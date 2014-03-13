@@ -71,7 +71,7 @@ default_hbv) is assumed. Within a case the model output (the results)
 are stored in a separate directory. This directory is called the run,
 indicated with a runId. This structure is indicated in the figure below:</p>
 <p class="graphviz">
-digraph file_system {
+<img src="_images/graphviz-48908b619c669b82505dbed23f936258c75c1a18.png" alt="digraph file_system {
 //rankdir=LR;
 size=&quot;8,11&quot;;
 &quot;Case&quot; -&gt; &quot;inmaps&quot;;
@@ -86,7 +86,7 @@ size=&quot;8,11&quot;;
    &quot;Run&quot; -&gt; &quot; outstate&quot;;
    &quot;Run&quot; -&gt; &quot;outsum&quot;;
    &quot;Run&quot; -&gt; &quot;runinfo&quot;;
-}
+}" />
 </p>
 <p>If you want to save the results and not overwrite the results from a previous
 run a new runId must be specified.</p>
