@@ -640,7 +640,7 @@ conditions is best done in several steps:</p>
 <p>The diagram below shows the stores and fluxes in the model in terms of internal variable names. It
 onlys shows the soil and Kinematic wave reservoir, not the canopy model.</p>
 <p class="graphviz">
-digraph grids {
+<img src="_images/graphviz-e5ec7992f1213e7eae816d6610041254d14f0520.png" alt="digraph grids {
 compound=true;
 node[shape=record];
 UStoreDepth [shape=box];
@@ -656,7 +656,7 @@ FirstZoneDepth -&gt; KinematicWaveStore [label=&quot;SubCellGWRunoffCubic [m^3/s
 &quot;OutSide&quot; -&gt; KinematicWaveStore [label=&quot;SubCellRunoffCubic [m^3/s]&quot;];
 &quot;OutSide&quot; -&gt; KinematicWaveStore [label=&quot;RunoffOpenWater [m^3/s]&quot;] ;
 &quot;OutSide&quot; -&gt; KinematicWaveStore [label=&quot;FreeWaterDepthCubic [m^3/s]&quot;] ;
-}
+}" />
 </p>
 </div>
 <div class="section" id="processing-of-meteorological-forcing-data">
@@ -665,7 +665,7 @@ FirstZoneDepth -&gt; KinematicWaveStore [label=&quot;SubCellGWRunoffCubic [m^3/s
 as possible it includes an option to apply an altitude correction to the
 temperature inputs. The three squares below demonstrate the principle.</p>
 <p class="graphviz">
-digraph grids {
+<img src="_images/graphviz-9d79b274e101d98314c7413137746824ea5ce6b1.png" alt="digraph grids {
 node[shape=record];
 a[label=&quot;{5|5|5}|{5|5|5}|{5|5|5}&quot;];
 b[label=&quot;{1|2|3}|{4|5|6}|{7|8|9}&quot;];
@@ -673,7 +673,7 @@ c[label=&quot;{4|3|2}|{1|0|-1}|{-2|-3|-4}&quot;];
   &quot;Average T input grid&quot; -&gt; a
   &quot;Correction per cell&quot; -&gt; b
   &quot;Resulting T&quot; -&gt; c
-}
+}" />
 </p>
 <p>wflow_sbm takes the correction grid as input and applies this to the input
 temperature. The correction grid has to be made outside of the model.

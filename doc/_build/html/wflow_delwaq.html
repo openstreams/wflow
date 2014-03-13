@@ -141,7 +141,7 @@ timestes while flows are integrated between tow timesteps. For volumes
 N+1 timesteps are needed, for flows N timesteps.  The figure below
 demonstrates this principle for N=4.</p>
 <p class="graphviz">
-digraph Flows {
+<img src="_images/graphviz-55e9276bcbec583e24cbb0e4e042a9cbadc61776.png" alt="digraph Flows {
 node[shape=record,width=.1,height=.1];
 node0 [label=&quot;{Time|Volume|Flow integrated}&quot;];
 node1 [label=&quot;{T=0|Volume=0|Flow=0 to 1}&quot;];
@@ -153,7 +153,7 @@ node1 -&gt; node2
 node2 -&gt; node3
 node3 -&gt; node4
 node4 -&gt; node5
-}
+}" />
 </p>
 <p>The volume.dat file is filled with N+1 steps of volumes of the wflow
 kinematic wave reservoir. To obtain the needed lag between the flows and
@@ -285,7 +285,7 @@ it flows out off.</p>
 <p>The whole procedure was setup in a Delft-FEWS configuration that can run
 the following steps operationally:</p>
 <p class="graphviz">
-digraph Flows {
+<img src="_images/graphviz-6943d4a394324f36d7cce83d9acc41f2fafa6e40.png" alt="digraph Flows {
 node[shape=record,width=.1,height=.1];
 &quot;Pre-Process P, T and PET data to match the model grid&quot; -&gt; &quot;Run the hydrological Model&quot;
 &quot;Run the hydrological Model&quot; -&gt; &quot; Save all flows per cell&quot;
@@ -293,7 +293,7 @@ node[shape=record,width=.1,height=.1];
 &quot;Feed flows per LU type and flow type to delwaq&quot; -&gt; &quot;Obtain flow fraction per LU and flow type at gauge locations&quot;
 &quot;Obtain flow fraction per LU and flow type at gauge locations&quot; -&gt; &quot;Multiply constituent concentration per LU and flow type with fraction&quot;
 &quot;Multiply constituent concentration per LU and flow type with fraction&quot; -&gt; &quot;Sum all fraction concentrations to obtain total concentration at gauge locations&quot;
-}
+}" />
 </p>
 </div>
 <div class="section" id="module-wflow_delwaq">
