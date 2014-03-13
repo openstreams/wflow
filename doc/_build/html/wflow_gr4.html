@@ -1,0 +1,463 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>wflow_gr4 Module &mdash; wflow 1.0RC1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/agogo.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0RC1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="wflow 1.0RC1 documentation" href="index.html" />
+    <link rel="next" title="wflow_wave Module" href="wflow_wave.html" />
+    <link rel="prev" title="wflow_sbm Module" href="wflow_sbm.html" /> 
+  </head>
+  <body>
+    <div class="header-wrapper">
+      <div class="header">
+        <div class="headertitle"><a
+          href="index.html">wflow 1.0RC1 documentation</a></div>
+        <div class="rel">
+          <a href="wflow_sbm.html" title="wflow_sbm Module"
+             accesskey="P">previous</a> |
+          <a href="wflow_wave.html" title="wflow_wave Module"
+             accesskey="N">next</a> |
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a>
+        </div>
+       </div>
+    </div>
+
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="index.html"><img src="_static/logo.png" border="0" alt="py4sci"/></a>
+</div>
+
+
+    <div class="content-wrapper">
+      <div class="content">
+        <div class="document">
+            
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="wflow-gr4-module">
+<h1>wflow_gr4 Module<a class="headerlink" href="#wflow-gr4-module" title="Permalink to this headline">¶</a></h1>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The documentation is incomplete</p>
+</div>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>An <em>experimental</em> implementation of the gr4 model. It is based on the hourly (gr4h) version</p>
+</div>
+<div class="section" id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<p>[PM]</p>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<p>The model  needs a number of settings in the ini file. The default name for the ini file
+is wflow_gr4.ini.</p>
+<p>See below for an example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">model</span><span class="p">]</span>
+
+<span class="n">Tslice</span><span class="o">=</span><span class="mi">1</span>
+<span class="c"># Maximum upstream distance to update the flow in metres</span>
+
+
+<span class="p">[</span><span class="n">gr4</span><span class="p">]</span>
+<span class="n">dt</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">B</span> <span class="o">=</span> <span class="mf">0.9</span>
+<span class="n">D</span> <span class="o">=</span> <span class="mf">1.25</span>
+<span class="n">X4</span> <span class="o">=</span> <span class="mf">32.83</span>
+<span class="c"># X1,X2 and X3 are given as .tbl files or maps</span>
+
+<span class="p">[</span><span class="n">layout</span><span class="p">]</span>
+<span class="c"># if set to zero the cell-size is given in lat/long (the default)</span>
+<span class="n">sizeinmetres</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="p">[</span><span class="n">outputmaps</span><span class="p">]</span>
+<span class="c"># Add maps here</span>
+
+<span class="c"># List all timeseries in tss format to save in this section. Timeseries are</span>
+<span class="c"># produced as averages per subcatchment. The discharge (run) timeseries</span>
+<span class="c"># is always saved (as samples at the gauge location)s.</span>
+<span class="p">[</span><span class="n">outputtss</span><span class="p">]</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">S_X1</span><span class="o">=</span><span class="n">S_X1</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">R_X3</span><span class="o">=</span><span class="n">R_X3</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">Pr</span><span class="o">=</span><span class="n">Pr</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">Q</span><span class="o">=</span><span class="n">Q</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="module-wflow_gr4">
+<span id="wflow-gr4-module-documentation"></span><h1>wflow_gr4 module documentation<a class="headerlink" href="#module-wflow_gr4" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="definition-of-the-wflow-gr4-model">
+<h2>Definition of the wflow_gr4 model.<a class="headerlink" href="#definition-of-the-wflow-gr4-model" title="Permalink to this headline">¶</a></h2>
+<p>Usage:
+wflow_gr4  [-l loglevel][-c configfile][-f][-h] -C case -R Runid -</p>
+<blockquote>
+<div><p>-C: set the name  of the case (directory) to run</p>
+<p>-R: set the name runId within the current case</p>
+<p>-c name of the config file (in the case directory)</p>
+<p>-f: Force overwrite of existing results</p>
+<dl class="docutils">
+<dt>-F: if set wflow is expected to be run by FEWS. It will determine</dt>
+<dd>the timesteps from the runinfo.xml file and save the output initial
+conditions to an alternate location. The runinfo.xml file should be located
+in the inmaps directory of the case. Also set fewsrun=1 in the .ini file!</dd>
+</dl>
+<p>-h: print usage information</p>
+<p>-l: loglevel (most be one of DEBUG, WARNING, ERROR)</p>
+</div></blockquote>
+<p>$Author: schelle $
+$Id: wflow_gr4.py 913 2014-02-04 13:10:51Z schelle $
+$Rev: 913 $</p>
+</div>
+<div class="section" id="notes">
+<h2>NOTES<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>The max length of the arrays is determined  by the X4 parameter (int(X4))</li>
+<li>The X4 parameter is always uniform over that catchment. Howvere, the state
+of the UH is determined per grid cell.</li>
+</ul>
+<dl class="class">
+<dt id="wflow_gr4.WflowModel">
+<em class="property">class </em><tt class="descclassname">wflow_gr4.</tt><tt class="descname">WflowModel</tt><big>(</big><em>cloneMap</em>, <em>Dir</em>, <em>RunDir</em>, <em>configfile</em><big>)</big><a class="headerlink" href="#wflow_gr4.WflowModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">pcraster.framework.dynamicPCRasterBase.DynamicModel</span></tt></p>
+<p>The user defined model class. This is your work!</p>
+<dl class="method">
+<dt id="wflow_gr4.WflowModel.dynamic">
+<tt class="descname">dynamic</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_gr4.WflowModel.dynamic" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Required</em></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>self.Pn</strong> &#8211; net precipitation [mm]</li>
+<li><strong>self.En</strong> &#8211; net evapotranspiration [mm]</li>
+<li><strong>self.Ps</strong> &#8211; part of Pn that feeds the production reservoir [mm]</li>
+<li><strong>self.Es</strong> &#8211; evaporation quantity substracted from the production reservoir [mm]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_gr4.WflowModel.initial">
+<tt class="descname">initial</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_gr4.WflowModel.initial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initial part of the gr4 model, executed only once. Reads all static model
+information (parameters) and sets-up the variables used in modelling.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dt.tbl</strong> &#8211; time step (1) [hour]</li>
+<li><strong>B.tbl</strong> &#8211; routing ratio (0.9) [-]</li>
+<li><strong>NH</strong> &#8211; UH dimension (number) taken from ini file [-]</li>
+<li><strong>D.tbl</strong> &#8211; variable for hourly time steps (1.25) [-]</li>
+<li><strong>C.tbl</strong> &#8211; variable (number) [hour]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><em>Parameters</em></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>X1.tbl</strong> &#8211; capacity of the production store, accounts for soil moisture (number) [mm]</li>
+<li><strong>X2.tbl</strong> &#8211; water exchange coefficient (number) [mm]</li>
+<li><strong>X3.tbl</strong> &#8211; capacity of the routing store (number) [mm]</li>
+<li><strong>(in ini)</strong> (<em>X4</em>) &#8211; time base of the unit hydrograph (number) [hour]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_gr4.WflowModel.resume">
+<tt class="descname">resume</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_gr4.WflowModel.resume" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Required</em></p>
+<p>This function is required. Read initial state maps (they are output of a 
+previous call to suspend()). The implementation showns her is the most basic 
+setup needed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_gr4.WflowModel.stateVariables">
+<tt class="descname">stateVariables</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_gr4.WflowModel.stateVariables" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a list of state variables that are essential to the model. 
+This list is essential for the resume and suspend functions to work.</p>
+<p>This function is specific for each model and <strong>must</strong> be present.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>self.S_X1</strong> &#8211; production reservoir content at the beginning of the time step (divided by X1) [mm]</li>
+<li><strong>self.R_X3</strong> &#8211; routing reservoir content at the beginning of the time step (divided by X3) [mm]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">add routing state vars</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_gr4.WflowModel.supplyCurrentTime">
+<tt class="descname">supplyCurrentTime</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_gr4.WflowModel.supplyCurrentTime" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Optional</em></p>
+<p>Supplies the current time in seconds after the start of the run
+This function is optional. If it is not set the framework assumes
+the model runs with daily timesteps.</p>
+<p>Ouput:</p>
+<blockquote>
+<div><ul class="simple">
+<li>time in seconds since the start of the model run</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_gr4.WflowModel.suspend">
+<tt class="descname">suspend</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_gr4.WflowModel.suspend" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Required</em></p>
+<p>Suspends the model to disk. All variables needed to restart the model
+are saved to disk as pcraster maps. Use resume() to re-read them</p>
+<p>This function is required.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_gr4.initUH1">
+<tt class="descclassname">wflow_gr4.</tt><tt class="descname">initUH1</tt><big>(</big><em>X4</em>, <em>D</em><big>)</big><a class="headerlink" href="#wflow_gr4.initUH1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the UH1 unit hydrograph</p>
+<dl class="docutils">
+<dt>Input:   </dt>
+<dd><ul class="first last simple">
+<li>X4</li>
+<li>D</li>
+</ul>
+</dd>
+<dt>Returns:   </dt>
+<dd><ul class="first last simple">
+<li>UH1, SH1</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_gr4.initUH2">
+<tt class="descclassname">wflow_gr4.</tt><tt class="descname">initUH2</tt><big>(</big><em>X4</em>, <em>D</em><big>)</big><a class="headerlink" href="#wflow_gr4.initUH2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the UH2 unit hydrograph</p>
+<p>Input:</p>
+<blockquote>
+<div><ul class="simple">
+<li>X4</li>
+<li>D</li>
+</ul>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div><ul class="simple">
+<li>UH2, SH2</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_gr4.main">
+<tt class="descclassname">wflow_gr4.</tt><tt class="descname">main</tt><big>(</big><em>argv=None</em><big>)</big><a class="headerlink" href="#wflow_gr4.main" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Optional</em></p>
+<p>Perform command line execution of the model. This example uses the getopt
+module to parse the command line options.</p>
+<p>The user can set the caseName, the runDir, the timestep and the configfile.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_gr4.mk_qres">
+<tt class="descclassname">wflow_gr4.</tt><tt class="descname">mk_qres</tt><big>(</big><em>N</em><big>)</big><a class="headerlink" href="#wflow_gr4.mk_qres" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an array (or ayyar of maps) to store the 
+delayed flow in</p>
+<p>Input:</p>
+<blockquote>
+<div><ul class="simple">
+<li>N nr op steps</li>
+</ul>
+</div></blockquote>
+<p>Ouput:</p>
+<blockquote>
+<div><ul class="simple">
+<li>nr of steps elemenst initialized with zeros&#8217;s</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_gr4.pcr_tanh">
+<tt class="descclassname">wflow_gr4.</tt><tt class="descname">pcr_tanh</tt><big>(</big><em>x</em><big>)</big><a class="headerlink" href="#wflow_gr4.pcr_tanh" title="Permalink to this definition">¶</a></dt>
+<dd><p>define tanh for pcraster objects</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_gr4.usage">
+<tt class="descclassname">wflow_gr4.</tt><tt class="descname">usage</tt><big>(</big><em>*args</em><big>)</big><a class="headerlink" href="#wflow_gr4.usage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+        </div>
+        <div class="sidebar">
+          <h3>Table Of Contents</h3>
+          <ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_hbv.html">The wflow_hbv model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_hbv.html#module-wflow_hbv">Description of the python module</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_sbm.html">wflow_sbm Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_sbm.html#module-wflow_sbm">wflow_sbm module documentation</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">wflow_gr4 Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configuration">Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#module-wflow_gr4">wflow_gr4 module documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#definition-of-the-wflow-gr4-model">Definition of the wflow_gr4 model.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#notes">NOTES</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_wave.html">wflow_wave Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_wave.html#module-wflow_wave">wflow_wave module documentation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_floodmap.html">The wflow_floodmap module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_floodmap.html#module-wflow_floodmap">Description of the python module</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_building.html">Data requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_building.html#setting-up-a-new-model">Setting-up a new model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_building.html#module-wflow_prepare_step1">Script documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_building.html#setting-up-a-case">Setting Up a Case</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_building.html#input-parameters-lookup-tables-or-maps">Input parameters (lookup tables or maps)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_building.html#common-problems">Common problems</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_building.html#calibrating-the-wflow-sbm-model">Calibrating the  wflow_sbm model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_building.html#id3">Common problems</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_usage.html">Using the models</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_adapt.html">wflow_adapt Module</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_fit.html">The wflow_fit module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_fit.html#module-wflow_fit">Description of the python module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_lib.html">wflow_lib Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_delwaq.html">wflow_delwaq Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_delwaq.html#case-study-for-malaysia-and-singapore">Case study for Malaysia and Singapore</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_delwaq.html#module-wflow_delwaq">wflow_delwaq module documentation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="testrunner_wflowhbv.html">run wflow_hbv via API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="calib_report.html">Calibration of the wflow_sbm model for the Rhine catchment using EOBS data</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="framework.html">Using the framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wf_DynamicFramework.html">wf_DynamicFramework Module</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Questions and answers</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_openda.html">Linking wflow to OpenDA</a></li>
+</ul>
+
+          <h3 style="margin-top: 1.5em;">Search</h3>
+          <form class="search" action="search.html" method="get">
+            <input type="text" name="q" />
+            <input type="submit" value="Go" />
+            <input type="hidden" name="check_keywords" value="yes" />
+            <input type="hidden" name="area" value="default" />
+          </form>
+          <p class="searchtip" style="font-size: 90%">
+            Enter search terms or a module, class or function name.
+          </p>
+        </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+
+    <div class="footer-wrapper">
+      <div class="footer">
+        <div class="left">
+          <a href="wflow_sbm.html" title="wflow_sbm Module"
+             >previous</a> |
+          <a href="wflow_wave.html" title="wflow_wave Module"
+             >next</a> |
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |
+          <a href="genindex.html" title="General Index"
+             >index</a>
+            <br/>
+            <a href="_sources/wflow_gr4.txt"
+               rel="nofollow">Show Source</a>
+        </div>
+
+        <div class="right">
+          
+    <div class="footer">
+        &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.1.
+    </div>
+        </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+
+  </body>
+</html>

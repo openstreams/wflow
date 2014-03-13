@@ -1,0 +1,383 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>wflow_adapt Module &mdash; wflow 1.0RC1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/agogo.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0RC1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="wflow 1.0RC1 documentation" href="index.html" />
+    <link rel="next" title="The wflow_fit module" href="wflow_fit.html" />
+    <link rel="prev" title="Using the models" href="wflow_usage.html" /> 
+  </head>
+  <body>
+    <div class="header-wrapper">
+      <div class="header">
+        <div class="headertitle"><a
+          href="index.html">wflow 1.0RC1 documentation</a></div>
+        <div class="rel">
+          <a href="wflow_usage.html" title="Using the models"
+             accesskey="P">previous</a> |
+          <a href="wflow_fit.html" title="The wflow_fit module"
+             accesskey="N">next</a> |
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a>
+        </div>
+       </div>
+    </div>
+
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="index.html"><img src="_static/logo.png" border="0" alt="py4sci"/></a>
+</div>
+
+
+    <div class="content-wrapper">
+      <div class="content">
+        <div class="document">
+            
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="wflow-adapt-module">
+<span id="wflow-adapt"></span><h1>wflow_adapt Module<a class="headerlink" href="#wflow-adapt-module" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>wflow_adapt is an adapter that links wflow to Delft-FEWS
+(<a class="reference external" href="http://publicwiki.deltares.nl/display/FEWSDOC/Home">http://publicwiki.deltares.nl/display/FEWSDOC/Home</a>). it is typically run from the
+Delft-FEWS general adapter.</p>
+</div>
+<div class="section" id="linking-wflow-models-to-delft-fews">
+<h2>Linking wflow models to Delft-FEWS<a class="headerlink" href="#linking-wflow-models-to-delft-fews" title="Permalink to this headline">¶</a></h2>
+<p>To run the model from Delft-FEWS the following actions need to be
+performed:</p>
+<ul class="simple">
+<li>wflow_[sbm|hbv].py needs to be run with the -F option where the argument refers
+to a Delft-FEWS runinfo.xml file</li>
+<li>you need to specify fewsrun=1 in the model section of the .ini file</li>
+<li>The postadapter (wflow_adapt.py) needs to be run after the wflow run</li>
+</ul>
+<p>Because DELFT-FEWS exports the mapstacks beginning at 0 and pcraster
+expects them to start at 1 you will need to add a delay of one
+timesstep to mapstack timeseries exported to wflow. This will mean
+the first timestep (.000) is empty but that one will be ignored by
+wflow anyway.</p>
+<p>Command line arguments:</p>
+<p>An example of executing wflow from the Delft-FEWS general adapter
+is shown below:</p>
+<div class="highlight-python"><div class="highlight"><pre>&lt;executeActivities&gt;
+&lt;executeActivity&gt;
+&lt;description&gt;Run wflow&lt;/description&gt;
+&lt;command&gt;&lt;executable&gt;bin-wflow\wflow_sbm.exe&lt;/executable&gt;&lt;/command&gt;
+    &lt;arguments&gt;
+    &lt;argument&gt;-C&lt;/argument&gt;
+    &lt;argument&gt;rhine&lt;/argument&gt;
+    &lt;argument&gt;-F&lt;/argument&gt;
+    &lt;argument&gt;rhine/inmaps/runinfo.xml&lt;/argument&gt;
+    &lt;argument&gt;-f&lt;/argument&gt;
+&lt;/arguments&gt;
+&lt;timeOut&gt;7200000&lt;/timeOut&gt;
+&lt;/executeActivity&gt;
+&lt;executeActivity&gt;
+&lt;description&gt;Run wflow post&lt;/description&gt;
+&lt;command&gt; &lt;executable&gt;bin-wflow\wflow_adapt.exe&lt;/executable&gt; &lt;/command&gt; &lt;arguments&gt;
+    &lt;argument&gt;-M&lt;/argument&gt;
+    &lt;argument&gt;Post&lt;/argument&gt;
+    &lt;argument&gt;-s&lt;/argument&gt;
+    &lt;argument&gt;rhine/instate/state.xml&lt;/argument&gt;
+    &lt;argument&gt;-o&lt;/argument&gt;
+    &lt;argument&gt;rhine/instate/outstate.xml&lt;/argument&gt;
+    &lt;argument&gt;-r&lt;/argument&gt;
+    &lt;argument&gt;rhine/inmaps/runinfo.xml&lt;/argument&gt;
+    &lt;argument&gt;-w&lt;/argument&gt;
+    &lt;argument&gt;./&lt;/argument&gt;
+    &lt;argument&gt;-C&lt;/argument&gt;
+    &lt;argument&gt;rhine&lt;/argument&gt;
+    &lt;argument&gt;-I&lt;/argument&gt;
+    &lt;argument&gt;wflow_sbm.ini&lt;/argument&gt;
+    &lt;argument&gt;-T&lt;/argument&gt;
+    &lt;argument&gt;86400&lt;/argument&gt;
+&lt;/arguments&gt;
+&lt;timeOut&gt;1200000&lt;/timeOut&gt;
+&lt;/executeActivity&gt;
+&lt;/executeActivities&gt;
+</pre></div>
+</div>
+<p>The wflow_adapt module can also be used by other programs to convert .tss files to
+pi-xml vv. Below the API documentation of the module is given.</p>
+</div>
+<div class="section" id="how-to-use-the-adapter">
+<h2>How to use the adapter<a class="headerlink" href="#how-to-use-the-adapter" title="Permalink to this headline">¶</a></h2>
+<p>[PM]</p>
+</div>
+<div class="section" id="module-wflow_adapt">
+<span id="module-function-documentation"></span><h2>Module function documentation<a class="headerlink" href="#module-wflow_adapt" title="Permalink to this headline">¶</a></h2>
+<p>wflow_adapt.py: Simple wflow Delft-FEWS adapter in python. This file can be run
+as a script from the command-line or be used as a module that provides (limited)
+functionality for converting PI-XML files to .tss and back.</p>
+<p><em>Usage pre adapter:</em></p>
+<p><strong>wflow_adapt</strong> -M Pre -t InputTimeseriesXml -I inifile -T timestepInSeconds</p>
+<p><em>Usage postadapter:</em></p>
+<dl class="docutils">
+<dt><strong>wflow_adapt</strong>-M Post -t InputTimeseriesXml -s inputStateFile -I inifile </dt>
+<dd>-o outputStateFile -r runinfofile -w workdir -C case -T timestepInSeconds [-R runId]</dd>
+</dl>
+<p>Issues:</p>
+<ul class="simple">
+<li>Delft-Fews exports data from 0 to timestep. PCraster starts to count at 1.
+Renaming the files is not desireable. The solution is the add a delay of 1 
+timestep in the GA run that exports the mapstacks to wflow.</li>
+<li>Not tested very well.</li>
+<li>There is a considerable amount of duplication (e.g. info in the runinfo.xml and
+the .ini file that you need to specify again :-())</li>
+</ul>
+<blockquote>
+<div><div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">rewrite and simplify</p>
+</div>
+</div></blockquote>
+<p>$Author: schelle $
+$Id: wflow_adapt.py 915 2014-02-10 07:33:56Z schelle $
+$Rev: 915 $</p>
+<dl class="function">
+<dt id="wflow_adapt.getEndTimefromRuninfo">
+<tt class="descclassname">wflow_adapt.</tt><tt class="descname">getEndTimefromRuninfo</tt><big>(</big><em>xmlfile</em><big>)</big><a class="headerlink" href="#wflow_adapt.getEndTimefromRuninfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the endtime of the run from the FEWS runinfo file</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_adapt.getMapStacksFromRuninfo">
+<tt class="descclassname">wflow_adapt.</tt><tt class="descname">getMapStacksFromRuninfo</tt><big>(</big><em>xmlfile</em><big>)</big><a class="headerlink" href="#wflow_adapt.getMapStacksFromRuninfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the list of mapstacks fews expect from the runinfo file and create those</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_adapt.getStartTimefromRuninfo">
+<tt class="descclassname">wflow_adapt.</tt><tt class="descname">getStartTimefromRuninfo</tt><big>(</big><em>xmlfile</em><big>)</big><a class="headerlink" href="#wflow_adapt.getStartTimefromRuninfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the starttime from the FEWS runinfo file</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_adapt.getTimeStepsfromRuninfo">
+<tt class="descclassname">wflow_adapt.</tt><tt class="descname">getTimeStepsfromRuninfo</tt><big>(</big><em>xmlfile</em>, <em>timestepsecs</em><big>)</big><a class="headerlink" href="#wflow_adapt.getTimeStepsfromRuninfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the number of  timesteps from the FEWS runinfo file.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_adapt.log2xml">
+<tt class="descclassname">wflow_adapt.</tt><tt class="descname">log2xml</tt><big>(</big><em>logfilename</em>, <em>xmlfilename</em><big>)</big><a class="headerlink" href="#wflow_adapt.log2xml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts an (adapter) log file the a FEW pi XML  diagnistics file</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_adapt.main">
+<tt class="descclassname">wflow_adapt.</tt><tt class="descname">main</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_adapt.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Main entry for using the module as a command line program (e.g. from the Delft-FEWS GA)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_adapt.mapstackxml">
+<tt class="descclassname">wflow_adapt.</tt><tt class="descname">mapstackxml</tt><big>(</big><em>mapstackxml</em>, <em>mapstackname</em>, <em>locationname</em>, <em>parametername</em>, <em>Sdate</em>, <em>Edate</em>, <em>timestepsecs</em><big>)</big><a class="headerlink" href="#wflow_adapt.mapstackxml" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes mapstack xml file</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_adapt.pixml_state_updateTime">
+<tt class="descclassname">wflow_adapt.</tt><tt class="descname">pixml_state_updateTime</tt><big>(</big><em>inxml</em>, <em>outxml</em>, <em>DT</em><big>)</big><a class="headerlink" href="#wflow_adapt.pixml_state_updateTime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads the pi-state xml file inxml and updates the data/time of
+the state using datetime. Writes updated file to outxml</p>
+<ul class="simple">
+<li>Can be use in scripts to set the date.time of the 
+output state.xml that Delft-FEWS writes.</li>
+</ul>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This function does not fully parse the xml file and will only work properly
+if the xml files date the dateTime element written on one line.</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_adapt.pixml_totss">
+<tt class="descclassname">wflow_adapt.</tt><tt class="descname">pixml_totss</tt><big>(</big><em>nname</em>, <em>outputdir</em><big>)</big><a class="headerlink" href="#wflow_adapt.pixml_totss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts and PI xml timeseries file to a number of tss files.</p>
+<p>The tss files are created using the following rules:</p>
+<blockquote>
+<div><ul class="simple">
+<li>tss filename determined by the content of the parameter element with a &#8221;.tss&#8221; postfix</li>
+<li>files are created in &#8220;outputdir&#8221;</li>
+<li>multiple locations will be multiple columns in the tss file written in order
+of appearance in the XML file</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_adapt.pixml_totss_dates">
+<tt class="descclassname">wflow_adapt.</tt><tt class="descname">pixml_totss_dates</tt><big>(</big><em>nname</em>, <em>outputdir</em><big>)</big><a class="headerlink" href="#wflow_adapt.pixml_totss_dates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets Date/time info from XML file and creates .tss files with:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Day of year</li>
+<li>Hour of day</li>
+<li>Others may follow</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_adapt.setlogger">
+<tt class="descclassname">wflow_adapt.</tt><tt class="descname">setlogger</tt><big>(</big><em>logfilename</em><big>)</big><a class="headerlink" href="#wflow_adapt.setlogger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set-up the logging system and return a logger object. Exit if this fails</p>
+<p>Input:
+- filename</p>
+<p>Output:
+- Logger object</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_adapt.tss_topixml">
+<tt class="descclassname">wflow_adapt.</tt><tt class="descname">tss_topixml</tt><big>(</big><em>tssfile</em>, <em>xmlfile</em>, <em>locationname</em>, <em>parametername</em>, <em>Sdate</em>, <em>timestep</em><big>)</big><a class="headerlink" href="#wflow_adapt.tss_topixml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a .tss file to a PI-xml file</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+        </div>
+        <div class="sidebar">
+          <h3>Table Of Contents</h3>
+          <ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_hbv.html">The wflow_hbv model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_hbv.html#module-wflow_hbv">Description of the python module</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_sbm.html">wflow_sbm Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_sbm.html#module-wflow_sbm">wflow_sbm module documentation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_gr4.html">wflow_gr4 Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_gr4.html#module-wflow_gr4">wflow_gr4 module documentation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_wave.html">wflow_wave Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_wave.html#module-wflow_wave">wflow_wave module documentation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_floodmap.html">The wflow_floodmap module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_floodmap.html#module-wflow_floodmap">Description of the python module</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_building.html">Data requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_building.html#setting-up-a-new-model">Setting-up a new model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_building.html#module-wflow_prepare_step1">Script documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_building.html#setting-up-a-case">Setting Up a Case</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_building.html#input-parameters-lookup-tables-or-maps">Input parameters (lookup tables or maps)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_building.html#common-problems">Common problems</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_building.html#calibrating-the-wflow-sbm-model">Calibrating the  wflow_sbm model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_building.html#id3">Common problems</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_usage.html">Using the models</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">wflow_adapt Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#linking-wflow-models-to-delft-fews">Linking wflow models to Delft-FEWS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-use-the-adapter">How to use the adapter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-wflow_adapt">Module function documentation</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_fit.html">The wflow_fit module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_fit.html#module-wflow_fit">Description of the python module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_lib.html">wflow_lib Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_delwaq.html">wflow_delwaq Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_delwaq.html#case-study-for-malaysia-and-singapore">Case study for Malaysia and Singapore</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_delwaq.html#module-wflow_delwaq">wflow_delwaq module documentation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="testrunner_wflowhbv.html">run wflow_hbv via API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="calib_report.html">Calibration of the wflow_sbm model for the Rhine catchment using EOBS data</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="framework.html">Using the framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wf_DynamicFramework.html">wf_DynamicFramework Module</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Questions and answers</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_openda.html">Linking wflow to OpenDA</a></li>
+</ul>
+
+          <h3 style="margin-top: 1.5em;">Search</h3>
+          <form class="search" action="search.html" method="get">
+            <input type="text" name="q" />
+            <input type="submit" value="Go" />
+            <input type="hidden" name="check_keywords" value="yes" />
+            <input type="hidden" name="area" value="default" />
+          </form>
+          <p class="searchtip" style="font-size: 90%">
+            Enter search terms or a module, class or function name.
+          </p>
+        </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+
+    <div class="footer-wrapper">
+      <div class="footer">
+        <div class="left">
+          <a href="wflow_usage.html" title="Using the models"
+             >previous</a> |
+          <a href="wflow_fit.html" title="The wflow_fit module"
+             >next</a> |
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |
+          <a href="genindex.html" title="General Index"
+             >index</a>
+            <br/>
+            <a href="_sources/wflow_adapt.txt"
+               rel="nofollow">Show Source</a>
+        </div>
+
+        <div class="right">
+          
+    <div class="footer">
+        &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.1.
+    </div>
+        </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+
+  </body>
+</html>
