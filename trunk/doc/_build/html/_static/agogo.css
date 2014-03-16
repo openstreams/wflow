@@ -4,7 +4,7 @@
  *
  * Sphinx stylesheet -- agogo theme.
  *
- * :copyright: Copyright 2007-2013 by the Sphinx team, see AUTHORS.
+ * :copyright: Copyright 2007-2011 by the Sphinx team, see AUTHORS.
  * :license: BSD, see LICENSE for details.
  *
  */
@@ -31,7 +31,7 @@ div.header, div.content, div.footer {
 }
 
 div.header-wrapper {
-  background: #555573 url(bgtop.png) top left repeat-x;
+  background: url(bgtop.png) top left repeat-x;
   border-bottom: 3px solid #2e3436;
 }
 
