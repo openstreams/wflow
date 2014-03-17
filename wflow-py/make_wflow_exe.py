@@ -6,7 +6,7 @@ import os
 #vers=os.system('svnversion -n')
 #print vers
 #Binary dist
-f = Freezer("Wflow0.93")
+f = Freezer("Wflow1.0RC2")
 f.addScript("wflow/__init__.py")
 f.addScript("wflow/wflow_sbm.py")
 f.addScript("wflow/wflow_hbv.py")
