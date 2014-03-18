@@ -1,12 +1,12 @@
 from distutils.core import setup
 from bbfreeze import Freezer
-import os
+from _version import *
+import ctypes
+
+nrbits = str(ctypes.sizeof(ctypes.c_voidp) * 8)
 
 
-#vers=os.system('svnversion -n')
-#print vers
-#Binary dist
-f = Freezer("Wflow1.0RC2")
+f = Freezer("Wflow"+MVERSION+'-'+nrbits)
 f.addScript("wflow/__init__.py")
 f.addScript("wflow/wflow_sbm.py")
 f.addScript("wflow/wflow_hbv.py")
