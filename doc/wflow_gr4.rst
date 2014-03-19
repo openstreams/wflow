@@ -59,7 +59,7 @@ See below for an example:
 
 
 wflow_gr4 module documentation
-================================
+------------------------------
 
 .. automodule:: wflow_gr4
     :members:

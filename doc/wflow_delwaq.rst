@@ -250,7 +250,7 @@ the following steps operationally:
 
 
 wflow\_delwaq module documentation
-==================================
+----------------------------------
 
 .. automodule:: wflow_delwaq
     :members:

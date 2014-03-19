@@ -106,7 +106,7 @@ hydrological model run by default:
 
 
 wflow_wave module documentation
-================================
+-------------------------------
 
 .. automodule:: wflow_wave
     :members:

@@ -713,7 +713,7 @@ References
 .. [Wigmosta] Wigmosta, M. S., L. J. Lane, J. D. Tagestad, and A. M. Coleman (2009), Hydrologic and erosion models to assess land use and management practices affecting soil erosion, Journal of Hydrologic Engineering, 14(1), 27-41.
 
 wflow_sbm module documentation
-==============================
+------------------------------
 
 .. automodule:: wflow_sbm
     :members:

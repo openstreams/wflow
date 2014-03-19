@@ -87,7 +87,7 @@ The wflow\_rhine\_sbm example can be used to test the fitting procedure.
     wflow_fit.py -M wflow\_sbm -T 300 -C wflow\rhine\_sbm
 
 Description of the python module
-================================
+--------------------------------
 
 .. automodule:: wflow_fit
 	:members:
