@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -8,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Data requirements &mdash; wflow 1.0RC1 documentation</title>
+  <title>Building a model &mdash; wflow 1.0RC1 documentation</title>
   
 
   
@@ -19,20 +18,6 @@
 
   
   
-
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:'',
-        VERSION:'1.0RC1',
-        COLLAPSE_INDEX:false,
-        FILE_SUFFIX:'.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-
     
 
   
@@ -40,7 +25,6 @@
   
   
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-    <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
   
@@ -48,35 +32,38 @@
         <link rel="next" title="Using the models" href="wflow_usage.html"/>
         <link rel="prev" title="The wflow_floodmap module" href="wflow_floodmap.html"/> 
 
-  <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav">
+<body class="wy-body-for-nav" role="document">
 
   <div class="wy-grid-for-nav">
 
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-nav-search">
-        <a href="index.html" class="icon icon-home"> wflow</a>
-        <form class="wy-form" action="search.html" method="get">
-  <input type="text" name="q" placeholder="Search docs" />
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
-</form>
+        <a href="index.html" class="fa fa-home"> wflow</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
       </div>
 
-      <div class="wy-menu wy-menu-vertical" data-spy="affix">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
         
         
             <ul>
 <li class="toctree-l1"><a class="reference internal" href="wflow_hbv.html">The wflow_hbv model</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="wflow_hbv.html#introduction">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wflow_hbv.html#description">Description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_hbv.html#module-wflow_hbv">Description of the python module</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="wflow_hbv.html#module-wflow_hbv">Description of the python module</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="wflow_sbm.html">wflow_sbm Module</a><ul>
@@ -89,20 +76,16 @@
 <li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#processing-of-meteorological-forcing-data">Processing of meteorological forcing data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#guidelines-for-wflowsbm-model-parameters">Guidelines for wflowsbm model parameters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#references">References</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#module-wflow_sbm">wflow_sbm module documentation</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="wflow_sbm.html#module-wflow_sbm">wflow_sbm module documentation</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="wflow_gr4.html">wflow_gr4 Module</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="wflow_gr4.html#introduction">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wflow_gr4.html#dependencies">Dependencies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wflow_gr4.html#configuration">Configuration</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="wflow_gr4.html#module-wflow_gr4">wflow_gr4 module documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="wflow_gr4.html#definition-of-the-wflow-gr4-model">Definition of the wflow_gr4 model.</a></li>
-<li class="toctree-l2"><a class="reference internal" href="wflow_gr4.html#notes">NOTES</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_gr4.html#module-wflow_gr4">wflow_gr4 module documentation</a></li>
 </ul>
 </li>
 </ul>
@@ -111,44 +94,29 @@
 <li class="toctree-l2"><a class="reference internal" href="wflow_wave.html#introduction">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wflow_wave.html#dependencies">Dependencies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wflow_wave.html#configuration">Configuration</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="wflow_wave.html#module-wflow_wave">wflow_wave module documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="wflow_wave.html#definition-of-the-wflow-wave-model">Definition of the wflow_wave model.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_wave.html#module-wflow_wave">wflow_wave module documentation</a></li>
 </ul>
 </li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="wflow_floodmap.html">The wflow_floodmap module</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="wflow_floodmap.html#introduction">Introduction</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="wflow_floodmap.html#module-wflow_floodmap">Description of the python module</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="wflow_floodmap.html#definition-of-the-wflow-floodmap-model">Definition of the wflow_floodmap model.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_floodmap.html#module-wflow_floodmap">Description of the python module</a></li>
 </ul>
 </li>
 </ul>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="">Data requirements</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#setting-up-a-new-model">Setting-up a new model</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Building a model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#data-requirements">Data requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#setting-up-a-new-model">Setting-up a new model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#preparing-static-input-maps">Preparing static input maps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-wflow_prepare_step1">Script documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#setting-up-a-case">Setting Up a Case</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#input-parameters-lookup-tables-or-maps">Input parameters (lookup tables or maps)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#calibrating-the-wflow-sbm-model">Calibrating the  wflow_sbm model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#common-problems">Common problems</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="#module-wflow_prepare_step1">Script documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#wflow-prepare-step1">wflow_prepare_step1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#wflow-prepare-step2">wflow_prepare_step2</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="#setting-up-a-case">Setting Up a Case</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#input-parameters-lookup-tables-or-maps">Input parameters (lookup tables or maps)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#common-problems">Common problems</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#calibrating-the-wflow-sbm-model">Calibrating the  wflow_sbm model</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#id2">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#parameters">Parameters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#changes-in-hydrographs-for-different-values-of-parameters">Changes in hydrographs for different values of parameters</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="#id3">Common problems</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="wflow_usage.html">Using the models</a><ul>
@@ -175,9 +143,9 @@
 <li class="toctree-l2"><a class="reference internal" href="wflow_fit.html#the-ini-file">The ini file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wflow_fit.html#fitting-results">Fitting results</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wflow_fit.html#how-to-fit">How to fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_fit.html#module-wflow_fit">Description of the python module</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="wflow_fit.html#module-wflow_fit">Description of the python module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="wflow_lib.html">wflow_lib Module</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="wflow_lib.html#wflow-lib-terrain-analysis-and-hydrological-library">wflow_lib - terrain analysis and hydrological library</a></li>
 </ul>
@@ -187,9 +155,8 @@
 <li class="toctree-l2"><a class="reference internal" href="wflow_delwaq.html#very-simple-example">Very simple example:</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="wflow_delwaq.html#case-study-for-malaysia-and-singapore">Case study for Malaysia and Singapore</a></li>
-<li class="toctree-l1"><a class="reference internal" href="wflow_delwaq.html#module-wflow_delwaq">wflow_delwaq module documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="wflow_delwaq.html#introduction">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_delwaq.html#case-study-for-malaysia-and-singapore">Case study for Malaysia and Singapore</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_delwaq.html#module-wflow_delwaq">wflow_delwaq module documentation</a></li>
 </ul>
 </li>
 </ul>
@@ -238,25 +205,34 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top">
-        <i data-toggle="wy-nav-top" class="icon icon-reorder"></i>
-        <a href="/">wflow</a>
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">wflow</a>
       </nav>
 
 
       
       <div class="wy-nav-content">
         <div class="rst-content">
-          <ul class="wy-breadcrumbs">
-  <li><a href="index.html">Docs</a> &raquo;</li>
-  <li><a href="">Data requirements</a></li>
-  
-</ul>
-<hr/>
-
-          
-  <div class="section" id="data-requirements">
-<h1>Data requirements<a class="headerlink" href="#data-requirements" title="Permalink to this headline">¶</a></h1>
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Building a model</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/wflow_building.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <div class="section" id="building-a-model">
+<h1>Building a model<a class="headerlink" href="#building-a-model" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="data-requirements">
+<h2>Data requirements<a class="headerlink" href="#data-requirements" title="Permalink to this headline">¶</a></h2>
 <p>The actual data requirements depend on the application of the model. The
 following list summarizes the data requirements:</p>
 <ul class="simple">
@@ -285,7 +261,7 @@ routines for the Delft-FEWS pi XML files. An example of the link to
 Delft-FEWS is given in section <a class="reference internal" href="wflow_adapt.html#wflow-adapt"><em>wflow_adapt Module</em></a></p>
 </div>
 <div class="section" id="setting-up-a-new-model">
-<span id="id1"></span><h1>Setting-up a new model<a class="headerlink" href="#setting-up-a-new-model" title="Permalink to this headline">¶</a></h1>
+<span id="id1"></span><h2>Setting-up a new model<a class="headerlink" href="#setting-up-a-new-model" title="Permalink to this headline">¶</a></h2>
 <p>Setting-up a new model first starts with making a number of decisions and gathering the
 required data:</p>
 <ol class="arabic simple">
@@ -314,6 +290,7 @@ a google maps or openstreetmaps layer using the qgis openlayers plugin.</p>
 <li>Supply all the .tbl files (or complete maps) for the model parameters (see <a class="reference internal" href="#input-parameters"><em>Input parameters (lookup tables or maps)</em></a>)</li>
 <li>Calibrate the model</li>
 </ol>
+</div>
 <div class="section" id="preparing-static-input-maps">
 <span id="preparing"></span><h2>Preparing static input maps<a class="headerlink" href="#preparing-static-input-maps" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="introduction">
@@ -458,12 +435,13 @@ the first script.</p>
 <div class="section" id="command-line-parameters">
 <h3>Command line parameters<a class="headerlink" href="#command-line-parameters" title="Permalink to this headline">¶</a></h3>
 <p>Both scripts take the same command-line parameters:</p>
-<div class="highlight-python"><pre>wflow_prepare_step1 -I inifile [-W workdir][-f][-h]
+<div class="highlight-python"><div class="highlight"><pre>wflow_prepare_step1 -I inifile [-W workdir][-f][-h]
 
     -f force recreation of ldd if it already exists
     -h show this information
     -W set the working directory, default is current dir
-    -I name of the ini file with settings</pre>
+    -I name of the ini file with settings
+</pre></div>
 </div>
 </div>
 <div class="section" id="contents-of-the-configuration-file">
@@ -554,22 +532,22 @@ to find the nearest river cell fro a gauge.</li>
 <p>If you still run into problems you can adjust the scripts yourself to get better results.</p>
 </div>
 </div>
-</div>
 <div class="section" id="module-wflow_prepare_step1">
-<span id="script-documentation"></span><h1>Script documentation<a class="headerlink" href="#module-wflow_prepare_step1" title="Permalink to this headline">¶</a></h1>
+<span id="script-documentation"></span><h2>Script documentation<a class="headerlink" href="#module-wflow_prepare_step1" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="wflow-prepare-step1">
-<h2>wflow_prepare_step1<a class="headerlink" href="#wflow-prepare-step1" title="Permalink to this headline">¶</a></h2>
+<h3>wflow_prepare_step1<a class="headerlink" href="#wflow-prepare-step1" title="Permalink to this headline">¶</a></h3>
 <p>wflow data preparation script. Data preparation can be done by hand or using 
 the two scripts. This script does the first step. The second script does 
 the resampling. This scripts need the pcraster and gdal executables to be
 available in you search path.</p>
 <p>Usage:</p>
-<div class="highlight-python"><pre>wflow_prepare_step1 [-W workdir][-f][-h] -I inifile 
+<div class="highlight-python"><div class="highlight"><pre>wflow_prepare_step1 [-W workdir][-f][-h] -I inifile 
 
 -f force recreation of ldd if it already exists
 -h show this information
 -W set the working directory, default is current dir
--I name of the ini file with settings</pre>
+-I name of the ini file with settings
+</pre></div>
 </div>
 <p>$Id: $</p>
 <dl class="function">
@@ -609,17 +587,19 @@ if the parameter is not found</p>
 
 </div>
 <span class="target" id="module-wflow_prepare_step2"></span><div class="section" id="wflow-prepare-step2">
-<h2>wflow_prepare_step2<a class="headerlink" href="#wflow-prepare-step2" title="Permalink to this headline">¶</a></h2>
+<h3>wflow_prepare_step2<a class="headerlink" href="#wflow-prepare-step2" title="Permalink to this headline">¶</a></h3>
 <p>wflow data preparation script. Data preparation can be done by hand or using 
 the two scripts. This script does the resampling. This scripts need the pcraster and gdal executables to be
 available in you search path.</p>
 <p>Usage:</p>
-<div class="highlight-python"><pre>wflow_prepare_step2 [-W workdir][-f][-h] -I inifile </pre>
+<div class="highlight-python"><div class="highlight"><pre>wflow_prepare_step2 [-W workdir][-f][-h] -I inifile 
+</pre></div>
 </div>
-<div class="highlight-python"><pre>-f force recreation of ldd if it already exists
+<div class="highlight-python"><div class="highlight"><pre>-f force recreation of ldd if it already exists
 -h show this information
 -W set the working directory, default is current dir
--I name of the ini file with settings</pre>
+-I name of the ini file with settings
+</pre></div>
 </div>
 <p>$Id: $</p>
 <dl class="function">
@@ -651,7 +631,7 @@ available in you search path.</p>
 </div>
 </div>
 <div class="section" id="setting-up-a-case">
-<span id="setting-up"></span><h1>Setting Up a Case<a class="headerlink" href="#setting-up-a-case" title="Permalink to this headline">¶</a></h1>
+<span id="setting-up"></span><h2>Setting Up a Case<a class="headerlink" href="#setting-up-a-case" title="Permalink to this headline">¶</a></h2>
 <p>PM</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -660,7 +640,7 @@ that does it automatically.</p>
 </div>
 </div>
 <div class="section" id="input-parameters-lookup-tables-or-maps">
-<span id="input-parameters"></span><h1>Input parameters (lookup tables or maps)<a class="headerlink" href="#input-parameters-lookup-tables-or-maps" title="Permalink to this headline">¶</a></h1>
+<span id="input-parameters"></span><h2>Input parameters (lookup tables or maps)<a class="headerlink" href="#input-parameters-lookup-tables-or-maps" title="Permalink to this headline">¶</a></h2>
 <p>The PCRaster lookup tables listed below are used by the model to create
 input parameter maps. Each table should have at least four columns. The
 first column is used to identify the land-use class in the wflow_landuse
@@ -689,12 +669,13 @@ messages).</p>
 the parameters are identical for each subcatchment (and soil type)
 but is different for each landuse type. See the pcraster documentation
 (<a class="reference external" href="http://www.pcraster.eu">http://www.pcraster.eu</a>) for details on how to create .tbl files.</p>
-<div class="highlight-python"><pre>1   &lt;,14]   1 0.11
+<div class="highlight-python"><div class="highlight"><pre>1   &lt;,14]   1 0.11
 2   &lt;,14]   1 0.11
 3   &lt;,14]   1 0.15
 4   &lt;,14]   1 0.11
 5   &lt;,14]   1 0.11
-6   &lt;,14]   1 0.11</pre>
+6   &lt;,14]   1 0.11
+</pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -747,32 +728,10 @@ dampen the discharge peak.</dd>
 <dd>Water content at saturation</dd>
 </dl>
 </div>
-<div class="section" id="common-problems">
-<h1>Common problems<a class="headerlink" href="#common-problems" title="Permalink to this headline">¶</a></h1>
-<ul>
-<li><dl class="first docutils">
-<dt>Missing values in the discharge</dt>
-<dd><ul class="first last simple">
-<li>make sure thereare no missing values in any of the input maps</li>
-<li>make sure all values in the intbl are set to realistic values.</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>No initial conditions</dt>
-<dd><ul class="first last simple">
-<li>run the model with the -I option first and copy the resulting files in runid\outstate back to the instate directory</li>
-</ul>
-</dd>
-</dl>
-</li>
-</ul>
-</div>
 <div class="section" id="calibrating-the-wflow-sbm-model">
-<h1>Calibrating the  wflow_sbm model<a class="headerlink" href="#calibrating-the-wflow-sbm-model" title="Permalink to this headline">¶</a></h1>
+<h2>Calibrating the  wflow_sbm model<a class="headerlink" href="#calibrating-the-wflow-sbm-model" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="id2">
-<h2>Introduction<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<h3>Introduction<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <p>As with all hydrological models calibration is needed for optimal performance.
 Currently we are working on getting the link with the OpenDA calibration
 environment running (not tested yet). We have calibrated the Rhine/Meuse
@@ -780,7 +739,7 @@ models using simple shell scripts and the XX and XX command-line parameters
 to multiply selected model parameters and evaluate the results later.</p>
 </div>
 <div class="section" id="parameters">
-<h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
+<h3>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h3>
 <dl class="docutils">
 <dt>M</dt>
 <dd>Once the depth of the soil has been set for the different land-use
@@ -808,22 +767,22 @@ and flattening of the peaks.</dd>
 </dl>
 </div>
 <div class="section" id="changes-in-hydrographs-for-different-values-of-parameters">
-<h2>Changes in hydrographs for different values of parameters<a class="headerlink" href="#changes-in-hydrographs-for-different-values-of-parameters" title="Permalink to this headline">¶</a></h2>
+<h3>Changes in hydrographs for different values of parameters<a class="headerlink" href="#changes-in-hydrographs-for-different-values-of-parameters" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><div class="figure align-center">
-<img alt="image" src="_images/mult_firstzonemin.png" style="height: 600px;" />
+<a class="reference internal image-reference" href="_images/mult_firstzonemin.png"><img alt="image" src="_images/mult_firstzonemin.png" style="height: 600px;" /></a>
 </div>
 <div class="figure align-center">
-<img alt="image" src="_images/mult_ksat_rhine.png" style="height: 600px;" />
+<a class="reference internal image-reference" href="_images/mult_ksat_rhine.png"><img alt="image" src="_images/mult_ksat_rhine.png" style="height: 600px;" /></a>
 </div>
 <div class="figure align-center">
-<img alt="_images/mult_m_rhine.png" src="_images/mult_m_rhine.png" style="height: 600px;" />
+<a class="reference internal image-reference" href="_images/mult_m_rhine.png"><img alt="_images/mult_m_rhine.png" src="_images/mult_m_rhine.png" style="height: 600px;" /></a>
 </div>
 </div></blockquote>
 </div>
 </div>
-<div class="section" id="id3">
-<h1>Common problems<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="common-problems">
+<h2>Common problems<a class="headerlink" href="#common-problems" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
 <dt>Missing values in output</dt>
 <dd><p class="first">This can have a number of reasons, the most common are:
@@ -849,29 +808,44 @@ for more information</div></blockquote>
 <p class="last">If you create maps with qgis (or gdal) specify the rigth output type (e.g. Float32 for scalar maps)</p>
 </div>
 </dd>
+<dt>Missing values in the discharge</dt>
+<dd><ul class="first last simple">
+<li>make sure thereare no missing values in any of the input maps</li>
+<li>make sure all values in the intbl are set to realistic values.</li>
+</ul>
+</dd>
+<dt>No initial conditions</dt>
+<dd><ul class="first last simple">
+<li>run the model with the -I option first and copy the resulting files in runid\outstate back to the instate directory</li>
+</ul>
+</dd>
 </dl>
+</div>
 </div>
 
 
+          </div>
           <footer>
   
-    <div class="rst-footer-buttons">
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="wflow_usage.html" class="btn btn-neutral float-right" title="Using the models"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="wflow_usage.html" class="btn btn-neutral float-right" title="Using the models"/>Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="wflow_floodmap.html" class="btn btn-neutral" title="The wflow_floodmap module"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="wflow_floodmap.html" class="btn btn-neutral" title="The wflow_floodmap module"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
 
   <hr/>
 
-  <p>
-      &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
-  </p>
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
+    </p>
+  </div>
 
-  <a href="https://www.github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="http://readthedocs.org">Read the Docs</a>
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
 </footer>
         </div>
       </div>
@@ -880,6 +854,38 @@ for more information</div></blockquote>
 
   </div>
   
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0RC1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
 
 </body>
 </html>

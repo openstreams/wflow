@@ -372,7 +372,7 @@ components, the reservoir constants have to meet the following requirement:
 
 
 Description of the python module
-================================
+--------------------------------
 
 .. automodule:: wflow_hbv
 	:members:

@@ -17,7 +17,7 @@ case and runid of either of these models.
 
 
 Description of the python module
-================================
+--------------------------------
 
 .. automodule:: wflow_floodmap
 	:members:

@@ -1,5 +1,8 @@
+Building a model
+================
+
 Data requirements
-=================
+-----------------
 
 The actual data requirements depend on the application of the model. The
 following list summarizes the data requirements:
@@ -36,7 +39,7 @@ Delft-FEWS is given in section :ref:`wflow_adapt`
 .. _Setting-up a-new-model:
 
 Setting-up a new model
-======================
+----------------------
 
 
 Setting-up a new model first starts with making a number of decisions and gathering the
@@ -332,7 +335,7 @@ in the first try. The most common problems are:
 If you still run into problems you can adjust the scripts yourself to get better results.
 
 Script documentation
-====================
+--------------------
 
 .. automodule:: wflow_prepare_step1
     :members:
@@ -346,7 +349,7 @@ Script documentation
 .. _Setting_Up:
 
 Setting Up a Case
-=================
+-----------------
 
 PM
 
@@ -358,7 +361,7 @@ PM
 .. _Input-Parameters:
 
 Input parameters (lookup tables or maps)
-========================================
+----------------------------------------
 
 The PCRaster lookup tables listed below are used by the model to create
 input parameter maps. Each table should have at least four columns. The
@@ -467,23 +470,11 @@ thetaS.tbl
 
 
 
-Common problems
-===============
-
-- Missing values in the discharge
-    - make sure thereare no missing values in any of the input maps
-    - make sure all values in the intbl are set to realistic values. 
-- No initial conditions
-    - run the model with the -I option first and copy the resulting files in runid\\outstate back to the instate directory
-
-
-
-
 Calibrating the  wflow\_sbm model 
-=================================
+---------------------------------
 
 Introduction
-------------
+~~~~~~~~~~~~
 As with all hydrological models calibration is needed for optimal performance.
 Currently we are working on getting the link with the OpenDA calibration
 environment running (not tested yet). We have calibrated the Rhine/Meuse
@@ -493,7 +484,7 @@ to multiply selected model parameters and evaluate the results later.
 
 
 Parameters
-----------
+~~~~~~~~~~
 
 M
     Once the depth of the soil has been set for the different land-use
@@ -525,7 +516,7 @@ RunoffGeneratingGWPerc
 
 
 Changes in hydrographs for different values of parameters
----------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     .. figure:: _images/mult_firstzonemin.png
        :align: center
@@ -547,7 +538,7 @@ Changes in hydrographs for different values of parameters
        
        
 Common problems
-===============
+---------------
 
 Missing values in output
 	This can have a number of reasons, the most common are:
@@ -570,3 +561,11 @@ wflow stops and complains about types not matching
 
      .. note::
           If you create maps with qgis (or gdal) specify the rigth output type (e.g. Float32 for scalar maps)
+
+Missing values in the discharge
+    - make sure thereare no missing values in any of the input maps
+    - make sure all values in the intbl are set to realistic values. 
+
+No initial conditions
+    - run the model with the -I option first and copy the resulting files in runid\\outstate back to the instate directory
+
