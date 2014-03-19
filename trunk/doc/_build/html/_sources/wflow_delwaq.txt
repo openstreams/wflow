@@ -166,7 +166,7 @@ generated pointer file is shown below::
 
 
 Case study for Malaysia and Singapore
-=====================================
+-------------------------------------
 
 To estimate load of different nutrients to Johor strait two wflow\_sbm models
 have been setup. Next these models where linked to delwaq as follows:

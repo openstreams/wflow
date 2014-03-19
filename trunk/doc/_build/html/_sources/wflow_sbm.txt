@@ -1,5 +1,5 @@
-wflow_sbm Module
-================
+The wflow_sbm Model
+===================
 
 
 Introduction

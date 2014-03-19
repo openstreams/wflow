@@ -1,10 +1,10 @@
-wflow_wave Module
-==================
+THe wflow_wave Model
+====================
 
 
 .. warning::
 
-    The documentation is incomplete
+    The documentation of this model is incomplete
 
 Introduction
 ------------
