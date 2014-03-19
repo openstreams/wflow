@@ -1,5 +1,5 @@
-wflow_gr4 Module
-================
+The wflow_gr4 model
+===================
 
 
 .. warning::

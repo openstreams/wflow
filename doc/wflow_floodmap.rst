@@ -1,5 +1,5 @@
-The wflow_floodmap module
-=========================
+The wflow_floodmap model
+========================
 
 
 Introduction
@@ -23,10 +23,6 @@ Description of the python module
 	:members:
     
 
-
-
-    
-        
 
 
 

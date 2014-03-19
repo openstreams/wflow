@@ -143,6 +143,13 @@ The wflow\_floodmap model
    wflow_floodmap
 
 
+The wflow Delft-FEWS adapter
+============================
+.. toctree::
+   :maxdepth: 2
+
+   wflow_adapt
+
 Building a model
 ================
 .. toctree::
@@ -157,12 +164,7 @@ How to use the models
    
    wflow_usage
 
-The wflow Delft-FEWS adapter
-============================
-.. toctree::
-   :maxdepth: 2
 
-   wflow_adapt
 
 wflow modules and libraries
 ===========================
