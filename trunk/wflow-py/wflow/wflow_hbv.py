@@ -853,7 +853,7 @@ class WflowModel(DynamicModel):
     self.sumprecip=self.sumprecip  +  self.Precipitation                     #accumulated rainfall for water balance
     self.sumevap=self.sumevap + ActEvap                           #accumulated evaporation for water balance
     self.sumpotevap=self.sumpotevap + self.PotEvaporation 
-    self.sumptemp=self.sumtemp + self.Temperature
+    self.sumtemp=self.sumtemp + self.Temperature
     self.sumrunoff=self.sumrunoff  + self.SurfaceRunoffMM                        #accumulated runoff for water balance
     self.sumlevel=self.sumlevel  + self.WaterLevel
     
