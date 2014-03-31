@@ -689,7 +689,7 @@ class WflowModel(DynamicModel):
                 self.Seepage = cover(self.wf_readmap(self.Seepage_mapstack,0.0),0.0)
             else:
                 self.Seepage=cover(0.0)
-            self.Temperature=self.wf_readmap(self.TEMP_mapstack,10.0)
+            self.Temperature=cover(self.wf_readmap(self.TEMP_mapstack,10.0),10.0)
             self.Temperature = self.Temperature + self.TempCor
             #self.Inflow=spatial(scalar(0.0))
     #self.report(self.LowerZoneStorage,"tt")
