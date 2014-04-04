@@ -39,7 +39,6 @@ from pylab import *
 
 
 
-
 def usage(*args):
     sys.stdout = sys.stderr
     for msg in args: print msg

@@ -353,11 +353,6 @@ class WflowModel(DynamicModel):
     self.logger.info("Create timeseries outputs...")
     toprinttss = configsection(self.config,'outputtss')
     
-    for a in toprinttss:
-        tssName = self.Dir + "/" + self.runId + "/" +  self.config.get("outputtss",a)
-        estr = "self." + self.config.get("outputtss",a) + "Tss=wf_TimeoutputTimeseries('" + tssName + "', self, self.OutputId,noHeader=False)"
-        self.logger.info("Creating tss output: " + a + "(" + self.config.get('outputtss',a) + ")")
-        exec estr
 
     # Save some summary maps
     self.logger.info("Saving summary maps...")
@@ -461,16 +456,6 @@ class WflowModel(DynamicModel):
     
     # Get rest from ini file
     
-    toprinttss = configsection(self.config,'outputtss')
-    
-    for a in toprinttss:
-        estr = "self." + self.config.get("outputtss",a) + "Tss.sample(" + a +")"
-        eval(estr)
-
-    # Print .ini defined outputmaps per timestep
-    toprint = configsection(self.config,'outputmaps')
-    for a in toprint:
-        eval("self.report(" + a  + ", self.Dir + \"/\" + self.runId + \"/outmaps/" + self.config.get("outputmaps",a) +"\")")
 
 
 

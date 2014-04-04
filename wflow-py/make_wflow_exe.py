@@ -6,6 +6,7 @@ import ctypes
 nrbits = str(ctypes.sizeof(ctypes.c_voidp) * 8)
 
 
+
 f = Freezer("Wflow"+MVERSION+'-'+nrbits)
 f.addScript("wflow/__init__.py")
 f.addScript("wflow/wflow_sbm.py")
@@ -15,6 +16,7 @@ f.addScript("wflow/wflow_delwaq.py")
 f.addScript("wflow/wflow_wave.py")
 f.addScript("wflow/wflow_gr4.py")
 f.addScript("wflow/wflow_floodmap.py")
+#f.addScript("wflow/plottss.py")
 f.addScript("Scripts/wflow_prepare_step1.py")
 f.addScript("Scripts/wflow_prepare_step2.py")
 #f.addScript("wflow/wflow_fit.py") # Does not work becuse of QT

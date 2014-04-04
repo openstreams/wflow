@@ -374,8 +374,6 @@ class WflowModel(DynamicModel):
  
     # Make seperate LDD for Dynamic Wave
     self.LddIn= lddrepair(ifthen(boolean(self.DynRiver),self.Ldd))
-    self.rundynTss=wf_TimeoutputTimeseries(self.Dir + "/" + self.runId  + "/rundyn",self, self.OutputLoc,noHeader=False)
-    self.levdynTss=wf_TimeoutputTimeseries(self.Dir + "/" + self.runId  + "/levdyn",self, self.OutputLoc,noHeader=False)
     self.crtsum = self.ZeroMap
  
 
