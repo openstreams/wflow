@@ -71,7 +71,7 @@ def rainfall_interception_gash(Cmax,EoverR,CanopyGapFraction, Precipitation, Can
     
     pt = 0.1 * CanopyGapFraction
     
-    P_sat = (-Cmax / EoverR) * ln (1.0 - (EoverR/(1.0 - CanopyGapFraction - pt)))
+    P_sat = max(scalar(0.0),cover((-Cmax / EoverR) * ln (1.0 - (EoverR/(1.0 - CanopyGapFraction - pt))),scalar(0.0)))
     
     # large storms P > P_sat
     
@@ -87,8 +87,9 @@ def rainfall_interception_gash(Cmax,EoverR,CanopyGapFraction, Precipitation, Can
     Interception = Iwet + Idry + Isat + Itrunc
     
     # No corect for area without any Interception (say open water Cmax -- zero)
-    ThroughFall=ifthenelse(-Cmax == 0, Precipitation,ThroughFall)
-    Interception==ifthenelse(-Cmax == 0,0,Interception)
+    ThroughFall=ifthenelse(Cmax <= scalar(0.0), Precipitation,ThroughFall)
+    Interception=ifthenelse(Cmax <= scalar(0.0), scalar(0.0),Interception)
+    StemFlow=ifthenelse(Cmax <= scalar(0.0), scalar(0.0),StemFlow)
     
     return ThroughFall, Interception, StemFlow, CanopyStorage
         
