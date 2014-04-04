@@ -23,7 +23,7 @@ $Rev: 915 $
 
 import numpy
 import ConfigParser
-from wf_Timeoutput import *
+#from wf_Timeoutput import *
 import pcrut
 import shutil, glob
 import sys
