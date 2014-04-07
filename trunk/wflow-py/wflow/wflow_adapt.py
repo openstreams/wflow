@@ -42,6 +42,7 @@ Issues:
  .. todo::
 
      rewrite and simplify
+     convert log to XML
 
 $Author: schelle $
 $Id: wflow_adapt.py 915 2014-02-10 07:33:56Z schelle $
@@ -135,6 +136,27 @@ def setlogger(logfilename):
         print "ERROR: Failed to initialize logger with logfile: " + logfilename
         sys.exit(2)
 
+
+
+def log2xml(logfile,xmldiag):
+    """
+    Converts a wflow log file to a Delft-Fews XML diag file
+    """
+    trans = {'WARNING': '2', 'ERROR': '1', 'INFO': '3','DEBUG': '4'}
+    if os.path.exists(logfile):
+        ifile = open(logfile,"r")
+        ofile = open(xmldiag,"w")
+        all = ifile.readlines()
+
+        ofile.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+        ofile.write("<Diag xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \n")
+        ofile.write("xmlns=\"http://www.wldelft.nl/fews/PI\" xsi:schemaLocation=\"http://www.wldelft.nl/fews/PI \n")
+        ofile.write("http://fews.wldelft.nl/schemas/version1.0/pi-schemas/pi_diag.xsd\" version=\"1.2\">\n")
+        for aline in all:
+            print aline
+            lineparts = aline.strip().split(" - ")
+            ofile.write("<line level=\"" + trans[lineparts[2]] + "\" description=\"" + lineparts[3] + "\"/>\n")
+        ofile.write("</Diag>\n")
 
 
 def pixml_state_updateTime(inxml,outxml,DT):
