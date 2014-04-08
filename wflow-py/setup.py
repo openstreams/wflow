@@ -3,7 +3,7 @@ from distutils.core import setup
 
 # Source dist
 setup(name='wflow',
-     version='1.0RC01',
+     version='1.0RC02',
       packages=['wflow'],
       package_dir={'wflow': 'wflow'},
       author='J. Schellekens',
