@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -18,6 +19,20 @@
 
   
   
+
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:'',
+        VERSION:'1.0RC1',
+        COLLAPSE_INDEX:false,
+        FILE_SUFFIX:'.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
     
 
   
@@ -25,6 +40,7 @@
   
   
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
   
@@ -32,29 +48,26 @@
         <link rel="next" title="Questions and answers" href="faq.html"/>
         <link rel="prev" title="Using the framework" href="framework.html"/> 
 
-  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
   <div class="wy-grid-for-nav">
 
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-nav-search">
-        <a href="index.html" class="fa fa-home"> wflow</a>
-        <div role="search">
-  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
+        <a href="index.html" class="icon icon-home"> wflow</a>
+        <form class="wy-form" action="search.html" method="get">
+  <input type="text" name="q" placeholder="Search docs" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
       </div>
 
-      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix">
         
         
             <ul>
@@ -203,30 +216,23 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="index.html">wflow</a>
+      <nav class="wy-nav-top">
+        <i data-toggle="wy-nav-top" class="icon icon-reorder"></i>
+        <a href="/">wflow</a>
       </nav>
 
 
       
       <div class="wy-nav-content">
         <div class="rst-content">
-          <div role="navigation" aria-label="breadcrumbs navigation">
-  <ul class="wy-breadcrumbs">
-    <li><a href="index.html">Docs</a> &raquo;</li>
-      
-    <li>wf_DynamicFramework Module</li>
-      <li class="wy-breadcrumbs-aside">
-        
-          <a href="_sources/wf_DynamicFramework.txt" rel="nofollow"> View page source</a>
-        
-      </li>
-  </ul>
-  <hr/>
-</div>
-          <div role="main">
-            
+          <ul class="wy-breadcrumbs">
+  <li><a href="index.html">Docs</a> &raquo;</li>
+  <li><a href="">wf_DynamicFramework Module</a></li>
+  
+</ul>
+<hr/>
+
+          
   <div class="section" id="module-wf_DynamicFramework">
 <span id="wf-dynamicframework-module"></span><h1>wf_DynamicFramework Module<a class="headerlink" href="#module-wf_DynamicFramework" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="wf-dynamicframework">
@@ -370,10 +376,9 @@ value. Current settings for dimensions are assumed.</p>
 <tt class="descname">wf_readmap</tt><big>(</big><em>name</em>, <em>default</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_readmap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adjusted version of readmapNew. the style variable is used to indicated
 how the data is read:</p>
-<div class="highlight-python"><div class="highlight"><pre>1 - default: reads pcrmaps
+<div class="highlight-python"><pre>1 - default: reads pcrmaps
 2 - memory: assumes the map is made available (in memory) using
-the in-memory interface
-</pre></div>
+the in-memory interface</pre>
 </div>
 </dd></dl>
 
@@ -767,25 +772,15 @@ map given.</p>
 <dl class="method">
 <dt id="wf_DynamicFramework.wf_DynamicFramework.wf_supplyVariableCount">
 <tt class="descname">wf_supplyVariableCount</tt><big>(</big><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_supplyVariableCount" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>returns:</dt>
-<dd><ul class="first last simple">
-<li>the number of exchangable variables</li>
-</ul>
-</dd>
-</dl>
+<dd><p>returns:
+- the number of exchangable variables</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="wf_DynamicFramework.wf_DynamicFramework.wf_supplyVariableNames">
 <tt class="descname">wf_supplyVariableNames</tt><big>(</big><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_supplyVariableNames" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>returns:</dt>
-<dd><ul class="first last simple">
-<li>the a list of variable names</li>
-</ul>
-</dd>
-</dl>
+<dd><p>returns:
+- the a list of variable names</p>
 </dd></dl>
 
 <dl class="method">
@@ -793,7 +788,7 @@ map given.</p>
 <tt class="descname">wf_supplyVariableNamesAndRoles</tt><big>(</big><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_supplyVariableNamesAndRoles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a list of variables
 List of list with the following structure:</p>
-<div class="highlight-python"><div class="highlight"><pre>[[ name, role, unit]
+<div class="highlight-python"><pre>[[ name, role, unit]
 [ name, role, unit]
 ...   
 ]
@@ -806,8 +801,7 @@ unit: 0 = mm/timestep
       2 = m
       3 = degree Celcius
       4 = mm
-      5 = -
-</pre></div>
+      5 = -</pre>
 </div>
 <p>The first time this function is called the exchangeitems object is filled
 with data from the ini file.</p>
@@ -816,25 +810,15 @@ with data from the ini file.</p>
 <dl class="method">
 <dt id="wf_DynamicFramework.wf_DynamicFramework.wf_supplyVariableRoles">
 <tt class="descname">wf_supplyVariableRoles</tt><big>(</big><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_supplyVariableRoles" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>returns:</dt>
-<dd><ul class="first last simple">
-<li>the a list of variable roles</li>
-</ul>
-</dd>
-</dl>
+<dd><p>returns:
+- the a list of variable roles</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="wf_DynamicFramework.wf_DynamicFramework.wf_supplyVariableUnits">
 <tt class="descname">wf_supplyVariableUnits</tt><big>(</big><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_supplyVariableUnits" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>returns:</dt>
-<dd><ul class="first last simple">
-<li>the a list of variable units</li>
-</ul>
-</dd>
-</dl>
+<dd><p>returns:
+- the a list of variable units</p>
 </dd></dl>
 
 <dl class="method">
@@ -849,28 +833,25 @@ with data from the ini file.</p>
 </div>
 
 
-          </div>
           <footer>
   
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+    <div class="rst-footer-buttons">
       
-        <a href="faq.html" class="btn btn-neutral float-right" title="Questions and answers"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="faq.html" class="btn btn-neutral float-right" title="Questions and answers"/>Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="framework.html" class="btn btn-neutral" title="Using the framework"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="framework.html" class="btn btn-neutral" title="Using the framework"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
 
   <hr/>
 
-  <div role="contentinfo">
-    <p>
-        &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
-    </p>
-  </div>
+  <p>
+      &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
+  </p>
 
-  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+  <a href="https://www.github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="http://readthedocs.org">Read the Docs</a>
 </footer>
         </div>
       </div>
@@ -879,38 +860,6 @@ with data from the ini file.</p>
 
   </div>
   
-
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'./',
-            VERSION:'1.0RC1',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
-        };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
-
-  
-  
-  <script type="text/javascript">
-      jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
-      });
-  </script>
-   
 
 </body>
 </html>

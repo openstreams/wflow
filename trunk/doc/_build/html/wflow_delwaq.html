@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -18,6 +19,20 @@
 
   
   
+
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:'',
+        VERSION:'1.0RC1',
+        COLLAPSE_INDEX:false,
+        FILE_SUFFIX:'.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
     
 
   
@@ -25,6 +40,7 @@
   
   
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
   
@@ -32,29 +48,26 @@
         <link rel="next" title="run wflow_hbv via API" href="testrunner_wflowhbv.html"/>
         <link rel="prev" title="wflow_lib Module" href="wflow_lib.html"/> 
 
-  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
   <div class="wy-grid-for-nav">
 
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-nav-search">
-        <a href="index.html" class="fa fa-home"> wflow</a>
-        <div role="search">
-  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
+        <a href="index.html" class="icon icon-home"> wflow</a>
+        <form class="wy-form" action="search.html" method="get">
+  <input type="text" name="q" placeholder="Search docs" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
       </div>
 
-      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix">
         
         
             <ul>
@@ -203,30 +216,23 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="index.html">wflow</a>
+      <nav class="wy-nav-top">
+        <i data-toggle="wy-nav-top" class="icon icon-reorder"></i>
+        <a href="/">wflow</a>
       </nav>
 
 
       
       <div class="wy-nav-content">
         <div class="rst-content">
-          <div role="navigation" aria-label="breadcrumbs navigation">
-  <ul class="wy-breadcrumbs">
-    <li><a href="index.html">Docs</a> &raquo;</li>
-      
-    <li>wflow_delwaq Module</li>
-      <li class="wy-breadcrumbs-aside">
-        
-          <a href="_sources/wflow_delwaq.txt" rel="nofollow"> View page source</a>
-        
-      </li>
-  </ul>
-  <hr/>
-</div>
-          <div role="main">
-            
+          <ul class="wy-breadcrumbs">
+  <li><a href="index.html">Docs</a> &raquo;</li>
+  <li><a href="">wflow_delwaq Module</a></li>
+  
+</ul>
+<hr/>
+
+          
   <div class="section" id="wflow-delwaq-module">
 <h1>wflow_delwaq Module<a class="headerlink" href="#wflow-delwaq-module" title="Permalink to this headline">¶</a></h1>
 <p>The wflow_delwaq module provides a set of functions to construct a
@@ -234,7 +240,7 @@ delwaq pointer file from a PCRaster local drainage network.
 A command-line interface is provide that allows you to
 create a delwaq model that can be linked to a wflow model.</p>
 <div class="figure">
-<a class="reference internal image-reference" href="_images/ldd-rhine.png"><img alt="_images/ldd-rhine.png" src="_images/ldd-rhine.png" style="width: 640px;" /></a>
+<img alt="_images/ldd-rhine.png" src="_images/ldd-rhine.png" style="width: 640px;" />
 </div>
 <p>The script sets-up a one-layer model (representing the kinematic wave
 reservoir). Water is labeled according to the area and flux where it
@@ -246,7 +252,7 @@ options. The -R and -C options indicate the wflow case and wflow run
 directories while the -D option indicates the delwaq template
 directory.</p>
 <p>The template used is shown below:</p>
-<div class="highlight-python"><div class="highlight"><pre>debug/
+<div class="highlight-python"><pre>debug/
 fixed/
 fixed/B2_numsettings.inc
 fixed/B4_dispersion.inc
@@ -262,15 +268,13 @@ libiomp5md.dll
 waq_plugin_wasteload.dll
 delwaq1.exe
 delwaq2.exe
-deltashell.inp
-</pre></div>
+deltashell.inp</pre>
 </div>
 <p>The debug, includes_flow, and includes_deltashell directories are
 filled by the script. After that delwaq1.exe and delwaq2.exe programs
 may be run (the run.bat file shows how this is done):</p>
-<div class="highlight-python"><div class="highlight"><pre>delwaq1.exe deltashell.inp -np
-delwaq2.exe deltashell.inp
-</pre></div>
+<div class="highlight-python"><pre>delwaq1.exe deltashell.inp -np
+delwaq2.exe deltashell.inp</pre>
 </div>
 <p>the script sets up delwaq such that the result for the wflow gauges locations
 are stored in the deltashell.his file.</p>
@@ -289,7 +293,7 @@ wflow_catchment map. The included area is define by all cells were the
 catchment id in a cel is larger than 1.</li>
 </ol>
 <div class="figure">
-<a class="reference internal image-reference" href="_images/delwaq-exchanges.png"><img alt="_images/delwaq-exchanges.png" src="_images/delwaq-exchanges.png" style="width: 640px;" /></a>
+<img alt="_images/delwaq-exchanges.png" src="_images/delwaq-exchanges.png" style="width: 640px;" />
 <p class="caption">Figure: How exchanges and inflows are connected</p>
 </div>
 <p>Within the includes_flow directory the following files are made:</p>
@@ -348,7 +352,7 @@ created.  First the pcraster ldd:</p>
 </div>
 <p>As can be seen both 9 and 10 are bottom points. The
 generated pointer file is shown below:</p>
-<div class="highlight-python"><div class="highlight"><pre> ;Written by dw_WritePointer
+<div class="highlight-python"><pre> ;Written by dw_WritePointer
  ;nr of pointers is:  20
   1          3          0          0
   2          4          0          0
@@ -369,8 +373,7 @@ generated pointer file is shown below:</p>
  -9          7          0          0
 -10          8          0          0
 -11          9          0          0
--12         10          0          0
-</pre></div>
+-12         10          0          0</pre>
 </div>
 </div>
 <div class="section" id="case-study-for-malaysia-and-singapore">
@@ -420,13 +423,13 @@ the LU type where they have been generated) can be traced throughout the
 system. Each each gauge location the discharge and the flow components
 that make up the discharge are reported.</p>
 <div class="figure">
-<a class="reference internal image-reference" href="_images/sing_24.png"><img alt="_images/sing_24.png" src="_images/sing_24.png" style="width: 800px;" /></a>
+<img alt="_images/sing_24.png" src="_images/sing_24.png" style="width: 800px;" />
 <p class="caption">Figure: Discharge and flow types for a small Singapore catchment. The
 Singapore catchment are dominated by fast flow types but during the end
 of the dry periods the slow flow types start to rise in importance.</p>
 </div>
 <div class="figure">
-<a class="reference internal image-reference" href="_images/malay_7.png"><img alt="_images/malay_7.png" src="_images/malay_7.png" style="width: 800px;" /></a>
+<img alt="_images/malay_7.png" src="_images/malay_7.png" style="width: 800px;" />
 <p class="caption">Figure: Discharge, flow types and resulting total P for a catchment in
 Malaysia.</p>
 </div>
@@ -477,11 +480,10 @@ a delwaq model and feed it with forcing data.</p>
 version is unstable and very poorly structured!</p>
 </div>
 <p>the wflow run should have saved at least the folowing mapstacks:</p>
-<div class="highlight-python"><div class="highlight"><pre>- self.OldKinWaveVolume=vol
+<div class="highlight-python"><pre>- self.OldKinWaveVolume=vol
 - self.WaterLevel=lev
 - self.SurfaceRunoff=run
-- self.Inwater=inw  (or the different components that make up this flux)
-</pre></div>
+- self.Inwater=inw  (or the different components that make up this flux)</pre>
 </div>
 <p>The script always sets-up at least two Substances, Initial and Check. Initial
 is present everywhere at startup and the concentration is zero
@@ -491,10 +493,10 @@ model. This can be a landuse map, a subcatchment map etc. Furthermore water
 can also be tagged based on the flux into the model.</p>
 <p>The naming of the sustances is as follows: &#8220;Area&#8221; areamap_class inflow_number</p>
 <p>Command line options:</p>
-<div class="highlight-python"><div class="highlight"><pre>-C: caseDir - set the wflow case directory to use
+<div class="highlight-python"><pre>-C: caseDir - set the wflow case directory to use
 -R: runId - set the wflow runId to use
 -T: Set last timestep
--O: set starttime (&#39;%Y-%m-%d% H:%M:%S&#39;)
+-O: set starttime ('%Y-%m-%d% H:%M:%S')
 -a: Also write dynamic area data if this option is set
 -j: if this option is set the static data is not generated (default is on) 
 -A: sets the areamap used to specify the fraction sources. This can be
@@ -511,8 +513,7 @@ can also be tagged based on the flux into the model.</p>
     the timesteps from the runinfo.xml file and save the output initial
     conditions to an alternate location. The runinfo.xml file should be located
     in the inmaps directory of the case. 
--c: Name of the wflow configuration file
-</pre></div>
+-c: Name of the wflow configuration file</pre>
 </div>
 <div class="admonition-todo admonition" id="index-0">
 <p class="first admonition-title">Todo</p>
@@ -718,28 +719,25 @@ missing values are removed. Used for generating delwaq data</p>
 </div>
 
 
-          </div>
           <footer>
   
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+    <div class="rst-footer-buttons">
       
-        <a href="testrunner_wflowhbv.html" class="btn btn-neutral float-right" title="run wflow_hbv via API"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="testrunner_wflowhbv.html" class="btn btn-neutral float-right" title="run wflow_hbv via API"/>Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="wflow_lib.html" class="btn btn-neutral" title="wflow_lib Module"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="wflow_lib.html" class="btn btn-neutral" title="wflow_lib Module"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
 
   <hr/>
 
-  <div role="contentinfo">
-    <p>
-        &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
-    </p>
-  </div>
+  <p>
+      &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
+  </p>
 
-  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+  <a href="https://www.github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="http://readthedocs.org">Read the Docs</a>
 </footer>
         </div>
       </div>
@@ -748,38 +746,6 @@ missing values are removed. Used for generating delwaq data</p>
 
   </div>
   
-
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'./',
-            VERSION:'1.0RC1',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
-        };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
-
-  
-  
-  <script type="text/javascript">
-      jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
-      });
-  </script>
-   
 
 </body>
 </html>

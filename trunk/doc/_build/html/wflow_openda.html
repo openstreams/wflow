@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -18,6 +19,20 @@
 
   
   
+
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:'',
+        VERSION:'1.0RC1',
+        COLLAPSE_INDEX:false,
+        FILE_SUFFIX:'.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
     
 
   
@@ -25,35 +40,33 @@
   
   
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
   
     <link rel="top" title="wflow 1.0RC1 documentation" href="index.html"/>
         <link rel="prev" title="Questions and answers" href="faq.html"/> 
 
-  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
   <div class="wy-grid-for-nav">
 
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-nav-search">
-        <a href="index.html" class="fa fa-home"> wflow</a>
-        <div role="search">
-  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
+        <a href="index.html" class="icon icon-home"> wflow</a>
+        <form class="wy-form" action="search.html" method="get">
+  <input type="text" name="q" placeholder="Search docs" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
       </div>
 
-      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix">
         
         
             <ul>
@@ -202,30 +215,23 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="index.html">wflow</a>
+      <nav class="wy-nav-top">
+        <i data-toggle="wy-nav-top" class="icon icon-reorder"></i>
+        <a href="/">wflow</a>
       </nav>
 
 
       
       <div class="wy-nav-content">
         <div class="rst-content">
-          <div role="navigation" aria-label="breadcrumbs navigation">
-  <ul class="wy-breadcrumbs">
-    <li><a href="index.html">Docs</a> &raquo;</li>
-      
-    <li>Linking wflow to OpenDA</li>
-      <li class="wy-breadcrumbs-aside">
-        
-          <a href="_sources/wflow_openda.txt" rel="nofollow"> View page source</a>
-        
-      </li>
-  </ul>
-  <hr/>
-</div>
-          <div role="main">
-            
+          <ul class="wy-breadcrumbs">
+  <li><a href="index.html">Docs</a> &raquo;</li>
+  <li><a href="">Linking wflow to OpenDA</a></li>
+  
+</ul>
+<hr/>
+
+          
   <div class="section" id="linking-wflow-to-openda">
 <h1>Linking wflow to OpenDA<a class="headerlink" href="#linking-wflow-to-openda" title="Permalink to this headline">¶</a></h1>
 <div class="admonition warning">
@@ -233,32 +239,28 @@
 <p class="last">This is experimental and incomplete</p>
 </div>
 <p>There are lot of folders that need to be set in the PATH and PYTHONPATH environment variables for this to work. Also you need the latest wflow python scripts, since Jaap fixed a bug a few days ago. These are also in Albrecht&#8217;s postbox:</p>
-<div class="highlight-python"><div class="highlight"><pre>\\hafilerk\homes\Deltabox\Postbox\Weerts, Albrecht\vanArno\testWflow\wflow_bin\
-</pre></div>
+<div class="highlight-python"><pre>\\hafilerk\homes\Deltabox\Postbox\Weerts, Albrecht\vanArno\testWflow\wflow_bin\</pre>
 </div>
 <p>You need to set the following folders in the following environment variables:</p>
 <p>PATH:</p>
-<div class="highlight-python"><div class="highlight"><pre>1. folder with jep.dll file (e.g. f:\testWflow\openda_bin\win32_ifort\)
+<div class="highlight-python"><pre>1. folder with jep.dll file (e.g. f:\testWflow\openda_bin\win32_ifort\)
 2. folder with PCRaster dll files (e.g. C:\PCRaster\apps).
-3. folder with CPython installation (e.g. C:\Python25)
-</pre></div>
+3. folder with CPython installation (e.g. C:\Python25)</pre>
 </div>
 <p>PYTHONPATH:</p>
-<div class="highlight-python"><div class="highlight"><pre>1. folder with WFLOW python scripts (e.g. f:\testWflow\wflow_bin\)
+<div class="highlight-python"><pre>1. folder with WFLOW python scripts (e.g. f:\testWflow\wflow_bin\)
 2. folder with PCRaster python scripts (e.g. C:\PCRaster\Python).
 
 
 Furthermore here is the description of the arguments that are configured in the bbStochModelConfig.xml file:
-6 arguments expected:
-</pre></div>
+6 arguments expected:</pre>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>1: piRunFile: pi run info file path (relative to working dir).&quot;
-2: name of the python module that contains the model to use (e.g. wflow_hbv).&quot;
-3: caseDirectory: case directory path (relative to working dir).&quot;
-4: templateRunId: name of the runId within the current case (relative to the caseDirectory).&quot;
-5: configFileName: name of the model configuration file (relative to the caseDirectory).&quot;
-6: cloneMapFileName: name of the map file that describes the catchment (relative to the staticmaps folder in the caseDirectory).&quot;
-</pre></div>
+<div class="highlight-python"><pre>1: piRunFile: pi run info file path (relative to working dir)."
+2: name of the python module that contains the model to use (e.g. wflow_hbv)."
+3: caseDirectory: case directory path (relative to working dir)."
+4: templateRunId: name of the runId within the current case (relative to the caseDirectory)."
+5: configFileName: name of the model configuration file (relative to the caseDirectory)."
+6: cloneMapFileName: name of the map file that describes the catchment (relative to the staticmaps folder in the caseDirectory)."</pre>
 </div>
 <p>This should make it run without any errors, however Albrecht and I are still working to get the OpenDA code working correctly, so we might run into some more problems to solve.</p>
 <div class="admonition note">
@@ -269,26 +271,23 @@ important. See [run wflow_hbv via API]_</p>
 </div>
 
 
-          </div>
           <footer>
   
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+    <div class="rst-footer-buttons">
       
       
-        <a href="faq.html" class="btn btn-neutral" title="Questions and answers"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="faq.html" class="btn btn-neutral" title="Questions and answers"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
 
   <hr/>
 
-  <div role="contentinfo">
-    <p>
-        &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
-    </p>
-  </div>
+  <p>
+      &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
+  </p>
 
-  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+  <a href="https://www.github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="http://readthedocs.org">Read the Docs</a>
 </footer>
         </div>
       </div>
@@ -297,38 +296,6 @@ important. See [run wflow_hbv via API]_</p>
 
   </div>
   
-
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'./',
-            VERSION:'1.0RC1',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
-        };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
-
-  
-  
-  <script type="text/javascript">
-      jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
-      });
-  </script>
-   
 
 </body>
 </html>
