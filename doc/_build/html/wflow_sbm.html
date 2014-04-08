@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -18,6 +19,20 @@
 
   
   
+
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:'',
+        VERSION:'1.0RC1',
+        COLLAPSE_INDEX:false,
+        FILE_SUFFIX:'.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
     
 
   
@@ -25,6 +40,7 @@
   
   
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
   
@@ -32,29 +48,26 @@
         <link rel="next" title="The wflow_gr4 model" href="wflow_gr4.html"/>
         <link rel="prev" title="The wflow_hbv model" href="wflow_hbv.html"/> 
 
-  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
   <div class="wy-grid-for-nav">
 
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-nav-search">
-        <a href="index.html" class="fa fa-home"> wflow</a>
-        <div role="search">
-  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
+        <a href="index.html" class="icon icon-home"> wflow</a>
+        <form class="wy-form" action="search.html" method="get">
+  <input type="text" name="q" placeholder="Search docs" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
       </div>
 
-      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix">
         
         
             <ul>
@@ -203,30 +216,23 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="index.html">wflow</a>
+      <nav class="wy-nav-top">
+        <i data-toggle="wy-nav-top" class="icon icon-reorder"></i>
+        <a href="/">wflow</a>
       </nav>
 
 
       
       <div class="wy-nav-content">
         <div class="rst-content">
-          <div role="navigation" aria-label="breadcrumbs navigation">
-  <ul class="wy-breadcrumbs">
-    <li><a href="index.html">Docs</a> &raquo;</li>
-      
-    <li>The wflow_sbm Model</li>
-      <li class="wy-breadcrumbs-aside">
-        
-          <a href="_sources/wflow_sbm.txt" rel="nofollow"> View page source</a>
-        
-      </li>
-  </ul>
-  <hr/>
-</div>
-          <div role="main">
-            
+          <ul class="wy-breadcrumbs">
+  <li><a href="index.html">Docs</a> &raquo;</li>
+  <li><a href="">The wflow_sbm Model</a></li>
+  
+</ul>
+<hr/>
+
+          
   <div class="section" id="the-wflow-sbm-model">
 <h1>The wflow_sbm Model<a class="headerlink" href="#the-wflow-sbm-model" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="introduction">
@@ -255,19 +261,19 @@ be applied on a daily basis, although a storm-based approach will yield
 better results in situations with more than one storm per day . The
 amount of water needed to completely saturate the canopy is defined as:</p>
 <div class="math">
-<p><img src="_images/math/5a63f3b5ae3fa5029d092fc9c6d8b6176c21333c.png" alt="P'=\frac{-\overline{R}S}{\overline{E}_{w}}ln\left[1-\frac{\overline{E}_{w}}{\overline{R}}(1-p-p_{t})^{-1}\right]"/></p>
-</div><p>where <img class="math" src="_images/math/c6d4cd125fffe3a9fbeb96336544dbd9fd61350e.png" alt="\overline{R}"/> is the average precipitation intensity on a saturated canopy
-and <img class="math" src="_images/math/c5d2f6c40538494b14ac7dddc2ee90642c0e38d8.png" alt="\overline{E}_{w}"/> the average evaporation from the wet canopy
-and with the vegetation parameters <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/>, <img class="math" src="_images/math/3eca8557203e86160952e1c0f735f7417f3285b1.png" alt="p"/> and <img class="math" src="_images/math/11fa6eb4f307883318b5aeb905dde18741c330db.png" alt="p_t"/> as defined
+<p><img src="_images/math/97788e032bc53b0d0f381443d442f373b77550c2.png" alt="P'=\frac{-\overline{R}S}{\overline{E}_{w}}ln\left[1-\frac{\overline{E}_{w}}{\overline{R}}(1-p-p_{t})^{-1}\right]"/></p>
+</div><p>where <img class="math" src="_images/math/753dc004105a6b3c558defb100e77a617e26971c.png" alt="\overline{R}"/> is the average precipitation intensity on a saturated canopy
+and <img class="math" src="_images/math/016077691cf3f8cb8f1118af45ebbc598b8c1149.png" alt="\overline{E}_{w}"/> the average evaporation from the wet canopy
+and with the vegetation parameters <img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/>, <img class="math" src="_images/math/36f73fc1312ee0349b3f3a0f3bd9eb5504339011.png" alt="p"/> and <img class="math" src="_images/math/aeeea574f48a72b8c8e6b341469ff891d6ff6c97.png" alt="p_t"/> as defined
 previously. The model uses a series of expressions to calculate the
 interception loss during different phases of a storm.
 An analytical integration of the total evaporation and rainfall under
 saturated canopy conditions is then done for each storm to determine
-average values of <img class="math" src="_images/math/c5d2f6c40538494b14ac7dddc2ee90642c0e38d8.png" alt="\overline{E}_{w}"/> and <img class="math" src="_images/math/c6d4cd125fffe3a9fbeb96336544dbd9fd61350e.png" alt="\overline{R}"/>.
+average values of <img class="math" src="_images/math/016077691cf3f8cb8f1118af45ebbc598b8c1149.png" alt="\overline{E}_{w}"/> and <img class="math" src="_images/math/753dc004105a6b3c558defb100e77a617e26971c.png" alt="\overline{R}"/>.
 The total evaporation from the canopy ( the
 total interception loss) is calculated as the sum of the components
 listed in the table below. Interception losses from the stems are
-calculated for days with <img class="math" src="_images/math/3596cdf2e487a5a218113f7579b39d626aa61f11.png" alt="P\geq S_{t}/p_{t}"/> . <img class="math" src="_images/math/11fa6eb4f307883318b5aeb905dde18741c330db.png" alt="p_t"/> and <img class="math" src="_images/math/640cd6ce2ad9f6f4826d45cd0b0f205043d8ef46.png" alt="S_t"/> are
+calculated for days with <img class="math" src="_images/math/ce8c1b7a751f542f6bb526e17da29fa59176d5aa.png" alt="P\geq S_{t}/p_{t}"/> . <img class="math" src="_images/math/aeeea574f48a72b8c8e6b341469ff891d6ff6c97.png" alt="p_t"/> and <img class="math" src="_images/math/93d5be9bdec94fc912e4bc9b74fc6812a19e186e.png" alt="S_t"/> are
 small and neglected in the wflow_sbm model.</p>
 <p>Table: Formulation of the components of interception loss  according to Gash:</p>
 <table border="1" class="docutils">
@@ -278,35 +284,35 @@ small and neglected in the wflow_sbm model.</p>
 <col width="28%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td>For <img class="math" src="_images/math/c4bb40dd65eae6c11b325989b14e0b8d35e4e3ef.png" alt="m"/> small storms (<img class="math" src="_images/math/72b8e56dec568f60a09ddec2dfc1b3f875ab7356.png" alt="P_{g}&lt;{P'}_{g}"/>)</td>
-<td colspan="3"><img class="math" src="_images/math/06a104d56e853d9eb6015d23f4ffcd1f8b0302b1.png" alt="(1-p-p_{t})\sum_{j=1}^{m}P_{g,j}"/></td>
+<tr class="row-odd"><td>For <img class="math" src="_images/math/f5047d1e0cbb50ec208923a22cd517c55100fa7b.png" alt="m"/> small storms (<img class="math" src="_images/math/52fa6bf3df5cf59842c84ba04ba4554d373be8fc.png" alt="P_{g}&lt;{P'}_{g}"/>)</td>
+<td colspan="3"><img class="math" src="_images/math/f4b8518db97648f06ace55c38b6b8c191014f51c.png" alt="(1-p-p_{t})\sum_{j=1}^{m}P_{g,j}"/></td>
 </tr>
-<tr class="row-even"><td>Wetting up the canopy in <img class="math" src="_images/math/413f8a8e40062a9090d9d50b88bc7b551b314c26.png" alt="n"/> large storms (<img class="math" src="_images/math/9ee0e8f92d36cac02afa223794877eeef1f9051b.png" alt="P_{g}\geq{P'}_{g}"/>)</td>
-<td colspan="3"><img class="math" src="_images/math/5d347a980bcfb615c709288a2039970f8a5b11dc.png" alt="n(1-p-p_{t}){P'}_{g}-nS"/></td>
+<tr class="row-even"><td>Wetting up the canopy in <img class="math" src="_images/math/174fadd07fd54c9afe288e96558c92e0c1da733a.png" alt="n"/> large storms (<img class="math" src="_images/math/6f5018be9adcd30e578ddb1f5cc230af608e2ea7.png" alt="P_{g}\geq{P'}_{g}"/>)</td>
+<td colspan="3"><img class="math" src="_images/math/5e9808b346f44fa1c112ab8ba134de03cbeae7a1.png" alt="n(1-p-p_{t}){P'}_{g}-nS"/></td>
 </tr>
 <tr class="row-odd"><td>Evaporation from saturated canopy during rainfall</td>
-<td colspan="3"><img class="math" src="_images/math/6ffb7e41e7cc9a3da893068104a9d48429a83a65.png" alt="\overline{E}/\overline{R}\sum_{j=1}^{n}(P_{g,j}-{P'}_{g})"/></td>
+<td colspan="3"><img class="math" src="_images/math/86fcf6a1663155b3efa017c8c170d7d66b5da902.png" alt="\overline{E}/\overline{R}\sum_{j=1}^{n}(P_{g,j}-{P'}_{g})"/></td>
 </tr>
-<tr class="row-even"><td>Evaporation after rainfall ceases for <img class="math" src="_images/math/413f8a8e40062a9090d9d50b88bc7b551b314c26.png" alt="n"/> large storms</td>
-<td colspan="3"><img class="math" src="_images/math/62aa4889e1739bac2fd7f8ee9bf2def4d1b33495.png" alt="nS"/></td>
+<tr class="row-even"><td>Evaporation after rainfall ceases for <img class="math" src="_images/math/174fadd07fd54c9afe288e96558c92e0c1da733a.png" alt="n"/> large storms</td>
+<td colspan="3"><img class="math" src="_images/math/cd09579342b09a4c67f1d270964bb6b4c2dcc5b8.png" alt="nS"/></td>
 </tr>
-<tr class="row-odd"><td>Evaporation from trunks in <img class="math" src="_images/math/23f1b45408e5b4130c0f940fcbfcec54492cbdcd.png" alt="q"/> storms that  fill the trunk storage</td>
-<td colspan="3"><img class="math" src="_images/math/39e6f5379bd98b57fcd77e510176953804ec9cc8.png" alt="qS_{t}"/></td>
+<tr class="row-odd"><td>Evaporation from trunks in <img class="math" src="_images/math/0615acc3725de21025457e7d6f7694dab8e2f758.png" alt="q"/> storms that  fill the trunk storage</td>
+<td colspan="3"><img class="math" src="_images/math/b3bc840232910bf1af78283c6bdeb32821962e18.png" alt="qS_{t}"/></td>
 </tr>
-<tr class="row-even"><td>Evaporation from  trunks in (<img class="math" src="_images/math/1c9b7d09a8e90744320ea9f15387ba2bb0f5e166.png" alt="m+n-q"/>) storms that do not fill the trunk  storage</td>
-<td colspan="3"><img class="math" src="_images/math/60c64a0da7f1cd4c0ba06a8410a7b764e485996c.png" alt="p_{t}\sum_{j=1}^{m+n-q}P_{g,j}"/></td>
+<tr class="row-even"><td>Evaporation from  trunks in (<img class="math" src="_images/math/bdd7cd7dc93671df8ea61de8f4c691b6b263bb00.png" alt="m+n-q"/>) storms that do not fill the trunk  storage</td>
+<td colspan="3"><img class="math" src="_images/math/bb0fc9d7b5344fd746e0a1bb70982b307f454b77.png" alt="p_{t}\sum_{j=1}^{m+n-q}P_{g,j}"/></td>
 </tr>
 </tbody>
 </table>
 <p>In applying the analytical model, saturated conditions are assumed to
 occur when the hourly rainfall exceeds a certain threshold. Often a
-threshold of 0.5 mm/hr is used . <img class="math" src="_images/math/c6d4cd125fffe3a9fbeb96336544dbd9fd61350e.png" alt="\overline{R}"/> is calculated for all hours when the
+threshold of 0.5 mm/hr is used . <img class="math" src="_images/math/753dc004105a6b3c558defb100e77a617e26971c.png" alt="\overline{R}"/> is calculated for all hours when the
 rainfall exceeds the threshold to give an estimate of the mean rainfall
 rate onto a saturated canopy.</p>
 <p>Gash (1979) has shown that in a regression of interception loss on rainfall (on a
-storm basis) the regression coefficient should equal to <img class="math" src="_images/math/707c74587e4f568120ea8d4f3dc7a5ff9ace5685.png" alt="\overline{E}_w/\overline{R}"/>. Assuming that
-neither <img class="math" src="_images/math/7eb95bb0ad0fd63fd50e453661374366fbffcfc2.png" alt="\overline{E}_w"/> nor <img class="math" src="_images/math/c6d4cd125fffe3a9fbeb96336544dbd9fd61350e.png" alt="\overline{R}"/> vary considerably in time, <img class="math" src="_images/math/7eb95bb0ad0fd63fd50e453661374366fbffcfc2.png" alt="\overline{E}_w"/> can be estimated in this
-way from <img class="math" src="_images/math/c6d4cd125fffe3a9fbeb96336544dbd9fd61350e.png" alt="\overline{R}"/> in the absence of above-canopy climatic observations .
+storm basis) the regression coefficient should equal to <img class="math" src="_images/math/dd2b0768075898b43da7365acc02eed22b7aaed5.png" alt="\overline{E}_w/\overline{R}"/>. Assuming that
+neither <img class="math" src="_images/math/86660b75377bfb1db0ed2021dc9333b49767f867.png" alt="\overline{E}_w"/> nor <img class="math" src="_images/math/753dc004105a6b3c558defb100e77a617e26971c.png" alt="\overline{R}"/> vary considerably in time, <img class="math" src="_images/math/86660b75377bfb1db0ed2021dc9333b49767f867.png" alt="\overline{E}_w"/> can be estimated in this
+way from <img class="math" src="_images/math/753dc004105a6b3c558defb100e77a617e26971c.png" alt="\overline{R}"/> in the absence of above-canopy climatic observations .
 Values derived in this way generally tend to be (much) higher than
 those calculated with the penman-montieth equation .</p>
 </div>
@@ -390,80 +396,80 @@ capacity.</p>
 </div>
 <div class="section" id="the-wflow-sbm-soil-water-accounting-scheme">
 <h3>The wflow_sbm soil water accounting scheme<a class="headerlink" href="#the-wflow-sbm-soil-water-accounting-scheme" title="Permalink to this headline">¶</a></h3>
-<p>A detailed description of the SBM model has been given by <a class="reference internal" href="#vertessy" id="id1">[vertessy]</a>. Briefly:
+<p>A detailed description of the SBM model has been given by <a class="reference internal" href="#vertessy">[vertessy]</a>. Briefly:
 the soil is considered as a bucket with a certain depth
-(<img class="math" src="_images/math/5ffc1aab54200e42566e4d318b9238dc8f1a627f.png" alt="z_{t}"/>), divided into a saturated store (<img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/>) and an
-unsaturated store (<img class="math" src="_images/math/73f5e249c88b2b3068263480f576b051cb5c4f6e.png" alt="U"/>), the magnitudes of which are expressed
-in units of depth. The top of the <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> store forms a pseudo-water
-table at depth <img class="math" src="_images/math/29716ce86360aa89ea80309cbbaf42144675258f.png" alt="z_{i}"/> such that the value of <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> at any
+(<img class="math" src="_images/math/768e49b100713b44862cafb313c32dc47cec6bd6.png" alt="z_{t}"/>), divided into a saturated store (<img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/>) and an
+unsaturated store (<img class="math" src="_images/math/e2bbebb3bd73f1ae5c64098ab0244f739abf7ca4.png" alt="U"/>), the magnitudes of which are expressed
+in units of depth. The top of the <img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/> store forms a pseudo-water
+table at depth <img class="math" src="_images/math/f90701df8a21fa64cddb49f54724a7258df00531.png" alt="z_{i}"/> such that the value of <img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/> at any
 time is given by:</p>
 <div class="math">
-<p><img src="_images/math/56e1c43d8ad3f644e5f1f3045cfae37d5f76b305.png" alt="S=(z_{t}-z_{i})(\theta_{s}-\theta_{r})"/></p>
+<p><img src="_images/math/1d7bf6fa1384e46490a369ebd16c34d91e2d2aa1.png" alt="S=(z_{t}-z_{i})(\theta_{s}-\theta_{r})"/></p>
 </div><p>where:</p>
-<p><img class="math" src="_images/math/0ff84049d66fc5a4922283bc0a63a89b69a9cec0.png" alt="\theta_{s}"/> and <img class="math" src="_images/math/0bfe7a00ff8d6cccdb30fb098ac1796551d8a4c8.png" alt="\theta_{r}"/> are the
+<p><img class="math" src="_images/math/f833307a248d8e8079758a58e00710f2759c898a.png" alt="\theta_{s}"/> and <img class="math" src="_images/math/a4cc29f53f4391abd79cc42c19b1f0c0582d6500.png" alt="\theta_{r}"/> are the
 saturated and residual soil water contents, respectively.</p>
-<p>The unsaturated store (<img class="math" src="_images/math/73f5e249c88b2b3068263480f576b051cb5c4f6e.png" alt="U"/>) is subdivided into storage
-(<img class="math" src="_images/math/64f281ce69fe298f943c7c51dea46df853f0df87.png" alt="U_{s}"/>) and deficit (<img class="math" src="_images/math/365172f667589363ddcab24885ddb99f75e81f6b.png" alt="U_{d}"/>) which are again
+<p>The unsaturated store (<img class="math" src="_images/math/e2bbebb3bd73f1ae5c64098ab0244f739abf7ca4.png" alt="U"/>) is subdivided into storage
+(<img class="math" src="_images/math/00dcb66409de2de86ad27b1c64d531d33cd37536.png" alt="U_{s}"/>) and deficit (<img class="math" src="_images/math/57ef46bc6ff9a52592e4d1b410b05fb50a82eb66.png" alt="U_{d}"/>) which are again
 expressed in units of depth:</p>
 <div class="math">
-<p><img src="_images/math/5bf61c9392bb8b341487f73a57e104eb00b90c00.png" alt="U_{d}=(\theta_{s}-\theta_{r})z_{i}-U
+<p><img src="_images/math/73ff671f0f60895010bdfe54412977d2d873ada4.png" alt="U_{d}=(\theta_{s}-\theta_{r})z_{i}-U
 
 U_{s}=U-U_{d}"/></p>
-</div><p>The saturation deficit (<img class="math" src="_images/math/f6d014760b523ad4c8cc3f5f49113784cb0f75de.png" alt="S_{d}"/>) for the soil profile as a
+</div><p>The saturation deficit (<img class="math" src="_images/math/2e1273d99bf6f88265cecd80df1ba472b355da4e.png" alt="S_{d}"/>) for the soil profile as a
 whole is defined as:</p>
 <div class="math">
-<p><img src="_images/math/aaac16c6cf953abde2564db30c0bf36a635c3f40.png" alt="S_{d}=(\theta_{s}-\theta_{r})z_{t}-S"/></p>
-</div><p>All infiltrating rainfall enters the <img class="math" src="_images/math/73f5e249c88b2b3068263480f576b051cb5c4f6e.png" alt="U"/> store first. The
-transfer of water from the <img class="math" src="_images/math/73f5e249c88b2b3068263480f576b051cb5c4f6e.png" alt="U"/> store to the <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> store
-(<img class="math" src="_images/math/a5aeb99c31bf3d913cfbf9ac1c4c4bad053f2a40.png" alt="st"/>) is controlled by the saturated hydraulic conductivity {}
-at depth <img class="math" src="_images/math/29716ce86360aa89ea80309cbbaf42144675258f.png" alt="z_{i}"/> and the ratio between <img class="math" src="_images/math/73f5e249c88b2b3068263480f576b051cb5c4f6e.png" alt="U"/> and
-<img class="math" src="_images/math/f6d014760b523ad4c8cc3f5f49113784cb0f75de.png" alt="S_{d}"/>:</p>
+<p><img src="_images/math/fe3045b1f6f5fe6aa12262755f3e7d2babce0583.png" alt="S_{d}=(\theta_{s}-\theta_{r})z_{t}-S"/></p>
+</div><p>All infiltrating rainfall enters the <img class="math" src="_images/math/e2bbebb3bd73f1ae5c64098ab0244f739abf7ca4.png" alt="U"/> store first. The
+transfer of water from the <img class="math" src="_images/math/e2bbebb3bd73f1ae5c64098ab0244f739abf7ca4.png" alt="U"/> store to the <img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/> store
+(<img class="math" src="_images/math/38611983906dda3650ff03bf618700fda7a09a4e.png" alt="st"/>) is controlled by the saturated hydraulic conductivity {}
+at depth <img class="math" src="_images/math/f90701df8a21fa64cddb49f54724a7258df00531.png" alt="z_{i}"/> and the ratio between <img class="math" src="_images/math/e2bbebb3bd73f1ae5c64098ab0244f739abf7ca4.png" alt="U"/> and
+<img class="math" src="_images/math/2e1273d99bf6f88265cecd80df1ba472b355da4e.png" alt="S_{d}"/>:</p>
 <div class="math">
-<p><img src="_images/math/d7602f22d922c21d509778b11bb85210c7e13699.png" alt="st=K_{\mathit{sat}}\frac{U_{s}}{S_{d}}"/></p>
+<p><img src="_images/math/6c9ee977a0a1d32f55dc6ad45b28db61966c0a5c.png" alt="st=K_{\mathit{sat}}\frac{U_{s}}{S_{d}}"/></p>
 </div><p>Hence, as the saturation deficit becomes smaller, the rate of the
-transfer between the <img class="math" src="_images/math/73f5e249c88b2b3068263480f576b051cb5c4f6e.png" alt="U"/> and <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> stores increases.</p>
+transfer between the <img class="math" src="_images/math/e2bbebb3bd73f1ae5c64098ab0244f739abf7ca4.png" alt="U"/> and <img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/> stores increases.</p>
 <div class="figure">
 <img alt="_images/wflow_soil.png" src="_images/wflow_soil.png" />
 <p class="caption">Schematisation of the soil within the wflow_sbm model</p>
 </div>
-<p>Saturated conductivity (<img class="math" src="_images/math/81280f393adea8b0e953124fea58297f7d9720af.png" alt="K_{sat}"/>) declines with soil depth (<img class="math" src="_images/math/84d7271dd9e78c1e05d6c3c6ecb60309ef7dfc73.png" alt="z"/>) in
+<p>Saturated conductivity (<img class="math" src="_images/math/87039f9be109173d5b30bec3381160b646eda812.png" alt="K_{sat}"/>) declines with soil depth (<img class="math" src="_images/math/b13f21416d84e13708696f34dea81026cda583c9.png" alt="z"/>) in
 the model according to:</p>
 <p>where:</p>
 <blockquote>
-<div><p><img class="math" src="_images/math/d2aac8e88041decff192d6d1cbcddbd01e524d84.png" alt="K_{0}"/> is the saturated conductivity at the soil surface and</p>
-<p><img class="math" src="_images/math/0001d02b63ede2fe3219e05a7cd09c82ae6298b6.png" alt="f"/> is a scaling parameter [<img class="math" src="_images/math/579b5f9d1adc9294af9fd8c017e3f92f117e5ca1.png" alt="m^{-1}"/>]</p>
+<div><p><img class="math" src="_images/math/c152b73ddead0a8c81c82986c7985baa0449d300.png" alt="K_{0}"/> is the saturated conductivity at the soil surface and</p>
+<p><img class="math" src="_images/math/bb2c93730dbb48558bb3c4738c956c4e8f816437.png" alt="f"/> is a scaling parameter [<img class="math" src="_images/math/123108aff1e6a7f9bf1fac70463f449280af077f.png" alt="m^{-1}"/>]</p>
 </div></blockquote>
-<p>The scaling parameter <img class="math" src="_images/math/0001d02b63ede2fe3219e05a7cd09c82ae6298b6.png" alt="f"/> is defined by:</p>
-<p><img class="math" src="_images/math/be7491eaebfd7620b6d2d56b51f1a8b235c3157c.png" alt="f=\frac{\theta_{s}-\theta_{r}}{M}"/></p>
-<p>with <img class="math" src="_images/math/0ff84049d66fc5a4922283bc0a63a89b69a9cec0.png" alt="\theta_{s}"/> and <img class="math" src="_images/math/0bfe7a00ff8d6cccdb30fb098ac1796551d8a4c8.png" alt="\theta_{r}"/> as defined
-previously and <img class="math" src="_images/math/2de38926392ba23abeac75effc66c37a5f5be5fd.png" alt="M"/> representing a model parameter (expressed in
+<p>The scaling parameter <img class="math" src="_images/math/bb2c93730dbb48558bb3c4738c956c4e8f816437.png" alt="f"/> is defined by:</p>
+<p><img class="math" src="_images/math/9f9d2e925ec88a9c5e7dc42396200b8e61d188f6.png" alt="f=\frac{\theta_{s}-\theta_{r}}{M}"/></p>
+<p>with <img class="math" src="_images/math/f833307a248d8e8079758a58e00710f2759c898a.png" alt="\theta_{s}"/> and <img class="math" src="_images/math/a4cc29f53f4391abd79cc42c19b1f0c0582d6500.png" alt="\theta_{r}"/> as defined
+previously and <img class="math" src="_images/math/5d1e4485dc90c450e8c76826516c1b2ccb8fce16.png" alt="M"/> representing a model parameter (expressed in
 meters).</p>
 <p>Figure: Plot of the relation between depth and conductivity for different values of M</p>
 <p>(<a class="reference external" href="./plots/m-plot.py">Source code</a>, <a class="reference external" href="./plots/m-plot.png">png</a>, <a class="reference external" href="./plots/m-plot.hires.png">hires.png</a>, <a class="reference external" href="./plots/m-plot.pdf">pdf</a>)</p>
 <div class="figure">
 <img alt="_images/m-plot.png" src="_images/m-plot.png" />
 </div>
-<p>The <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> store can be drained laterally via subsurface flow
+<p>The <img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/> store can be drained laterally via subsurface flow
 according to:</p>
-<p><img class="math" src="_images/math/a9da659e8e438aba4b6c5b2e4dd4ffc9b18ff2db.png" alt="sf=K_{0}\mathit{tan}(\beta)e^{-S_{d}/M}"/></p>
+<p><img class="math" src="_images/math/772ab373466b775b4891af1ea9fa6067dda557b5.png" alt="sf=K_{0}\mathit{tan}(\beta)e^{-S_{d}/M}"/></p>
 <p>where:</p>
 <blockquote>
-<div><p><img class="math" src="_images/math/8ce03f78ed945f2ef3dac87c8799b55b393527e7.png" alt="\beta"/> is element slope angle [deg.]</p>
-<p><img class="math" src="_images/math/49bc1e493357f0553fe86c91e684dea9ce57e799.png" alt="sf"/> is the calculated subsurface flow [<img class="math" src="_images/math/2b07d9316845c7fc94b6398fa11e8150ff43ee93.png" alt="m^{2}d^{-1}"/>]</p>
-<p><img class="math" src="_images/math/f6d014760b523ad4c8cc3f5f49113784cb0f75de.png" alt="S_{d}"/> is the saturation deficit defined as:    (<img class="math" src="_images/math/750972e207dec45fef286c1b63974a522ed50694.png" alt="(\theta_{s}-\theta_{r})z_{t}-S"/>)</p>
+<div><p><img class="math" src="_images/math/fdb63b9e51abe6bbb16acfb5d7b773ddbb5bf4a8.png" alt="\beta"/> is element slope angle [deg.]</p>
+<p><img class="math" src="_images/math/e988b1e0382b9735b66371e029432d703170bd0e.png" alt="sf"/> is the calculated subsurface flow [<img class="math" src="_images/math/ecd90a8fe15719299b40d1605da6af4992371509.png" alt="m^{2}d^{-1}"/>]</p>
+<p><img class="math" src="_images/math/2e1273d99bf6f88265cecd80df1ba472b355da4e.png" alt="S_{d}"/> is the saturation deficit defined as:    (<img class="math" src="_images/math/942b62ea09a33486a2afaeda353e6549764ce61e.png" alt="(\theta_{s}-\theta_{r})z_{t}-S"/>)</p>
 </div></blockquote>
-<p>with <img class="math" src="_images/math/2de38926392ba23abeac75effc66c37a5f5be5fd.png" alt="M"/> and <img class="math" src="_images/math/f6d014760b523ad4c8cc3f5f49113784cb0f75de.png" alt="S_{d}"/> as defined previously. A schematic
+<p>with <img class="math" src="_images/math/5d1e4485dc90c450e8c76826516c1b2ccb8fce16.png" alt="M"/> and <img class="math" src="_images/math/2e1273d99bf6f88265cecd80df1ba472b355da4e.png" alt="S_{d}"/> as defined previously. A schematic
 representation of the various hydrological processes and pathways
 modelled by SBM (infiltration, exfiltration, Hortonian and saturation
 overland flow, subsurface flow) is provided by verstessy (1999).</p>
 <p>The original SBM model does not include transpiration or a notion of
 capilary rise. In  wflow_sbm  transpiration is first taken from the
-<img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> store if the roots reach the water table <img class="math" src="_images/math/29716ce86360aa89ea80309cbbaf42144675258f.png" alt="z_{i}"/>. If
-the <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> store cannot satisfy the demand the <img class="math" src="_images/math/73f5e249c88b2b3068263480f576b051cb5c4f6e.png" alt="U"/> store is
+<img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/> store if the roots reach the water table <img class="math" src="_images/math/f90701df8a21fa64cddb49f54724a7258df00531.png" alt="z_{i}"/>. If
+the <img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/> store cannot satisfy the demand the <img class="math" src="_images/math/e2bbebb3bd73f1ae5c64098ab0244f739abf7ca4.png" alt="U"/> store is
 used next. First the number of wet roots is determined (going from 1 to 0) using
 an sigmoid function as follows:</p>
 <div class="math">
-<p><img src="_images/math/9cee5bf001f1af2558e59579fdadacddfa1f955a.png" alt="WetRoots = 1.0/(1.0 + e^{-SharpNess (WaterTable - RootingDepth)})"/></p>
+<p><img src="_images/math/2e6d61376172952433fc7b4e5095aedb4ceb2076.png" alt="WetRoots = 1.0/(1.0 + e^{-SharpNess (WaterTable - RootingDepth)})"/></p>
 </div><p>Here the sharpness parameter (by default a large negative value, -80000.0) parameter
 determines if there is a stepwise output or a more gradual output (default is stepwise).
 WaterTable is the level of the Water table in the gridcell in mm below the
@@ -496,18 +502,18 @@ unsaturated store:</p>
 </pre></div>
 </div>
 <p>Capilary rise is determined using the following approach:
-first the <img class="math" src="_images/math/81280f393adea8b0e953124fea58297f7d9720af.png" alt="K_{sat}"/> is determined at the water table
-<img class="math" src="_images/math/29716ce86360aa89ea80309cbbaf42144675258f.png" alt="z_{i}"/>; next a potential capilary rise is determined from the
-minimum of the <img class="math" src="_images/math/81280f393adea8b0e953124fea58297f7d9720af.png" alt="K_{sat}"/>, the actual transpiration taken from
-the <img class="math" src="_images/math/73f5e249c88b2b3068263480f576b051cb5c4f6e.png" alt="U"/> store, the available water in the <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> store and
-the deficit of the <img class="math" src="_images/math/73f5e249c88b2b3068263480f576b051cb5c4f6e.png" alt="U"/> store. Finally the potential rise is
+first the <img class="math" src="_images/math/87039f9be109173d5b30bec3381160b646eda812.png" alt="K_{sat}"/> is determined at the water table
+<img class="math" src="_images/math/f90701df8a21fa64cddb49f54724a7258df00531.png" alt="z_{i}"/>; next a potential capilary rise is determined from the
+minimum of the <img class="math" src="_images/math/87039f9be109173d5b30bec3381160b646eda812.png" alt="K_{sat}"/>, the actual transpiration taken from
+the <img class="math" src="_images/math/e2bbebb3bd73f1ae5c64098ab0244f739abf7ca4.png" alt="U"/> store, the available water in the <img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/> store and
+the deficit of the <img class="math" src="_images/math/e2bbebb3bd73f1ae5c64098ab0244f739abf7ca4.png" alt="U"/> store. Finally the potential rise is
 scaled using the distance between the roots and the water table using:</p>
 <blockquote>
-<div><img class="math" src="_images/math/bc99f3aa53aad1a14b185c318bb8df9b83c1bd17.png" alt="CS=CSF/(CSF+z_{i}-RT)"/></div></blockquote>
-<p>in which <img class="math" src="_images/math/81d55f55684ab39007c45eee4344df563fa3c77f.png" alt="CS"/> is the scaling factor to multiply the potential
-rise with, <img class="math" src="_images/math/beba6746668158f886cf9d3ca178df797d1be069.png" alt="CSF"/> is a model parameter (default = 100, use
-CapScale.tbl to set differently) and <img class="math" src="_images/math/06ec220acf45d6cbd98725d278e2a43ba121fc79.png" alt="RT"/> the rooting depth. If
-the roots reach the water table (<img class="math" src="_images/math/603ab6b8c5b72c7ccd55ed8fa3554b8d60bc2f21.png" alt="RT&gt;z_{i}"/>) <img class="math" src="_images/math/81d55f55684ab39007c45eee4344df563fa3c77f.png" alt="CS"/> is set
+<div><img class="math" src="_images/math/520cd00d75450d8998f40f9a0aadd49fef7c0907.png" alt="CS=CSF/(CSF+z_{i}-RT)"/></div></blockquote>
+<p>in which <img class="math" src="_images/math/5d9f1ff4706cf9340a5a24d275fafb46157c9b54.png" alt="CS"/> is the scaling factor to multiply the potential
+rise with, <img class="math" src="_images/math/3ed165af6753f30104b941ceb79cdaf3f9570603.png" alt="CSF"/> is a model parameter (default = 100, use
+CapScale.tbl to set differently) and <img class="math" src="_images/math/b8fe0bc1f0ab90d60df20bc9e4ccac77d35238e1.png" alt="RT"/> the rooting depth. If
+the roots reach the water table (<img class="math" src="_images/math/7c9cec996318780fb2c1ec461d6b28e1cc3c40be.png" alt="RT&gt;z_{i}"/>) <img class="math" src="_images/math/5d9f1ff4706cf9340a5a24d275fafb46157c9b54.png" alt="CS"/> is set
 to zero thus setting the capilary rise to zero.</p>
 <ol class="arabic simple">
 <li>Water in the saturated store is transferred laterally along the DEM
@@ -528,12 +534,12 @@ the kinematic wave reservoir</li>
 </div>
 <div class="section" id="soil-temperature">
 <h3>Soil temperature<a class="headerlink" href="#soil-temperature" title="Permalink to this headline">¶</a></h3>
-<p>The near surface soil temperature is modelled using a simple equation <a class="reference internal" href="#wigmosta" id="id2">[Wigmosta]</a>:</p>
+<p>The near surface soil temperature is modelled using a simple equation <a class="reference internal" href="#wigmosta">[Wigmosta]</a>:</p>
 <blockquote>
 <div><div class="math">
-<p><img src="_images/math/5d752b89b7da922f11dfee7716779b04d6ce1656.png" alt="T_s^{t} = T_s^{t-1} + w  (T_a - T_s^{t-1})"/></p>
+<p><img src="_images/math/a3bdf7d1786c14cc0e0202e91b7867e726615be8.png" alt="T_s^{t} = T_s^{t-1} + w  (T_a - T_s^{t-1})"/></p>
 </div></div></blockquote>
-<p>where <img class="math" src="_images/math/aad25a2e56e877757aff526f198e1cededfec2b7.png" alt="T_s^{t}"/>  is the near-surface soil temperature at time t, <img class="math" src="_images/math/a3c8b423acbf97f3d00a76dffa9d5fec6b69b481.png" alt="T_a"/> is air temperature and <img class="math" src="_images/math/8659700e6646cd91bc02c32affaa5ec046ee9935.png" alt="w"/> is a
+<p>where <img class="math" src="_images/math/76c2ee3aecba05a6233c4975b2dcc1870104f8e3.png" alt="T_s^{t}"/>  is the near-surface soil temperature at time t, <img class="math" src="_images/math/e58864fe606c6a429f1e9a6fcfa945de432e67d8.png" alt="T_a"/> is air temperature and <img class="math" src="_images/math/9ee4b825a2e36ae093ed7be5e4851ef453b34914.png" alt="w"/> is a
 weighting coefficient determined through calibration (default is 0.1125 for daily timesteps, 0.9 for 3-hourly timesteps)</p>
 <p>if T_s &lt; 0 than a K_{sat} reduction factor (default 0.038) is applied. An S-curve (see plot below)
 is used to make a smooth transition (a  c-factor of 8 is used).</p>
@@ -549,11 +555,11 @@ general this feature is used if the grid cell size is relatively lager compared
 to the variation of topography. In addition you will need to have information
 on the ditribution of altotude within a grid-cell. Depending on the topography sub-grid
 runoff generation may be useful aroun 1x1km and larger.</p>
-<p>The basis is formed by a sigmoid (<img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/>) function that is fitted using
-a 10, 50 and 90 percentile  DEM. The <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> function is defined as:</p>
+<p>The basis is formed by a sigmoid (<img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/>) function that is fitted using
+a 10, 50 and 90 percentile  DEM. The <img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/> function is defined as:</p>
 <blockquote>
 <div><div class="math">
-<p><img src="_images/math/b466541a4fc1463fe04635f699a68c05a1262dd4.png" alt="S = 1.0/(b + e^{(-c (X - a))})"/></p>
+<p><img src="_images/math/56c5a3e8af85ec9c779cd5babf0c076930582a52.png" alt="S = 1.0/(b + e^{(-c (X - a))})"/></p>
 </div></div></blockquote>
 <p>Where:</p>
 <blockquote>
@@ -562,31 +568,31 @@ a 10, 50 and 90 percentile  DEM. The <img class="math" src="_images/math/11a85f3
 <p>c = sharpness parameter. Higher values give sharper step</p>
 <p>a = centre-point of the curve (normally the 50% DEM)</p>
 </div></blockquote>
-<p>The <img class="math" src="_images/math/65868d23a5bfe5b3b2d819386b19c14fa36af134.png" alt="c"/> parameter is estimated by reversing the function above to:</p>
+<p>The <img class="math" src="_images/math/3372c1cb6d68cf97c2d231acc0b47b95a9ed04cc.png" alt="c"/> parameter is estimated by reversing the function above to:</p>
 <blockquote>
 <div><div class="math">
-<p><img src="_images/math/5e96a31724eb555727653085e416c7a263ecd1ba.png" alt="c = log(1.0/p - 1)/(dem_{p} - dem_{50})"/></p>
+<p><img src="_images/math/6e464fa417f49b3fa0d3b9a08e38be54ff1112c1.png" alt="c = log(1.0/p - 1)/(dem_{p} - dem_{50})"/></p>
 </div></div></blockquote>
 <p>where:</p>
 <blockquote>
-<div><p>percentile is the percentile of <img class="math" src="_images/math/6517ecee60409a4e7f9901e76aff634f22eccc30.png" alt="dem_{p}"/></p>
-<p><img class="math" src="_images/math/791c049a9864e89427685d9a9c6dd7bfe819be44.png" alt="dem_{50}"/> is the average altitude in the gridcell</p>
-<p><img class="math" src="_images/math/6517ecee60409a4e7f9901e76aff634f22eccc30.png" alt="dem_{p}"/> is the altitude below with percentile (p) cells of the dem
+<div><p>percentile is the percentile of <img class="math" src="_images/math/52c502e203015692fa78373cd13275a77bff830d.png" alt="dem_{p}"/></p>
+<p><img class="math" src="_images/math/282f9de1d84068df63bf35e5a254f24e8ab214b3.png" alt="dem_{50}"/> is the average altitude in the gridcell</p>
+<p><img class="math" src="_images/math/52c502e203015692fa78373cd13275a77bff830d.png" alt="dem_{p}"/> is the altitude below with percentile (p) cells of the dem
 are found</p>
 </div></blockquote>
-<p>The outcome of the <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> will range from 0 to 1 for inputs ranging from the
+<p>The outcome of the <img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/> will range from 0 to 1 for inputs ranging from the
 minimum altitude to the maximum altitude (within the gridcell). Thereore,
 the calculated groundwater levels within the cell are scale to match the minimum and
 maximum altitude within the cell using:</p>
 <div class="math">
-<p><img src="_images/math/72c5dd1f84aeba068c9c14716ecf7c8f06c8b5ab.png" alt="G_s = (A_{max}-A_{min})/FZT/GWPerc"/></p>
+<p><img src="_images/math/c41422a8959293b45927970e511bbf7ba841304a.png" alt="G_s = (A_{max}-A_{min})/FZT/GWPerc"/></p>
 </div><p>where:</p>
 <blockquote>
-<div><p><img class="math" src="_images/math/0ae1d8d74b16744c8bb2bd276716a7a4d71db491.png" alt="G_s"/> is the scaling factor</p>
-<p><img class="math" src="_images/math/fc70ddef8954a8f3bbdd8fadf474321291e4c058.png" alt="A_{max}"/> the maximum altitude within the cell</p>
-<p><img class="math" src="_images/math/c48f05be3cf0c50dc09579545d4a2ccd151542ba.png" alt="A_{min}"/> the minumum altitude within the cell</p>
-<p><img class="math" src="_images/math/5706c8716988c701af50595c69ff9f1ecc4a3d39.png" alt="FZT"/> the total thickness of the soil in the model</p>
-<p><img class="math" src="_images/math/e9357453962bf867b8e2516e4e95ba9c713b8ff7.png" alt="GWperc"/> is a dimensionless parameter (from &gt;0 to 1) that determines which
+<div><p><img class="math" src="_images/math/8760afb4c41319ff4c398efe5895460efceec1e7.png" alt="G_s"/> is the scaling factor</p>
+<p><img class="math" src="_images/math/57ab05803d219bfc843f883cb50c0ffa0f57f6ab.png" alt="A_{max}"/> the maximum altitude within the cell</p>
+<p><img class="math" src="_images/math/8790a5a854013e720367657743a90bea46a048d6.png" alt="A_{min}"/> the minumum altitude within the cell</p>
+<p><img class="math" src="_images/math/9d6c4a88618b2925b43fe5e82a8b51586236ce8d.png" alt="FZT"/> the total thickness of the soil in the model</p>
+<p><img class="math" src="_images/math/d9115f0b8b614fa0195051c0aedd10494aa644f9.png" alt="GWperc"/> is a dimensionless parameter (from &gt;0 to 1) that determines which
 part of the soil profile generates runoff. If it is 1 runoff is generated whenever
 there is groundwater in the system. If it is 0.1 only the top 10 % of the
 soil profile generated runoff</p>
@@ -608,7 +614,7 @@ to which the curve is fitted. So at present only two points are used (10 % and 5
 </div>
 <p>In the dynamic section of the model the absolute groundwater level is determined and
 scaled before it is
-fed into the <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> curve function. The result is a estimated saturated fraction within a
+fed into the <img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/> curve function. The result is a estimated saturated fraction within a
 the gridcell. The saturated fraction is used to generated Saturation Overland Flow (SOF)
 and generate ouflow from the groundwater reservoir:</p>
 <ol class="arabic simple">
@@ -635,9 +641,9 @@ in the groundwater reservoir.</li>
 <div class="section" id="kinematic-wave-and-river-width">
 <h2>Kinematic wave and River Width<a class="headerlink" href="#kinematic-wave-and-river-width" title="Permalink to this headline">¶</a></h2>
 <p>The river width is determined from the DEM the upstream area and yearly
-average discharge (<a class="reference internal" href="#finnegan" id="id3">[Finnegan]</a>):</p>
+average discharge (<a class="reference internal" href="#finnegan">[Finnegan]</a>):</p>
 <p>The early average Q at outlet is scaled for each point in the drainage network
-with the upstream area. <img class="math" src="_images/math/ad59b6e24a4a00ac621801f8d7513d68be654ab5.png" alt="\alpha"/> ranges from 5 to &gt; 60. Here 5 is used for hardrock,
+with the upstream area. <img class="math" src="_images/math/10f32377ac67d94f764f12a15ea987e88c85d3e1.png" alt="\alpha"/> ranges from 5 to &gt; 60. Here 5 is used for hardrock,
 largre values are used for sediments</p>
 <p>Implementation:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">upstr</span> <span class="o">=</span> <span class="n">catchmenttotal</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">TopoLdd</span><span class="p">)</span>
@@ -864,7 +870,7 @@ TemperatureCorrectionMap=NameOfTheMap</p>
 precipitation rate - usually between 0.06 and 0.15 depending on climate and site.</li>
 <li>FirstZoneCapacity -</li>
 </ul>
-<div class="highlight-python"><div class="highlight"><pre>FirstZoneKsatVer.tbl
+<div class="highlight-python"><pre>FirstZoneKsatVer.tbl
 file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/FirstZoneMinCapacity.tbl
 file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/InfiltCapPath.tbl
 file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/InfiltCapSoil.tbl
@@ -879,8 +885,7 @@ file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/thetaR.tbl
 file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/thetaS.tbl
 file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/TT.tbl
 file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/TTI.tbl
-file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/WHC.tbl
-</pre></div>
+file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/WHC.tbl</pre>
 </div>
 </div>
 <div class="section" id="references">
@@ -908,7 +913,7 @@ file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/WHC.tbl
 <span id="wflow-sbm-module-documentation"></span><h2>wflow_sbm module documentation<a class="headerlink" href="#module-wflow_sbm" title="Permalink to this headline">¶</a></h2>
 <p>Run the wflow_sbm hydrological model..</p>
 <p>usage</p>
-<div class="highlight-python"><div class="highlight"><pre>wflow_sbm [-h][-v level][-F runinfofile][-L logfile][-C casename][-R runId]
+<div class="highlight-python"><pre>wflow_sbm [-h][-v level][-F runinfofile][-L logfile][-C casename][-R runId]
       [-c configfile][-T last_step][-S first_step][-s seconds][-W][-E][-N][-U discharge]
       [-P parameter multiplication][-X][-f][-I][-i tbl_dir][-x subcatchId][-u updatecols]
       [-p inputparameter multiplication][-l loglevel]
@@ -960,15 +965,14 @@ file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/WHC.tbl
     -u [1 , 4 ,13]
     The above example uses column 1, 4 and 13
     
--P: set parameter multiply dictionary (e.g: -P {&#39;self.FirstZoneDepth&#39; : 1.2}
+-P: set parameter multiply dictionary (e.g: -P {'self.FirstZoneDepth' : 1.2}
     to increase self.FirstZoneDepth by 20%, multiply with 1.2)
     
 -p: set input parameter (dynamic, e.g. precip) multiply dictionary 
-    (e.g: -p {&#39;self.Precipitation&#39; : 1.2} to increase Precipitation 
+    (e.g: -p {'self.Precipitation' : 1.2} to increase Precipitation 
     by 20%, multiply with 1.2)    
     
--l: loglevel (most be one of DEBUG, WARNING, ERROR)
-</pre></div>
+-l: loglevel (most be one of DEBUG, WARNING, ERROR)</pre>
 </div>
 <p>$Author: schelle $
 $Id: wflow_sbm.py 900 2014-01-09 17:41:06Z schelle $
@@ -1001,12 +1005,10 @@ factors (RFCF and SFCF) are set to 1. The refreezing efficiency factor is set to
 <dt id="wflow_sbm.WflowModel">
 <em class="property">class </em><tt class="descclassname">wflow_sbm.</tt><tt class="descname">WflowModel</tt><big>(</big><em>cloneMap</em>, <em>Dir</em>, <em>RunDir</em>, <em>configfile</em><big>)</big><a class="headerlink" href="#wflow_sbm.WflowModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">pcraster.framework.dynamicPCRasterBase.DynamicModel</span></tt></p>
-<div class="versionchanged">
-<p><span class="versionmodified">Changed in version 0.91: </span>- Calculation of GWScale moved to resume() to allow fitting.</p>
-</div>
-<div class="versionadded">
-<p><span class="versionmodified">New in version 0.91: </span>- added S-curve for freezing soil infiltration reduction calculations</p>
-</div>
+<p class="versionchanged">
+<span class="versionmodified">Changed in version 0.91: </span>- Calculation of GWScale moved to resume() to allow fitting.</p>
+<p class="versionadded">
+<span class="versionmodified">New in version 0.91: </span>- added S-curve for freezing soil infiltration reduction calculations</p>
 <dl class="method">
 <dt id="wflow_sbm.WflowModel.dynamic">
 <tt class="descname">dynamic</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_sbm.WflowModel.dynamic" title="Permalink to this definition">¶</a></dt>
@@ -1151,11 +1153,12 @@ A less negative number smooths this. [mm] (default = -80000)</li>
 <dl class="method">
 <dt id="wflow_sbm.WflowModel.stateVariables">
 <tt class="descname">stateVariables</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_sbm.WflowModel.stateVariables" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div><p>returns a list of state variables that are essential to the model. 
-This list is essential for the resume and suspend functions to work.</p>
-<p>This function is specific for each model and <strong>must</strong> be present.</p>
-</div></blockquote>
+<dd><dl class="docutils">
+<dt>returns a list of state variables that are essential to the model. </dt>
+<dd><p class="first">This list is essential for the resume and suspend functions to work.</p>
+<p class="last">This function is specific for each model and <strong>must</strong> be present.</p>
+</dd>
+</dl>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1236,28 +1239,25 @@ representing a root-depth distribution</li>
 </div>
 
 
-          </div>
           <footer>
   
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+    <div class="rst-footer-buttons">
       
-        <a href="wflow_gr4.html" class="btn btn-neutral float-right" title="The wflow_gr4 model"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="wflow_gr4.html" class="btn btn-neutral float-right" title="The wflow_gr4 model"/>Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="wflow_hbv.html" class="btn btn-neutral" title="The wflow_hbv model"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="wflow_hbv.html" class="btn btn-neutral" title="The wflow_hbv model"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
 
   <hr/>
 
-  <div role="contentinfo">
-    <p>
-        &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
-    </p>
-  </div>
+  <p>
+      &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
+  </p>
 
-  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+  <a href="https://www.github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="http://readthedocs.org">Read the Docs</a>
 </footer>
         </div>
       </div>
@@ -1266,38 +1266,6 @@ representing a root-depth distribution</li>
 
   </div>
   
-
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'./',
-            VERSION:'1.0RC1',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
-        };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
-
-  
-  
-  <script type="text/javascript">
-      jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
-      });
-  </script>
-   
 
 </body>
 </html>

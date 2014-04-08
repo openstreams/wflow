@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -18,6 +19,20 @@
 
   
   
+
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:'',
+        VERSION:'1.0RC1',
+        COLLAPSE_INDEX:false,
+        FILE_SUFFIX:'.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
     
 
   
@@ -25,6 +40,7 @@
   
   
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
   
@@ -32,29 +48,26 @@
         <link rel="next" title="The wflow_fit module" href="wflow_fit.html"/>
         <link rel="prev" title="Building a model" href="wflow_building.html"/> 
 
-  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
   <div class="wy-grid-for-nav">
 
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-nav-search">
-        <a href="index.html" class="fa fa-home"> wflow</a>
-        <div role="search">
-  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
+        <a href="index.html" class="icon icon-home"> wflow</a>
+        <form class="wy-form" action="search.html" method="get">
+  <input type="text" name="q" placeholder="Search docs" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
       </div>
 
-      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix">
         
         
             <ul>
@@ -203,30 +216,23 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="index.html">wflow</a>
+      <nav class="wy-nav-top">
+        <i data-toggle="wy-nav-top" class="icon icon-reorder"></i>
+        <a href="/">wflow</a>
       </nav>
 
 
       
       <div class="wy-nav-content">
         <div class="rst-content">
-          <div role="navigation" aria-label="breadcrumbs navigation">
-  <ul class="wy-breadcrumbs">
-    <li><a href="index.html">Docs</a> &raquo;</li>
-      
-    <li>Using the models</li>
-      <li class="wy-breadcrumbs-aside">
-        
-          <a href="_sources/wflow_usage.txt" rel="nofollow"> View page source</a>
-        
-      </li>
-  </ul>
-  <hr/>
-</div>
-          <div role="main">
-            
+          <ul class="wy-breadcrumbs">
+  <li><a href="index.html">Docs</a> &raquo;</li>
+  <li><a href="">Using the models</a></li>
+  
+</ul>
+<hr/>
+
+          
   <div class="section" id="using-the-models">
 <h1>Using the models<a class="headerlink" href="#using-the-models" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="directory-structure-cases-and-runs">
@@ -299,8 +305,7 @@ saved in this directory.</dd>
 Based on the system settings you can call the  wFlow_[sbm|hbv].py file
 directly or you need to call python with the script as the first argument
 e.g.:</p>
-<div class="highlight-python"><div class="highlight"><pre>python wflow_sbm.py -C myCase -R calib_run -T 365 -f
-</pre></div>
+<div class="highlight-python"><pre>python wflow_sbm.py -C myCase -R calib_run -T 365 -f</pre>
 </div>
 <p>In the example above the  wflow_sbm  model is run using the
 information in case myCase storing the results in runId calib_run. A
@@ -312,13 +317,12 @@ wflow_sbm.ini located in the myCase directory is read at startup.</p>
 <h3>Command-line options<a class="headerlink" href="#command-line-options" title="Permalink to this headline">¶</a></h3>
 <p>The command line options for wflow are summarized below, use  wflow
 -h to view them at the command line:</p>
-<div class="highlight-python"><div class="highlight"><pre>wflow_sbm [-h][-v level][-F runinfofile][-L logfile][-C casename][-R runId]
+<div class="highlight-python"><pre>wflow_sbm [-h][-v level][-F runinfofile][-L logfile][-C casename][-R runId]
       [-c configfile][-T last_step][-S first_step][-s seconds][-W][-E][-N][-U discharge]
       [-P parameter multiplication][-X][-f][-I][-i tbl_dir][-x subcatchId][-u updatecols]
-      [-p inputparameter multiplication]
-</pre></div>
+      [-p inputparameter multiplication]</pre>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>-F: if set wflow is expected to be run by FEWS. It will determine
+<div class="highlight-python"><pre>-F: if set wflow is expected to be run by FEWS. It will determine
     the timesteps from the runinfo.xml file and save the output initial
     conditions to an alternate location. The runinfo.xml file should be located
     in the inmaps directory of the case.
@@ -351,13 +355,12 @@ wflow_sbm.ini located in the myCase directory is read at startup.</p>
     The above example uses column 1, 4 and 13
     Note that this also sets the order in which the updating takes place! In
     general specify downstream gauges first.
--P: set parameter multiply dictionary (e.g: -P &#39;self.FirstZoneDepth&#39; : 1.2
+-P: set parameter multiply dictionary (e.g: -P 'self.FirstZoneDepth' : 1.2
     to increase self.FirstZoneDepth by 20\%, multiply with 1.2)
 -p: set input parameter (dynamic, e.g. precip) multiply dictionary
-    (e.g: -p &#39;Precipitation&#39; : 1.2 to increase Precipitation
+    (e.g: -p 'Precipitation' : 1.2 to increase Precipitation
     by 20%, multiply with 1.2)
--v: set verbosity level
-</pre></div>
+-v: set verbosity level</pre>
 </div>
 </div>
 </div>
@@ -569,7 +572,7 @@ according to a maximum distance from the gauge.</li>
 </div>
 <div class="section" id="all-possible-options-in-wflow-sbm-ini-file">
 <h2>All possible options in wflow_sbm.ini file<a class="headerlink" href="#all-possible-options-in-wflow-sbm-ini-file" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre>[outputtss]
+<div class="highlight-python"><pre>[outputtss]
 # All variables in the dynamic section can be put here
 
 [defaultfortbl]
@@ -637,35 +640,31 @@ wflow_riverlength = staticmaps/wflow_riverlength.map
 wflow_ldd = staticmaps/wflow_ldd.map
 wflow_gauges = staticmaps/wflow_gauges.map
 Tslice = 1
-waterdem = 0
-</pre></div>
+waterdem = 0</pre>
 </div>
 </div>
 </div>
 
 
-          </div>
           <footer>
   
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+    <div class="rst-footer-buttons">
       
-        <a href="wflow_fit.html" class="btn btn-neutral float-right" title="The wflow_fit module"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="wflow_fit.html" class="btn btn-neutral float-right" title="The wflow_fit module"/>Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="wflow_building.html" class="btn btn-neutral" title="Building a model"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="wflow_building.html" class="btn btn-neutral" title="Building a model"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
 
   <hr/>
 
-  <div role="contentinfo">
-    <p>
-        &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
-    </p>
-  </div>
+  <p>
+      &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
+  </p>
 
-  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+  <a href="https://www.github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="http://readthedocs.org">Read the Docs</a>
 </footer>
         </div>
       </div>
@@ -674,38 +673,6 @@ waterdem = 0
 
   </div>
   
-
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'./',
-            VERSION:'1.0RC1',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
-        };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
-
-  
-  
-  <script type="text/javascript">
-      jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
-      });
-  </script>
-   
 
 </body>
 </html>

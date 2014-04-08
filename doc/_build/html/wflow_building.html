@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -18,6 +19,20 @@
 
   
   
+
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:'',
+        VERSION:'1.0RC1',
+        COLLAPSE_INDEX:false,
+        FILE_SUFFIX:'.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
     
 
   
@@ -25,6 +40,7 @@
   
   
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
   
@@ -32,29 +48,26 @@
         <link rel="next" title="Using the models" href="wflow_usage.html"/>
         <link rel="prev" title="wflow_adapt Module" href="wflow_adapt.html"/> 
 
-  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
   <div class="wy-grid-for-nav">
 
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-nav-search">
-        <a href="index.html" class="fa fa-home"> wflow</a>
-        <div role="search">
-  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
+        <a href="index.html" class="icon icon-home"> wflow</a>
+        <form class="wy-form" action="search.html" method="get">
+  <input type="text" name="q" placeholder="Search docs" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
       </div>
 
-      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix">
         
         
             <ul>
@@ -203,30 +216,23 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="index.html">wflow</a>
+      <nav class="wy-nav-top">
+        <i data-toggle="wy-nav-top" class="icon icon-reorder"></i>
+        <a href="/">wflow</a>
       </nav>
 
 
       
       <div class="wy-nav-content">
         <div class="rst-content">
-          <div role="navigation" aria-label="breadcrumbs navigation">
-  <ul class="wy-breadcrumbs">
-    <li><a href="index.html">Docs</a> &raquo;</li>
-      
-    <li>Building a model</li>
-      <li class="wy-breadcrumbs-aside">
-        
-          <a href="_sources/wflow_building.txt" rel="nofollow"> View page source</a>
-        
-      </li>
-  </ul>
-  <hr/>
-</div>
-          <div role="main">
-            
+          <ul class="wy-breadcrumbs">
+  <li><a href="index.html">Docs</a> &raquo;</li>
+  <li><a href="">Building a model</a></li>
+  
+</ul>
+<hr/>
+
+          
   <div class="section" id="building-a-model">
 <h1>Building a model<a class="headerlink" href="#building-a-model" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="data-requirements">
@@ -433,13 +439,12 @@ the first script.</p>
 <div class="section" id="command-line-parameters">
 <h3>Command line parameters<a class="headerlink" href="#command-line-parameters" title="Permalink to this headline">¶</a></h3>
 <p>Both scripts take the same command-line parameters:</p>
-<div class="highlight-python"><div class="highlight"><pre>wflow_prepare_step1 -I inifile [-W workdir][-f][-h]
+<div class="highlight-python"><pre>wflow_prepare_step1 -I inifile [-W workdir][-f][-h]
 
     -f force recreation of ldd if it already exists
     -h show this information
     -W set the working directory, default is current dir
-    -I name of the ini file with settings
-</pre></div>
+    -I name of the ini file with settings</pre>
 </div>
 </div>
 <div class="section" id="contents-of-the-configuration-file">
@@ -539,13 +544,12 @@ the two scripts. This script does the first step. The second script does
 the resampling. This scripts need the pcraster and gdal executables to be
 available in you search path.</p>
 <p>Usage:</p>
-<div class="highlight-python"><div class="highlight"><pre>wflow_prepare_step1 [-W workdir][-f][-h] -I inifile 
+<div class="highlight-python"><pre>wflow_prepare_step1 [-W workdir][-f][-h] -I inifile 
 
 -f force recreation of ldd if it already exists
 -h show this information
 -W set the working directory, default is current dir
--I name of the ini file with settings
-</pre></div>
+-I name of the ini file with settings</pre>
 </div>
 <p>$Id: $</p>
 <dl class="function">
@@ -590,14 +594,12 @@ if the parameter is not found</p>
 the two scripts. This script does the resampling. This scripts need the pcraster and gdal executables to be
 available in you search path.</p>
 <p>Usage:</p>
-<div class="highlight-python"><div class="highlight"><pre>wflow_prepare_step2 [-W workdir][-f][-h] -I inifile 
-</pre></div>
+<div class="highlight-python"><pre>wflow_prepare_step2 [-W workdir][-f][-h] -I inifile </pre>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>-f force recreation of ldd if it already exists
+<div class="highlight-python"><pre>-f force recreation of ldd if it already exists
 -h show this information
 -W set the working directory, default is current dir
--I name of the ini file with settings
-</pre></div>
+-I name of the ini file with settings</pre>
 </div>
 <p>$Id: $</p>
 <dl class="function">
@@ -667,13 +669,12 @@ messages).</p>
 the parameters are identical for each subcatchment (and soil type)
 but is different for each landuse type. See the pcraster documentation
 (<a class="reference external" href="http://www.pcraster.eu">http://www.pcraster.eu</a>) for details on how to create .tbl files.</p>
-<div class="highlight-python"><div class="highlight"><pre>1   &lt;,14]   1 0.11
+<div class="highlight-python"><pre>1   &lt;,14]   1 0.11
 2   &lt;,14]   1 0.11
 3   &lt;,14]   1 0.15
 4   &lt;,14]   1 0.11
 5   &lt;,14]   1 0.11
-6   &lt;,14]   1 0.11
-</pre></div>
+6   &lt;,14]   1 0.11</pre>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -768,13 +769,13 @@ and flattening of the peaks.</dd>
 <h3>Changes in hydrographs for different values of parameters<a class="headerlink" href="#changes-in-hydrographs-for-different-values-of-parameters" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><div class="figure align-center">
-<a class="reference internal image-reference" href="_images/mult_firstzonemin.png"><img alt="image" src="_images/mult_firstzonemin.png" style="height: 600px;" /></a>
+<img alt="image" src="_images/mult_firstzonemin.png" style="height: 600px;" />
 </div>
 <div class="figure align-center">
-<a class="reference internal image-reference" href="_images/mult_ksat_rhine.png"><img alt="image" src="_images/mult_ksat_rhine.png" style="height: 600px;" /></a>
+<img alt="image" src="_images/mult_ksat_rhine.png" style="height: 600px;" />
 </div>
 <div class="figure align-center">
-<a class="reference internal image-reference" href="_images/mult_m_rhine.png"><img alt="_images/mult_m_rhine.png" src="_images/mult_m_rhine.png" style="height: 600px;" /></a>
+<img alt="_images/mult_m_rhine.png" src="_images/mult_m_rhine.png" style="height: 600px;" />
 </div>
 </div></blockquote>
 </div>
@@ -822,28 +823,25 @@ for more information</div></blockquote>
 </div>
 
 
-          </div>
           <footer>
   
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+    <div class="rst-footer-buttons">
       
-        <a href="wflow_usage.html" class="btn btn-neutral float-right" title="Using the models"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="wflow_usage.html" class="btn btn-neutral float-right" title="Using the models"/>Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="wflow_adapt.html" class="btn btn-neutral" title="wflow_adapt Module"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="wflow_adapt.html" class="btn btn-neutral" title="wflow_adapt Module"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
 
   <hr/>
 
-  <div role="contentinfo">
-    <p>
-        &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
-    </p>
-  </div>
+  <p>
+      &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
+  </p>
 
-  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+  <a href="https://www.github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="http://readthedocs.org">Read the Docs</a>
 </footer>
         </div>
       </div>
@@ -852,38 +850,6 @@ for more information</div></blockquote>
 
   </div>
   
-
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'./',
-            VERSION:'1.0RC1',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
-        };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
-
-  
-  
-  <script type="text/javascript">
-      jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
-      });
-  </script>
-   
 
 </body>
 </html>
