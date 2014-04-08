@@ -436,28 +436,6 @@ def getTimeStepsfromRuninfo(xmlfile,timestepsecs):
         print xmlfile + " does not exists."
 
 
-def log2xml(logfilename,xmlfilename):
-    """
-    Converts an (adapter) log file the a FEW pi XML  diagnistics file
-    """
-    f = open(logfilename,"rb")
-    lines = [line.strip() for line in f]
-    f.close()
-    
-    for line in lines:
-        level = line.split(' - ')[2]
-        if level == "DEBUG":
-            print "DEBUG"
-        elif level == "INFO":
-            print "INFO"
-        elif level == "WARN":
-            print "INFO"
-        elif level == "ERROR":
-            print "ERROR"
-        else:
-            logger.warn("Unexpected level in log file")
-            
-    
 
 def getEndTimefromRuninfo(xmlfile):
     """ 
@@ -531,7 +509,10 @@ def main():
     global case
     global runId
     timestepsecs = 86400
-    
+    xmldiagfname = "wflow_diag.xml"
+    adaptxmldiagfname = "wflow_adapt_diag.xml"
+    logfname = "wflow.log"
+
     try:
         opts, args = getopt.getopt(sys.argv[1:], "-T:-M:-t:-s:-o:-r:-w:-C:-I:R:")
     except getopt.GetoptError, err:
@@ -634,8 +615,11 @@ def main():
                 stop = 1
 
 
-                
-        logger.info("Ending postadapter")                    
+        # Convert log file of model code
+        log2xml(case + "/" + runId + "/" + logfname,xmldiagfname)
+        logger.info("Ending postadapter")
+        # convert logfile of adapter
+        log2xml(logfile,adaptxmldiagfname)
     else:
         sys.exit(2)
     
