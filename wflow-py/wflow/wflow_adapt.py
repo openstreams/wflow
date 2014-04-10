@@ -153,9 +153,8 @@ def log2xml(logfile,xmldiag):
         ofile.write("xmlns=\"http://www.wldelft.nl/fews/PI\" xsi:schemaLocation=\"http://www.wldelft.nl/fews/PI \n")
         ofile.write("http://fews.wldelft.nl/schemas/version1.0/pi-schemas/pi_diag.xsd\" version=\"1.2\">\n")
         for aline in all:
-            print aline
             lineparts = aline.strip().split(" - ")
-            ofile.write("<line level=\"" + trans[lineparts[2]] + "\" description=\"" + lineparts[3] + "\"/>\n")
+            ofile.write("<line level=\"" + trans[lineparts[2]] + "\" description=\"" + lineparts[3] + " [" + lineparts[0] + "]\"/>\n")
         ofile.write("</Diag>\n")
 
 
@@ -169,7 +168,7 @@ def pixml_state_updateTime(inxml,outxml,DT):
 
     .. warning::
 
-	This function does not fully parse the xml file and will only work properly
+	    This function does not fully parse the xml file and will only work properly
         if the xml files date the dateTime element written on one line.
       
     """
@@ -187,8 +186,7 @@ def pixml_state_updateTime(inxml,outxml,DT):
                 ofile.write("<dateTime date=\"" + datestr + "\" time=\"" + timestr + "\"/>\n")
             else:
                 ofile.write(aline.replace('instate','outstate'))
-            
-            
+
         ofile.close()
     else:
         print inxml + " does not exists."
@@ -257,8 +255,7 @@ def pixml_totss(nname,outputdir):
         ParList=[]
         for par in Parameters:
             ParList.append(par.text)
-          
- 
+
         uniqueParList=make_uniek(ParList)
        
         colsinfile=len(ParList)
@@ -350,8 +347,6 @@ def tss_topixml(tssfile,xmlfile,locationname,parametername,Sdate,timestep):
     ofile.write("<TimeSeries xmlns=\"http://www.wldelft.nl/fews/PI\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.wldelft.nl/fews/PI http://fews.wldelft.nl/schemas/version1.0/pi-schemas/pi_timeseries.xsd\" version=\"1.2\">\n")
     ofile.write("<timeZone>0.0</timeZone>\n")
     count = 0
-    
-
 
     for col in tss.transpose():
         count = count + 1
@@ -385,7 +380,7 @@ def tss_topixml(tssfile,xmlfile,locationname,parametername,Sdate,timestep):
     
 def mapstackxml(mapstackxml,mapstackname,locationname,parametername,Sdate,Edate,timestepsecs):
     """
-    writes mapstack xml file
+        writes a mapstack xml file
     """
     Sdatestr = Sdate.strftime('%Y-%m-%d')
     Stimestr = Sdate.strftime('%H:%M:%S')
@@ -411,7 +406,7 @@ def mapstackxml(mapstackxml,mapstackname,locationname,parametername,Sdate,Edate,
 
 def getTimeStepsfromRuninfo(xmlfile,timestepsecs):
     """
-    Gets the number of  timesteps from the FEWS runinfo file.
+        Gets the number of  timesteps from the FEWS runinfo file.
     """
     if os.path.exists(xmlfile):
         file = open(xmlfile, "r")
