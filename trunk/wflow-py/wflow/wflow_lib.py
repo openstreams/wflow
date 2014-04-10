@@ -469,22 +469,23 @@ def subcatch_order_a(ldd,oorder):
     pts = ifthen((scalar(sttd) - scalar(stt)) > 0.0,sttd)
     dif = upstream(ldd,cover(ifthen(large,uniqueid(boolean(ifthen(stt == ordinal(oorder), pts)))),0))
     dif = cover(scalar(outl),dif) # Add catchment outlet
-    sc = subcatchment(ldd,ordinal(uniqueid(boolean(dif))))
+    dif = ordinal(uniqueid(boolean(dif)))
+    sc = subcatchment(ldd,dif)
     
     return sc, dif, stt
 
-def subcatch_order_b(ldd,oorder,Largest):
+def subcatch_order_b(ldd,oorder,Largest=False):
     """
     Determines subcatchments using the catchment order
 
     This version uses the bottommost cell of order
-    If Largest is true the analysis is only done for the larges basin 
+    If Largest is true the analysis is only done for the largest basin
     found in the ldd
     
     Input:
         - ldd
         - oorder - order to use
-        - largest - toggle
+        - largest - toggle, default = False
     
     Output:
         - map with catchment for the given streamorsder
@@ -500,7 +501,8 @@ def subcatch_order_b(ldd,oorder,Largest):
         dif = uniqueid(boolean(ifthen(stt == ordinal(oorder), pts)))
             
     dif = cover(scalar(outl),dif) # Add catchment outlet
-    sc = subcatchment(ldd,ordinal(uniqueid(boolean(dif))))
+    dif = ordinal(uniqueid(boolean(dif)))
+    sc = subcatchment(ldd,dif)
     
     return sc, dif, stt
 
