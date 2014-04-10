@@ -1,0 +1,12 @@
+2014-01-09 14:38:32,581 - model - DEBUG - File logging to wflow_mini/run_default/wflow.log
+2014-01-09 14:38:32,582 - model - INFO - model no version Case: wflow_mini Runid: run_default
+2014-01-09 14:38:32,588 - model - INFO - Starting Dynamic run...
+2014-01-09 14:38:32,589 - model - INFO - Reading initial conditions...
+2014-01-09 14:38:32,595 - model - WARNING - Variable: TEMPnot set by API, returning default
+2014-01-09 14:38:32,598 - model - WARNING - Could not find or save the configured mapstack:self.ExfiltWaterFrac
+2014-01-09 14:38:32,598 - model - WARNING - Could not find or save the configured mapstack:self.ExfiltWater
+2014-01-09 14:38:32,599 - model - WARNING - Could not find or save the configured mapstack:self.SurfaceRunoff
+2014-01-09 14:38:32,601 - model - WARNING - Could not find or save the configured mapstack:self.ExfiltWaterFrac
+2014-01-09 14:38:32,602 - model - WARNING - Could not find or save the configured mapstack:self.ExfiltWater
+2014-01-09 14:38:32,604 - model - WARNING - Could not find or save the configured mapstack:self.SurfaceRunoff
+2014-01-09 14:38:32,605 - model - INFO - Saving initial conditions...
