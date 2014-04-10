@@ -1,0 +1,5 @@
+
+TODO:
+- Root fraction function with dept, ala pcrglob
+- Test setup for sub-daily timesteps -> Done, seems to work, tested with zero-p only
+- Need flexible rainfall interception for daily and subdaily timesteps. Implement lui model, see doc.
