@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -8,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Calibration of the wflow_sbm model for the Rhine catchment using EOBS data &mdash; wflow 1.0RC1 documentation</title>
+  <title>Calibration of the wflow_sbm model for the Rhine catchment using EOBS data &mdash; wflow 1.0RC2 documentation</title>
   
 
   
@@ -19,20 +18,6 @@
 
   
   
-
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:'',
-        VERSION:'1.0RC1',
-        COLLAPSE_INDEX:false,
-        FILE_SUFFIX:'.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-
     
 
   
@@ -40,34 +25,36 @@
   
   
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-    <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
   
-    <link rel="top" title="wflow 1.0RC1 documentation" href="index.html"/>
+    <link rel="top" title="wflow 1.0RC2 documentation" href="index.html"/>
         <link rel="next" title="Using the framework" href="framework.html"/>
         <link rel="prev" title="run wflow_hbv via API" href="testrunner_wflowhbv.html"/> 
 
-  <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav">
+<body class="wy-body-for-nav" role="document">
 
   <div class="wy-grid-for-nav">
 
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-nav-search">
-        <a href="index.html" class="icon icon-home"> wflow</a>
-        <form class="wy-form" action="search.html" method="get">
-  <input type="text" name="q" placeholder="Search docs" />
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
-</form>
+        <a href="index.html" class="fa fa-home"> wflow</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
       </div>
 
-      <div class="wy-menu wy-menu-vertical" data-spy="affix">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
         
         
             <ul>
@@ -122,7 +109,6 @@
 <li class="toctree-l1"><a class="reference internal" href="wflow_adapt.html">wflow_adapt Module</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="wflow_adapt.html#introduction">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wflow_adapt.html#linking-wflow-models-to-delft-fews">Linking wflow models to Delft-FEWS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="wflow_adapt.html#how-to-use-the-adapter">How to use the adapter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wflow_adapt.html#module-wflow_adapt">Module function documentation</a></li>
 </ul>
 </li>
@@ -216,23 +202,30 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top">
-        <i data-toggle="wy-nav-top" class="icon icon-reorder"></i>
-        <a href="/">wflow</a>
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">wflow</a>
       </nav>
 
 
       
       <div class="wy-nav-content">
         <div class="rst-content">
-          <ul class="wy-breadcrumbs">
-  <li><a href="index.html">Docs</a> &raquo;</li>
-  <li><a href="">Calibration of the wflow_sbm model for the Rhine catchment using EOBS data</a></li>
-  
-</ul>
-<hr/>
-
-          
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Calibration of the wflow_sbm model for the Rhine catchment using EOBS data</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/calib_report.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
   <div class="section" id="calibration-of-the-wflow-sbm-model-for-the-rhine-catchment-using-eobs-data">
 <h1>Calibration of the wflow_sbm model for the Rhine catchment using EOBS data<a class="headerlink" href="#calibration-of-the-wflow-sbm-model-for-the-rhine-catchment-using-eobs-data" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="dem-and-landuse-data">
@@ -248,13 +241,13 @@ following steps:</p>
 <div class="section" id="forcing-data">
 <h2>Forcing data<a class="headerlink" href="#forcing-data" title="Permalink to this headline">¶</a></h2>
 <p>The wflowsbm model was calibrated for the Rhine basin using daily temperature
-and precipitation data from the EOBS dataset <a class="reference internal" href="#haylock">[Haylock]</a> (version 5.0).
-Discharge was taken from the CHR daily dataset (<a class="reference internal" href="#gorgen">[gorgen]</a>). Potential
+and precipitation data from the EOBS dataset <a class="reference internal" href="#haylock" id="id1">[Haylock]</a> (version 5.0).
+Discharge was taken from the CHR daily dataset (<a class="reference internal" href="#gorgen" id="id2">[gorgen]</a>). Potential
 evapotranspiration was determined using and adjusted version Hargraeves&#8217; method
-(<a class="reference internal" href="#weiland">[weiland]</a>):</p>
+(<a class="reference internal" href="#weiland" id="id3">[weiland]</a>):</p>
 <div class="math">
-<p><img src="_images/math/91a257f2b4731f8b20d685edb7bde45c2a23e37e.png" alt="E_{pot} = 0.0031  (T + 17.78)  abs(T_{max} - T_{min})^{0.5}  R"/></p>
-</div><p>In which 0.0031 is a calibration factor and <img class="math" src="_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> is the clear sky solar
+<p><img src="_images/math/330cf5a1e2a1be4947c4f7486fa42d141a02e8c1.png" alt="E_{pot} = 0.0031  (T + 17.78)  abs(T_{max} - T_{min})^{0.5}  R"/></p>
+</div><p>In which 0.0031 is a calibration factor and <img class="math" src="_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> is the clear sky solar
 radiation expressed in mm/day.</p>
 <p>Within the wflow_sbm model the temperature is corrected for altitude
 differences within one EOBS cell. For each wflow_sbm 1x1km cell the temperature
@@ -439,25 +432,28 @@ hydrological model study,” Hydrology and Earth System Sciences, vol. 16, pp.
 </div>
 
 
+          </div>
           <footer>
   
-    <div class="rst-footer-buttons">
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="framework.html" class="btn btn-neutral float-right" title="Using the framework"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="framework.html" class="btn btn-neutral float-right" title="Using the framework"/>Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="testrunner_wflowhbv.html" class="btn btn-neutral" title="run wflow_hbv via API"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="testrunner_wflowhbv.html" class="btn btn-neutral" title="run wflow_hbv via API"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
 
   <hr/>
 
-  <p>
-      &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
-  </p>
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
+    </p>
+  </div>
 
-  <a href="https://www.github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="http://readthedocs.org">Read the Docs</a>
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
 </footer>
         </div>
       </div>
@@ -466,6 +462,38 @@ hydrological model study,” Hydrology and Earth System Sciences, vol. 16, pp.
 
   </div>
   
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0RC2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
 
 </body>
 </html>

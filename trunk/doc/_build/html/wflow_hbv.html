@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -8,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>The wflow_hbv model &mdash; wflow 1.0RC1 documentation</title>
+  <title>The wflow_hbv model &mdash; wflow 1.0RC2 documentation</title>
   
 
   
@@ -19,20 +18,6 @@
 
   
   
-
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:'',
-        VERSION:'1.0RC1',
-        COLLAPSE_INDEX:false,
-        FILE_SUFFIX:'.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-
     
 
   
@@ -40,34 +25,36 @@
   
   
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-    <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
   
-    <link rel="top" title="wflow 1.0RC1 documentation" href="index.html"/>
+    <link rel="top" title="wflow 1.0RC2 documentation" href="index.html"/>
         <link rel="next" title="The wflow_sbm Model" href="wflow_sbm.html"/>
         <link rel="prev" title="Welcome to wflow’s documentation!" href="index.html"/> 
 
-  <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav">
+<body class="wy-body-for-nav" role="document">
 
   <div class="wy-grid-for-nav">
 
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-nav-search">
-        <a href="index.html" class="icon icon-home"> wflow</a>
-        <form class="wy-form" action="search.html" method="get">
-  <input type="text" name="q" placeholder="Search docs" />
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
-</form>
+        <a href="index.html" class="fa fa-home"> wflow</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
       </div>
 
-      <div class="wy-menu wy-menu-vertical" data-spy="affix">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
         
         
             <ul class="current">
@@ -122,7 +109,6 @@
 <li class="toctree-l1"><a class="reference internal" href="wflow_adapt.html">wflow_adapt Module</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="wflow_adapt.html#introduction">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wflow_adapt.html#linking-wflow-models-to-delft-fews">Linking wflow models to Delft-FEWS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="wflow_adapt.html#how-to-use-the-adapter">How to use the adapter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wflow_adapt.html#module-wflow_adapt">Module function documentation</a></li>
 </ul>
 </li>
@@ -216,23 +202,30 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top">
-        <i data-toggle="wy-nav-top" class="icon icon-reorder"></i>
-        <a href="/">wflow</a>
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">wflow</a>
       </nav>
 
 
       
       <div class="wy-nav-content">
         <div class="rst-content">
-          <ul class="wy-breadcrumbs">
-  <li><a href="index.html">Docs</a> &raquo;</li>
-  <li><a href="">The wflow_hbv model</a></li>
-  
-</ul>
-<hr/>
-
-          
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>The wflow_hbv model</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/wflow_hbv.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
   <div class="section" id="the-wflow-hbv-model">
 <h1>The wflow_hbv model<a class="headerlink" href="#the-wflow-hbv-model" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="introduction">
@@ -262,7 +255,7 @@ the HBV-96 of the HBV model. The use of the grid cells offers the
 possibility to turn the HBV modelling concept, which is originally
 lumped, into a distributed model.</p>
 <div class="figure">
-<img alt="_images/hbv96.png" src="_images/hbv96.png" style="width: 600px;" />
+<a class="reference internal image-reference" href="_images/hbv96.png"><img alt="_images/hbv96.png" src="_images/hbv96.png" style="width: 600px;" /></a>
 <p class="caption">Schematic view of the relevant components of the HBV model</p>
 </div>
 <p>The figure above shows a schematic view of hydrological response
@@ -273,24 +266,24 @@ separately below.</p>
 <div class="section" id="the-snow-routine">
 <h3>The snow routine<a class="headerlink" href="#the-snow-routine" title="Permalink to this headline">¶</a></h3>
 <p>Precipitation enters the model via the snow routine. If the air temperature,
-<img class="math" src="_images/math/e7ef2ce6c6c9c39a18cb6782fec51bd2ceec6fc8.png" alt="T_{a}"/>, is below a user-defined threshold <img class="math" src="_images/math/1808e99970b119139c4b8b53fa31ff7db0d434f6.png" alt="TT (\approx0^{o}C)"/>
+<img class="math" src="_images/math/869b95ab78b99797366a3a4cd1f28bbf926514ab.png" alt="T_{a}"/>, is below a user-defined threshold <img class="math" src="_images/math/2228b4a7d66a26735183313022371e86aa7c0967.png" alt="TT (\approx0^{o}C)"/>
 precipitation occurs as snowfall, whereas it occurs as rainfall if
-<img class="math" src="_images/math/4e0769d419106b78cb20c08e9d2157007902f87c.png" alt="T_{a}\geq TT"/>. A another parameter <img class="math" src="_images/math/ab9bd3cc719c6788476de0011893a787bca85daa.png" alt="TTI"/> defines how precipitation
+<img class="math" src="_images/math/1445108f059a7c550e35aa9dee131e69d330cdb4.png" alt="T_{a}\geq TT"/>. A another parameter <img class="math" src="_images/math/e55126b0222259973f50adaea7d2a5cc58eea24e.png" alt="TTI"/> defines how precipitation
 can occur partly as rain of snowfall (see the figure below).
 If precipitation occurs as snowfall, it is added to the dry snow component
 within the snow pack. Otherwise it ends up in the free water reservoir,
 which represents the liquid water content of the snow pack. Between
 the two components of the snow pack, interactions take place, either
-through snow melt (if temperatures are above a threshold <img class="math" src="_images/math/a548142d612346e8619ba6b45351132dbbfac8f3.png" alt="TT"/>) or
-through snow refreezing (if temperatures are below threshold <img class="math" src="_images/math/a548142d612346e8619ba6b45351132dbbfac8f3.png" alt="TT"/>).
+through snow melt (if temperatures are above a threshold <img class="math" src="_images/math/b81c06fea47e20081adf3f0b19eb39005c027319.png" alt="TT"/>) or
+through snow refreezing (if temperatures are below threshold <img class="math" src="_images/math/b81c06fea47e20081adf3f0b19eb39005c027319.png" alt="TT"/>).
 The respective rates of snow melt and refreezing are:</p>
 <div class="math">
-<p><img src="_images/math/9c4ab27ae0b6397f68f221abe5383c139a970720.png" alt="Q_{m}  =  cfmax(T_{a}-TT)\;\;;T_{a}&gt;TT
+<p><img src="_images/math/4dc33b987b1a7e867712d9782b8dd35ff77c003e.png" alt="Q_{m}  =  cfmax(T_{a}-TT)\;\;;T_{a}&gt;TT
 
 Q_{r}  =  cfmax*cfr(TT-T_{a})\;;T_{a}&lt;TT"/></p>
-</div><p>where <img class="math" src="_images/math/b17f4851c033733eb5e3ddcc50ef9ec5850d853c.png" alt="Q_{m}"/> is the rate of snow melt, <img class="math" src="_images/math/eef69d4a3eafc4f2fb2ac5e7b9c2f06e307ec2fd.png" alt="Q_{r}"/> is the rate of snow
+</div><p>where <img class="math" src="_images/math/5f1547feeec56d1077db7ab7040df08c1601f4f4.png" alt="Q_{m}"/> is the rate of snow melt, <img class="math" src="_images/math/a665b84378cbd0e086f9a15b60c698761a0e8506.png" alt="Q_{r}"/> is the rate of snow
 refreezing, and $cfmax$ and $cfr$ are user defined model parameters
-(the melting factor <img class="math" src="_images/math/bb5d8f5ca1a82a1f3458b49099880c0bff045481.png" alt="mm/(^{o}C*day)"/> and the refreezing factor
+(the melting factor <img class="math" src="_images/math/073f565ae61eb281a78a85f5fea2cebd6184d596.png" alt="mm/(^{o}C*day)"/> and the refreezing factor
 respectively)</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -298,25 +291,25 @@ respectively)</p>
 the CFMAX is presumed to be for the landuse per pixel. Normally for
 forested pixels the CFMAX is 0.6 {*} CFMAX</p>
 </div>
-<p>The air temperature, <img class="math" src="_images/math/e7ef2ce6c6c9c39a18cb6782fec51bd2ceec6fc8.png" alt="T_{a}"/>, is related to measured daily average
+<p>The air temperature, <img class="math" src="_images/math/869b95ab78b99797366a3a4cd1f28bbf926514ab.png" alt="T_{a}"/>, is related to measured daily average
 temperatures. In the original HBV-concept, elevation differences within
 the catchment are represented through a distribution function (i.e.
 a hypsographic curve) which makes the snow module semi-distributed.
-In the modified version that is applied here, the temperature, <img class="math" src="_images/math/e7ef2ce6c6c9c39a18cb6782fec51bd2ceec6fc8.png" alt="T_{a}"/>,
+In the modified version that is applied here, the temperature, <img class="math" src="_images/math/869b95ab78b99797366a3a4cd1f28bbf926514ab.png" alt="T_{a}"/>,
 is represented in a fully distributed manner, which means for each
 grid cell the temperature is related to the grid elevation.</p>
 <p>The fraction of liquid water in the snow pack (free water) is at most
-equal to a user defined fraction, <img class="math" src="_images/math/7c932f5007c8eeef5e37c507f3a45e38864dec23.png" alt="WHC"/>, of the water equivalent
+equal to a user defined fraction, <img class="math" src="_images/math/ebe21011ad8ff50462a453cc9372d49a33f3f27f.png" alt="WHC"/>, of the water equivalent
 of the dry snow content. If the liquid water concentration exceeds
-<img class="math" src="_images/math/7c932f5007c8eeef5e37c507f3a45e38864dec23.png" alt="WHC"/>, either through snow melt or incoming rainfall, the surpluss
+<img class="math" src="_images/math/ebe21011ad8ff50462a453cc9372d49a33f3f27f.png" alt="WHC"/>, either through snow melt or incoming rainfall, the surpluss
 water becomes available for infiltration into the soil:</p>
 <div class="math">
-<p><img src="_images/math/981cdbc60659d0e7dc89056b5d741ffd3e87476e.png" alt="Q_{in}=max\{(SW-WHC*SD);\;0.0\}"/></p>
-</div><p>where <img class="math" src="_images/math/aa3ad8e99a9ab0665e52a327ca0dbb6a294c3090.png" alt="Q_{in}"/> is the volume of water added to the soil module, <img class="math" src="_images/math/59efe75995214833fecbb21eca861afca0337fc5.png" alt="SW"/>
-is the free water content of the snow pack and <img class="math" src="_images/math/00084142caa2ca6f4368ae403bb10fe8a8757cb2.png" alt="SD"/> is the dry snow
+<p><img src="_images/math/0acf8f41dea03946ffdcb4a367eb81eba2b50cf3.png" alt="Q_{in}=max\{(SW-WHC*SD);\;0.0\}"/></p>
+</div><p>where <img class="math" src="_images/math/1d9d4e71ca1af79b59566ceffe6616963f2a8add.png" alt="Q_{in}"/> is the volume of water added to the soil module, <img class="math" src="_images/math/5fb72f04263f3f2e9defa6f1e50ae70f5a4baeb3.png" alt="SW"/>
+is the free water content of the snow pack and <img class="math" src="_images/math/1cd5a5a896c61eb241b14e5272da126fbd350748.png" alt="SD"/> is the dry snow
 content of the snow pack.</p>
 <div class="figure">
-<img alt="_images/hbv-snow.png" src="_images/hbv-snow.png" style="width: 600px;" />
+<a class="reference internal image-reference" href="_images/hbv-snow.png"><img alt="_images/hbv-snow.png" src="_images/hbv-snow.png" style="width: 600px;" /></a>
 <p class="caption">Schematic view of the snow routine</p>
 </div>
 </div>
@@ -324,13 +317,13 @@ content of the snow pack.</p>
 <h3>Potential Evaporation<a class="headerlink" href="#potential-evaporation" title="Permalink to this headline">¶</a></h3>
 <p>The original HBV version includes both a multiplication factor for
 potential evaporation and a exponential reduction factor for potential
-evapotranspiration during rain events. The <img class="math" src="_images/math/6212028bdd95d4bd31eea68aa9032049eb4122a0.png" alt="CEVPF"/> factor is used
+evapotranspiration during rain events. The <img class="math" src="_images/math/d079fce0461a893cb899a3580a46959780610443.png" alt="CEVPF"/> factor is used
 to connect potential evapotranspiration per landuse. In the original
-version the <img class="math" src="_images/math/9d0eae70049b17742dec920545d4e8500b0e4eb9.png" alt="CEVPFO"/> is used and it is used for forest landuse only.</p>
+version the <img class="math" src="_images/math/2430742ca6af90d45c4c7044e650fcfc6332b3d6.png" alt="CEVPFO"/> is used and it is used for forest landuse only.</p>
 </div>
 <div class="section" id="interception">
 <h3>Interception<a class="headerlink" href="#interception" title="Permalink to this headline">¶</a></h3>
-<p>The parameters <img class="math" src="_images/math/4f9b0810588d69a87c7c3ceb9a2333d725d5ecb0.png" alt="ICF0"/> and <img class="math" src="_images/math/5a7949bd7f2fa028577f80d86b4455175c90e730.png" alt="ICFI"/> introduce interception storage
+<p>The parameters <img class="math" src="_images/math/f4cba1e14970643ef4018e6ac81b32a9cddcbdd3.png" alt="ICF0"/> and <img class="math" src="_images/math/d65b87d55d21d157ad824fe635a900d88dd0e6fe.png" alt="ICFI"/> introduce interception storage
 for forested and non-forested zones respectively in the original model.
 Within our application this is replaced by a single $ICF$ parameter
 assuming the parameter is set for each grid cell according to the
@@ -338,7 +331,7 @@ land-use. In the original application it is not clear if interception
 evaporation is subtracted from the potential evaporation. In this
 implementation we dos subtract the interception evaporation to ensure
 total evaporation does not exceed potential evaporation. From this
-storage evaporation equal to the potential rate <img class="math" src="_images/math/cd1c813a120294e9069891a6e26e1f3c34a3b940.png" alt="ET_{p}"/> will occur
+storage evaporation equal to the potential rate <img class="math" src="_images/math/40190a1da2777c565c6a9cdf7d55e1636482c0ae.png" alt="ET_{p}"/> will occur
 as long as water is available, even if it is stored as snow. All water
 enters this store first, there is no concept of free throughfall (e.g.
 through gaps in the canopy). In the model a running water budget is
@@ -346,8 +339,8 @@ kept of the interception store:</p>
 <blockquote>
 <div><ul class="simple">
 <li>The available storage (ICF-Actual storage) is filled with the water
-coming from the snow routine (<img class="math" src="_images/math/aa3ad8e99a9ab0665e52a327ca0dbb6a294c3090.png" alt="Q_{in}"/>)</li>
-<li>Any surplus water now becomes the new <img class="math" src="_images/math/aa3ad8e99a9ab0665e52a327ca0dbb6a294c3090.png" alt="Q_{in}"/></li>
+coming from the snow routine (<img class="math" src="_images/math/1d9d4e71ca1af79b59566ceffe6616963f2a8add.png" alt="Q_{in}"/>)</li>
+<li>Any surplus water now becomes the new <img class="math" src="_images/math/1d9d4e71ca1af79b59566ceffe6616963f2a8add.png" alt="Q_{in}"/></li>
 <li>Interception evaporation is determined as the minimum of the current
 interception storage and the potential evaporation</li>
 </ul>
@@ -355,144 +348,144 @@ interception storage and the potential evaporation</li>
 </div>
 <div class="section" id="the-soil-routine">
 <h3>The soil routine<a class="headerlink" href="#the-soil-routine" title="Permalink to this headline">¶</a></h3>
-<p>The incoming water from the snow and interception routines, <img class="math" src="_images/math/aa3ad8e99a9ab0665e52a327ca0dbb6a294c3090.png" alt="Q_{in}"/>,
+<p>The incoming water from the snow and interception routines, <img class="math" src="_images/math/1d9d4e71ca1af79b59566ceffe6616963f2a8add.png" alt="Q_{in}"/>,
 is available for infiltration in the soil routine. The soil layer
-has a limited capacity, <img class="math" src="_images/math/d42881636c43963486f53010b37323e989be981f.png" alt="F_{c}"/>, to hold soil water, which means
-if <img class="math" src="_images/math/d42881636c43963486f53010b37323e989be981f.png" alt="F_{c}"/> is exceeded the abundant water cannot infiltrate and,
+has a limited capacity, <img class="math" src="_images/math/03259a217c704b7c89776f137026ef2fed6da956.png" alt="F_{c}"/>, to hold soil water, which means
+if <img class="math" src="_images/math/03259a217c704b7c89776f137026ef2fed6da956.png" alt="F_{c}"/> is exceeded the abundant water cannot infiltrate and,
 consequently, becomes directly available for runoff.</p>
 <div class="math">
-<p><img src="_images/math/58dfcbea98182072c86fdc9820e021267f9c78fa.png" alt="Q_{dr}=max\{(SM+Q_{in}-F_{c});\;0.0\}"/></p>
-</div><p>where <img class="math" src="_images/math/205491536b6dc8e465bbf2233c1ff8c9d5954e99.png" alt="Q_{dr}"/> is the abundant soil water (also referred to as direct
-runoff) and <img class="math" src="_images/math/64ddf097bfa83d428e59497177c6f71249d98278.png" alt="SM"/> is the soil moisture content. Consequently, the
-net amount of water that infiltrates into the soil, <img class="math" src="_images/math/dd9629b1cc8f5b20c496c35fb26f80946dc969f8.png" alt="I_{net}"/>, equals:</p>
+<p><img src="_images/math/393f939e2dd0deb358c46f8e84b76bb6c6dcdb27.png" alt="Q_{dr}=max\{(SM+Q_{in}-F_{c});\;0.0\}"/></p>
+</div><p>where <img class="math" src="_images/math/1ed2c1d3e6213883ff3d050ec8f64c41eb21d280.png" alt="Q_{dr}"/> is the abundant soil water (also referred to as direct
+runoff) and <img class="math" src="_images/math/65e66658463c5b3ebdbd833e6cb8bf22bc7884e1.png" alt="SM"/> is the soil moisture content. Consequently, the
+net amount of water that infiltrates into the soil, <img class="math" src="_images/math/5119396a5c6fff3c3612c6dbf68568ba04f5d965.png" alt="I_{net}"/>, equals:</p>
 <div class="math">
-<p><img src="_images/math/8e4c03900863dc80f4300fbec711eaab0428c1e0.png" alt="I_{net}=Q_{in}-Q_{dr}"/></p>
-</div><p>Part of the infiltrating water, <img class="math" src="_images/math/dd9629b1cc8f5b20c496c35fb26f80946dc969f8.png" alt="I_{net}"/>, will runoff through the
-soil layer (seepage). This runoff volume, <img class="math" src="_images/math/4b101ae280775cd91fd7bb1d46e315a73a11ff5f.png" alt="SP"/>, is related to the
-soil moisture content, <img class="math" src="_images/math/64ddf097bfa83d428e59497177c6f71249d98278.png" alt="SM"/>, through the following power relation:</p>
+<p><img src="_images/math/80d245cb66f13b03eafe8127d319133a49dbb52e.png" alt="I_{net}=Q_{in}-Q_{dr}"/></p>
+</div><p>Part of the infiltrating water, <img class="math" src="_images/math/5119396a5c6fff3c3612c6dbf68568ba04f5d965.png" alt="I_{net}"/>, will runoff through the
+soil layer (seepage). This runoff volume, <img class="math" src="_images/math/28058024ed59d4ca46d4ea9bf6722cb9ff2e6201.png" alt="SP"/>, is related to the
+soil moisture content, <img class="math" src="_images/math/65e66658463c5b3ebdbd833e6cb8bf22bc7884e1.png" alt="SM"/>, through the following power relation:</p>
 <div class="math">
-<p><img src="_images/math/a5293cdb3d5a24188ae4402c47c654e070743349.png" alt="SP=\left(\frac{SM}{F_{c}}\right)^{\beta}I_{net}\label{eq:SP}"/></p>
-</div><p>where <img class="math" src="_images/math/fdb63b9e51abe6bbb16acfb5d7b773ddbb5bf4a8.png" alt="\beta"/> is an empirically based parameter. Application of this equation
+<p><img src="_images/math/c27630403e802b813ce4a02c2ab5d1b9c444c061.png" alt="SP=\left(\frac{SM}{F_{c}}\right)^{\beta}I_{net}\label{eq:SP}"/></p>
+</div><p>where <img class="math" src="_images/math/8ce03f78ed945f2ef3dac87c8799b55b393527e7.png" alt="\beta"/> is an empirically based parameter. Application of this equation
 implies that the amount of seepage water increases with
 increasing soil moisture content. The fraction of the infiltrating
-water which doesn&#8217;t runoff, <img class="math" src="_images/math/532be3f2802cc1db0d345527e7c4c82d1d5040f2.png" alt="I_{net}-SP"/>, is added
-to the available amount of soil moisture, <img class="math" src="_images/math/64ddf097bfa83d428e59497177c6f71249d98278.png" alt="SM"/>. The <img class="math" src="_images/math/fdb63b9e51abe6bbb16acfb5d7b773ddbb5bf4a8.png" alt="\beta"/> parameter
+water which doesn&#8217;t runoff, <img class="math" src="_images/math/f4187d76ef78eb7d5e70493964c26fd972c81053.png" alt="I_{net}-SP"/>, is added
+to the available amount of soil moisture, <img class="math" src="_images/math/65e66658463c5b3ebdbd833e6cb8bf22bc7884e1.png" alt="SM"/>. The <img class="math" src="_images/math/8ce03f78ed945f2ef3dac87c8799b55b393527e7.png" alt="\beta"/> parameter
 affects the amount of supply to the soil moisture reservoir that is
-transferred to the quick response reservoir. Values of <img class="math" src="_images/math/fdb63b9e51abe6bbb16acfb5d7b773ddbb5bf4a8.png" alt="\beta"/> vary
-generally between 1 and 3. Larger values of <img class="math" src="_images/math/fdb63b9e51abe6bbb16acfb5d7b773ddbb5bf4a8.png" alt="\beta"/> reduce runoff
+transferred to the quick response reservoir. Values of <img class="math" src="_images/math/8ce03f78ed945f2ef3dac87c8799b55b393527e7.png" alt="\beta"/> vary
+generally between 1 and 3. Larger values of <img class="math" src="_images/math/8ce03f78ed945f2ef3dac87c8799b55b393527e7.png" alt="\beta"/> reduce runoff
 and indicate a higher absorption capacity of the soil (see Figure
 ref{fig:HBV-Beta}).</p>
 <div class="figure">
-<img alt="_images/hbv-soilmoist.png" src="_images/hbv-soilmoist.png" style="width: 600px;" />
+<a class="reference internal image-reference" href="_images/hbv-soilmoist.png"><img alt="_images/hbv-soilmoist.png" src="_images/hbv-soilmoist.png" style="width: 600px;" /></a>
 <p class="caption">Schematic view of the soil moisture routine</p>
 </div>
 <div class="figure">
-<img alt="_images/beta-hbv.png" src="_images/beta-hbv.png" style="width: 600px;" />
-<p class="caption">Figure showing the relation between <img class="math" src="_images/math/de83db251570a7310ab9c666096cfbea41ec457c.png" alt="SM/F_{c}"/> (x-axis) and the
-fraction of water running off (y-axis) for three values of <img class="math" src="_images/math/fdb63b9e51abe6bbb16acfb5d7b773ddbb5bf4a8.png" alt="\beta"/> :1,
+<a class="reference internal image-reference" href="_images/beta-hbv.png"><img alt="_images/beta-hbv.png" src="_images/beta-hbv.png" style="width: 600px;" /></a>
+<p class="caption">Figure showing the relation between <img class="math" src="_images/math/63dbc50058e10dc5c95333d9fcc5077b9903e7ef.png" alt="SM/F_{c}"/> (x-axis) and the
+fraction of water running off (y-axis) for three values of <img class="math" src="_images/math/8ce03f78ed945f2ef3dac87c8799b55b393527e7.png" alt="\beta"/> :1,
 2 and 3</p>
 </div>
 <p>A percentage of the soil moisture will evaporate. This percentage
 is related to the measured potential evaporation and the available
 amount of soil moisture:</p>
 <div class="math">
-<p><img src="_images/math/d8c4c71f78614da8d0c5aa2ca62c086ca9601385.png" alt="E_{a}  =  \frac{SM}{T_{m}}E_{p\;\;};SM&lt;T_{m}\\
+<p><img src="_images/math/37f4ef3a748af8706cd2fb7ebbfdf07ef378c1e2.png" alt="E_{a}  =  \frac{SM}{T_{m}}E_{p\;\;};SM&lt;T_{m}\\
 
 E_{a}  =  E_{p}\;\;\;;SM\geq T_{m}"/></p>
-</div><p>where <img class="math" src="_images/math/2150355b3f18deeaa7a54ef51628002ddc0f970d.png" alt="E_{a}"/> is the actual evaporation, <img class="math" src="_images/math/a9dd8522ce5597731f8bf6d0f05ecf01fec48553.png" alt="E_{p}"/> is the potential
-evaporation and <img class="math" src="_images/math/9de63ac374c4b80b881a7956de3b85a9939e9700.png" alt="T_{m}"/> (<img class="math" src="_images/math/1ca8797047ad69ab0084904270c96483e8a7717d.png" alt="\leq F_{c}"/>) is a user defined threshold,
+</div><p>where <img class="math" src="_images/math/5fd3eb8ec3d5e568458ecd7d1a379b1ffc5df12b.png" alt="E_{a}"/> is the actual evaporation, <img class="math" src="_images/math/609e714283adef08c2f3be86a6bcbf03bd3c75cd.png" alt="E_{p}"/> is the potential
+evaporation and <img class="math" src="_images/math/4b96a36f489360cb412a228d4eaafe26fa0dc0a3.png" alt="T_{m}"/> (<img class="math" src="_images/math/55621a32c88380e9dd370f982733ffa019fee3d7.png" alt="\leq F_{c}"/>) is a user defined threshold,
 above which the actual evaporation equals the potential evaporation.
-<img class="math" src="_images/math/9de63ac374c4b80b881a7956de3b85a9939e9700.png" alt="T_{m}"/> is defined as <img class="math" src="_images/math/d83ec88905f9525c68a269f9e9639d552dc54249.png" alt="LP*F_{c}\;"/> in which <img class="math" src="_images/math/c59f89192e2432cd318d0f10a7740aaee16bb4bf.png" alt="LP"/> is a soil dependent
-evaporation factor <img class="math" src="_images/math/e83b7f94e0d779f50b5c19b61c9db298d42a33d6.png" alt="(LP\leq1)"/>.</p>
-<p>In the original model (Berglov, 2009 XX), a correction to <img class="math" src="_images/math/e5540ad0c6154469b830f286a563794eeac4bc98.png" alt="Ea"/> is
-applied in case of interception. If <img class="math" src="_images/math/e5540ad0c6154469b830f286a563794eeac4bc98.png" alt="Ea"/> from the soil moisture storage
-plus <img class="math" src="_images/math/c2d482528e22c9eb4032702f8fa8ea1ec7e6cb42.png" alt="Ei"/> exceeds <img class="math" src="_images/math/69ae4bb1c84451beb9a9fdee9bc03d323b42fd52.png" alt="ETp - Ei"/> (<img class="math" src="_images/math/c2d482528e22c9eb4032702f8fa8ea1ec7e6cb42.png" alt="Ei"/> = interception
+<img class="math" src="_images/math/4b96a36f489360cb412a228d4eaafe26fa0dc0a3.png" alt="T_{m}"/> is defined as <img class="math" src="_images/math/4c1c59c88e438d498ef6a70edb2beafa61325a41.png" alt="LP*F_{c}\;"/> in which <img class="math" src="_images/math/fbd37a30b5f9dda8850542c872f799e9bfab331c.png" alt="LP"/> is a soil dependent
+evaporation factor <img class="math" src="_images/math/0350971edce79dd7af7098a05b97a4201ea90452.png" alt="(LP\leq1)"/>.</p>
+<p>In the original model (Berglov, 2009 XX), a correction to <img class="math" src="_images/math/d1c870791be30e7f50fe57b72162dc6b2926de99.png" alt="Ea"/> is
+applied in case of interception. If <img class="math" src="_images/math/d1c870791be30e7f50fe57b72162dc6b2926de99.png" alt="Ea"/> from the soil moisture storage
+plus <img class="math" src="_images/math/4e9e7df3693a0dce8611c810d88d3b9bea628697.png" alt="Ei"/> exceeds <img class="math" src="_images/math/0a22ac06a0aa47ad63b8642b12632d827509a833.png" alt="ETp - Ei"/> (<img class="math" src="_images/math/4e9e7df3693a0dce8611c810d88d3b9bea628697.png" alt="Ei"/> = interception
 evaporation) then the exceeding part is multiplied by a factor (1-ered),
 where the parameter ered varies between 0 and 1. This correction is presently not present in the wflow_hbv model.</p>
 </div>
 <div class="section" id="the-runoff-response-routine">
 <h3>The runoff response routine<a class="headerlink" href="#the-runoff-response-routine" title="Permalink to this headline">¶</a></h3>
-<p>The volume of water which becomes available for runoff, <img class="math" src="_images/math/f06bd5393c481f60701e8306ee9b14f5978c1a9a.png" alt="S_{dr}+SP"/>,
+<p>The volume of water which becomes available for runoff, <img class="math" src="_images/math/f3350e3e020d3b46c676d5e7bd2de1523e6c497b.png" alt="S_{dr}+SP"/>,
 is transferred to the runoff response routine. In this routine the
 runoff delay is simulated through the use of a number of linear reservoirs.</p>
 <p>Two linear reservoir are defined to simulate the different runoff
 processes: the upper zone (generating quick runoff and interflow)
 and the lower zone (generating slow runoff). The available runoff
-water from the soil routine (i.e. direct runoff, <img class="math" src="_images/math/00f657826ee9a97c8ca033828b51f869b3f610cb.png" alt="S_{dr}"/>, and seepage,
-<img class="math" src="_images/math/4b101ae280775cd91fd7bb1d46e315a73a11ff5f.png" alt="SP"/>) in principle ends up in the lower zone, unless the percolation
-threshold, <img class="math" src="_images/math/9a8e9fd7ef6d0d581fa4d4de6883acac79991e0d.png" alt="PERC"/>, is exceeded, in which case the redundant water
+water from the soil routine (i.e. direct runoff, <img class="math" src="_images/math/f46785d4cabe26ff062ee495eb660154707be99f.png" alt="S_{dr}"/>, and seepage,
+<img class="math" src="_images/math/28058024ed59d4ca46d4ea9bf6722cb9ff2e6201.png" alt="SP"/>) in principle ends up in the lower zone, unless the percolation
+threshold, <img class="math" src="_images/math/1af85431185887da1ba1bea2a82c434b6409b726.png" alt="PERC"/>, is exceeded, in which case the redundant water
 ends up in the upper zone:</p>
 <div class="math">
-<p><img src="_images/math/99c0b740368c904daa33da1ff1ad6085b066f042.png" alt="\triangle V_{LZ}  =  min\{PERC;(S_{dr}+SP)\}\\
+<p><img src="_images/math/f3d1d19cb5450df15993c913e10f31a632c0d610.png" alt="\triangle V_{LZ}  =  min\{PERC;(S_{dr}+SP)\}\\
 
 \triangle V_{UZ}  =  max\{0.0;(S_{dr}+SP-PERC)\}"/></p>
-</div><p>where <img class="math" src="_images/math/86632f79edda50a9f36aabe8a2417c78adda8294.png" alt="V_{UZ}"/> is the content of the upper zone, <img class="math" src="_images/math/ccaa533fadfc86d1afd70b827fb5f44f723a8242.png" alt="V_{LZ}"/> is the
-content of the lower zone and <img class="math" src="_images/math/009cf3eeb0ff3789cc057632947cadb200ab4663.png" alt="\triangle"/> means increase
+</div><p>where <img class="math" src="_images/math/3d9fd14e7f56adf71a18084806ba5d321a0c1d3c.png" alt="V_{UZ}"/> is the content of the upper zone, <img class="math" src="_images/math/9bdeb3e34bafe1c4d0e0496574662a6d382a160c.png" alt="V_{LZ}"/> is the
+content of the lower zone and <img class="math" src="_images/math/86c482e1f148418c58c4ffaaf05fe6aade3ba1b2.png" alt="\triangle"/> means increase
 of.</p>
 <p>Capillary flow from the upper zone to the soil moisture reservoir
 is modeled according to:</p>
 <div class="math">
-<p><img src="_images/math/9c7501e7b389950bc57de87ca63e9a455a899325.png" alt="Q_{cf}=cflux*(F_{c}-SM)/F_{c}"/></p>
-</div><p>where <img class="math" src="_images/math/57aee3dab22f344bc05a55c1eb601e71670a6ac3.png" alt="cflux"/> is the maximum capilary flux in <img class="math" src="_images/math/03882d4fd063d41d5bb6f96250b709a8501ed0b5.png" alt="mm/day"/>.</p>
-<p>The Upper zone generates quick runoff <img class="math" src="_images/math/a21902755f1af47652cc390301758d6d49920f59.png" alt="(Q_{q})"/> using:</p>
+<p><img src="_images/math/69fe3911b78ecef3a9e6b24e6a00686fdd7447c6.png" alt="Q_{cf}=cflux*(F_{c}-SM)/F_{c}"/></p>
+</div><p>where <img class="math" src="_images/math/a45cdb53c9fbea3d3df796caf65714b88d9b415d.png" alt="cflux"/> is the maximum capilary flux in <img class="math" src="_images/math/8abebba9d6b523b1fb0c065c528f03c6e52836cd.png" alt="mm/day"/>.</p>
+<p>The Upper zone generates quick runoff <img class="math" src="_images/math/9d0fdbe348e32215288b6ab6cca511975324bbb6.png" alt="(Q_{q})"/> using:</p>
 <div class="math">
-<p><img src="_images/math/dec3e99211cf8fec3087f74d535770082bc5735e.png" alt="Q_{q}=K*UZ^{(1+alpha)}"/></p>
-</div><p>here <img class="math" src="_images/math/dfb064112b6c94470339f6571f69d07afc1c024c.png" alt="K"/> is the upper zone recession coefficient, and <img class="math" src="_images/math/10f32377ac67d94f764f12a15ea987e88c85d3e1.png" alt="\alpha"/> determines
-the amount of non-linearity. Within HBV-96, the value of <img class="math" src="_images/math/dfb064112b6c94470339f6571f69d07afc1c024c.png" alt="K"/> is determined
-from three other parameters: <img class="math" src="_images/math/10f32377ac67d94f764f12a15ea987e88c85d3e1.png" alt="\alpha"/>, <img class="math" src="_images/math/46912c1eae99950d00679bade1bc5c0e2409bc03.png" alt="KHQ"/>, and <img class="math" src="_images/math/cc655fedd3d17c86f75507ea19718b23b7d011f4.png" alt="HQ"/> (mm/day).
-The value of <img class="math" src="_images/math/cc655fedd3d17c86f75507ea19718b23b7d011f4.png" alt="HQ"/> represents an outflow rate of the upper zone for
-which the recession rate is equal to <img class="math" src="_images/math/46912c1eae99950d00679bade1bc5c0e2409bc03.png" alt="KHQ"/>. if we define <img class="math" src="_images/math/2b15ce606b0d125a03af3db58551f4f0c686ece3.png" alt="UZ_{HQ}"/> to
-be the content of the upper zone at outflow rate <img class="math" src="_images/math/cc655fedd3d17c86f75507ea19718b23b7d011f4.png" alt="HQ"/> we can write
+<p><img src="_images/math/29448c16b241743c78ca2fc7c44fb45173b83b2a.png" alt="Q_{q}=K*UZ^{(1+alpha)}"/></p>
+</div><p>here <img class="math" src="_images/math/28e003020d0ae96250b302d7d779c791f183f707.png" alt="K"/> is the upper zone recession coefficient, and <img class="math" src="_images/math/ad59b6e24a4a00ac621801f8d7513d68be654ab5.png" alt="\alpha"/> determines
+the amount of non-linearity. Within HBV-96, the value of <img class="math" src="_images/math/28e003020d0ae96250b302d7d779c791f183f707.png" alt="K"/> is determined
+from three other parameters: <img class="math" src="_images/math/ad59b6e24a4a00ac621801f8d7513d68be654ab5.png" alt="\alpha"/>, <img class="math" src="_images/math/12e6ac98b308f9bb6d2897c0286381079e5a7f0a.png" alt="KHQ"/>, and <img class="math" src="_images/math/08e8462080d99d6cf72c0a71f1c509278f07dcce.png" alt="HQ"/> (mm/day).
+The value of <img class="math" src="_images/math/08e8462080d99d6cf72c0a71f1c509278f07dcce.png" alt="HQ"/> represents an outflow rate of the upper zone for
+which the recession rate is equal to <img class="math" src="_images/math/12e6ac98b308f9bb6d2897c0286381079e5a7f0a.png" alt="KHQ"/>. if we define <img class="math" src="_images/math/9dcf06d20af4cd00c668b6ff4963285e7d5e5495.png" alt="UZ_{HQ}"/> to
+be the content of the upper zone at outflow rate <img class="math" src="_images/math/08e8462080d99d6cf72c0a71f1c509278f07dcce.png" alt="HQ"/> we can write
 the following equation:</p>
 <div class="math">
-<p><img src="_images/math/1c44c844cedeedc462978878e9a331fd2f3f2720.png" alt="HQ=K*UZ_{HQ}^{(1+\alpha)}=KHQ*UZ_{HQ}"/></p>
-</div><p>If we eliminate <img class="math" src="_images/math/2b15ce606b0d125a03af3db58551f4f0c686ece3.png" alt="UZ_{HQ}"/> we obtain:</p>
+<p><img src="_images/math/ba3582e26cd975d56f0445cdddd6077df4e7085d.png" alt="HQ=K*UZ_{HQ}^{(1+\alpha)}=KHQ*UZ_{HQ}"/></p>
+</div><p>If we eliminate <img class="math" src="_images/math/9dcf06d20af4cd00c668b6ff4963285e7d5e5495.png" alt="UZ_{HQ}"/> we obtain:</p>
 <div class="math">
-<p><img src="_images/math/b43ed6da0499af658f14d7eb5a362badcefb4c6f.png" alt="HQ=K*\left(\frac{HQ}{KHQ}\right)^{(1+\alpha)}"/></p>
-</div><p>Rewriting for <img class="math" src="_images/math/dfb064112b6c94470339f6571f69d07afc1c024c.png" alt="K"/> results in:</p>
+<p><img src="_images/math/8d30d10daa9aad8a042128737315a35f3c1484a2.png" alt="HQ=K*\left(\frac{HQ}{KHQ}\right)^{(1+\alpha)}"/></p>
+</div><p>Rewriting for <img class="math" src="_images/math/28e003020d0ae96250b302d7d779c791f183f707.png" alt="K"/> results in:</p>
 <div class="math">
-<p><img src="_images/math/a6097b5b1e3ed615ba63c7f027d526c0c6ab48e1.png" alt="K=KQH^{(1-alpha)}HQ^{-alpha}"/></p>
+<p><img src="_images/math/da6150fd48ecd43045131cc9148119fe20196b21.png" alt="K=KQH^{(1-alpha)}HQ^{-alpha}"/></p>
 </div><div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">Note that the HBV-96 manual mentions that for a recession rate larger
 than 1 the timestap in the model will be adjusted.</p>
 </div>
 <p>The lower zone is a linear reservoir, which means the rate of slow
-runoff, <img class="math" src="_images/math/d4d68298fb5341e92dcac0a1bf1be934570673e9.png" alt="Q_{LZ}"/>, which leaves this zone during one time step equals:</p>
+runoff, <img class="math" src="_images/math/fb8f3d3b1168745727e723d0b0db80872ccfda34.png" alt="Q_{LZ}"/>, which leaves this zone during one time step equals:</p>
 <div class="math">
-<p><img src="_images/math/ea5cf665f29e3e9bf09f36d1ff34a0b966868cb2.png" alt="Q_{LZ}=K_{LZ}*V_{LZ}"/></p>
-</div><p>where <img class="math" src="_images/math/b9879d3520e7d9d14e590218149ae18665ec2b93.png" alt="K_{LZ}"/> is the reservoir constant.</p>
+<p><img src="_images/math/6e22d3b0a67979ac0078b8986b8564f62534cd18.png" alt="Q_{LZ}=K_{LZ}*V_{LZ}"/></p>
+</div><p>where <img class="math" src="_images/math/113b41c4598696ae21bc2d44da50dc6cda3c6ba3.png" alt="K_{LZ}"/> is the reservoir constant.</p>
 <p>The upper zone is also a linear reservoir, but it is slightly more
 complicated than the lower zone because it is divided into two zones:
 A lower part in which interflow is generated and an upper part in
 which quick flow is generated (see Figure ref{fig:upper}).</p>
 <div class="figure">
-<img alt="_images/hbv-upper.png" src="_images/hbv-upper.png" style="width: 600px;" />
+<a class="reference internal image-reference" href="_images/hbv-upper.png"><img alt="_images/hbv-upper.png" src="_images/hbv-upper.png" style="width: 600px;" /></a>
 <p class="caption">Schematic view of the Upper zone</p>
 </div>
-<p>If the total water content of the upper zone, <img class="math" src="_images/math/86632f79edda50a9f36aabe8a2417c78adda8294.png" alt="V_{UZ}"/>, is lower
-than a threshold <img class="math" src="_images/math/4cbdbc8cfadbf87828f21f864d460df052a3f467.png" alt="UZ1"/>, the upper zone only generates interflow.
-On the other hand, if <img class="math" src="_images/math/86632f79edda50a9f36aabe8a2417c78adda8294.png" alt="V_{UZ}"/> exceeds <img class="math" src="_images/math/4cbdbc8cfadbf87828f21f864d460df052a3f467.png" alt="UZ1"/>, part of the upper
+<p>If the total water content of the upper zone, <img class="math" src="_images/math/3d9fd14e7f56adf71a18084806ba5d321a0c1d3c.png" alt="V_{UZ}"/>, is lower
+than a threshold <img class="math" src="_images/math/d96f6bb865957aa20b0bd1a7fb68ae1b1b1539ff.png" alt="UZ1"/>, the upper zone only generates interflow.
+On the other hand, if <img class="math" src="_images/math/3d9fd14e7f56adf71a18084806ba5d321a0c1d3c.png" alt="V_{UZ}"/> exceeds <img class="math" src="_images/math/d96f6bb865957aa20b0bd1a7fb68ae1b1b1539ff.png" alt="UZ1"/>, part of the upper
 zone water will runoff as quick flow:</p>
 <div class="math">
-<p><img src="_images/math/2edd3d62451770ef941e017434611c87f68e6219.png" alt="Q_{i}  =  K_{i}*min\{UZ1;V_{uz}\}
+<p><img src="_images/math/1be0b0531511abfdaf965b31ff5167570bd47683.png" alt="Q_{i}  =  K_{i}*min\{UZ1;V_{uz}\}
 
 Q_{q}  =  K_{q}*max\{(V_{UZ}-UZ1);0.0\}"/></p>
-</div><p>Where <img class="math" src="_images/math/0a33516fba3eca4e72a40592df188f326d26db57.png" alt="Q_{i}"/> is the amount of generated interflow in one time step,
-<img class="math" src="_images/math/8f177d7d373b8a0d9013c6a7c6d55951a65db3ee.png" alt="Q_{q}"/> is the amount of generated quick flow in one time step and
-<img class="math" src="_images/math/efc9d207b944fa41a9a5633b8195ac84357c241f.png" alt="K_{i}"/> and <img class="math" src="_images/math/db1d440ba1884f6a8d6bff09f811bf9bbb53e310.png" alt="K_{q}"/> are reservoir constants for interflow and quick
+</div><p>Where <img class="math" src="_images/math/72fa4930250a61ad4deaf1b08282ab870ea24fcd.png" alt="Q_{i}"/> is the amount of generated interflow in one time step,
+<img class="math" src="_images/math/210886b2333494e32f0aaeb2a18412362cffc932.png" alt="Q_{q}"/> is the amount of generated quick flow in one time step and
+<img class="math" src="_images/math/c3a3f3e8b773a5abeea0eba558fd38cb3a964132.png" alt="K_{i}"/> and <img class="math" src="_images/math/ee817e0ec298b0f32d406fa134c581854cdbbb22.png" alt="K_{q}"/> are reservoir constants for interflow and quick
 flow respectively.</p>
-<p>The total runoff rate, <img class="math" src="_images/math/9866e3a998d628ba0941eb4fea0666ac391d149a.png" alt="Q"/>, is equal to the sum of the three different
+<p>The total runoff rate, <img class="math" src="_images/math/7b1816c51f7d31275cd3ad400208fb7b3ce136a0.png" alt="Q"/>, is equal to the sum of the three different
 runoff components:</p>
 <div class="math">
-<p><img src="_images/math/b93443278467fa80e945863e6880e11cce8a19fa.png" alt="Q=Q_{LZ}+Q_{i}+Q_{q}"/></p>
+<p><img src="_images/math/8f3a0fbe91d91e926de3ff2f6d83f95c37af4610.png" alt="Q=Q_{LZ}+Q_{i}+Q_{q}"/></p>
 </div><p>The runoff behaviour in the runoff response routine is controlled
-by two threshold values <img class="math" src="_images/math/4ca9bea99d54cc4da5daba0c7a95cc11a7e47b65.png" alt="P_{m}"/> and <img class="math" src="_images/math/4cbdbc8cfadbf87828f21f864d460df052a3f467.png" alt="UZ1"/> in combination with three
-reservoir parameters, <img class="math" src="_images/math/b9879d3520e7d9d14e590218149ae18665ec2b93.png" alt="K_{LZ}"/>, <img class="math" src="_images/math/efc9d207b944fa41a9a5633b8195ac84357c241f.png" alt="K_{i}"/> and <img class="math" src="_images/math/db1d440ba1884f6a8d6bff09f811bf9bbb53e310.png" alt="K_{q}"/>. In order to
+by two threshold values <img class="math" src="_images/math/287d0ad50c54fc7828b72d0ebc6fd3787f6b80ec.png" alt="P_{m}"/> and <img class="math" src="_images/math/d96f6bb865957aa20b0bd1a7fb68ae1b1b1539ff.png" alt="UZ1"/> in combination with three
+reservoir parameters, <img class="math" src="_images/math/113b41c4598696ae21bc2d44da50dc6cda3c6ba3.png" alt="K_{LZ}"/>, <img class="math" src="_images/math/c3a3f3e8b773a5abeea0eba558fd38cb3a964132.png" alt="K_{i}"/> and <img class="math" src="_images/math/ee817e0ec298b0f32d406fa134c581854cdbbb22.png" alt="K_{q}"/>. In order to
 represent the differences in delay times between the three runoff
 components, the reservoir constants have to meet the following requirement:</p>
 <div class="math">
-<p><img src="_images/math/7c58dc95c12e5c930129530ec2ae10fb26e7117f.png" alt="K_{LZ}&lt;K_{i}&lt;K_{q}"/></p>
+<p><img src="_images/math/ebb4831f61412e0467a7768d8ae8220582497719.png" alt="K_{LZ}&lt;K_{i}&lt;K_{q}"/></p>
 </div></div>
 </div>
 <div class="section" id="module-wflow_hbv">
@@ -500,9 +493,10 @@ components, the reservoir constants have to meet the following requirement:</p>
 <p>Run the wflow_hbv hydrological model..</p>
 <p>usage: 
 wflow_hbv:</p>
-<div class="highlight-python"><pre>[-h][-v level][-F runinfofile][-L logfile][-C casename][-R runId]
+<div class="highlight-python"><div class="highlight"><pre>[-h][-v level][-F runinfofile][-L logfile][-C casename][-R runId]
 [-c configfile][-T timesteps][-s seconds][-W][-E][-N][-U discharge]
-[-P parameter multiplication][-X][-l loglevel]</pre>
+[-P parameter multiplication][-X][-l loglevel]
+</pre></div>
 </div>
 <dl class="docutils">
 <dt>-F: if set wflow is expected to be run by FEWS. It will determine</dt>
@@ -678,12 +672,11 @@ information (parameters) and sets-up the variables used in modelling.</p>
 <dl class="method">
 <dt id="wflow_hbv.WflowModel.stateVariables">
 <tt class="descname">stateVariables</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_hbv.WflowModel.stateVariables" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>returns a list of state variables that are essential to the model. </dt>
-<dd><p class="first">This list is essential for the resume and suspend functions to work.</p>
-<p class="last">This function is specific for each model and <strong>must</strong> be present.</p>
-</dd>
-</dl>
+<dd><blockquote>
+<div><p>returns a list of state variables that are essential to the model. 
+This list is essential for the resume and suspend functions to work.</p>
+<p>This function is specific for each model and <strong>must</strong> be present.</p>
+</div></blockquote>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -775,25 +768,28 @@ are saved to disk as pcraster maps. Use resume() to re-read them</p>
 </div>
 
 
+          </div>
           <footer>
   
-    <div class="rst-footer-buttons">
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="wflow_sbm.html" class="btn btn-neutral float-right" title="The wflow_sbm Model"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="wflow_sbm.html" class="btn btn-neutral float-right" title="The wflow_sbm Model"/>Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="index.html" class="btn btn-neutral" title="Welcome to wflow’s documentation!"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="index.html" class="btn btn-neutral" title="Welcome to wflow’s documentation!"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
 
   <hr/>
 
-  <p>
-      &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
-  </p>
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
+    </p>
+  </div>
 
-  <a href="https://www.github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="http://readthedocs.org">Read the Docs</a>
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
 </footer>
         </div>
       </div>
@@ -802,6 +798,38 @@ are saved to disk as pcraster maps. Use resume() to re-read them</p>
 
   </div>
   
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0RC2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
 
 </body>
 </html>

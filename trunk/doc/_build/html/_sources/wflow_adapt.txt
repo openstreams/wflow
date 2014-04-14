@@ -34,6 +34,13 @@ timesstep to mapstack timeseries exported to wflow. This will mean
 the first timestep (.000) is empty but that one will be ignored by
 wflow anyway.
 
+The adapter also tries to convert the log messages of the model into Delft-FEWS diagnostics
+XML format.
+
+- Casename\runid\wflow.log is converted to wflow_diag.xml
+
+- Also the adapter log files is converted to wflow_adapt_diag.xml
+
 
 Command line arguments:
 
@@ -78,7 +85,8 @@ is shown below:
         <argument>-T</argument>
         <argument>86400</argument>
     </arguments> 
-    <timeOut>1200000</timeOut> 
+    <timeOut>1200000</timeOut>
+    <overrulingDiagnosticFile>wflow_diag.xml</overrulingDiagnosticFile>
     </executeActivity> 
     </executeActivities> 
 
@@ -88,10 +96,7 @@ The wflow_adapt module can also be used by other programs to convert .tss files 
 pi-xml vv. Below the API documentation of the module is given.
 
 
-How to use the adapter
-----------------------
 
-[PM]
 
 Module function documentation
 -----------------------------

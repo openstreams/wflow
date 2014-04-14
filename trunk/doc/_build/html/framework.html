@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -8,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Using the framework &mdash; wflow 1.0RC1 documentation</title>
+  <title>Using the framework &mdash; wflow 1.0RC2 documentation</title>
   
 
   
@@ -19,20 +18,6 @@
 
   
   
-
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:'',
-        VERSION:'1.0RC1',
-        COLLAPSE_INDEX:false,
-        FILE_SUFFIX:'.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-
     
 
   
@@ -40,34 +25,36 @@
   
   
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-    <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
   
-    <link rel="top" title="wflow 1.0RC1 documentation" href="index.html"/>
+    <link rel="top" title="wflow 1.0RC2 documentation" href="index.html"/>
         <link rel="next" title="wf_DynamicFramework Module" href="wf_DynamicFramework.html"/>
         <link rel="prev" title="Calibration of the wflow_sbm model for the Rhine catchment using EOBS data" href="calib_report.html"/> 
 
-  <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav">
+<body class="wy-body-for-nav" role="document">
 
   <div class="wy-grid-for-nav">
 
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-nav-search">
-        <a href="index.html" class="icon icon-home"> wflow</a>
-        <form class="wy-form" action="search.html" method="get">
-  <input type="text" name="q" placeholder="Search docs" />
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
-</form>
+        <a href="index.html" class="fa fa-home"> wflow</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
       </div>
 
-      <div class="wy-menu wy-menu-vertical" data-spy="affix">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
         
         
             <ul>
@@ -122,7 +109,6 @@
 <li class="toctree-l1"><a class="reference internal" href="wflow_adapt.html">wflow_adapt Module</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="wflow_adapt.html#introduction">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wflow_adapt.html#linking-wflow-models-to-delft-fews">Linking wflow models to Delft-FEWS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="wflow_adapt.html#how-to-use-the-adapter">How to use the adapter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wflow_adapt.html#module-wflow_adapt">Module function documentation</a></li>
 </ul>
 </li>
@@ -216,23 +202,30 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top">
-        <i data-toggle="wy-nav-top" class="icon icon-reorder"></i>
-        <a href="/">wflow</a>
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">wflow</a>
       </nav>
 
 
       
       <div class="wy-nav-content">
         <div class="rst-content">
-          <ul class="wy-breadcrumbs">
-  <li><a href="index.html">Docs</a> &raquo;</li>
-  <li><a href="">Using the framework</a></li>
-  
-</ul>
-<hr/>
-
-          
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Using the framework</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/framework.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
   <div class="section" id="using-the-framework">
 <h1>Using the framework<a class="headerlink" href="#using-the-framework" title="Permalink to this headline">¶</a></h1>
 <p>This section only gives a brief description of the framework focussing on the extensions
@@ -242,7 +235,7 @@ at <a class="reference external" href="http://www.pcraster.eu">http://www.pcrast
 to the class to describe the model behaviour. The easiest way to get started is to copy
 and modify the <tt class="docutils literal"><span class="pre">wflow_sceleton.py</span></tt> example model. You can also use the other models
 for inspiration.</p>
-<p>In order to faclitate reusing data between models the data is stored in the following directory
+<p>In order to facilitate reusing data between models the data is stored in the following directory
 tree:</p>
 <p class="graphviz">
 <img src="_images/graphviz-48908b619c669b82505dbed23f936258c75c1a18.png" alt="digraph file_system {
@@ -379,29 +372,274 @@ module to parse the command line options.</p>
 </div>
 <div class="section" id="anotated-source-code-for-the-above">
 <h2>Anotated source code for the above<a class="headerlink" href="#anotated-source-code-for-the-above" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#!/usr/bin/python</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Definition of the wflow_sceleton model.</span>
+<span class="sd">---------------------------------------</span>
+
+<span class="sd">This simple model calculates soil temperature using</span>
+<span class="sd">air temperature as a forcing.</span>
+
+<span class="sd">Usage:</span>
+<span class="sd">wflow_sceleton  -C case -R Runid -c inifile</span>
+
+<span class="sd">    -C: set the name  of the case (directory) to run</span>
+<span class="sd">    </span>
+<span class="sd">    -R: set the name runId within the current case</span>
+<span class="sd">    </span>
+<span class="sd">    -c name of the config file (in the case directory)</span>
+<span class="sd">    </span>
+<span class="sd">$Author: schelle $</span>
+<span class="sd">$Id: wflow_sceleton.py 898 2014-01-09 14:47:06Z schelle $</span>
+<span class="sd">$Rev: 898 $</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
+<span class="kn">import</span> <span class="nn">shutil</span><span class="o">,</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">getopt</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span>  <span class="nn">wflow.wf_DynamicFramework</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span>  <span class="nn">wf_DynamicFramework</span> <span class="kn">import</span> <span class="o">*</span>
+    
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span>  <span class="nn">wflow.wflow_adapt</span>  <span class="kn">import</span> <span class="o">*</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span>  <span class="nn">wflow_adapt</span> <span class="kn">import</span> <span class="o">*</span>  
+<span class="kn">import</span> <span class="nn">scipy</span>
+
+
+
+<span class="k">def</span> <span class="nf">usage</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span>
+    <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span> <span class="k">print</span> <span class="n">msg</span>
+    <span class="k">print</span> <span class="n">__doc__</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">WflowModel</span><span class="p">(</span><span class="n">DynamicModel</span><span class="p">):</span>  
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  The user defined model class. This is your work!</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cloneMap</span><span class="p">,</span><span class="n">Dir</span><span class="p">,</span><span class="n">RunDir</span><span class="p">,</span><span class="n">configfile</span><span class="p">):</span>
+      <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">      *Required*</span>
+<span class="sd">      </span>
+<span class="sd">      The init function **must** contain what is shown below. Other functionality</span>
+<span class="sd">      may be added by you if needed.</span>
+<span class="sd">      </span>
+<span class="sd">      &quot;&quot;&quot;</span>
+      <span class="n">DynamicModel</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>   
+      <span class="n">setclone</span><span class="p">(</span><span class="n">Dir</span> <span class="o">+</span> <span class="s">&quot;/staticmaps/&quot;</span> <span class="o">+</span> <span class="n">cloneMap</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">runId</span><span class="o">=</span><span class="n">RunDir</span>      
+      <span class="bp">self</span><span class="o">.</span><span class="n">caseName</span><span class="o">=</span><span class="n">Dir</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">Dir</span> <span class="o">=</span> <span class="n">Dir</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">configfile</span> <span class="o">=</span> <span class="n">configfile</span>
+     
+
+
+  <span class="k">def</span> <span class="nf">stateVariables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+      <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">      *Required*</span>
+<span class="sd">      </span>
+<span class="sd">      Returns a list of state variables that are essential to the model. </span>
+<span class="sd">      This list is essential for the resume and suspend functions to work.</span>
+<span class="sd">      </span>
+<span class="sd">      This function is specific for each model and **must** be present. This is</span>
+<span class="sd">      where you specify the state variables of you model. If your model is stateless</span>
+<span class="sd">      this function must return and empty array (states = [])</span>
+<span class="sd">      </span>
+<span class="sd">      In the simple example here the TSoil variable is a state </span>
+<span class="sd">      for the model.</span>
+<span class="sd">      </span>
+<span class="sd">      :var TSoil: Temperature of the soil [oC]</span>
+<span class="sd">      &quot;&quot;&quot;</span>
+      <span class="n">states</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;TSoil&#39;</span><span class="p">]</span>
+      
+      <span class="k">return</span> <span class="n">states</span>
+      
+      
+  <span class="k">def</span> <span class="nf">supplyCurrentTime</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+      <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">      *Optional*</span>
+<span class="sd">      </span>
+<span class="sd">      Supplies the current time in seconds after the start of the run</span>
+<span class="sd">      This function is optional. If it is not set the framework assumes</span>
+<span class="sd">      the model runs with daily timesteps.</span>
+<span class="sd">      </span>
+<span class="sd">      Ouput:</span>
+<span class="sd">      </span>
+<span class="sd">          - time in seconds since the start of the model run</span>
+<span class="sd">          </span>
+<span class="sd">      &quot;&quot;&quot;</span>
+      
+      <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">currentTimeStep</span><span class="p">()</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="n">configget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span><span class="s">&#39;model&#39;</span><span class="p">,</span><span class="s">&#39;timestepsecs&#39;</span><span class="p">,</span><span class="s">&#39;86400&#39;</span><span class="p">))</span>
+  
+  <span class="k">def</span> <span class="nf">suspend</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">      *Required*</span>
+<span class="sd">      </span>
+<span class="sd">      Suspends the model to disk. All variables needed to restart the model</span>
+<span class="sd">      are saved to disk as pcraster maps. Use resume() to re-read them</span>
+<span class="sd">      </span>
+<span class="sd">      This function is required. </span>
+<span class="sd">      </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+        
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Saving initial conditions...&quot;</span><span class="p">)</span>
+    <span class="c">#: It is advised to use the wf_suspend() function </span>
+    <span class="c">#: here which will suspend the variables that are given by stateVariables </span>
+    <span class="c">#: function.</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">wf_suspend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Dir</span> <span class="o">+</span> <span class="s">&quot;/outstate/&quot;</span><span class="p">)</span>
+
+      
+  <span class="k">def</span> <span class="nf">initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+      
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    *Required*</span>
+<span class="sd">    </span>
+<span class="sd">    Initial part of the model, executed only once. It reads all static model</span>
+<span class="sd">    information (parameters) and sets-up the variables used in modelling.</span>
+<span class="sd">    </span>
+<span class="sd">    This function is required. The contents is free. However, in order to</span>
+<span class="sd">    easily connect to other models it is advised to adhere to the directory</span>
+<span class="sd">    structure used in the other models.</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: pcraster option to calculate with units or cells. Not really an issue</span>
+    <span class="c">#: in this model but always good to keep in mind.</span>
+    <span class="n">setglobaloption</span><span class="p">(</span><span class="s">&quot;unittrue&quot;</span><span class="p">)</span>
+
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">timestepsecs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">configget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span><span class="s">&#39;model&#39;</span><span class="p">,</span><span class="s">&#39;timestepsecs&#39;</span><span class="p">,</span><span class="s">&#39;86400&#39;</span><span class="p">))</span>
+    
+    <span class="bp">self</span><span class="o">.</span><span class="n">basetimestep</span><span class="o">=</span><span class="mi">86400</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">SaveMapDir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Dir</span> <span class="o">+</span> <span class="s">&quot;/&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">runId</span> <span class="o">+</span> <span class="s">&quot;/outmaps&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">TEMP_mapstack</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Dir</span> <span class="o">+</span> <span class="n">configget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span><span class="s">&quot;inputmapstacks&quot;</span><span class="p">,</span><span class="s">&quot;Temperature&quot;</span><span class="p">,</span><span class="s">&quot;/inmaps/TEMP&quot;</span><span class="p">)</span> 
+    <span class="bp">self</span><span class="o">.</span><span class="n">Altitude</span><span class="o">=</span><span class="n">readmap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Dir</span> <span class="o">+</span> <span class="s">&quot;/staticmaps/wflow_dem&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Starting Dynamic run...&quot;</span><span class="p">)</span>
+
+
+  <span class="k">def</span> <span class="nf">resume</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    *Required*</span>
+
+<span class="sd">    This function is required. Read initial state maps (they are output of a </span>
+<span class="sd">    previous call to suspend()). The implementation showns here is the most basic </span>
+<span class="sd">    setup needed.</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Reading initial conditions...&quot;</span><span class="p">)</span>
+    <span class="c">#: It is advised to use the wf_resume() function </span>
+    <span class="c">#: here which pick up the variable save by a call to wf_suspend()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wf_resume</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Dir</span> <span class="o">+</span> <span class="s">&quot;/instate/&quot;</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Cannot load initial states, setting to default&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stateVariables</span><span class="p">():</span>
+            <span class="k">exec</span> <span class="s">&quot;self.&quot;</span> <span class="o">+</span> <span class="n">s</span> <span class="o">+</span> <span class="s">&quot; = cover(1.0)&quot;</span>
+
+
+    
+  <span class="k">def</span> <span class="nf">dynamic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+      <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">      *Required*</span>
+<span class="sd">      </span>
+<span class="sd">      This is where all the time dependent functions are executed. Time dependent</span>
+<span class="sd">      output should also be saved here.</span>
+<span class="sd">      &quot;&quot;&quot;</span>
+      
+      <span class="n">Temperature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wf_readmap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TEMP_mapstack</span><span class="p">,</span><span class="mf">0.0</span><span class="p">)</span>     
+      <span class="bp">self</span><span class="o">.</span><span class="n">TSoil</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TSoil</span> <span class="o">+</span> <span class="mf">0.1125</span> <span class="o">*</span> <span class="p">(</span><span class="n">Temperature</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">TSoil</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestepsecs</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">basetimestep</span> 
+      
+      <span class="c"># reporting of maps and csv timeseries is done by the framework (see ini file)</span>
+    
+
+<span class="c"># The main function is used to run the program from the command line</span>
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>  
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    *Optional*</span>
+<span class="sd">    </span>
+<span class="sd">    Perform command line execution of the model. This example uses the getopt</span>
+<span class="sd">    module to parse the command line options.</span>
+<span class="sd">    </span>
+<span class="sd">    The user can set the caseName, the runDir, the timestep and the configfile.</span>
+<span class="sd">    &quot;&quot;&quot;</span>      
+    <span class="k">global</span> <span class="n">multpars</span>
+    <span class="n">caseName</span> <span class="o">=</span> <span class="s">&quot;default&quot;</span>
+    <span class="n">runId</span> <span class="o">=</span> <span class="s">&quot;run_default&quot;</span>
+    <span class="n">configfile</span><span class="o">=</span><span class="s">&quot;wflow_sceleton.ini&quot;</span>
+    <span class="n">_lastTimeStep</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">_firstTimeStep</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">timestepsecs</span><span class="o">=</span><span class="mi">86400</span>
+    <span class="n">wflow_cloneMap</span> <span class="o">=</span> <span class="s">&#39;wflow_subcatch.map&#39;</span>
+    
+    <span class="c"># This allows us to use the model both on the command line and to call </span>
+    <span class="c"># the model usinge main function from another python script.</span>
+    
+    <span class="k">if</span> <span class="n">argv</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">argv</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">usage</span><span class="p">()</span>
+            <span class="k">return</span>     
+
+    <span class="n">opts</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="n">getopt</span><span class="o">.</span><span class="n">getopt</span><span class="p">(</span><span class="n">argv</span><span class="p">,</span> <span class="s">&#39;C:S:T:c:s:R:&#39;</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">o</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">opts</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">o</span> <span class="o">==</span> <span class="s">&#39;-C&#39;</span><span class="p">:</span> <span class="n">caseName</span> <span class="o">=</span> <span class="n">a</span>
+        <span class="k">if</span> <span class="n">o</span> <span class="o">==</span> <span class="s">&#39;-R&#39;</span><span class="p">:</span> <span class="n">runId</span> <span class="o">=</span> <span class="n">a</span>
+        <span class="k">if</span> <span class="n">o</span> <span class="o">==</span> <span class="s">&#39;-c&#39;</span><span class="p">:</span> <span class="n">configfile</span> <span class="o">=</span> <span class="n">a</span>
+        <span class="k">if</span> <span class="n">o</span> <span class="o">==</span> <span class="s">&#39;-s&#39;</span><span class="p">:</span> <span class="n">timestepsecs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">o</span> <span class="o">==</span> <span class="s">&#39;-T&#39;</span><span class="p">:</span> <span class="n">_lastTimeStep</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">o</span> <span class="o">==</span> <span class="s">&#39;-S&#39;</span><span class="p">:</span> <span class="n">_firstTimeStep</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+        
+    <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span> <span class="o">&lt;=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">usage</span><span class="p">()</span>
+        
+    <span class="n">myModel</span> <span class="o">=</span> <span class="n">WflowModel</span><span class="p">(</span><span class="n">wflow_cloneMap</span><span class="p">,</span> <span class="n">caseName</span><span class="p">,</span><span class="n">runId</span><span class="p">,</span><span class="n">configfile</span><span class="p">)</span>
+    <span class="n">dynModelFw</span> <span class="o">=</span> <span class="n">wf_DynamicFramework</span><span class="p">(</span><span class="n">myModel</span><span class="p">,</span> <span class="n">_lastTimeStep</span><span class="p">,</span><span class="n">firstTimestep</span><span class="o">=</span><span class="n">_firstTimeStep</span><span class="p">)</span>
+    <span class="n">dynModelFw</span><span class="o">.</span><span class="n">createRunId</span><span class="p">(</span><span class="n">NoOverWrite</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>    
+    <span class="n">dynModelFw</span><span class="o">.</span><span class="n">_runInitial</span><span class="p">()</span>
+    <span class="n">dynModelFw</span><span class="o">.</span><span class="n">_runResume</span><span class="p">()</span>
+    <span class="n">dynModelFw</span><span class="o">.</span><span class="n">_runDynamic</span><span class="p">(</span><span class="n">_firstTimeStep</span><span class="p">,</span><span class="n">_lastTimeStep</span><span class="p">)</span>
+    <span class="n">dynModelFw</span><span class="o">.</span><span class="n">_runSuspend</span><span class="p">()</span>
+    <span class="n">dynModelFw</span><span class="o">.</span><span class="n">_wf_shutdown</span><span class="p">()</span>
+    
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
 </div>
 </div>
 
 
+          </div>
           <footer>
   
-    <div class="rst-footer-buttons">
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="wf_DynamicFramework.html" class="btn btn-neutral float-right" title="wf_DynamicFramework Module"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="wf_DynamicFramework.html" class="btn btn-neutral float-right" title="wf_DynamicFramework Module"/>Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="calib_report.html" class="btn btn-neutral" title="Calibration of the wflow_sbm model for the Rhine catchment using EOBS data"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="calib_report.html" class="btn btn-neutral" title="Calibration of the wflow_sbm model for the Rhine catchment using EOBS data"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
 
   <hr/>
 
-  <p>
-      &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
-  </p>
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
+    </p>
+  </div>
 
-  <a href="https://www.github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="http://readthedocs.org">Read the Docs</a>
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
 </footer>
         </div>
       </div>
@@ -410,6 +648,38 @@ module to parse the command line options.</p>
 
   </div>
   
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0RC2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
 
 </body>
 </html>
