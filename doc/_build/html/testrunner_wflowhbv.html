@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -8,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>run wflow_hbv via API &mdash; wflow 1.0RC1 documentation</title>
+  <title>run wflow_hbv via API &mdash; wflow 1.0RC2 documentation</title>
   
 
   
@@ -19,20 +18,6 @@
 
   
   
-
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:'',
-        VERSION:'1.0RC1',
-        COLLAPSE_INDEX:false,
-        FILE_SUFFIX:'.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-
     
 
   
@@ -40,34 +25,36 @@
   
   
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-    <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
   
-    <link rel="top" title="wflow 1.0RC1 documentation" href="index.html"/>
+    <link rel="top" title="wflow 1.0RC2 documentation" href="index.html"/>
         <link rel="next" title="Calibration of the wflow_sbm model for the Rhine catchment using EOBS data" href="calib_report.html"/>
         <link rel="prev" title="wflow_delwaq Module" href="wflow_delwaq.html"/> 
 
-  <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav">
+<body class="wy-body-for-nav" role="document">
 
   <div class="wy-grid-for-nav">
 
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-nav-search">
-        <a href="index.html" class="icon icon-home"> wflow</a>
-        <form class="wy-form" action="search.html" method="get">
-  <input type="text" name="q" placeholder="Search docs" />
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
-</form>
+        <a href="index.html" class="fa fa-home"> wflow</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
       </div>
 
-      <div class="wy-menu wy-menu-vertical" data-spy="affix">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
         
         
             <ul>
@@ -122,7 +109,6 @@
 <li class="toctree-l1"><a class="reference internal" href="wflow_adapt.html">wflow_adapt Module</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="wflow_adapt.html#introduction">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wflow_adapt.html#linking-wflow-models-to-delft-fews">Linking wflow models to Delft-FEWS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="wflow_adapt.html#how-to-use-the-adapter">How to use the adapter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wflow_adapt.html#module-wflow_adapt">Module function documentation</a></li>
 </ul>
 </li>
@@ -216,23 +202,30 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top">
-        <i data-toggle="wy-nav-top" class="icon icon-reorder"></i>
-        <a href="/">wflow</a>
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">wflow</a>
       </nav>
 
 
       
       <div class="wy-nav-content">
         <div class="rst-content">
-          <ul class="wy-breadcrumbs">
-  <li><a href="index.html">Docs</a> &raquo;</li>
-  <li><a href="">run wflow_hbv via API</a></li>
-  
-</ul>
-<hr/>
-
-          
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>run wflow_hbv via API</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/testrunner_wflowhbv.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
   <div class="section" id="run-wflow-hbv-via-api">
 <h1>run wflow_hbv via API<a class="headerlink" href="#run-wflow-hbv-via-api" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="settings-in-the-ini-file">
@@ -251,7 +244,7 @@ convention:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">variable_name_in_model</span><span class="o">=</span><span class="n">variable_role</span><span class="p">,</span><span class="n">variable_unit</span>
 </pre></div>
 </div>
-<div class="highlight-python"><pre>role: 0 = input (to the model)
+<div class="highlight-python"><div class="highlight"><pre>role: 0 = input (to the model)
       1 = is output (from the model)
       2 = input/output (state information)
       3 = model parameter
@@ -260,10 +253,89 @@ unit: 0 = mm/timestep
       2 = m
       3 = degree Celcius
       4 = mm
-      5 = -</pre>
+      5 = -
+</pre></div>
 </div>
 <p>Use role 0 for input maps to the model (those that are normally read from disk), role 1
 for outputs, role 2 for state variables and role3 for model parameters.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Model parameters and settings</span>
+<span class="p">[</span><span class="n">model</span><span class="p">]</span>
+<span class="n">AnnualDischarge</span><span class="o">=</span><span class="mi">2290</span>
+<span class="c"># Alpha for wiver-width estimation 5 for mountain stream 60 for the river rhine</span>
+<span class="n">Alpha</span><span class="o">=</span><span class="mi">120</span>
+<span class="n">ModelSnow</span><span class="o">=</span><span class="mi">1</span>
+<span class="n">ScalarInput</span><span class="o">=</span><span class="mi">0</span>
+<span class="n">InterpolationMethod</span><span class="o">=</span><span class="n">inv</span>
+<span class="n">Tslice</span><span class="o">=</span><span class="mi">1</span>
+<span class="n">UpdMaxDist</span><span class="o">=</span><span class="mf">300000.0</span>
+
+
+<span class="c"># Specify variables that are exposed via the API here. Use the following </span>
+<span class="c"># convention:</span>
+<span class="c"># variable_name_in_model=variable_role,variable_unit</span>
+<span class="c">#          role: 0 = input (to the model)</span>
+<span class="c">#                1 = is output (from the model)</span>
+<span class="c">#                2 = input/output (state information)</span>
+<span class="c">#                3 = model parameter</span>
+<span class="c">#          unit: 0 = mm/timestep</span>
+<span class="c">#                1 = m^3/sec</span>
+<span class="c">#                2 = m</span>
+<span class="c">#                3 = degree Celcius</span>
+<span class="c">#                4 = mm</span>
+<span class="c">#                5 = -</span>
+<span class="c"># </span>
+<span class="p">[</span><span class="n">API</span><span class="p">]</span>
+<span class="n">FreeWater</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span>
+<span class="n">SoilMoisture</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span>
+<span class="n">UpperZoneStorage</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span>
+<span class="n">LowerZoneStorage</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span>
+<span class="n">InterceptionStorage</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span>
+<span class="n">SurfaceRunoff</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span>
+<span class="n">WaterLevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span>
+<span class="n">DrySnow</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span>
+<span class="n">Percolation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span>
+<span class="n">ForecQ_qmec</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span>
+<span class="n">PERC</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span>
+<span class="n">FC</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span>
+<span class="c"># Below are the forcing variables. By putting these here you MUST </span>
+<span class="c"># supply them via the API, if not these will default to 0.0</span>
+<span class="c">#P=0,0</span>
+<span class="n">PET</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span>
+<span class="n">TEMP</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span>
+
+<span class="p">[</span><span class="n">framework</span><span class="p">]</span>
+<span class="c">#debug=1</span>
+<span class="n">debug</span><span class="o">=</span><span class="mi">0</span>
+
+<span class="p">[</span><span class="n">misc</span><span class="p">]</span>
+<span class="c">#mapSaveInterval=365</span>
+
+<span class="p">[</span><span class="n">layout</span><span class="p">]</span>
+<span class="c"># if set to zero the cell-size is given in lat/long (the default)</span>
+<span class="n">sizeinmetres</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="p">[</span><span class="n">outputmaps</span><span class="p">]</span>
+<span class="c">#self.OldKinWaveVolume=vol</span>
+<span class="c">#self.WaterLevel=lev</span>
+
+
+<span class="c"># List all timeseries in tss format to save in this section. Timeseries are</span>
+<span class="c"># produced as averages per subcatchment. </span>
+<span class="p">[</span><span class="n">outputtss</span><span class="p">]</span>
+<span class="c"># self.OldKinWaveVolume=vol</span>
+<span class="c"># self.MassBalKinWave=mkin</span>
+<span class="c"># self.DrySnow=sno</span>
+<span class="c"># self.LowerZoneStorage=low</span>
+<span class="c"># self.UpperZoneStorage=upp</span>
+<span class="c"># Temperature=tem</span>
+<span class="c"># self.BaseFlow=bas</span>
+<span class="c"># self.QuickFlow=qui</span>
+<span class="c"># self.Percolation=per</span>
+<span class="c"># ActEvap=act</span>
+<span class="c"># IntEvap=int</span>
+<span class="c"># PotEvaporation=pot</span>
+</pre></div>
+</div>
 <span class="target" id="module-testrunner_wflowhbv"></span><div class="section" id="controlling-the-model-via-the-api">
 <h3>Controlling the model via the API<a class="headerlink" href="#controlling-the-model-via-the-api" title="Permalink to this headline">¶</a></h3>
 <p>Example of how to use the framework to control the wflow_* models
@@ -281,29 +353,141 @@ be used by the controlling program to interrogate the model.</p>
 <li>Inputs (forcing variables) must be set at the start of a timesteps, results should be read after each timestep.</li>
 </ul>
 </div>
+<div class="highlight-python"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Controlling the model via the API</span>
+<span class="sd">---------------------------------</span>
+<span class="sd">Example of how to use the framework to control the wflow\_\* models</span>
+<span class="sd">from other software, in this case a python script.</span>
+
+<span class="sd">In this example case the controlling piece of software (this script)</span>
+<span class="sd">provides the forcing data using the API. It also interrogates the model</span>
+<span class="sd">to get results and display them on screen.</span>
+
+<span class="sd">Each wflow\_\* model should provide a def supplyVariableNamesAndRoles function</span>
+<span class="sd">that returns a list of variables and their roles. This function can than</span>
+<span class="sd">be used by the controlling program to interrogate the model. </span>
+
+<span class="sd">Some important things to consider:</span>
+<span class="sd">    </span>
+<span class="sd">+ when initialzing the framework you must do so for the maximum number of \</span>
+<span class="sd">timesteps you want to run the model for. This is needed for the pcraster\</span>
+<span class="sd">timeseries output functions.</span>
+
+<span class="sd">+ the framework internally saves the state variable for the last timesteps. As\</span>
+<span class="sd"> such it is possible to redo the previous timesteps after calling the \</span>
+<span class="sd">quickresume function. If you want to go back more than one timesteps you \</span>
+<span class="sd">will need to call the normal resume function wich will restore the states \</span>
+<span class="sd">to the last time the suspend function was call. Administering this is left \</span>
+<span class="sd">to the controlling application.</span>
+
+<span class="sd">+ Inputs (forcing variables) must be set at the start of a timesteps, results\</span>
+<span class="sd"> should be read after each timestep.</span>
+<span class="sd"> </span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">from</span> <span class="nn">wflow_hbv</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">npmap0</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">ltt</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span> 
+    
+    <span class="k">global</span> <span class="n">npmap0</span>
+    <span class="k">global</span> <span class="n">ltt</span>
+     <span class="c"># define start and stop time of the run</span>
+    <span class="n">startTime</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">stopTime</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">currentTime</span> <span class="o">=</span> <span class="mi">1</span>
+     
+      <span class="c"># set runid, cl;onemap and casename. Also define the ini file</span>
+    <span class="n">runId</span> <span class="o">=</span> <span class="s">&quot;memtest&quot;</span>
+    <span class="n">configfile</span><span class="o">=</span><span class="s">&quot;wflow_hbv_mem.ini&quot;</span>
+    <span class="n">wflow_cloneMap</span> <span class="o">=</span> <span class="s">&#39;wflow_subcatch.map&#39;</span> 
+    <span class="n">caseName</span><span class="o">=</span><span class="s">&quot;../../../examples/wflow_rhine_hbv&quot;</span>
+    <span class="c"># Mske a usermodel object     </span>
+    <span class="n">myModel</span> <span class="o">=</span> <span class="n">WflowModel</span><span class="p">(</span><span class="n">wflow_cloneMap</span><span class="p">,</span> <span class="n">caseName</span><span class="p">,</span><span class="n">runId</span><span class="p">,</span><span class="n">configfile</span><span class="p">)</span>
+     <span class="c"># initialise the framework</span>
+    <span class="n">dynModelFw</span> <span class="o">=</span> <span class="n">wf_DynamicFramework</span><span class="p">(</span><span class="n">myModel</span><span class="p">,</span> <span class="n">stopTime</span><span class="p">,</span><span class="n">startTime</span><span class="p">)</span>
+ 
+      <span class="c"># Load model config from files and check directory structure</span>
+    <span class="n">dynModelFw</span><span class="o">.</span><span class="n">createRunId</span><span class="p">(</span><span class="n">NoOverWrite</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="c"># Run the initial part of the model (reads parameters and sets initial values)</span>
+    <span class="n">dynModelFw</span><span class="o">.</span><span class="n">_runInitial</span><span class="p">()</span> <span class="c"># Runs initial part</span>
+
+    <span class="n">dynModelFw</span><span class="o">.</span><span class="n">_runResume</span><span class="p">()</span> <span class="c"># gets the state variables</span>
+
+     <span class="c"># Get list of variables supplied by the model</span>
+
+    <span class="n">dd</span> <span class="o">=</span> <span class="n">dynModelFw</span><span class="o">.</span><span class="n">wf_supplyVariableNamesAndRoles</span><span class="p">()</span>
+    <span class="k">print</span> <span class="n">dd</span>
+    <span class="n">dynModelFw</span><span class="o">.</span><span class="n">wf_setValueLdd</span><span class="p">(</span><span class="s">&quot;TopoLdd&quot;</span><span class="p">,</span><span class="mf">5.0</span><span class="p">,</span><span class="mf">6.46823</span><span class="p">,</span><span class="mf">51.6821</span><span class="p">)</span>
+    <span class="n">npmap0</span> <span class="o">=</span> <span class="n">dynModelFw</span><span class="o">.</span><span class="n">wf_supplyMapAsNumpy</span><span class="p">(</span><span class="s">&quot;TopoLdd&quot;</span><span class="p">)</span>
+    <span class="n">ltt</span> <span class="o">=</span> <span class="n">dynModelFw</span><span class="o">.</span><span class="n">wf_supplyMapAsList</span><span class="p">(</span><span class="s">&quot;SurfaceRunoff&quot;</span><span class="p">)</span>
+
+
+    <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">startTime</span><span class="p">,</span><span class="n">stopTime</span><span class="p">):</span>
+        
+        <span class="c"># Get value at pit</span>
+
+        <span class="n">inflowQ</span> <span class="o">=</span> <span class="n">dynModelFw</span><span class="o">.</span><span class="n">wf_supplyScalar</span><span class="p">(</span><span class="s">&quot;SurfaceRunoff&quot;</span><span class="p">,</span><span class="mf">6.46823</span><span class="p">,</span><span class="mf">51.6821</span><span class="p">)</span>
+        <span class="n">outflowQ</span> <span class="o">=</span> <span class="n">dynModelFw</span><span class="o">.</span><span class="n">wf_supplyScalar</span><span class="p">(</span><span class="s">&quot;SurfaceRunoff&quot;</span><span class="p">,</span><span class="mf">6.43643</span><span class="p">,</span><span class="mf">51.7226</span><span class="p">)</span>
+        
+        <span class="c"># Ass inflow to outflow</span>
+        <span class="c">#dynModelFw.wf_setValue(&quot;ForecQ_qmec&quot;, -1.0 * inflowQ  ,6.46823,51.6821)</span>
+        <span class="n">Resoutflow</span> <span class="o">=</span> <span class="n">inflowQ</span>
+        <span class="n">dynModelFw</span><span class="o">.</span><span class="n">wf_setValue</span><span class="p">(</span><span class="s">&quot;ForecQ_qmec&quot;</span><span class="p">,</span><span class="n">Resoutflow</span> <span class="p">,</span><span class="mf">6.43643</span><span class="p">,</span><span class="mf">51.7226</span><span class="p">)</span>
+        <span class="n">dynModelFw</span><span class="o">.</span><span class="n">wf_setValues</span><span class="p">(</span><span class="s">&quot;P&quot;</span><span class="p">,</span><span class="n">scalar</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">)</span>
+        <span class="c">#dynModelFw.wf_setValue(&quot;ForecQ_qmec&quot;,inflowQ * 1000 ,6.47592,51.7288)</span>
+        <span class="c"># update runoff ONLY NEEDED IF YOU FIDDLE WITH THE KIN_WAVE RESERVOIR</span>
+        <span class="n">myModel</span><span class="o">.</span><span class="n">updateRunOff</span><span class="p">()</span>
+        <span class="n">dynModelFw</span><span class="o">.</span><span class="n">_runDynamic</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span><span class="n">ts</span><span class="p">)</span> <span class="c"># runs for all timesteps</span>
+        <span class="c">#dynModelFw.wf_setValue(&quot;SurfaceRunoff&quot;,0.0,6.46823,51.6821)</span>
+        <span class="c">#dynModelFw.wf_setValue(&quot;SurfaceRunoff&quot;,0.0,6.11535,51.8425)</span>
+        <span class="n">npmap0</span> <span class="o">=</span> <span class="n">dynModelFw</span><span class="o">.</span><span class="n">wf_supplyMapAsNumpy</span><span class="p">(</span><span class="s">&quot;ForecQ_qmec&quot;</span><span class="p">)</span>
+        <span class="n">npmap1</span> <span class="o">=</span> <span class="n">dynModelFw</span><span class="o">.</span><span class="n">wf_supplyMapAsNumpy</span><span class="p">(</span><span class="s">&quot;P&quot;</span><span class="p">)</span>
+        <span class="n">dynModelFw</span><span class="o">.</span><span class="n">wf_setValuesAsNumpy</span><span class="p">(</span><span class="s">&quot;xx&quot;</span><span class="p">,</span><span class="n">npmap1</span><span class="p">)</span>
+        <span class="n">npmap2</span> <span class="o">=</span> <span class="n">dynModelFw</span><span class="o">.</span><span class="n">wf_supplyMapAsNumpy</span><span class="p">(</span><span class="s">&quot;DezeBestaatNiet&quot;</span><span class="p">)</span>
+        <span class="c">#myModel.updateRunOff()</span>
+        
+
+
+
+
+    <span class="n">dynModelFw</span><span class="o">.</span><span class="n">_runSuspend</span><span class="p">()</span> <span class="c"># saves the state variables</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s">&quot;../../&quot;</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
 </div>
 </div>
 
 
+          </div>
           <footer>
   
-    <div class="rst-footer-buttons">
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="calib_report.html" class="btn btn-neutral float-right" title="Calibration of the wflow_sbm model for the Rhine catchment using EOBS data"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="calib_report.html" class="btn btn-neutral float-right" title="Calibration of the wflow_sbm model for the Rhine catchment using EOBS data"/>Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="wflow_delwaq.html" class="btn btn-neutral" title="wflow_delwaq Module"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="wflow_delwaq.html" class="btn btn-neutral" title="wflow_delwaq Module"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
 
   <hr/>
 
-  <p>
-      &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
-  </p>
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
+    </p>
+  </div>
 
-  <a href="https://www.github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="http://readthedocs.org">Read the Docs</a>
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
 </footer>
         </div>
       </div>
@@ -312,6 +496,38 @@ be used by the controlling program to interrogate the model.</p>
 
   </div>
   
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0RC2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
 
 </body>
 </html>

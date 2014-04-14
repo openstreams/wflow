@@ -42,11 +42,11 @@ Use role 0 for input maps to the model (those that are normally read from disk),
 for outputs, role 2 for state variables and role3 for model parameters.
 
 
-.. include:: ../../../examples/wflow_rhine_hbv/wflow_hbv_mem.ini
+.. include:: ../examples/wflow_rhine_hbv/wflow_hbv_mem.ini
 	:literal:
 
 .. automodule:: testrunner_wflowhbv
 
-.. literalinclude:: ../../../src/wflow-py/wflow/testrunner_wflowhbv.py
+.. literalinclude:: ../wflow-py/wflow/testrunner_wflowhbv.py
 
 

@@ -10,7 +10,7 @@ to the class to describe the model behaviour. The easiest way to get started is 
 and modify the ``wflow_sceleton.py`` example model. You can also use the other models
 for inspiration.
 
-In order to faclitate reusing data between models the data is stored in the following directory
+In order to facilitate reusing data between models the data is stored in the following directory
 tree:
 
 .. digraph:: file_system
@@ -47,7 +47,10 @@ A basic sceleton of a model is given below:
 Anotated source code for the above
 ----------------------------------
 
-.. include:: ../../../src/wflow-py/wflow/wflow_sceleton.py
+.. include:: ../wflow-py/wflow/wflow_sceleton.py
 	:literal:
+
+
+
 
 

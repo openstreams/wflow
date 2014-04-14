@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -8,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>wflow_adapt Module &mdash; wflow 1.0RC1 documentation</title>
+  <title>wflow_adapt Module &mdash; wflow 1.0RC2 documentation</title>
   
 
   
@@ -19,20 +18,6 @@
 
   
   
-
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:'',
-        VERSION:'1.0RC1',
-        COLLAPSE_INDEX:false,
-        FILE_SUFFIX:'.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-
     
 
   
@@ -40,34 +25,36 @@
   
   
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-    <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
   
-    <link rel="top" title="wflow 1.0RC1 documentation" href="index.html"/>
+    <link rel="top" title="wflow 1.0RC2 documentation" href="index.html"/>
         <link rel="next" title="Building a model" href="wflow_building.html"/>
         <link rel="prev" title="The wflow_floodmap model" href="wflow_floodmap.html"/> 
 
-  <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav">
+<body class="wy-body-for-nav" role="document">
 
   <div class="wy-grid-for-nav">
 
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-nav-search">
-        <a href="index.html" class="icon icon-home"> wflow</a>
-        <form class="wy-form" action="search.html" method="get">
-  <input type="text" name="q" placeholder="Search docs" />
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
-</form>
+        <a href="index.html" class="fa fa-home"> wflow</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
       </div>
 
-      <div class="wy-menu wy-menu-vertical" data-spy="affix">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
         
         
             <ul>
@@ -122,7 +109,6 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="">wflow_adapt Module</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#linking-wflow-models-to-delft-fews">Linking wflow models to Delft-FEWS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#how-to-use-the-adapter">How to use the adapter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-wflow_adapt">Module function documentation</a></li>
 </ul>
 </li>
@@ -216,23 +202,30 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top">
-        <i data-toggle="wy-nav-top" class="icon icon-reorder"></i>
-        <a href="/">wflow</a>
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">wflow</a>
       </nav>
 
 
       
       <div class="wy-nav-content">
         <div class="rst-content">
-          <ul class="wy-breadcrumbs">
-  <li><a href="index.html">Docs</a> &raquo;</li>
-  <li><a href="">wflow_adapt Module</a></li>
-  
-</ul>
-<hr/>
-
-          
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>wflow_adapt Module</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/wflow_adapt.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
   <div class="section" id="wflow-adapt-module">
 <span id="wflow-adapt"></span><h1>wflow_adapt Module<a class="headerlink" href="#wflow-adapt-module" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="introduction">
@@ -256,10 +249,16 @@ expects them to start at 1 you will need to add a delay of one
 timesstep to mapstack timeseries exported to wflow. This will mean
 the first timestep (.000) is empty but that one will be ignored by
 wflow anyway.</p>
+<p>The adapter also tries to convert the log messages of the model into Delft-FEWS diagnostics
+XML format.</p>
+<ul class="simple">
+<li>Casenamerunidwflow.log is converted to wflow_diag.xml</li>
+<li>Also the adapter log files is converted to wflow_adapt_diag.xml</li>
+</ul>
 <p>Command line arguments:</p>
 <p>An example of executing wflow from the Delft-FEWS general adapter
 is shown below:</p>
-<div class="highlight-python"><pre>&lt;executeActivities&gt;
+<div class="highlight-python"><div class="highlight"><pre>&lt;executeActivities&gt;
 &lt;executeActivity&gt;
 &lt;description&gt;Run wflow&lt;/description&gt;
 &lt;command&gt;&lt;executable&gt;bin-wflow\wflow_sbm.exe&lt;/executable&gt;&lt;/command&gt;
@@ -293,15 +292,13 @@ is shown below:</p>
     &lt;argument&gt;86400&lt;/argument&gt;
 &lt;/arguments&gt;
 &lt;timeOut&gt;1200000&lt;/timeOut&gt;
+&lt;overrulingDiagnosticFile&gt;wflow_diag.xml&lt;/overrulingDiagnosticFile&gt;
 &lt;/executeActivity&gt;
-&lt;/executeActivities&gt;</pre>
+&lt;/executeActivities&gt;
+</pre></div>
 </div>
 <p>The wflow_adapt module can also be used by other programs to convert .tss files to
 pi-xml vv. Below the API documentation of the module is given.</p>
-</div>
-<div class="section" id="how-to-use-the-adapter">
-<h2>How to use the adapter<a class="headerlink" href="#how-to-use-the-adapter" title="Permalink to this headline">¶</a></h2>
-<p>[PM]</p>
 </div>
 <div class="section" id="module-wflow_adapt">
 <span id="module-function-documentation"></span><h2>Module function documentation<a class="headerlink" href="#module-wflow_adapt" title="Permalink to this headline">¶</a></h2>
@@ -373,7 +370,7 @@ $Rev: 915 $</p>
 <dl class="function">
 <dt id="wflow_adapt.mapstackxml">
 <tt class="descclassname">wflow_adapt.</tt><tt class="descname">mapstackxml</tt><big>(</big><em>mapstackxml</em>, <em>mapstackname</em>, <em>locationname</em>, <em>parametername</em>, <em>Sdate</em>, <em>Edate</em>, <em>timestepsecs</em><big>)</big><a class="headerlink" href="#wflow_adapt.mapstackxml" title="Permalink to this definition">¶</a></dt>
-<dd><p>writes mapstack xml file</p>
+<dd><p>writes a mapstack xml file</p>
 </dd></dl>
 
 <dl class="function">
@@ -387,8 +384,9 @@ output state.xml that Delft-FEWS writes.</li>
 </ul>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
-<p class="last">This function does not fully parse the xml file and will only work properly
-if the xml files date the dateTime element written on one line.</p>
+<blockquote>
+<div>This function does not fully parse the xml file and will only work properly</div></blockquote>
+<p class="last">if the xml files date the dateTime element written on one line.</p>
 </div>
 </dd></dl>
 
@@ -411,11 +409,13 @@ of appearance in the XML file</li>
 <dt id="wflow_adapt.pixml_totss_dates">
 <tt class="descclassname">wflow_adapt.</tt><tt class="descname">pixml_totss_dates</tt><big>(</big><em>nname</em>, <em>outputdir</em><big>)</big><a class="headerlink" href="#wflow_adapt.pixml_totss_dates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets Date/time info from XML file and creates .tss files with:</p>
-<ul class="simple">
+<blockquote>
+<div><ul class="simple">
 <li>Day of year</li>
 <li>Hour of day</li>
 <li>Others may follow</li>
 </ul>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
@@ -438,25 +438,28 @@ of appearance in the XML file</li>
 </div>
 
 
+          </div>
           <footer>
   
-    <div class="rst-footer-buttons">
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="wflow_building.html" class="btn btn-neutral float-right" title="Building a model"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="wflow_building.html" class="btn btn-neutral float-right" title="Building a model"/>Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="wflow_floodmap.html" class="btn btn-neutral" title="The wflow_floodmap model"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="wflow_floodmap.html" class="btn btn-neutral" title="The wflow_floodmap model"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
 
   <hr/>
 
-  <p>
-      &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
-  </p>
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
+    </p>
+  </div>
 
-  <a href="https://www.github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="http://readthedocs.org">Read the Docs</a>
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
 </footer>
         </div>
       </div>
@@ -465,6 +468,38 @@ of appearance in the XML file</li>
 
   </div>
   
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0RC2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
 
 </body>
 </html>
