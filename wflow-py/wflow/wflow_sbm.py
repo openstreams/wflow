@@ -919,10 +919,12 @@ class WflowModel(DynamicModel):
                                                                                                  self.Precipitation,
                                                                                                  self.CanopyStorage)
             PotTrans = cover(max(0.0, self.PotEvap - Interception), 0.0)  # now in mm
+            self.Interception=Interception
         else:
             NetInterception, ThroughFall, StemFlow, LeftOver, Interception, self.CanopyStorage = rainfall_interception_modrut(
                 self.Precipitation, self.PotEvap, self.CanopyStorage, self.CanopyGapFraction, self.Cmax)
             PotTrans = cover(max(0.0, LeftOver), 0.0)  # now in mm
+            self.Interception=NetInterception
 
         ##########################################################################
         # Start with the soil calculations  ######################################
@@ -1174,7 +1176,7 @@ class WflowModel(DynamicModel):
         CellStorage = self.UStoreDepth + self.FirstZoneDepth + self.CanopyStorage
         DeltaStorage = CellStorage - self.InitialStorage
         OutFlow = self.FirstZoneFlux
-        CellInFlow = upstream(self.TopoLdd, scalar(self.FirstZoneFlux));
+        CellInFlow = upstream(self.TopoLdd, scalar(self.FirstZoneFlux))
         #CellWatBal = ActInfilt - self.ActEvap - self.ExfiltWater - ActLeakage + Reinfilt + IF - OutFlow + (OldCellStorage - CellStorage)
         #SumCellWatBal = SumCellWatBal + CellWatBal;
 

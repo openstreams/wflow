@@ -165,7 +165,8 @@ class wf_OutputTimeSeriesArea():
                    self.ofile[-1].write(str(idd) +"\n")
  
       self.steps = self.steps + 1
-      self.resmap = areaaverage(scalar(variable),self.area)
+      tmpvar = scalar(spatial(variable))
+      self.resmap = areaaverage(tmpvar,self.area)
       self.remap_np = pcr2numpy(self.resmap,0)
       self.flatres = self.remap_np.flatten()[self.idx]
 
@@ -346,9 +347,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             samplemapname = caseName + "/" + configget(self._userModel().config,thissection,"samplemap","None")
             if "None" not in samplemapname :    
                 try:
-                    samplemap = readmap(samplemapname)
+                    self.samplemap = readmap(samplemapname)
                     idd = tsformat + ":" +samplemapname
-                    self.oscv[idd] =wf_OutputTimeSeriesArea(samplemap,oformat=tsformat)
+                    self.oscv[idd] =wf_OutputTimeSeriesArea(self.samplemap,oformat=tsformat)
                     self.logger.info("Adding " + tsformat + " output at "+ samplemapname)
                 except:
                     self.logger.warn("Could not read sample id-map for timeseries: " + samplemapname)
