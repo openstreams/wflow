@@ -308,9 +308,11 @@ def tss_topixml(tssfile,xmlfile,locationname,parametername,Sdate,timestep):
     Converts a .tss file to a PI-xml file
 
     """
-    
+    missval = "-999.0"
+
     #try:
     tss,header = pcrut.readtss(tssfile)
+
     #except:
     #    logger.error("Tss file not found or corrupt: ", tssfile)
     #    return
@@ -318,14 +320,16 @@ def tss_topixml(tssfile,xmlfile,locationname,parametername,Sdate,timestep):
     # Add dummpy first timesteps
     if len(tss.shape) > 1:
         dumm = tss[0,:].copy()
-        dumm[:] = -999
+        dumm[:] = -999.0
         tss =  pcrut.numpy.vstack((dumm,tss))
     else:
         dumm = tss.copy()
-        dumm[:] = -999
+        dumm[:] = -999.0
         tss =  pcrut.numpy.vstack((dumm,tss))
   
-            
+    # replace NaN with missing values
+    tss[pcrut.numpy.isnan(tss)] = missval
+
     trange = timedelta(seconds=timestep * (tss.shape[0]))
 
     extraday = timedelta(seconds=timestep)
@@ -334,12 +338,10 @@ def tss_topixml(tssfile,xmlfile,locationname,parametername,Sdate,timestep):
     #Edate = Sdate + trange - extraday    
     Sdate = Sdate + extraday
     Edate = Sdate + trange - extraday - extraday
-        
-    
+
     Sdatestr = Sdate.strftime('%Y-%m-%d')
     Stimestr = Sdate.strftime('%H:%M:%S')
-    
-    
+
     Edatestr = Edate.strftime('%Y-%m-%d')
     Etimestr = Edate.strftime('%H:%M:%S')
     ofile = open(xmlfile,'w')
@@ -358,7 +360,7 @@ def tss_topixml(tssfile,xmlfile,locationname,parametername,Sdate,timestep):
         ofile.write("<timeStep unit=\"second\" multiplier=\"" + str(timestep) + "\"/>\n")
         ofile.write("<startDate date=\"" + Sdatestr +"\" time=\""+ Stimestr + "\"/>\n")
         ofile.write("<endDate date=\"" + Edatestr + "\" time=\"" + Etimestr + "\"/>\n")
-        ofile.write("<missVal>-999.0</missVal>\n")
+        ofile.write("<missVal>"+str(missval)+"</missVal>\n")
         ofile.write("<stationName>" + header[count-1] +  "</stationName>\n")
         ofile.write("</header>\n")
         # add data here

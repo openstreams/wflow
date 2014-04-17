@@ -701,6 +701,32 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
           self.logger.debug(mapname + " is not defined in the usermodel, doing nothing")
           return 0
 
+  def wf_multParameterValuesArea(self,mapname,value,areacode,areamapname):
+      """
+      multiply a parameter map with a single scalar
+      value for area with id area only. Current settings for dimensions are assumed.
+
+      This method must be called *after* the runinitial() method
+
+      Input:
+          - mapname - string with name of map
+          - value - single scalar
+          - areacode - id of the area in the areamap
+          - areamapname - name of the areamap
+
+      :returns: 1 if the map was present, 0 if nothing was done
+      """
+
+
+      arpcr = cover(value)
+
+      if hasattr(self._userModel(), mapname):
+          #exec "self._userModel()." + mapname + " = arpcr * " + "self._userModel()." + mapname
+          exec "self._userModel()." + mapname + " = ifthenelse(self._userModel()." + areamapname+ " == " + str(areacode) + " arpcr *  self._userModel()." + areamapname+ ", self._userModel()." + areamapname + " )"
+          return 1
+      else:
+          self.logger.debug(mapname + " is not defined in the usermodel, doing nothing")
+          return 0
 
        
   def wf_setParameterValues(self,mapname,values):
