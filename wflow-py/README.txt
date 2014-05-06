@@ -5,15 +5,16 @@ wflow consists of a set of python programs that can be run on the command line
 and perform hydrological simulations. The models are based on the PCRaster 
 python framework. In wflow this framework is extended (the wf_DynamicFramework) 
 so that models build using the framework can be controlled using the API. 
-Links to OpenMI and OpenDAP are being tested.
+Links to OpenMI and OpenDAP have been made.
 
-A link to the latest version can always be found at http://www.openstreams.nl
+A link to the latest version can always be found at http://www.openstreams.nl or
+http://wflow.googlecode.com
 
 INSTALL
 =======
 
 Assuming you have all supporting packages install installen a new wflow 
-distribution entails running the wflow_setup.py script. This script follows
+distribution entails running the setup.py script. This script follows
 the general python setup.py syntax. As such install using
 
 ./setup.py install
@@ -24,6 +25,7 @@ requirements for windows:
 
 - install python-2.7.?.msi, install in c:\python27
 - install pcraster4.0 (see pcraster.eu web site)
+(we have fou6dn the Anaconda distribution to work very well in combination with pcraster)
 
 Optional but highly recommended:
 - install matplotlib for python 2.7
@@ -35,7 +37,8 @@ Optional but highly recommended:
 
 Freezer
 =======
-The make_wflow_exe.py script builds a binary distribution of the models. You need the bbfreeze package installed to do this youself.
+The make_wflow_exe.py script builds a binary distribution of the models. You need the bbfreeze package installed
+to do this yourself.
 
 
 

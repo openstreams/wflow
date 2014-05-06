@@ -3,4 +3,4 @@ TODO:
 - USe partial wetness of cell in kinematic wave
 - Add the open water ET!
 - Add add_reservoir function to framework
-- Need flexible rainfall interception for daily and subdaily timesteps. Implement lui model, see doc.
+
