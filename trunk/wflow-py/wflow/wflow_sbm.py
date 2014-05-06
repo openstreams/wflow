@@ -235,12 +235,21 @@ class WflowModel(DynamicModel):
 
     def __init__(self, cloneMap, Dir, RunDir, configfile):
         DynamicModel.__init__(self)
-        setclone(Dir + "/staticmaps/" + cloneMap)
+        self.clonemappath = Dir + "/staticmaps/" + cloneMap
+        setclone(self.clonemappath)
         self.runId = RunDir
         self.caseName = Dir
         self.Dir = Dir + "/"
         self.configfile = configfile
 
+    def _initAPIVars(self):
+        """
+        Sets vars in the API that are forcing variables to the model
+        """
+        apivars = self.wf_supplyVariableNamesAndRoles()
+
+        for var in apivars:
+            exec "self."+ var[0] + " = self.ZeroMap"
 
     def updateRunOff(self):
         """
@@ -256,22 +265,22 @@ class WflowModel(DynamicModel):
 
     def stateVariables(self):
         """
-      returns a list of state variables that are essential to the model. 
-      This list is essential for the resume and suspend functions to work.
-      
-      This function is specific for each model and **must** be present.
-      
-     :var self.SurfaceRunoff: Surface runoff in the kin-wave resrvoir [m^3/s]
-     :var self.SurfaceRunoffDyn: Surface runoff in the dyn-wave resrvoir [m^3/s]
-     :var self.WaterLevel: Water level in the kin-wave resrvoir [m]
-     :var self.WaterLevelDyn: Water level in the dyn-wave resrvoir [m^]
-     :var self.Snow: Snow pack [mm]
-     :var self.SnowWater: Snow pack water [mm]
-     :var self.TSoil: Top soil temperature [oC]
-     :var self.UStoreDepth: Water in the Unsaturated Store [mm]
-     :var self.FirstZoneDepth: Water in the saturated store [mm]
-     :var self.CanopyStorage: Amount of water on the Canopy [mm]
-      """
+        returns a list of state variables that are essential to the model.
+        This list is essential for the resume and suspend functions to work.
+
+        This function is specific for each model and **must** be present.
+
+       :var self.SurfaceRunoff: Surface runoff in the kin-wave resrvoir [m^3/s]
+       :var self.SurfaceRunoffDyn: Surface runoff in the dyn-wave resrvoir [m^3/s]
+       :var self.WaterLevel: Water level in the kin-wave resrvoir [m]
+       :var self.WaterLevelDyn: Water level in the dyn-wave resrvoir [m^]
+       :var self.Snow: Snow pack [mm]
+       :var self.SnowWater: Snow pack water [mm]
+       :var self.TSoil: Top soil temperature [oC]
+       :var self.UStoreDepth: Water in the Unsaturated Store [mm]
+       :var self.FirstZoneDepth: Water in the saturated store [mm]
+       :var self.CanopyStorage: Amount of water on the Canopy [mm]
+       """
         states = ['SurfaceRunoff', 'WaterLevel',
                   'FirstZoneDepth',
                   'Snow',
@@ -618,7 +627,6 @@ class WflowModel(DynamicModel):
         self.DrainageBase = readmap(self.Dir + "/staticmaps/wflow_demmin")
         self.CC = min(100.0, -log(1.0 / 0.1 - 1) / min(-0.1, self.DrainageBase - self.Altitude))
 
-
         #self.GWScale = (self.DemMax-self.DrainageBase)/self.FirstZoneThickness / self.RunoffGeneratingGWPerc
         # Which columns/gauges to use/ignore in updating
         self.UpdateMap = self.ZeroMap
@@ -767,6 +775,9 @@ class WflowModel(DynamicModel):
             report(self.DistToUpdPt, self.Dir + "/" + self.runId + "/outsum/DistToUpdPt.map")
 
         self.SaveDir = self.Dir + "/" + self.runId + "/"
+
+        #self.IF = self.ZeroMap
+        self._initAPIVars()
         self.logger.info("End of initial section")
 
 
@@ -786,6 +797,8 @@ class WflowModel(DynamicModel):
         else:
             self.logger.info("Setting initial conditions from state files")
             self.wf_resume(self.Dir + "/instate/")
+
+
 
         P = self.Bw + (2.0 * self.WaterLevel)
         self.Alpha = self.AlpTerm * pow(P, self.AlpPow)
@@ -880,7 +893,7 @@ class WflowModel(DynamicModel):
             if (os.path.exists(self.caseName + self.inflowTss)):
                 self.Inflow = cover(timeinputscalar(self.caseName + self.inflowTss, nominal(self.InflowLoc)), 0)
             else:
-                self.Inflow = pcrut.readmapSave(self.Inflow_mapstack, 0.0)
+                self.Inflow = cover(self.wf_readmap(self.Inflow_mapstack, scalar(0.0)),0)
             #self.Inflow=spatial(scalar(0.0))
             if self.modelSnow:
                 self.Temperature = cover(self.wf_readmap(self.TEMP_mapstack, 10.0), 10.0)

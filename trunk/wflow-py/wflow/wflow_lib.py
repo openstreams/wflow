@@ -569,7 +569,7 @@ def points_to_map(in_map,xcor,ycor,tolerance):
     in X, Y pairs. It's goal is to replace the pcraster col2map program. 
     
     tolerance should be 0.5 to select single points
-    Performance is not very good and scales liniear with the number of points
+    Performance is not very good and scales linear with the number of points
     
     
     Input:
@@ -598,7 +598,7 @@ def points_to_map(in_map,xcor,ycor,tolerance):
     # Loop over points and "burn in" map
     for n in range(0,xcor.size):
         if Verbose:
-	  print(n)
+            print(n)
         diffx = x - xcor[n]
         diffy = y - ycor[n]        
         col_ =  absolute(diffx) <= (XX[0,0] * tolerance)  # cellsize

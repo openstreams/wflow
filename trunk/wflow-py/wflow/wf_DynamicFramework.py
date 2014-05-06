@@ -208,12 +208,14 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     self._addMethodToClass(self.wf_resume)
     self._addMethodToClass(self.wf_readmap)
     self._addMethodToClass(self.readtblDefault)
+    self._addMethodToClass(self.wf_supplyVariableNamesAndRoles)
 
     self._userModel()._setNrTimeSteps(lastTimeStep)
     self._d_firstTimestep = firstTimestep
     self._userModel()._setFirstTimeStep(self._d_firstTimestep)
     self.APIDebug = 0
     
+
 
   
   def _wf_shutdown(self):
@@ -583,7 +585,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 ar.reshape(getrows(),getcols())
                 arpcr = numpy2pcr(Scalar,ar.reshape(getrows(),getcols()),-999)
       else:
-                arpcr = cover(values)
+                self.logger.debug("Setting single value: " + str(values))
+                arpcr = cover(scalar(values))
+
       
       if hasattr(self._userModel(), mapname):
           exec "self._userModel()." + mapname + " = arpcr"
@@ -616,7 +620,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
           exec "self._userModel()." + mapname + " = arpcr"
           return 1
       else:
-           self.logger.debug(mapname + " is not defined in the usermodel.Doing nothing")
+           self.logger.debug(mapname + " is not defined in the usermodel. Doing nothing")
            return 0
 
 
@@ -631,17 +635,22 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
           - ycor - ycor to set the value in
           - value - single scalar
           
-      
+      .. note::
+
+        this is buggy somehow...!!!
+
       :returns: 1 if the map was present, 0 if nothing was done   
       """
       
       if hasattr(self._userModel(), mapname):
-          exec "pcrmap = self._userModel()." + mapname
+          pcrmap = getattr(self._userModel(),mapname)
+          ar = pcr2numpy(scalar(pcrmap),-999)
           row, col = getRowColPoint(pcrmap,xcor,ycor)
-          ar = pcr2numpy(pcrmap,-999)
           ar[row,col] = value
-          arpcr = numpy2pcr(Scalar,ar,-999)                
-          exec "self._userModel()." + mapname + " = scalar(arpcr)"
+          save("tt.np",ar)
+          pcrmap = numpy2pcr(Scalar,ar,-999)
+          report(pcrmap,"zz.map")
+          exec "self._userModel()." + mapname + " = pcrmap"
           return 1
       else:
            self.logger.debug(mapname + " is not defined in the usermodel")
@@ -1200,6 +1209,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       if self._userModel()._inDynamic() or self._inUpdateWeight():
         newName = generateNameT(name, self._userModel().currentTimeStep())
 
+
     path = os.path.join(directoryPrefix, newName)
     
     if self.outputFormat == 1:
@@ -1249,7 +1259,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self.wf_supplyVariableNamesAndRoles()
     
     style = self.exchnageitems.getvarStyle(varname)
-    #print varname + " : " + str(style)
 
     
     if hasattr(self._userModel(), "_inStochastic"):
@@ -1286,11 +1295,12 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         # first get basename (last bit of path)
         name = os.path.basename(name)
         if hasattr(self._userModel(),name):
-            exec "retval = self._userModel()." + name
+            exec "retval = cover(self._userModel()." + name + ",scalar(default))"
             return retval
         else:
-            self.logger.warn("Variable: " + name + "not set by API, returning default")
+            self.logger.warn("Variable: " + name + " not set by API, returning default")
             exec "self._userModel()." + name + " = cover(scalar(default))"
+            #setattr(self._userModel(),name,clone())
             exec "retval = self._userModel()." + name
             return retval
     else:
