@@ -714,7 +714,7 @@ class WflowModel(DynamicModel):
 
         self.Bw = ifthenelse(self.River, self.RiverWidth, self.Bw)
 
-        # Add rivers to the WaterFrac, but check with waterfrac map
+        # Add rivers to the WaterFrac, but check with waterfrac map and correct
         self.RiverFrac = min(1.0, ifthenelse(self.River, (self.RiverWidth * self.DCL) / (self.xl * self.yl), 0))
         self.WaterFrac = self.WaterFrac - ifthenelse((self.RiverFrac + self.WaterFrac) > 1.0,
                                                      self.RiverFrac + self.WaterFrac - 1.0, 0.0)
@@ -764,6 +764,7 @@ class WflowModel(DynamicModel):
         report(self.CC, self.Dir + "/" + self.runId + "/outsum/CC.map")
         report(self.N, self.Dir + "/" + self.runId + "/outsum/N.map")
         report(self.RiverFrac, self.Dir + "/" + self.runId + "/outsum/RiverFrac.map")
+        report(self.WaterFrac, self.Dir + "/" + self.runId + "/outsum/WaterFrac.map")
 
         report(self.xl, self.Dir + "/" + self.runId + "/outsum/xl.map")
         report(self.yl, self.Dir + "/" + self.runId + "/outsum/yl.map")
@@ -893,7 +894,7 @@ class WflowModel(DynamicModel):
             if (os.path.exists(self.caseName + self.inflowTss)):
                 self.Inflow = cover(timeinputscalar(self.caseName + self.inflowTss, nominal(self.InflowLoc)), 0)
             else:
-                self.Inflow = cover(self.wf_readmap(self.Inflow_mapstack, scalar(0.0)),0)
+                self.Inflow = cover(self.wf_readmap(self.Inflow_mapstack, 0.0,verbose=False),0)
             #self.Inflow=spatial(scalar(0.0))
             if self.modelSnow:
                 self.Temperature = cover(self.wf_readmap(self.TEMP_mapstack, 10.0), 10.0)
@@ -923,7 +924,6 @@ class WflowModel(DynamicModel):
 
         ##########################################################################
         # Interception according to a modified Gash model
-        # TODOs: add sub-daily interception!
         ##########################################################################
 
         if self.timestepsecs >= (23 * 3600):
@@ -954,15 +954,19 @@ class WflowModel(DynamicModel):
         FreeWaterDepth = ThroughFall + StemFlow
         UStoreCapacity = self.FirstZoneCapacity - self.FirstZoneDepth - self.UStoreDepth
 
-        # Runoff onto water boddies and river network
-        self.RunoffOpenWater = self.RiverFrac * self.WaterFrac * FreeWaterDepth
+        # Runoff onto water bodies and river network
+        self.RunoffOpenWater = min(1.0,self.RiverFrac + self.WaterFrac) * FreeWaterDepth
         #self.RunoffOpenWater = self.ZeroMap
         FreeWaterDepth = FreeWaterDepth - self.RunoffOpenWater
 
         if self.RunoffGenSigmaFunction:
             self.AbsoluteGW = self.DemMax - (self.zi * self.GWScale)
+            # Determine saturated fraction of cell
             self.SubCellFrac = sCurve(self.AbsoluteGW, c=self.CC, a=self.Altitude + 1.0)
-            self.SubCellRunoff = self.SubCellFrac * FreeWaterDepth
+            # Make sure total of SubCellFRac + WaterFRac + RiverFrac <=1 to avoid double counting
+            Frac_correction = ifthenelse((self.SubCellFrac + self.RiverFrac + self.WaterFrac) > 1.0,
+                                                     self.SubCellFrac + self.RiverFrac + self.WaterFrac - 1.0, 0.0)
+            self.SubCellRunoff = (self.SubCellFrac - Frac_correction) * FreeWaterDepth
             self.SubCellGWRunoff = min(self.SubCellFrac * self.FirstZoneDepth,
                                        self.SubCellFrac * self.Slope * self.FirstZoneKsatVer * exp(-self.f * self.zi))
             self.FirstZoneDepth = self.FirstZoneDepth - self.SubCellGWRunoff
@@ -1012,8 +1016,7 @@ class WflowModel(DynamicModel):
                                                                                               self.FirstZoneDepth,
                                                                                               PotTrans,
                                                                                               self.rootdistpar)
-        #self.ActEvap = self.ZeroMap
-        #self.ActEvapUStore = self.ZeroMap
+
         ##########################################################################
         # Transfer of water from unsaturated to saturated store...################
         ##########################################################################
@@ -1149,14 +1152,14 @@ class WflowModel(DynamicModel):
         # first column (nr 1). Assumes that outputloc and columns match!
 
         if self.updating:
-            QM = timeinputscalar(self.updateFile, self.UpdateMap) * self.QMMConv
+            self.QM = timeinputscalar(self.updateFile, self.UpdateMap) * self.QMMConv
 
             # Now update the state. Just add to the Ustore
             # self.UStoreDepth =  result
             # No determine multiplication ratio for each gauge influence area.
             # For missing gauges 1.0 is assumed (no change).
             # UpDiff = areamaximum(QM,  self.UpdateMap) - areamaximum(self.SurfaceRunoffMM, self.UpdateMap)
-            UpRatio = areamaximum(QM, self.UpdateMap) / areamaximum(self.SurfaceRunoffMM, self.UpdateMap)
+            UpRatio = areamaximum(self.QM, self.UpdateMap) / areamaximum(self.SurfaceRunoffMM, self.UpdateMap)
 
             UpRatio = cover(areaaverage(UpRatio, self.TopoId), 1.0)
             # Now split between Soil and Kyn  wave

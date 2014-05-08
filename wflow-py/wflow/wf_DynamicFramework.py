@@ -27,7 +27,9 @@ import ConfigParser
 import pcrut
 import shutil, glob
 import sys
+import traceback
 
+logging = None
 
 if sys.version_info[0] == 2 and sys.version_info[1] >=6:
     try:
@@ -44,6 +46,14 @@ else:
 
 from wflow_lib import *
 #import scipy.io
+
+
+def log_uncaught_exceptions(ex_cls, ex, tb):
+    global logging
+    logging.error(''.join(traceback.format_tb(tb)))
+    logging.error('{0}: {1}'.format(ex_cls, ex))
+
+sys.excepthook = log_uncaught_exceptions
 
 
 class wf_exchnageVariables():
@@ -317,14 +327,21 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     
     for file in glob.glob(caseName + "/" + intbl + "/*.tbl"):
         shutil.copy(file, caseName +"/" + runId + "/" + intbl)
-    shutil.copy(caseName + "/" + configfile, caseName +"/" + runId + "/runinfo") 
+    try:
+        shutil.copy(caseName + "/" + configfile, caseName +"/" + runId + "/runinfo")
+    except:
+        print "Cannot find config file: " + caseName + "/" + configfile
 
     
 
     self._userModel().logger = self.loggingSetUp(caseName,runId,logfname,model,modelVersion,level=level)
-    self._userModel().config = self.iniFileSetUp(caseName,runId,configfile)
+
     self.logger = self._userModel().logger
-    
+    global logging
+    logging= self.logger
+
+    self._userModel().config = self.iniFileSetUp(caseName,runId,configfile)
+
     self.outputFormat = int(configget(self._userModel().config,'framework','outputformat','1'))
     self.APIDebug = int(configget(self._userModel().config,'framework','debug',str(self.APIDebug)))
 
@@ -1232,7 +1249,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     
     
     
-  def wf_readmap(self, name, default):
+  def wf_readmap(self, name, default,verbose=True):
     """
       Adjusted version of readmapNew. the style variable is used to indicated
       how the data is read::
@@ -1289,7 +1306,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             mapje=readmap(path)
             return mapje
         else:
-            self.logger.warn("Forcing data (" + path + ") for timestep not present, returning " + str(default))
+            if verbose:
+                self.logger.warn("Forcing data (" + path + ") for timestep not present, returning " + str(default))
             return scalar(default)  
     elif style == 2: # Assyming they are set in memory by the API
         # first get basename (last bit of path)
