@@ -442,7 +442,7 @@ Please note the following points when using updating:
 - The tss file should have enough data points to cover the simulation time
 
 - The -U options should be used to specify which columns to actually use and in which order
-  to use them. For example: -u '[1,3,2]' indicated to use column 1,2 and 2 in that order.
+  to use them. For example: -u '[1,3,2]' indicates to use column 1,2 and 3 in that order.
 
 All possible options in wflow\_sbm.ini file
 -------------------------------------------
