@@ -414,9 +414,15 @@ Inflow = /inmaps/IF
 Updating using measured data
 ----------------------------
 
+.. note::
+
+    Updating is only supported in the wflow\_sbm and wflow_hbv models.
+
+
 If a file (in .tss format) with measured discharge is specified using
 the -U command-line option the model will try to update (match) the flow
-at the outlet to the measured discharge. The following steps are taken:
+at the outlet to the measured discharge. In that case the -u option should also be specified
+to indicate which of the columns must be used. When updating is switched on the following steps are taken:
 
 -  the difference at the outlet between measured and simulated Q (in mm)
    is determined
@@ -427,6 +433,16 @@ at the outlet to the measured discharge. The following steps are taken:
    to multiply the kinematic wave store with. This ratio is scaled
    according to a maximum distance from the gauge.
 
+
+Please note the following points when using updating:
+
+
+- The tss file should have as many columns as there are gauges defined in the model
+
+- The tss file should have enough data points to cover the simulation time
+
+- The -U options should be used to specify which columns to actually use and in which order
+  to use them. For example: -u '[1,3,2]' indicated to use column 1,2 and 2 in that order.
 
 All possible options in wflow\_sbm.ini file
 -------------------------------------------

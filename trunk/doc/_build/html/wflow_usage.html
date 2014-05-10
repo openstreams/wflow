@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Using the models &mdash; wflow 1.0RC2 documentation</title>
+  <title>Using the models &mdash; wflow 1.0-RC3-dev:31:39M documentation</title>
   
 
   
@@ -28,7 +28,7 @@
   
 
   
-    <link rel="top" title="wflow 1.0RC2 documentation" href="index.html"/>
+    <link rel="top" title="wflow 1.0-RC3-dev:31:39M documentation" href="index.html"/>
         <link rel="next" title="The wflow_fit module" href="wflow_fit.html"/>
         <link rel="prev" title="Building a model" href="wflow_building.html"/> 
 
@@ -554,9 +554,14 @@ an average per landuse.</p>
 </div>
 <div class="section" id="updating-using-measured-data">
 <h2>Updating using measured data<a class="headerlink" href="#updating-using-measured-data" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Updating is only supported in the wflow_sbm and wflow_hbv models.</p>
+</div>
 <p>If a file (in .tss format) with measured discharge is specified using
 the -U command-line option the model will try to update (match) the flow
-at the outlet to the measured discharge. The following steps are taken:</p>
+at the outlet to the measured discharge. In that case the -u option should also be specified
+to indicate which of the columns must be used. When updating is switched on the following steps are taken:</p>
 <ul class="simple">
 <li>the difference at the outlet between measured and simulated Q (in mm)
 is determined</li>
@@ -564,6 +569,13 @@ is determined</li>
 <li>the ratio of measured Q divided by simulated Q at the outlet is used
 to multiply the kinematic wave store with. This ratio is scaled
 according to a maximum distance from the gauge.</li>
+</ul>
+<p>Please note the following points when using updating:</p>
+<ul class="simple">
+<li>The tss file should have as many columns as there are gauges defined in the model</li>
+<li>The tss file should have enough data points to cover the simulation time</li>
+<li>The -U options should be used to specify which columns to actually use and in which order
+to use them. For example: -u &#8216;[1,3,2]&#8217; indicated to use column 1,2 and 2 in that order.</li>
 </ul>
 </div>
 <div class="section" id="all-possible-options-in-wflow-sbm-ini-file">
@@ -680,7 +692,7 @@ waterdem = 0
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.0RC2',
+            VERSION:'1.0-RC3-dev:31:39M',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

@@ -168,9 +168,9 @@ determined. The infiltrating water is split is two parts, the part that
 fall on compacted areas and the part that fall on non-compacted areas.
 First the amount of water that infiltrates in non-compacted areas is
 calculated by taking the mimimum of the remaining storage capacity, the
-maximum soil infiltration rate and the water on non-compated areas.
+maximum soil infiltration rate and the water on non-compacted areas.
 After adding the infiltrated water to the unsaturated store the same is
-done for the compated areas after updatting the remaining storage
+done for the compacted areas after updating the remaining storage
 capacity.
 
 
