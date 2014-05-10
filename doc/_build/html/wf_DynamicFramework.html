@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>wf_DynamicFramework Module &mdash; wflow 1.0RC2 documentation</title>
+  <title>wf_DynamicFramework Module &mdash; wflow 1.0-RC3-dev:31:39M documentation</title>
   
 
   
@@ -28,7 +28,7 @@
   
 
   
-    <link rel="top" title="wflow 1.0RC2 documentation" href="index.html"/>
+    <link rel="top" title="wflow 1.0-RC3-dev:31:39M documentation" href="index.html"/>
         <link rel="next" title="Questions and answers" href="faq.html"/>
         <link rel="prev" title="Using the framework" href="framework.html"/> 
 
@@ -365,8 +365,34 @@ value. Current settings for dimensions are assumed.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_multParameterValuesArea">
+<tt class="descname">wf_multParameterValuesArea</tt><big>(</big><em>mapname</em>, <em>value</em>, <em>areacode</em>, <em>areamapname</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_multParameterValuesArea" title="Permalink to this definition">¶</a></dt>
+<dd><p>multiply a parameter map with a single scalar
+value for area with id area only. Current settings for dimensions are assumed.</p>
+<p>This method must be called <em>after</em> the runinitial() method</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>mapname - string with name of map</li>
+<li>value - single scalar</li>
+<li>areacode - id of the area in the areamap</li>
+<li>areamapname - name of the areamap</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">1 if the map was present, 0 if nothing was done</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="wf_DynamicFramework.wf_DynamicFramework.wf_readmap">
-<tt class="descname">wf_readmap</tt><big>(</big><em>name</em>, <em>default</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_readmap" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">wf_readmap</tt><big>(</big><em>name</em>, <em>default</em>, <em>verbose=True</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_readmap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adjusted version of readmapNew. the style variable is used to indicated
 how the data is read:</p>
 <div class="highlight-python"><div class="highlight"><pre>1 - default: reads pcrmaps
@@ -444,6 +470,10 @@ map remain the same.</p>
 </ul>
 </dd>
 </dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">this is buggy somehow...!!!</p>
+</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -885,7 +915,7 @@ with data from the ini file.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.0RC2',
+            VERSION:'1.0-RC3-dev:31:39M',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

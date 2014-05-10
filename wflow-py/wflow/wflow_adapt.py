@@ -449,7 +449,7 @@ def getEndTimefromRuninfo(xmlfile):
         
     return ed
 
-def getStartTimefromRuninfo(xmlfile):
+def getStartTimefromRuninfo(xmlfile,logger):
     """ 
     Gets the starttime from the FEWS runinfo file
     """
@@ -459,11 +459,11 @@ def getStartTimefromRuninfo(xmlfile):
         runinf = tree.getroot()
         edate=runinf.find('.//{' + fewsNamespace + '}startDateTime')
         ttime = edate.attrib['time']
-        if len(ttime) ==  12: # Hack for millisecons in testrunner runifo.xml...
+        if len(ttime) ==  12: # Hack for millisecons in testrunner runinfo.xml...
             ttime = ttime.split('.')[0]
         ed = datetime.strptime(edate.attrib['date'] + ttime,'%Y-%m-%d%H:%M:%S')
     else:
-        print xmlfile + " does not exists."
+        logger.warn(xmlfile + " does not exists.")
         
     return ed
 
@@ -483,9 +483,10 @@ def getMapStacksFromRuninfo(xmlfile):
         
     return ed
 
-def pre_adapter(INxmlTimeSeries):
+def pre_adapter(INxmlTimeSeries,logger):
     list_xmlTimeSeries = INxmlTimeSeries.split()
     for xmlTimeSeries in list_xmlTimeSeries:
+        logger.info("Converting " + xmlTimeSeries + " ..... ")
         pixml_totss(xmlTimeSeries,case + '/intss/')
         pixml_totss_dates(xmlTimeSeries,case + '/intss/')
         #writeNrTimesteps()
@@ -501,7 +502,6 @@ def usage():
 def main():
     """
     Main entry for using the module as a command line program (e.g. from the Delft-FEWS GA)
-    
     """
     global case
     global runId
@@ -561,7 +561,9 @@ def main():
     logger = setlogger(logfile)    
     
     if mode =="Pre":
-        pre_adapter(xmlTimeSeries)
+        logger.info("Starting preadapter")
+        pre_adapter(xmlTimeSeries,logger)
+        logger.info("Ending preadapter")
         sys.exit(0)
     elif mode == "Run":
         logger.info("Run adapter not implemented...")    # Not implmented -> se pcraster adapter        
@@ -600,7 +602,7 @@ def main():
                 thissection ='outputtss_'+ str(secnr)
                 tssfiles  = config.options(thissection)
                 secnr = secnr + 1
-                sDate = getStartTimefromRuninfo(runinfofile)
+                sDate = getStartTimefromRuninfo(runinfofile,logger)
     
                 for aa in tssfiles:
                     if aa not in "samplemap":
