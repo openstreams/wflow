@@ -716,7 +716,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     
       :returns: 1 if the map was present, 0 if nothing was done
       """
-      
 
       arpcr = cover(value)
           
@@ -847,8 +846,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       Output: 
           - numpy array
       """
-      
-      
       if hasattr(self._userModel(), mapname):
           exec "retval = pcr2numpy(self._userModel()." + mapname + ",-999)"          
           if self.APIDebug:
@@ -875,10 +872,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       Output: 
           - numpy array
       """
-      
-      
       if hasattr(self._userModel(), mapname):
-          exec "retval = self._userModel()." + mapname 
+          retval =  getattr(self._userModel(), mapname)
           if self.APIDebug:
               self.logger.debug("wf_supplyMapAsNumpy returning: " + mapname)
       else:          
@@ -955,9 +950,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       """
       returns:
           - the a list of variable names
-          
       """
-      
       varlist= self.wf_supplyVariableNamesAndRoles()
       ret = range(len(varlist))
       for ss in range(len(varlist)):
@@ -974,8 +967,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       returns:
           - the a list of variable roles
       """
-      
-   
       varlist= self.wf_supplyVariableNamesAndRoles()
       ret = range(len(varlist))
       for ss in range(len(varlist)):
@@ -992,8 +983,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       returns:
           - the number of exchangable variables
       """
-      
-     
       varlist= self.wf_supplyVariableNamesAndRoles()
       
       if self.APIDebug:
@@ -1007,8 +996,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       returns:
           - the a list of variable units
       """
-      
-
       varlist= self.wf_supplyVariableNamesAndRoles()
       ret = range(len(varlist))
       for ss in range(len(varlist)):
@@ -1040,7 +1027,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
               self.logger.debug("wf_supplyCurrentTime from usermodel: " + str(ttime))
 
           return ttime        
-      else:
+      else: # Assume daily timesteps
           ttime = self._userModel().self.currentTimeStep() * 86400
           if self.APIDebug:
               self.logger.debug("wf_supplyCurrentTime from framework: " + str(ttime))
@@ -1080,9 +1067,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
           - value at location xcor, ycor
       
       """
-      exec "pcmap = self._userModel()." + mapname
-
-      
+      pcmap =  getattr(self._userModel(), mapname)
       pt = getValAtPoint(pcmap,xcor,ycor) 
       
       if self.APIDebug:
@@ -1090,27 +1075,25 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
  
       return pt
 
- 
+
   def wf_supplyScalarRowCol(self,mapname,row,col):
       """
       returns a single value for row and col from the
-      map given.      
-      
+      map given (zero based).
+
       Input:
           - mapname
           - xcor
           - ycor
-          
+
       Output:
           - value at location row, col
       """
-      
-      exec "pcmap = self._userModel()." + mapname
-      
-      npmap = pcr2numpy(pcmap,NaN)
-      
-      return npmap[row,col]    
-   
+      pcmap =  getattr(self._userModel(), mapname)
+      ret = cellvalue(pcmap,row+1,col+1)
+
+      return ret[0]
+
 
 
   def _userModel(self):
