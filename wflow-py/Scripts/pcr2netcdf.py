@@ -98,11 +98,7 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
     - maxbuf = 600: number of timesteps to buffer before writing
     
     """
-    # Create a buffer of a number of timesteps to speed-up writing    
 
-    bufsize = minimum(len(timeList),maxbuf)
-    print bufsize
-    timestepbuffer = zeros((bufsize,169,187))
     # if necessary, make trgPrefix maximum of 8 characters    
     if len(srcPrefix) > 8:
         srcPrefix = srcPrefix[0:8]
@@ -111,6 +107,8 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
     # read time axis and convert to time objects
     time = nc_trg.variables['time']
     timeObj = nc4.num2date(time[:], units=time.units, calendar=time.calendar)
+
+    
     try:
         nc_var = nc_trg.variables[trgVar]
     except:
@@ -118,6 +116,11 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
         nc_var = nc_trg.createVariable(trgVar, 'f4', ('time', 'lat', 'lon',), fill_value=-9999., zlib=True)
         nc_var.units = trgUnits
         nc_var.standard_name = trgName
+        
+    # Create a buffer of a number of timesteps to speed-up writing    
+    bufsize = minimum(len(timeList),maxbuf) 
+    timestepbuffer = zeros((bufsize,len(nc_trg.variables['lat']),len(nc_trg.variables['lon'])))
+
     # now loop over all time steps, check the date and write valid dates to a list, write time series to PCRaster maps
     for nn, curTime in enumerate(timeList):
         idx = where(timeObj==curTime)[0]
@@ -137,6 +140,7 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
         #timestepbuffer[bufpos,:,:] =  flipud(data)
         # Weird, the flupud is no longer needed!!!!
         timestepbuffer[bufpos,:,:] =  data
+
         if buffreset == 0 or idx ==  bufsize -1:
             logger.debug("Writing buffer to file at: " + str(curTime) + " " + str(int(bufpos) + 1) + " timesteps")
             nc_var[idx-bufsize+1:idx+1,:,:] = timestepbuffer
