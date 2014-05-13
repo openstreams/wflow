@@ -1,10 +1,11 @@
 import os
 
 thisversion = "$Id: mkversion.py 550 2012-11-27 19:17:46Z schelle $"
-vers=os.popen('svnversion -n').read()
+vers=os.popen('svnversion -n').read().replace(":","-")
+
 # SET THESE
 ###################################
-manualversion = "1.0-RC3-dev" + ":" + vers
+manualversion = "1.0-RC3-dev" + "-" + vers
 manualmainversion = "1.0-dev"
 ###################################
 a = open("_version.py","w")
