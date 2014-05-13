@@ -18,7 +18,8 @@ f.addScript("wflow/wflow_gr4.py")
 f.addScript("wflow/wflow_floodmap.py")
 #f.addScript("wflow/plottss.py")
 f.addScript("Scripts/wflow_prepare_step1.py")
-f.addScript("Scripts/area_in_out.py")
+#f.addScript("Scripts/area_in_out.py")
 f.addScript("Scripts/wflow_prepare_step2.py")
+f.addScript("Scripts/pcr2netcdf.py")
 #f.addScript("wflow/wflow_fit.py") # Does not work becuse of QT
 f()    # starts the freezing process

@@ -54,7 +54,9 @@ else:
     from PCRaster.Framework import *
     from PCRaster.NumPy import *
     
+
 import scipy
+import netCDF4 as nc4
 
 
 
@@ -693,4 +695,5 @@ def sCurveSlope(X,a=0.0,b=1.0,c=1.0):
     sc = sCurve(X,a=a,b=b,c=c)
     slope = sc * (1 - sc)
     return slope    
-    
+
+
