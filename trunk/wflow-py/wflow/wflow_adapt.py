@@ -103,22 +103,19 @@ def _f10(seq, idfun=None):
             
 fewsNamespace="http://www.wldelft.nl/fews/PI"
 
-def setlogger(logfilename):
+def setlogger(logfilename,loggername,thelevel=logging.INFO):
     """
     Set-up the logging system and return a logger object. Exit if this fails
-    
-    Input:
-    - filename
-    
-    Output:
-    - Logger object
     """
+
     try:    
         #create logger
-        logger = logging.getLogger("wflow_adapt")
-        logger.setLevel(logging.DEBUG)
-        ch = logging.handlers.RotatingFileHandler(logfile,maxBytes=200000, backupCount=5)
-        #ch = logging.handlers.FileHandler(logfiles,mode='w')
+        logger = logging.getLogger(loggername)
+        if not isinstance(thelevel, int):
+            logger.setLevel(logging.DEBUG)
+        else:
+            logger.setLevel(thelevel)
+        ch = logging.FileHandler(logfilename,mode='w')
         console = logging.StreamHandler()
         console.setLevel(logging.DEBUG)
         ch.setLevel(logging.DEBUG)
@@ -202,6 +199,7 @@ def pixml_totss_dates (nname,outputdir):
         - Others may follow
 
     """
+    
     if os.path.exists(nname):
         file = open(nname, "r")
         tree = parse(file)
@@ -287,6 +285,7 @@ def pixml_totss(nname,outputdir):
                 i = i+1
         nrevents = i
         
+
         for par in uniqueParList:
             f = open(outputdir + '/' + par + '.tss','w')
             # write the header
@@ -558,7 +557,7 @@ def main():
     timestepsecs = int(wflow_lib.configget(config,"model","timestepsecs",str(timestepsecs)))
     
 
-    logger = setlogger(logfile)    
+    logger = setlogger(logfile,"wflow_adapt")    
     
     if mode =="Pre":
         logger.info("Starting preadapter")
@@ -581,7 +580,7 @@ def main():
         for a in mstacks:
            var = config.get("outputmaps",a)           
            logger.debug("Creating mapstack xml: " + workdir + "/" + case +"/" +runId + "/" + var + ".xml" )
-           mapstackxml(workdir + "/" + case +"/" + runId + "/outmaps/" + var +".xml",var + "?????.???",var,var,getStartTimefromRuninfo(runinfofile),getEndTimefromRuninfo(runinfofile),timestepsecs)
+           mapstackxml(workdir + "/" + case +"/" + runId + "/outmaps/" + var +".xml",var + "?????.???",var,var,getStartTimefromRuninfo(runinfofile,logger),getEndTimefromRuninfo(runinfofile),timestepsecs)
            
         
         # Back hack to work around the 0 based FEWS problem and create a double timestep zo that we have connection between subsequent runs in FEWS

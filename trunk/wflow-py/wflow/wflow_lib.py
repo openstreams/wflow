@@ -57,6 +57,9 @@ else:
 
 import scipy
 import netCDF4 as nc4
+import gzip, zipfile
+import osgeo.gdal as gdal
+from osgeo.gdalconst import *
 
 
 
@@ -697,3 +700,144 @@ def sCurveSlope(X,a=0.0,b=1.0,c=1.0):
     return slope    
 
 
+def Gzip(fileName, storePath=False, chunkSize=1024*1024):
+        """
+        Usage: Gzip(fileName, storePath=False, chunksize=1024*1024)
+        Gzip the given file to the given storePath and then remove the file.
+        A chunk size may be selected. Default is 1 megabyte
+        Input:
+            fileName:   file to be GZipped
+            storePath:  destination folder. Default is False, meaning the file will be zipped to its own folder
+            chunkSize:  size of chunks to write. If set too large, GZip will fail with memory problems
+        """
+        import gzip
+        if not storePath:
+            pathName = os.path.split(fileName)[0]
+            fileName = os.path.split(fileName)[1]
+            curdir   = os.path.curdir
+            os.chdir(pathName)
+        # open files for reading / writing
+        r_file = open(fileName, 'rb')
+        w_file = gzip.GzipFile(fileName + '.gz', 'wb', 9)
+        dataChunk = r_file.read(chunkSize)
+        while dataChunk:
+            w_file.write(dataChunk)
+            dataChunk = r_file.read(chunkSize)
+        w_file.flush()
+        w_file.close()
+        r_file.close()
+        os.unlink(fileName) #We don't need the file now
+        if not storePath:
+            os.chdir(curdir)
+
+
+
+# These come from GLOFRIS_Utils
+
+def Gzip(fileName, storePath=False, chunkSize=1024*1024):
+        """
+        Usage: Gzip(fileName, storePath=False, chunksize=1024*1024)
+        Gzip the given file to the given storePath and then remove the file.
+        A chunk size may be selected. Default is 1 megabyte
+        Input:
+            fileName:   file to be GZipped
+            storePath:  destination folder. Default is False, meaning the file will be zipped to its own folder
+            chunkSize:  size of chunks to write. If set too large, GZip will fail with memory problems
+        """
+        if not storePath:
+            pathName = os.path.split(fileName)[0]
+            fileName = os.path.split(fileName)[1]
+            curdir   = os.path.curdir
+            os.chdir(pathName)
+        # open files for reading / writing
+        r_file = open(fileName, 'rb')
+        w_file = gzip.GzipFile(fileName + '.gz', 'wb', 9)
+        dataChunk = r_file.read(chunkSize)
+        while dataChunk:
+            w_file.write(dataChunk)
+            dataChunk = r_file.read(chunkSize)
+        w_file.flush()
+        w_file.close()
+        r_file.close()
+        os.unlink(fileName) #We don't need the file now
+        if not storePath:
+            os.chdir(curdir)
+
+def zipFiles(fileList, fileTarget):
+    """
+    Usage: zipFiles(fileList, fileTarget)
+    zip the given list of files to the given target file
+    Input:
+        fileList:   list of files to be zipped
+        fileTarget: target zip-file
+    """
+    zout = zipfile.ZipFile(fileTarget, "w", compression=zipfile.ZIP_DEFLATED)
+    for fname in fileList:
+        zout.write(fname, arcname=os.path.split(fname)[1])
+    zout.close()
+
+
+
+def readMap(fileName, fileFormat):
+    """ Read geographical file into memory
+    """
+    # Open file for binary-reading
+    mapFormat = gdal.GetDriverByName(fileFormat)
+    mapFormat.Register()
+    ds = gdal.Open(fileName)
+    if ds is None:
+        print 'Could not open ' + fileName + '. Something went wrong!! Shutting down'
+        sys.exit(1)
+        # Retrieve geoTransform info
+    geotrans = ds.GetGeoTransform()
+    originX = geotrans[0]
+    originY = geotrans[3]
+    resX    = geotrans[1]
+    resY    = geotrans[5]
+    cols = ds.RasterXSize
+    rows = ds.RasterYSize
+    x = linspace(originX+resX/2,originX+resX/2+resX*(cols-1),cols)
+    y = linspace(originY+resY/2,originY+resY/2+resY*(rows-1),rows)
+    # Retrieve raster
+    RasterBand = ds.GetRasterBand(1) # there's only 1 band, starting from 1
+    data = RasterBand.ReadAsArray(0,0,cols,rows)
+    FillVal = RasterBand.GetNoDataValue()
+    RasterBand = None
+    ds = None
+    return x, y, data, FillVal
+
+def writeMap(fileName, fileFormat, x, y, data, FillVal):
+    """ Write geographical data into file"""
+
+    verbose = False
+    gdal.AllRegister()
+    driver1 = gdal.GetDriverByName('GTiff')
+    driver2 = gdal.GetDriverByName(fileFormat)
+
+		# Processing
+    if verbose:
+        print 'Writing to temporary file ' + fileName + '.tif'
+	# Create Output filename from (FEWS) product name and data and open for writing
+    TempDataset = driver1.Create(fileName + '.tif',data.shape[1],data.shape[0],1,gdal.GDT_Float32)
+	# Give georeferences
+    xul = x[0]-(x[1]-x[0])/2
+    yul = y[0]+(y[0]-y[1])/2
+    TempDataset.SetGeoTransform( [ xul, x[1]-x[0], 0, yul, 0, y[1]-y[0] ] )
+	# get rasterband entry
+    TempBand = TempDataset.GetRasterBand(1)
+	# fill rasterband with array
+    TempBand.WriteArray(data,0,0)
+    TempBand.FlushCache()
+    TempBand.SetNoDataValue(FillVal)
+	# Create data to write to correct format (supported by 'CreateCopy')
+    if verbose:
+        print 'Writing to ' + fileName + '.map'
+    outDataset = driver2.CreateCopy(fileName, TempDataset, 0)
+    TempDataset = None
+    outDataset = None
+    if verbose:
+        print 'Removing temporary file ' + fileName + '.tif'
+    os.remove(fileName + '.tif');
+
+    if verbose:
+        print 'Writing to ' + fileName + ' is done!'
