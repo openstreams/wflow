@@ -1168,7 +1168,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
     return 0
     
-  def _reportNew(self, variable, name, style=1):
+  def _reportNew(self, variable, name, style=1,gzipit=False):
     """
     outputformat: (set in the [framework] section of the init file). 
         1: pcraster
@@ -1220,7 +1220,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 import PCRaster as PCRaster
         else:
             import PCRaster
-        PCRaster.report(variable, path)    
+        PCRaster.report(variable, path)
+        if gzipit:
+            Gzip(path,storePath=True)
     elif self.outputFormat == 2:
         numpy.savez(path,pcr2numpy(variable,-999))
     elif self.outputFormat == 3:

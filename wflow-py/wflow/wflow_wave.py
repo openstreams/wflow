@@ -318,7 +318,8 @@ class WflowModel(DynamicModel):
     self.dynHBoundary = pcrut.readmapSave(os.path.join(self.Dir, wflow_dynhboun),0.0)
     self.lowerflowbound=configget(self.config,"dynamicwave","lowerflowbound","0")
     self.fixed_h_tss=configget(self.config,"dynamicwave","levelTss","intss/Hboun.tss")
-    self.logger.debug("Dynamic wave timestep is: " + str(self.timestepsecs/self.dynsubsteps/self.TsliceDyn) + " seconds")
+    self.logger.info("Dynamic wave timestep is: " + str(self.timestepsecs/self.dynsubsteps/self.TsliceDyn) + " seconds")
+    self.logger.info("Lower boundary file: " + self.fixed_h_tss)
     self.AdaptiveTimeStepping = int(configget(self.config,"dynamicwave","AdaptiveTimeStepping","0"))
 
     
