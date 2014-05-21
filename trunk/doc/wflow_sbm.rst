@@ -380,7 +380,7 @@ Sub-grid runoff generation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Sub-grid runoff generaten can be switched on on off in the configuration file. In 
-general this feature is used if the grid cell size is relatively lager compared
+general this feature is used if the grid cell size is relatively larger compared
 to the variation of topography. In addition you will need to have information
 on the distribution of altitude within a grid-cell. Depending on the topography sub-grid
 runoff generation may be useful around 1x1km and larger.
