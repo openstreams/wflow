@@ -4,16 +4,17 @@ syntax:
     pcr2netcdf -S date -E date - N mapstackname -I mapstack_folder 
                -O netcdf_name [-b buffersize]
 
--S startdate in "%d-%m-%Y %H:%M:%S" e.g. 31-12-1990 00:00:00
--E endDate in "%d-%m-%Y %H:%M:%S"
--N Mapstack-name (prefix)
-   You can sepcify multiple input mapstack  to merge them into one netcdf
-   e.g. -M P -M TEMP -M PET
--I input mapstack folder
--O output netcdf file
--b maxbuf - maximum number of timesteps to buffer before writing (default = 600)
--t timestep - (set timestep in seconds, default = 86400) Only 86400 and 3600 supported
-
+    -S startdate in "%d-%m-%Y %H:%M:%S" e.g. 31-12-1990 00:00:00
+    -E endDate in "%d-%m-%Y %H:%M:%S"
+    -N Mapstack-name (prefix)
+       You can sepcify multiple input mapstack  to merge them into one netcdf
+       e.g. -M P -M TEMP -M PET
+    -I input mapstack folder
+    -O output netcdf file
+    -b maxbuf - maximum number of timesteps to buffer before writing (default = 600)
+    -t timestep - (set timestep in seconds, default = 86400) Only 86400 and 3600 supported
+    -F FORMAT (default = NETCDF4, use NETCDF3_CLASSIC for OpenDA)
+    -z switch on zlib compression (default=Off)
 
 This utility is made to simplify running wflow models with OpenDA. The
 OpenDA link needs the forcing timeseries to be in netcdf format. Use this to convert
@@ -30,10 +31,10 @@ based on GLOFRIS_utils.py by H Winsemius
 
 try:
     import  wflow.wflow_lib as wflow_lib
-    import wflow.pcrut as pcrut
+    import wflow.pcrut as _pcrut
 except ImportError:
     import  wflow_lib  as wflow_lib 
-    import  pcrut as pcrut
+    import  pcrut as _pcrut
     
 import time
 import datetime as dt
@@ -83,7 +84,7 @@ def readMap(fileName, fileFormat,logger):
     return x, y, data, FillVal
     
 
-def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trgName, timeList, logger,maxbuf=600):
+def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trgName, timeList, logger,maxbuf=600,Format="NETCDF4",zlib=False):
     """
     Write pcraster mapstack to netcdf file. Taken from GLOFRIS_Utils.py
     
@@ -103,8 +104,9 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
     if len(srcPrefix) > 8:
         srcPrefix = srcPrefix[0:8]
     # Open target netCDF file
-    nc_trg = nc4.Dataset(trgFile, 'a',format="NETCDF4",zlib=True)
+    nc_trg = nc4.Dataset(trgFile, 'a',format=Format,zlib=zlib)
     # read time axis and convert to time objects
+    logger.debug("Creating time object..")
     time = nc_trg.variables['time']
     timeObj = nc4.num2date(time[:], units=time.units, calendar=time.calendar)
 
@@ -113,16 +115,18 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
         nc_var = nc_trg.variables[trgVar]
     except:
         # prepare the variable
-        nc_var = nc_trg.createVariable(trgVar, 'f4', ('time', 'lat', 'lon',), fill_value=-9999., zlib=True)
+        nc_var = nc_trg.createVariable(trgVar, 'f4', ('time', 'lat', 'lon',), fill_value=-9999., zlib=zlib)
         nc_var.units = trgUnits
         nc_var.standard_name = trgName
-        
+    
+    nc_Fill = nc_var._FillValue
     # Create a buffer of a number of timesteps to speed-up writing    
     bufsize = minimum(len(timeList),maxbuf) 
     timestepbuffer = zeros((bufsize,len(nc_trg.variables['lat']),len(nc_trg.variables['lon'])))
 
     # now loop over all time steps, check the date and write valid dates to a list, write time series to PCRaster maps
     for nn, curTime in enumerate(timeList):
+        logger.debug("Adding time: " + str(curTime))
         idx = where(timeObj==curTime)[0]
         count = nn + 1
         below_thousand = count % 1000
@@ -132,8 +136,8 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
         pcraster_path = os.path.join(srcFolder, pcraster_file)
         # write grid to PCRaster file
         x, y, data, FillVal = readMap(pcraster_path, 'PCRaster',logger)
-        logger.debug("Adding time: " + str(curTime))
-        data[data==FillVal] = nc_var._FillValue
+       
+        data[data==FillVal] = nc_Fill
         
         buffreset = (idx + 1) % maxbuf
         bufpos = (idx) % maxbuf
@@ -150,7 +154,7 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
 
     
     
-def prepare_nc(trgFile, timeList, x, y, metadata, logger, units='Days since 1900-01-01 00:00:00', calendar='gregorian'):
+def prepare_nc(trgFile, timeList, x, y, metadata, logger, units='Days since 1900-01-01 00:00:00', calendar='gregorian',Format="NETCDF4",zlib=False):
     """
     This function prepares a NetCDF file with given metadata, for a certain year, daily basis data
     The function assumes a gregorian calendar and a time unit 'Days since 1900-01-01 00:00:00'
@@ -161,7 +165,7 @@ def prepare_nc(trgFile, timeList, x, y, metadata, logger, units='Days since 1900
     startDayNr = nc4.date2num(timeList[0], units=units, calendar=calendar)
     endDayNr   = nc4.date2num(timeList[-1], units=units, calendar=calendar)
     time       = arange(startDayNr,endDayNr+1)
-    nc_trg     = nc4.Dataset(trgFile,'w',format="NETCDF4",zlib=True)
+    nc_trg     = nc4.Dataset(trgFile,'w',format=Format,zlib=zlib)
 
     logger.info('Setting up dimensions and attributes. lat: ' + str(len(y))+ " lon: " + str(len(x)))
     nc_trg.createDimension('time', 0) #NrOfDays*8
@@ -172,15 +176,18 @@ def prepare_nc(trgFile, timeList, x, y, metadata, logger, units='Days since 1900
     DateHour.calendar = calendar
     DateHour.standard_name = 'time'
     DateHour.long_name = 'time'
+    DateHour.axis = 'T'
     DateHour[:] = time
     y_var = nc_trg.createVariable('lat','f4',('lat',))
     y_var.standard_name = 'latitude'
     y_var.long_name = 'latitude'
     y_var.units = 'degrees_north'
+    y_var.axis = 'Y'
     x_var = nc_trg.createVariable('lon','f4',('lon',))
     x_var.standard_name = 'longitude'
     x_var.long_name = 'longitude'
     x_var.units = 'degrees_east'
+    x_var.axis = 'X'
     y_var[:] = y
     x_var[:] = x
     projection= nc_trg.createVariable('projection','c')
@@ -233,7 +240,8 @@ def main(argv=None):
     timestepsecs = 86400
     
     clonemap=None
-    
+    Format="NETCDF4"
+    zlib=False
     if argv is None:
         argv = sys.argv[1:]
         if len(argv) == 0:
@@ -243,7 +251,7 @@ def main(argv=None):
     ## Main model starts here
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, 'S:E:N:I:O:b:t:')
+        opts, args = getopt.getopt(argv, 'S:E:N:I:O:b:t:F:z')
     except getopt.error, msg:
         usage(msg)
 
@@ -253,6 +261,8 @@ def main(argv=None):
         if o == '-O': ncoutfile = a
         if o == '-I': mapstackfolder = a
         if o == '-b': mbuf = int(a)
+        if o == '-z': zlib=True
+        if o == '-F': Format=a
         if o == '-t': 
             timestepsecs = int(a)
         if o == '-N': 
@@ -261,17 +271,17 @@ def main(argv=None):
             varname.append(a)
     
     # USe first timestep as clone-map
-    logger = pcrut.setlogger('pcr2netcdf.log','pcr2netcdf',thelevel=pcrut.logging.DEBUG)
+    logger = _pcrut.setlogger('pcr2netcdf.log','pcr2netcdf', thelevel = _pcrut.logging.DEBUG)
 
     count = 1
     below_thousand = count % 1000
     above_thousand = count / 1000
     clonemapname  = str(mapstackname[0] + '%0' + str(8-len(mapstackname[0])) + '.f.%03.f') % (above_thousand, below_thousand)
     clonemap = os.path.join(mapstackfolder, clonemapname)
-    pcrut.setclone(clonemap)
+    _pcrut.setclone(clonemap)
    
-    x = pcrut.pcr2numpy(pcrut.xcoordinate(pcrut.boolean(pcrut.cover(1.0))),NaN)[0,:]
-    y = pcrut.pcr2numpy(pcrut.ycoordinate(pcrut.boolean(pcrut.cover(1.0))),NaN)[:,0]
+    x = _pcrut.pcr2numpy(_pcrut.xcoordinate(_pcrut.boolean(_pcrut.cover(1.0))),NaN)[0,:]
+    y = _pcrut.pcr2numpy(_pcrut.ycoordinate(_pcrut.boolean(_pcrut.cover(1.0))),NaN)[:,0]
     
 
     start=dt.datetime.strptime(startstr,"%d-%m-%Y %H:%M:%S")
@@ -282,12 +292,12 @@ def main(argv=None):
         timeList = date_range(start, end, tdelta="hours")
 
     
-    prepare_nc(ncoutfile, timeList, x, y, metadata, logger)
+    prepare_nc(ncoutfile, timeList, x, y, metadata, logger,Format=Format,zlib=zlib)
     
     idx = 0
     for mname in mapstackname:
         logger.info("Converting mapstack: " + mname + " to " + ncoutfile)
-        write_netcdf_timeseries(mapstackfolder, mname, ncoutfile, var[idx], unit, varname[idx], timeList, logger,maxbuf=mbuf)
+        write_netcdf_timeseries(mapstackfolder, mname, ncoutfile, var[idx], unit, varname[idx], timeList, logger,maxbuf=mbuf,Format=Format,zlib=zlib)
         idx = idx + 1
     
 

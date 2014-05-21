@@ -716,8 +716,7 @@ class WflowModel(DynamicModel):
 
         # Add rivers to the WaterFrac, but check with waterfrac map and correct
         self.RiverFrac = min(1.0, ifthenelse(self.River, (self.RiverWidth * self.DCL) / (self.xl * self.yl), 0))
-        self.WaterFrac = self.WaterFrac - ifthenelse((self.RiverFrac + self.WaterFrac) > 1.0,
-                                                     self.RiverFrac + self.WaterFrac - 1.0, 0.0)
+        self.WaterFrac = min(1.0,self.WaterFrac  + self.RiverFrac)
 
 
         # term for Alpha
@@ -1011,11 +1010,18 @@ class WflowModel(DynamicModel):
         self.InfiltExcess = ifthenelse(UStoreCapacity > 0.0, FreeWaterDepth, 0.0)
         self.CumInfiltExcess = self.CumInfiltExcess + self.InfiltExcess
 
+        # Determine soil eveporation
         self.ActEvap, self.FirstZoneDepth, self.UStoreDepth, self.ActEvapUStore = actEvap_SBM(self.RootingDepth,
                                                                                               self.zi, self.UStoreDepth,
                                                                                               self.FirstZoneDepth,
                                                                                               PotTrans,
                                                                                               self.rootdistpar)
+        # Determine Open Water EVAP. Later subtract this from water that
+        # enters the Kinematic wave
+        self.EvapRest = PotTrans - self.ActEvap
+        self.ActEvapOpenWater =  min(self.WaterLevel * 1000.0 ,self.WaterFrac * self.EvapRest)
+        self.ActEvap = self.ActEvap + self.ActEvapOpenWater
+
 
         ##########################################################################
         # Transfer of water from unsaturated to saturated store...################
@@ -1039,7 +1045,7 @@ class WflowModel(DynamicModel):
         # Now add leakage. to deeper groundwater
         #ActLeakage = cover(max(0,min(self.MaxLeakage,ActLeakage)),0)
 
-        # Now look if there is Seeapage
+        # Now look if there is Seapage
 
         #ActLeakage = ifthenelse(self.Seepage > 0.0, -1.0 * Seepage, ActLeakage)
         self.FirstZoneDepth = self.FirstZoneDepth + self.Transfer - ActLeakage
@@ -1117,8 +1123,7 @@ class WflowModel(DynamicModel):
         else:
             Reinfilt = self.ZeroMap
 
-        self.InwaterMM = max(0.0,
-                             self.ExfiltWater + FreeWaterDepth + self.SubCellRunoff + self.SubCellGWRunoff + self.RunoffOpenWater - Reinfilt)
+        self.InwaterMM = max(0.0,  self.ExfiltWater + FreeWaterDepth + self.SubCellRunoff + self.SubCellGWRunoff + self.RunoffOpenWater - Reinfilt - self.ActEvapOpenWater)
         self.Inwater = self.InwaterMM * self.ToCubic  # m3/s
 
         self.ExfiltWaterCubic = self.ExfiltWater * self.ToCubic
