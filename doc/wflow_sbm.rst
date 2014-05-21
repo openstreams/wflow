@@ -382,8 +382,8 @@ Sub-grid runoff generation
 Sub-grid runoff generaten can be switched on on off in the configuration file. In 
 general this feature is used if the grid cell size is relatively lager compared
 to the variation of topography. In addition you will need to have information
-on the ditribution of altotude within a grid-cell. Depending on the topography sub-grid
-runoff generation may be useful aroun 1x1km and larger.
+on the distribution of altitude within a grid-cell. Depending on the topography sub-grid
+runoff generation may be useful around 1x1km and larger.
 
 The basis is formed by a sigmoid (:math:`S`) function that is fitted using 
 a 10, 50 and 90 percentile  DEM. The :math:`S` function is defined as:
