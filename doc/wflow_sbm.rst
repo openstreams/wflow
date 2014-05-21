@@ -321,6 +321,10 @@ unsaturated store:
     ActEvap = ActEvapSat + ActEvapUStore
 
 
+
+Remaining evaporative demand is used to for evaporation of open water. This amount
+is subtracted from the water that would otherwise enter the kinematic wave.
+
 Capilary rise is determined using the following approach:
 first the :math:`K_{sat}` is determined at the water table
 :math:`z_{i}`; next a potential capilary rise is determined from the

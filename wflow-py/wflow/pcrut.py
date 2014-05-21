@@ -87,7 +87,8 @@ def usage(*args):
 
 
 
-def setlogger(logfilename,loggername,thelevel=logging.INFO):
+
+def setlogger(logfilename,loggername, thelevel=logging.INFO):
     """
     Set-up the logging system and return a logger object. Exit if this fails
     """
