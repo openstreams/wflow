@@ -502,7 +502,7 @@ class WflowModel(DynamicModel):
             touse[idx] = thecol
             
         self.UpdateMap = numpy2pcr(Nominal,touse,0.0)
-        # Calulate distance to updating points (upstream) annd use to scale the correction
+        # Calculate distance to updating points (upstream) annd use to scale the correction
         # ldddist returns zero for cell at the gauges so add 1.0 tp result
         self.DistToUpdPt = cover(min(ldddist(self.TopoLdd,boolean(cover(self.UpdateMap,0)),1) * self.reallength/celllength(),self.UpdMaxDist),self.UpdMaxDist)
         #self.DistToUpdPt = ldddist(self.TopoLdd,boolean(cover(self.OutputId,0.0)),1)
@@ -649,7 +649,7 @@ class WflowModel(DynamicModel):
     :var self.QuickFlow: specific runoff (quickflow part) [mm]
     :var self.RealQuickFlow: specific runoff (quickflow), If K upper zone is precalculated [mm]
     :var self.CapFlux: capilary rise [mm]
-    :var self.SurfaceRunoffMM: Surfacerunoff in mm
+    :var self.SurfaceRunoffMM: SurfaceRunoff in mm
     :var self.KinWaveVolume: Volume in the kinematic wave reservoir
         
     
@@ -691,8 +691,7 @@ class WflowModel(DynamicModel):
                 self.Seepage=cover(0.0)
             self.Temperature=cover(self.wf_readmap(self.TEMP_mapstack,10.0),10.0)
             self.Temperature = self.Temperature + self.TempCor
-            #self.Inflow=spatial(scalar(0.0))
-    #self.report(self.LowerZoneStorage,"tt")
+
     # Multiply input parameters with a factor (for calibration etc) -p option in command line
     for k, v in multdynapars.iteritems():
         estr = k + "=" + k + "*" + str(v)

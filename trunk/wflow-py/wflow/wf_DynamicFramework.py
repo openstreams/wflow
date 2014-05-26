@@ -425,7 +425,25 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
           self.oscv[self.samplenamecsv[a]].writestep(tmpvar,a,self._userModel().currentStep)
 
    
-   
+
+
+  def wf_savesummarymaps(self):
+      """
+      Saves the maps defined in the summary section to disk
+      [summary] # Single values or end values
+      Not done yet [summary_sum] # accumulative maps over the model run
+      Note done yet [summary_avg] # average maps over the model run
+      """
+      toprint = configsection(self._userModel().config,'summary')
+      for a in toprint:
+          b = a.replace('self','self._userModel()')
+          try:
+              eval("self._userModel().report(" + b  + ", self._userModel().Dir + \"/\" + self._userModel().runId + \"/outsum/" + self._userModel().config.get("summary",a) +"\")")
+          except:
+              self._userModel().logger.warn("Could not find or save the configured summary map:"  + a)
+
+
+
   def wf_savedynMaps(self):
       """
       Save the maps defined in the ini file for the dynamic section
