@@ -240,7 +240,7 @@ class WflowModel(DynamicModel):
     report(self.sumlevel,self.SaveDir + "/outsum/sumlevel.map")
     report(self.sumrunoff/catchmenttotal(1,self.TopoLdd),self.SaveDir + "/outsum/sumrunoff.map")
 
-
+    report(self.suminflow,self.SaveDir + "/outsum/suminflow.map")
       
   def initial(self):
       
@@ -531,6 +531,7 @@ class WflowModel(DynamicModel):
     self.OldKinWaveVolume=self.ZeroMap
     self.Qvolume=self.ZeroMap
     self.Q=self.ZeroMap
+    self.suminflow=self.ZeroMap
     # cntd
     self.FieldCapacity=self.FC                               #: total water holding capacity of the soil
     self.Treshold=self.LP*self.FieldCapacity                      # Threshold soilwaterstorage above which AE=PE
@@ -587,14 +588,9 @@ class WflowModel(DynamicModel):
     report(ifthen(self.River,self.Bw),self.Dir + "/" + self.runId + "/outsum/RiverWidth.map")
     if self.updating:
         report(self.DistToUpdPt,self.Dir + "/" + self.runId + "/outsum/DistToUpdPt.map")
-    
-    
+
     self.logger.info("End of initial section.")
-    
-    #print ";;;;;;;;;;;;;"
-    #self.csvsaveGauges=pcrut.wf_OutputTimeSeriesArea(self.OutputLoc,"rungauges.csv")
-    #self.csvsaveSubcatch=pcrut.wf_OutputTimeSeriesArea(self.OutputId,"runsub.csv")
-    #print ";;;;;;;;;;;;;"
+
 
 
   def resume(self):
@@ -667,10 +663,8 @@ class WflowModel(DynamicModel):
 
     
     if self.scalarInput:
-            # gaugesmap not yet finished. Should be a map with cells that
-            # hold the gauges with an unique id
-            self.Precipitation = timeinputscalar(self.precipTss,self.gaugesMap)
-            self.Inflow = cover(0.0)
+            self.Precipitation = timeinputscalar(self.precipTss,self.gaugesMap) * self.Pcorr
+            self.Inflow=cover(timeinputscalar(self.inflowTss,self.InflowLoc),0.0)
             #self.Seepage = cover(timeinputscalar(self.SeepageTss,self.SeepageLoc),0)
             self.Precipitation = pcrut.interpolategauges(self.Precipitation,self.interpolMethod)
             self.PotEvaporation=timeinputscalar(self.evapTss,self.gaugesMap)
@@ -680,7 +674,7 @@ class WflowModel(DynamicModel):
             self.Temperature = pcrut.interpolategauges(self.Temperature,self.interpolMethod)
             self.Temperature = self.Temperature + self.TempCor
     else:
-            self.Precipitation=cover(self.wf_readmap(self.P_mapstack,0.0),0.0)
+            self.Precipitation=cover(self.wf_readmap(self.P_mapstack,0.0),0.0) * self.Pcorr
             self.PotEvaporation=cover(self.wf_readmap(self.PET_mapstack,0.0),0.0)
             #self.Inflow=cover(self.wf_readmap(self.self.Inflow),0)
             # These ar ALWAYS 0 at present!!!
@@ -753,7 +747,7 @@ class WflowModel(DynamicModel):
     self.SoilMoisture=self.SoilMoisture+Backtosoil     
     InUpperZone=DirectRunoff+HBVSeepage                         		# total water available for runoff
 	
-    # Steps is alway 1 at the moment
+    # Steps is always 1 at the moment
     # calculations for Upper zone
     self.UpperZoneStorage=self.UpperZoneStorage+InUpperZone                 		#incoming water from soil 
     self.Percolation=min(self.PERC,self.UpperZoneStorage)                        		#Percolation
@@ -763,10 +757,7 @@ class WflowModel(DynamicModel):
     self.CapFlux=min(self.FieldCapacity-self.SoilMoisture,self.CapFlux)
     self.UpperZoneStorage=self.UpperZoneStorage-self.CapFlux
     self.SoilMoisture=self.SoilMoisture+self.CapFlux
-    #NetInUpperZone=InUpperZone-self.Percolation-self.CapFlux              		#Net inflow of upperzone
-    #MaxUZout=UpperZoneStorage                                   		#maximum possible amount of outflow in this time step 
-    #UpperZoneStorage=UpperZoneStorage-NetInUpperZone    
-    		#back to start: real computations start below 
+
     if not self.SetKquickFlow:
         self.QuickFlow = max(0,self.KQuickFlow*(self.UpperZoneStorage**(1.0+self.AlphaNL)))
         self.RealQuickFlow = self.ZeroMap
@@ -855,6 +846,8 @@ class WflowModel(DynamicModel):
     self.sumtemp=self.sumtemp + self.Temperature
     self.sumrunoff=self.sumrunoff  + self.SurfaceRunoffMM                        #accumulated runoff for water balance
     self.sumlevel=self.sumlevel  + self.WaterLevel
+    self.suminflow=self.suminflow  + self.Inflow
+    
     
 
 
