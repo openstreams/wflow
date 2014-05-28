@@ -241,6 +241,7 @@ class WflowModel(DynamicModel):
         self.caseName = Dir
         self.Dir = Dir + "/"
         self.configfile = configfile
+        self.SaveDir = self.Dir + "/" + self.runId + "/"
 
     def _initAPIVars(self):
         """
@@ -736,49 +737,53 @@ class WflowModel(DynamicModel):
         self.csize = areamaximum(self.upsize, self.TopoId)
         # Save some summary maps
         self.logger.info("Saving summary maps...")
-        if self.modelSnow:
-            report(self.Cfmax, self.Dir + "/" + self.runId + "/outsum/Cfmax.map")
-            report(self.TTI, self.Dir + "/" + self.runId + "/outsum/TTI.map")
-            report(self.TT, self.Dir + "/" + self.runId + "/outsum/TT.map")
-            report(self.WHC, self.Dir + "/" + self.runId + "/outsum/WHC.map")
 
-        report(self.Cmax, self.Dir + "/" + self.runId + "/outsum/Cmax.map")
-        report(self.csize, self.Dir + "/" + self.runId + "/outsum/CatchmentSize.map")
-        report(self.upsize, self.Dir + "/" + self.runId + "/outsum/UpstreamSize.map")
-        report(self.EoverR, self.Dir + "/" + self.runId + "/outsum/EoverR.map")
-        report(self.RootingDepth, self.Dir + "/" + self.runId + "/outsum/RootingDepth.map")
-        report(self.CanopyGapFraction, self.Dir + "/" + self.runId + "/outsum/CanopyGapFraction.map")
-        report(self.InfiltCapSoil, self.Dir + "/" + self.runId + "/outsum/InfiltCapSoil.map")
-        report(self.InfiltCapPath, self.Dir + "/" + self.runId + "/outsum/InfiltCapPath.map")
-        report(self.PathFrac, self.Dir + "/" + self.runId + "/outsum/PathFrac.map")
-        report(self.thetaR, self.Dir + "/" + self.runId + "/outsum/thetaR.map")
-        report(self.thetaS, self.Dir + "/" + self.runId + "/outsum/thetaS.map")
-        report(self.FirstZoneMinCapacity, self.Dir + "/" + self.runId + "/outsum/FirstZoneMinCapacity.map")
-        report(self.FirstZoneKsatVer, self.Dir + "/" + self.runId + "/outsum/FirstZoneKsatVer.map")
-        report(self.M, self.Dir + "/" + self.runId + "/outsum/M.map")
-        report(self.FirstZoneCapacity, self.Dir + "/" + self.runId + "/outsum/FirstZoneCapacity.map")
-        report(Terrain_angle, self.Dir + "/" + self.runId + "/outsum/angle.map")
-        report(self.Slope, self.Dir + "/" + self.runId + "/outsum/slope.map")
-        report(WI, self.Dir + "/" + self.runId + "/outsum/WI.map")
-        report(self.CC, self.Dir + "/" + self.runId + "/outsum/CC.map")
-        report(self.N, self.Dir + "/" + self.runId + "/outsum/N.map")
-        report(self.RiverFrac, self.Dir + "/" + self.runId + "/outsum/RiverFrac.map")
-        report(self.WaterFrac, self.Dir + "/" + self.runId + "/outsum/WaterFrac.map")
-
-        report(self.xl, self.Dir + "/" + self.runId + "/outsum/xl.map")
-        report(self.yl, self.Dir + "/" + self.runId + "/outsum/yl.map")
-        report(self.reallength, self.Dir + "/" + self.runId + "/outsum/rl.map")
-        report(self.DCL, self.Dir + "/" + self.runId + "/outsum/DCL.map")
-        report(self.Bw, self.Dir + "/" + self.runId + "/outsum/Bw.map")
-        report(ifthen(self.River, self.Bw), self.Dir + "/" + self.runId + "/outsum/RiverWidth.map")
         if self.updating:
             report(self.DistToUpdPt, self.Dir + "/" + self.runId + "/outsum/DistToUpdPt.map")
 
-        self.SaveDir = self.Dir + "/" + self.runId + "/"
+
 
         #self.IF = self.ZeroMap
         self._initAPIVars()
         self.logger.info("End of initial section")
+
+    def default_summarymaps(self):
+          """
+          Returns a list of default summary-maps at the end of a run.
+          This is model specific. You can also add them to the [summary]section of the ini file but stuff
+          you think is crucial to the model should be listed here
+
+
+          """
+          lst = ['self.Cfmax','self.TTI','self.RiverWidth', 'self.TT',
+                'self.WHC',
+                'self.Cmax',
+                'self.csize',
+                'self.upsize',
+                'self.EoverR',
+                'self.RootingDepth',
+                'self.CanopyGapFraction',
+                'self.InfiltCapSoil',
+                'self.InfiltCapPath',
+                'self.PathFrac',
+                'self.thetaR',
+                'self.thetaS',
+                'self.FirstZoneMinCapacity',
+                'self.FirstZoneKsatVer',
+                'self.M',
+                'self.FirstZoneCapacity',
+                'self.Slope',
+                'self.CC',
+                'self.N',
+                'self.RiverFrac',
+                'self.WaterFrac',
+                'self.xl',
+                'self.yl',
+                'self.reallength',
+                'self.DCL',
+                'self.Bw']
+
+          return lst
 
 
     def resume(self):

@@ -345,7 +345,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     self.outputFormat = int(configget(self._userModel().config,'framework','outputformat','1'))
     self.APIDebug = int(configget(self._userModel().config,'framework','debug',str(self.APIDebug)))
 
-    # now gather all the csv/tss/txt etc timeseries output objects
+    # Now gather all the csv/tss/txt etc timeseries output objects
     # Print .ini defined outputmaps per timestep
 
     checktss = configsection(self._userModel().config,"outputtss")
@@ -386,6 +386,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
   def wf_suspend(self, directory):
       """
       Suspend the state variables to disk as .map files
+      Also saves the summary maps
       
       """
       allvars = self._userModel().stateVariables()
@@ -410,22 +411,19 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
               self.logger.warn("Problem saving state variable: " + var)
               self.logger.warn(execstr)
 
-
-
+      # Save the summary maps
+      self.wf_savesummarymaps()
 
 
   def wf_saveTimeSeries(self):
       """
+      Print .ini defined output csv/tss timeseries per timestep
       """
-      # Print .ini defined output csv timeseries per timestep
-      #toprint = configsection(self._userModel().config,'outputcsv')
       for a in self.samplenamecsv:
-          #print a + "IN:" + self.samplenamecsv[a]
           exec "tmpvar = " +  self.varnamecsv[a]
           self.oscv[self.samplenamecsv[a]].writestep(tmpvar,a,self._userModel().currentStep)
 
    
-
 
   def wf_savesummarymaps(self):
       """
@@ -434,13 +432,23 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       Not done yet [summary_sum] # accumulative maps over the model run
       Note done yet [summary_avg] # average maps over the model run
       """
+
       toprint = configsection(self._userModel().config,'summary')
       for a in toprint:
-          b = a.replace('self','self._userModel()')
+          b = a.replace('self.','')
           try:
-              eval("self._userModel().report(" + b  + ", self._userModel().Dir + \"/\" + self._userModel().runId + \"/outsum/" + self._userModel().config.get("summary",a) +"\")")
+              pcrmap = getattr(self._userModel(),b)
+              report( pcrmap , self._userModel().Dir + "/" + self._userModel().runId + "/outsum/" + self._userModel().config.get("summary",a) )
           except:
               self._userModel().logger.warn("Could not find or save the configured summary map:"  + a)
+
+      # Check of the usermodel has a list of summary maps defined and save those
+      if hasattr(self._userModel(),'default_summarymaps'):
+          for a in self._userModel().default_summarymaps():
+              b = a.replace('self.','')
+              pcrmap = getattr(self._userModel(),b)
+              report( pcrmap , self._userModel().Dir + "/" + self._userModel().runId + "/outsum/" + b + ".map" )
+
 
 
 

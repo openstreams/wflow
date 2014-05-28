@@ -569,29 +569,24 @@ class WflowModel(DynamicModel):
     # calculate catchmentsize
     self.upsize=catchmenttotal(self.xl * self.yl,self.TopoLdd)
     self.csize=areamaximum(self.upsize,self.TopoId)
-    # Save some summary maps
-    self.logger.info("Saving summary maps...")
-    report(self.Cfmax,self.Dir + "/" + self.runId + "/outsum/Cfmax.map")
-    report(self.csize,self.Dir + "/" + self.runId + "/outsum/CatchmentSize.map")
-    report(self.upsize,self.Dir + "/" + self.runId + "/outsum/UpstreamSize.map")
-    report(self.TTI,self.Dir + "/" + self.runId + "/outsum/TTI.map")
-    report(self.TT,self.Dir + "/" + self.runId + "/outsum/TT.map")
-    report(self.WHC,self.Dir + "/" + self.runId + "/outsum/WHC.map")       
-    report(Terrain_angle,self.Dir + "/" + self.runId + "/outsum/angle.map")
-    report(self.Slope,self.Dir + "/" + self.runId + "/outsum/slope.map")
-    report(self.N,self.Dir + "/" + self.runId + "/outsum/N.map")
-    report(self.xl,self.Dir + "/" + self.runId + "/outsum/xl.map")
-    report(self.yl,self.Dir + "/" + self.runId + "/outsum/yl.map")
-    report(self.reallength,self.Dir + "/" + self.runId + "/outsum/rl.map")
-    report(self.DCL,self.Dir + "/" + self.runId + "/outsum/DCL.map")
-    report(self.Bw,self.Dir + "/" + self.runId + "/outsum/Bw.map")
-    report(ifthen(self.River,self.Bw),self.Dir + "/" + self.runId + "/outsum/RiverWidth.map")
-    if self.updating:
-        report(self.DistToUpdPt,self.Dir + "/" + self.runId + "/outsum/DistToUpdPt.map")
+
 
     self.logger.info("End of initial section.")
 
 
+  def default_summarymaps(self):
+      """
+      Returns a list of default summary-maps at the end of a run.
+      This is model specific. You can also add them to the [summary]section of the ini file but stuff
+      you think is crucial to the model should be listed here
+
+       Example:
+
+      """
+      lst = ['self.Cfmax','self.csize','self.upsize','self.TTI','self.TT','self.WHC',
+             'self.Slope','self.N','self.xl','self.yl','self.reallength','self.DCL','self.Bw',]
+
+      return lst
 
   def resume(self):
     """ read initial state maps (they are output of a previous call to suspend()) """
