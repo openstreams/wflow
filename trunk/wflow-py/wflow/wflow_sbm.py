@@ -831,8 +831,7 @@ class WflowModel(DynamicModel):
     def dynamic(self):
         """
     Stuf that is done for each timestep
-    
-    
+
     Below a list of variables that can be save to disk as maps or as 
     timeseries (see ini file for syntax):
      
@@ -899,7 +898,7 @@ class WflowModel(DynamicModel):
                 self.Inflow = cover(timeinputscalar(self.caseName + self.inflowTss, nominal(self.InflowLoc)), 0)
             else:
                 self.Inflow = cover(self.wf_readmap(self.Inflow_mapstack, 0.0,verbose=False),0)
-            #self.Inflow=spatial(scalar(0.0))
+
             if self.modelSnow:
                 self.Temperature = cover(self.wf_readmap(self.TEMP_mapstack, 10.0), 10.0)
                 self.Temperature = self.Temperature + self.TempCor
@@ -929,7 +928,6 @@ class WflowModel(DynamicModel):
         ##########################################################################
         # Interception according to a modified Gash model
         ##########################################################################
-
         if self.timestepsecs >= (23 * 3600):
             ThroughFall, Interception, StemFlow, self.CanopyStorage = rainfall_interception_gash(self.Cmax, self.EoverR,
                                                                                                  self.CanopyGapFraction,
@@ -946,8 +944,6 @@ class WflowModel(DynamicModel):
         ##########################################################################
         # Start with the soil calculations  ######################################
         ##########################################################################
-
-
         self.ExfiltWater = self.ZeroMap
         FreeWaterDepth = self.ZeroMap
 
@@ -981,11 +977,9 @@ class WflowModel(DynamicModel):
             self.SubCellGWRunoff = spatial(scalar(0.0))
             self.SubCellRunoff = spatial(scalar(0.0))
 
-        #----->>
         # First determine if the soil infiltration capacity can deal with the
         # amount of water
         # split between infiltration in undisturbed soil and compacted areas (paths)
-
         SoilInf = FreeWaterDepth * (1 - self.PathFrac)
         PathInf = FreeWaterDepth * self.PathFrac
         if self.modelSnow:
@@ -1001,7 +995,7 @@ class WflowModel(DynamicModel):
         self.UStoreDepth = self.UStoreDepth + InfiltSoil
         UStoreCapacity = UStoreCapacity - InfiltSoil
         FreeWaterDepth = FreeWaterDepth - InfiltSoil
-        # <-------
+
         MaxInfiltPath = min(self.InfiltCapPath * soilInfRedu, PathInf)
         #self.PathInfiltExceeded=self.PathInfiltExceeded + ifthenelse(self.InfiltCapPath < FreeWaterDepth, scalar(1), scalar(0))
         self.PathInfiltExceeded = self.PathInfiltExceeded + scalar(self.InfiltCapPath * soilInfRedu < PathInf)
@@ -1045,22 +1039,19 @@ class WflowModel(DynamicModel):
         self.Transfer = min(self.UStoreDepth, ifthenelse(SaturationDeficit <= 0.00001, 0.0,
                                                          Ksat * self.UStoreDepth / (SaturationDeficit + 1)))
         # Determine Ksat at base
-        #DeepTransfer = min(self.UStoreDepth,ifthenelse (SaturationDeficit <= 0.00001, 0.0, DeepKsat * self.UStoreDepth/(SaturationDeficit+1)))
-        ActLeakage = 0.0
+        self.DeepTransfer = min(self.UStoreDepth,ifthenelse (SaturationDeficit <= 0.00001, 0.0, self.DeepKsat * self.UStoreDepth/(SaturationDeficit+1)))
+        #ActLeakage = 0.0
         # Now add leakage. to deeper groundwater
-        #ActLeakage = cover(max(0,min(self.MaxLeakage,ActLeakage)),0)
+        self.ActLeakage = cover(max(0.0,min(self.MaxLeakage,self.DeepTransfer)),0)
 
-        # Now look if there is Seapage
+        # Now look if there is Seepage
 
-        #ActLeakage = ifthenelse(self.Seepage > 0.0, -1.0 * Seepage, ActLeakage)
-        self.FirstZoneDepth = self.FirstZoneDepth + self.Transfer - ActLeakage
+        #self.ActLeakage = ifthenelse(self.Seepage > 0.0, -1.0 * self.Seepage, self.ActLeakage)
+        self.FirstZoneDepth = self.FirstZoneDepth + self.Transfer - self.ActLeakage
         self.UStoreDepth = self.UStoreDepth - self.Transfer
 
-        # Determine % saturated
-        #Sat = ifthenelse(self.FirstZoneDepth >= (self.FirstZoneCapacity*0.999), scalar(1.0), scalar(0.0))
+        # Determine % saturated taking into account subcell fraction
         self.Sat = max(self.SubCellFrac, scalar(self.FirstZoneDepth >= (self.FirstZoneCapacity * 0.999)))
-        #PercSat = areaaverage(scalar(Sat),self.TopoId) * 100
-
 
         ##########################################################################
         # Horizontal (downstream) transport of water #############################
@@ -1088,9 +1079,6 @@ class WflowModel(DynamicModel):
             self.FirstZoneFlux = accucapacityflux(self.TopoLdd, self.FirstZoneDepth, MaxHor)
             self.FirstZoneDepth = accucapacitystate(self.TopoLdd, self.FirstZoneDepth, MaxHor)
 
-
-
-
         ##########################################################################
         # Determine returnflow from first zone          ##########################
         ##########################################################################
@@ -1098,7 +1086,6 @@ class WflowModel(DynamicModel):
         self.ExfiltWater = self.ExfiltWaterFrac * (self.FirstZoneDepth - self.FirstZoneCapacity)
         #self.ExfiltWater=ifthenelse (self.FirstZoneDepth - self.FirstZoneCapacity > 0 , self.FirstZoneDepth - self.FirstZoneCapacity , 0.0)
         self.FirstZoneDepth = self.FirstZoneDepth - self.ExfiltWater
-
 
         # Re-determine UStoreCapacity
         UStoreCapacity = self.FirstZoneCapacity - self.FirstZoneDepth - self.UStoreDepth
@@ -1218,7 +1205,7 @@ class WflowModel(DynamicModel):
         else:
             self.CumInt = self.CumInt + NetInterception
 
-        self.CumLeakage = self.CumLeakage + ActLeakage
+        self.CumLeakage = self.CumLeakage + self.ActLeakage
         self.CumInwaterMM = self.CumInwaterMM + self.InwaterMM
         self.CumExfiltWater = self.CumExfiltWater + self.ExfiltWater
         # Water budget
@@ -1293,7 +1280,6 @@ def main(argv=None):
             _lastTimeStep) + ")"
         usage()
 
-    print LogFileName
     myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile)
     dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep, firstTimestep=_firstTimeStep)
     dynModelFw.createRunId(NoOverWrite=_NoOverWrite, level=loglevel, logfname=LogFileName)
