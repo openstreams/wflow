@@ -1138,14 +1138,13 @@ class WflowModel(DynamicModel):
         self.SurfaceRunoffMM = self.SurfaceRunoff * self.QMMConv  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
         self.updateRunOff()
         self.InflowKinWaveCell = upstream(self.TopoLdd, self.SurfaceRunoff)
-        self.MassBalKinWave = (
-                                  self.KinWaveVolume - self.OldKinWaveVolume) / self.timestepsecs + self.InflowKinWaveCell + self.Inwater - self.SurfaceRunoff
+        self.MassBalKinWave = (self.KinWaveVolume - self.OldKinWaveVolume) / self.timestepsecs + self.InflowKinWaveCell + self.Inwater - self.SurfaceRunoff
 
         Runoff = self.SurfaceRunoff
 
         # Updating
         # --------
-        # Assume a tss file with as many columns as outpulocs. Start updating for each non-missing value and start with the
+        # Assume a tss file with as many columns as outputlocs. Start updating for each non-missing value and start with the
         # first column (nr 1). Assumes that outputloc and columns match!
 
         if self.updating:
@@ -1238,8 +1237,8 @@ def main(argv=None):
         if len(argv) == 0:
             usage()
             return
-
-    ## Main model starts here
+    ########################################################################
+    ## Process command-line options                                        #
     ########################################################################
     try:
         opts, args = getopt.getopt(argv, 'XF:L:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:')
@@ -1269,7 +1268,7 @@ def main(argv=None):
     if fewsrun:
         ts = getTimeStepsfromRuninfo(runinfoFile, timestepsecs)
         if (ts):
-            _lastTimeStep = ts  # * 86400/timestepsecs
+            _lastTimeStep = ts
             _firstTimeStep = 1
         else:
             print "Failed to get timesteps from runinfo file: " + runinfoFile
