@@ -169,7 +169,14 @@ class WflowModel(DynamicModel):
             exec "self." + s + " = cover(1.0)"
 
 
-    
+  def default_summarymaps(self):
+      """
+      *Optional*
+
+      Return a default list of variables to report as summary maps in the outsum dir.
+      """
+      return ['self.Altitude']
+
   def dynamic(self):
       """
       *Required*
