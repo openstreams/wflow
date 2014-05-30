@@ -56,6 +56,8 @@ def log_uncaught_exceptions(ex_cls, ex, tb):
 sys.excepthook = log_uncaught_exceptions
 
 
+
+
 class wf_exchnageVariables():
     """
     List of exchange variables
@@ -224,7 +226,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     self._d_firstTimestep = firstTimestep
     self._userModel()._setFirstTimeStep(self._d_firstTimestep)
     self.APIDebug = 0
-    
+
 
 
   
@@ -344,6 +346,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
     self.outputFormat = int(configget(self._userModel().config,'framework','outputformat','1'))
     self.APIDebug = int(configget(self._userModel().config,'framework','debug',str(self.APIDebug)))
+
+
+    # Add the summary/statistics variable to the class
+    # self._addAttributeToClass("summap",self._userModel().clone)
 
     # Now gather all the csv/tss/txt etc timeseries output objects
     # Print .ini defined outputmaps per timestep
