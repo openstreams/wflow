@@ -671,9 +671,9 @@ class WflowModel(DynamicModel):
     else:
             self.Precipitation=cover(self.wf_readmap(self.P_mapstack,0.0),0.0) * self.Pcorr
             self.PotEvaporation=cover(self.wf_readmap(self.PET_mapstack,0.0),0.0)
-            #self.Inflow=cover(self.wf_readmap(self.self.Inflow),0)
+            self.Inflow=cover(self.wf_readmap(self.Inflow_mapstack,0.0),0.0)
             # These ar ALWAYS 0 at present!!!
-            self.Inflow=pcrut.readmapSave(self.Inflow_mapstack,0.0)
+            #self.Inflow=pcrut.readmapSave(self.Inflow_mapstack,0.0)
             if self.ExternalQbase:
                 self.Seepage = cover(self.wf_readmap(self.Seepage_mapstack,0.0),0.0)
             else:
