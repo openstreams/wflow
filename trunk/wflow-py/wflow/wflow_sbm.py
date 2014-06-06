@@ -435,6 +435,7 @@ class WflowModel(DynamicModel):
         wflow_mgauges = configget(self.config, "model", "wflow_mgauges", "staticmaps/wflow_mgauges.map")
         wflow_riverwidth = configget(self.config, "model", "wflow_riverwidth", "staticmaps/wflow_riverwidth.map")
 
+
         # 2: Input base maps ########################################################
         subcatch = ordinal(readmap(self.Dir + wflow_subcatch))  # Determines the area of calculations (all cells > 0)
         subcatch = ifthen(subcatch > 0, subcatch)
@@ -457,7 +458,6 @@ class WflowModel(DynamicModel):
         self.OutputLoc = readmap(self.Dir + wflow_gauges)  # location of output gauge(s)
         self.InflowLoc = pcrut.readmapSave(self.Dir + wflow_inflow, 0.0)  # location abstractions/inflows.
         self.RiverWidth = pcrut.readmapSave(self.Dir + wflow_riverwidth, 0.0)
-
         # Experimental
         self.RunoffGenSigmaFunction = int(configget(self.config, 'model', 'RunoffGenSigmaFunction', '0'))
         self.RunoffGeneratingGWPerc = float(configget(self.config, 'defaultfortbl', 'RunoffGeneratingGWPerc', '0.1'))
@@ -550,7 +550,8 @@ class WflowModel(DynamicModel):
                                           self.Soil, 0.036)  # Manning river
         self.WaterFrac = self.readtblDefault(self.Dir + "/" + self.intbl + "/WaterFrac.tbl", self.LandUse, subcatch,
                                              self.Soil, 0.0)  # Fraction Open water
-
+        self.et_RefToPot = self.readtblDefault(self.Dir + "/" + self.intbl + "/et_reftopot.tbl", self.LandUse, subcatch,
+                                             self.Soil, 0.0)  # Fraction Open water
         if self.modelSnow:
             # HBV Snow parameters
             # critical temperature for snowmelt and refreezing:  TTI= 1.000
@@ -885,14 +886,14 @@ class WflowModel(DynamicModel):
                 self.Inflow = self.ZeroMap
             self.Precipitation = pcrut.interpolategauges(self.Precipitation, self.interpolMethod)
             self.PotenEvap = timeinputscalar(self.caseName + self.evapTss, self.gaugesMap)
-            self.PotenEvap = pcrut.interpolategauges(self.PotenEvap, self.interpolMethod)
+            self.PotenEvap = pcrut.interpolategauges(self.PotenEvap, self.interpolMethod) * self.et_RefToPot
             if self.modelSnow:
                 self.Temperature = timeinputscalar(self.caseName + self.tempTss, self.gaugesMap)
                 self.Temperature = pcrut.interpolategauges(self.Temperature, self.interpolMethod)
                 self.Temperature = self.Temperature + self.TempCor
         else:
             self.Precipitation = cover(self.wf_readmap(self.P_mapstack, 0.0), 0)
-            self.PotenEvap = cover(self.wf_readmap(self.PET_mapstack, 0.0), 0)
+            self.PotenEvap = cover(self.wf_readmap(self.PET_mapstack, 0.0), 0) * self.et_RefToPot
             #self.Inflow=cover(self.wf_readmap(self.Inflow),0)
             if (os.path.exists(self.caseName + self.inflowTss)):
                 self.Inflow = cover(timeinputscalar(self.caseName + self.inflowTss, nominal(self.InflowLoc)), 0)

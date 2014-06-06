@@ -504,7 +504,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
               try:
                   exec "self._userModel()." + var + "= readmap(\"" + directory + "/" + var + ".map\")"
               except:
-                  self.logger.warn("problem while reading state variable from disk: " + var + " Suggest to use the -I uption to restart")
+                  self.logger.warn("problem while reading state variable from disk: " + directory + "/" + var + " Suggest to use the -I uption to restart")
                   exit(1)
                
  
