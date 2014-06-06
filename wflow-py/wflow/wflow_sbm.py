@@ -1033,14 +1033,14 @@ class WflowModel(DynamicModel):
 
         # Determine saturation deficit. NB, as noted by Vertessy and Elsenbeer 1997
         # this deficit does NOT take into account the water in the unsaturated zone
-        SaturationDeficit = self.FirstZoneCapacity - self.FirstZoneDepth
+        self.SaturationDeficit = self.FirstZoneCapacity - self.FirstZoneDepth
 
 
         # now the actual tranfer to the saturated store..
-        self.Transfer = min(self.UStoreDepth, ifthenelse(SaturationDeficit <= 0.00001, 0.0,
-                                                         Ksat * self.UStoreDepth / (SaturationDeficit + 1)))
+        self.Transfer = min(self.UStoreDepth, ifthenelse(self.SaturationDeficit <= 0.00001, 0.0,
+                                                         Ksat * self.UStoreDepth / (self.SaturationDeficit + 1)))
         # Determine Ksat at base
-        self.DeepTransfer = min(self.UStoreDepth,ifthenelse (SaturationDeficit <= 0.00001, 0.0, self.DeepKsat * self.UStoreDepth/(SaturationDeficit+1)))
+        self.DeepTransfer = min(self.UStoreDepth,ifthenelse (self.SaturationDeficit <= 0.00001, 0.0, self.DeepKsat * self.UStoreDepth/(self.SaturationDeficit+1)))
         #ActLeakage = 0.0
         # Now add leakage. to deeper groundwater
         self.ActLeakage = cover(max(0.0,min(self.MaxLeakage,self.DeepTransfer)),0)
@@ -1068,14 +1068,14 @@ class WflowModel(DynamicModel):
             self.thetaS - self.thetaR))  # Determine actual water depth
 
         if self.waterdem:
-            MaxHor = max(0.0, min(self.FirstZoneKsatVer * waterSlope * exp(-SaturationDeficit / self.M),
+            MaxHor = max(0.0, min(self.FirstZoneKsatVer * waterSlope * exp(-self.SaturationDeficit / self.M),
                                   self.FirstZoneDepth))
             self.FirstZoneFlux = accucapacityflux(waterLdd, self.FirstZoneDepth, MaxHor)
             self.FirstZoneDepth = accucapacitystate(waterLdd, self.FirstZoneDepth, MaxHor)
         else:
             #
             #MaxHor = max(0,min(self.FirstZoneKsatVer * self.Slope * exp(-SaturationDeficit/self.M),self.FirstZoneDepth*(self.thetaS-self.thetaR))) * timestepsecs/basetimestep
-            MaxHor = max(0.0, min(self.FirstZoneKsatVer * self.Slope * exp(-SaturationDeficit / self.M),
+            MaxHor = max(0.0, min(self.FirstZoneKsatVer * self.Slope * exp(-self.SaturationDeficit / self.M),
                                   self.FirstZoneDepth))
             self.FirstZoneFlux = accucapacityflux(self.TopoLdd, self.FirstZoneDepth, MaxHor)
             self.FirstZoneDepth = accucapacitystate(self.TopoLdd, self.FirstZoneDepth, MaxHor)
