@@ -24,6 +24,15 @@ widely. The main differences are:
 The sections below describe the working of the model in more detail.
 
 
+Potential and Reference evaporation
+-----------------------------------
+
+The wflow\_sbm model assumes the input to be potential eveporation. In many case the evaporation
+will be a refercen evaporation fro a different land cover. In that case you can use the
+et_reftopot.tbl file to set the mutiplication per landuse to go from the supplied evaporation
+to the potential evaporation for each land cover. By default al is set to 1.0 assuming the eveaporation
+to be potential.
+
 
 
 The rainfall interception model
