@@ -240,9 +240,11 @@ class wfmodel_fit_API():
         for ts in range(self.startTime,self.stopTime):
             self.dynModelFw._runDynamic(ts,ts) # runs for all timesteps
 
-        results, head = pcrut.readtss(os.path.join(self.caseName,self.runId,"run.tss"))
+     
         # save output state
         self.dynModelFw._runSuspend()
+        self.dynModelFw._wf_shutdown()
+        results, head = pcrut.readtss(os.path.join(self.caseName,self.runId,"run.tss"))
         return results[self.WarmUpSteps:,self.ColSim].astype(np.float64)
       
     def savemaps(self,pars,savetoinput=False):

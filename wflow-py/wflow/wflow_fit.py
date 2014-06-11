@@ -129,6 +129,7 @@ class wfmodel_fit_API():
             mod = __import__(modeltofit, globals(), locals(), [], -1)
             self.WF = mod
 
+       
         self.results= []
         self.runId = runId
         self.caseName = casename
@@ -144,6 +145,8 @@ class wfmodel_fit_API():
         self.dynModelFw = self.WF.wf_DynamicFramework(self.myModel, self.stopTime,self.startTime)
         # Load model config from files and check directory structure
         self.dynModelFw.createRunId(NoOverWrite=False,level=30)
+        
+    
         #self.dynModelFw.logger.setLevel(20)
         self.log = self.dynModelFw._userModel().logger
         self.conf  = self.dynModelFw._userModel().config
@@ -229,11 +232,17 @@ class wfmodel_fit_API():
         
         for ts in range(self.startTime,self.stopTime):
             self.dynModelFw._runDynamic(ts,ts) # runs for all timesteps
+        
+        
 
-        results, head = pcrut.readtss(os.path.join(self.caseName,self.runId,"run.tss"))
+      
         # save output state
         self.dynModelFw._runSuspend()
         self.dynModelFw._wf_shutdown()
+
+        tssfile = os.path.join(self.caseName,self.runId,"run.tss")
+        
+        results, head = pcrut.readtss(tssfile)
         return results[self.WarmUpSteps:,self.ColSim].astype(np.float64)
       
     def savemaps(self,pars,savetoinput=False):
