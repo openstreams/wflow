@@ -63,7 +63,8 @@ $Rev: 669 $
 
 
 
-
+import matplotlib
+import pylab
 import scipy.optimize
 
 try:
@@ -80,8 +81,8 @@ except ImportError:
 
 import os.path
 import numpy as np
-import matplotlib
-import pylab
+
+
 import getopt
 import sys
 import csv
