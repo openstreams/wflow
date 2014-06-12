@@ -111,26 +111,23 @@ class wf_exchnageVariables():
 class wf_sumavg():
 
     def __init__(self,varname,mode='sum',filename=None):
-
         """
-
+        Class to hold variable in the usermodel that must be averaged summed etc.
         """
         if filename == None:
             filename=varname
-
         self.mode = mode
         self.varname = varname
         self.filename = filename
-
         self.data = None
         self.count = 0
+        self.availtypes =['sum','avg','min','max']
 
 
     def add_one(self,data):
         """
-
+        Ad a map (timmestep)
         """
-
         if self.count == 0:
             self.data = data
         else:
@@ -143,13 +140,14 @@ class wf_sumavg():
         self.count = self.count + 1
 
     def finalise(self):
-
+        """
+        Perform final calculations if needed (average, etc) and assign to the
+        result variable
+        """
         if self.mode == 'sum' or self.mode == 'min' or self.mode == 'max':
             self.result = self.data
         if self.mode == 'avg':
             self.result = self.data/self.count
-
-
 
 
 
@@ -376,7 +374,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     except:
         print "Cannot find config file: " + caseName + "/" + configfile
 
-    
 
     self._userModel().logger = self.loggingSetUp(caseName,runId,logfname,model,modelVersion,level=level)
 
@@ -389,31 +386,15 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     self.outputFormat = int(configget(self._userModel().config,'framework','outputformat','1'))
     self.APIDebug = int(configget(self._userModel().config,'framework','debug',str(self.APIDebug)))
 
-
+    # Fill the summary (stat) list from the ini file
     self.statslst = []
-    sum_maps = configsection(self._userModel().config,"summary_sum")
-    for thismap in sum_maps:
-        thismapname = self._userModel().config.get("summary_sum",thismap)
-        thismap = thismap.split('self.')[1]
-        self.statslst.append(wf_sumavg(thismap,mode='sum',filename=thismapname))
-
-    max_maps = configsection(self._userModel().config,"summary_max")
-    for thismap in max_maps:
-        thismapname = self._userModel().config.get("summary_max",thismap)
-        thismap = thismap.split('self.')[1]
-        self.statslst.append(wf_sumavg(thismap,mode='max',filename=thismapname))
-
-    min_maps = configsection(self._userModel().config,"summary_min")
-    for thismap in min_maps:
-        thismapname = self._userModel().config.get("summary_min",thismap)
-        thismap = thismap.split('self.')[1]
-        self.statslst.append(wf_sumavg(thismap,mode='min',filename=thismapname))
-
-    avg_maps = configsection(self._userModel().config,"summary_avg")
-    for thismap in avg_maps:
-        thismapname = self._userModel().config.get("summary_avg",thismap)
-        thismap = thismap.split('self.')[1]
-        self.statslst.append(wf_sumavg(thismap,mode='avg',filename=thismapname))
+    _type = wf_sumavg(None)
+    for sttype in _type.availtypes:
+        _maps = configsection(self._userModel().config,"summary_" + sttype)
+        for thismap in _maps:
+            thismapname = caseName + "/" + runId + "/outsum/" + self._userModel().config.get("summary_" + sttype,thismap)
+            thismap = thismap.split('self.')[1]
+            self.statslst.append(wf_sumavg(thismap,mode=sttype,filename=thismapname))
 
     # Add the summary/statistics variable to the class
     # self._addAttributeToClass("summap",self._userModel().clone)
@@ -502,8 +483,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       """
       Saves the maps defined in the summary section to disk
       [summary] # Single values or end values
-      Not done yet [summary_sum] # accumulative maps over the model run
-      Note done yet [summary_avg] # average maps over the model run
+      [summary_sum] # accumulative maps over the model run
+      [summary_avg] # average of maps over the model run
+      [summary_max] # max of maps over the model run
+      [summary_min] # min of maps over the model run
       """
 
       toprint = configsection(self._userModel().config,'summary')
@@ -521,7 +504,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
               b = a.replace('self.','')
               pcrmap = getattr(self._userModel(),b)
               report( pcrmap , self._userModel().Dir + "/" + self._userModel().runId + "/outsum/" + b + ".map" )
-
+      # These are the ones in the _sum _average etc sections
       for a in range(0,len(self.statslst)):
           self.statslst[a].finalise()
           data = self.statslst[a].result
