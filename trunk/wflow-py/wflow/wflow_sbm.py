@@ -773,6 +773,7 @@ class WflowModel(DynamicModel):
                 'self.FirstZoneKsatVer',
                 'self.M',
                 'self.FirstZoneCapacity',
+                'self.et_RefToPot',
                 'self.Slope',
                 'self.CC',
                 'self.N',

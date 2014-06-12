@@ -108,6 +108,49 @@ class wf_exchnageVariables():
         return 1   
 
 
+class wf_sumavg():
+
+    def __init__(self,varname,mode='sum',filename=None):
+
+        """
+
+        """
+        if filename == None:
+            filename=varname
+
+        self.mode = mode
+        self.varname = varname
+        self.filename = filename
+
+        self.data = None
+        self.count = 0
+
+
+    def add_one(self,data):
+        """
+
+        """
+
+        if self.count == 0:
+            self.data = data
+        else:
+            if self.mode == 'sum' or self.mode == 'avg':
+                self.data = self.data + data
+            if self.mode == 'max':
+                self.data = max(self.data,data)
+            if self.mode == 'min':
+                self.data = min(self.data,data)
+        self.count = self.count + 1
+
+    def finalise(self):
+
+        if self.mode == 'sum' or self.mode == 'min' or self.mode == 'max':
+            self.result = self.data
+        if self.mode == 'avg':
+            self.result = self.data/self.count
+
+
+
 
 
 class wf_OutputTimeSeriesArea():
@@ -347,6 +390,31 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     self.APIDebug = int(configget(self._userModel().config,'framework','debug',str(self.APIDebug)))
 
 
+    self.statslst = []
+    sum_maps = configsection(self._userModel().config,"summary_sum")
+    for thismap in sum_maps:
+        thismapname = self._userModel().config.get("summary_sum",thismap)
+        thismap = thismap.split('self.')[1]
+        self.statslst.append(wf_sumavg(thismap,mode='sum',filename=thismapname))
+
+    max_maps = configsection(self._userModel().config,"summary_max")
+    for thismap in max_maps:
+        thismapname = self._userModel().config.get("summary_max",thismap)
+        thismap = thismap.split('self.')[1]
+        self.statslst.append(wf_sumavg(thismap,mode='max',filename=thismapname))
+
+    min_maps = configsection(self._userModel().config,"summary_min")
+    for thismap in min_maps:
+        thismapname = self._userModel().config.get("summary_min",thismap)
+        thismap = thismap.split('self.')[1]
+        self.statslst.append(wf_sumavg(thismap,mode='min',filename=thismapname))
+
+    avg_maps = configsection(self._userModel().config,"summary_avg")
+    for thismap in avg_maps:
+        thismapname = self._userModel().config.get("summary_avg",thismap)
+        thismap = thismap.split('self.')[1]
+        self.statslst.append(wf_sumavg(thismap,mode='avg',filename=thismapname))
+
     # Add the summary/statistics variable to the class
     # self._addAttributeToClass("summap",self._userModel().clone)
 
@@ -453,6 +521,15 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
               b = a.replace('self.','')
               pcrmap = getattr(self._userModel(),b)
               report( pcrmap , self._userModel().Dir + "/" + self._userModel().runId + "/outsum/" + b + ".map" )
+
+      for a in range(0,len(self.statslst)):
+          self.statslst[a].finalise()
+          data = self.statslst[a].result
+          fname = self.statslst[a].filename
+          report (data,fname)
+
+
+
 
 
 
@@ -1162,6 +1239,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self.wf_QuickSuspend()
         self.wf_savedynMaps()
         self.wf_saveTimeSeries()
+        for a in range(0,len(self.statslst)):
+            data = getattr(self._userModel(),self.statslst[a].varname)
+            self.statslst[a].add_one(data)
+
 
       self._timeStepFinished()
       self._decrementIndentLevel()
