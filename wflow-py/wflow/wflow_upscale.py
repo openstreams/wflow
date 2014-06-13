@@ -50,7 +50,7 @@ try:
 except ImportError:
     import pcrut    
     
-import os, sys, shlex
+import os, sys, shlex, time
 import os.path
 import glob
 import getopt
