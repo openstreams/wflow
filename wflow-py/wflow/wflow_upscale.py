@@ -27,7 +27,9 @@ Usage::
     -N NewCaseName
     -r resample factor
     -I skip input mapstacks if specified
-     -f force overwrite an existing model
+    -f force overwrite an existing model
+    -M maxcpu
+       maximum number of cpu's/cores to use (default = 4)
 
 The script uses the pcraster resample program to reduce the maps. The original
 river network is used to force the river network in the reduced version of the 
@@ -57,7 +59,7 @@ import getopt
 import subprocess
 
 
-maxcpu = 4
+
 def usage(*args):
     sys.stdout = sys.stderr
     for msg in args: print msg
@@ -66,28 +68,31 @@ def usage(*args):
     
 
 
-def removeFinishedProcesses(processes):
-    """ given a list of (commandString, process),
-        remove those that have completed and return the result
-    """
-    newProcs = []
-    for pollCmd, pollProc in processes:
-        retCode = pollProc.poll()
-        if retCode==None:
-            # still running
-            newProcs.append((pollCmd, pollProc))
-        elif retCode!=0:
-            # failed
-            raise Exception("Command %s failed" % pollCmd)
-        else:
-            print "Command %s completed successfully" % pollCmd
-    return newProcs
+
 
 def runCommands(commands, maxCpu):
     """
     Runs a list of processes deviding
     over maxCpu
     """
+
+    def removeFinishedProcesses(processes):
+        """ given a list of (commandString, process),
+            remove those that have completed and return the result
+        """
+        newProcs = []
+        for pollCmd, pollProc in processes:
+            retCode = pollProc.poll()
+            if retCode==None:
+                # still running
+                newProcs.append((pollCmd, pollProc))
+            elif retCode!=0:
+                # failed
+                raise Exception("Command %s failed" % pollCmd)
+            else:
+                print "Command %s completed successfully" % pollCmd
+        return newProcs
+
     processes = []
     for command in commands:
         command = command.replace('\\','/') # otherwise shlex.split removes all path separators
@@ -108,7 +113,7 @@ def runCommands(commands, maxCpu):
 def main():
     
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'fhC:N:Ir:')
+        opts, args = getopt.getopt(sys.argv[1:], 'fhC:N:Ir:M:')
     except getopt.error, msg:
         usage(msg)
 
@@ -118,7 +123,7 @@ def main():
     force = False
     caseName = "rhineNew"
     caseNameNew = "rhineNew_resamp"
-
+    maxcpu = 4
 
     for o, a in opts:
         if o == '-C': caseName = a
@@ -127,7 +132,7 @@ def main():
         if o == '-I': inmaps = False
         if o == '-h': usage()
         if o == '-f': force = True
-
+        if o == '-M': maxcpu = int(a)
 
     dirs = ['/intbl/', '/inmaps/', '/staticmaps/', '/intss/', '/instate/', '/outstate/']
     if os.path.isdir(caseNameNew) and not force:
@@ -145,7 +150,7 @@ def main():
         allcmd = []
         for mfile in glob.glob(caseName + ddir + '/*.map'):
             mstr = "resample -r " + str(factor) + ' ' + mfile + " " + mfile.replace(caseName,caseNameNew)
-            print mstr
+            #print mstr
             allcmd.append(mstr)
             #os.system(mstr)
         runCommands(allcmd,maxcpu)
@@ -155,7 +160,7 @@ def main():
             for mfile in glob.glob(caseName + ddir + '/*.[0-9][0-9][0-9]'):
                 mstr = "resample -r " + str(factor) + ' ' + mfile + " " + mfile.replace(caseName,caseNameNew)
                 if not os.path.exists(mfile.replace(caseName,caseNameNew)):
-                    print mstr
+                    #print mstr
                     allcmd.append(mstr)
                     #os.system(mstr)
                 else:
