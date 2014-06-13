@@ -36,8 +36,8 @@ river network is used to force the river network in the reduced version of the
 model. Nevertheless it may be needed to manually adjust the locations of
 the gauges in the gauges.col file.
 
-A more sophisticated method for resampling is inplemented in the wflow_prepare
-scripts. In general is you need a high and a low resolution model it is best to 
+A more sophisticated method for resampling is implemented in the wflow_prepare
+scripts. In general, if you need a high and a low resolution model it is best to
 run the wflow_prepare scripts twice to create the different models.
 """
 
@@ -135,10 +135,10 @@ def main():
         if o == '-M': maxcpu = int(a)
 
     dirs = ['/intbl/', '/inmaps/', '/staticmaps/', '/intss/', '/instate/', '/outstate/']
+    ext_to_copy = ['*.tss','*.tbl','*.col','*.xml']
     if os.path.isdir(caseNameNew) and not force:
         print "Refusing to write into an existing directory:" + caseNameNew
         exit()
-
 
     if not os.path.isdir(caseNameNew):
         for ddir in dirs:
@@ -149,9 +149,10 @@ def main():
     for ddir in dirs:
         allcmd = []
         for mfile in glob.glob(caseName + ddir + '/*.map'):
-            mstr = "resample -r " + str(factor) + ' ' + mfile + " " + mfile.replace(caseName,caseNameNew)
+            if '_ldd.map' not in mfile:
+                mstr = "resample -r " + str(factor) + ' ' + mfile + " " + mfile.replace(caseName,caseNameNew)
             #print mstr
-            allcmd.append(mstr)
+                allcmd.append(mstr)
             #os.system(mstr)
         runCommands(allcmd,maxcpu)
 
@@ -167,13 +168,13 @@ def main():
                     print "skipping " + mfile.replace(caseName,caseNameNew)
             runCommands(allcmd,maxcpu)
 
+        for ext in ext_to_copy:
+            for mfile in glob.glob(caseName + ddir + ext):
+                shutil.copy(mfile, mfile.replace(caseName,caseNameNew))
 
-        for mfile in glob.glob(caseName + ddir + '*.tbl'):
-            shutil.copy(mfile, mfile.replace(caseName,caseNameNew))
-        for mfile in glob.glob(caseName + ddir + '*.col'):
-            shutil.copy(mfile, mfile.replace(caseName,caseNameNew))
-        for mfile in glob.glob(caseName + ddir + '*.tss'):
-            shutil.copy(mfile, mfile.replace(caseName,caseNameNew))
+
+    # Because the ldd cannot be resampled this way we have to recreate
+    # in including the subcatchments that are derived from it
 
     print "recreating static maps ..."
     # Create new ldd using old river network
@@ -185,7 +186,6 @@ def main():
     demburn = cover(ifthen(boolean(riverburn), dem - 600) ,dem)
     print "Creating ldd..."
     ldd = lddcreate_save(caseNameNew + "/staticmaps/wflow_ldd.map",demburn, True, 10.0E35)
-    #
     ## Find catchment (overall)
     outlet = find_outlet(ldd)
     sub = subcatch(ldd,outlet)
