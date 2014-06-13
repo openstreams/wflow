@@ -72,8 +72,8 @@ def usage(*args):
 
 def runCommands(commands, maxCpu):
     """
-    Runs a list of processes deviding
-    over maxCpu
+    Runs a list of processes dividing
+    over maxCpu number of cores.
     """
 
     def removeFinishedProcesses(processes):
@@ -107,7 +107,7 @@ def runCommands(commands, maxCpu):
     while len(processes)>0:
         time.sleep(0.5)
         processes = removeFinishedProcesses(processes)
-    print "All ogr2ogr processes (" + str(len(commands)) + ") completed."
+    print "All processes in que (" + str(len(commands)) + ") completed."
 
 
 def main():
