@@ -50,18 +50,59 @@ try:
 except ImportError:
     import pcrut    
     
-import os
+import os, sys
 import os.path
 import glob
 import getopt
+import subprocess
 
 
+maxcpu = 4
 def usage(*args):
     sys.stdout = sys.stderr
     for msg in args: print msg
     print __doc__
     sys.exit(0)
     
+
+
+def removeFinishedProcesses(processes):
+    """ given a list of (commandString, process),
+        remove those that have completed and return the result
+    """
+    newProcs = []
+    for pollCmd, pollProc in processes:
+        retCode = pollProc.poll()
+        if retCode==None:
+            # still running
+            newProcs.append((pollCmd, pollProc))
+        elif retCode!=0:
+            # failed
+            raise Exception("Command %s failed" % pollCmd)
+        else:
+            print "Command %s completed successfully" % pollCmd
+    return newProcs
+
+def runCommands(commands, maxCpu):
+    """
+    Runs a list of processes deviding
+    over maxCpu
+    """
+    processes = []
+    for command in commands:
+        command = command.replace('\\','/') # otherwise shlex.split removes all path separators
+        proc =  subprocess.Popen(shlex.split(command))
+        procTuple = (command, proc)
+        processes.append(procTuple)
+        while len(processes) >= maxCpu:
+            time.sleep(.2)
+            processes = removeFinishedProcesses(processes)
+
+    # wait for all processes
+    while len(processes)>0:
+        time.sleep(0.5)
+        processes = removeFinishedProcesses(processes)
+    print "All ogr2ogr processes (" + str(len(commands)) + ") completed."
 
 
 def main():
@@ -105,14 +146,19 @@ def main():
 		mstr = "resample -r " + str(factor) + ' ' + mfile + " " + mfile.replace(caseName,caseNameNew)
 		print mstr
 		os.system(mstr)
-	    if inmaps:
-		for mfile in glob.glob(caseName + ddir + '/*.[0-9][0-9][0-9]'):
-		    mstr = "resample -r " + str(factor) + ' ' + mfile + " " + mfile.replace(caseName,caseNameNew)
-		    if not os.path.exists(mfile.replace(caseName,caseNameNew)):
-		        print mstr
-		        os.system(mstr)
-		    else:
-		        print "skipping " + mfile.replace(caseName,caseNameNew)
+        if inmaps:
+            allcmd = []
+		    for mfile in glob.glob(caseName + ddir + '/*.[0-9][0-9][0-9]'):
+		        mstr = "resample -r " + str(factor) + ' ' + mfile + " " + mfile.replace(caseName,caseNameNew)
+		        if not os.path.exists(mfile.replace(caseName,caseNameNew)):
+		            print mstr
+                    allcmd.append(mstr)
+		            #os.system(mstr)
+		        else:
+		            print "skipping " + mfile.replace(caseName,caseNameNew)
+            runCommands(allcmd,maxcpu)
+
+
 	    for mfile in glob.glob(caseName + ddir + '*.tbl'):
 		shutil.copy(mfile, mfile.replace(caseName,caseNameNew))
 	    for mfile in glob.glob(caseName + ddir + '*.col'):
