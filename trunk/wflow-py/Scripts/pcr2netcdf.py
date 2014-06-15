@@ -235,7 +235,7 @@ def main(argv=None):
     varname=[]
     unit="mm"
     startstr="1-1-1990 00:00:00"
-    endstr="2 2 1990 :00:00:00"
+    endstr="2-2-1990 :00:00:00"
     mbuf=600
     timestepsecs = 86400
     
