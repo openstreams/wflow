@@ -27,6 +27,7 @@ import pcrut
 import shutil, glob
 import sys
 import traceback
+import netCDF4
 
 logging = None
 
@@ -55,7 +56,43 @@ def log_uncaught_exceptions(ex_cls, ex, tb):
 sys.excepthook = log_uncaught_exceptions
 
 
+class netcdfinput():
+    def __init__(self,netcdffile,logging,precipvar='P',petvar='PET',tempvar='TEMP',readinmem=True):
+        """
+        First try to setup a class to facilitaye reading netcdf files
+        (converted with pcr2netcdf.py)
+        """
+        self.dataset = netCDF4.Dataset(netcdffile,mode='r')
+        logging.info("Reading input from netCDF file: " + netcdffile + ": " + str(self.dataset).replace('\n',' '))
+        self.alldat ={}
+        if readinmem:
+            self.alldat['P'] = self.dataset.variables[precipvar][:]
+            self.alldat['PET'] = self.dataset.variables[petvar][:]
+            self.alldat['TEMP'] = self.dataset.variables[tempvar][:]
+        else:
+            self.alldat['P'] = self.dataset.variables[precipvar]
+            self.alldat['PET'] = self.dataset.variables[petvar]
+            self.alldat['TEMP'] = self.dataset.variables[tempvar]
 
+    def gettimestep(self,timestep,logging,var='P'):
+
+        if self.alldat.has_key(var):
+            np_step = self.alldat[var][timestep,:,:]
+            return numpy2pcr(Scalar, np_step, 1E31)
+        else:
+            return  cover(0.0)
+
+
+
+class netcdfoutput():
+    def __init__(self):
+        """
+        Under construction
+        """
+    def savetimestep(self,timestep,var='P'):
+        """
+        ss
+        """
 
 class wf_exchnageVariables():
     """
@@ -385,6 +422,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
     self.outputFormat = int(configget(self._userModel().config,'framework','outputformat','1'))
     self.APIDebug = int(configget(self._userModel().config,'framework','debug',str(self.APIDebug)))
+
+    self.ncfile = configget(self._userModel().config,'framework','netcdfinput',"None")
+    if self.ncfile != "None":
+        self.NcInput = netcdfinput(caseName +"/" + 'inmaps.nc',self.logger)
 
     # Fill the summary (stat) list from the ini file
     self.statslst = []
@@ -1329,7 +1370,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     
     
     
-  def wf_readmap(self, name, default,verbose=True):
+  def wf_readmap(self, name, default,verbose=True,filetype='PCRaster'):
     """
       Adjusted version of readmapNew. the style variable is used to indicated
       how the data is read::
@@ -1357,7 +1398,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     
     style = self.exchnageitems.getvarStyle(varname)
 
-    
     if hasattr(self._userModel(), "_inStochastic"):
       if self._userModel()._inStochastic():
         if self._userModel()._inPremc() or self._userModel()._inPostmc():
@@ -1381,14 +1421,17 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     if style==1: # Normal reading of mapstack from DISK
         path = os.path.join(directoryPrefix, newName)
         assert path is not ""
-            
+
+        if self.ncfile != "None":
+            return self.NcInput.gettimestep(self._userModel().currentTimeStep() -1 ,self.logger,var=varname)
+
         if os.path.isfile(path):
             mapje=readmap(path)
             return mapje
         else:
             if verbose:
                 self.logger.warn("Forcing data (" + path + ") for timestep not present, returning " + str(default))
-            return scalar(default)  
+            return scalar(default)
     elif style == 2: # Assyming they are set in memory by the API
         # first get basename (last bit of path)
         name = os.path.basename(name)
