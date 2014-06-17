@@ -893,8 +893,8 @@ class WflowModel(DynamicModel):
                 self.Temperature = pcrut.interpolategauges(self.Temperature, self.interpolMethod)
                 self.Temperature = self.Temperature + self.TempCor
         else:
-            self.Precipitation = cover(self.wf_readmap(self.P_mapstack, 0.0), 0)
-            self.PotenEvap = cover(self.wf_readmap(self.PET_mapstack, 0.0), 0) * self.et_RefToPot
+            self.Precipitation = cover(self.wf_readmap(self.P_mapstack, 0.0), scalar(0.0))
+            self.PotenEvap = cover(self.wf_readmap(self.PET_mapstack, 0.0), scalar(0.0)) * self.et_RefToPot
             #self.Inflow=cover(self.wf_readmap(self.Inflow),0)
             if (os.path.exists(self.caseName + self.inflowTss)):
                 self.Inflow = cover(timeinputscalar(self.caseName + self.inflowTss, nominal(self.InflowLoc)), 0)
@@ -902,7 +902,7 @@ class WflowModel(DynamicModel):
                 self.Inflow = cover(self.wf_readmap(self.Inflow_mapstack, 0.0,verbose=False),0)
 
             if self.modelSnow:
-                self.Temperature = cover(self.wf_readmap(self.TEMP_mapstack, 10.0), 10.0)
+                self.Temperature = cover(self.wf_readmap(self.TEMP_mapstack, 10.0), scalar(10.0))
                 self.Temperature = self.Temperature + self.TempCor
 
 
