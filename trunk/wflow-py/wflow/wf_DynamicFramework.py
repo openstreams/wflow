@@ -27,7 +27,12 @@ import pcrut
 import shutil, glob
 import sys
 import traceback
-import netCDF4
+
+try:
+    from wf_netcdfio import *
+except:
+    from wflow.wf_netcdfio import *
+
 
 logging = None
 
@@ -56,52 +61,6 @@ def log_uncaught_exceptions(ex_cls, ex, tb):
 sys.excepthook = log_uncaught_exceptions
 
 
-class netcdfinput():
-    def __init__(self,netcdffile,logging,vars=[]):
-        """
-        First try to setup a class read netcdf files
-        (converted with pcr2netcdf.py)
-
-        netcdffile: file to read the forcing data from
-        logging: python logging object
-        vars: list of variables to get from file
-        """
-        self.dataset = netCDF4.Dataset(netcdffile,mode='r')
-        logging.info("Reading input from netCDF file: " + netcdffile + ": " + str(self.dataset).replace('\n',' '))
-        self.alldat ={}
-        a = pcr2numpy(cover(0.0),0.0).flatten()
-        # Determine steps to load in mem based on estimated memory usage
-        floatspermb = 1048576/4
-        maxmb = 4000
-        self.maxsteps = maxmb * len(a)/floatspermb + 1
-        self.fstep = 0
-        self.lstep = self.fstep + self.maxsteps
-
-        for var in vars:
-            self.alldat[var] = self.dataset.variables[var][self.fstep:self.maxsteps]
-
-    def gettimestep(self,timestep,logging,var='P'):
-        """
-        Gets a map for a single timestep. reads data in blocks assuming sequential access
-
-        timestep: framework timestep (1-based)
-        logging: python logging object
-        var: variable to get from the file
-        """
-        ncindex = timestep -1
-        if self.alldat.has_key(var):
-            if ncindex == self.lstep: # Read new block of data in mem
-                logging.debug("reading new netcdf data block starting at: " + str(ncindex))
-                for vars in self.alldat:
-                    self.alldat[vars] = self.dataset.variables[vars][ncindex:ncindex + self.maxsteps]
-                self.fstep = ncindex
-                self.lstep = ncindex + self.maxsteps
-                print ncindex - self.fstep
-            np_step = self.alldat[var][ncindex-self.fstep,:,:]
-            return numpy2pcr(Scalar, np_step, 1E31)
-        else:
-            logging.debug("Var (" + var + ") not found returning 0")
-            return  cover(0.0)
 
 
 
@@ -445,8 +404,15 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     self.APIDebug = int(configget(self._userModel().config,'framework','debug',str(self.APIDebug)))
 
     self.ncfile = configget(self._userModel().config,'framework','netcdfinput',"None")
+
+
     if self.ncfile != "None":
-        self.NcInput = netcdfinput(caseName +"/" + 'inmaps.nc',self.logger,vars=['P','PET','TEMP'])
+        mstacks = configsection(self._userModel().config,"inputmapstacks")
+        varlst = []
+        for ms in mstacks:
+            varlst.append(os.path.basename(configget(self._userModel().config,'inputmapstacks',ms,'None')))
+        self.logger.debug("Found following input variables to get from netcdf file: " + str(varlst))
+        self.NcInput = netcdfinput(caseName +"/" + 'inmaps.nc',self.logger,varlst)
 
     # Fill the summary (stat) list from the ini file
     self.statslst = []
@@ -637,8 +603,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       The variables are inserted into the model object
       This function is normally called as part of the run. Normally there is
       no need to call it directly.
-      
-          
       """
       allvars = self._userModel().stateVariables()
       
@@ -1444,7 +1408,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         assert path is not ""
 
         if self.ncfile != "None":
-            return self.NcInput.gettimestep(self._userModel().currentTimeStep() ,self.logger,var=varname)
+            retval =  self.NcInput.gettimestep(self._userModel().currentTimeStep() ,self.logger,var=varname)
+            return retval
 
         if os.path.isfile(path):
             mapje=readmap(path)
