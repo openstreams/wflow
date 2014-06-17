@@ -262,7 +262,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     frameworkBase.FrameworkBase.__init__(self)
     
     self.exchnageitems = wf_exchnageVariables()
-    
+    self.setQuiet(True)
     self._d_model = userModel
     self._testRequirements()
 
@@ -1462,3 +1462,4 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
   def setQuiet(self, quiet):
     self._d_quiet = quiet
+    self._d_quietProgressDots = quiet
