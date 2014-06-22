@@ -417,6 +417,7 @@ class WflowModel(DynamicModel):
         self.waterdem = int(configget(self.config, 'model', 'waterdem', '0'))
         WIMaxScale = float(configget(self.config, 'model', 'WIMaxScale', '0.8'))
         self.reInfilt = int(configget(self.config, 'model', 'reInfilt', '0'))
+        self.MassWasting = int(configget(self.config,"model","MassWasting","0"))
 
 
 
@@ -926,6 +927,17 @@ class WflowModel(DynamicModel):
                                                                                        self.Precipitation,
                                                                                        self.Temperature, self.TTI,
                                                                                        self.TT, self.Cfmax, self.WHC)
+            MaxSnowPack = 10000.0
+            if self.MassWasting:
+                # Masswasting of snow
+                # 5.67 = tan 80 graden
+                SnowFluxFrac = min(0.5,self.Slope/5.67) * min(1.0,self.DrySnow/MaxSnowPack)
+                MaxFlux = SnowFluxFrac * self.DrySnow
+                self.DrySnow = accucapacitystate(self.TopoLdd,self.DrySnow, MaxFlux)
+                self.FreeWater = accucapacitystate(self.TopoLdd,self.FreeWater,SnowFluxFrac * self.FreeWater )
+            else:
+                SnowFluxFrac = self.ZeroMap
+                MaxFlux= self.ZeroMap
 
         ##########################################################################
         # Interception according to a modified Gash model
@@ -1292,7 +1304,7 @@ def main(argv=None):
         if o == '-s': configset(myModel.config, 'model', 'timestepsecs', a, overwrite=True)
         if o == '-x': configset(myModel.config, 'model', 'sCatch', a, overwrite=True)
         if o == '-c': configset(myModel.config, 'model', 'configfile', a, overwrite=True)
-        if o == '-M': configset(myModel.config, 'model', 'MassWasting', "1", overwrite=True)
+        if o == '-M': configset(myModel.config, 'model', 'MassWasting', "0", overwrite=True)
         if o == '-Q': configset(myModel.config, 'model', 'ExternalQbase', '1', overwrite=True)
         if o == '-U':
             configset(myModel.config, 'model', 'updateFile', a, overwrite=True)

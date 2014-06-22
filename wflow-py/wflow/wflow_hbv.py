@@ -338,6 +338,7 @@ class WflowModel(DynamicModel):
     self.UpFrac =float(configget(self.config,"model","UpFrac","0.8"))    
     self.ExternalQbase=int(configget(self.config,'model','ExternalQbase','0'))
     self.SetKquickFlow=int(configget(self.config,'model','SetKquickFlow','0'))
+    self.MassWasting = int(configget(self.config,"model","MassWasting","0"))
 
     # static maps to use (normally default)
     wflow_subcatch = configget(self.config,"model","wflow_subcatch","/staticmaps/wflow_subcatch.map")
@@ -723,6 +724,19 @@ class WflowModel(DynamicModel):
     self.SoilMoisture=self.SoilMoisture-DirectRunoff            
     NetInSoil=NetInSoil-DirectRunoff                  		#net water which infiltrates into soil
 
+    MaxSnowPack = 10000.0
+    if self.MassWasting:
+        # Masswasting of snow
+        # 5.67 = tan 80 graden
+        SnowFluxFrac = min(0.5,self.Slope/5.67) * min(1.0,self.DrySnow/MaxSnowPack)
+        MaxFlux = SnowFluxFrac * self.DrySnow
+        self.DrySnow = accucapacitystate(self.TopoLdd,self.DrySnow, MaxFlux)
+        self.FreeWater = accucapacitystate(self.TopoLdd,self.FreeWater,SnowFluxFrac * self.FreeWater )
+    else:
+        SnowFluxFrac = self.ZeroMap
+        MaxFlux= self.ZeroMap
+
+
     IntEvap=min(self.InterceptionStorage,self.PotEvaporation) 	 #: Evaporation from interception storage
     self.InterceptionStorage=self.InterceptionStorage-IntEvap
     
@@ -927,7 +941,7 @@ def main(argv=None):
         if o == '-s': configset(myModel.config,'model','timestepsecs',a,overwrite=True)
         if o == '-x': configset(myModel.config,'model','sCatch',a,overwrite=True)
         if o == '-c': configset(myModel.config,'model','configfile', a,overwrite=True)
-        if o == '-M': configset(myModel.config,'model','MassWasting',"1",overwrite=True)
+        if o == '-M': configset(myModel.config,'model','MassWasting',"0",overwrite=True)
         if o == '-N': configset(myModel.config,'model','nolateral','1',overwrite=True) 
         if o == '-Q': configset(myModel.config,'model','ExternalQbase','1',overwrite=True)
         if o == '-U': 

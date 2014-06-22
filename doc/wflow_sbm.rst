@@ -34,6 +34,10 @@ to the potential evaporation for each land cover. By default al is set to 1.0 as
 to be potential.
 
 
+Snow
+----
+
+The wflow\_sbm model uses the same snow routine as the wflow\_hbv model.
 
 The rainfall interception model
 -------------------------------
