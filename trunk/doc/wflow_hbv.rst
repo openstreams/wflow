@@ -112,6 +112,17 @@ content of the snow pack.
 	Schematic view of the snow routine
 
 
+The snow model als has an optional (experimental) 'mass-wasting' routine. This transports snow downhill
+using the local drainage network. To use it set the variable MassWasting in the model section to 1.
+
+::
+
+       # Masswasting of snow
+       # 5.67 = tan 80 graden
+       SnowFluxFrac = min(0.5,self.Slope/5.67) * min(1.0,self.DrySnow/MaxSnowPack)
+       MaxFlux = SnowFluxFrac * self.DrySnow
+       self.DrySnow = accucapacitystate(self.TopoLdd,self.DrySnow, MaxFlux)
+       self.FreeWater = accucapacitystate(self.TopoLdd,self.FreeWater,SnowFluxFrac * self.FreeWater )
 
 
 Potential Evaporation
