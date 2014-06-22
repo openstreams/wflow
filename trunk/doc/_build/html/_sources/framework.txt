@@ -2,10 +2,10 @@ Using the framework
 ===================
 
 This section only gives a brief description of the framework focussing on the extensions
-made for OpenStreams. A full description of the current version of the framwork can be found
+made for OpenStreams. A full description of the current version of the framework can be found
 at http://www.pcraster.eu.
 
-In order to build a dynamic model the one needs to define a model class and add several methods 
+In order to build a dynamic model you will needs to define a model class and add several methods
 to the class to describe the model behaviour. The easiest way to get started is to copy
 and modify the ``wflow_sceleton.py`` example model. You can also use the other models
 for inspiration.

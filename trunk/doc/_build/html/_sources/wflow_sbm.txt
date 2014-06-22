@@ -24,6 +24,15 @@ widely. The main differences are:
 The sections below describe the working of the model in more detail.
 
 
+Potential and Reference evaporation
+-----------------------------------
+
+The wflow\_sbm model assumes the input to be potential eveporation. In many case the evaporation
+will be a refercen evaporation fro a different land cover. In that case you can use the
+et_reftopot.tbl file to set the mutiplication per landuse to go from the supplied evaporation
+to the potential evaporation for each land cover. By default al is set to 1.0 assuming the eveaporation
+to be potential.
+
 
 
 The rainfall interception model
@@ -321,6 +330,10 @@ unsaturated store:
     ActEvap = ActEvapSat + ActEvapUStore
 
 
+
+Remaining evaporative demand is used to for evaporation of open water. This amount
+is subtracted from the water that would otherwise enter the kinematic wave.
+
 Capilary rise is determined using the following approach:
 first the :math:`K_{sat}` is determined at the water table
 :math:`z_{i}`; next a potential capilary rise is determined from the
@@ -376,10 +389,10 @@ Sub-grid runoff generation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Sub-grid runoff generaten can be switched on on off in the configuration file. In 
-general this feature is used if the grid cell size is relatively lager compared
+general this feature is used if the grid cell size is relatively larger compared
 to the variation of topography. In addition you will need to have information
-on the ditribution of altotude within a grid-cell. Depending on the topography sub-grid
-runoff generation may be useful aroun 1x1km and larger.
+on the distribution of altitude within a grid-cell. Depending on the topography sub-grid
+runoff generation may be useful around 1x1km and larger.
 
 The basis is formed by a sigmoid (:math:`S`) function that is fitted using 
 a 10, 50 and 90 percentile  DEM. The :math:`S` function is defined as:
