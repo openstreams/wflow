@@ -3,6 +3,75 @@ __author__ = 'schelle'
 
 import netCDF4
 from pcraster import *
+from numpy import *
+
+
+
+
+
+def prepare_nc(trgFile, timeList, x, y, metadata, logger, units='Days since 1900-01-01 00:00:00', calendar='gregorian',Format="NETCDF4",zlib=False):
+    """
+    This function prepares a NetCDF file with given metadata, for a certain year, daily basis data
+    The function assumes a gregorian calendar and a time unit 'Days since 1900-01-01 00:00:00'
+    """
+    import datetime as dt
+
+    logger.info('Setting up "' + trgFile + '"')
+    startDayNr = netCDF4.date2num(timeList[0], units=units, calendar=calendar)
+    endDayNr   = netCDF4.date2num(timeList[-1], units=units, calendar=calendar)
+    time       = arange(startDayNr,endDayNr+1)
+    nc_trg     = netCDF4.Dataset(trgFile,'w',format=Format,zlib=zlib)
+
+    logger.info('Setting up dimensions and attributes. lat: ' + str(len(y))+ " lon: " + str(len(x)))
+    nc_trg.createDimension('time', 0) #NrOfDays*8
+    nc_trg.createDimension('lat', len(y))
+    nc_trg.createDimension('lon', len(x))
+    DateHour = nc_trg.createVariable('time','f8',('time',))
+    DateHour.units = units
+    DateHour.calendar = calendar
+    DateHour.standard_name = 'time'
+    DateHour.long_name = 'time'
+    DateHour.axis = 'T'
+    DateHour[:] = time
+    y_var = nc_trg.createVariable('lat','f4',('lat',))
+    y_var.standard_name = 'latitude'
+    y_var.long_name = 'latitude'
+    y_var.units = 'degrees_north'
+    y_var.axis = 'Y'
+    x_var = nc_trg.createVariable('lon','f4',('lon',))
+    x_var.standard_name = 'longitude'
+    x_var.long_name = 'longitude'
+    x_var.units = 'degrees_east'
+    x_var.axis = 'X'
+    y_var[:] = y
+    x_var[:] = x
+    projection= nc_trg.createVariable('projection','c')
+    projection.long_name = 'wgs84'
+    projection.EPSG_code = 'EPSG:4326'
+    projection.proj4_params = '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
+    projection.grid_mapping_name = 'latitude_longitude'
+
+    # now add all attributes from user-defined metadata
+    for attr in metadata:
+        nc_trg.setncattr(attr, metadata[attr])
+    nc_trg.sync()
+    nc_trg.close()
+
+
+
+class netcdfoutput():
+
+    def __init__(self,netcdffile,vars=[]):
+        """
+        Under construction
+        """
+
+
+    def savetimestep(self,timestep,var='P'):
+        """
+        ss
+        """
+
 
 
 class netcdfinput():
