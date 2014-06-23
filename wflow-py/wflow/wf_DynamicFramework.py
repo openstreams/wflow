@@ -63,17 +63,6 @@ sys.excepthook = log_uncaught_exceptions
 
 
 
-
-class netcdfoutput():
-    def __init__(self):
-        """
-        Under construction
-        """
-    def savetimestep(self,timestep,var='P'):
-        """
-        ss
-        """
-
 class wf_exchnageVariables():
     """
     List of exchange variables
