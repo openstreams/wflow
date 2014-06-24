@@ -5,6 +5,15 @@ import netCDF4
 from pcraster import *
 from numpy import *
 
+import time
+import datetime as dt
+
+try:
+    import wflow.wflow_lib as wflow_lib
+    import wflow.pcrut as _pcrut
+except ImportError:
+    import  wflow_lib  as wflow_lib
+    import  pcrut as _pcrut
 
 
 
@@ -61,20 +70,83 @@ def prepare_nc(trgFile, timeList, x, y, metadata, logger, units='Days since 1900
 
 class netcdfoutput():
 
-    def __init__(self,netcdffile,vars=[]):
+    def __init__(self,netcdffile,logger,starttime,timesteps,timestepsecs=86400,vars=[]):
         """
         Under construction
         """
 
+        def date_range(start, end, tdelta="days"):
+            if tdelta == "days":
+                r = (end+dt.timedelta(days=1)-start).days
+                return [start+dt.timedelta(days=i) for i in range(r)]
+            else:
+                r = (end+dt.timedelta(days=1)-start).days * 24
+                return [start+dt.timedelta(hours=i) for i in range(r)]
 
-    def savetimestep(self,timestep,var='P'):
+
+        self.ncfile = netcdffile
+        rows = pcraster._pcraster.clone().nrRows()
+        cols = pcraster._pcraster.clone().nrCols()
+        cellsize = pcraster._pcraster.clone().cellSize()
+        yupper = pcraster._pcraster.clone().north()
+        xupper = pcraster._pcraster.clone().west()
+        x = _pcrut.pcr2numpy(_pcrut.xcoordinate(_pcrut.boolean(_pcrut.cover(1.0))),NaN)[0,:]
+        y = _pcrut.pcr2numpy(_pcrut.ycoordinate(_pcrut.boolean(_pcrut.cover(1.0))),NaN)[:,0]
+
+        #start=dt.datetime.strptime(startstr,"%d-%m-%Y %H:%M:%S")
+        end=starttime + dt.timedelta(seconds=timestepsecs) * timesteps
+        if timestepsecs == 86400:
+            timeList = date_range(starttime, end, tdelta="days")
+        else:
+            timeList = date_range(start, end, tdelta="hours")
+
+
+        metadata = {'SS': "lll"}
+        prepare_nc(self.ncfile,timeList,x,y,metadata,logger)
+
+
+    def savetimestep(self,timestep,pcrdata,unit="mm",var='P',name="Precipitation"):
         """
-        ss
+        save a single timestep for a variable
+
+        input:
+
+            - timestep - current timestep
+            - pcrdata - pcraster map to save
+            - unit - unit string
+            - var - variable string
+            - name - name of the variable
+        """
+        # Open target netCDF file
+        self.nc_trg = netCDF4.Dataset(self.ncfile, 'a',format='NETCDF4',zlib=True)
+        # read time axis and convert to time objects
+        #logger.debug("Creating time object..")
+        time = self.nc_trg.variables['time']
+        timeObj = netCDF4.num2date(time[:], units=time.units, calendar=time.calendar)
+
+        try:
+            nc_var = self.nc_trg.variables[var]
+        except:
+            # prepare the variable
+            nc_var = self.nc_trg.createVariable(netCDF4, 'f4', ('time', 'lat', 'lon',), fill_value=-9999., zlib=True)
+            nc_var.units = unit
+            nc_var.standard_name = name
+
+        nc_var[timestep -1,:,:] = pcr2numpy(pcrdata,nc_var._FillValue).flatten()
+
+    def finish(self):
+        """
+        Flushes and closes the netcdf file
+
+        :return: Nothing
         """
 
+        self.nc_trg.sync()
+        self.nc_trg.close()
 
 
 class netcdfinput():
+
     def __init__(self,netcdffile,logging,vars=[]):
         """
         First try to setup a class read netcdf files
