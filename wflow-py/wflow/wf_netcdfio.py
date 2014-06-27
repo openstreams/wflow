@@ -15,23 +15,29 @@ except ImportError:
     import  wflow_lib  as wflow_lib
     import  pcrut as _pcrut
 
+globmetadata = {}
+globmetadata['title'] = 'wflow output mapstack'
+globmetadata['institution'] = 'Deltares'
+globmetadata['source'] = 'wflow'
+globmetadata['history'] = time.ctime()
+globmetadata['references'] = 'http://wflow.googlecode.com'
+globmetadata['Conventions'] = 'CF-1.4'
 
 
-
-def prepare_nc(trgFile, timeList, x, y, metadata, logger, units='Days since 1900-01-01 00:00:00', calendar='gregorian',Format="NETCDF4",zlib=False):
+def prepare_nc(trgFile, timeList, x, y, metadata, logger, units='Days since 1900-01-01 00:00:00', calendar='gregorian',Format="NETCDF4",complevel=1,zlib=True):
     """
     This function prepares a NetCDF file with given metadata, for a certain year, daily basis data
     The function assumes a gregorian calendar and a time unit 'Days since 1900-01-01 00:00:00'
     """
     import datetime as dt
 
-    logger.info('Setting up "' + trgFile + '"')
+    logger.info('Setting up netcdf output: ' + trgFile)
     startDayNr = netCDF4.date2num(timeList[0], units=units, calendar=calendar)
     endDayNr   = netCDF4.date2num(timeList[-1], units=units, calendar=calendar)
     time       = arange(startDayNr,endDayNr+1)
     nc_trg     = netCDF4.Dataset(trgFile,'w',format=Format,zlib=zlib)
 
-    logger.info('Setting up dimensions and attributes. lat: ' + str(len(y))+ " lon: " + str(len(x)))
+    logger.info('Setting up dimensions and attributes.Steps: ' + str(len(timeList)) + ' lat: ' + str(len(y))+ " lon: " + str(len(x)))
     nc_trg.createDimension('time', 0) #NrOfDays*8
     nc_trg.createDimension('lat', len(y))
     nc_trg.createDimension('lon', len(x))
@@ -70,7 +76,7 @@ def prepare_nc(trgFile, timeList, x, y, metadata, logger, units='Days since 1900
 
 class netcdfoutput():
 
-    def __init__(self,netcdffile,logger,starttime,timesteps,timestepsecs=86400,vars=[]):
+    def __init__(self,netcdffile,logger,starttime,timesteps,timestepsecs=86400,metadata={},maxbuf=25):
         """
         Under construction
         """
@@ -83,8 +89,11 @@ class netcdfoutput():
                 r = (end+dt.timedelta(days=1)-start).days * 24
                 return [start+dt.timedelta(hours=i) for i in range(r)]
 
-
+        self.logger = logger
+        # Do not allow a max buffer larger than the number of timesteps
+        self.maxbuf =  maxbuf if timesteps >= maxbuf else timesteps
         self.ncfile = netcdffile
+        self.timesteps = timesteps
         rows = pcraster._pcraster.clone().nrRows()
         cols = pcraster._pcraster.clone().nrCols()
         cellsize = pcraster._pcraster.clone().cellSize()
@@ -93,16 +102,17 @@ class netcdfoutput():
         x = _pcrut.pcr2numpy(_pcrut.xcoordinate(_pcrut.boolean(_pcrut.cover(1.0))),NaN)[0,:]
         y = _pcrut.pcr2numpy(_pcrut.ycoordinate(_pcrut.boolean(_pcrut.cover(1.0))),NaN)[:,0]
 
-        #start=dt.datetime.strptime(startstr,"%d-%m-%Y %H:%M:%S")
-        end=starttime + dt.timedelta(seconds=timestepsecs) * timesteps
+        end=starttime + dt.timedelta(seconds=timestepsecs * self.timesteps-1)
         if timestepsecs == 86400:
             timeList = date_range(starttime, end, tdelta="days")
         else:
-            timeList = date_range(start, end, tdelta="hours")
+            timeList = date_range(starttime, end, tdelta="hours")
 
+        self.timestepbuffer = zeros((self.maxbuf,len(y),len(x)))
+        self.bufflst={}
 
-        metadata = {'SS': "lll"}
-        prepare_nc(self.ncfile,timeList,x,y,metadata,logger)
+        globmetadata.update(metadata)
+        prepare_nc(self.ncfile,timeList,x,y,globmetadata,logger)
 
 
     def savetimestep(self,timestep,pcrdata,unit="mm",var='P',name="Precipitation"):
@@ -110,7 +120,6 @@ class netcdfoutput():
         save a single timestep for a variable
 
         input:
-
             - timestep - current timestep
             - pcrdata - pcraster map to save
             - unit - unit string
@@ -118,21 +127,41 @@ class netcdfoutput():
             - name - name of the variable
         """
         # Open target netCDF file
-        self.nc_trg = netCDF4.Dataset(self.ncfile, 'a',format='NETCDF4',zlib=True)
+        var = os.path.basename(var)
+        self.nc_trg = netCDF4.Dataset(self.ncfile, 'a',format='NETCDF4',zlib=True,complevel=1)
         # read time axis and convert to time objects
-        #logger.debug("Creating time object..")
         time = self.nc_trg.variables['time']
         timeObj = netCDF4.num2date(time[:], units=time.units, calendar=time.calendar)
 
+        idx = timestep -1
+
+        buffreset = (idx + 1) % self.maxbuf
+        bufpos = (idx) % self.maxbuf
+
         try:
-            nc_var = self.nc_trg.variables[var]
+             nc_var = self.nc_trg.variables[var]
         except:
-            # prepare the variable
-            nc_var = self.nc_trg.createVariable(netCDF4, 'f4', ('time', 'lat', 'lon',), fill_value=-9999., zlib=True)
+            nc_var = self.nc_trg.createVariable(var, 'f4', ('time', 'lat', 'lon',), fill_value=-9999.0, zlib=True)
             nc_var.units = unit
             nc_var.standard_name = name
 
-        nc_var[timestep -1,:,:] = pcr2numpy(pcrdata,nc_var._FillValue).flatten()
+        miss =  float(nc_var._FillValue)
+        data = pcr2numpy(pcrdata,miss)
+
+        if self.bufflst.has_key(var):
+            self.bufflst[var][bufpos,:,:] =  data
+        else:
+            self.bufflst[var] = self.timestepbuffer.copy()
+            self.bufflst[var][bufpos,:,:] =  data
+
+        # Write out timestep buffer.....
+        if buffreset == 0 or idx ==  self.maxbuf -1 or self.timesteps <= timestep:
+            spos = idx-bufpos
+            self.logger.debug("Writing buffer for " + var + " to file at: " + str(spos) + " " + str(int(bufpos) + 1) + " timesteps")
+            nc_var[spos:idx+1,:,:] = self.bufflst[var][0:bufpos+1,:,:]
+
+        #nc_var[idx,:,:] = data
+
 
     def finish(self):
         """
@@ -140,9 +169,9 @@ class netcdfoutput():
 
         :return: Nothing
         """
-
-        self.nc_trg.sync()
-        self.nc_trg.close()
+        if getattr(self,"nc_trg"):
+            self.nc_trg.sync()
+            self.nc_trg.close()
 
 
 class netcdfinput():
@@ -190,7 +219,6 @@ class netcdfinput():
                     self.alldat[vars] = self.dataset.variables[vars][ncindex:ncindex + self.maxsteps]
                 self.fstep = ncindex
                 self.lstep = ncindex + self.maxsteps
-                print ncindex - self.fstep
             np_step = self.alldat[var][ncindex-self.fstep,:,:]
             return numpy2pcr(Scalar, np_step, 1E31)
         else:

@@ -268,10 +268,12 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     self._addMethodToClass(self.readtblDefault)
     self._addMethodToClass(self.wf_supplyVariableNamesAndRoles)
 
-    self._userModel()._setNrTimeSteps(lastTimeStep)
+    self._userModel()._setNrTimeSteps(lastTimeStep - firstTimestep + 1)
     self._d_firstTimestep = firstTimestep
     self._userModel()._setFirstTimeStep(self._d_firstTimestep)
+    self._d_lastTimestep = lastTimeStep
     self.APIDebug = 0
+
 
 
 
@@ -286,6 +288,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
               self.oscv[ofile_list].closeall()
       except:
           return
+
+      if hasattr(self,'NcOutput'):
+        self.NcOutput.finish()
 
  
   def loggingSetUp(self,caseName,runId,logfname,model,modelversion,level=pcrut.logging.INFO):
@@ -393,6 +398,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     self.APIDebug = int(configget(self._userModel().config,'framework','debug',str(self.APIDebug)))
 
     self.ncfile = configget(self._userModel().config,'framework','netcdfinput',"None")
+    self.ncoutfile = configget(self._userModel().config,'framework','netcdfoutput',"None")
 
 
     if self.ncfile != "None":
@@ -401,7 +407,13 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         for ms in mstacks:
             varlst.append(os.path.basename(configget(self._userModel().config,'inputmapstacks',ms,'None')))
         self.logger.debug("Found following input variables to get from netcdf file: " + str(varlst))
-        self.NcInput = netcdfinput(caseName +"/" + 'inmaps.nc',self.logger,varlst)
+        self.NcInput = netcdfinput('inmaps.nc',self.logger,varlst)
+
+    if self.ncoutfile != 'None': # Ncoutput
+        startstr="1-1-1990 00:00:00"
+        stime = dt.datetime.strptime(startstr,"%d-%m-%Y %H:%M:%S")
+        buffer = int(configget(self._userModel().config,'framework','netcdfwritebuffer',"50"))
+        self.NcOutput = netcdfoutput(caseName + "/" + runId + "/" + self.ncoutfile,self.logger,stime,self._d_lastTimestep - self._d_firstTimestep + 1,maxbuf=buffer)
 
     # Fill the summary (stat) list from the ini file
     self.statslst = []
@@ -486,6 +498,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       self.wf_savesummarymaps()
 
 
+
   def wf_saveTimeSeries(self):
       """
       Print .ini defined output csv/tss timeseries per timestep
@@ -547,10 +560,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       toprint = configsection(self._userModel().config,'outputmaps')
       for a in toprint:
           b = a.replace('self','self._userModel()')
-          try:
-              eval("self._userModel().report(" + b  + ", self._userModel().Dir + \"/\" + self._userModel().runId + \"/outmaps/" + self._userModel().config.get("outputmaps",a) +"\")")
-          except:
-              self._userModel().logger.warn("Could not find or save the configured mapstack:"  + a)
+          #try:
+          eval("self._userModel().report(" + b  + ", self._userModel().Dir + \"/\" + self._userModel().runId + \"/outmaps/" + self._userModel().config.get("outputmaps",a) +"\")")
+          #except:
+          #    self._userModel().logger.warn("Could not find or save the configured mapstack:"  + a)
       
       
   def wf_resume(self, directory):
@@ -1330,7 +1343,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 import PCRaster as PCRaster
         else:
             import PCRaster
-        PCRaster.report(variable, path)
+        if not hasattr(self,'NcOutput'):
+            PCRaster.report(variable, path)
+        else:
+            self.NcOutput.savetimestep( self._userModel().currentTimeStep(),variable,var=name,name=name)
         if gzipit:
             Gzip(path,storePath=True)
     elif self.outputFormat == 2:
