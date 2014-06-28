@@ -1,4 +1,13 @@
-__author__ = 'schelle'
+"""
+wf_netcdfio
+-----------
+
+netcdf reading and writing for wflow
+
+$Author: schelle $
+$Id: wf_DynamicFramework.py 915 2014-02-10 07:33:56Z schelle $
+$Rev: 915 $
+"""
 
 
 import netCDF4

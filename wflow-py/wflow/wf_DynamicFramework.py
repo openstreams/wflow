@@ -20,6 +20,8 @@ $Id: wf_DynamicFramework.py 915 2014-02-10 07:33:56Z schelle $
 $Rev: 915 $
 """
 
+#TODO: rmove most exec statements and replace by getattr
+
 import numpy
 import ConfigParser
 #from wf_Timeoutput import *
@@ -480,8 +482,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
           try:
               fname = os.path.join(directory,var) + ".map"
               #print fname
-              execstr = "savevar = self._userModel()." + var 
-              exec execstr             
+              execstr = "savevar = self._userModel()." + var
+              exec execstr
               try: # Check if we have a list of maps
                   a = len(savevar)
                   a = 0
@@ -770,10 +772,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
           - xcor - xcor to set the value in
           - ycor - ycor to set the value in
           - value - single scalar
-          
-      .. note::
-
-        this is buggy somehow...!!!
 
       :returns: 1 if the map was present, 0 if nothing was done   
       """
