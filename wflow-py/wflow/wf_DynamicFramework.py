@@ -247,13 +247,14 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
   # \param firstTimestep sets the starting timestep of the model (optional,
   #        default is 1)
   #
-  def __init__(self, userModel, lastTimeStep=0, firstTimestep=1):
+  def __init__(self, userModel, lastTimeStep=0, firstTimestep=1,datetimestart=dt.datetime(1990,01,01)):
     frameworkBase.FrameworkBase.__init__(self)
     
     self.exchnageitems = wf_exchnageVariables()
     self.setQuiet(True)
     self._d_model = userModel
     self._testRequirements()
+    self.datetime_firststep = datetimestart
 
     if firstTimestep > lastTimeStep:
       msg = "Cannot run dynamic framework: Start timestep smaller than end timestep"
@@ -410,10 +411,11 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self.NcInput = netcdfinput('inmaps.nc',self.logger,varlst)
 
     if self.ncoutfile != 'None': # Ncoutput
-        startstr="1-1-1990 00:00:00"
-        stime = dt.datetime.strptime(startstr,"%d-%m-%Y %H:%M:%S")
         buffer = int(configget(self._userModel().config,'framework','netcdfwritebuffer',"50"))
-        self.NcOutput = netcdfoutput(caseName + "/" + runId + "/" + self.ncoutfile,self.logger,stime,self._d_lastTimestep - self._d_firstTimestep + 1,maxbuf=buffer)
+        meta ={}
+        meta['caseName'] = caseName
+        meta['runId'] = runId
+        self.NcOutput = netcdfoutput(caseName + "/" + runId + "/" + self.ncoutfile,self.logger,self.datetime_firststep,self._d_lastTimestep - self._d_firstTimestep + 1,maxbuf=buffer,metadata=meta)
 
     # Fill the summary (stat) list from the ini file
     self.statslst = []
@@ -559,12 +561,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       # Print .ini defined outputmaps per timestep
       toprint = configsection(self._userModel().config,'outputmaps')
       for a in toprint:
-          b = a.replace('self','self._userModel()')
-          #try:
-          eval("self._userModel().report(" + b  + ", self._userModel().Dir + \"/\" + self._userModel().runId + \"/outmaps/" + self._userModel().config.get("outputmaps",a) +"\")")
-          #except:
-          #    self._userModel().logger.warn("Could not find or save the configured mapstack:"  + a)
-      
+          if hasattr(self._userModel(),a.replace('self.','')):
+              thevar = getattr(self._userModel(),a.replace('self.',''))
+              self._reportNew(thevar,self._userModel().Dir + "/" + self._userModel().runId + "/outmaps/" +  self._userModel().config.get("outputmaps",a),longname=a)
+
       
   def wf_resume(self, directory):
       """
@@ -1291,7 +1291,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
     return 0
     
-  def _reportNew(self, variable, name, style=1,gzipit=False):
+  def _reportNew(self, variable, name, style=1,gzipit=False, longname=None):
     """
     outputformat: (set in the [framework] section of the init file). 
         1: pcraster
@@ -1305,6 +1305,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         [framework]
         outputformat = 4
     """
+
+    if longname == None:
+        longname = name
     head, tail = os.path.split(name)
 
     if re.search("\.", tail):
@@ -1346,14 +1349,13 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         if not hasattr(self,'NcOutput'):
             PCRaster.report(variable, path)
         else:
-            self.NcOutput.savetimestep( self._userModel().currentTimeStep(),variable,var=name,name=name)
+            self.NcOutput.savetimestep( self._userModel().currentTimeStep(),variable,var=name,name=longname)
         if gzipit:
             Gzip(path,storePath=True)
     elif self.outputFormat == 2:
         numpy.savez(path,pcr2numpy(variable,-999))
     elif self.outputFormat == 3:
         numpy.savez(path,pcr2numpy(variable,-999))
-        #scipy.io.savemat(path,mdict={str(self._userModel().currentTimeStep()) : pcr2numpy(variable,-999)})
     elif self.outputFormat == 4:
         numpy.savetxt(path,pcr2numpy(variable,-999),fmt="%0.6g")
     

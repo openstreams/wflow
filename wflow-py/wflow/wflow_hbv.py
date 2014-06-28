@@ -919,19 +919,22 @@ def main(argv=None):
      
     if fewsrun: 
         ts = getTimeStepsfromRuninfo(runinfoFile,timestepsecs)
+        starttime = getStartTimefromRuninfo(runinfoFile)
         if (ts):
             _lastTimeStep =  ts# * 86400/timestepsecs
             _firstTimeStep = 1 
         else:
             print "Failed to get timesteps from runinfo file: " + runinfoFile
             exit(2)
+    else:
+        starttime = dt.datetime(1990,01,01)
        
     if _lastTimeStep < _firstTimeStep:
         print "The starttimestep (" + str(_firstTimeStep) +") is smaller than the last timestep (" + str(_lastTimeStep) + ")"
         usage()
  
     myModel = WflowModel(wflow_cloneMap, caseName,runId,configfile)
-    dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep,firstTimestep=_firstTimeStep)
+    dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep,firstTimestep=_firstTimeStep,datetimestart=starttime)
     dynModelFw.createRunId(NoOverWrite=NoOverWrite,logfname=LogFileName,level=loglevel)    
     
     for o, a in opts:

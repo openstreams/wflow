@@ -22,7 +22,8 @@ globmetadata['source'] = 'wflow'
 globmetadata['history'] = time.ctime()
 globmetadata['references'] = 'http://wflow.googlecode.com'
 globmetadata['Conventions'] = 'CF-1.4'
-
+# 'NETCDF4', 'NETCDF4_CLASSIC', 'NETCDF3_64BIT', or 'NETCDF3_CLASSIC'
+netcdfformat = "NETCDF4"
 
 def prepare_nc(trgFile, timeList, x, y, metadata, logger, units='Days since 1900-01-01 00:00:00', calendar='gregorian',Format="NETCDF4",complevel=1,zlib=True):
     """
@@ -112,7 +113,7 @@ class netcdfoutput():
         self.bufflst={}
 
         globmetadata.update(metadata)
-        prepare_nc(self.ncfile,timeList,x,y,globmetadata,logger)
+        prepare_nc(self.ncfile,timeList,x,y,globmetadata,logger,Format=netcdfformat)
 
 
     def savetimestep(self,timestep,pcrdata,unit="mm",var='P',name="Precipitation"):
@@ -128,7 +129,7 @@ class netcdfoutput():
         """
         # Open target netCDF file
         var = os.path.basename(var)
-        self.nc_trg = netCDF4.Dataset(self.ncfile, 'a',format='NETCDF4',zlib=True,complevel=1)
+        self.nc_trg = netCDF4.Dataset(self.ncfile, 'a',format=netcdfformat,zlib=True,complevel=1)
         # read time axis and convert to time objects
         time = self.nc_trg.variables['time']
         timeObj = netCDF4.num2date(time[:], units=time.units, calendar=time.calendar)
@@ -141,9 +142,11 @@ class netcdfoutput():
         try:
              nc_var = self.nc_trg.variables[var]
         except:
-            nc_var = self.nc_trg.createVariable(var, 'f4', ('time', 'lat', 'lon',), fill_value=-9999.0, zlib=True)
+            self.logger.debug("Creating variable " + var + " in netcdf file. Format: " + netcdfformat)
+            nc_var = self.nc_trg.createVariable(var, 'f4', ('time', 'lat', 'lon',), fill_value=-9999.0, zlib=True,complevel=1)
             nc_var.units = unit
             nc_var.standard_name = name
+            self.nc_trg.sync()
 
         miss =  float(nc_var._FillValue)
         data = pcr2numpy(pcrdata,miss)
@@ -169,7 +172,7 @@ class netcdfoutput():
 
         :return: Nothing
         """
-        if getattr(self,"nc_trg"):
+        if hasattr(self,"nc_trg"):
             self.nc_trg.sync()
             self.nc_trg.close()
 
