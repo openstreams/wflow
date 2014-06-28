@@ -450,7 +450,7 @@ def getEndTimefromRuninfo(xmlfile):
         
     return ed
 
-def getStartTimefromRuninfo(xmlfile,logger):
+def getStartTimefromRuninfo(xmlfile):
     """ 
     Gets the starttime from the FEWS runinfo file
     """
@@ -464,7 +464,7 @@ def getStartTimefromRuninfo(xmlfile,logger):
             ttime = ttime.split('.')[0]
         ed = datetime.strptime(edate.attrib['date'] + ttime,'%Y-%m-%d%H:%M:%S')
     else:
-        logger.warn(xmlfile + " does not exists.")
+        return None
         
     return ed
 
@@ -582,7 +582,7 @@ def main():
         for a in mstacks:
            var = config.get("outputmaps",a)           
            logger.debug("Creating mapstack xml: " + workdir + "/" + case +"/" +runId + "/" + var + ".xml" )
-           mapstackxml(workdir + "/" + case +"/" + runId + "/outmaps/" + var +".xml",var + "?????.???",var,var,getStartTimefromRuninfo(runinfofile,logger),getEndTimefromRuninfo(runinfofile),timestepsecs)
+           mapstackxml(workdir + "/" + case +"/" + runId + "/outmaps/" + var +".xml",var + "?????.???",var,var,getStartTimefromRuninfo(runinfofile),getEndTimefromRuninfo(runinfofile),timestepsecs)
            
         
         # Back hack to work around the 0 based FEWS problem and create a double timestep zo that we have connection between subsequent runs in FEWS
@@ -603,7 +603,7 @@ def main():
                 thissection ='outputtss_'+ str(secnr)
                 tssfiles  = config.options(thissection)
                 secnr = secnr + 1
-                sDate = getStartTimefromRuninfo(runinfofile,logger)
+                sDate = getStartTimefromRuninfo(runinfofile)
     
                 for aa in tssfiles:
                     if aa not in "samplemap":
