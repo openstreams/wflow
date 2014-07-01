@@ -172,8 +172,6 @@ class netcdfoutput():
             self.logger.debug("Writing buffer for " + var + " to file at: " + str(spos) + " " + str(int(bufpos) + 1) + " timesteps")
             nc_var[spos:idx+1,:,:] = self.bufflst[var][0:bufpos+1,:,:]
 
-        #nc_var[idx,:,:] = data
-
 
     def finish(self):
         """
@@ -214,6 +212,7 @@ class netcdfinput():
             except:
                 self.alldat.pop(var, None)
                 logging.warn("Variable " + var + " not found in netcdf file: " + netcdffile)
+
 
     def gettimestep(self,timestep,logging,var='P'):
         """
