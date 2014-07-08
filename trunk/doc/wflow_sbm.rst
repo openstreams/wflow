@@ -543,8 +543,19 @@ significantly higher. (Use N.tbl for non-river cells and N_River.tbl for river c
     "bottom: gravels, cobbles, and few  boulders", 0.03, 0.04, 0.05 
     "bottom: cobbles with large boulders", 0.04,  0.05, 0.07 
  
+Subcatchment flow
+=================
+Normally the the kinematic wave is continuous throughout the model. By using the
+the SubCatchFlowOnly entry in the model section of the ini file all flow is at the
+subcatchment only and no flow is transferred from one subcatchment to another. This can be handy
+when connecting the result of the model to a water allocation model such as Ribasim.
 
+Example:
 
+::
+
+    [model]
+    SubCatchFlowOnly = 1
 
 Dynamic wave
 ------------

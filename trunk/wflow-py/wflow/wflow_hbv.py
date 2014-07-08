@@ -339,6 +339,7 @@ class WflowModel(DynamicModel):
     self.ExternalQbase=int(configget(self.config,'model','ExternalQbase','0'))
     self.SetKquickFlow=int(configget(self.config,'model','SetKquickFlow','0'))
     self.MassWasting = int(configget(self.config,"model","MassWasting","0"))
+    self.SubCatchFlowOnly = int(configget(self.config, 'model', 'SubCatchFlowOnly', '0'))
 
     # static maps to use (normally default)
     wflow_subcatch = configget(self.config,"model","wflow_subcatch","/staticmaps/wflow_subcatch.map")
@@ -514,7 +515,16 @@ class WflowModel(DynamicModel):
     self.logger.info("Initializing of model variables..")
     self.TopoLdd=lddmask(self.TopoLdd,boolean(self.TopoId))   
     catchmentcells=maptotal(scalar(self.TopoId))
- 
+
+
+    # Limit lateral flow per subcatchment (make pits at all subcatch boundaries)
+    # This is very handy for Ribasim etc...
+    if self.SubCatchFlowOnly > 0:
+        self.logger.info("Creating subcatchment-only drainage network (ldd)")
+        ds = downstream(self.TopoLdd,self.sCatch)
+        usid = ifthenelse(ds != self.sCatch,self.sCatch,0)
+        self.TopoLdd = lddrepair(ifthenelse(boolean(usid),ldd(5),self.TopoLdd))
+
     # Used to seperate output per LandUse/management classes
     #OutZones = self.LandUse
     #report(self.reallength,"rl.map")

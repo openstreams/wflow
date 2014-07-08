@@ -461,6 +461,7 @@ class WflowModel(DynamicModel):
         self.RiverWidth = pcrut.readmapSave(self.Dir + wflow_riverwidth, 0.0)
         # Experimental
         self.RunoffGenSigmaFunction = int(configget(self.config, 'model', 'RunoffGenSigmaFunction', '0'))
+        self.SubCatchFlowOnly = int(configget(self.config, 'model', 'SubCatchFlowOnly', '0'))
         self.RunoffGeneratingGWPerc = float(configget(self.config, 'defaultfortbl', 'RunoffGeneratingGWPerc', '0.1'))
 
         if self.scalarInput:
@@ -657,6 +658,15 @@ class WflowModel(DynamicModel):
         self.logger.info("Initializing of model variables..")
         self.TopoLdd = lddmask(self.TopoLdd, boolean(self.TopoId))
         catchmentcells = maptotal(scalar(self.TopoId))
+
+        # Limit lateral flow per subcatchment (make pits at all subcatch boundaries)
+        # This is very handy for Ribasim etc...
+        if self.SubCatchFlowOnly > 0:
+            self.logger.info("Creating subcatchment-only drainage network (ldd)")
+            ds = downstream(self.TopoLdd,self.sCatch)
+            usid = ifthenelse(ds != self.sCatch,self.sCatch,0)
+            self.TopoLdd = lddrepair(ifthenelse(boolean(usid),ldd(5),self.TopoLdd))
+
 
         # Used to seperate output per LandUse/management classes
         OutZones = self.LandUse
