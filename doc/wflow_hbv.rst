@@ -380,6 +380,20 @@ components, the reservoir constants have to meet the following requirement:
 
 
 
+Subcatchment flow
+=================
+Normally the the kinematic wave is continuous throughout the model. By using the
+the SubCatchFlowOnly entry in the model section of the ini file all flow is at the
+subcatchment only and no flow is transferred from one subcatchment to another. This can be handy
+when connecting the result of the model to a water allocation model such as Ribasim.
+
+Example:
+
+::
+
+    [model]
+    SubCatchFlowOnly = 1
+
 
 
 Description of the python module
