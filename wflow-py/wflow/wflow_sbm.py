@@ -663,8 +663,8 @@ class WflowModel(DynamicModel):
         # This is very handy for Ribasim etc...
         if self.SubCatchFlowOnly > 0:
             self.logger.info("Creating subcatchment-only drainage network (ldd)")
-            ds = downstream(self.TopoLdd,self.sCatch)
-            usid = ifthenelse(ds != self.sCatch,self.sCatch,0)
+            ds = downstream(self.TopoLdd,self.TopoId)
+            usid = ifthenelse(ds != self.TopoId,self.TopoId,0)
             self.TopoLdd = lddrepair(ifthenelse(boolean(usid),ldd(5),self.TopoLdd))
 
 
