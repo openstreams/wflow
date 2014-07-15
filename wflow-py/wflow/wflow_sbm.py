@@ -767,8 +767,7 @@ class WflowModel(DynamicModel):
 
 
           """
-          lst = ['self.Cfmax','self.TTI','self.RiverWidth', 'self.TT',
-                'self.WHC',
+          lst = ['self.RiverWidth',
                 'self.Cmax',
                 'self.csize',
                 'self.upsize',
