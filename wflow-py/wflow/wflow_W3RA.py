@@ -258,12 +258,10 @@ class WflowModel(DynamicModel):
       This is where all the time dependent functions are executed. Time dependent
       output should also be saved here.
       """
+
+      #Put the W3RA here. Stuff from W3RA_timestep_model.m
       
-      Temperature = self.wf_readmap(self.TEMP_mapstack,0.0)     
-      self.TSoil = self.TSoil + 0.1125 * (Temperature - self.TSoil) * self.timestepsecs/self.basetimestep 
-      
-      # reporting of maps and csv timeseries is done by the framework (see ini file)
-    
+
 
 # The main function is used to run the program from the command line
 

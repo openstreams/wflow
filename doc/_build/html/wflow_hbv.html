@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>The wflow_hbv model &mdash; wflow 1.0RC2 documentation</title>
+  <title>The wflow_hbv model &mdash; wflow 1.0-RC3-dev-31-45M documentation</title>
   
 
   
@@ -18,20 +18,6 @@
 
   
   
-
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:'./',
-        VERSION:'1.0RC2',
-        COLLAPSE_INDEX:false,
-        FILE_SUFFIX:'.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-
     
 
   
@@ -39,40 +25,45 @@
   
   
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-    <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
   
-    <link rel="top" title="wflow 1.0RC2 documentation" href="index.html"/>
+    <link rel="top" title="wflow 1.0-RC3-dev-31-45M documentation" href="index.html"/>
         <link rel="next" title="The wflow_sbm Model" href="wflow_sbm.html"/>
         <link rel="prev" title="Welcome to wflow’s documentation!" href="index.html"/> 
 
-  <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav">
+<body class="wy-body-for-nav" role="document">
 
   <div class="wy-grid-for-nav">
 
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-nav-search">
-        <a href="index.html" class="icon icon-home"> wflow</a>
-        <form class="wy-form" action="search.html" method="get">
-  <input type="text" name="q" placeholder="Search docs" />
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
-</form>
+        <a href="index.html" class="fa fa-home"> wflow</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
       </div>
 
-      <div class="wy-menu wy-menu-vertical" data-spy="affix">
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
         
         
             <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="">The wflow_hbv model</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#description">Description</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#subcatchment-flow">Subcatchment flow</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#module-wflow_hbv">Description of the python module</a></li>
 </ul>
 </li>
@@ -81,9 +72,13 @@
 <li class="toctree-l1"><a class="reference internal" href="wflow_sbm.html">The wflow_sbm Model</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#introduction">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#potential-and-reference-evaporation">Potential and Reference evaporation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#snow">Snow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#the-rainfall-interception-model">The rainfall interception model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#the-soil-model">The soil model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#kinematic-wave-and-river-width">Kinematic wave and River Width</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_sbm.html#subcatchment-flow">Subcatchment flow</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#dynamic-wave">Dynamic wave</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#model-variables-stores-and-fluxes">Model variables stores and fluxes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#processing-of-meteorological-forcing-data">Processing of meteorological forcing data</a></li>
@@ -158,7 +153,10 @@
 <li class="toctree-l2"><a class="reference internal" href="wflow_fit.html#module-wflow_fit">Description of the python module</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="wflow_lib.html">wflow_lib Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_lib.html">wflow_lib Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_lib.html#wflow-lib-terrain-analysis-and-hydrological-library">wflow_lib - terrain analysis and hydrological library</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="wflow_delwaq.html">wflow_delwaq Module</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="wflow_delwaq.html#how-the-script-works">How the script works</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wflow_delwaq.html#very-simple-example">Very simple example:</a></li>
@@ -188,7 +186,10 @@
 <li class="toctree-l2"><a class="reference internal" href="framework.html#anotated-source-code-for-the-above">Anotated source code for the above</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="wf_DynamicFramework.html">wf_DynamicFramework Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wf_DynamicFramework.html">wf_DynamicFramework Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wf_DynamicFramework.html#wf-dynamicframework">wf_DynamicFramework</a></li>
+</ul>
+</li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="faq.html">Questions and answers</a><ul>
@@ -209,23 +210,30 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top">
-        <i data-toggle="wy-nav-top" class="icon icon-reorder"></i>
-        <a href="/">wflow</a>
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">wflow</a>
       </nav>
 
 
       
       <div class="wy-nav-content">
         <div class="rst-content">
-          <ul class="wy-breadcrumbs">
-  <li><a href="index.html">Docs</a> &raquo;</li>
-  <li><a href="">The wflow_hbv model</a></li>
-  
-</ul>
-<hr/>
-
-          
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>The wflow_hbv model</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/wflow_hbv.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
   <div class="section" id="the-wflow-hbv-model">
 <h1>The wflow_hbv model<a class="headerlink" href="#the-wflow-hbv-model" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="introduction">
@@ -311,6 +319,16 @@ content of the snow pack.</p>
 <div class="figure">
 <a class="reference internal image-reference" href="_images/hbv-snow.png"><img alt="_images/hbv-snow.png" src="_images/hbv-snow.png" style="width: 600px;" /></a>
 <p class="caption">Schematic view of the snow routine</p>
+</div>
+<p>The snow model als has an optional (experimental) &#8216;mass-wasting&#8217; routine. This transports snow downhill
+using the local drainage network. To use it set the variable MassWasting in the model section to 1.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Masswasting of snow</span>
+<span class="c"># 5.67 = tan 80 graden</span>
+<span class="n">SnowFluxFrac</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">Slope</span><span class="o">/</span><span class="mf">5.67</span><span class="p">)</span> <span class="o">*</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">DrySnow</span><span class="o">/</span><span class="n">MaxSnowPack</span><span class="p">)</span>
+<span class="n">MaxFlux</span> <span class="o">=</span> <span class="n">SnowFluxFrac</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">DrySnow</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">DrySnow</span> <span class="o">=</span> <span class="n">accucapacitystate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TopoLdd</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">DrySnow</span><span class="p">,</span> <span class="n">MaxFlux</span><span class="p">)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">FreeWater</span> <span class="o">=</span> <span class="n">accucapacitystate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TopoLdd</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">FreeWater</span><span class="p">,</span><span class="n">SnowFluxFrac</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">FreeWater</span> <span class="p">)</span>
+</pre></div>
 </div>
 </div>
 <div class="section" id="potential-evaporation">
@@ -487,6 +505,18 @@ components, the reservoir constants have to meet the following requirement:</p>
 <div class="math">
 <p><img src="_images/math/ebb4831f61412e0467a7768d8ae8220582497719.png" alt="K_{LZ}&lt;K_{i}&lt;K_{q}"/></p>
 </div></div>
+</div>
+</div>
+<div class="section" id="subcatchment-flow">
+<h1>Subcatchment flow<a class="headerlink" href="#subcatchment-flow" title="Permalink to this headline">¶</a></h1>
+<p>Normally the the kinematic wave is continuous throughout the model. By using the
+the SubCatchFlowOnly entry in the model section of the ini file all flow is at the
+subcatchment only and no flow is transferred from one subcatchment to another. This can be handy
+when connecting the result of the model to a water allocation model such as Ribasim.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">model</span><span class="p">]</span>
+<span class="n">SubCatchFlowOnly</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
 </div>
 <div class="section" id="module-wflow_hbv">
 <span id="description-of-the-python-module"></span><h2>Description of the python module<a class="headerlink" href="#module-wflow_hbv" title="Permalink to this headline">¶</a></h2>
@@ -778,25 +808,28 @@ are saved to disk as pcraster maps. Use resume() to re-read them</p>
 </div>
 
 
+          </div>
           <footer>
   
-    <div class="rst-footer-buttons">
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="wflow_sbm.html" class="btn btn-neutral float-right" title="The wflow_sbm Model"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="wflow_sbm.html" class="btn btn-neutral float-right" title="The wflow_sbm Model"/>Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="index.html" class="btn btn-neutral" title="Welcome to wflow’s documentation!"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="index.html" class="btn btn-neutral" title="Welcome to wflow’s documentation!"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
 
   <hr/>
 
-  <p>
-      &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
-  </p>
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
+    </p>
+  </div>
 
-  <a href="https://www.github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="http://readthedocs.org">Read the Docs</a>
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
 </footer>
         </div>
       </div>
@@ -805,6 +838,38 @@ are saved to disk as pcraster maps. Use resume() to re-read them</p>
 
   </div>
   
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0-RC3-dev-31-45M',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
 
 </body>
 </html>
