@@ -112,6 +112,17 @@ content of the snow pack.
 	Schematic view of the snow routine
 
 
+The snow model als has an optional (experimental) 'mass-wasting' routine. This transports snow downhill
+using the local drainage network. To use it set the variable MassWasting in the model section to 1.
+
+::
+
+       # Masswasting of snow
+       # 5.67 = tan 80 graden
+       SnowFluxFrac = min(0.5,self.Slope/5.67) * min(1.0,self.DrySnow/MaxSnowPack)
+       MaxFlux = SnowFluxFrac * self.DrySnow
+       self.DrySnow = accucapacitystate(self.TopoLdd,self.DrySnow, MaxFlux)
+       self.FreeWater = accucapacitystate(self.TopoLdd,self.FreeWater,SnowFluxFrac * self.FreeWater )
 
 
 Potential Evaporation
@@ -368,6 +379,20 @@ components, the reservoir constants have to meet the following requirement:
 	K_{LZ}<K_{i}<K_{q}
 
 
+
+Subcatchment flow
+=================
+Normally the the kinematic wave is continuous throughout the model. By using the
+the SubCatchFlowOnly entry in the model section of the ini file all flow is at the
+subcatchment only and no flow is transferred from one subcatchment to another. This can be handy
+when connecting the result of the model to a water allocation model such as Ribasim.
+
+Example:
+
+::
+
+    [model]
+    SubCatchFlowOnly = 1
 
 
 
