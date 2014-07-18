@@ -1,0 +1,707 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Using the framework &mdash; wflow 1.0-RC3-dev-31-45M documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="wflow 1.0-RC3-dev-31-45M documentation" href="index.html"/>
+        <link rel="next" title="wf_DynamicFramework Module" href="wf_DynamicFramework.html"/>
+        <link rel="prev" title="Calibration of the wflow_sbm model for the Rhine catchment using EOBS data" href="calib_report.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="index.html" class="fa fa-home"> wflow</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_hbv.html">The wflow_hbv model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_hbv.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_hbv.html#description">Description</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_hbv.html#subcatchment-flow">Subcatchment flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_hbv.html#module-wflow_hbv">Description of the python module</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_sbm.html">The wflow_sbm Model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#potential-and-reference-evaporation">Potential and Reference evaporation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#snow">Snow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#the-rainfall-interception-model">The rainfall interception model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#the-soil-model">The soil model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#kinematic-wave-and-river-width">Kinematic wave and River Width</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_sbm.html#subcatchment-flow">Subcatchment flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#dynamic-wave">Dynamic wave</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#model-variables-stores-and-fluxes">Model variables stores and fluxes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#processing-of-meteorological-forcing-data">Processing of meteorological forcing data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#guidelines-for-wflowsbm-model-parameters">Guidelines for wflowsbm model parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#references">References</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#module-wflow_sbm">wflow_sbm module documentation</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_gr4.html">The wflow_gr4 model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_gr4.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_gr4.html#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_gr4.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_gr4.html#module-wflow_gr4">wflow_gr4 module documentation</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_wave.html">THe wflow_wave Model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_wave.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_wave.html#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_wave.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_wave.html#module-wflow_wave">wflow_wave module documentation</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_floodmap.html">The wflow_floodmap model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_floodmap.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_floodmap.html#module-wflow_floodmap">Description of the python module</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_adapt.html">wflow_adapt Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_adapt.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_adapt.html#linking-wflow-models-to-delft-fews">Linking wflow models to Delft-FEWS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_adapt.html#module-wflow_adapt">Module function documentation</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_building.html">Building a model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_building.html#data-requirements">Data requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_building.html#setting-up-a-new-model">Setting-up a new model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_building.html#preparing-static-input-maps">Preparing static input maps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_building.html#module-wflow_prepare_step1">Script documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_building.html#setting-up-a-case">Setting Up a Case</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_building.html#input-parameters-lookup-tables-or-maps">Input parameters (lookup tables or maps)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_building.html#calibrating-the-wflow-sbm-model">Calibrating the  wflow_sbm model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_building.html#common-problems">Common problems</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_usage.html">Using the models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_usage.html#directory-structure-cases-and-runs">Directory structure: cases and runs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_usage.html#running-the-model">Running the model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_usage.html#wflow-sbm-hbv-ini-file">wflow_sbm|hbv.ini file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_usage.html#updating-using-measured-data">Updating using measured data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_usage.html#all-possible-options-in-wflow-sbm-ini-file">All possible options in wflow_sbm.ini file</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_fit.html">The wflow_fit module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_fit.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_fit.html#the-ini-file">The ini file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_fit.html#fitting-results">Fitting results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_fit.html#how-to-fit">How to fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_fit.html#module-wflow_fit">Description of the python module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_lib.html">wflow_lib Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_lib.html#wflow-lib-terrain-analysis-and-hydrological-library">wflow_lib - terrain analysis and hydrological library</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_delwaq.html">wflow_delwaq Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_delwaq.html#how-the-script-works">How the script works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_delwaq.html#very-simple-example">Very simple example:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_delwaq.html#case-study-for-malaysia-and-singapore">Case study for Malaysia and Singapore</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_delwaq.html#module-wflow_delwaq">wflow_delwaq module documentation</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="testrunner_wflowhbv.html">run wflow_hbv via API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="testrunner_wflowhbv.html#settings-in-the-ini-file">Settings in the ini file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testrunner_wflowhbv.html#settings-in-the-api-section">Settings in the API section</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="calib_report.html">Calibration of the wflow_sbm model for the Rhine catchment using EOBS data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="calib_report.html#dem-and-landuse-data">DEM and landuse data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="calib_report.html#forcing-data">Forcing data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="calib_report.html#calibration-procedure">Calibration procedure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="calib_report.html#original-landuse">Original landuse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="calib_report.html#modified-landuse">Modified landuse</a></li>
+</ul>
+</li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">Using the framework</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#definition-of-the-wflow-sceleton-model">Definition of the wflow_sceleton model.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#anotated-source-code-for-the-above">Anotated source code for the above</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wf_DynamicFramework.html">wf_DynamicFramework Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wf_DynamicFramework.html#wf-dynamicframework">wf_DynamicFramework</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Questions and answers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="faq.html#questions">Questions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq.html#answers">Answers</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_openda.html">Linking wflow to OpenDA</a></li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">wflow</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Using the framework</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/framework.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <div class="section" id="using-the-framework">
+<h1>Using the framework<a class="headerlink" href="#using-the-framework" title="Permalink to this headline">¶</a></h1>
+<p>This section only gives a brief description of the framework focussing on the extensions
+made for OpenStreams. A full description of the current version of the framework can be found
+at <a class="reference external" href="http://www.pcraster.eu">http://www.pcraster.eu</a>.</p>
+<p>In order to build a dynamic model you will needs to define a model class and add several methods
+to the class to describe the model behaviour. The easiest way to get started is to copy
+and modify the <tt class="docutils literal"><span class="pre">wflow_sceleton.py</span></tt> example model. You can also use the other models
+for inspiration.</p>
+<p>In order to facilitate reusing data between models the data is stored in the following directory
+tree:</p>
+<p class="graphviz">
+<img src="_images/graphviz-48908b619c669b82505dbed23f936258c75c1a18.png" alt="digraph file_system {
+//rankdir=LR;
+size=&quot;8,11&quot;;
+&quot;Case&quot; -&gt; &quot;inmaps&quot;;
+&quot;Case&quot; -&gt; &quot;instate&quot;;
+&quot;Case&quot; -&gt; &quot;intbl&quot;;
+&quot;Case&quot; -&gt; &quot;intss&quot;;
+&quot;Case&quot; -&gt; &quot;outstate&quot;;
+&quot;Case&quot; -&gt; &quot;Run&quot;;
+&quot;Case&quot; -&gt; &quot;staticmaps&quot;;
+   &quot;Run&quot; -&gt; &quot; intbl&quot;;
+   &quot;Run&quot; -&gt; &quot;outmaps&quot;;
+   &quot;Run&quot; -&gt; &quot; outstate&quot;;
+   &quot;Run&quot; -&gt; &quot;outsum&quot;;
+   &quot;Run&quot; -&gt; &quot;runinfo&quot;;
+}" />
+</p>
+<p>Although it is possible to deviate from this layout it is highly recommended to
+adhere to this if you build your own model. Also make sure you use an ini file to
+specify model settings instead of putting those in the python code.</p>
+<p>A basic sceleton of a model is given below:</p>
+<span class="target" id="module-wflow_sceleton"></span><div class="section" id="definition-of-the-wflow-sceleton-model">
+<h2>Definition of the wflow_sceleton model.<a class="headerlink" href="#definition-of-the-wflow-sceleton-model" title="Permalink to this headline">¶</a></h2>
+<p>This simple model calculates soil temperature using
+air temperature as a forcing.</p>
+<p>Usage:
+wflow_sceleton  -C case -R Runid -c inifile</p>
+<blockquote>
+<div><p>-C: set the name  of the case (directory) to run</p>
+<p>-R: set the name runId within the current case</p>
+<p>-c name of the config file (in the case directory)</p>
+</div></blockquote>
+<p>$Author: schelle $
+$Id: wflow_sceleton.py 898 2014-01-09 14:47:06Z schelle $
+$Rev: 898 $</p>
+<dl class="class">
+<dt id="wflow_sceleton.WflowModel">
+<em class="property">class </em><tt class="descclassname">wflow_sceleton.</tt><tt class="descname">WflowModel</tt><big>(</big><em>cloneMap</em>, <em>Dir</em>, <em>RunDir</em>, <em>configfile</em><big>)</big><a class="headerlink" href="#wflow_sceleton.WflowModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>The user defined model class. This is your work!</p>
+<dl class="method">
+<dt id="wflow_sceleton.WflowModel.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>cloneMap</em>, <em>Dir</em>, <em>RunDir</em>, <em>configfile</em><big>)</big><a class="headerlink" href="#wflow_sceleton.WflowModel.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Required</em></p>
+<p>The init function <strong>must</strong> contain what is shown below. Other functionality
+may be added by you if needed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_sceleton.WflowModel.stateVariables">
+<tt class="descname">stateVariables</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_sceleton.WflowModel.stateVariables" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Required</em></p>
+<p>Returns a list of state variables that are essential to the model. 
+This list is essential for the resume and suspend functions to work.</p>
+<p>This function is specific for each model and <strong>must</strong> be present. This is
+where you specify the state variables of you model. If your model is stateless
+this function must return and empty array (states = [])</p>
+<p>In the simple example here the TSoil variable is a state 
+for the model.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><strong>TSoil</strong> &#8211; Temperature of the soil [oC]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_sceleton.WflowModel.supplyCurrentTime">
+<tt class="descname">supplyCurrentTime</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_sceleton.WflowModel.supplyCurrentTime" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Optional</em></p>
+<p>Supplies the current time in seconds after the start of the run
+This function is optional. If it is not set the framework assumes
+the model runs with daily timesteps.</p>
+<p>Ouput:</p>
+<blockquote>
+<div><ul class="simple">
+<li>time in seconds since the start of the model run</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_sceleton.WflowModel.suspend">
+<tt class="descname">suspend</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_sceleton.WflowModel.suspend" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Required</em></p>
+<p>Suspends the model to disk. All variables needed to restart the model
+are saved to disk as pcraster maps. Use resume() to re-read them</p>
+<p>This function is required.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_sceleton.WflowModel.initial">
+<tt class="descname">initial</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_sceleton.WflowModel.initial" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Required</em></p>
+<p>Initial part of the model, executed only once. It reads all static model
+information (parameters) and sets-up the variables used in modelling.</p>
+<p>This function is required. The contents is free. However, in order to
+easily connect to other models it is advised to adhere to the directory
+structure used in the other models.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_sceleton.WflowModel.resume">
+<tt class="descname">resume</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_sceleton.WflowModel.resume" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Required</em></p>
+<p>This function is required. Read initial state maps (they are output of a 
+previous call to suspend()). The implementation showns here is the most basic 
+setup needed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_sceleton.WflowModel.default_summarymaps">
+<tt class="descname">default_summarymaps</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_sceleton.WflowModel.default_summarymaps" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Optional</em></p>
+<p>Return a default list of variables to report as summary maps in the outsum dir.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_sceleton.WflowModel.dynamic">
+<tt class="descname">dynamic</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_sceleton.WflowModel.dynamic" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Required</em></p>
+<p>This is where all the time dependent functions are executed. Time dependent
+output should also be saved here.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_sceleton.main">
+<tt class="descclassname">wflow_sceleton.</tt><tt class="descname">main</tt><big>(</big><em>argv=None</em><big>)</big><a class="headerlink" href="#wflow_sceleton.main" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Optional</em></p>
+<p>Perform command line execution of the model. This example uses the getopt
+module to parse the command line options.</p>
+<p>The user can set the caseName, the runDir, the timestep and the configfile.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="anotated-source-code-for-the-above">
+<h2>Anotated source code for the above<a class="headerlink" href="#anotated-source-code-for-the-above" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#!/usr/bin/python</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Definition of the wflow_sceleton model.</span>
+<span class="sd">---------------------------------------</span>
+
+<span class="sd">This simple model calculates soil temperature using</span>
+<span class="sd">air temperature as a forcing.</span>
+
+<span class="sd">Usage:</span>
+<span class="sd">wflow_sceleton  -C case -R Runid -c inifile</span>
+
+<span class="sd">    -C: set the name  of the case (directory) to run</span>
+<span class="sd">    </span>
+<span class="sd">    -R: set the name runId within the current case</span>
+<span class="sd">    </span>
+<span class="sd">    -c name of the config file (in the case directory)</span>
+<span class="sd">    </span>
+<span class="sd">$Author: schelle $</span>
+<span class="sd">$Id: wflow_sceleton.py 898 2014-01-09 14:47:06Z schelle $</span>
+<span class="sd">$Rev: 898 $</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
+<span class="kn">import</span> <span class="nn">shutil</span><span class="o">,</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">getopt</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span>  <span class="nn">wflow.wf_DynamicFramework</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span>  <span class="nn">wf_DynamicFramework</span> <span class="kn">import</span> <span class="o">*</span>
+    
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span>  <span class="nn">wflow.wflow_adapt</span>  <span class="kn">import</span> <span class="o">*</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span>  <span class="nn">wflow_adapt</span> <span class="kn">import</span> <span class="o">*</span>  
+<span class="kn">import</span> <span class="nn">scipy</span>
+
+
+
+<span class="k">def</span> <span class="nf">usage</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span>
+    <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span> <span class="k">print</span> <span class="n">msg</span>
+    <span class="k">print</span> <span class="n">__doc__</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">WflowModel</span><span class="p">(</span><span class="n">DynamicModel</span><span class="p">):</span>  
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  The user defined model class. This is your work!</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cloneMap</span><span class="p">,</span><span class="n">Dir</span><span class="p">,</span><span class="n">RunDir</span><span class="p">,</span><span class="n">configfile</span><span class="p">):</span>
+      <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">      *Required*</span>
+<span class="sd">      </span>
+<span class="sd">      The init function **must** contain what is shown below. Other functionality</span>
+<span class="sd">      may be added by you if needed.</span>
+<span class="sd">      </span>
+<span class="sd">      &quot;&quot;&quot;</span>
+      <span class="n">DynamicModel</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>   
+      <span class="n">setclone</span><span class="p">(</span><span class="n">Dir</span> <span class="o">+</span> <span class="s">&quot;/staticmaps/&quot;</span> <span class="o">+</span> <span class="n">cloneMap</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">runId</span><span class="o">=</span><span class="n">RunDir</span>      
+      <span class="bp">self</span><span class="o">.</span><span class="n">caseName</span><span class="o">=</span><span class="n">Dir</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">Dir</span> <span class="o">=</span> <span class="n">Dir</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">configfile</span> <span class="o">=</span> <span class="n">configfile</span>
+     
+
+
+  <span class="k">def</span> <span class="nf">stateVariables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+      <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">      *Required*</span>
+<span class="sd">      </span>
+<span class="sd">      Returns a list of state variables that are essential to the model. </span>
+<span class="sd">      This list is essential for the resume and suspend functions to work.</span>
+<span class="sd">      </span>
+<span class="sd">      This function is specific for each model and **must** be present. This is</span>
+<span class="sd">      where you specify the state variables of you model. If your model is stateless</span>
+<span class="sd">      this function must return and empty array (states = [])</span>
+<span class="sd">      </span>
+<span class="sd">      In the simple example here the TSoil variable is a state </span>
+<span class="sd">      for the model.</span>
+<span class="sd">      </span>
+<span class="sd">      :var TSoil: Temperature of the soil [oC]</span>
+<span class="sd">      &quot;&quot;&quot;</span>
+      <span class="n">states</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;TSoil&#39;</span><span class="p">]</span>
+      
+      <span class="k">return</span> <span class="n">states</span>
+      
+      
+  <span class="k">def</span> <span class="nf">supplyCurrentTime</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+      <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">      *Optional*</span>
+<span class="sd">      </span>
+<span class="sd">      Supplies the current time in seconds after the start of the run</span>
+<span class="sd">      This function is optional. If it is not set the framework assumes</span>
+<span class="sd">      the model runs with daily timesteps.</span>
+<span class="sd">      </span>
+<span class="sd">      Ouput:</span>
+<span class="sd">      </span>
+<span class="sd">          - time in seconds since the start of the model run</span>
+<span class="sd">          </span>
+<span class="sd">      &quot;&quot;&quot;</span>
+      
+      <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">currentTimeStep</span><span class="p">()</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="n">configget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span><span class="s">&#39;model&#39;</span><span class="p">,</span><span class="s">&#39;timestepsecs&#39;</span><span class="p">,</span><span class="s">&#39;86400&#39;</span><span class="p">))</span>
+  
+  <span class="k">def</span> <span class="nf">suspend</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">      *Required*</span>
+<span class="sd">      </span>
+<span class="sd">      Suspends the model to disk. All variables needed to restart the model</span>
+<span class="sd">      are saved to disk as pcraster maps. Use resume() to re-read them</span>
+<span class="sd">      </span>
+<span class="sd">      This function is required. </span>
+<span class="sd">      </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+        
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Saving initial conditions...&quot;</span><span class="p">)</span>
+    <span class="c">#: It is advised to use the wf_suspend() function </span>
+    <span class="c">#: here which will suspend the variables that are given by stateVariables </span>
+    <span class="c">#: function.</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">wf_suspend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Dir</span> <span class="o">+</span> <span class="s">&quot;/outstate/&quot;</span><span class="p">)</span>
+
+      
+  <span class="k">def</span> <span class="nf">initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+      
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    *Required*</span>
+<span class="sd">    </span>
+<span class="sd">    Initial part of the model, executed only once. It reads all static model</span>
+<span class="sd">    information (parameters) and sets-up the variables used in modelling.</span>
+<span class="sd">    </span>
+<span class="sd">    This function is required. The contents is free. However, in order to</span>
+<span class="sd">    easily connect to other models it is advised to adhere to the directory</span>
+<span class="sd">    structure used in the other models.</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#: pcraster option to calculate with units or cells. Not really an issue</span>
+    <span class="c">#: in this model but always good to keep in mind.</span>
+    <span class="n">setglobaloption</span><span class="p">(</span><span class="s">&quot;unittrue&quot;</span><span class="p">)</span>
+
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">timestepsecs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">configget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span><span class="s">&#39;model&#39;</span><span class="p">,</span><span class="s">&#39;timestepsecs&#39;</span><span class="p">,</span><span class="s">&#39;86400&#39;</span><span class="p">))</span>
+    
+    <span class="bp">self</span><span class="o">.</span><span class="n">basetimestep</span><span class="o">=</span><span class="mi">86400</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">SaveMapDir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Dir</span> <span class="o">+</span> <span class="s">&quot;/&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">runId</span> <span class="o">+</span> <span class="s">&quot;/outmaps&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">TEMP_mapstack</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Dir</span> <span class="o">+</span> <span class="n">configget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span><span class="s">&quot;inputmapstacks&quot;</span><span class="p">,</span><span class="s">&quot;Temperature&quot;</span><span class="p">,</span><span class="s">&quot;/inmaps/TEMP&quot;</span><span class="p">)</span> 
+    <span class="bp">self</span><span class="o">.</span><span class="n">Altitude</span><span class="o">=</span><span class="n">readmap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Dir</span> <span class="o">+</span> <span class="s">&quot;/staticmaps/wflow_dem&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Starting Dynamic run...&quot;</span><span class="p">)</span>
+
+
+  <span class="k">def</span> <span class="nf">resume</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    *Required*</span>
+
+<span class="sd">    This function is required. Read initial state maps (they are output of a </span>
+<span class="sd">    previous call to suspend()). The implementation showns here is the most basic </span>
+<span class="sd">    setup needed.</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Reading initial conditions...&quot;</span><span class="p">)</span>
+    <span class="c">#: It is advised to use the wf_resume() function </span>
+    <span class="c">#: here which pick up the variable save by a call to wf_suspend()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wf_resume</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Dir</span> <span class="o">+</span> <span class="s">&quot;/instate/&quot;</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Cannot load initial states, setting to default&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stateVariables</span><span class="p">():</span>
+            <span class="k">exec</span> <span class="s">&quot;self.&quot;</span> <span class="o">+</span> <span class="n">s</span> <span class="o">+</span> <span class="s">&quot; = cover(1.0)&quot;</span>
+
+
+  <span class="k">def</span> <span class="nf">default_summarymaps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+      <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">      *Optional*</span>
+
+<span class="sd">      Return a default list of variables to report as summary maps in the outsum dir.</span>
+<span class="sd">      &quot;&quot;&quot;</span>
+      <span class="k">return</span> <span class="p">[</span><span class="s">&#39;self.Altitude&#39;</span><span class="p">]</span>
+
+  <span class="k">def</span> <span class="nf">dynamic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+      <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">      *Required*</span>
+<span class="sd">      </span>
+<span class="sd">      This is where all the time dependent functions are executed. Time dependent</span>
+<span class="sd">      output should also be saved here.</span>
+<span class="sd">      &quot;&quot;&quot;</span>
+      
+      <span class="n">Temperature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wf_readmap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TEMP_mapstack</span><span class="p">,</span><span class="mf">0.0</span><span class="p">)</span>     
+      <span class="bp">self</span><span class="o">.</span><span class="n">TSoil</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TSoil</span> <span class="o">+</span> <span class="mf">0.1125</span> <span class="o">*</span> <span class="p">(</span><span class="n">Temperature</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">TSoil</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestepsecs</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">basetimestep</span> 
+      
+      <span class="c"># reporting of maps and csv timeseries is done by the framework (see ini file)</span>
+    
+
+<span class="c"># The main function is used to run the program from the command line</span>
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>  
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    *Optional*</span>
+<span class="sd">    </span>
+<span class="sd">    Perform command line execution of the model. This example uses the getopt</span>
+<span class="sd">    module to parse the command line options.</span>
+<span class="sd">    </span>
+<span class="sd">    The user can set the caseName, the runDir, the timestep and the configfile.</span>
+<span class="sd">    &quot;&quot;&quot;</span>      
+    <span class="k">global</span> <span class="n">multpars</span>
+    <span class="n">caseName</span> <span class="o">=</span> <span class="s">&quot;default&quot;</span>
+    <span class="n">runId</span> <span class="o">=</span> <span class="s">&quot;run_default&quot;</span>
+    <span class="n">configfile</span><span class="o">=</span><span class="s">&quot;wflow_sceleton.ini&quot;</span>
+    <span class="n">_lastTimeStep</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">_firstTimeStep</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">timestepsecs</span><span class="o">=</span><span class="mi">86400</span>
+    <span class="n">wflow_cloneMap</span> <span class="o">=</span> <span class="s">&#39;wflow_subcatch.map&#39;</span>
+    
+    <span class="c"># This allows us to use the model both on the command line and to call </span>
+    <span class="c"># the model usinge main function from another python script.</span>
+    
+    <span class="k">if</span> <span class="n">argv</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">argv</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">usage</span><span class="p">()</span>
+            <span class="k">return</span>     
+
+    <span class="n">opts</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="n">getopt</span><span class="o">.</span><span class="n">getopt</span><span class="p">(</span><span class="n">argv</span><span class="p">,</span> <span class="s">&#39;C:S:T:c:s:R:&#39;</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">o</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">opts</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">o</span> <span class="o">==</span> <span class="s">&#39;-C&#39;</span><span class="p">:</span> <span class="n">caseName</span> <span class="o">=</span> <span class="n">a</span>
+        <span class="k">if</span> <span class="n">o</span> <span class="o">==</span> <span class="s">&#39;-R&#39;</span><span class="p">:</span> <span class="n">runId</span> <span class="o">=</span> <span class="n">a</span>
+        <span class="k">if</span> <span class="n">o</span> <span class="o">==</span> <span class="s">&#39;-c&#39;</span><span class="p">:</span> <span class="n">configfile</span> <span class="o">=</span> <span class="n">a</span>
+        <span class="k">if</span> <span class="n">o</span> <span class="o">==</span> <span class="s">&#39;-s&#39;</span><span class="p">:</span> <span class="n">timestepsecs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">o</span> <span class="o">==</span> <span class="s">&#39;-T&#39;</span><span class="p">:</span> <span class="n">_lastTimeStep</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">o</span> <span class="o">==</span> <span class="s">&#39;-S&#39;</span><span class="p">:</span> <span class="n">_firstTimeStep</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+        
+    <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span> <span class="o">&lt;=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">usage</span><span class="p">()</span>
+        
+    <span class="n">myModel</span> <span class="o">=</span> <span class="n">WflowModel</span><span class="p">(</span><span class="n">wflow_cloneMap</span><span class="p">,</span> <span class="n">caseName</span><span class="p">,</span><span class="n">runId</span><span class="p">,</span><span class="n">configfile</span><span class="p">)</span>
+    <span class="n">dynModelFw</span> <span class="o">=</span> <span class="n">wf_DynamicFramework</span><span class="p">(</span><span class="n">myModel</span><span class="p">,</span> <span class="n">_lastTimeStep</span><span class="p">,</span><span class="n">firstTimestep</span><span class="o">=</span><span class="n">_firstTimeStep</span><span class="p">)</span>
+    <span class="n">dynModelFw</span><span class="o">.</span><span class="n">createRunId</span><span class="p">(</span><span class="n">NoOverWrite</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>    
+    <span class="n">dynModelFw</span><span class="o">.</span><span class="n">_runInitial</span><span class="p">()</span>
+    <span class="n">dynModelFw</span><span class="o">.</span><span class="n">_runResume</span><span class="p">()</span>
+    <span class="n">dynModelFw</span><span class="o">.</span><span class="n">_runDynamic</span><span class="p">(</span><span class="n">_firstTimeStep</span><span class="p">,</span><span class="n">_lastTimeStep</span><span class="p">)</span>
+    <span class="n">dynModelFw</span><span class="o">.</span><span class="n">_runSuspend</span><span class="p">()</span>
+    <span class="n">dynModelFw</span><span class="o">.</span><span class="n">_wf_shutdown</span><span class="p">()</span>
+    
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="wf_DynamicFramework.html" class="btn btn-neutral float-right" title="wf_DynamicFramework Module"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="calib_report.html" class="btn btn-neutral" title="Calibration of the wflow_sbm model for the Rhine catchment using EOBS data"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0-RC3-dev-31-45M',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

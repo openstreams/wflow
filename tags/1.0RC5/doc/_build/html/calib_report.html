@@ -1,0 +1,507 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Calibration of the wflow_sbm model for the Rhine catchment using EOBS data &mdash; wflow 1.0-RC3-dev-31-45M documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="wflow 1.0-RC3-dev-31-45M documentation" href="index.html"/>
+        <link rel="next" title="Using the framework" href="framework.html"/>
+        <link rel="prev" title="run wflow_hbv via API" href="testrunner_wflowhbv.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="index.html" class="fa fa-home"> wflow</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_hbv.html">The wflow_hbv model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_hbv.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_hbv.html#description">Description</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_hbv.html#subcatchment-flow">Subcatchment flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_hbv.html#module-wflow_hbv">Description of the python module</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_sbm.html">The wflow_sbm Model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#potential-and-reference-evaporation">Potential and Reference evaporation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#snow">Snow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#the-rainfall-interception-model">The rainfall interception model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#the-soil-model">The soil model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#kinematic-wave-and-river-width">Kinematic wave and River Width</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_sbm.html#subcatchment-flow">Subcatchment flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#dynamic-wave">Dynamic wave</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#model-variables-stores-and-fluxes">Model variables stores and fluxes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#processing-of-meteorological-forcing-data">Processing of meteorological forcing data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#guidelines-for-wflowsbm-model-parameters">Guidelines for wflowsbm model parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#references">References</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#module-wflow_sbm">wflow_sbm module documentation</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_gr4.html">The wflow_gr4 model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_gr4.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_gr4.html#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_gr4.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_gr4.html#module-wflow_gr4">wflow_gr4 module documentation</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_wave.html">THe wflow_wave Model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_wave.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_wave.html#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_wave.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_wave.html#module-wflow_wave">wflow_wave module documentation</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_floodmap.html">The wflow_floodmap model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_floodmap.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_floodmap.html#module-wflow_floodmap">Description of the python module</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_adapt.html">wflow_adapt Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_adapt.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_adapt.html#linking-wflow-models-to-delft-fews">Linking wflow models to Delft-FEWS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_adapt.html#module-wflow_adapt">Module function documentation</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_building.html">Building a model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_building.html#data-requirements">Data requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_building.html#setting-up-a-new-model">Setting-up a new model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_building.html#preparing-static-input-maps">Preparing static input maps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_building.html#module-wflow_prepare_step1">Script documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_building.html#setting-up-a-case">Setting Up a Case</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_building.html#input-parameters-lookup-tables-or-maps">Input parameters (lookup tables or maps)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_building.html#calibrating-the-wflow-sbm-model">Calibrating the  wflow_sbm model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_building.html#common-problems">Common problems</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_usage.html">Using the models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_usage.html#directory-structure-cases-and-runs">Directory structure: cases and runs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_usage.html#running-the-model">Running the model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_usage.html#wflow-sbm-hbv-ini-file">wflow_sbm|hbv.ini file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_usage.html#updating-using-measured-data">Updating using measured data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_usage.html#all-possible-options-in-wflow-sbm-ini-file">All possible options in wflow_sbm.ini file</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_fit.html">The wflow_fit module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_fit.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_fit.html#the-ini-file">The ini file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_fit.html#fitting-results">Fitting results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_fit.html#how-to-fit">How to fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_fit.html#module-wflow_fit">Description of the python module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_lib.html">wflow_lib Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_lib.html#wflow-lib-terrain-analysis-and-hydrological-library">wflow_lib - terrain analysis and hydrological library</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_delwaq.html">wflow_delwaq Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_delwaq.html#how-the-script-works">How the script works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_delwaq.html#very-simple-example">Very simple example:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_delwaq.html#case-study-for-malaysia-and-singapore">Case study for Malaysia and Singapore</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_delwaq.html#module-wflow_delwaq">wflow_delwaq module documentation</a></li>
+</ul>
+</li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="testrunner_wflowhbv.html">run wflow_hbv via API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="testrunner_wflowhbv.html#settings-in-the-ini-file">Settings in the ini file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testrunner_wflowhbv.html#settings-in-the-api-section">Settings in the API section</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Calibration of the wflow_sbm model for the Rhine catchment using EOBS data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dem-and-landuse-data">DEM and landuse data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#forcing-data">Forcing data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#calibration-procedure">Calibration procedure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#original-landuse">Original landuse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#modified-landuse">Modified landuse</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="framework.html">Using the framework</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="framework.html#definition-of-the-wflow-sceleton-model">Definition of the wflow_sceleton model.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="framework.html#anotated-source-code-for-the-above">Anotated source code for the above</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wf_DynamicFramework.html">wf_DynamicFramework Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wf_DynamicFramework.html#wf-dynamicframework">wf_DynamicFramework</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Questions and answers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="faq.html#questions">Questions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq.html#answers">Answers</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_openda.html">Linking wflow to OpenDA</a></li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">wflow</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Calibration of the wflow_sbm model for the Rhine catchment using EOBS data</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/calib_report.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <div class="section" id="calibration-of-the-wflow-sbm-model-for-the-rhine-catchment-using-eobs-data">
+<h1>Calibration of the wflow_sbm model for the Rhine catchment using EOBS data<a class="headerlink" href="#calibration-of-the-wflow-sbm-model-for-the-rhine-catchment-using-eobs-data" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="dem-and-landuse-data">
+<h2>DEM and landuse data<a class="headerlink" href="#dem-and-landuse-data" title="Permalink to this headline">¶</a></h2>
+<p>The digital elevation model used was the SRTM 90x90 m resolution dataset. The
+DEM was used to determine the river network and the altitude of each cell using the
+following steps:</p>
+<p># The 90x90 m DEM was used to determine the local drainage network (D8) and pits were removed from the network
+# The network determined above was used to fix the river network when resampling the DEM to a 900x900 m resolution DEM.
+# [pm] resampling procedure</p>
+<p>Corina land-use map and reclassification [PM]</p>
+</div>
+<div class="section" id="forcing-data">
+<h2>Forcing data<a class="headerlink" href="#forcing-data" title="Permalink to this headline">¶</a></h2>
+<p>The wflowsbm model was calibrated for the Rhine basin using daily temperature
+and precipitation data from the EOBS dataset <a class="reference internal" href="#haylock" id="id1">[Haylock]</a> (version 5.0).
+Discharge was taken from the CHR daily dataset (<a class="reference internal" href="#gorgen" id="id2">[gorgen]</a>). Potential
+evapotranspiration was determined using and adjusted version Hargraeves&#8217; method
+(<a class="reference internal" href="#weiland" id="id3">[weiland]</a>):</p>
+<div class="math">
+<p><img src="_images/math/330cf5a1e2a1be4947c4f7486fa42d141a02e8c1.png" alt="E_{pot} = 0.0031  (T + 17.78)  abs(T_{max} - T_{min})^{0.5}  R"/></p>
+</div><p>In which 0.0031 is a calibration factor and <img class="math" src="_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> is the clear sky solar
+radiation expressed in mm/day.</p>
+<p>Within the wflow_sbm model the temperature is corrected for altitude
+differences within one EOBS cell. For each wflow_sbm 1x1km cell the temperature
+is corrected by using the differences between the altitude in that cell and the
+average altitude within the matching EOBS cell and applying a lapse rate.</p>
+<p>Gauge data from CHR</p>
+</div>
+<div class="section" id="calibration-procedure">
+<h2>Calibration procedure<a class="headerlink" href="#calibration-procedure" title="Permalink to this headline">¶</a></h2>
+<p>Calibration was performed in two steps. First an initial gues of all parameters
+was made based on land-use type. Secondly  a full matrix search of a number of parameters
+was performed and best perfroming sets have been chosen per subcatchment (based on NS and bias).</p>
+<p>The plots below show the calibration results for the period 1985 &#8211; 1995 for the
+following stations:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Rhein</span><span class="o">-</span><span class="n">Basel</span><span class="p">,</span> <span class="n">Rheinhalle</span>
+<span class="n">Kalkhoven</span>
+<span class="n">Rockenau</span>
+<span class="n">Kaub</span>
+<span class="n">Koeln</span>
+<span class="n">Lobith</span>
+<span class="n">Raunheim</span>
+<span class="n">Cochem</span>
+<span class="n">Andernach</span>
+<span class="n">Maxau</span>
+<span class="n">Schermbeck</span>
+<span class="n">Menden</span>
+<span class="n">Hattingen</span>
+</pre></div>
+</div>
+<p>The title of the plots also shows the model efficiency (Nash
+and Sutcliffe).</p>
+</div>
+<div class="section" id="original-landuse">
+<h2>Original landuse<a class="headerlink" href="#original-landuse" title="Permalink to this headline">¶</a></h2>
+<p>(<a class="reference external" href="./plots/calibplot.py">Source code</a>)</p>
+<div class="figure">
+<img alt="_images/calibplot_00.png" src="_images/calibplot_00.png" />
+<p class="caption">(<a class="reference external" href="./plots/calibplot_00.png">png</a>, <a class="reference external" href="./plots/calibplot_00.hires.png">hires.png</a>, <a class="reference external" href="./plots/calibplot_00.pdf">pdf</a>)</p>
+</div>
+<div class="figure">
+<img alt="_images/calibplot_01.png" src="_images/calibplot_01.png" />
+<p class="caption">(<a class="reference external" href="./plots/calibplot_01.png">png</a>, <a class="reference external" href="./plots/calibplot_01.hires.png">hires.png</a>, <a class="reference external" href="./plots/calibplot_01.pdf">pdf</a>)</p>
+</div>
+<div class="figure">
+<img alt="_images/calibplot_02.png" src="_images/calibplot_02.png" />
+<p class="caption">(<a class="reference external" href="./plots/calibplot_02.png">png</a>, <a class="reference external" href="./plots/calibplot_02.hires.png">hires.png</a>, <a class="reference external" href="./plots/calibplot_02.pdf">pdf</a>)</p>
+</div>
+<div class="figure">
+<img alt="_images/calibplot_03.png" src="_images/calibplot_03.png" />
+<p class="caption">(<a class="reference external" href="./plots/calibplot_03.png">png</a>, <a class="reference external" href="./plots/calibplot_03.hires.png">hires.png</a>, <a class="reference external" href="./plots/calibplot_03.pdf">pdf</a>)</p>
+</div>
+<div class="figure">
+<img alt="_images/calibplot_04.png" src="_images/calibplot_04.png" />
+<p class="caption">(<a class="reference external" href="./plots/calibplot_04.png">png</a>, <a class="reference external" href="./plots/calibplot_04.hires.png">hires.png</a>, <a class="reference external" href="./plots/calibplot_04.pdf">pdf</a>)</p>
+</div>
+<div class="figure">
+<img alt="_images/calibplot_05.png" src="_images/calibplot_05.png" />
+<p class="caption">(<a class="reference external" href="./plots/calibplot_05.png">png</a>, <a class="reference external" href="./plots/calibplot_05.hires.png">hires.png</a>, <a class="reference external" href="./plots/calibplot_05.pdf">pdf</a>)</p>
+</div>
+<div class="figure">
+<img alt="_images/calibplot_06.png" src="_images/calibplot_06.png" />
+<p class="caption">(<a class="reference external" href="./plots/calibplot_06.png">png</a>, <a class="reference external" href="./plots/calibplot_06.hires.png">hires.png</a>, <a class="reference external" href="./plots/calibplot_06.pdf">pdf</a>)</p>
+</div>
+<div class="figure">
+<img alt="_images/calibplot_07.png" src="_images/calibplot_07.png" />
+<p class="caption">(<a class="reference external" href="./plots/calibplot_07.png">png</a>, <a class="reference external" href="./plots/calibplot_07.hires.png">hires.png</a>, <a class="reference external" href="./plots/calibplot_07.pdf">pdf</a>)</p>
+</div>
+<div class="figure">
+<img alt="_images/calibplot_08.png" src="_images/calibplot_08.png" />
+<p class="caption">(<a class="reference external" href="./plots/calibplot_08.png">png</a>, <a class="reference external" href="./plots/calibplot_08.hires.png">hires.png</a>, <a class="reference external" href="./plots/calibplot_08.pdf">pdf</a>)</p>
+</div>
+<div class="figure">
+<img alt="_images/calibplot_09.png" src="_images/calibplot_09.png" />
+<p class="caption">(<a class="reference external" href="./plots/calibplot_09.png">png</a>, <a class="reference external" href="./plots/calibplot_09.hires.png">hires.png</a>, <a class="reference external" href="./plots/calibplot_09.pdf">pdf</a>)</p>
+</div>
+<div class="figure">
+<img alt="_images/calibplot_10.png" src="_images/calibplot_10.png" />
+<p class="caption">(<a class="reference external" href="./plots/calibplot_10.png">png</a>, <a class="reference external" href="./plots/calibplot_10.hires.png">hires.png</a>, <a class="reference external" href="./plots/calibplot_10.pdf">pdf</a>)</p>
+</div>
+<div class="figure">
+<img alt="_images/calibplot_11.png" src="_images/calibplot_11.png" />
+<p class="caption">(<a class="reference external" href="./plots/calibplot_11.png">png</a>, <a class="reference external" href="./plots/calibplot_11.hires.png">hires.png</a>, <a class="reference external" href="./plots/calibplot_11.pdf">pdf</a>)</p>
+</div>
+<div class="figure">
+<img alt="_images/calibplot_12.png" src="_images/calibplot_12.png" />
+<p class="caption">(<a class="reference external" href="./plots/calibplot_12.png">png</a>, <a class="reference external" href="./plots/calibplot_12.hires.png">hires.png</a>, <a class="reference external" href="./plots/calibplot_12.pdf">pdf</a>)</p>
+</div>
+<div class="figure">
+<img alt="_images/calibplot_13.png" src="_images/calibplot_13.png" />
+<p class="caption">(<a class="reference external" href="./plots/calibplot_13.png">png</a>, <a class="reference external" href="./plots/calibplot_13.hires.png">hires.png</a>, <a class="reference external" href="./plots/calibplot_13.pdf">pdf</a>)</p>
+</div>
+</div>
+<div class="section" id="modified-landuse">
+<h2>Modified landuse<a class="headerlink" href="#modified-landuse" title="Permalink to this headline">¶</a></h2>
+<p>(<a class="reference external" href="./plots/calibplot_lunew.py">Source code</a>)</p>
+<div class="figure">
+<img alt="_images/calibplot_lunew_00.png" src="_images/calibplot_lunew_00.png" />
+<p class="caption">(<a class="reference external" href="./plots/calibplot_lunew_00.png">png</a>, <a class="reference external" href="./plots/calibplot_lunew_00.hires.png">hires.png</a>, <a class="reference external" href="./plots/calibplot_lunew_00.pdf">pdf</a>)</p>
+</div>
+<div class="figure">
+<img alt="_images/calibplot_lunew_01.png" src="_images/calibplot_lunew_01.png" />
+<p class="caption">(<a class="reference external" href="./plots/calibplot_lunew_01.png">png</a>, <a class="reference external" href="./plots/calibplot_lunew_01.hires.png">hires.png</a>, <a class="reference external" href="./plots/calibplot_lunew_01.pdf">pdf</a>)</p>
+</div>
+<div class="figure">
+<img alt="_images/calibplot_lunew_02.png" src="_images/calibplot_lunew_02.png" />
+<p class="caption">(<a class="reference external" href="./plots/calibplot_lunew_02.png">png</a>, <a class="reference external" href="./plots/calibplot_lunew_02.hires.png">hires.png</a>, <a class="reference external" href="./plots/calibplot_lunew_02.pdf">pdf</a>)</p>
+</div>
+<div class="figure">
+<img alt="_images/calibplot_lunew_03.png" src="_images/calibplot_lunew_03.png" />
+<p class="caption">(<a class="reference external" href="./plots/calibplot_lunew_03.png">png</a>, <a class="reference external" href="./plots/calibplot_lunew_03.hires.png">hires.png</a>, <a class="reference external" href="./plots/calibplot_lunew_03.pdf">pdf</a>)</p>
+</div>
+<div class="figure">
+<img alt="_images/calibplot_lunew_04.png" src="_images/calibplot_lunew_04.png" />
+<p class="caption">(<a class="reference external" href="./plots/calibplot_lunew_04.png">png</a>, <a class="reference external" href="./plots/calibplot_lunew_04.hires.png">hires.png</a>, <a class="reference external" href="./plots/calibplot_lunew_04.pdf">pdf</a>)</p>
+</div>
+<div class="figure">
+<img alt="_images/calibplot_lunew_05.png" src="_images/calibplot_lunew_05.png" />
+<p class="caption">(<a class="reference external" href="./plots/calibplot_lunew_05.png">png</a>, <a class="reference external" href="./plots/calibplot_lunew_05.hires.png">hires.png</a>, <a class="reference external" href="./plots/calibplot_lunew_05.pdf">pdf</a>)</p>
+</div>
+<div class="figure">
+<img alt="_images/calibplot_lunew_06.png" src="_images/calibplot_lunew_06.png" />
+<p class="caption">(<a class="reference external" href="./plots/calibplot_lunew_06.png">png</a>, <a class="reference external" href="./plots/calibplot_lunew_06.hires.png">hires.png</a>, <a class="reference external" href="./plots/calibplot_lunew_06.pdf">pdf</a>)</p>
+</div>
+<div class="figure">
+<img alt="_images/calibplot_lunew_07.png" src="_images/calibplot_lunew_07.png" />
+<p class="caption">(<a class="reference external" href="./plots/calibplot_lunew_07.png">png</a>, <a class="reference external" href="./plots/calibplot_lunew_07.hires.png">hires.png</a>, <a class="reference external" href="./plots/calibplot_lunew_07.pdf">pdf</a>)</p>
+</div>
+<div class="figure">
+<img alt="_images/calibplot_lunew_08.png" src="_images/calibplot_lunew_08.png" />
+<p class="caption">(<a class="reference external" href="./plots/calibplot_lunew_08.png">png</a>, <a class="reference external" href="./plots/calibplot_lunew_08.hires.png">hires.png</a>, <a class="reference external" href="./plots/calibplot_lunew_08.pdf">pdf</a>)</p>
+</div>
+<div class="figure">
+<img alt="_images/calibplot_lunew_09.png" src="_images/calibplot_lunew_09.png" />
+<p class="caption">(<a class="reference external" href="./plots/calibplot_lunew_09.png">png</a>, <a class="reference external" href="./plots/calibplot_lunew_09.hires.png">hires.png</a>, <a class="reference external" href="./plots/calibplot_lunew_09.pdf">pdf</a>)</p>
+</div>
+<div class="figure">
+<img alt="_images/calibplot_lunew_10.png" src="_images/calibplot_lunew_10.png" />
+<p class="caption">(<a class="reference external" href="./plots/calibplot_lunew_10.png">png</a>, <a class="reference external" href="./plots/calibplot_lunew_10.hires.png">hires.png</a>, <a class="reference external" href="./plots/calibplot_lunew_10.pdf">pdf</a>)</p>
+</div>
+<div class="figure">
+<img alt="_images/calibplot_lunew_11.png" src="_images/calibplot_lunew_11.png" />
+<p class="caption">(<a class="reference external" href="./plots/calibplot_lunew_11.png">png</a>, <a class="reference external" href="./plots/calibplot_lunew_11.hires.png">hires.png</a>, <a class="reference external" href="./plots/calibplot_lunew_11.pdf">pdf</a>)</p>
+</div>
+<div class="figure">
+<img alt="_images/calibplot_lunew_12.png" src="_images/calibplot_lunew_12.png" />
+<p class="caption">(<a class="reference external" href="./plots/calibplot_lunew_12.png">png</a>, <a class="reference external" href="./plots/calibplot_lunew_12.hires.png">hires.png</a>, <a class="reference external" href="./plots/calibplot_lunew_12.pdf">pdf</a>)</p>
+</div>
+<div class="figure">
+<img alt="_images/calibplot_lunew_13.png" src="_images/calibplot_lunew_13.png" />
+<p class="caption">(<a class="reference external" href="./plots/calibplot_lunew_13.png">png</a>, <a class="reference external" href="./plots/calibplot_lunew_13.hires.png">hires.png</a>, <a class="reference external" href="./plots/calibplot_lunew_13.pdf">pdf</a>)</p>
+</div>
+<table class="docutils citation" frame="void" id="haylock" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[Haylock]</a></td><td>Haylock, M.R., N. Hofstra, A.M.G. Klein Tank, E.J. Klok, P.D.</td></tr>
+</tbody>
+</table>
+<p>Jones, M. New. 2008: A European daily high-resolution gridded dataset of surface
+temperature and precipitation. J. Geophys. Res (Atmospheres), 113, D20119,
+doi:10.1029/2008JD10201&#8221;</p>
+<table class="docutils citation" frame="void" id="gorgen" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[gorgen]</a></td><td>Görgen, K., Beersma, J., Brahmer, G., Buiteveld, H., Carambia, M.,</td></tr>
+</tbody>
+</table>
+<p>de Keizer, O., Krahe, P., Nilson, E., Lammersen, R., Perrin, C. and Volken, D.
+(2010) Assessment of Climate Change Impacts on Discharge in the Rhine River
+Basin: Results of the RheinBlick2050 Project, CHR report, I-23, 229 pp.,
+Lelystad, ISBN 978-90-70980-35-1</p>
+<table class="docutils citation" frame="void" id="weiland" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[weiland]</a></td><td>Sperna Weiland, F. C.,  C. Tisseuil, H. H. Dürr, M. Vrac, and L. P.</td></tr>
+</tbody>
+</table>
+<p>H. Van Beek, “Selecting the optimal method to calculate daily global reference
+potential evaporation from CFSR reanalysis data for application in a
+hydrological model study,” Hydrology and Earth System Sciences, vol. 16, pp.
+983–1000, 2012.</p>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="framework.html" class="btn btn-neutral float-right" title="Using the framework"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="testrunner_wflowhbv.html" class="btn btn-neutral" title="run wflow_hbv via API"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0-RC3-dev-31-45M',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

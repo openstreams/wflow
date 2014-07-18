@@ -1,0 +1,444 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>The wflow_fit module &mdash; wflow 1.0-RC3-dev-31-45M documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="wflow 1.0-RC3-dev-31-45M documentation" href="index.html"/>
+        <link rel="next" title="wflow_lib Module" href="wflow_lib.html"/>
+        <link rel="prev" title="Using the models" href="wflow_usage.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="index.html" class="fa fa-home"> wflow</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_hbv.html">The wflow_hbv model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_hbv.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_hbv.html#description">Description</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_hbv.html#subcatchment-flow">Subcatchment flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_hbv.html#module-wflow_hbv">Description of the python module</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_sbm.html">The wflow_sbm Model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#potential-and-reference-evaporation">Potential and Reference evaporation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#snow">Snow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#the-rainfall-interception-model">The rainfall interception model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#the-soil-model">The soil model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#kinematic-wave-and-river-width">Kinematic wave and River Width</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_sbm.html#subcatchment-flow">Subcatchment flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#dynamic-wave">Dynamic wave</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#model-variables-stores-and-fluxes">Model variables stores and fluxes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#processing-of-meteorological-forcing-data">Processing of meteorological forcing data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#guidelines-for-wflowsbm-model-parameters">Guidelines for wflowsbm model parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#references">References</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_sbm.html#module-wflow_sbm">wflow_sbm module documentation</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_gr4.html">The wflow_gr4 model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_gr4.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_gr4.html#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_gr4.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_gr4.html#module-wflow_gr4">wflow_gr4 module documentation</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_wave.html">THe wflow_wave Model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_wave.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_wave.html#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_wave.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_wave.html#module-wflow_wave">wflow_wave module documentation</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_floodmap.html">The wflow_floodmap model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_floodmap.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_floodmap.html#module-wflow_floodmap">Description of the python module</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_adapt.html">wflow_adapt Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_adapt.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_adapt.html#linking-wflow-models-to-delft-fews">Linking wflow models to Delft-FEWS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_adapt.html#module-wflow_adapt">Module function documentation</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_building.html">Building a model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_building.html#data-requirements">Data requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_building.html#setting-up-a-new-model">Setting-up a new model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_building.html#preparing-static-input-maps">Preparing static input maps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_building.html#module-wflow_prepare_step1">Script documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_building.html#setting-up-a-case">Setting Up a Case</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_building.html#input-parameters-lookup-tables-or-maps">Input parameters (lookup tables or maps)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_building.html#calibrating-the-wflow-sbm-model">Calibrating the  wflow_sbm model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_building.html#common-problems">Common problems</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_usage.html">Using the models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_usage.html#directory-structure-cases-and-runs">Directory structure: cases and runs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_usage.html#running-the-model">Running the model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_usage.html#wflow-sbm-hbv-ini-file">wflow_sbm|hbv.ini file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_usage.html#updating-using-measured-data">Updating using measured data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_usage.html#all-possible-options-in-wflow-sbm-ini-file">All possible options in wflow_sbm.ini file</a></li>
+</ul>
+</li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">The wflow_fit module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-ini-file">The ini file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fitting-results">Fitting results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-fit">How to fit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-wflow_fit">Description of the python module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_lib.html">wflow_lib Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_lib.html#wflow-lib-terrain-analysis-and-hydrological-library">wflow_lib - terrain analysis and hydrological library</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wflow_delwaq.html">wflow_delwaq Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_delwaq.html#how-the-script-works">How the script works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_delwaq.html#very-simple-example">Very simple example:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_delwaq.html#case-study-for-malaysia-and-singapore">Case study for Malaysia and Singapore</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_delwaq.html#module-wflow_delwaq">wflow_delwaq module documentation</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="testrunner_wflowhbv.html">run wflow_hbv via API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="testrunner_wflowhbv.html#settings-in-the-ini-file">Settings in the ini file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testrunner_wflowhbv.html#settings-in-the-api-section">Settings in the API section</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="calib_report.html">Calibration of the wflow_sbm model for the Rhine catchment using EOBS data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="calib_report.html#dem-and-landuse-data">DEM and landuse data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="calib_report.html#forcing-data">Forcing data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="calib_report.html#calibration-procedure">Calibration procedure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="calib_report.html#original-landuse">Original landuse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="calib_report.html#modified-landuse">Modified landuse</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="framework.html">Using the framework</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="framework.html#definition-of-the-wflow-sceleton-model">Definition of the wflow_sceleton model.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="framework.html#anotated-source-code-for-the-above">Anotated source code for the above</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wf_DynamicFramework.html">wf_DynamicFramework Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wf_DynamicFramework.html#wf-dynamicframework">wf_DynamicFramework</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Questions and answers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="faq.html#questions">Questions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq.html#answers">Answers</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_openda.html">Linking wflow to OpenDA</a></li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">wflow</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>The wflow_fit module</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/wflow_fit.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <div class="section" id="the-wflow-fit-module">
+<h1>The wflow_fit module<a class="headerlink" href="#the-wflow-fit-module" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>The wflow_fit module provides simple automated least square fitting
+for the wflow models. It uses the scipy.optimize function to perform
+the fitting.</p>
+<p>The program works mu multipling the fit parameter with a factor and optimise this
+factor. To get the new optimised parameters for your model you have to
+multiply your original parameters with the optimised factor. You
+can specify measured and simulated Q pairs to use and which area of the model
+you wan to adjust for each Simulated/Measured pair</p>
+<p>In order to use the fit module you must have a:</p>
+<ul class="simple">
+<li>A working wflow model</li>
+<li>a tss file with measured discharge</li>
+<li>an [fit] section in the ini file</li>
+</ul>
+</div>
+<div class="section" id="the-ini-file">
+<h2>The ini file<a class="headerlink" href="#the-ini-file" title="Permalink to this headline">¶</a></h2>
+<p>To be able to use the fit module you must add a [fit] section to the
+.ini file of the wflow model you want to fit.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">fit</span><span class="p">]</span>
+  <span class="c"># The parameters are name parameter_0 to parameter_n</span>
+<span class="n">parameter_0</span> <span class="o">=</span> <span class="n">M</span>
+<span class="n">parameter_1</span> <span class="o">=</span> <span class="n">RootingDepth</span>
+  <span class="c"># Q specifies the tss file with measure discharge data</span>
+  <span class="c"># the path is relative to the case directory</span>
+<span class="n">Q</span> <span class="o">=</span> <span class="n">testing</span><span class="o">.</span><span class="n">tss</span>
+  <span class="c"># The columns in the measured Q you want to fit to</span>
+<span class="n">ColMeas</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span>
+  <span class="c"># The columns in the measured Q you want to fit</span>
+<span class="n">ColSim</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span>
+  <span class="c"># Number of warup timesteps. This are not used in fitting</span>
+<span class="n">WarmUpSteps</span> <span class="o">=</span> <span class="mi">1</span>
+  <span class="c"># The map defining the areas you want to adjust</span>
+<span class="n">areamap</span><span class="o">=</span><span class="n">staticmaps</span><span class="o">/</span><span class="n">wflow_catchment</span><span class="o">.</span><span class="n">map</span>
+  <span class="c"># The areas you want to adjust for each Qmeas/Qsim combination</span>
+<span class="n">areacode</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="fitting-results">
+<h2>Fitting results<a class="headerlink" href="#fitting-results" title="Permalink to this headline">¶</a></h2>
+<p>Results are saved in the wflow_fit.res file in the case/runid directory. In addition,
+the program saves a graph of modelled and observed data in the file fit.png and maps
+of the original and fitted parameters are also saved.</p>
+<p>If you specify the -U option the resulting maps are saved in the staticmaps directory
+after each steps. As such, next steps (if you calibrate multiple subcatchments/areas)
+also include the results of the previous steps. Note that this will overwrite your
+maps if you already have those!</p>
+</div>
+<div class="section" id="how-to-fit">
+<h2>How to fit<a class="headerlink" href="#how-to-fit" title="Permalink to this headline">¶</a></h2>
+<p>Although wflow_sbm has a fairly large number of parameters most should not be
+fitted automatically. The parameters that are most suited for fitting are:</p>
+<ul class="simple">
+<li>M</li>
+<li>FirstZoneKsatVer</li>
+<li>RunoffGeneratingGWPerc (if this is switched on. It is usually best to first
+setup the model without this parameter!)</li>
+<li>RootingDepth</li>
+</ul>
+<p>It is recommended to only fit one or two parameters at one time.</p>
+<p>The wflow_rhine_sbm example can be used to test the fitting procedure.</p>
+<div class="highlight-python"><div class="highlight"><pre>wflow_fit.py -M wflow\_sbm -T 300 -C wflow\rhine\_sbm
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-wflow_fit">
+<span id="description-of-the-python-module"></span><h2>Description of the python module<a class="headerlink" href="#module-wflow_fit" title="Permalink to this headline">¶</a></h2>
+<p>Fit a wflow_ hydrological model using scipy.leastsq.</p>
+<p>usage</p>
+<div class="highlight-python"><div class="highlight"><pre>wflow_fit -M ModelName [-h][-F runinfofile][-C casename]
+      [-c configfile][-T last_step][-S first_step][-s seconds]
+      
+
+-M: model to fit (e.g. wflow_sbm, wflow_hbv, wflow_cqf)          
+                  
+-T: Set last timestep
+
+-S: Set the start timestep (default = 1)
+
+-C: set the name  of the case (directory) to run
+
+-R: set the name runId within the current case
+
+-U: save the map after each step ti the input (staticmaps) dir so 
+    that next steps (colums) use the previous results
+
+-c: name of wflow the configuration file (default: Casename/wflow_sbm.ini). 
+
+-h: print usage information
+</pre></div>
+</div>
+<p>For this program to work you must add a [fit] section to the
+ini file of the program to fit (e.g. the wflow_hbv program)</p>
+<p>$Author: schelle $
+$Id: wflow_sbm.py 669 2013-05-16 05:25:48Z schelle $
+$Rev: 669 $</p>
+<dl class="function">
+<dt id="wflow_fit.configget">
+<tt class="descclassname">wflow_fit.</tt><tt class="descname">configget</tt><big>(</big><em>config</em>, <em>section</em>, <em>var</em>, <em>default</em><big>)</big><a class="headerlink" href="#wflow_fit.configget" title="Permalink to this definition">¶</a></dt>
+<dd><p>gets parameter from config file and returns a default value
+if the parameter is not found</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="wflow_fit.wfmodel_fit_API">
+<em class="property">class </em><tt class="descclassname">wflow_fit.</tt><tt class="descname">wfmodel_fit_API</tt><big>(</big><em>startTime</em>, <em>stopTime</em>, <em>casename</em>, <em>runId='_fitrun'</em>, <em>modeltofit='wflow_sbm'</em>, <em>config='wflow_sbm.ini'</em>, <em>clonemap='wflow_subcatch.map'</em><big>)</big><a class="headerlink" href="#wflow_fit.wfmodel_fit_API" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class that initializes and runs a wflow model</p>
+<dl class="method">
+<dt id="wflow_fit.wfmodel_fit_API.multVarWithPar">
+<tt class="descname">multVarWithPar</tt><big>(</big><em>pars</em><big>)</big><a class="headerlink" href="#wflow_fit.wfmodel_fit_API.multVarWithPar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multiply a parameter in the model with the fit parameters.
+Use a map to limit the area to adjust</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_fit.wfmodel_fit_API.run">
+<tt class="descname">run</tt><big>(</big><em>pars</em><big>)</big><a class="headerlink" href="#wflow_fit.wfmodel_fit_API.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the model for the number of timesteps.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_fit.wfmodel_fit_API.savemaps">
+<tt class="descname">savemaps</tt><big>(</big><em>pars</em>, <em>savetoinput=False</em><big>)</big><a class="headerlink" href="#wflow_fit.wfmodel_fit_API.savemaps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ssave the adjusted (and original) parameter maps</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_fit.wfmodel_fit_API.shutdown">
+<tt class="descname">shutdown</tt><big>(</big><em>pars</em><big>)</big><a class="headerlink" href="#wflow_fit.wfmodel_fit_API.shutdown" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shutdown the model</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="wflow_lib.html" class="btn btn-neutral float-right" title="wflow_lib Module"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="wflow_usage.html" class="btn btn-neutral" title="Using the models"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0-RC3-dev-31-45M',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
