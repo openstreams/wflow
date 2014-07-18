@@ -1,0 +1,16 @@
+Release notes
+=============
+
+Version 1.0 RC5
+---------------
+unsupported interim release
+
++ netcdf reading and writing added (filename should be configured in ini file, framework section: netcdfoutput, netcdfwritebuffer, netcdfinput)
++ summary sections (summary, summary_max, symmary_avg, ect) added to ini file to save maps at end of run
+
+Version 1.0 RC4
+---------------
+
+unsupported interim release
+
++ tss (and csv) output refactored. The ini file can now hold multiple outputtss sections each with a diffrent maps for extracting/averaging

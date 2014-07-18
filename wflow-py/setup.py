@@ -1,9 +1,10 @@
 from distutils.core import setup
 
+from _version import *
 
 # Source dist
 setup(name='wflow',
-     version='1.0RC02',
+     version= MVERSION,
       packages=['wflow'],
       package_dir={'wflow': 'wflow'},
       author='J. Schellekens',
