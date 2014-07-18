@@ -461,7 +461,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     self.logger.warn("Could not read sample id-map for timeseries: " + samplemapname)
                 
                 for a in toprint:
-    
                   if  "samplemap" not in a:
                       b = a.replace('self','self._userModel()')         
                       fn = os.path.join(caseName,runId,self._userModel().config.get(thissection,a))
