@@ -183,7 +183,9 @@ class WflowModel(DynamicModel):
     # Add reading of parameters here
 
     self.Nhru        = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.Fhru        = readmap(self.Dir + "/staticmaps/Nhru.map")
+    self.Fhru        = readmap(self.Dir + "/staticmaps/Fhru.map")
+
+    # etc fix this below.....
     self.SLA         = readmap(self.Dir + "/staticmaps/Nhru.map")
     self.LAIref      = readmap(self.Dir + "/staticmaps/Nhru.map")
     self.Sgref       = readmap(self.Dir + "/staticmaps/Nhru.map")

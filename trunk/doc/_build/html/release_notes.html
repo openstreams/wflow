@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Search &mdash; wflow 1.0-RC3-dev-31-45M documentation</title>
+  <title>Release notes &mdash; wflow 1.0-RC3-dev-31-45M documentation</title>
   
 
   
@@ -28,7 +28,9 @@
   
 
   
-    <link rel="top" title="wflow 1.0-RC3-dev-31-45M documentation" href="index.html"/> 
+    <link rel="top" title="wflow 1.0-RC3-dev-31-45M documentation" href="index.html"/>
+        <link rel="next" title="Linking wflow to OpenDA" href="wflow_openda.html"/>
+        <link rel="prev" title="Questions and answers" href="faq.html"/> 
 
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
@@ -44,7 +46,7 @@
       <div class="wy-side-nav-search">
         <a href="index.html" class="fa fa-home"> wflow</a>
         <div role="search">
-  <form id ="rtd-search-form" class="wy-form" action="#" method="get">
+  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
@@ -196,10 +198,10 @@
 </ul>
 </li>
 </ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="release_notes.html">Release notes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="release_notes.html#version-1-0-rc5">Version 1.0 RC5</a></li>
-<li class="toctree-l2"><a class="reference internal" href="release_notes.html#version-1-0-rc4">Version 1.0 RC4</a></li>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">Release notes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#version-1-0-rc5">Version 1.0 RC5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-1-0-rc4">Version 1.0 RC4</a></li>
 </ul>
 </li>
 </ul>
@@ -228,8 +230,10 @@
   <ul class="wy-breadcrumbs">
     <li><a href="index.html">Docs</a> &raquo;</li>
       
-    <li></li>
+    <li>Release notes</li>
       <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/release_notes.txt" rel="nofollow"> View page source</a>
         
       </li>
   </ul>
@@ -237,22 +241,37 @@
 </div>
           <div role="main">
             
-  <noscript>
-  <div id="fallback" class="admonition warning">
-    <p class="last">
-      Please activate JavaScript to enable the search
-      functionality.
-    </p>
-  </div>
-  </noscript>
+  <div class="section" id="release-notes">
+<h1>Release notes<a class="headerlink" href="#release-notes" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="version-1-0-rc5">
+<h2>Version 1.0 RC5<a class="headerlink" href="#version-1-0-rc5" title="Permalink to this headline">¶</a></h2>
+<p>unsupported interim release</p>
+<ul class="simple">
+<li>netcdf reading and writing added (filename should be configured in ini file, framework section: netcdfoutput, netcdfwritebuffer, netcdfinput)</li>
+<li>summary sections (summary, summary_max, symmary_avg, ect) added to ini file to save maps at end of run</li>
+</ul>
+</div>
+<div class="section" id="version-1-0-rc4">
+<h2>Version 1.0 RC4<a class="headerlink" href="#version-1-0-rc4" title="Permalink to this headline">¶</a></h2>
+<p>unsupported interim release</p>
+<ul class="simple">
+<li>tss (and csv) output refactored. The ini file can now hold multiple outputtss sections each with a diffrent maps for extracting/averaging</li>
+</ul>
+</div>
+</div>
 
-  
-  <div id="search-results">
-  
-  </div>
 
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="wflow_openda.html" class="btn btn-neutral float-right" title="Linking wflow to OpenDA"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="faq.html" class="btn btn-neutral" title="Questions and answers"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>
@@ -288,7 +307,6 @@
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="_static/searchtools.js"></script>
 
   
 
@@ -304,14 +322,7 @@
           SphinxRtdTheme.StickyNav.enable();
       });
   </script>
-  
-  <script type="text/javascript">
-    jQuery(function() { Search.loadIndex("searchindex.js"); });
-  </script>
-  
-  <script type="text/javascript" id="searchindexloader"></script>
    
-
 
 </body>
 </html>
