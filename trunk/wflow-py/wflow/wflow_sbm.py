@@ -123,8 +123,6 @@ wflow = "wflow_sbm: "
 wflowVersion = "$Revision: 900 $  $Date: 2014-01-09 18:41:06 +0100 (Thu, 09 Jan 2014) $"
 
 updateCols = []
-
-# TODO: Clean-up updating
 # Dictionary with parameters and multipliers (used in calibration)
 multpars = {}
 multdynapars = {}
@@ -1193,7 +1191,6 @@ class WflowModel(DynamicModel):
                 self.UStoreDepth = self.UStoreDepth + toadd
 
             # Update the kinematic wave reservoir up to a maximum upstream distance
-            # TODO:  add (much smaller) downstream updating also?
             MM = (1.0 - self.UpRatioKyn) / self.UpdMaxDist
             self.UpRatioKyn = MM * self.DistToUpdPt + self.UpRatioKyn
 
