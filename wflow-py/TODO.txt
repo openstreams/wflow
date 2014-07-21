@@ -3,7 +3,8 @@ TODO:
 - Use partial wetness of cell in kinematic wave
 - Add add_reservoir function to framework
 - split kinematic wave from SBM and HBV
-- read input maptacks from netcdf
+
 
 DONE:
 - add cumulative and average maps to framework
+- read input maptacks from netcdf
