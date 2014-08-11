@@ -1,0 +1,3 @@
+# OpenStreams provides the building blocks that make up integrated hydrological models. 
+
+OpenStreams provides the building blocks that make up integrated hydrological models. These blocks can be complete models but also parts of models that can be used to build other models. It does not aim to be a complete framework for building and connecting models, that task is left to layers (such as OpenMI) that can be build on top of the component or collections of components. See http://publicwiki.deltares.nl/display/OpenS/Home
