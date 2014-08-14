@@ -662,6 +662,42 @@ def detdrainwidth(ldd,xl,yl):
     return drainwidth
 
 
+def classify(inmap,lower=[0,10,20,30],upper=[10,20,30,40],classes=[2,2,3,4]):
+    """
+    classify a scaler maps accroding to the boundaries given in classes.
+
+    """
+
+    result=ordinal(cover(-1))
+    for l, u, c in zip(lower, upper,classes):
+        result = cover(ifthen(inmap >= l,ifthen(inmap < u,ordinal(c))),result)
+
+    return ifthen(result >=0,result)
+
+
+def hand(dem,ldd,threshold=50.0,stream=None):
+    """
+    Determines heigth above nearest drain.
+
+    Input:
+        ldd
+        dem
+        Optional:
+        threshold - to determine streams (number of upstreams cell needed to be a stream)
+        stream - if the threshols is not a stream map (boolean) should be supplied
+
+    Returns: Hand and the stream map
+
+    """
+
+    #setglobaloption("unittrue")
+    if threshold:
+        stream = boolean(ifthenelse(accuflux(ldd,1) > threshold, boolean(1), boolean(0)))
+
+    demdiff = dem - downstream(ldd,dem)
+    hand = ldddist(ldd,stream,max(demdiff,0))/celllength()
+
+    return hand, stream
 
 
     
