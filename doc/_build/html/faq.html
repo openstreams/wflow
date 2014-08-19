@@ -1,0 +1,168 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Questions and answers &mdash; wflow 1.0-RC5-dev-85-92M documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0-RC5-dev-85-92M',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="wflow 1.0-RC5-dev-85-92M documentation" href="index.html" />
+    <link rel="next" title="Release notes" href="release_notes.html" />
+    <link rel="prev" title="wf_DynamicFramework Module" href="wf_DynamicFramework.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="release_notes.html" title="Release notes"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="wf_DynamicFramework.html" title="wf_DynamicFramework Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">wflow 1.0-RC5-dev-85-92M documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Questions and answers</a><ul>
+<li><a class="reference internal" href="#questions">Questions</a></li>
+<li><a class="reference internal" href="#answers">Answers</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="wf_DynamicFramework.html"
+                        title="previous chapter">wf_DynamicFramework Module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="release_notes.html"
+                        title="next chapter">Release notes</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/faq.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="questions-and-answers">
+<h1>Questions and answers<a class="headerlink" href="#questions-and-answers" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="questions">
+<h2>Questions<a class="headerlink" href="#questions" title="Permalink to this headline">¶</a></h2>
+<p><a class="footnote-reference" href="#id4" id="id1">[1]</a> The discharge in the timeseries output gives weird numbers (1E31) what is going wrong?</p>
+<p><a class="footnote-reference" href="#id5" id="id2">[2]</a> How do a setup a wflow model?</p>
+<p><a class="footnote-reference" href="#id6" id="id3">[3]</a> Why do I have missing values in my model output?</p>
+</div>
+<div class="section" id="answers">
+<h2>Answers<a class="headerlink" href="#answers" title="Permalink to this headline">¶</a></h2>
+<table class="docutils footnote" frame="void" id="id4" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[1]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id7">2</a>)</em> <p><em>The discharge in the timeseries output gives weird numbers (1E31) what is going wrong?</em>
+The 1E31 values indicate missing values. This probably means that at least one
+of the cells in the part upstreasm of the discharge points has a missing value.
+Missing values are routed downstream so any missing values upstreams of a discharge
+will cause the discharge to eventually become a missing value. To resolve this check the following:</p>
+<ul class="last simple">
+<li>Check if the .tbl files are correct ( do that cover all values in the landuse soil and subcatchment maps)</li>
+<li>check for missing values in the input maps</li>
+<li>check of model parameters are within the working range</li>
+<li>check all maps in the runId/outsum directory so see at which stage the missing values starts</li>
+</ul>
+</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id5" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td><em>How do a setup a wflow model?</em>
+First read the section on <a class="reference internal" href="wflow_building.html#setting-up-a-new-model"><em>Setting-up a new model</em></a>. Next check one of the supplied example models</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id6" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[3]</a></td><td><em>Why do I have missing values in my model output?</em>
+See question <a class="footnote-reference" href="#id4" id="id7">[1]</a></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="release_notes.html" title="Release notes"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="wf_DynamicFramework.html" title="wf_DynamicFramework Module"
+             >previous</a> |</li>
+        <li><a href="index.html">wflow 1.0-RC5-dev-85-92M documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.1.
+    </div>
+  </body>
+</html>
