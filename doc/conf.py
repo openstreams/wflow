@@ -15,9 +15,9 @@ import sys, os
 import wflow
 import sphinx_rtd_theme
 
-html_theme = "sphinx_rtd_theme"
+html_theme = "sphinxdoc"
 
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+html_theme_path = ["."]
 
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -124,7 +124,7 @@ pygments_style = 'sphinx'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-#html_logo = None
+html_logo = "_static/logo.png"
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
