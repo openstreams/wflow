@@ -1,0 +1,754 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>wflow_lib Module &mdash; wflow 1.0-RC5-dev-85-92M documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0-RC5-dev-85-92M',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="wflow 1.0-RC5-dev-85-92M documentation" href="index.html" />
+    <link rel="next" title="wflow_delwaq Module" href="wflow_delwaq.html" />
+    <link rel="prev" title="The wflow_fit module" href="wflow_fit.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="wflow_delwaq.html" title="wflow_delwaq Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="wflow_fit.html" title="The wflow_fit module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">wflow 1.0-RC5-dev-85-92M documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">wflow_lib Module</a><ul>
+<li><a class="reference internal" href="#wflow-lib-terrain-analysis-and-hydrological-library">wflow_lib - terrain analysis and hydrological library</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="wflow_fit.html"
+                        title="previous chapter">The wflow_fit module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="wflow_delwaq.html"
+                        title="next chapter">wflow_delwaq Module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/wflow_lib.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-wflow_lib">
+<span id="wflow-lib-module"></span><h1>wflow_lib Module<a class="headerlink" href="#module-wflow_lib" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="wflow-lib-terrain-analysis-and-hydrological-library">
+<h2>wflow_lib - terrain analysis and hydrological library<a class="headerlink" href="#wflow-lib-terrain-analysis-and-hydrological-library" title="Permalink to this headline">¶</a></h2>
+<p>The goal of this module is to make a series functions to upscale maps (DEM)
+and to  maintain as much of the information in a detailled dem when upscaling
+to a coarser DEM. These include:</p>
+<blockquote>
+<div><ul class="simple">
+<li>river length (per cell)</li>
+<li>river network location</li>
+<li>elevation distribution</li>
+<li>other terrain analysis</li>
+</ul>
+</div></blockquote>
+<p>the wflow_prepare scripts use this library extensively.</p>
+<p>$Author: schelle $
+$Id: wflow_lib.py 808 2013-10-04 19:42:43Z schelle $
+$Rev: 808 $</p>
+<dl class="function">
+<dt id="wflow_lib.Gzip">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">Gzip</tt><big>(</big><em>fileName</em>, <em>storePath=False</em>, <em>chunkSize=1048576</em><big>)</big><a class="headerlink" href="#wflow_lib.Gzip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Usage: Gzip(fileName, storePath=False, chunksize=1024*1024)
+Gzip the given file to the given storePath and then remove the file.
+A chunk size may be selected. Default is 1 megabyte
+Input:</p>
+<blockquote>
+<div>fileName:   file to be GZipped
+storePath:  destination folder. Default is False, meaning the file will be zipped to its own folder
+chunkSize:  size of chunks to write. If set too large, GZip will fail with memory problems</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.area_percentile">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">area_percentile</tt><big>(</big><em>inmap</em>, <em>area</em>, <em>n</em>, <em>order</em>, <em>percentile</em><big>)</big><a class="headerlink" href="#wflow_lib.area_percentile" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculates percentile of inmap per area
+n is the number of points in each area, 
+order, the sorter order of inmap per area (output of
+areaorder(inmap,area))
+n is the output of areatotal(spatial(scalar(1.0)),area)</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>inmap</li>
+<li>area map</li>
+<li>n</li>
+<li>order (riverorder)</li>
+<li>percentile</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>percentile map</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.area_river_burnin">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">area_river_burnin</tt><big>(</big><em>ldd</em>, <em>dem</em>, <em>order</em>, <em>Area</em><big>)</big><a class="headerlink" href="#wflow_lib.area_river_burnin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the lowest values in as DEM for each erea in an area map for 
+river of order <em>order</em></p>
+<dl class="docutils">
+<dt>Input: </dt>
+<dd><ul class="first last simple">
+<li>ldd</li>
+<li>dem</li>
+<li>order</li>
+<li>Area map</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>dem</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.area_riverlength_factor">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">area_riverlength_factor</tt><big>(</big><em>ldd</em>, <em>Area</em>, <em>Clength</em><big>)</big><a class="headerlink" href="#wflow_lib.area_riverlength_factor" title="Permalink to this definition">¶</a></dt>
+<dd><p>ceates correction factors for riverlength for 
+the largest streamorder in each area</p>
+<dl class="docutils">
+<dt>Input: </dt>
+<dd><ul class="first last simple">
+<li>ldd</li>
+<li>Area</li>
+<li>Clength (1d length of a cell (sqrt(Area))</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>distance per area</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.areastat">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">areastat</tt><big>(</big><em>Var</em>, <em>Area</em><big>)</big><a class="headerlink" href="#wflow_lib.areastat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate several statistics of <em>Var</em> for each unique id in <em>Area</em></p>
+<dl class="docutils">
+<dt>Input: </dt>
+<dd><ul class="first last simple">
+<li>Var</li>
+<li>Area</li>
+</ul>
+</dd>
+<dt>Output: </dt>
+<dd><ul class="first last simple">
+<li>Standard_Deviation,Average,Max,Min</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.checkerboard">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">checkerboard</tt><big>(</big><em>mapin</em>, <em>fcc</em><big>)</big><a class="headerlink" href="#wflow_lib.checkerboard" title="Permalink to this definition">¶</a></dt>
+<dd><p>checkerboard create a checkerboard map with unique id&#8217;s in a 
+fcc*fcc cells area. The resulting map can be used
+to derive statistics for (later) upscaling of maps (using the fcc factor)</p>
+<dl class="docutils">
+<dt>Input: </dt>
+<dd><ul class="first last simple">
+<li>map (used to determine coordinates)</li>
+<li>fcc (size of the areas in cells)</li>
+</ul>
+</dd>
+<dt>Output: </dt>
+<dd><ul class="first last simple">
+<li>checkerboard type map</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.classify">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">classify</tt><big>(</big><em>inmap, lower=[0, 10, 20, 30], upper=[10, 20, 30, 40], classes=[2, 2, 3, 4]</em><big>)</big><a class="headerlink" href="#wflow_lib.classify" title="Permalink to this definition">¶</a></dt>
+<dd><p>classify a scaler maps accroding to the boundaries given in classes.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.configget">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">configget</tt><big>(</big><em>config</em>, <em>section</em>, <em>var</em>, <em>default</em><big>)</big><a class="headerlink" href="#wflow_lib.configget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a string from a config file (.ini) and returns a default value if
+the key is not found. If the key is not found it also sets the value 
+with the default in the config-file</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>config - python ConfigParser object</li>
+<li>section - section in the file</li>
+<li>var - variable (key) to get</li>
+<li>default - default string</li>
+</ul>
+</dd>
+<dt>Returns:</dt>
+<dd><ul class="first last simple">
+<li>string - either the value from the config file or the default value</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.configsection">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">configsection</tt><big>(</big><em>config</em>, <em>section</em><big>)</big><a class="headerlink" href="#wflow_lib.configsection" title="Permalink to this definition">¶</a></dt>
+<dd><p>gets the list of lesy in a section</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>config</li>
+<li>section</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>list of keys in the section</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.configset">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">configset</tt><big>(</big><em>config</em>, <em>section</em>, <em>var</em>, <em>value</em>, <em>overwrite=False</em><big>)</big><a class="headerlink" href="#wflow_lib.configset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets a string in the in memory representation of the config object
+Deos NOT overwrite existing values if overwrite is set to False (default)</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>config - python ConfigParser object</li>
+<li>section - section in the file</li>
+<li>var - variable (key) to set</li>
+<li>value - the value to set</li>
+<li>overwrite (optional, default is False)</li>
+</ul>
+</dd>
+<dt>Returns:</dt>
+<dd><ul class="first last simple">
+<li>nothing</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.detdrainlength">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">detdrainlength</tt><big>(</big><em>ldd</em>, <em>xl</em>, <em>yl</em><big>)</big><a class="headerlink" href="#wflow_lib.detdrainlength" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines the drainaige length (DCL) for a non square grid</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>ldd - drainage network</li>
+<li>xl - length of cells in x direction</li>
+<li>yl - length of cells in y direction</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>DCL</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.detdrainwidth">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">detdrainwidth</tt><big>(</big><em>ldd</em>, <em>xl</em>, <em>yl</em><big>)</big><a class="headerlink" href="#wflow_lib.detdrainwidth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines width of drainage over DEM for a non square grid</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>ldd - drainage network</li>
+<li>xl - length of cells in x direction</li>
+<li>yl - length of cells in y direction</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>DCL</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.find_outlet">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">find_outlet</tt><big>(</big><em>ldd</em><big>)</big><a class="headerlink" href="#wflow_lib.find_outlet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tries to find the outlet of the largest catchment in the Ldd</p>
+<dl class="docutils">
+<dt>Input: </dt>
+<dd><ul class="first last simple">
+<li>Ldd</li>
+</ul>
+</dd>
+<dt>Output: </dt>
+<dd><ul class="first last simple">
+<li>outlet map (single point in the map)</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.getRowColPoint">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">getRowColPoint</tt><big>(</big><em>in_map</em>, <em>xcor</em>, <em>ycor</em><big>)</big><a class="headerlink" href="#wflow_lib.getRowColPoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns the row and col in a map at the point given.
+Works but is rather slow.</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>in_map - map to determine coordinates from</li>
+<li>xcor - x coordinate</li>
+<li>ycor - y coordinate</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>row, column</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.getValAtPoint">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">getValAtPoint</tt><big>(</big><em>in_map</em>, <em>xcor</em>, <em>ycor</em><big>)</big><a class="headerlink" href="#wflow_lib.getValAtPoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns the value in a map at the point given.
+works but is rather slow.</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>in_map - map to determine coordinates from</li>
+<li>xcor - x coordinate</li>
+<li>ycor - y coordinate</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>value</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.getcols">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">getcols</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_lib.getcols" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns the number of columns in the current map</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><ul class="first">
+<li></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>nr of columns in the current clonemap as a scalar</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.getgridparams">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">getgridparams</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_lib.getgridparams" title="Permalink to this definition">¶</a></dt>
+<dd><p>return grid parameters in a python friendly way</p>
+<dl class="docutils">
+<dt>Output:    </dt>
+<dd><p class="first">[ Xul, Yul, xsize, ysize, rows, cols]</p>
+<ul class="last simple">
+<li>xul - x upper left centre</li>
+<li>yul - y upper left centre</li>
+<li>xsize - size of a cell in x direction</li>
+<li>ysize - size of a cell in y direction</li>
+<li>cols - number of columns</li>
+<li>rows - number of rows</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.getrows">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">getrows</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_lib.getrows" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns the number of rows in the current map</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><ul class="first">
+<li></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>nr of rows in the current clonemap as a scalar</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.hand">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">hand</tt><big>(</big><em>dem</em>, <em>ldd</em>, <em>threshold=50.0</em>, <em>stream=None</em><big>)</big><a class="headerlink" href="#wflow_lib.hand" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines heigth above nearest drain.</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd>ldd
+dem
+Optional:
+threshold - to determine streams (number of upstreams cell needed to be a stream)
+stream - if the threshols is not a stream map (boolean) should be supplied</dd>
+</dl>
+<p>Returns: Hand and the stream map</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.lddcreate_save">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">lddcreate_save</tt><big>(</big><em>lddname</em>, <em>dem</em>, <em>force</em>, <em>corevolume=1e+35</em>, <em>catchmentprecipitation=1e+35</em>, <em>corearea=1e+35</em>, <em>outflowdepth=1e+35</em><big>)</big><a class="headerlink" href="#wflow_lib.lddcreate_save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates an ldd if a file does not exists or if the force flag is used</p>
+<dl class="docutils">
+<dt>input: </dt>
+<dd><ul class="first last simple">
+<li>lddname (name of the ldd to create)</li>
+<li>dem (actual dem)</li>
+<li>force (boolean to force recreation of the ldd)</li>
+<li>outflowdepth (set to 10.0E35 normally but smaller if needed)</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>the LDD</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.points_to_map">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">points_to_map</tt><big>(</big><em>in_map</em>, <em>xcor</em>, <em>ycor</em>, <em>tolerance</em><big>)</big><a class="headerlink" href="#wflow_lib.points_to_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a map with non zero values at the points defined
+in X, Y pairs. It&#8217;s goal is to replace the pcraster col2map program.</p>
+<p>tolerance should be 0.5 to select single points
+Performance is not very good and scales linear with the number of points</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>in_map - map to determine coordinates from</li>
+<li>xcor - x coordinate (array or single value)</li>
+<li>ycor - y coordinate (array or single value)</li>
+<li>tolerance - tolerance in cell units. 0.5 selects a single cell        10 would select a 10x10 block of cells</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>Map with values burned in. 1 for first point, 2 for second and so on</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.readMap">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">readMap</tt><big>(</big><em>fileName</em>, <em>fileFormat</em><big>)</big><a class="headerlink" href="#wflow_lib.readMap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read geographical file into memory</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.riverlength">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">riverlength</tt><big>(</big><em>ldd</em>, <em>order</em><big>)</big><a class="headerlink" href="#wflow_lib.riverlength" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines the length of a river using the ldd. 
+only determined for order and higher.</p>
+<dl class="docutils">
+<dt>Input: </dt>
+<dd><ul class="first last simple">
+<li>ldd, order (streamorder)</li>
+</ul>
+</dd>
+<dt>Returns: </dt>
+<dd><ul class="first last simple">
+<li>totallength,lengthpercell, streamorder</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.sCurve">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">sCurve</tt><big>(</big><em>X</em>, <em>a=0.0</em>, <em>b=1.0</em>, <em>c=1.0</em><big>)</big><a class="headerlink" href="#wflow_lib.sCurve" title="Permalink to this definition">¶</a></dt>
+<dd><p>sCurve function:</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>X input map</li>
+<li>C determines the steepness or &#8220;stepwiseness&#8221; of the curve. 
+The higher C the sharper the function. A negative C reverses the function.</li>
+<li>b determines the amplitude of the curve</li>
+<li>a determines the centre level (default = 0)</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>result</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.sCurveSlope">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">sCurveSlope</tt><big>(</big><em>X</em>, <em>a=0.0</em>, <em>b=1.0</em>, <em>c=1.0</em><big>)</big><a class="headerlink" href="#wflow_lib.sCurveSlope" title="Permalink to this definition">¶</a></dt>
+<dd><p>First derivitive of the sCurve defined by a,b,c at point X</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>X - value to calculate for</li>
+<li>a</li>
+<li>b</li>
+<li>c</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>first derivitive (slope) of the curve at point X</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.snaptomap">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">snaptomap</tt><big>(</big><em>points</em>, <em>mmap</em><big>)</big><a class="headerlink" href="#wflow_lib.snaptomap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Snap the points in _points_ to nearest non missing
+values in _mmap_. Can be used to move gauge locations
+to the nearest rivers.</p>
+<dl class="docutils">
+<dt>Input: </dt>
+<dd><ul class="first last simple">
+<li>points - map with points to move</li>
+<li>mmap - map with points to move to</li>
+</ul>
+</dd>
+<dt>Return: </dt>
+<dd><ul class="first last simple">
+<li>map with shifted points</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.subcatch">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">subcatch</tt><big>(</big><em>ldd</em>, <em>outlet</em><big>)</big><a class="headerlink" href="#wflow_lib.subcatch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines a subcatchment map using LDD and outlet(s). In the resulting
+subcatchment map the i&#8217;s of the catchment are determiend by the id&#8217;s of
+the outlets.</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>ldd</li>
+<li>Outlet - maps with points for each outlet.</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>map of subcatchments</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.subcatch_order_a">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">subcatch_order_a</tt><big>(</big><em>ldd</em>, <em>oorder</em><big>)</big><a class="headerlink" href="#wflow_lib.subcatch_order_a" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines subcatchments using the catchment order</p>
+<p>This version uses the last cell BELOW order to derive the
+catchments. In general you want the _b version</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>ldd</li>
+<li>order - order to use</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>map with catchment for the given streamorder</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.subcatch_order_b">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">subcatch_order_b</tt><big>(</big><em>ldd</em>, <em>oorder</em>, <em>Largest=False</em><big>)</big><a class="headerlink" href="#wflow_lib.subcatch_order_b" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines subcatchments using the catchment order</p>
+<p>This version uses the bottommost cell of order
+If Largest is true the analysis is only done for the largest basin
+found in the ldd</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>ldd</li>
+<li>oorder - order to use</li>
+<li>largest - toggle, default = False</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>map with catchment for the given streamorsder</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.upscale_riverlength">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">upscale_riverlength</tt><big>(</big><em>ldd</em>, <em>order</em>, <em>factor</em><big>)</big><a class="headerlink" href="#wflow_lib.upscale_riverlength" title="Permalink to this definition">¶</a></dt>
+<dd><p>Upscales the riverlength using &#8216;factor&#8217;
+The resulting maps can be resampled (e.g. using resample.exe) by factor and should
+include the accurate length as determined with the original higher 
+resolution maps.  This function is <strong>depricated</strong>,  
+use are_riverlength instead as this version
+is very slow for large maps</p>
+<dl class="docutils">
+<dt>Input: </dt>
+<dd><ul class="first last simple">
+<li>ldd</li>
+<li>minimum streamorder to include</li>
+</ul>
+</dd>
+<dt>Output: </dt>
+<dd><ul class="first last simple">
+<li>distance per factor cells</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.writeMap">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">writeMap</tt><big>(</big><em>fileName</em>, <em>fileFormat</em>, <em>x</em>, <em>y</em>, <em>data</em>, <em>FillVal</em><big>)</big><a class="headerlink" href="#wflow_lib.writeMap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write geographical data into file</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_lib.zipFiles">
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">zipFiles</tt><big>(</big><em>fileList</em>, <em>fileTarget</em><big>)</big><a class="headerlink" href="#wflow_lib.zipFiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Usage: zipFiles(fileList, fileTarget)
+zip the given list of files to the given target file
+Input:</p>
+<blockquote>
+<div>fileList:   list of files to be zipped
+fileTarget: target zip-file</div></blockquote>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="wflow_delwaq.html" title="wflow_delwaq Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="wflow_fit.html" title="The wflow_fit module"
+             >previous</a> |</li>
+        <li><a href="index.html">wflow 1.0-RC5-dev-85-92M documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.1.
+    </div>
+  </body>
+</html>
