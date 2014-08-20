@@ -257,6 +257,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     self._d_model = userModel
     self._testRequirements()
     self.datetime_firststep = datetimestart
+    self.currentdatetime = self.datetime_firststep
 
     if firstTimestep > lastTimeStep:
       msg = "Cannot run dynamic framework: Start timestep smaller than end timestep"
@@ -1251,6 +1252,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             data = getattr(self._userModel(),self.statslst[a].varname)
             self.statslst[a].add_one(data)
 
+      self.currentdatetime = self.currentdatetime + dt.timedelta(seconds=self._userModel().timestepsecs)
 
       self._timeStepFinished()
       self._decrementIndentLevel()
@@ -1356,7 +1358,36 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     elif self.outputFormat == 4:
         numpy.savetxt(path,pcr2numpy(variable,-999),fmt="%0.6g")
     
-    
+
+  def wf_readmapClimatology(self,name,kind=1,default=0.0,verbose=1):
+      """
+      Read a climatology map. The current date/time is onverted to:
+      1: a month and the file fro the current month is returend
+      2: days of year and the file for the current day is implmented
+      3: hour of day and the file for the current hours is returned
+
+      :param name: name if the mapstack
+      :param kind: time of the climatology
+      :return: a map
+      """
+      directoryPrefix = ""
+      if kind == 1:
+          month = self.currentdatetime.month
+          newName = generateNameT(name, month)
+          path = os.path.join(directoryPrefix, newName)
+          if os.path.isfile(path):
+            mapje=readmap(path)
+            return mapje
+          else:
+            if verbose:
+                self.logger.warn("Climatology data (" + path + ") for timestep not present, returning " + str(default))
+
+            return scalar(default)
+      else:
+          self.logger.error("This Kind of climatology not implemented yet: " + str(kind))
+
+
+
     
     
   def wf_readmap(self, name, default,verbose=True,filetype='PCRaster'):

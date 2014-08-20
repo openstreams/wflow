@@ -96,13 +96,10 @@ class WflowModel(DynamicModel):
       This function is specific for each model and **must** be present. This is
       where you specify the state variables of you model. If your model is stateless
       this function must return and empty array (states = [])
-      
-      In the simple example here the TSoil variable is a state 
-      for the model.
-      
-      :var TSoil: Temperature of the soil [oC]
       """
-      states = ['S0','Ss','Sd','Sg','Sr','Mleaf','FreeWater','DrySnow']
+
+      states = ['S01','Ss1','Sd1','Mleaf1','FreeWater1','DrySnow1','LAI1','EVI1',
+                'Sg','Sr','S02','Ss2','Sd2','Mleaf2','FreeWater2','DrySnow2','LAI2','EVI2']
       
       return states
       
@@ -166,60 +163,86 @@ class WflowModel(DynamicModel):
 
     # Define here the W3RA mapstacks (best to read these via netcdf)
 
-    self.TEMP_mapstack=self.Dir + configget(self.config,"inputmapstacks","Temperature","/inmaps/TEMP")
-
-    self.Pg_mapstack          =   self.Dir + configget(self.config,"inputmapstacks","Pg","/inmaps/Pg")
-    self.Rg_mapstack          =   self.Dir + configget(self.config,"inputmapstacks","Rg","/inmaps/Rg")
-    self.Ta_mapstack          =   self.Dir + configget(self.config,"inputmapstacks","Ta","/inmaps/Ta")
-    self.T24_mapstack         =   self.Dir + configget(self.config,"inputmapstacks","T24","/inmaps/T24")
-    self.pe_mapstack          =   self.Dir + configget(self.config,"inputmapstacks","pe","/inmaps/pe")
-    self.pair_mapstack        =   self.Dir + configget(self.config,"inputmapstacks","pair","/inmaps/pair")
-    self.u2_mapstack          =   self.Dir + configget(self.config,"inputmapstacks","u2","/inmaps/u2")
-    self.fday_mapstack        =   self.Dir + configget(self.config,"inputmapstacks","fday","/inmaps/fday")
-    self.ns_alb_mapstack      =   self.Dir + configget(self.config,"inputmapstacks","ns_alb","/inmaps/ns_alb")
+    self.TMAX_mapstack=self.Dir + configget(self.config,"inputmapstacks","TMAX","/inmaps/TMAX")
+    self.TMIN_mapstack=self.Dir + configget(self.config,"inputmapstacks","TMIN","/inmaps/TMIN")
+    self.PRECIP_mapstack=self.Dir + configget(self.config,"inputmapstacks","PRECIP","/inmaps/PRECIP")
+    self.RAD_mapstack=self.Dir + configget(self.config,"inputmapstacks","RAD","/inmaps/RAD")
+    self.WINDSPEED_mapstack=self.Dir + configget(self.config,"inputmapstacks","WINDSPEED","/inmaps/WINDSPEED")
+    self.AIRPRESS_mapstack=self.Dir + configget(self.config,"inputmapstacks","AIRPRESS","/inmaps/AIRPRESS")
+    self.ALBEDO_mapstack=self.Dir + configget(self.config,"inputmapstacks","ALBEDO","/inmaps/ALBEDO")
 
     self.Altitude=readmap(self.Dir + "/staticmaps/wflow_dem")
 
-    # Add reading of parameters here
+    self.latitude = ycoordinate(boolean(self.Altitude))
 
-    self.Nhru        = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.Fhru        = readmap(self.Dir + "/staticmaps/Fhru.map")
+   # Add reading of parameters here
 
-    # etc fix this below.....
-    self.SLA         = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.LAIref      = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.Sgref       = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.S0FC        = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.SsFC        = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.SdFC        = readmap(self.Dir + "/staticmaps/Nhru.map")
-    # fday
-    self.Vc          = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.alb_dry     = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.alb_wet     = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.w0ref_alb   = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.Gfrac_max   = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.fvegref_G   = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.hveg        = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.Us0         = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.Ud0         = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.wslimU      = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.wdlimU      = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.cGsmax      = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.FsoilEmax   = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.w0limE      = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.FwaterE     = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.S_sls       = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.ER_frac_ref = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.InitLoss    = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.PrefR       = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.FdrainFC    = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.beta        = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.Fgw_conn    = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.K_gw        = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.K_rout      = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.LAImax      = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.Tgrow       = readmap(self.Dir + "/staticmaps/Nhru.map")
-    self.Tsenc       = readmap(self.Dir + "/staticmaps/Nhru.map")
+    self.K_gw = readmap(self.Dir + "staticmaps/K_gw.map")
+    self.K_rout = readmap(self.Dir + "staticmaps/K_rout.map")
+    self.Sgref = readmap(self.Dir + "staticmaps/Sgref.map")
+    self.alb_dry1 = readmap(self.Dir + "staticmaps/alb_dry.map")
+    self.alb_wet1 = readmap(self.Dir + "staticmaps/alb_wet.map")
+    self.beta1 = readmap(self.Dir + "staticmaps/beta.map")
+    self.cGsmax1 = readmap(self.Dir + "staticmaps/cGsmax.map")
+    self.ER_frac_ref1 = readmap(self.Dir + "staticmaps/ER_frac_ref.map")
+    self.FdrainFC1 = readmap(self.Dir + "staticmaps/FdrainFC.map")
+    self.Fgw_conn1 = readmap(self.Dir + "staticmaps/Fgw_conn.map")
+    self.Fhru1 = readmap(self.Dir + "staticmaps/Fhru.map")
+    self.SLA1  = readmap(self.Dir + "staticmaps/SLA.map")
+    self.LAIref1 = readmap(self.Dir + "staticmaps/LAIref.map")
+    self.FsoilEmax1 = readmap(self.Dir + "staticmaps/FsoilEmax.map")
+    self.fvegref_G1 = readmap(self.Dir + "staticmaps/fvegref_G.map")
+    self.FwaterE1 = readmap(self.Dir + "staticmaps/FwaterE.map")
+    self.Gfrac_max1 = readmap(self.Dir + "staticmaps/Gfrac_max.map")
+    self.hveg1 = readmap(self.Dir + "staticmaps/hveg.map")
+    self.InitLoss1 = readmap(self.Dir + "staticmaps/InitLoss.map")
+    self.LAImax1 = readmap(self.Dir + "staticmaps/LAImax.map")
+    self.PrefR1 = readmap(self.Dir + "staticmaps/PrefR.map")
+    self.S_sls1 = readmap(self.Dir + "staticmaps/S_sls.map")
+    self.S0FC1 = readmap(self.Dir + "staticmaps/S0FC.map")
+    self.SsFC1 = readmap(self.Dir + "staticmaps/SsFC.map")
+    self.SdFC1 = readmap(self.Dir + "staticmaps/SdFC.map")
+    self.Vc1  = readmap(self.Dir + "staticmaps/Vc.map")
+    self.w0ref_alb1 = readmap(self.Dir + "staticmaps/w0ref_alb.map")
+    self.Us01  = readmap(self.Dir + "staticmaps/Us0.map")
+    self.Ud01  = readmap(self.Dir + "staticmaps/Ud0.map")
+    self.wslimU1 = readmap(self.Dir + "staticmaps/wslimU.map")
+    self.wdlimU1 = readmap(self.Dir + "staticmaps/wdlimU.map")
+    self.w0limE1 = readmap(self.Dir + "staticmaps/w0limE.map")
+    self.Tgrow1 = readmap(self.Dir + "staticmaps/Tgrow.map")
+    self.Tsenc1 = readmap(self.Dir + "staticmaps/Tsenc.map")
+
+    self.alb_dry2 = readmap(self.Dir + "staticmaps/alb_dry2.map")
+    self.alb_wet2 = readmap(self.Dir + "staticmaps/alb_wet2.map")
+    self.beta2 = readmap(self.Dir + "staticmaps/beta2.map")
+    self.cGsmax2 = readmap(self.Dir + "staticmaps/cGsmax2.map")
+    self.ER_frac_ref2 = readmap(self.Dir + "staticmaps/ER_frac_ref2.map")
+    self.FdrainFC2 = readmap(self.Dir + "staticmaps/FdrainFC2.map")
+    self.Fgw_conn2 = readmap(self.Dir + "staticmaps/Fgw_conn2.map")
+    self.Fhru2 = readmap(self.Dir + "staticmaps/Fhru2.map")
+    self.SLA2  = readmap(self.Dir + "staticmaps/SLA2.map")
+    self.LAIref2 = readmap(self.Dir + "staticmaps/LAIref2.map")
+    self.FsoilEmax2 = readmap(self.Dir + "staticmaps/FsoilEmax2.map")
+    self.fvegref_G2 = readmap(self.Dir + "staticmaps/fvegref_G2.map")
+    self.FwaterE2 = readmap(self.Dir + "staticmaps/FwaterE2.map")
+    self.Gfrac_max2 = readmap(self.Dir + "staticmaps/Gfrac_max2.map")
+    self.hveg2 = readmap(self.Dir + "staticmaps/hveg2.map")
+    self.InitLoss2 = readmap(self.Dir + "staticmaps/InitLoss2.map")
+    self.LAImax2 = readmap(self.Dir + "staticmaps/LAImax2.map")
+    self.PrefR2 = readmap(self.Dir + "staticmaps/PrefR2.map")
+    self.S_sls2 = readmap(self.Dir + "staticmaps/S_sls2.map")
+    self.S0FC2 = readmap(self.Dir + "staticmaps/S0FC2.map")
+    self.SsFC2 = readmap(self.Dir + "staticmaps/SsFC2.map")
+    self.SdFC2 = readmap(self.Dir + "staticmaps/SdFC2.map")
+    self.Vc2  = readmap(self.Dir + "staticmaps/Vc2.map")
+    self.w0ref_alb2 = readmap(self.Dir + "staticmaps/w0ref_alb2.map")
+    self.Us02  = readmap(self.Dir + "staticmaps/Us02.map")
+    self.Ud02  = readmap(self.Dir + "staticmaps/Ud02.map")
+    self.wslimU2 = readmap(self.Dir + "staticmaps/wslimU2.map")
+    self.wdlimU2 = readmap(self.Dir + "staticmaps/wdlimU2.map")
+    self.w0limE2 = readmap(self.Dir + "staticmaps/w0limE2.map")
+    self.Tgrow2 = readmap(self.Dir + "staticmaps/Tgrow2.map")
+    self.Tsenc2 = readmap(self.Dir + "staticmaps/Tsenc2.map")
 
 
     self.logger.info("Starting Dynamic run...")
@@ -251,17 +274,460 @@ class WflowModel(DynamicModel):
 
       Return a default list of variables to report as summary maps in the outsum dir.
       """
-      return ['self.Altitude']
+      return []
 
   def dynamic(self):
-      """
-      *Required*
-      
-      This is where all the time dependent functions are executed. Time dependent
-      output should also be saved here.
-      """
+        """
+          *Required*
 
-      #Put the W3RA here. Stuff from W3RA_timestep_model.m
+          This is where all the time dependent functions are executed. Time dependent
+          output should also be saved here.
+        """
+
+        #Put the W3RA here. Stuff from W3RA_timestep_model.m
+        #read meteo from file
+        TMAX=cover(self.wf_readmap(self.TMAX_mapstack, 10.0), scalar(10.0))
+        TMIN=cover(self.wf_readmap(self.TMIN_mapstack, 10.0), scalar(10.0))
+        PRECIP=cover(self.wf_readmap(self.PRECIP_mapstack, 0.0), scalar(0.0))
+        RAD=cover(self.wf_readmap(self.RAD_mapstack, 10.0), scalar(10.0))
+        WINDSPEED=cover(self.wf_readmapClimatology(self.WINDSPEED_mapstack, default=1.0), scalar(1.0))
+        AIRPRESS=cover(self.wf_readmapClimatology(self.AIRPRESS_mapstack, default=980.0), scalar(980.0))
+        ALBEDO=cover(self.wf_readmapClimatology(self.ALBEDO_mapstack, default=0.1), scalar(0.1))
+
+        doy=self.currentdatetime.timetuple().tm_yday
+
+        #conversion daylength
+        x = tan((23.439*pi/180)*cos(2*pi*(doy+9)/365.25))
+        m = scalar(1)-(tan(self.latitude*scalar((pi/180)))*scalar(x))
+        x2 = acos(scalar(1)-max(scalar(0),m))
+        fday = min(max(scalar(0.02),(scalar(x2)/scalar(pi)),scalar(1))) # fraction daylength
+        # Assign forcing and estimate effective meteorological variables
+
+        Pg = PRECIP*scalar(24*60*60) # from kg m-2 s-1 to mm d-1
+        Rg = max(RAD,scalar(0.01)) # already in W m-2 s-1; set minimum of 0.01 to avoid numerical problems
+        Ta = (TMIN+scalar(0.75)*(TMAX-TMIN))-scalar(273.15) # from K to degC
+        T24 = (TMIN+scalar(0.5)*(TMAX-TMIN))-scalar(273.15) # from K to degC
+        pex = min(scalar(17.27)*(TMIN-scalar(273.15))/(scalar(237.3)+TMIN-scalar(273.15)),scalar(10))
+        pe = min(scalar(610.8)*(exp(pex)),scalar(10000))
+
+        # rescale factor because windspeed climatology is at 50m
+        WindFactor = 0.59904
+        u2 = scalar(WindFactor)*WINDSPEED*(scalar(1)-(scalar(1)-fday)*scalar(0.25))/fday
+        pair = AIRPRESS # already in Pa
+        ns_alb = ALBEDO
+
+        #TODO: Why is LAI a sate variable? According to this it is not!
+        # diagnostic equations
+        self.LAI1 = self.SLA1*self.Mleaf1   # (5.3)
+        self.LAI2 = self.SLA2*self.Mleaf2   # (5.3)
+        fveg1 = 1 - exp(-self.LAI1/self.LAIref1) # (5.3)
+        fveg2 = 1 - exp(-self.LAI2/self.LAIref2)
+
+        # Vc = max(0,EVI-0.07)/fveg
+        fsoil1 = 1 - fveg1
+        fsoil2 = 1 - fveg2
+        w01 = self.S01/self.S0FC1     # (2.1)
+        w02 = self.S02/self.S0FC2
+        ws1 = self.Ss1/self.SsFC1     # (2.1)
+        ws2 = self.Ss2/self.SsFC2
+        wd1 = self.Sd1/self.SdFC1     # (2.1)
+        wd2 = self.Sd2/self.SdFC2     # (2.1)
+        TotSnow1 = self.FreeWater1+self.DrySnow1
+        TotSnow2 = self.FreeWater2+self.DrySnow2
+        wSnow1 = self.FreeWater1/(TotSnow1+1e-5)
+        wSnow2 = self.FreeWater2/(TotSnow2+1e-5)
+
+        # Spatialise catchment fractions
+        Sgfree =   max(self.Sg,0)
+        fwater1 =   min(0.005,(0.007*self.Sr**0.75))
+        fwater2 =   min(0.005,(0.007*self.Sr**0.75))
+        fsat1 =   min(1,max(min(0.005,0.007*self.Sr**0.75),Sgfree/self.Sgref))
+        fsat2 =   min(1,max(min(0.005,0.007*self.Sr**0.75),Sgfree/self.Sgref))
+        Sghru1 =   self.Sg
+        Sghru2 =   self.Sg
+
+        # CALCULATION OF PET
+        # Conversions and coefficients (3.1)
+        pesx = min((scalar(17.27)*Ta/(scalar(237.3)+Ta)),scalar(10))
+        pes = min(scalar((scalar(610.8))*exp(pesx)),scalar(10000)) # saturated vapour pressure
+        fRH = pe/pes # relative air humidity
+        cRE = 0.03449+4.27e-5*Ta
+        Caero = fday*0.176*(1+Ta/209.1)*(pair-0.417*pe)*(1-fRH)
+        keps = 1.4e-3*((Ta/187)**2+Ta/107+1)*(6.36*pair+pe)/pes
+        Rgeff = Rg/fday
+
+        # shortwave radiation balance (3.2)
+        #alb_veg = 0.452*Vc
+        #alb_soil = alb_wet+(alb_dry-alb_wet)*exp(-w0/w0ref_alb)
+        # new equations for snow albedo
+        alb_snow1 = 0.65-0.2*wSnow1          # assumed; ideally some lit research needed
+        alb_snow2 = 0.65-0.2*wSnow2
+        fsnow1 = min(1,0.05*TotSnow1)     # assumed; ideally some lit research needed
+        fsnow2 = min(1,0.05*TotSnow2)
+        #alb = fveg*alb_veg+(fsoil-fsnow)*alb_soil +fsnow*alb_snow
+        #alb = albedo
+        alb1 = (1-fsnow1)*ns_alb +fsnow1*alb_snow1
+        alb2 = (1-fsnow2)*ns_alb +fsnow2*alb_snow2
+        RSn1 = (1-alb1)*Rgeff
+        RSn2 = (1-alb2)*Rgeff
+        # long wave radiation balance (3.3 to 3.5)
+        StefBolz = 5.67e-8
+        Tkelv = Ta+273.16
+        RLin = (0.65*(pe/Tkelv)**0.14)*StefBolz*Tkelv**4     # (3.3)
+        RLout = 1*StefBolz*Tkelv**4      # (3.4)
+        RLn = RLin-RLout
+        fGR1 = self.Gfrac_max1*(1-exp(-fsoil1/self.fvegref_G1))
+        fGR2 = self.Gfrac_max2*(1-exp(-fsoil2/self.fvegref_G2))     # (3.5)
+        Rneff1 = (RSn1+RLn)*(1-fGR1)
+        Rneff2 = (RSn2+RLn)*(1-fGR2)
+        # Aerodynamic conductance (3.7)
+        fh1 = ln(813/self.hveg1-5.45)
+        fh2 = ln(813/self.hveg2-5.45)
+        ku2_1 = 0.305/(fh1*(fh1+2.3))
+        ku2_2 = 0.305/(fh2*(fh2+2.3))
+        ga1 = ku2_1*u2
+        ga2 = ku2_2*u2
+        #  Potential evaporation
+        kalpha1 = 1+Caero*ga1/Rneff1
+        kalpha2 = 1+Caero*ga2/Rneff2
+        E01 = cRE*(1/(1+keps))*kalpha1*Rneff1*fday
+        E02 = cRE*(1/(1+keps))*kalpha2*Rneff2*fday
+        E01 = max(E01,0)
+        E02 = max(E02,0)
+
+        # CALCULATION OF ET FLUXES AND ROOT WATER UPTAKE
+        # Root water uptake constraint (4.4)
+        Usmax1 = max(0, self.Us01*min(1,ws1/self.wslimU1))       ##0-waarden omdat ws1 bevat 0-waarden (zie regel 116)
+        Usmax2 = max(0, self.Us02*min(1,ws2/self.wslimU2))       ##0-waarden omdat ws2 bevat 0-waarden (zie regel 117)
+        Udmax1 = max(0, self.Ud01*min(1,wd1/self.wdlimU1))       ##0-waarden omdat wd1 bevat 0-waarden (zie regel 118)
+        Udmax2 = max(0, self.Ud02*min(1,wd2/self.wdlimU2))       ##0-waarden omdat wd2 bevat 0-waarden (zie regel 119)
+        #U0max = max(0, Us0*min(1,w0/wslimU))
+        U0max1 = scalar(0)
+        U0max2 = scalar(0)
+        Utot1 = max(Usmax1, max(Udmax1,U0max1))
+        Utot2 = max(Usmax2, max(Udmax2,U0max2))
+
+        # Maximum transpiration (4.3)
+        Gsmax1 = self.cGsmax1*self.Vc1
+        gs1 = fveg1*Gsmax1
+        ft1 = 1/(1+(keps/(1+keps))*ga1/gs1)
+        Etmax1 = ft1*E01
+        Gsmax2 = self.cGsmax2*self.Vc2
+        gs2 = fveg2*Gsmax2
+        ft2 = 1/(1+(keps/(1+keps))*ga2/gs2)
+        Etmax2 = ft2*E02
+
+        # Actual transpiration (4.1)
+        Et1 = min(Utot1, Etmax1)
+        Et2 = min(Utot2, Etmax2)
+
+        # # Root water uptake distribution (2.3)
+        U01 = max(min((U0max1/(U0max1 + Usmax1 + Udmax1))*Et1,self. S01-1e-2),0)
+        Us1 = max(min((Usmax1/(U0max1 + Usmax1 + Udmax1))*Et1, self.Ss1-1e-2),0)
+        Ud1 = max(min((Udmax1/(U0max1 + Usmax1 + Udmax1))*Et1, self.Sd1-1e-2),0)
+        Et1 = U01 + Us1 + Ud1      # to ensure mass balance
+
+        U02 = max(min((U0max2/(U0max2 + Usmax2 + Udmax2))*Et2, self.S02-1e-2),0)
+        Us2 = max(min((Usmax2/(U0max2 + Usmax2 + Udmax2))*Et2, self.Ss2-1e-2),0)
+        Ud2 = max(min((Udmax2/(U0max2 + Usmax2 + Udmax2))*Et2, self.Sd2-1e-2),0)
+        Et2 = U02 + Us2 + Ud2
+
+        # Soil evaporation (4.5)
+        self.S01 = max(0, self.S01 - U01)
+        self.S02 = max(0, self.S02 - U02)
+        w01 = self.S01/self.S0FC1     # (2.1)
+        w02 = self.S02/self.S0FC2     # (2.1)
+        fsoilE1 = self.FsoilEmax1*min(1,w01/self.w0limE1)
+        fsoilE2 = self.FsoilEmax2*min(1,w02/self.w0limE2)
+        Es1 = max(0, min(((1-fsat1)*fsoilE1*(E01-Et1)),self.S01-1e-2))
+        Es2 = max(0, min(((1-fsat2)*fsoilE2*(E02-Et2)),self.S02-1e-2))
+        # Groundwater evaporation (4.6)
+        Eg1 = min((fsat1-fwater1)*self.FsoilEmax1*(E01-Et1),Sghru1)
+        Eg2 = min((fsat2-fwater2)*self.FsoilEmax2*(E02-Et2),Sghru2)
+        # Open water evaporation (4.7)
+        Er1 = min(fwater1*self.FwaterE1*max(0, E01-Et1), self.Sr)
+        Er2 = min(fwater2*self.FwaterE2*max(0, E02-Et2), self.Sr)
+        # Rainfall interception evaporation (4.2)
+        Sveg1 = self.S_sls1*self.LAI1
+        fER1 = self.ER_frac_ref1*fveg1
+        Pwet1 = -ln(1-fER1/fveg1)*Sveg1/fER1
+        Ei1 = scalar(Pg<Pwet1)*fveg1*Pg+scalar(Pg>=Pwet1)*(fveg1*Pwet1+fER1*(Pg-Pwet1))
+
+        Sveg2 = self.S_sls2*self.LAI2
+        fER2 = self.ER_frac_ref2*fveg2
+        Pwet2 = -ln(1-fER2/fveg2)*Sveg2/fER2
+        Ei2 = scalar(Pg<Pwet2)*fveg2*Pg+scalar(Pg>=Pwet2)*(fveg2*Pwet2+fER2*(Pg-Pwet2))
+
+        # HBV snow routine
+        # Matlab: function [FreeWater,DrySnow,InSoil]=snow_submodel(Precipitation,Temperature,FreeWater,DrySnow)
+        # derived from HBV-96 shared by Jaap Schellekens (Deltares) in May 2011
+        # original in PCraster, adapted to Matlab by Albert van Dijk
+        # HBV snow routine
+        Pn1 = Pg-Ei1
+        Pn2 = Pg-Ei2
+        Precipitation1 = Pn1
+        Precipitation2 = Pn2
+
+        # Snow routine parameters
+        # parameters
+        x = scalar(Pg)
+        Cfmax1 = 0.6*3.75653*scalar(x>=0)
+        Cfmax2 = 3.75653*scalar(x>=0)
+        TT1=-1.41934*scalar(x>=0)            # critical temperature for snowmelt and refreezing
+        TT2=-1.41934*scalar(x>=0)
+        TTI1=1.00000*scalar(x>=0)            # defines interval in which precipitation falls as rainfall and snowfall
+        TTI2=1.00000*scalar(x>=0)
+        CFR1=0.05000*scalar(x>=0)            # refreezing efficiency constant in refreezing of freewater in snow
+        CFR2=0.05000*scalar(x>=0)
+        WHC1=0.10000*scalar(x>=0)
+        WHC2=0.10000*scalar(x>=0)
+
+        # Partitioning into fractions rain and snow
+        Temperature = T24             # Dimmie, let op: tijdelijke regel!!
+        RainFrac1 = max(0,min((Temperature-(TT1-TTI1/2))/TTI1,1))
+        RainFrac2 = max(0,min((Temperature-(TT2-TTI2/2))/TTI2,1))
+        SnowFrac1 = 1 - RainFrac1    #fraction of precipitation which falls as snow
+        SnowFrac2 = 1 - RainFrac2
+
+        # Snowfall/melt calculations
+        SnowFall1 = SnowFrac1*Precipitation1                      #snowfall depth
+        SnowFall2 = SnowFrac2*Precipitation2
+        RainFall1 = RainFrac1*Precipitation1                      #rainfall depth
+        RainFall2 = RainFrac2*Precipitation2
+        PotSnowMelt1 = Cfmax1*max(0,Temperature-TT1)                 #Potential snow melt, based on temperature
+        PotSnowMelt2 = Cfmax2*max(0,Temperature-TT2)
+        PotRefreezing1 = Cfmax1*CFR1*max(TT1-Temperature,0)             #Potential refreezing, based on temperature
+        PotRefreezing2 = Cfmax2*CFR2*max(TT2-Temperature,0)
+        Refreezing1 = min(PotRefreezing1,self.FreeWater1)                #actual refreezing
+        Refreezing2 = min(PotRefreezing2,self.FreeWater2)
+        SnowMelt1 = min(PotSnowMelt1,self.DrySnow1)                    #actual snow melt
+        SnowMelt2 = min(PotSnowMelt2,self.DrySnow2)
+        self.DrySnow1 = self.DrySnow1 + SnowFall1 + Refreezing1 -SnowMelt1   #dry snow content
+        self.DrySnow2 = self.DrySnow2 + SnowFall2 + Refreezing2 -SnowMelt2
+        self.FreeWater1 = self.FreeWater1 - Refreezing1                      #free water content in snow
+        self.FreeWater2 = self.FreeWater2 - Refreezing2
+        MaxFreeWater1 = self.DrySnow1*WHC1
+        MaxFreeWater2 = self.DrySnow2*WHC2
+        self.FreeWater1 = self.FreeWater1 + SnowMelt1 + RainFall1
+        self.FreeWater2 = self.FreeWater2 + SnowMelt2 + RainFall2
+        InSoil1 = max(self.FreeWater1-MaxFreeWater1,0)               #abundant water in snow pack which goes into soil
+        InSoil2 = max(self.FreeWater2-MaxFreeWater2,0)
+        self.FreeWater1 = self.FreeWater1 - InSoil1
+        self.FreeWater2 = self.FreeWater2 - InSoil2
+        # End of Snow Module
+
+        # CALCULATION OF WATER BALANCES
+        # surface water fluxes (2.2)
+        NetInSoil1 = max(0, (InSoil1 - self.InitLoss1))
+        NetInSoil2 = max(0, (InSoil2 - self.InitLoss2))
+        Rhof1 = (1-fsat1)*(NetInSoil1/(NetInSoil1+self.PrefR1) )*NetInSoil1
+        Rhof2 = (1-fsat2)*(NetInSoil2/(NetInSoil2+self.PrefR2) )*NetInSoil2
+        Rsof1 = fsat1 * NetInSoil1
+        Rsof2 = fsat2 * NetInSoil2
+        QR1 = Rhof1 + Rsof1
+        QR2 = Rhof2 + Rsof2
+        I1 = InSoil1 - QR1
+        I2 = InSoil2 - QR2
+        # SOIL WATER BALANCES (2.1 & 2.4)
+        # Topsoil water balance (S0)
+        self.S01 = self.S01  + I1 - Es1 - U01
+        self.S02 = self.S02  + I2 - Es2 - U02
+        SzFC1 = self.S0FC1
+        SzFC2 = self.S0FC2
+        Sz1 = self.S01
+        Sz2 = self.S02
+        wz1 = max(1e-2,Sz1)/SzFC1
+        wz2 = max(1e-2,Sz2)/SzFC2
+        fD1 = scalar(wz1>1)*max(self.FdrainFC1,1-1/wz1) + scalar(wz1<=1)*self.FdrainFC1*exp(self.beta1*scalar(wz1-1))
+        fD2 = scalar(wz2>1)*max(self.FdrainFC2,1-1/wz2) + scalar(wz2<=1)*self.FdrainFC2*exp(self.beta2*scalar(wz2-1))
+        Dz1 = max(0, min(fD1*Sz1,Sz1-1e-2))
+        Dz2 = max(0, min(fD2*Sz2,Sz2-1e-2))
+        D01 = Dz1
+        D02 = Dz2
+        self.S01 = self.S01  - D01
+        self.S02 = self.S02  - D02
+        # Shallow root zone water balance (Ss)
+        self.Ss1 = self.Ss1  + D01 -  Us1
+        self.Ss2 = self.Ss2  + D02 -  Us2
+        SzFC1 = self.SsFC1
+        SzFC2 = self.SsFC2
+        Sz1 = self.Ss1
+        Sz2 = self.Ss2
+        wz1 = max(1e-2,Sz1)/SzFC1
+        wz2 = max(1e-2,Sz2)/SzFC2
+        fD1 = scalar(wz1>1)*max(self.FdrainFC1,1-1/wz1) + scalar(wz1<=1)*self.FdrainFC1*exp(self.beta1*scalar(wz1-1))
+        fD2 = scalar(wz2>1)*max(self.FdrainFC2,1-1/wz2) + scalar(wz2<=1)*self.FdrainFC2*exp(self.beta2*scalar(wz2-1))
+        Dz1 = max(0, min(fD1*Sz1,Sz1-1e-2))
+        Dz2 = max(0, min(fD2*Sz2,Sz2-1e-2))
+        Ds1 = Dz1
+        Ds2 = Dz2
+        self.Ss1 = self.Ss1  - Ds1
+        self.Ss2 = self.Ss2  - Ds2
+        # Deep root zone water balance (Sd) (2.6)
+        self.Sd1 = self.Sd1  + Ds1 -  Ud1
+        self.Sd2 = self.Sd2  + Ds2 -  Ud2
+        SzFC1 = self.SdFC1
+        SzFC2 = self.SdFC2
+        Sz1 = self.Sd1
+        Sz2 = self.Sd2
+        wz1 = max(1e-2,Sz1)/SzFC1
+        wz2 = max(1e-2,Sz2)/SzFC2
+        fD1 = scalar(wz1>1)*max(self.FdrainFC1,1-1/wz1) + scalar(wz1<=1)*self.FdrainFC1*exp(self.beta1*scalar(wz1-1))
+        fD2 = scalar(wz2>1)*max(self.FdrainFC2,1-1/wz2) + scalar(wz2<=1)*self.FdrainFC2*exp(self.beta2*scalar(wz2-1))
+        Dz1 = max(0, min(fD1*Sz1,Sz1-1e-2))
+        Dz2 = max(0, min(fD2*Sz2,Sz2-1e-2))
+        Dd1 = Dz1
+        Dd2 = Dz2
+        self.Sd1 = self.Sd1  - Dd1
+        self.Sd2 = self.Sd2  - Dd2
+        Y1 = min(self.Fgw_conn1*max(0,self.wdlimU1*self.SdFC1-Sd1),Sghru1-Eg1)
+        Y2 = min(self.Fgw_conn2*max(0,self.wdlimU2*self.SdFC2-Sd2),Sghru2-Eg2)
+        #Y = Fgw_conn.*max(0,wdlimU.*SdFC-Sd); #nog matlab script
+        self.Sd1 = self.Sd1 + Y1
+        self.Sd2 = self.Sd2 + Y2
+
+        # CATCHMENT WATER BALANCE
+        # Groundwater store water balance (Sg) (2.5)
+        NetGf = (self.Fhru1*(Dd1 - Eg1 - Y1))+(self.Fhru2*(Dd2 - Eg2 - Y2))
+        self.Sg = self.Sg + NetGf
+        Sgfree = max(self.Sg,0)
+        Qg = min(Sgfree, (1-exp(-self.K_gw))*Sgfree)
+        self.Sg = self.Sg - Qg
+
+        # Surface water store water balance (Sr) (2.7)
+        self.Sr = self.Sr  +  (self.Fhru1*(QR1 - Er1) ) +  (self.Fhru2*(QR2 - Er2) ) + Qg
+        Qtot = min(self.Sr, (1-exp(-self.K_rout))*self.Sr)
+        self.Sr = self.Sr  - Qtot
+
+        # VEGETATION ADJUSTMENT (5)
+        fveq1 = (1/max((E01/Utot1)-1,1e-3))*(keps/(1+keps))*(ga1/Gsmax1)
+        fveq2 = (1/max((E02/Utot2)-1,1e-3))*(keps/(1+keps))*(ga2/Gsmax2)
+        fvmax1 = 1-exp(-self.LAImax1/self.LAIref1)
+        fvmax2 = 1-exp(-self.LAImax2/self.LAIref2)
+        fveq1 = min(fveq1,fvmax1)
+        fveq2 = min(fveq2,fvmax2)
+        dMleaf1 = -ln(1-fveq1)*self.LAIref1/self.SLA1-self.Mleaf1
+        dMleaf2 = -ln(1-fveq2)*self.LAIref2/self.SLA2-self.Mleaf2
+        Mleafnet1 = scalar(dMleaf1>0)*(dMleaf1/self.Tgrow1) +scalar(dMleaf1<0)*dMleaf1/self.Tsenc1
+        Mleafnet2 = scalar(dMleaf2>0)*(dMleaf2/self.Tgrow2) +scalar(dMleaf2<0)*dMleaf2/self.Tsenc2
+        self.Mleaf1 = self.Mleaf1 + Mleafnet1
+        self.Mleaf2 = self.Mleaf2 + Mleafnet2
+        self.LAI1 = self.SLA1*self.Mleaf1   # (5.3)
+        self.LAI2 = self.SLA2*self.Mleaf2
+
+        # Updating diagnostics
+        self.LAI1 = self.SLA1*self.Mleaf1    # (5.3)
+        self.LAI2 = self.SLA2*self.Mleaf2
+        fveg1 = 1 - exp(-self.LAI1/self.LAIref1)     #(5.3)
+        fveg2 = 1 - exp(-self.LAI2/self.LAIref2)
+        fsoil1 = 1 - fveg1
+        fsoil2 = 1 - fveg2
+        w01 = self.S01/self.S0FC1     # (2.1)
+        w02 = self.S02/self.S0FC2
+        ws1 = self.Ss1/self.SsFC1     # (2.1)
+        ws2 = self.Ss2/self.SsFC2
+        wd1 = self.Sd1/self.SdFC1     # (2.1)
+        wd2 = self.Sd2/self.SdFC2
+
+
+        # ASSIGN OUTPUT VARIABLES
+        # fluxes
+        Pg      =   (self.Fhru1*Pg) + (self.Fhru2*Pg)
+        E01     =   self.Fhru1*E01
+        E02     =   self.Fhru2*E02
+        E0      =   E01 + E02
+
+        Ee1     =   self.Fhru1*(Es1 + Eg1 + Er1 + Ei1)
+        Ee2     =   self.Fhru2*(Es2 + Eg2 + Er2 + Ei2)
+        Ee      =   Ee1 + Ee2
+
+        # out.Eg      =   sum(Fhru*Eg)
+        Et1     =   self.Fhru1*Et1
+        Et2     =   self.Fhru2*Et2
+        Et      =   Et1 + Et2
+        Ei1     =   self.Fhru1*Ei1
+        Ei2     =   self.Fhru2*Ei2
+        Ei      =   Ei1 + Ei2
+        Etot    =   Et + Ee
+        Qtot    =   Qtot
+        # out.Qg      =   Qg;
+        # out.QR      =   sum(Fhru.*QR);
+        gwflux  =   NetGf
+        D1      =   self.Fhru1*Dd1
+        D2      =   self.Fhru2*Dd2
+        D       =   D1 + D2
+        # HRU specific drainage
+        # out.D1    = Dd(1,:);
+        # out.D2    = Dd(2,:);
+        # out.Et1   = Et(1,:);
+        # out.Et2   = Et(2,:);
+        ET1     = Es1 + Eg1 + Er1 + Ei1 + Et1
+        ET2     = Es2 + Eg2 + Er2 + Ei2 + Et2
+        ETtot   = ET1 + ET2
+
+        # states
+        self.S01     =   self.Fhru1 * self.S01
+        self.S02     =   self.Fhru2 * self.S02
+        self.S0      =   self.S01 + self.S02
+        self.Ss1     =   self.Fhru1 * self.Ss1
+        self.Ss2     =   self.Fhru2 *self. Ss2
+        self.Ss      =   self.Ss1 + self.Ss2
+        self.Sd1     =   self.Fhru1 * self.Sd1
+        self.Sd2     =   self.Fhru2 * self.Sd2
+        self.Sd      =   self.Sd1 + self.Sd2
+        self.Sg      =   self.Sg
+        self.Sr      =   self.Sr
+        Ssnow1  =  self.Fhru1 * (self.FreeWater1 + self.DrySnow1)
+        Ssnow2  =   self.Fhru2 * (self.FreeWater2 + self.DrySnow2)
+        Ssnow   =   Ssnow1 + Ssnow2
+        Stot    =   self.S0 + self.Ss + self.Sd + self.Sg + self.Sr + Ssnow + (self.Fhru1 * self.Mleaf1*scalar(4)) + (self.Fhru2 * self.Mleaf2*scalar(4))     # assume 80% water  in biomass
+        Mleaf1  =   self.Fhru1 * self.Mleaf1
+        Mleaf2  =   self.Fhru2 * self.Mleaf2
+        Mleaf   =   Mleaf1 + Mleaf2
+        self.LAI1    =   self.Fhru1 * self.LAI1
+        self.LAI2    =   self.Fhru2 * self.LAI2
+        LAI     =   self.LAI1 + self.LAI2
+        fveg1   =   self.Fhru1 * fveg1
+        fveg2   =   self.Fhru2 * fveg2
+        fveg    =   fveg1 + fveg2
+        # out.fveq    =   sum(Fhru * fveq)
+        # satellite equivalent
+        ALBEDO  =   self.Fhru1 * alb1 + self.Fhru2 * alb2
+        self.EVI1    =   self.Fhru1 * (self.Vc1*fveg1+0.07)    # assume 0.07 is EVI for bare soil
+        self.EVI2    =   self.Fhru2 * (self.Vc2*fveg2+0.07)    # assume 0.07 is EVI for bare soil
+        EVI     =   self.EVI1 + self.EVI2
+        fsat1   =   self.Fhru1 * fsat1
+        fsat2   =   self.Fhru2 * fsat2
+        fsat    =   fsat1 + fsat2
+        wunsat1 =   self.Fhru1 * w01
+        wunsat2 =   self.Fhru2 * w02
+        wunsat  =   wunsat1 + wunsat2
+
+        # ASSIGN STATE VARIABLES
+
+        states = ['S01','S02','Ss2','Ss2','Sd1','Sd2','Sg','Sr',
+                  'Mleaf1','Mleaf2','FreeWater1','FreeWater2','DrySnow1','DrySnow2', 'LAI1', 'LAI2', 'EVI1', 'EVI2']
+
+
+
+        #report output
+        # QTOT MAPS
+        report(Qtot,os.path.join(outputDir,'qtot',('qtot0000.'+extension)))
+        report(PRECIP,os.path.join(outputDir,'precip',('precip00.'+extension)))
+        report(E01,os.path.join(outputDir,'epot1',('epot1000.'+extension)))
+        report(E02,os.path.join(outputDir,'epot2',('epot2000.'+extension)))
+
+        #time series of results gridcell down stream Amazone river
+        #FreeWater1/(TotSnow1+1e-5)
+        #test_array1 = pcr2numpy(wSnow1,0)
+        #test1.append(test_array1[87,124])
+
+        #test_array2 = pcr2numpy(FreeWater1,0)
+        #test2.append(test_array2[87,124])
+
+        #test_array3 = pcr2numpy(alb_snow1,0)
+        #test3.append(test_array3[87,124])
+
       
 
 
