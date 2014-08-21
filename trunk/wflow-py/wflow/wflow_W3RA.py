@@ -83,6 +83,7 @@ class WflowModel(DynamicModel):
       self.caseName=Dir
       self.Dir = Dir
       self.configfile = configfile
+      self.SaveDir = self.Dir + "/" + self.runId + "/"
      
 
 
@@ -103,23 +104,7 @@ class WflowModel(DynamicModel):
       
       return states
       
-      
-  def supplyCurrentTime(self):
-      """
-      *Optional*
-      
-      Supplies the current time in seconds after the start of the run
-      This function is optional. If it is not set the framework assumes
-      the model runs with daily timesteps.
-      
-      Ouput:
-      
-          - time in seconds since the start of the model run
-          
-      """
-      
-      return self.currentTimeStep() * int(configget(self.config,'model','timestepsecs','86400'))
-  
+
   def suspend(self):
     """
       *Required*
@@ -135,7 +120,7 @@ class WflowModel(DynamicModel):
     #: It is advised to use the wf_suspend() function 
     #: here which will suspend the variables that are given by stateVariables 
     #: function.
-    self.wf_suspend(self.Dir + "/outstate/")
+    self.wf_suspend(self.SaveDir + "/outstate/")
 
       
   def initial(self):
@@ -177,72 +162,72 @@ class WflowModel(DynamicModel):
 
    # Add reading of parameters here
 
-    self.K_gw = readmap(self.Dir + "staticmaps/K_gw.map")
-    self.K_rout = readmap(self.Dir + "staticmaps/K_rout.map")
-    self.Sgref = readmap(self.Dir + "staticmaps/Sgref.map")
-    self.alb_dry1 = readmap(self.Dir + "staticmaps/alb_dry.map")
-    self.alb_wet1 = readmap(self.Dir + "staticmaps/alb_wet.map")
-    self.beta1 = readmap(self.Dir + "staticmaps/beta.map")
-    self.cGsmax1 = readmap(self.Dir + "staticmaps/cGsmax.map")
-    self.ER_frac_ref1 = readmap(self.Dir + "staticmaps/ER_frac_ref.map")
-    self.FdrainFC1 = readmap(self.Dir + "staticmaps/FdrainFC.map")
-    self.Fgw_conn1 = readmap(self.Dir + "staticmaps/Fgw_conn.map")
-    self.Fhru1 = readmap(self.Dir + "staticmaps/Fhru.map")
-    self.SLA1  = readmap(self.Dir + "staticmaps/SLA.map")
-    self.LAIref1 = readmap(self.Dir + "staticmaps/LAIref.map")
-    self.FsoilEmax1 = readmap(self.Dir + "staticmaps/FsoilEmax.map")
-    self.fvegref_G1 = readmap(self.Dir + "staticmaps/fvegref_G.map")
-    self.FwaterE1 = readmap(self.Dir + "staticmaps/FwaterE.map")
-    self.Gfrac_max1 = readmap(self.Dir + "staticmaps/Gfrac_max.map")
-    self.hveg1 = readmap(self.Dir + "staticmaps/hveg.map")
-    self.InitLoss1 = readmap(self.Dir + "staticmaps/InitLoss.map")
-    self.LAImax1 = readmap(self.Dir + "staticmaps/LAImax.map")
-    self.PrefR1 = readmap(self.Dir + "staticmaps/PrefR.map")
-    self.S_sls1 = readmap(self.Dir + "staticmaps/S_sls.map")
-    self.S0FC1 = readmap(self.Dir + "staticmaps/S0FC.map")
-    self.SsFC1 = readmap(self.Dir + "staticmaps/SsFC.map")
-    self.SdFC1 = readmap(self.Dir + "staticmaps/SdFC.map")
-    self.Vc1  = readmap(self.Dir + "staticmaps/Vc.map")
-    self.w0ref_alb1 = readmap(self.Dir + "staticmaps/w0ref_alb.map")
-    self.Us01  = readmap(self.Dir + "staticmaps/Us0.map")
-    self.Ud01  = readmap(self.Dir + "staticmaps/Ud0.map")
-    self.wslimU1 = readmap(self.Dir + "staticmaps/wslimU.map")
-    self.wdlimU1 = readmap(self.Dir + "staticmaps/wdlimU.map")
-    self.w0limE1 = readmap(self.Dir + "staticmaps/w0limE.map")
-    self.Tgrow1 = readmap(self.Dir + "staticmaps/Tgrow.map")
-    self.Tsenc1 = readmap(self.Dir + "staticmaps/Tsenc.map")
+    self.K_gw = readmap(os.path.join(self.Dir, "staticmaps/K_gw.map"))
+    self.K_rout = readmap(os.path.join(self.Dir,  "staticmaps/K_rout.map"))
+    self.Sgref = readmap(os.path.join(self.Dir, "staticmaps/Sgref.map"))
+    self.alb_dry1 = readmap(os.path.join(self.Dir, "staticmaps/alb_dry.map"))
+    self.alb_wet1 = readmap(os.path.join(self.Dir, "staticmaps/alb_wet.map"))
+    self.beta1 = readmap(os.path.join(self.Dir, "staticmaps/beta.map"))
+    self.cGsmax1 = readmap(os.path.join(self.Dir, "staticmaps/cGsmax.map"))
+    self.ER_frac_ref1 = readmap(os.path.join(self.Dir, "staticmaps/ER_frac_ref.map"))
+    self.FdrainFC1 = readmap(os.path.join(self.Dir, "staticmaps/FdrainFC.map"))
+    self.Fgw_conn1 = readmap(os.path.join(self.Dir, "staticmaps/Fgw_conn.map"))
+    self.Fhru1 = readmap(os.path.join(self.Dir, "staticmaps/Fhru.map"))
+    self.SLA1  = readmap(os.path.join(self.Dir, "staticmaps/SLA.map"))
+    self.LAIref1 = readmap(os.path.join(self.Dir, "staticmaps/LAIref.map"))
+    self.FsoilEmax1 = readmap(os.path.join(self.Dir, "staticmaps/FsoilEmax.map"))
+    self.fvegref_G1 = readmap(os.path.join(self.Dir, "staticmaps/fvegref_G.map"))
+    self.FwaterE1 = readmap(os.path.join(self.Dir, "staticmaps/FwaterE.map"))
+    self.Gfrac_max1 = readmap(os.path.join(self.Dir, "staticmaps/Gfrac_max.map"))
+    self.hveg1 = readmap(os.path.join(self.Dir, "staticmaps/hveg.map"))
+    self.InitLoss1 = readmap(os.path.join(self.Dir, "staticmaps/InitLoss.map"))
+    self.LAImax1 = readmap(os.path.join(self.Dir, "staticmaps/LAImax.map"))
+    self.PrefR1 = readmap(os.path.join(self.Dir, "staticmaps/PrefR.map"))
+    self.S_sls1 = readmap(os.path.join(self.Dir, "staticmaps/S_sls.map"))
+    self.S0FC1 = readmap(os.path.join(self.Dir, "staticmaps/S0FC.map"))
+    self.SsFC1 = readmap(os.path.join(self.Dir, "staticmaps/SsFC.map"))
+    self.SdFC1 = readmap(os.path.join(self.Dir, "staticmaps/SdFC.map"))
+    self.Vc1  = readmap(os.path.join(self.Dir, "staticmaps/Vc.map"))
+    self.w0ref_alb1 = readmap(os.path.join(self.Dir, "staticmaps/w0ref_alb.map"))
+    self.Us01  = readmap(os.path.join(self.Dir, "staticmaps/Us0.map"))
+    self.Ud01  = readmap(os.path.join(self.Dir, "staticmaps/Ud0.map"))
+    self.wslimU1 = readmap(os.path.join(self.Dir, "staticmaps/wslimU.map"))
+    self.wdlimU1 = readmap(os.path.join(self.Dir, "staticmaps/wdlimU.map"))
+    self.w0limE1 = readmap(os.path.join(self.Dir, "staticmaps/w0limE.map"))
+    self.Tgrow1 = readmap(os.path.join(self.Dir, "staticmaps/Tgrow.map"))
+    self.Tsenc1 = readmap(os.path.join(self.Dir, "staticmaps/Tsenc.map"))
 
-    self.alb_dry2 = readmap(self.Dir + "staticmaps/alb_dry2.map")
-    self.alb_wet2 = readmap(self.Dir + "staticmaps/alb_wet2.map")
-    self.beta2 = readmap(self.Dir + "staticmaps/beta2.map")
-    self.cGsmax2 = readmap(self.Dir + "staticmaps/cGsmax2.map")
-    self.ER_frac_ref2 = readmap(self.Dir + "staticmaps/ER_frac_ref2.map")
-    self.FdrainFC2 = readmap(self.Dir + "staticmaps/FdrainFC2.map")
-    self.Fgw_conn2 = readmap(self.Dir + "staticmaps/Fgw_conn2.map")
-    self.Fhru2 = readmap(self.Dir + "staticmaps/Fhru2.map")
-    self.SLA2  = readmap(self.Dir + "staticmaps/SLA2.map")
-    self.LAIref2 = readmap(self.Dir + "staticmaps/LAIref2.map")
-    self.FsoilEmax2 = readmap(self.Dir + "staticmaps/FsoilEmax2.map")
-    self.fvegref_G2 = readmap(self.Dir + "staticmaps/fvegref_G2.map")
-    self.FwaterE2 = readmap(self.Dir + "staticmaps/FwaterE2.map")
-    self.Gfrac_max2 = readmap(self.Dir + "staticmaps/Gfrac_max2.map")
-    self.hveg2 = readmap(self.Dir + "staticmaps/hveg2.map")
-    self.InitLoss2 = readmap(self.Dir + "staticmaps/InitLoss2.map")
-    self.LAImax2 = readmap(self.Dir + "staticmaps/LAImax2.map")
-    self.PrefR2 = readmap(self.Dir + "staticmaps/PrefR2.map")
-    self.S_sls2 = readmap(self.Dir + "staticmaps/S_sls2.map")
-    self.S0FC2 = readmap(self.Dir + "staticmaps/S0FC2.map")
-    self.SsFC2 = readmap(self.Dir + "staticmaps/SsFC2.map")
-    self.SdFC2 = readmap(self.Dir + "staticmaps/SdFC2.map")
-    self.Vc2  = readmap(self.Dir + "staticmaps/Vc2.map")
-    self.w0ref_alb2 = readmap(self.Dir + "staticmaps/w0ref_alb2.map")
-    self.Us02  = readmap(self.Dir + "staticmaps/Us02.map")
-    self.Ud02  = readmap(self.Dir + "staticmaps/Ud02.map")
-    self.wslimU2 = readmap(self.Dir + "staticmaps/wslimU2.map")
-    self.wdlimU2 = readmap(self.Dir + "staticmaps/wdlimU2.map")
-    self.w0limE2 = readmap(self.Dir + "staticmaps/w0limE2.map")
-    self.Tgrow2 = readmap(self.Dir + "staticmaps/Tgrow2.map")
-    self.Tsenc2 = readmap(self.Dir + "staticmaps/Tsenc2.map")
+    self.alb_dry2 = readmap(os.path.join(self.Dir,  "staticmaps/alb_dry2.map"))
+    self.alb_wet2 = readmap(os.path.join(self.Dir,  "staticmaps/alb_wet2.map"))
+    self.beta2 = readmap(os.path.join(self.Dir,  "staticmaps/beta2.map"))
+    self.cGsmax2 = readmap(os.path.join(self.Dir,  "staticmaps/cGsmax2.map"))
+    self.ER_frac_ref2 = readmap(os.path.join(self.Dir,  "staticmaps/ER_frac_ref2.map"))
+    self.FdrainFC2 = readmap(os.path.join(self.Dir,  "staticmaps/FdrainFC2.map"))
+    self.Fgw_conn2 = readmap(os.path.join(self.Dir,  "staticmaps/Fgw_conn2.map"))
+    self.Fhru2 = readmap(os.path.join(self.Dir,  "staticmaps/Fhru2.map"))
+    self.SLA2  = readmap(os.path.join(self.Dir,  "staticmaps/SLA2.map"))
+    self.LAIref2 = readmap(os.path.join(self.Dir,  "staticmaps/LAIref2.map"))
+    self.FsoilEmax2 = readmap(os.path.join(self.Dir,  "staticmaps/FsoilEmax2.map"))
+    self.fvegref_G2 = readmap(os.path.join(self.Dir,  "staticmaps/fvegref_G2.map"))
+    self.FwaterE2 = readmap(os.path.join(self.Dir,  "staticmaps/FwaterE2.map"))
+    self.Gfrac_max2 = readmap(os.path.join(self.Dir,  "staticmaps/Gfrac_max2.map"))
+    self.hveg2 = readmap(os.path.join(self.Dir,  "staticmaps/hveg2.map"))
+    self.InitLoss2 = readmap(os.path.join(self.Dir,  "staticmaps/InitLoss2.map"))
+    self.LAImax2 = readmap(os.path.join(self.Dir,  "staticmaps/LAImax2.map"))
+    self.PrefR2 = readmap(os.path.join(self.Dir,  "staticmaps/PrefR2.map"))
+    self.S_sls2 = readmap(os.path.join(self.Dir,  "staticmaps/S_sls2.map"))
+    self.S0FC2 = readmap(os.path.join(self.Dir,  "staticmaps/S0FC2.map"))
+    self.SsFC2 = readmap(os.path.join(self.Dir,  "staticmaps/SsFC2.map"))
+    self.SdFC2 = readmap(os.path.join(self.Dir,  "staticmaps/SdFC2.map"))
+    self.Vc2  = readmap(os.path.join(self.Dir,  "staticmaps/Vc2.map"))
+    self.w0ref_alb2 = readmap(os.path.join(self.Dir,  "staticmaps/w0ref_alb2.map"))
+    self.Us02  = readmap(os.path.join(self.Dir,  "staticmaps/Us02.map"))
+    self.Ud02  = readmap(os.path.join(self.Dir,  "staticmaps/Ud02.map"))
+    self.wslimU2 = readmap(os.path.join(self.Dir,  "staticmaps/wslimU2.map"))
+    self.wdlimU2 = readmap(os.path.join(self.Dir,  "staticmaps/wdlimU2.map"))
+    self.w0limE2 = readmap(os.path.join(self.Dir,  "staticmaps/w0limE2.map"))
+    self.Tgrow2 = readmap(os.path.join(self.Dir,  "staticmaps/Tgrow2.map"))
+    self.Tsenc2 = readmap(os.path.join(self.Dir,  "staticmaps/Tsenc2.map"))
 
 
     self.logger.info("Starting Dynamic run...")
@@ -286,13 +271,14 @@ class WflowModel(DynamicModel):
 
         #Put the W3RA here. Stuff from W3RA_timestep_model.m
         #read meteo from file
-        TMAX=cover(self.wf_readmap(self.TMAX_mapstack, 10.0), scalar(10.0))
-        TMIN=cover(self.wf_readmap(self.TMIN_mapstack, 10.0), scalar(10.0))
-        PRECIP=cover(self.wf_readmap(self.PRECIP_mapstack, 0.0), scalar(0.0))
-        RAD=cover(self.wf_readmap(self.RAD_mapstack, 10.0), scalar(10.0))
-        WINDSPEED=cover(self.wf_readmapClimatology(self.WINDSPEED_mapstack, default=1.0), scalar(1.0))
-        AIRPRESS=cover(self.wf_readmapClimatology(self.AIRPRESS_mapstack, default=980.0), scalar(980.0))
-        ALBEDO=cover(self.wf_readmapClimatology(self.ALBEDO_mapstack, default=0.1), scalar(0.1))
+        self.logger.debug("Running for: " + str(self.currentdatetime))
+        self.TMAX=cover(self.wf_readmap(self.TMAX_mapstack, 10.0), scalar(10.0))
+        self.TMIN=cover(self.wf_readmap(self.TMIN_mapstack, 10.0), scalar(10.0))
+        self.PRECIP=cover(self.wf_readmap(self.PRECIP_mapstack, 0.0), scalar(0.0))
+        self.RAD=cover(self.wf_readmap(self.RAD_mapstack, 10.0), scalar(10.0))
+        self.WINDSPEED=cover(self.wf_readmapClimatology(self.WINDSPEED_mapstack, default=1.0), scalar(1.0))
+        self.AIRPRESS=cover(self.wf_readmapClimatology(self.AIRPRESS_mapstack, default=980.0), scalar(980.0))
+        self.ALBEDO=cover(self.wf_readmapClimatology(self.ALBEDO_mapstack, default=0.1), scalar(0.1))
 
         doy=self.currentdatetime.timetuple().tm_yday
 
@@ -300,29 +286,30 @@ class WflowModel(DynamicModel):
         x = tan((23.439*pi/180)*cos(2*pi*(doy+9)/365.25))
         m = scalar(1)-(tan(self.latitude*scalar((pi/180)))*scalar(x))
         x2 = acos(scalar(1)-max(scalar(0),m))
-        fday = min(max(scalar(0.02),(scalar(x2)/scalar(pi)),scalar(1))) # fraction daylength
+        self.fday = min(max(scalar(0.02),(scalar(x2)/scalar(pi)),scalar(1))) # fraction daylength
         # Assign forcing and estimate effective meteorological variables
 
-        Pg = PRECIP*scalar(24*60*60) # from kg m-2 s-1 to mm d-1
-        Rg = max(RAD,scalar(0.01)) # already in W m-2 s-1; set minimum of 0.01 to avoid numerical problems
-        Ta = (TMIN+scalar(0.75)*(TMAX-TMIN))-scalar(273.15) # from K to degC
-        T24 = (TMIN+scalar(0.5)*(TMAX-TMIN))-scalar(273.15) # from K to degC
-        pex = min(scalar(17.27)*(TMIN-scalar(273.15))/(scalar(237.3)+TMIN-scalar(273.15)),scalar(10))
+        Pg = self.PRECIP*scalar(24*60*60) # from kg m-2 s-1 to mm d-1
+        Rg = max(self.RAD,scalar(0.01)) # already in W m-2 s-1; set minimum of 0.01 to avoid numerical problems
+        Ta = (self.TMIN+scalar(0.75)*(self.TMAX-self.TMIN))-scalar(273.15) # from K to degC
+        T24 = (self.TMIN+scalar(0.5)*(self.TMAX-self.TMIN))-scalar(273.15) # from K to degC
+        pex = min(scalar(17.27)*(self.TMIN-scalar(273.15))/(scalar(237.3)+self.TMIN-scalar(273.15)),scalar(10))
         pe = min(scalar(610.8)*(exp(pex)),scalar(10000))
 
-        # rescale factor because windspeed climatology is at 50m
+        # rescale factor because windspeed climatology is at 50ms
         WindFactor = 0.59904
-        u2 = scalar(WindFactor)*WINDSPEED*(scalar(1)-(scalar(1)-fday)*scalar(0.25))/fday
-        pair = AIRPRESS # already in Pa
-        ns_alb = ALBEDO
+        u2 = scalar(WindFactor)*self.WINDSPEED*(scalar(1)-(scalar(1)-self.fday)*scalar(0.25))/self.fday
+        pair = self.AIRPRESS # already in Pa
+        ns_alb = self.ALBEDO
 
         #TODO: Why is LAI a sate variable? According to this it is not!
         # diagnostic equations
+        # TODO: XXXX Mleaf1/2 goes wrong....
         self.LAI1 = self.SLA1*self.Mleaf1   # (5.3)
         self.LAI2 = self.SLA2*self.Mleaf2   # (5.3)
         fveg1 = 1 - exp(-self.LAI1/self.LAIref1) # (5.3)
         fveg2 = 1 - exp(-self.LAI2/self.LAIref2)
-
+        self.TMP= self.Mleaf1
         # Vc = max(0,EVI-0.07)/fveg
         fsoil1 = 1 - fveg1
         fsoil2 = 1 - fveg2
@@ -352,9 +339,9 @@ class WflowModel(DynamicModel):
         pes = min(scalar((scalar(610.8))*exp(pesx)),scalar(10000)) # saturated vapour pressure
         fRH = pe/pes # relative air humidity
         cRE = 0.03449+4.27e-5*Ta
-        Caero = fday*0.176*(1+Ta/209.1)*(pair-0.417*pe)*(1-fRH)
+        Caero = self.fday*0.176*(1+Ta/209.1)*(pair-0.417*pe)*(1-fRH)
         keps = 1.4e-3*((Ta/187)**2+Ta/107+1)*(6.36*pair+pe)/pes
-        Rgeff = Rg/fday
+        Rgeff = Rg/self.fday
 
         # shortwave radiation balance (3.2)
         #alb_veg = 0.452*Vc
@@ -373,27 +360,29 @@ class WflowModel(DynamicModel):
         # long wave radiation balance (3.3 to 3.5)
         StefBolz = 5.67e-8
         Tkelv = Ta+273.16
-        RLin = (0.65*(pe/Tkelv)**0.14)*StefBolz*Tkelv**4     # (3.3)
+        self.RLin = (0.65*(pe/Tkelv)**0.14)*StefBolz*Tkelv**4     # (3.3)
         RLout = 1*StefBolz*Tkelv**4      # (3.4)
-        RLn = RLin-RLout
-        fGR1 = self.Gfrac_max1*(1-exp(-fsoil1/self.fvegref_G1))
-        fGR2 = self.Gfrac_max2*(1-exp(-fsoil2/self.fvegref_G2))     # (3.5)
-        Rneff1 = (RSn1+RLn)*(1-fGR1)
-        Rneff2 = (RSn2+RLn)*(1-fGR2)
+        self.RLn = self.RLin-RLout
+
+        self.fGR1 = self.Gfrac_max1*(1-exp(-fsoil1/self.fvegref_G1))
+        self.fGR2 = self.Gfrac_max2*(1-exp(-fsoil2/self.fvegref_G2))     # (3.5)
+        self.Rneff1 = (RSn1+self.RLn)*(1-self.fGR1)
+        self.Rneff2 = (RSn2+self.RLn)*(1-self.fGR2)
         # Aerodynamic conductance (3.7)
-        fh1 = ln(813/self.hveg1-5.45)
-        fh2 = ln(813/self.hveg2-5.45)
-        ku2_1 = 0.305/(fh1*(fh1+2.3))
-        ku2_2 = 0.305/(fh2*(fh2+2.3))
+        # TODO: Check if this can go outside the dynamic loop.....
+        self.fh1 = ln(813./self.hveg1-5.45)
+        self.fh2 = ln(813./self.hveg2-5.45)
+        ku2_1 = 0.305/(self.fh1*(self.fh1+2.3))
+        ku2_2 = 0.305/(self.fh2*(self.fh2+2.3))
         ga1 = ku2_1*u2
         ga2 = ku2_2*u2
         #  Potential evaporation
-        kalpha1 = 1+Caero*ga1/Rneff1
-        kalpha2 = 1+Caero*ga2/Rneff2
-        E01 = cRE*(1/(1+keps))*kalpha1*Rneff1*fday
-        E02 = cRE*(1/(1+keps))*kalpha2*Rneff2*fday
-        E01 = max(E01,0)
-        E02 = max(E02,0)
+        kalpha1 = 1+Caero*ga1/self.Rneff1
+        kalpha2 = 1+Caero*ga2/self.Rneff2
+        self.E01 = cRE*(1/(1+keps))*kalpha1*self.Rneff1*self.fday
+        self.E02 = cRE*(1/(1+keps))*kalpha2*self.Rneff2*self.fday
+        self.E01 = max(self.E01,0)
+        self.E02 = max(self.E02,0)
 
         # CALCULATION OF ET FLUXES AND ROOT WATER UPTAKE
         # Root water uptake constraint (4.4)
@@ -411,11 +400,11 @@ class WflowModel(DynamicModel):
         Gsmax1 = self.cGsmax1*self.Vc1
         gs1 = fveg1*Gsmax1
         ft1 = 1/(1+(keps/(1+keps))*ga1/gs1)
-        Etmax1 = ft1*E01
+        Etmax1 = ft1*self.E01
         Gsmax2 = self.cGsmax2*self.Vc2
         gs2 = fveg2*Gsmax2
         ft2 = 1/(1+(keps/(1+keps))*ga2/gs2)
-        Etmax2 = ft2*E02
+        Etmax2 = ft2*self.E02
 
         # Actual transpiration (4.1)
         Et1 = min(Utot1, Etmax1)
@@ -439,14 +428,14 @@ class WflowModel(DynamicModel):
         w02 = self.S02/self.S0FC2     # (2.1)
         fsoilE1 = self.FsoilEmax1*min(1,w01/self.w0limE1)
         fsoilE2 = self.FsoilEmax2*min(1,w02/self.w0limE2)
-        Es1 = max(0, min(((1-fsat1)*fsoilE1*(E01-Et1)),self.S01-1e-2))
-        Es2 = max(0, min(((1-fsat2)*fsoilE2*(E02-Et2)),self.S02-1e-2))
+        Es1 = max(0, min(((1-fsat1)*fsoilE1*(self.E01-Et1)),self.S01-1e-2))
+        Es2 = max(0, min(((1-fsat2)*fsoilE2*(self.E02-Et2)),self.S02-1e-2))
         # Groundwater evaporation (4.6)
-        Eg1 = min((fsat1-fwater1)*self.FsoilEmax1*(E01-Et1),Sghru1)
-        Eg2 = min((fsat2-fwater2)*self.FsoilEmax2*(E02-Et2),Sghru2)
+        Eg1 = min((fsat1-fwater1)*self.FsoilEmax1*(self.E01-Et1),Sghru1)
+        Eg2 = min((fsat2-fwater2)*self.FsoilEmax2*(self.E02-Et2),Sghru2)
         # Open water evaporation (4.7)
-        Er1 = min(fwater1*self.FwaterE1*max(0, E01-Et1), self.Sr)
-        Er2 = min(fwater2*self.FwaterE2*max(0, E02-Et2), self.Sr)
+        Er1 = min(fwater1*self.FwaterE1*max(0, self.E01-Et1), self.Sr)
+        Er2 = min(fwater2*self.FwaterE2*max(0, self.E02-Et2), self.Sr)
         # Rainfall interception evaporation (4.2)
         Sveg1 = self.S_sls1*self.LAI1
         fER1 = self.ER_frac_ref1*fveg1
@@ -580,8 +569,8 @@ class WflowModel(DynamicModel):
         Dd2 = Dz2
         self.Sd1 = self.Sd1  - Dd1
         self.Sd2 = self.Sd2  - Dd2
-        Y1 = min(self.Fgw_conn1*max(0,self.wdlimU1*self.SdFC1-Sd1),Sghru1-Eg1)
-        Y2 = min(self.Fgw_conn2*max(0,self.wdlimU2*self.SdFC2-Sd2),Sghru2-Eg2)
+        Y1 = min(self.Fgw_conn1*max(0,self.wdlimU1*self.SdFC1-self.Sd1),Sghru1-Eg1)
+        Y2 = min(self.Fgw_conn2*max(0,self.wdlimU2*self.SdFC2-self.Sd2),Sghru2-Eg2)
         #Y = Fgw_conn.*max(0,wdlimU.*SdFC-Sd); #nog matlab script
         self.Sd1 = self.Sd1 + Y1
         self.Sd2 = self.Sd2 + Y2
@@ -600,8 +589,8 @@ class WflowModel(DynamicModel):
         self.Sr = self.Sr  - Qtot
 
         # VEGETATION ADJUSTMENT (5)
-        fveq1 = (1/max((E01/Utot1)-1,1e-3))*(keps/(1+keps))*(ga1/Gsmax1)
-        fveq2 = (1/max((E02/Utot2)-1,1e-3))*(keps/(1+keps))*(ga2/Gsmax2)
+        fveq1 = (1/max((self.E01/Utot1)-1,1e-3))*(keps/(1+keps))*(ga1/Gsmax1)
+        fveq2 = (1/max((self.E02/Utot2)-1,1e-3))*(keps/(1+keps))*(ga2/Gsmax2)
         fvmax1 = 1-exp(-self.LAImax1/self.LAIref1)
         fvmax2 = 1-exp(-self.LAImax2/self.LAIref2)
         fveq1 = min(fveq1,fvmax1)
@@ -610,6 +599,8 @@ class WflowModel(DynamicModel):
         dMleaf2 = -ln(1-fveq2)*self.LAIref2/self.SLA2-self.Mleaf2
         Mleafnet1 = scalar(dMleaf1>0)*(dMleaf1/self.Tgrow1) +scalar(dMleaf1<0)*dMleaf1/self.Tsenc1
         Mleafnet2 = scalar(dMleaf2>0)*(dMleaf2/self.Tgrow2) +scalar(dMleaf2<0)*dMleaf2/self.Tsenc2
+        ### MEleave is the problem why??
+        #TODO: ddddd
         self.Mleaf1 = self.Mleaf1 + Mleafnet1
         self.Mleaf2 = self.Mleaf2 + Mleafnet2
         self.LAI1 = self.SLA1*self.Mleaf1   # (5.3)
@@ -633,9 +624,9 @@ class WflowModel(DynamicModel):
         # ASSIGN OUTPUT VARIABLES
         # fluxes
         Pg      =   (self.Fhru1*Pg) + (self.Fhru2*Pg)
-        E01     =   self.Fhru1*E01
-        E02     =   self.Fhru2*E02
-        E0      =   E01 + E02
+        self.E01     =   self.Fhru1*self.E01
+        self.E02     =   self.Fhru2*self.E02
+        E0      =   self.E01 + self.E02
 
         Ee1     =   self.Fhru1*(Es1 + Eg1 + Er1 + Ei1)
         Ee2     =   self.Fhru2*(Es2 + Eg2 + Er2 + Ei2)
@@ -705,17 +696,17 @@ class WflowModel(DynamicModel):
 
         # ASSIGN STATE VARIABLES
 
-        states = ['S01','S02','Ss2','Ss2','Sd1','Sd2','Sg','Sr',
-                  'Mleaf1','Mleaf2','FreeWater1','FreeWater2','DrySnow1','DrySnow2', 'LAI1', 'LAI2', 'EVI1', 'EVI2']
+        #states = ['S01','S02','Ss2','Ss2','Sd1','Sd2','Sg','Sr',
+        #          'Mleaf1','Mleaf2','FreeWater1','FreeWater2','DrySnow1','DrySnow2', 'LAI1', 'LAI2', 'EVI1', 'EVI2']
 
 
 
         #report output
         # QTOT MAPS
-        report(Qtot,os.path.join(outputDir,'qtot',('qtot0000.'+extension)))
-        report(PRECIP,os.path.join(outputDir,'precip',('precip00.'+extension)))
-        report(E01,os.path.join(outputDir,'epot1',('epot1000.'+extension)))
-        report(E02,os.path.join(outputDir,'epot2',('epot2000.'+extension)))
+        #report(Qtot,os.path.join(outputDir,'qtot',('qtot0000.'+extension)))
+        #report(PRECIP,os.path.join(outputDir,'precip',('precip00.'+extension)))
+        #report(self.E01,os.path.join(outputDir,'epot1',('epot1000.'+extension)))
+        #report(self.self.E02,os.path.join(outputDir,'epot2',('epot2000.'+extension)))
 
         #time series of results gridcell down stream Amazone river
         #FreeWater1/(TotSnow1+1e-5)
