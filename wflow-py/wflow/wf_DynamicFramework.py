@@ -269,14 +269,18 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     self._addMethodToClass(self.wf_suspend)
     self._addMethodToClass(self.wf_resume)
     self._addMethodToClass(self.wf_readmap)
+    self._addMethodToClass(self.wf_readmapClimatology)
     self._addMethodToClass(self.readtblDefault)
     self._addMethodToClass(self.wf_supplyVariableNamesAndRoles)
+    self._addMethodToClass(self.wf_supplyVariableNamesAndRoles)
+
 
     self._userModel()._setNrTimeSteps(lastTimeStep - firstTimestep + 1)
     self._d_firstTimestep = firstTimestep
     self._userModel()._setFirstTimeStep(self._d_firstTimestep)
     self._d_lastTimestep = lastTimeStep
     self.APIDebug = 0
+    self._userModel().currentdatetime = self.currentdatetime
 
 
 
@@ -485,7 +489,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
               execstr = "savevar = self._userModel()." + var
               exec execstr
               try: # Check if we have a list of maps
-                  a = len(savevar)
+                  b = len(savevar)
                   a = 0
                   for z in savevar:
                       fname = os.path.join(directory,var + "_" + str(a)) + ".map"
@@ -1138,18 +1142,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
           Get timestep info from from config file
           
       """
-      if hasattr(self._userModel(), 'supplyCurrentTime'):
-          ttime = self._userModel().supplyCurrentTime()
-          if self.APIDebug:
-              self.logger.debug("wf_supplyCurrentTime from usermodel: " + str(ttime))
 
-          return ttime        
-      else: # Assume daily timesteps
-          ttime = self._userModel().self.currentTimeStep() * 86400
-          if self.APIDebug:
-              self.logger.debug("wf_supplyCurrentTime from framework: " + str(ttime))
-
-          return ttime
+      return (self.currentdatetime - self.datetime_firststep).total_seconds()
 
          
   def wf_supplyRowCol(self,mapname,xcor,ycor):
@@ -1253,6 +1247,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self.statslst[a].add_one(data)
 
       self.currentdatetime = self.currentdatetime + dt.timedelta(seconds=self._userModel().timestepsecs)
+      self._userModel().currentdatetime =  self.currentdatetime
+
 
       self._timeStepFinished()
       self._decrementIndentLevel()
