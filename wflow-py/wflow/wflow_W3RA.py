@@ -289,12 +289,12 @@ class WflowModel(DynamicModel):
         self.fday = min(max(scalar(0.02),(scalar(x2)/scalar(pi)),scalar(1))) # fraction daylength
         # Assign forcing and estimate effective meteorological variables
 
-        Pg = self.PRECIP*scalar(24*60*60) # from kg m-2 s-1 to mm d-1
-        Rg = max(self.RAD,scalar(0.01)) # already in W m-2 s-1; set minimum of 0.01 to avoid numerical problems
-        Ta = (self.TMIN+scalar(0.75)*(self.TMAX-self.TMIN))-scalar(273.15) # from K to degC
-        T24 = (self.TMIN+scalar(0.5)*(self.TMAX-self.TMIN))-scalar(273.15) # from K to degC
+        Pg = self.PRECIP*24*60*60 # from kg m-2 s-1 to mm d-1
+        Rg = max(self.RAD,scalar(0.0001)) # already in W m-2 s-1; set minimum of 0.01 to avoid numerical problems
+        Ta = (self.TMIN+scalar(0.75)*(self.TMAX-self.TMIN))-273.15 # from K to degC
+        T24 = (self.TMIN+scalar(0.5)*(self.TMAX-self.TMIN))-273.15 # from K to degC
         pex = min(scalar(17.27)*(self.TMIN-scalar(273.15))/(scalar(237.3)+self.TMIN-scalar(273.15)),scalar(10))
-        pe = min(scalar(610.8)*(exp(pex)),scalar(10000))
+        pe = min(scalar(610.8)*(exp(pex)),scalar(10000.0))
 
         # rescale factor because windspeed climatology is at 50ms
         WindFactor = 0.59904
@@ -302,14 +302,14 @@ class WflowModel(DynamicModel):
         pair = self.AIRPRESS # already in Pa
         ns_alb = self.ALBEDO
 
-        #TODO: Why is LAI a sate variable? According to this it is not!
+
         # diagnostic equations
-        # TODO: XXXX Mleaf1/2 goes wrong....
+
         self.LAI1 = self.SLA1*self.Mleaf1   # (5.3)
         self.LAI2 = self.SLA2*self.Mleaf2   # (5.3)
         fveg1 = 1 - exp(-self.LAI1/self.LAIref1) # (5.3)
         fveg2 = 1 - exp(-self.LAI2/self.LAIref2)
-        self.TMP= self.Mleaf1
+
         # Vc = max(0,EVI-0.07)/fveg
         fsoil1 = 1 - fveg1
         fsoil2 = 1 - fveg2
@@ -319,13 +319,16 @@ class WflowModel(DynamicModel):
         ws2 = self.Ss2/self.SsFC2
         wd1 = self.Sd1/self.SdFC1     # (2.1)
         wd2 = self.Sd2/self.SdFC2     # (2.1)
+
         TotSnow1 = self.FreeWater1+self.DrySnow1
         TotSnow2 = self.FreeWater2+self.DrySnow2
         wSnow1 = self.FreeWater1/(TotSnow1+1e-5)
         wSnow2 = self.FreeWater2/(TotSnow2+1e-5)
 
         # Spatialise catchment fractions
-        Sgfree =   max(self.Sg,0)
+        Sgfree =   max(self.Sg,0.0)
+        # JS: Not sure if this is translated properly....
+        #for i=1:par.Nhru
         fwater1 =   min(0.005,(0.007*self.Sr**0.75))
         fwater2 =   min(0.005,(0.007*self.Sr**0.75))
         fsat1 =   min(1,max(min(0.005,0.007*self.Sr**0.75),Sgfree/self.Sgref))
@@ -349,8 +352,8 @@ class WflowModel(DynamicModel):
         # new equations for snow albedo
         alb_snow1 = 0.65-0.2*wSnow1          # assumed; ideally some lit research needed
         alb_snow2 = 0.65-0.2*wSnow2
-        fsnow1 = min(1,0.05*TotSnow1)     # assumed; ideally some lit research needed
-        fsnow2 = min(1,0.05*TotSnow2)
+        fsnow1 = min(1.0,0.05*TotSnow1)     # assumed; ideally some lit research needed
+        fsnow2 = min(1.0,0.05*TotSnow2)
         #alb = fveg*alb_veg+(fsoil-fsnow)*alb_soil +fsnow*alb_snow
         #alb = albedo
         alb1 = (1-fsnow1)*ns_alb +fsnow1*alb_snow1
@@ -527,6 +530,7 @@ class WflowModel(DynamicModel):
         Sz2 = self.S02
         wz1 = max(1e-2,Sz1)/SzFC1
         wz2 = max(1e-2,Sz2)/SzFC2
+        self.TMP = SzFC1
         fD1 = scalar(wz1>1)*max(self.FdrainFC1,1-1/wz1) + scalar(wz1<=1)*self.FdrainFC1*exp(self.beta1*scalar(wz1-1))
         fD2 = scalar(wz2>1)*max(self.FdrainFC2,1-1/wz2) + scalar(wz2<=1)*self.FdrainFC2*exp(self.beta2*scalar(wz2-1))
         Dz1 = max(0, min(fD1*Sz1,Sz1-1e-2))
@@ -589,6 +593,7 @@ class WflowModel(DynamicModel):
         self.Sr = self.Sr  - Qtot
 
         # VEGETATION ADJUSTMENT (5)
+
         fveq1 = (1/max((self.E01/Utot1)-1,1e-3))*(keps/(1+keps))*(ga1/Gsmax1)
         fveq2 = (1/max((self.E02/Utot2)-1,1e-3))*(keps/(1+keps))*(ga2/Gsmax2)
         fvmax1 = 1-exp(-self.LAImax1/self.LAIref1)
@@ -597,10 +602,13 @@ class WflowModel(DynamicModel):
         fveq2 = min(fveq2,fvmax2)
         dMleaf1 = -ln(1-fveq1)*self.LAIref1/self.SLA1-self.Mleaf1
         dMleaf2 = -ln(1-fveq2)*self.LAIref2/self.SLA2-self.Mleaf2
-        Mleafnet1 = scalar(dMleaf1>0)*(dMleaf1/self.Tgrow1) +scalar(dMleaf1<0)*dMleaf1/self.Tsenc1
-        Mleafnet2 = scalar(dMleaf2>0)*(dMleaf2/self.Tgrow2) +scalar(dMleaf2<0)*dMleaf2/self.Tsenc2
-        ### MEleave is the problem why??
-        #TODO: ddddd
+
+        Mleafnet1 = dMleaf1 * (dMleaf1/self.Tgrow1) + dMleaf1 * dMleaf1/self.Tsenc1
+        Mleafnet2 = dMleaf2 * (dMleaf1/self.Tgrow2) + dMleaf2 * dMleaf2/self.Tsenc2
+        #Mleafnet1 = scalar(dMleaf1>0)*(dMleaf1/self.Tgrow1) +scalar(dMleaf1<0)*dMleaf1/self.Tsenc1
+        #Mleafnet2 = scalar(dMleaf2>0)*(dMleaf2/self.Tgrow2) +scalar(dMleaf2<0)*dMleaf2/self.Tsenc2
+
+
         self.Mleaf1 = self.Mleaf1 + Mleafnet1
         self.Mleaf2 = self.Mleaf2 + Mleafnet2
         self.LAI1 = self.SLA1*self.Mleaf1   # (5.3)
@@ -672,9 +680,9 @@ class WflowModel(DynamicModel):
         Ssnow2  =   self.Fhru2 * (self.FreeWater2 + self.DrySnow2)
         Ssnow   =   Ssnow1 + Ssnow2
         Stot    =   self.S0 + self.Ss + self.Sd + self.Sg + self.Sr + Ssnow + (self.Fhru1 * self.Mleaf1*scalar(4)) + (self.Fhru2 * self.Mleaf2*scalar(4))     # assume 80% water  in biomass
-        Mleaf1  =   self.Fhru1 * self.Mleaf1
-        Mleaf2  =   self.Fhru2 * self.Mleaf2
-        Mleaf   =   Mleaf1 + Mleaf2
+        self.Mleaf1  =   self.Fhru1 * self.Mleaf1
+        self.Mleaf2  =   self.Fhru2 * self.Mleaf2
+        Mleaf   =   self.Mleaf1 + self.Mleaf2
         self.LAI1    =   self.Fhru1 * self.LAI1
         self.LAI2    =   self.Fhru2 * self.LAI2
         LAI     =   self.LAI1 + self.LAI2
