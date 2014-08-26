@@ -479,7 +479,7 @@ def subcatch_order_a(ldd,oorder):
     
     return sc, dif, stt
 
-def subcatch_order_b(ldd,oorder,Largest=False):
+def subcatch_order_b(ldd,oorder,Largest=False,sizelimit=0):
     """
     Determines subcatchments using the catchment order
 
@@ -491,6 +491,7 @@ def subcatch_order_b(ldd,oorder,Largest=False):
         - ldd
         - oorder - order to use
         - largest - toggle, default = False
+        - sizelimit - smallest catchments to include, default is all (sizelimit=0) in number of cells
     
     Output:
         - map with catchment for the given streamorsder
@@ -503,10 +504,10 @@ def subcatch_order_b(ldd,oorder,Largest=False):
     if Largest:
         dif = ifthen(large,uniqueid(boolean(ifthen(stt == ordinal(oorder), pts))))
     else:
-        dif = uniqueid(boolean(ifthen(stt == ordinal(oorder), pts)))
-            
-    dif = cover(scalar(outl),dif) # Add catchment outlet
-    dif = ordinal(uniqueid(boolean(dif)))
+        dif = uniqueid(cover(boolean(pit(ldd)),boolean(ifthen(stt == ordinal(oorder), pts))))
+    
+    scsize = catchmenttotal(1,ldd)
+    dif = ordinal(uniqueid(boolean(ifthen(scsize >= sizelimit,dif))))
     sc = subcatchment(ldd,dif)
     
     return sc, dif, stt
