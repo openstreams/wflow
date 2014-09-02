@@ -139,8 +139,19 @@ class WflowModel(DynamicModel):
     #: pcraster option to calculate with units or cells. Not really an issue
     #: in this model but always good to keep in mind.
     setglobaloption("unittrue")
+    setglobaloption('radians') # Needed as W3RA was originally written in matlab
 
-
+    # SET GLBOAL PARAMETER VALUES (howevefr not used in original script)
+    # Nhru=2
+    # K_gw_scale=0.0146
+    # K_gw_shape=0.0709
+    # K_rout_scale=0.1943
+    # K_rout_int=0.0589
+    # FdrainFC_scale=0.2909
+    # FdrainFC_shape=0.5154
+    # Sgref_scale=3.2220
+    # Sgref_shape=3.2860
+    # fday=0.5000
     self.timestepsecs = int(configget(self.config,'model','timestepsecs','86400'))
     
     self.basetimestep=86400
@@ -283,10 +294,10 @@ class WflowModel(DynamicModel):
         doy=self.currentdatetime.timetuple().tm_yday
 
         #conversion daylength
-        x = tan((23.439*pi/180)*cos(2*pi*(doy+9)/365.25))
-        m = scalar(1)-(tan(self.latitude*scalar((pi/180)))*scalar(x))
-        x2 = acos(scalar(1)-max(scalar(0),m))
-        self.fday = min(max(scalar(0.02),(scalar(x2)/scalar(pi)),scalar(1))) # fraction daylength
+        m = scalar(1)-tan((self.latitude*scalar(pi)/scalar(180)))*tan(((scalar(23.439)*scalar(pi)/scalar(180))*cos(scalar(2)*scalar(pi)*(doy+scalar(9))/scalar(365.25))))
+        self.fday = min(max(scalar(0.02),scalar(acos(scalar(1)-min(max(scalar(0),m),scalar(2))))/scalar(pi)),scalar(1)) #fraction daylength
+
+
         # Assign forcing and estimate effective meteorological variables
 
         Pg = self.PRECIP*24*60*60 # from kg m-2 s-1 to mm d-1
@@ -307,8 +318,8 @@ class WflowModel(DynamicModel):
 
         self.LAI1 = self.SLA1*self.Mleaf1   # (5.3)
         self.LAI2 = self.SLA2*self.Mleaf2   # (5.3)
-        fveg1 = 1 - exp(-self.LAI1/self.LAIref1) # (5.3)
-        fveg2 = 1 - exp(-self.LAI2/self.LAIref2)
+        fveg1 = max(1 - exp(-self.LAI1/self.LAIref1),0.000001) # (5.3)
+        fveg2 = max(1 - exp(-self.LAI2/self.LAIref2),0.000001)
 
         # Vc = max(0,EVI-0.07)/fveg
         fsoil1 = 1 - fveg1
@@ -331,8 +342,8 @@ class WflowModel(DynamicModel):
         #for i=1:par.Nhru
         fwater1 =   min(0.005,(0.007*self.Sr**0.75))
         fwater2 =   min(0.005,(0.007*self.Sr**0.75))
-        fsat1 =   min(1,max(min(0.005,0.007*self.Sr**0.75),Sgfree/self.Sgref))
-        fsat2 =   min(1,max(min(0.005,0.007*self.Sr**0.75),Sgfree/self.Sgref))
+        fsat1 =   min(1.0,max(min(0.005,0.007*self.Sr**0.75),Sgfree/self.Sgref))
+        fsat2 =   min(1.0,max(min(0.005,0.007*self.Sr**0.75),Sgfree/self.Sgref))
         Sghru1 =   self.Sg
         Sghru2 =   self.Sg
 
@@ -364,7 +375,7 @@ class WflowModel(DynamicModel):
         StefBolz = 5.67e-8
         Tkelv = Ta+273.16
         self.RLin = (0.65*(pe/Tkelv)**0.14)*StefBolz*Tkelv**4     # (3.3)
-        RLout = 1*StefBolz*Tkelv**4      # (3.4)
+        RLout = StefBolz*Tkelv**4.0      # (3.4)
         self.RLn = self.RLin-RLout
 
         self.fGR1 = self.Gfrac_max1*(1-exp(-fsoil1/self.fvegref_G1))
@@ -462,6 +473,7 @@ class WflowModel(DynamicModel):
 
         # Snow routine parameters
         # parameters
+        # TODO: Check this, not sure if this works.......
         x = scalar(Pg)
         Cfmax1 = 0.6*3.75653*scalar(x>=0)
         Cfmax2 = 3.75653*scalar(x>=0)
@@ -531,6 +543,8 @@ class WflowModel(DynamicModel):
         wz1 = max(1e-2,Sz1)/SzFC1
         wz2 = max(1e-2,Sz2)/SzFC2
         self.TMP = SzFC1
+
+        # TODO: Check if this works
         fD1 = scalar(wz1>1)*max(self.FdrainFC1,1-1/wz1) + scalar(wz1<=1)*self.FdrainFC1*exp(self.beta1*scalar(wz1-1))
         fD2 = scalar(wz2>1)*max(self.FdrainFC2,1-1/wz2) + scalar(wz2<=1)*self.FdrainFC2*exp(self.beta2*scalar(wz2-1))
         Dz1 = max(0, min(fD1*Sz1,Sz1-1e-2))
