@@ -372,6 +372,15 @@ to zero thus setting the capilary rise to zero.
    the kinematic wave reservoir
 
 
+Lower zone and leakage
+~~~~~~~~~~~~~~~~~~~~~~
+
+If the parameter MaxPercolation is set > 0 this is used to transfer water from the bottom of the
+FirstZone to a HBV-type groundwater reservoir (LowerZone). The K4 parameter is used to set the
+recession rate of the lower zone.
+
+Alternativeli a MAxLeage paramter may be se > 0. IN that case the water is lost from the FirstZoen and
+not transferred to the LowerZone.
 
 Soil temperature
 ~~~~~~~~~~~~~~~~
