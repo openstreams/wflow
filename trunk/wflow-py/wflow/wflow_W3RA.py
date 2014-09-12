@@ -456,6 +456,7 @@ class WflowModel(DynamicModel):
         Pwet1 = -ln(1-fER1/fveg1)*Sveg1/fER1
         Ei1 = scalar(Pg<Pwet1)*fveg1*Pg+scalar(Pg>=Pwet1)*(fveg1*Pwet1+fER1*(Pg-Pwet1))
 
+        #zz = ifthenelse(Pg<Pwet1,sdsds,sdsd)
         Sveg2 = self.S_sls2*self.LAI2
         fER2 = self.ER_frac_ref2*fveg2
         Pwet2 = -ln(1-fER2/fveg2)*Sveg2/fER2
