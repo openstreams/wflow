@@ -285,7 +285,7 @@ class WflowModel(DynamicModel):
                   'Snow',
                   'TSoil',
                   'UStoreDepth',
-                  'SnowWater', 'CanopyStorage']
+                  'SnowWater', 'CanopyStorage','LowerZoneStorage']
 
         return states
 
@@ -517,10 +517,15 @@ class WflowModel(DynamicModel):
                                                  subcatch, self.Soil, 100.0) * self.timestepsecs / self.basetimestep
         self.CapScale = self.readtblDefault(self.Dir + "/" + self.intbl + "/CapScale.tbl", self.LandUse, subcatch,
                                             self.Soil, 100.0)  #
+        self.K4= self.readtblDefault(self.Dir + "/" + self.intbl + "/K4.tbl",
+                                     self.LandUse,subcatch,self.Soil, 0.02307) * self.timestepsecs / self.basetimestep # Recession constant baseflow   #K4=0.07; BASEFLOW:LINEARRESERVOIR
+
         # infiltration capacity of the compacted
         self.InfiltCapPath = self.readtblDefault(self.Dir + "/" + self.intbl + "/InfiltCapPath.tbl", self.LandUse,
                                                  subcatch, self.Soil, 10.0) * self.timestepsecs / self.basetimestep
         self.MaxLeakage = self.readtblDefault(self.Dir + "/" + self.intbl + "/MaxLeakage.tbl", self.LandUse, subcatch,
+                                              self.Soil, 0.0) * self.timestepsecs / self.basetimestep
+        self.MaxPercolation = self.readtblDefault(self.Dir + "/" + self.intbl + "/MaxPercolation.tbl", self.LandUse, subcatch,
                                               self.Soil, 0.0) * self.timestepsecs / self.basetimestep
         # areas (paths) in [mm/day]
         # Fraction area with compacted soil (Paths etc.)
@@ -808,6 +813,7 @@ class WflowModel(DynamicModel):
             self.SnowWater = self.ZeroMap
             self.TSoil = self.ZeroMap + 10.0
             self.CanopyStorage = self.ZeroMap
+            self.LowerZoneStorage = 1.0/(3.0 * self.K4) #: Storage in Uppe Zone (state variable [mm])
 
         else:
             self.logger.info("Setting initial conditions from state files")
@@ -1056,19 +1062,25 @@ class WflowModel(DynamicModel):
         self.SaturationDeficit = self.FirstZoneCapacity - self.FirstZoneDepth
 
 
-        # now the actual tranfer to the saturated store..
+        # now the actual transfer to the saturated store..
         self.Transfer = min(self.UStoreDepth, ifthenelse(self.SaturationDeficit <= 0.00001, 0.0,
                                                          Ksat * self.UStoreDepth / (self.SaturationDeficit + 1)))
+
         # Determine Ksat at base
         self.DeepTransfer = min(self.UStoreDepth,ifthenelse (self.SaturationDeficit <= 0.00001, 0.0, self.DeepKsat * self.UStoreDepth/(self.SaturationDeficit+1)))
         #ActLeakage = 0.0
         # Now add leakage. to deeper groundwater
         self.ActLeakage = cover(max(0.0,min(self.MaxLeakage,self.DeepTransfer)),0)
+        self.Percolation = cover(max(0.0,min(self.MaxPercolation,self.DeepTransfer)),0)
+
+        self.LowerZoneStorage=self.LowerZoneStorage+self.Percolation
+        self.BaseFlow=self.K4*self.LowerZoneStorage #: Baseflow in mm/timestep
+        self.LowerZoneStorage=self.LowerZoneStorage-self.BaseFlow
 
         # Now look if there is Seepage
 
         #self.ActLeakage = ifthenelse(self.Seepage > 0.0, -1.0 * self.Seepage, self.ActLeakage)
-        self.FirstZoneDepth = self.FirstZoneDepth + self.Transfer - self.ActLeakage
+        self.FirstZoneDepth = self.FirstZoneDepth + self.Transfer - self.ActLeakage - self.Percolation
         self.UStoreDepth = self.UStoreDepth - self.Transfer
 
         # Determine % saturated taking into account subcell fraction
@@ -1078,25 +1090,30 @@ class WflowModel(DynamicModel):
         # Horizontal (downstream) transport of water #############################
         ##########################################################################
 
+
+        waterDem = self.Altitude - (self.zi * 0.001)
+        self.waterSlope = max(0.00001, slope(waterDem) * celllength() / self.reallength)
         if self.waterdem:
-            waterDem = self.Altitude - (self.zi * 0.001)
             waterLdd = lddcreate(waterDem, 1E35, 1E35, 1E35, 1E35)
             #waterLdd = lddcreate(waterDem,1,1,1,1)
-            waterSlope = max(0.00001, slope(waterDem) * celllength() / self.reallength)
+
 
         self.zi = max(0.0, self.FirstZoneThickness - self.FirstZoneDepth / (
             self.thetaS - self.thetaR))  # Determine actual water depth
 
         if self.waterdem:
-            MaxHor = max(0.0, min(self.FirstZoneKsatVer * waterSlope * exp(-self.SaturationDeficit / self.M),
+            MaxHor = max(0.0, min(self.FirstZoneKsatVer * self.waterSlope * exp(-self.SaturationDeficit / self.M),
                                   self.FirstZoneDepth))
             self.FirstZoneFlux = accucapacityflux(waterLdd, self.FirstZoneDepth, MaxHor)
             self.FirstZoneDepth = accucapacitystate(waterLdd, self.FirstZoneDepth, MaxHor)
         else:
             #
             #MaxHor = max(0,min(self.FirstZoneKsatVer * self.Slope * exp(-SaturationDeficit/self.M),self.FirstZoneDepth*(self.thetaS-self.thetaR))) * timestepsecs/basetimestep
-            MaxHor = max(0.0, min(self.FirstZoneKsatVer * self.Slope * exp(-self.SaturationDeficit / self.M),
+            #MaxHor = max(0.0, min(self.FirstZoneKsatVer * self.Slope * exp(-self.SaturationDeficit / self.M),
+            #                      self.FirstZoneDepth))
+            MaxHor = max(0.0, min(self.FirstZoneKsatVer * self.waterSlope * exp(-self.SaturationDeficit / self.M),
                                   self.FirstZoneDepth))
+
             self.FirstZoneFlux = accucapacityflux(self.TopoLdd, self.FirstZoneDepth, MaxHor)
             self.FirstZoneDepth = accucapacitystate(self.TopoLdd, self.FirstZoneDepth, MaxHor)
 
@@ -1136,7 +1153,7 @@ class WflowModel(DynamicModel):
         else:
             Reinfilt = self.ZeroMap
 
-        self.InwaterMM = max(0.0,  self.ExfiltWater + FreeWaterDepth + self.SubCellRunoff + self.SubCellGWRunoff + self.RunoffOpenWater - Reinfilt - self.ActEvapOpenWater)
+        self.InwaterMM = max(0.0,  self.ExfiltWater + FreeWaterDepth + self.SubCellRunoff + self.SubCellGWRunoff + self.RunoffOpenWater + self.BaseFlow - Reinfilt - self.ActEvapOpenWater)
         self.Inwater = self.InwaterMM * self.ToCubic  # m3/s
 
         self.ExfiltWaterCubic = self.ExfiltWater * self.ToCubic
