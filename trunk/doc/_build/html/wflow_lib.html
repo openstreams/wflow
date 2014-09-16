@@ -657,7 +657,7 @@ catchments. In general you want the _b version</p>
 
 <dl class="function">
 <dt id="wflow_lib.subcatch_order_b">
-<tt class="descclassname">wflow_lib.</tt><tt class="descname">subcatch_order_b</tt><big>(</big><em>ldd</em>, <em>oorder</em>, <em>Largest=False</em><big>)</big><a class="headerlink" href="#wflow_lib.subcatch_order_b" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">wflow_lib.</tt><tt class="descname">subcatch_order_b</tt><big>(</big><em>ldd</em>, <em>oorder</em>, <em>Largest=False</em>, <em>sizelimit=0</em><big>)</big><a class="headerlink" href="#wflow_lib.subcatch_order_b" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determines subcatchments using the catchment order</p>
 <p>This version uses the bottommost cell of order
 If Largest is true the analysis is only done for the largest basin
@@ -668,6 +668,7 @@ found in the ldd</p>
 <li>ldd</li>
 <li>oorder - order to use</li>
 <li>largest - toggle, default = False</li>
+<li>sizelimit - smallest catchments to include, default is all (sizelimit=0) in number of cells</li>
 </ul>
 </dd>
 <dt>Output:</dt>
@@ -748,7 +749,7 @@ fileTarget: target zip-file</div></blockquote>
     </div>
     <div class="footer">
         &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>
