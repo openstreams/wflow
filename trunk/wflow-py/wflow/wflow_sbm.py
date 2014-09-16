@@ -527,6 +527,13 @@ class WflowModel(DynamicModel):
                                               self.Soil, 0.0) * self.timestepsecs / self.basetimestep
         self.MaxPercolation = self.readtblDefault(self.Dir + "/" + self.intbl + "/MaxPercolation.tbl", self.LandUse, subcatch,
                                               self.Soil, 0.0) * self.timestepsecs / self.basetimestep
+        if pcr_as_numpy(self.MaxPercolation).sum() >0.0:
+            self.NoLowerZone = False
+            self.logger.info("Enabling HBV Type lower zone")
+        else:
+            self.NoLowerZone = True
+            self.logger.info("Disabling HBV Type lower zone")
+
         # areas (paths) in [mm/day]
         # Fraction area with compacted soil (Paths etc.)
         self.PathFrac = self.readtblDefault(self.Dir + "/" + self.intbl + "/PathFrac.tbl", self.LandUse, subcatch,
@@ -812,8 +819,11 @@ class WflowModel(DynamicModel):
             self.SnowWater = self.ZeroMap
             self.TSoil = self.ZeroMap + 10.0
             self.CanopyStorage = self.ZeroMap
-            #self.LowerZoneStorage = 1.0/(3.0 * self.K4) #: Storage in Uppe Zone (state variable [mm])
-            self.LowerZoneStorage = 0.0
+            if self.NoLowerZone:
+                self.LowerZoneStorage = 0.0
+            else:
+                self.LowerZoneStorage = 1.0/(3.0 * self.K4) #: Storage in Lower Zone (state variable [mm])
+
         else:
             self.logger.info("Setting initial conditions from state files")
             self.wf_resume(self.Dir + "/instate/")
@@ -930,10 +940,10 @@ class WflowModel(DynamicModel):
         self.PotEvap = self.PotenEvap  #
         #TODO: Snow modelling if enabled _ need to be moved as it breaks the scalar input
         """
-    .. todo::
+        .. todo::
         
         Snow modelling if enabled _ needs to be moved as it breaks the scalar input
-    """
+        """
         if self.modelSnow:
             self.TSoil = self.TSoil + self.w_soil * (self.Temperature - self.TSoil)
             # return Snow,SnowWater,SnowMelt,RainFall
@@ -951,6 +961,8 @@ class WflowModel(DynamicModel):
             else:
                 SnowFluxFrac = self.ZeroMap
                 MaxFlux= self.ZeroMap
+        else:
+            self.PrecipitationPlusMelt = self.Precipitation
 
         ##########################################################################
         # Interception according to a modified Gash model
@@ -999,9 +1011,9 @@ class WflowModel(DynamicModel):
             self.AvailableForInfiltration = self.AvailableForInfiltration - self.SubCellRunoff
         else:
             self.AbsoluteGW = self.DemMax - (self.zi * self.GWScale)
-            self.SubCellFrac = self.ZeroMap
-            self.SubCellGWRunoff = self.ZeroMap
-            self.SubCellRunoff = self.ZeroMap
+            self.SubCellFrac = spatial(scalar(0.0))
+            self.SubCellGWRunoff = spatial(scalar(0.0))
+            self.SubCellRunoff = spatial(scalar(0.0))
 
         # First determine if the soil infiltration capacity can deal with the
         # amount of water
@@ -1045,7 +1057,7 @@ class WflowModel(DynamicModel):
         # Determine Open Water EVAP. Later subtract this from water that
         # enters the Kinematic wave
         self.EvapRest = PotTrans - self.ActEvap
-        self.ActEvapOpenWater =  min(self.WaterLevel * 1000.0 ,self.WaterFrac * self.EvapRest)
+        self.ActEvapOpenWater =  min(self.WaterLevel * 1000.0 * self.WaterFrac ,self.WaterFrac * self.EvapRest)
         self.ActEvap = self.ActEvap + self.ActEvapOpenWater
 
 
