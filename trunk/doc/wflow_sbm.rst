@@ -379,7 +379,7 @@ If the parameter MaxPercolation is set > 0 this is used to transfer water from t
 FirstZone to a HBV-type groundwater reservoir (LowerZone). The K4 parameter is used to set the
 recession rate of the lower zone.
 
-Alternativeli a MAxLeage paramter may be se > 0. IN that case the water is lost from the FirstZoen and
+Alternatively a MaxLeage parameter may be set > 0. In that case the water is lost from the FirstZone and
 not transferred to the LowerZone.
 
 Soil temperature
