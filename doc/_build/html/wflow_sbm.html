@@ -65,6 +65,7 @@
 <li><a class="reference internal" href="#the-soil-model">The soil model</a><ul>
 <li><a class="reference internal" href="#infiltration">Infiltration</a></li>
 <li><a class="reference internal" href="#the-wflow-sbm-soil-water-accounting-scheme">The wflow_sbm soil water accounting scheme</a></li>
+<li><a class="reference internal" href="#lower-zone-and-leakage">Lower zone and leakage</a></li>
 <li><a class="reference internal" href="#soil-temperature">Soil temperature</a></li>
 <li><a class="reference internal" href="#sub-grid-runoff-generation">Sub-grid runoff generation</a></li>
 </ul>
@@ -427,6 +428,14 @@ The latter option slows down the program considerably</li>
 <li>surplus water in cells as a result of the previous step is added to
 the kinematic wave reservoir</li>
 </ol>
+</div>
+<div class="section" id="lower-zone-and-leakage">
+<h3>Lower zone and leakage<a class="headerlink" href="#lower-zone-and-leakage" title="Permalink to this headline">¶</a></h3>
+<p>If the parameter MaxPercolation is set &gt; 0 this is used to transfer water from the bottom of the
+FirstZone to a HBV-type groundwater reservoir (LowerZone). The K4 parameter is used to set the
+recession rate of the lower zone.</p>
+<p>Alternatively a MaxLeage parameter may be set &gt; 0. In that case the water is lost from the FirstZone and
+not transferred to the LowerZone.</p>
 </div>
 <div class="section" id="soil-temperature">
 <h3>Soil temperature<a class="headerlink" href="#soil-temperature" title="Permalink to this headline">¶</a></h3>
@@ -933,7 +942,7 @@ you think is crucial to the model should be listed here</p>
 <dt id="wflow_sbm.WflowModel.dynamic">
 <tt class="descname">dynamic</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_sbm.WflowModel.dynamic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Stuf that is done for each timestep</p>
-<p>Below a list of variables that can be save to disk as maps or as 
+<p>Below a list of variables that can be save to disk as maps or as
 timeseries (see ini file for syntax):</p>
 <p><em>Dynamic variables</em></p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -1183,7 +1192,7 @@ representing a root-depth distribution</li>
     </div>
     <div class="footer">
         &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>
