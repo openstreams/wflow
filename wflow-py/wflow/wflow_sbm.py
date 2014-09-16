@@ -1130,8 +1130,12 @@ class WflowModel(DynamicModel):
         ##########################################################################
         #self.ExfiltWaterFrac = sCurve(self.FirstZoneDepth, a=self.FirstZoneCapacity, c=5.0)
 
-        self.ExfiltWater=ifthenelse (self.FirstZoneDepth - self.FirstZoneCapacity > 0 , self.FirstZoneDepth - self.FirstZoneCapacity , 0.0)
+
+        self.ExfiltWaterFrac = sCurve(self.FirstZoneDepth, a=self.FirstZoneCapacity, c=5.0)
+        self.ExfiltWater = self.ExfiltWaterFrac * (self.FirstZoneDepth - self.FirstZoneCapacity)
+        #self.ExfiltWater=ifthenelse (self.FirstZoneDepth - self.FirstZoneCapacity > 0 , self.FirstZoneDepth - self.FirstZoneCapacity , 0.0)
         self.FirstZoneDepth = self.FirstZoneDepth - self.ExfiltWater
+
 
         # Re-determine UStoreCapacity
         UStoreCapacity = self.FirstZoneCapacity - self.FirstZoneDepth - self.UStoreDepth
@@ -1160,7 +1164,8 @@ class WflowModel(DynamicModel):
         else:
             Reinfilt = self.ZeroMap
 
-        self.InwaterMM = self.ExfiltWater + self.ExcessWater + self.SubCellRunoff + self.SubCellGWRunoff + self.RunoffOpenWater + self.BaseFlow - Reinfilt - self.ActEvapOpenWater
+        # The MAx here may lead to watbal error. Howvere, if inwaterMMM becomes < 0, the kinematic wave becomes very slow......
+        self.InwaterMM = max(0.0,self.ExfiltWater + self.ExcessWater + self.SubCellRunoff + self.SubCellGWRunoff + self.RunoffOpenWater + self.BaseFlow - Reinfilt - self.ActEvapOpenWater)
         self.Inwater = self.InwaterMM * self.ToCubic  # m3/s
 
         self.ExfiltWaterCubic = self.ExfiltWater * self.ToCubic
