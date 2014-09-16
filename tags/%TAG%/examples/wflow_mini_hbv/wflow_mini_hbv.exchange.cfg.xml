@@ -1,0 +1,5 @@
+<Config>
+  <ExchangeItems>
+    <IdBasedItem Name="OutflowDown" Quantity="SurfaceRunoff" Role="Output" I="5" J="10" />
+  </ExchangeItems>
+</Config>

@@ -1,0 +1,20 @@
+Metadata-Version: 0.`
+Name: wflow
+Version: $Id: $ 
+Summary: Distributed hydrological models using the pcraster python bindings
+Home-page: http://www.openstreams.nl
+Author: J. Schellekens/Deltares
+Author-email: jaap.schellekens@deltares.nl
+License: GPL
+Description: 
+        PM
+        
+Platform: any
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Console
+Classifier: Operating System :: OS Independent
+Classifier: Intended Audience :: Science/Research
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Cython
+Classifier: Topic :: Scientific/Engineering
