@@ -1,0 +1,807 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>wf_DynamicFramework Module &mdash; wflow 1.0-RC5-dev-85-92M documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0-RC5-dev-85-92M',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="wflow 1.0-RC5-dev-85-92M documentation" href="index.html" />
+    <link rel="next" title="Questions and answers" href="faq.html" />
+    <link rel="prev" title="Using the framework" href="framework.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="faq.html" title="Questions and answers"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="framework.html" title="Using the framework"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">wflow 1.0-RC5-dev-85-92M documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">wf_DynamicFramework Module</a><ul>
+<li><a class="reference internal" href="#wf-dynamicframework">wf_DynamicFramework</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="framework.html"
+                        title="previous chapter">Using the framework</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="faq.html"
+                        title="next chapter">Questions and answers</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/wf_DynamicFramework.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-wf_DynamicFramework">
+<span id="wf-dynamicframework-module"></span><h1>wf_DynamicFramework Module<a class="headerlink" href="#module-wf_DynamicFramework" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="wf-dynamicframework">
+<h2>wf_DynamicFramework<a class="headerlink" href="#wf-dynamicframework" title="Permalink to this headline">¶</a></h2>
+<p>This is a replacement for the standard pcraster/python DynamicFramwork class.It provides extra functionality to simplify linking the models build in the framwork
+with other models. The provided functionality allows external programs to control
+and interrogate the model.</p>
+<p>Compared to the original pcraster class the usermodel needs to be extended with
+the stateVariables() method which lists the state variables. Other items to be
+exchanged most be listed in the API section of the .ini file</p>
+<p>In addition, the following methods must also be called at  startup:</p>
+<blockquote>
+<div><ul class="simple">
+<li>createRunId()</li>
+</ul>
+</div></blockquote>
+<p>$Author: schelle $
+$Id: wf_DynamicFramework.py 915 2014-02-10 07:33:56Z schelle $
+$Rev: 915 $</p>
+<dl class="class">
+<dt id="wf_DynamicFramework.wf_DynamicFramework">
+<em class="property">class </em><tt class="descclassname">wf_DynamicFramework.</tt><tt class="descname">wf_DynamicFramework</tt><big>(</big><em>userModel</em>, <em>lastTimeStep=0</em>, <em>firstTimestep=1</em>, <em>datetimestart=datetime.datetime(1990</em>, <em>1</em>, <em>1</em>, <em>0</em>, <em>0)</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.createRunId">
+<tt class="descname">createRunId</tt><big>(</big><em>intbl='intbl'</em>, <em>logfname='wflow.log'</em>, <em>NoOverWrite=True</em>, <em>model='model'</em>, <em>modelVersion='no version'</em>, <em>level=10</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.createRunId" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create runId dir and copy table files to it
+Also changes the working dir to the case/runid directory</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.iniFileSetUp">
+<tt class="descname">iniFileSetUp</tt><big>(</big><em>caseName</em>, <em>runId</em>, <em>configfile</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.iniFileSetUp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads .ini file and returns a config object.</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>caseName - dir with case</li>
+<li>runId - run dir within case</li>
+<li>configfile - name of the configfile (.ini type)</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>python config object</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.loggingSetUp">
+<tt class="descname">loggingSetUp</tt><big>(</big><em>caseName</em>, <em>runId</em>, <em>logfname</em>, <em>model</em>, <em>modelversion</em>, <em>level=20</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.loggingSetUp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets up the logging system assuming we are in the runId directory</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.readtblDefault">
+<tt class="descname">readtblDefault</tt><big>(</big><em>pathtotbl</em>, <em>landuse</em>, <em>subcatch</em>, <em>soil</em>, <em>default</em>, <em>cloneMap=None</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.readtblDefault" title="Permalink to this definition">¶</a></dt>
+<dd><p>First check if a prepared  maps of the same name is present
+in the staticmaps directory. next try to
+read a tbl file to match a landuse, catchment and soil map. Returns 
+the default value if the tbl file is not found.</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>pathtotbl: full path to table file</li>
+<li>landuse: landuse map</li>
+<li>subcatch: subcatchment map</li>
+<li>soil: soil map</li>
+<li>default: default value</li>
+<li>optional clonemap to check maps against</li>
+</ul>
+</dd>
+<dt>Output: </dt>
+<dd><ul class="first last simple">
+<li>map constructed from tbl file or map with default value</li>
+</ul>
+</dd>
+</dl>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">Add checking for missing values</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.run">
+<tt class="descname">run</tt><big>(</big><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs the dynamic model for all timesteps</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.setQuiet">
+<tt class="descname">setQuiet</tt><big>(</big><em>quiet</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.setQuiet" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_QuickResume">
+<tt class="descname">wf_QuickResume</tt><big>(</big><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_QuickResume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resumes the state variable of the previous timestep in memory
+it uses the wf_supplyVariableNamesAndRoles() function to find them.
+The variables are inserted into the model object</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_QuickSuspend">
+<tt class="descname">wf_QuickSuspend</tt><big>(</big><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_QuickSuspend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the state variable of the current timestep in memory
+it uses the wf_supplyVariableNamesAndRoles() function to find them.
+The variables are inserted into the model object
+This function is normally called as part of the run. Normally there is
+no need to call it directly.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_multParameterValues">
+<tt class="descname">wf_multParameterValues</tt><big>(</big><em>mapname</em>, <em>value</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_multParameterValues" title="Permalink to this definition">¶</a></dt>
+<dd><p>multiply a parameter map with a single scalar 
+value. Current settings for dimensions are assumed.</p>
+<p>This method must be called <em>after</em> the runinitial() method</p>
+<dl class="docutils">
+<dt>Input: </dt>
+<dd><ul class="first last simple">
+<li>mapname - string with name of map</li>
+<li>value - single scalar</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">1 if the map was present, 0 if nothing was done</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_multParameterValuesArea">
+<tt class="descname">wf_multParameterValuesArea</tt><big>(</big><em>mapname</em>, <em>value</em>, <em>areacode</em>, <em>areamapname</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_multParameterValuesArea" title="Permalink to this definition">¶</a></dt>
+<dd><p>multiply a parameter map with a single scalar
+value for area with id area only. Current settings for dimensions are assumed.</p>
+<p>This method must be called <em>after</em> the runinitial() method</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>mapname - string with name of map</li>
+<li>value - single scalar</li>
+<li>areacode - id of the area in the areamap</li>
+<li>areamapname - name of the areamap</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">1 if the map was present, 0 if nothing was done</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_readmap">
+<tt class="descname">wf_readmap</tt><big>(</big><em>name</em>, <em>default</em>, <em>verbose=True</em>, <em>filetype='PCRaster'</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_readmap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adjusted version of readmapNew. the style variable is used to indicated
+how the data is read:</p>
+<div class="highlight-python"><div class="highlight"><pre>1 - default: reads pcrmaps
+2 - memory: assumes the map is made available (in memory) using
+the in-memory interface
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_readmapClimatology">
+<tt class="descname">wf_readmapClimatology</tt><big>(</big><em>name</em>, <em>kind=1</em>, <em>default=0.0</em>, <em>verbose=1</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_readmapClimatology" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a climatology map. The current date/time is onverted to:
+1: a month and the file fro the current month is returend
+2: days of year and the file for the current day is implmented
+3: hour of day and the file for the current hours is returned</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> &#8211; name if the mapstack</li>
+<li><strong>kind</strong> &#8211; time of the climatology</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a map</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_resume">
+<tt class="descname">wf_resume</tt><big>(</big><em>directory</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_resume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resumes the state variables from disk as .map files (or arrays of maps files using
+a _? postfix)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_saveTimeSeries">
+<tt class="descname">wf_saveTimeSeries</tt><big>(</big><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_saveTimeSeries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print .ini defined output csv/tss timeseries per timestep</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_savedynMaps">
+<tt class="descname">wf_savedynMaps</tt><big>(</big><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_savedynMaps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the maps defined in the ini file for the dynamic section</p>
+<div class="admonition-todo admonition" id="index-1">
+<p class="first admonition-title">Todo</p>
+<p class="last">Save maps to be used in memory at startup and do not call the ini file each time</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_savesummarymaps">
+<tt class="descname">wf_savesummarymaps</tt><big>(</big><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_savesummarymaps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves the maps defined in the summary section to disk
+[summary] # Single values or end values
+[summary_sum] # accumulative maps over the model run
+[summary_avg] # average of maps over the model run
+[summary_max] # max of maps over the model run
+[summary_min] # min of maps over the model run</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_setParameterValues">
+<tt class="descname">wf_setParameterValues</tt><big>(</big><em>mapname</em>, <em>values</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_setParameterValues" title="Permalink to this definition">¶</a></dt>
+<dd><p>set a parameter map with values from a python list or a single scalar 
+value. In case a single value is specified the value will be distributed
+uniformly over the map. Current settings for dimensions are assumed.</p>
+<p>This method must be called _after_ the runinitial() method</p>
+<dl class="docutils">
+<dt>Input: </dt>
+<dd><ul class="first last">
+<li><p class="first">mapname - string with name of map</p>
+</li>
+<li><dl class="first docutils">
+<dt>values - single list of value of length rows * cols or a single</dt>
+<dd><p class="first last">scalar</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">1 if the map was present, 0 if nothing was done</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_setValue">
+<tt class="descname">wf_setValue</tt><big>(</big><em>mapname</em>, <em>value</em>, <em>xcor</em>, <em>ycor</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_setValue" title="Permalink to this definition">¶</a></dt>
+<dd><p>set single value in a map on xcor, ycor (0 based). All other values in the 
+map remain the same.</p>
+<dl class="docutils">
+<dt>Input: </dt>
+<dd><ul class="first last simple">
+<li>mapname - string with name of map</li>
+<li>xcor - xcor to set the value in</li>
+<li>ycor - ycor to set the value in</li>
+<li>value - single scalar</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">1 if the map was present, 0 if nothing was done</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_setValueLdd">
+<tt class="descname">wf_setValueLdd</tt><big>(</big><em>mapname</em>, <em>value</em>, <em>xcor</em>, <em>ycor</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_setValueLdd" title="Permalink to this definition">¶</a></dt>
+<dd><p>set single value in an ldd on xcor, ycor (0 based). All other values in the 
+map remain the same. Calls lddrepair to ensure the ldd is sound</p>
+<dl class="docutils">
+<dt>Input: </dt>
+<dd><ul class="first last">
+<li><p class="first">mapname of tipy ldd - string with name of map</p>
+</li>
+<li><p class="first">xcor - xcor to set the value in</p>
+</li>
+<li><p class="first">ycor - ycor to set the value in</p>
+</li>
+<li><dl class="first docutils">
+<dt>values - single scalar (see pcraster ldddescription for legal values)</dt>
+<dd><p class="first last">e.g. use 5 for setting a pit</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">1 if the map was present, 0 if nothing was done</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_setValueRowCol">
+<tt class="descname">wf_setValueRowCol</tt><big>(</big><em>mapname</em>, <em>value</em>, <em>row</em>, <em>col</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_setValueRowCol" title="Permalink to this definition">¶</a></dt>
+<dd><p>set single value in a map on row, col (0 based). All other values in the 
+map remain the same. Numbering starts at the upper left corner.</p>
+<dl class="docutils">
+<dt>Input: </dt>
+<dd><ul class="first last simple">
+<li>mapname - string with name of map</li>
+<li>row - row to set the value in</li>
+<li>col - column to set the value in</li>
+<li>values - single scalar</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">1 if the map was present, 0 if nothing was done</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_setValues">
+<tt class="descname">wf_setValues</tt><big>(</big><em>mapname</em>, <em>values</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_setValues" title="Permalink to this definition">¶</a></dt>
+<dd><p>set a map with values from a python list or a single scalar 
+value. In case a single value is specified the value will be distributed
+uniformly over the map. Current settings for
+dimensions are assumed.</p>
+<dl class="docutils">
+<dt>Input: </dt>
+<dd><ul class="first last">
+<li><p class="first">mapname - string with name of map</p>
+</li>
+<li><dl class="first docutils">
+<dt>values - single list of value of length rows * cols or a single</dt>
+<dd><p class="first last">scalar</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">1 if the map was present, 0 if a new map was created</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_setValuesAsNumpy">
+<tt class="descname">wf_setValuesAsNumpy</tt><big>(</big><em>mapname</em>, <em>values</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_setValuesAsNumpy" title="Permalink to this definition">¶</a></dt>
+<dd><p>set a map with values from a numpy array. Current settings for
+dimensions are assumed.</p>
+<dl class="docutils">
+<dt>Input: </dt>
+<dd><ul class="first last simple">
+<li>mapname - string with name of map</li>
+<li>values - numpy array</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">1 if the map was present, 0 if a new map was created</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_setValuesAsPcrMap">
+<tt class="descname">wf_setValuesAsPcrMap</tt><big>(</big><em>mapname</em>, <em>pcrmap</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_setValuesAsPcrMap" title="Permalink to this definition">¶</a></dt>
+<dd><p>set a map with values from a pcrmap. Current settings for
+dimensions are assumed.</p>
+<dl class="docutils">
+<dt>Input: </dt>
+<dd><ul class="first last simple">
+<li>mapname - string with name of map</li>
+<li>pcrmap - pcraster map</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">1 if the map was present, 0 if a new map was created</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_supplyCurrentTime">
+<tt class="descname">wf_supplyCurrentTime</tt><big>(</big><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_supplyCurrentTime" title="Permalink to this definition">¶</a></dt>
+<dd><p>gets the current time in seconds after the start of the run
+Assumed daily timesteps if not defined in the user model</p>
+<dl class="docutils">
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>current model time (since start of the run)</li>
+</ul>
+</dd>
+</dl>
+<div class="admonition-todo admonition" id="index-2">
+<p class="first admonition-title">Todo</p>
+<p class="last">Get timestep info from from config file</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_supplyGridDim">
+<tt class="descname">wf_supplyGridDim</tt><big>(</big><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_supplyGridDim" title="Permalink to this definition">¶</a></dt>
+<dd><p>return the dimension of the current model grid as list:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span> <span class="n">Xul</span><span class="p">,</span> <span class="n">Yul</span><span class="p">,</span> <span class="n">xsize</span><span class="p">,</span> <span class="n">ysize</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_supplyMapAsList">
+<tt class="descname">wf_supplyMapAsList</tt><big>(</big><em>mapname</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_supplyMapAsList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a python list for the specified map and the current
+timestep. If the maps is not dynamic the current status of the map is
+returned which may be undefined for maps that are filled with data 
+at the end of a run</p>
+<dl class="docutils">
+<dt>Input: </dt>
+<dd><ul class="first last simple">
+<li>mapname (string)</li>
+</ul>
+</dd>
+<dt>Output: </dt>
+<dd><ul class="first last simple">
+<li>list</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_supplyMapAsNumpy">
+<tt class="descname">wf_supplyMapAsNumpy</tt><big>(</big><em>mapname</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_supplyMapAsNumpy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a numpy array (matrix) for the specified map and the current
+timestep. If the maps is not dynamic the current staus of the map is
+returns which may be undefined for maps that are filled with data 
+at the end of a run
+Missing value is -999</p>
+<dl class="docutils">
+<dt>Input: </dt>
+<dd><ul class="first last simple">
+<li>mapname (string)</li>
+</ul>
+</dd>
+<dt>Output: </dt>
+<dd><ul class="first last simple">
+<li>numpy array</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_supplyMapAsPcrMap">
+<tt class="descname">wf_supplyMapAsPcrMap</tt><big>(</big><em>mapname</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_supplyMapAsPcrMap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a pcrmap for the specified map and the current
+timestep. If the maps is not dynamic the current staus of the map is
+returns which may be undefined for maps that are filled with data 
+at the end of a run
+Missing value is -999</p>
+<dl class="docutils">
+<dt>Input: </dt>
+<dd><ul class="first last simple">
+<li>mapname (string)</li>
+</ul>
+</dd>
+<dt>Output: </dt>
+<dd><ul class="first last simple">
+<li>numpy array</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_supplyParameterAsList">
+<tt class="descname">wf_supplyParameterAsList</tt><big>(</big><em>mapname</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_supplyParameterAsList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a python list for the specified parameter map and the current
+timestep. If the maps is not dynamic the current status of the map is
+returned.</p>
+<dl class="docutils">
+<dt>Input: </dt>
+<dd><ul class="first last simple">
+<li>mapname (string)</li>
+</ul>
+</dd>
+<dt>Output: </dt>
+<dd><ul class="first last simple">
+<li>list</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_supplyRowCol">
+<tt class="descname">wf_supplyRowCol</tt><big>(</big><em>mapname</em>, <em>xcor</em>, <em>ycor</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_supplyRowCol" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a tuple (Row,Col) for the given X and y coordinate</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>mapname</li>
+<li>xcor</li>
+<li>ycor</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>tuple with row, col</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_supplyScalar">
+<tt class="descname">wf_supplyScalar</tt><big>(</big><em>mapname</em>, <em>xcor</em>, <em>ycor</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_supplyScalar" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a single value for the x and y coordinates from the
+map given uses getValAtPoint(in_map,xcor,ycor) from terrain_lib.py</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>mapname</li>
+<li>xcor</li>
+<li>ycor</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>value at location xcor, ycor</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_supplyScalarRowCol">
+<tt class="descname">wf_supplyScalarRowCol</tt><big>(</big><em>mapname</em>, <em>row</em>, <em>col</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_supplyScalarRowCol" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a single value for row and col from the
+map given (zero based).</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>mapname</li>
+<li>xcor</li>
+<li>ycor</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>value at location row, col</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_supplyVariableCount">
+<tt class="descname">wf_supplyVariableCount</tt><big>(</big><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_supplyVariableCount" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>returns:</dt>
+<dd><ul class="first last simple">
+<li>the number of exchangable variables</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_supplyVariableNames">
+<tt class="descname">wf_supplyVariableNames</tt><big>(</big><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_supplyVariableNames" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>returns:</dt>
+<dd><ul class="first last simple">
+<li>the a list of variable names</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_supplyVariableNamesAndRoles">
+<tt class="descname">wf_supplyVariableNamesAndRoles</tt><big>(</big><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_supplyVariableNamesAndRoles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of variables
+List of list with the following structure:</p>
+<div class="highlight-python"><div class="highlight"><pre>[[ name, role, unit]
+[ name, role, unit]
+...   
+]
+role: 0 = input (to the model)
+      1 = is output (from the model)
+      2 = input/output (state information)
+      3 = model parameter
+unit: 0 = mm/timestep
+      1 = m^3/sec
+      2 = m
+      3 = degree Celcius
+      4 = mm
+      5 = -
+</pre></div>
+</div>
+<p>The first time this function is called the exchangeitems object is filled
+with data from the ini file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_supplyVariableRoles">
+<tt class="descname">wf_supplyVariableRoles</tt><big>(</big><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_supplyVariableRoles" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>returns:</dt>
+<dd><ul class="first last simple">
+<li>the a list of variable roles</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_supplyVariableUnits">
+<tt class="descname">wf_supplyVariableUnits</tt><big>(</big><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_supplyVariableUnits" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>returns:</dt>
+<dd><ul class="first last simple">
+<li>the a list of variable units</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.wf_suspend">
+<tt class="descname">wf_suspend</tt><big>(</big><em>directory</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_suspend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Suspend the state variables to disk as .map files
+Also saves the summary maps</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="faq.html" title="Questions and answers"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="framework.html" title="Using the framework"
+             >previous</a> |</li>
+        <li><a href="index.html">wflow 1.0-RC5-dev-85-92M documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>
