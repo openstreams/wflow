@@ -24,6 +24,22 @@ widely. The main differences are:
 The sections below describe the working of the model in more detail.
 
 
+Limitations
+~~~~~~~~~~~
+
+The \_sbm concept has been developed for small catchments and relatively thin soils. In addition, the numerical
+solution of the soil water flow is a simple explicit scheme and the lateral groundwater flow follows topography rather than true
+hydraulic head. As such, the following limitation apply:
+
++ Results for deep soils > 2m may be unrealistic
+
++ The lateral movement of groundwater may be very wrong in terrain that is not steep
+
++ The simple numerical solution means that results from a daily timestep model may be very different from those
+  with an hourly timestep.
+
+
+
 Potential and Reference evaporation
 -----------------------------------
 
