@@ -233,10 +233,10 @@ class WflowModel(DynamicModel):
 
     def __init__(self, cloneMap, Dir, RunDir, configfile):
         DynamicModel.__init__(self)
+        self.caseName = os.path.abspath(Dir)
         self.clonemappath = Dir + "/staticmaps/" + cloneMap
         setclone(self.clonemappath)
         self.runId = RunDir
-        self.caseName = Dir
         self.Dir = Dir + "/"
         self.configfile = configfile
         self.SaveDir = self.Dir + "/" + self.runId + "/"
@@ -401,7 +401,7 @@ class WflowModel(DynamicModel):
         if self.origTopogLateral:
             self.logger.info("Applying the original topog_sbm lateral transfer formulation")
         else:
-            self.logger.info("Applying the wflow lateral transfer formulation")
+            self.logger.warn("Using the original (depreciated!!) wflow lateral transfer formulation")
 
         self.sCatch = int(configget(self.config, "model", "sCatch", "0"))
         self.intbl = configget(self.config, "model", "intbl", "intbl")
@@ -1086,12 +1086,6 @@ class WflowModel(DynamicModel):
         # now the actual transfer to the saturated store..
         self.Transfer = min(self.UStoreDepth, ifthenelse(self.SaturationDeficit <= 0.00001, 0.0,
                                                          Ksat * self.UStoreDepth / (self.SaturationDeficit + 1)))
-        zi_foreward = max(0.0, self.FirstZoneThickness - (self.FirstZoneDepth  + self.Transfer) / (
-            self.thetaS - self.thetaR))
-        Ksat_foreward = self.FirstZoneKsatVer * exp(-self.f * zi_foreward)
-        self.Transfer = min(self.UStoreDepth, ifthenelse(self.SaturationDeficit <= 0.00001, 0.0,
-                                                         (Ksat +Ksat_foreward) * 0.5 * self.UStoreDepth / (self.SaturationDeficit + 1)))
-
 
 
         MaxCapFlux = max(0.0, min(Ksat, self.ActEvapUStore, UStoreCapacity, self.FirstZoneDepth))
@@ -1142,7 +1136,11 @@ class WflowModel(DynamicModel):
             if self.origTopogLateral:
                 Lateral = self.FirstZoneKsatVer * tan(self.waterSlope) *  exp(-self.SaturationDeficit / self.M)
             else:
-                Lateral = self.FirstZoneKsatVer * self.waterSlope * exp(-self.SaturationDeficit / self.M)
+                if self.origTopogLateral == 1:
+                    Lateral = self.FirstZoneKsatVer * self.waterSlope * exp(-self.SaturationDeficit / self.M)
+                else:
+                    Lateral = Ksat * self.waterSlope
+
             MaxHor = max(0.0, min(Lateral, self.FirstZoneDepth))
             self.FirstZoneFlux = accucapacityflux(waterLdd, self.FirstZoneDepth, MaxHor)
             self.FirstZoneDepth = accucapacitystate(waterLdd, self.FirstZoneDepth, MaxHor)
@@ -1154,7 +1152,10 @@ class WflowModel(DynamicModel):
             if self.origTopogLateral:
                 Lateral = self.FirstZoneKsatVer * tan(self.waterSlope) *  exp(-self.SaturationDeficit / self.M)
             else:
-                Lateral = self.FirstZoneKsatVer * self.waterSlope * exp(-self.SaturationDeficit / self.M)
+                if self.origTopogLateral == 1:
+                    Lateral = self.FirstZoneKsatVer * self.waterSlope * exp(-self.SaturationDeficit / self.M)
+                else:
+                    Lateral = Ksat * self.waterSlope
 
             MaxHor = max(0.0, min(Lateral, self.FirstZoneDepth))
             #MaxHor = self.ZeroMap

@@ -950,32 +950,32 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
              return retval.flatten().tolist() 
       else:
              self.logger.warn(mapname + " is not defined in the usermodel, returning empty list")
-             return []   
-
+             return []
 
   def wf_supplyMapAsNumpy(self,mapname):
       """
       Returns a numpy array (matrix) for the specified map and the current
       timestep. If the maps is not dynamic the current staus of the map is
-      returns which may be undefined for maps that are filled with data 
+      returns which may be undefined for maps that are filled with data
       at the end of a run
       Missing value is -999
-      
-      Input: 
+
+      Input:
           - mapname (string)
-          
-      Output: 
+
+      Output:
           - numpy array
       """
       if hasattr(self._userModel(), mapname):
-          exec "retval = pcr2numpy(self._userModel()." + mapname + ",-999)"          
+          #exec "retval = pcr2numpy(self._userModel()." + mapname + ",-999)"
+          pcrmap = getattr(self._userModel(),mapname)
+          retval = pcr_as_numpy(pcrmap)
           if self.APIDebug:
               self.logger.debug("wf_supplyMapAsNumpy returning: " + mapname)
-      else:          
+      else:
           self.logger.warn(mapname + " is not defined in the usermodel, returning empty list")
           return []
-          
-          
+
       return retval
 
 
@@ -1126,8 +1126,25 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
           self.logger.debug("wf_supplyVariableUnits from framework: " + str(ret))
            
       return ret
-          
 
+  def wf_supplyEndTime(self):
+      """
+      gets the end time of the model run
+      :return: current time as seconds since epoch
+      """
+
+      seconds_since_epoch = time.mktime(self.datetime_firststep.timetuple()) * 1000
+
+      return seconds_since_epoch + (self._d_lastTimestep - self._d_firstTimestep) * self._userModel().timestepsecs
+
+  def wf_supplyStartTime(self):
+      """
+      gets the start time of the model run
+      :return: current time as seconds since epoch
+      """
+      seconds_since_epoch = time.mktime(self.datetime_firststep.timetuple()) * 1000
+
+      return seconds_since_epoch
 
   def wf_supplyCurrentTime(self):
       """
