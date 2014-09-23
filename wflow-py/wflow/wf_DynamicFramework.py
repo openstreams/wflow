@@ -22,6 +22,11 @@ $Rev: 915 $
 
 #TODO: rmove most exec statements and replace by getattr
 
+try:
+    from wf_netcdfio import *
+except:
+    from wflow.wf_netcdfio import *
+
 import numpy
 import ConfigParser
 #from wf_Timeoutput import *
@@ -30,10 +35,6 @@ import shutil, glob
 import sys
 import traceback
 
-try:
-    from wf_netcdfio import *
-except:
-    from wflow.wf_netcdfio import *
 
 
 logging = None
