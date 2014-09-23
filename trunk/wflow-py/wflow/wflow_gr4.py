@@ -161,14 +161,16 @@ class WflowModel(DynamicModel):
       may be added by you if needed.
       
       """
-      DynamicModel.__init__(self)   
-      setclone(Dir + "/staticmaps/" + cloneMap)
-      self.runId=RunDir      
-      self.caseName=Dir
-      self.Dir = Dir
+      DynamicModel.__init__(self)
+
+      self.caseName = os.path.abspath(Dir)
+      self.clonemappath = os.path.join(os.path.abspath(Dir),"staticmaps",cloneMap)
+      setclone(self.clonemappath)
+      self.runId = RunDir
+      self.Dir = os.path.abspath(Dir)
       self.configfile = configfile
-      self.SaveDir = self.Dir + "/" + self.runId + "/"
-     
+      self.SaveDir = os.path.join(self.Dir,self.runId)
+
 
 
   def stateVariables(self):
@@ -220,16 +222,16 @@ class WflowModel(DynamicModel):
     """
         
     self.logger.info("Saving initial conditions...")
-    self.wf_suspend(self.SaveDir + "/outstate/")
+    self.wf_suspend(os.path.join(self.SaveDir, "outstate"))
    
     if self.OverWriteInit:            
         self.logger.info("Saving initial conditions over start conditions...")
-        self.wf_suspend(self.SaveDir + "/instate/")
+        self.wf_suspend(os.path.join(self.SaveDir , "/instate"))
 
 
     if self.fewsrun:
         self.logger.info("Saving initial conditions for FEWS...")
-        self.wf_suspend(self.Dir + "/outstate/")
+        self.wf_suspend(os.path.join(self.Dir , "outstate"))
 
       
   def initial(self):
@@ -337,7 +339,7 @@ class WflowModel(DynamicModel):
         self.QUH1 = mk_qres(self.NH)
         self.QUH2 = mk_qres(self.NH * 2)
     else:
-        self.wf_resume(self.Dir + "/instate/")    
+        self.wf_resume(os.path.join(self.Dir, "instate"))
 
 
   def dynamic(self):

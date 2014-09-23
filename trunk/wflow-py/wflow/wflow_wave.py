@@ -135,15 +135,17 @@ class WflowModel(DynamicModel):
       Initialize the object
       
       """
-      DynamicModel.__init__(self)   
-      setclone(os.path.join(Dir,"staticmaps",cloneMap))
-      self.runId=RunDir      
-      self.caseName=Dir
-      self.Dir = Dir
-      self.configfile = configfile
-      self.SaveDir = self.Dir + "/" + self.runId + "/"
       self.thestep=0
-     
+      DynamicModel.__init__(self)
+
+      self.caseName = os.path.abspath(Dir)
+      self.clonemappath = os.path.join(os.path.abspath(Dir),"staticmaps",cloneMap)
+      setclone(self.clonemappath)
+      self.runId = RunDir
+      self.Dir = os.path.abspath(Dir)
+      self.configfile = configfile
+      self.SaveDir = os.path.join(self.Dir,self.runId)
+
 
   def runDynamicWave(self):
         """
@@ -280,7 +282,7 @@ class WflowModel(DynamicModel):
 
     if self.fewsrun:
         self.logger.info("Saving initial conditions for FEWS...")
-        self.wf_suspend(self.Dir + "/outstate/")
+        self.wf_suspend(os.path.join(self.Dir , "outstate"))
 
       
   def initial(self):
@@ -398,7 +400,7 @@ class WflowModel(DynamicModel):
         self.SurfaceRunoffDyn=self.ZeroMap * scalar(boolean(self.River))        
 
     else:
-        self.wf_resume(self.Dir + "/instate/")    
+        self.wf_resume(os.path.join(self.Dir, "instate"))
 
 
     
