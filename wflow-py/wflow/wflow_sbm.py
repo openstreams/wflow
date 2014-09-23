@@ -233,13 +233,14 @@ class WflowModel(DynamicModel):
 
     def __init__(self, cloneMap, Dir, RunDir, configfile):
         DynamicModel.__init__(self)
+
         self.caseName = os.path.abspath(Dir)
-        self.clonemappath = Dir + "/staticmaps/" + cloneMap
+        self.clonemappath = os.path.join(os.path.abspath(Dir),"staticmaps",cloneMap)
         setclone(self.clonemappath)
         self.runId = RunDir
-        self.Dir = Dir + "/"
+        self.Dir = os.path.abspath(Dir)
         self.configfile = configfile
-        self.SaveDir = self.Dir + "/" + self.runId + "/"
+        self.SaveDir = os.path.join(self.Dir,self.runId)
 
     def _initAPIVars(self):
         """
@@ -300,7 +301,7 @@ class WflowModel(DynamicModel):
     def suspend(self):
 
         self.logger.info("Saving initial conditions...")
-        self.wf_suspend(self.SaveDir + "/outstate/")
+        self.wf_suspend(os.path.join(self.SaveDir,"outstate"))
 
         if self.OverWriteInit:
             self.logger.info("Saving initial conditions over start conditions...")
@@ -442,35 +443,35 @@ class WflowModel(DynamicModel):
 
 
         # 2: Input base maps ########################################################
-        subcatch = ordinal(readmap(self.Dir + wflow_subcatch))  # Determines the area of calculations (all cells > 0)
+        subcatch = ordinal(readmap(os.path.join(self.Dir,wflow_subcatch)))  # Determines the area of calculations (all cells > 0)
         subcatch = ifthen(subcatch > 0, subcatch)
 
-        self.Altitude = readmap(self.Dir + wflow_dem)  # * scalar(defined(subcatch)) # DEM
-        self.TopoLdd = readmap(self.Dir + wflow_ldd)  # Local
-        self.TopoId = readmap(self.Dir + wflow_subcatch)  # area map
-        self.River = cover(boolean(readmap(self.Dir + wflow_river)), 0)
+        self.Altitude = readmap(os.path.join(self.Dir,wflow_dem))  # * scalar(defined(subcatch)) # DEM
+        self.TopoLdd = readmap(os.path.join(self.Dir,wflow_ldd))  # Local
+        self.TopoId = readmap(os.path.join(self.Dir,wflow_subcatch))  # area map
+        self.River = cover(boolean(readmap(os.path.join(self.Dir,wflow_river))), 0)
 
-        self.RiverLength = cover(pcrut.readmapSave(self.Dir + wflow_riverlength, 0.0), 0.0)
+        self.RiverLength = cover(pcrut.readmapSave(os.path.join(self.Dir,wflow_riverlength), 0.0), 0.0)
         # Factor to multiply riverlength with (defaults to 1.0)
-        self.RiverLengthFac = pcrut.readmapSave(self.Dir + wflow_riverlength_fact, 1.0)
+        self.RiverLengthFac = pcrut.readmapSave(os.path.join(self.Dir,wflow_riverlength_fact), 1.0)
 
         # read landuse and soilmap and make sure there are no missing points related to the
         # subcatchment map. Currently sets the lu and soil type  type to 1
-        self.LandUse = readmap(self.Dir + wflow_landuse)
+        self.LandUse = readmap(os.path.join(self.Dir,wflow_landuse))
         self.LandUse = cover(self.LandUse, nominal(ordinal(subcatch) > 0))
-        self.Soil = readmap(self.Dir + wflow_soil)
+        self.Soil = readmap(os.path.join(self.Dir,wflow_soil))
         self.Soil = cover(self.Soil, nominal(ordinal(subcatch) > 0))
-        self.OutputLoc = readmap(self.Dir + wflow_gauges)  # location of output gauge(s)
-        self.InflowLoc = pcrut.readmapSave(self.Dir + wflow_inflow, 0.0)  # location abstractions/inflows.
-        self.RiverWidth = pcrut.readmapSave(self.Dir + wflow_riverwidth, 0.0)
+        self.OutputLoc = readmap(os.path.join(self.Dir,wflow_gauges))  # location of output gauge(s)
+        self.InflowLoc = pcrut.readmapSave(os.path.join(self.Dir,wflow_inflow), 0.0)  # location abstractions/inflows.
+        self.RiverWidth = pcrut.readmapSave(os.path.join(self.Dir,wflow_riverwidth), 0.0)
         # Experimental
         self.RunoffGenSigmaFunction = int(configget(self.config, 'model', 'RunoffGenSigmaFunction', '0'))
         self.SubCatchFlowOnly = int(configget(self.config, 'model', 'SubCatchFlowOnly', '0'))
         self.RunoffGeneratingGWPerc = float(configget(self.config, 'defaultfortbl', 'RunoffGeneratingGWPerc', '0.1'))
 
         if self.scalarInput:
-            self.gaugesMap = readmap(self.Dir + wflow_mgauges)  # location of rainfall/evap/temp gauge(s)
-        self.OutputId = readmap(self.Dir + wflow_subcatch)  # location of subcatchment
+            self.gaugesMap = readmap(os.path.join(self.Dir, wflow_mgauges))  # location of rainfall/evap/temp gauge(s)
+        self.OutputId = readmap(os.path.join(self.Dir,wflow_subcatch))  # location of subcatchment
         # Temperature correction poer cell to add
 
         self.TempCor = pcrut.readmapSave(
@@ -832,7 +833,7 @@ class WflowModel(DynamicModel):
 
         else:
             self.logger.info("Setting initial conditions from state files")
-            self.wf_resume(self.Dir + "/instate/")
+            self.wf_resume(os.path.join(self.Dir,"instate"))
 
 
 

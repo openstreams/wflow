@@ -484,15 +484,15 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       
       for var in allvars:
           try:
-              fname = os.path.join(directory,var) + ".map"
-              #print fname
+              fname = os.path.join(directory,var).replace("\\","/") + ".map"
               execstr = "savevar = self._userModel()." + var
               exec execstr
+
               try: # Check if we have a list of maps
                   b = len(savevar)
                   a = 0
                   for z in savevar:
-                      fname = os.path.join(directory,var + "_" + str(a)) + ".map"
+                      fname = os.path.join(directory,var + "_" + str(a)).replace("\\","/") + ".map"
                       report(z,fname)
                       a = a + 1
               except:
@@ -586,7 +586,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
           nr = 0
 
           while stop == 0:
-              name = directory + "/" + var + "_" + str(nr) + ".map"
+              name = os.path.join(directory,var + "_" + str(nr) + ".map").replace("\\","/")
 
               if os.path.exists(name):
                   if nr == 0:
@@ -598,9 +598,11 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                   stop = 1
           if nr == 0:  
               try:
-                  exec "self._userModel()." + var + "= readmap(\"" + directory + "/" + var + ".map\")"
+                  mpath = os.path.join(directory,var + ".map").replace("\\","/")
+                  execstr = "self._userModel()." + var + "= readmap(\"" + mpath + "\")"
+                  exec execstr
               except:
-                  self.logger.warn("problem while reading state variable from disk: " + directory + "/" + var + " Suggest to use the -I uption to restart")
+                  self.logger.warn("problem while reading state variable from disk: " + mpath + " Suggest to use the -I uption to restart")
                   exit(1)
                
  
