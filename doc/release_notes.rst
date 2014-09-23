@@ -1,13 +1,16 @@
 Release notes
 =============
 
-Version 1.0 RC6
----------------
+Trunc
+-----
 unsupported interim release
 
 + added  HBV type lower zone to wflow\_sbm. Use MaxPercolation > 0 to use this zone. MaxLeakege > 0 will send
   water outside of the model
 + Test version of the wflow_W3RA model
++ The default formulation of lateral flow is not the original SBM formulation that
+  gives much lower lateral flows than the one from the Cqflow model. Use origTopogLateral=0 to fro
+  old models! Other options are 1 (default), and 2: use effective Ksat at freatic level
 
 
 Version 1.0 RC5

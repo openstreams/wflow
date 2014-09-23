@@ -1,26 +1,38 @@
 __author__ = 'schelle'
 
+import os
 
-from abc import abstractmethod
-from abc import ABCMeta
+#TODO: Put link to runinfo file in ini ( to get date time)
+#TODO: Rework framework to get rid of max timesteps shit
 
+class wflowbmi(object):
 
-class IBmi(object):
-    __metaclass__ = ABCMeta
-
-    @abstractmethod
     def initialize(self, configfile=None):
         """
-        Initialize and load the Fortran library (and model, if applicable).
-        The Fortran library is loaded and ctypes is used to annotate functions
-        inside the library. The Fortran library's initialization is called.
-        Normally a path to an ``*.ini`` model file is passed to the
-        :meth:`__init__`. If so, that model is loaded. Note that
-        :meth:`_load_model` changes the working directory to that of the model.
+        Assumptions for now:
+        - the configfile wih be a full path
+        - we define the case from the basedir of the configfile
         """
-        pass
+        wflow_cloneMap = 'wflow_subcatch.map'
+        datadir = os.path.basename(os.path.dirname(configfile))
+        inifile = os.path.basename(configfile)
+        runid = "run_default"
+        # The current pcraster framework needs a max number of timesteps :-(
+        # This cannot be avoided at the moment (needs a rework)
+        # set to 10000 for now
+        maxNrSteps = 10000
+        if "_sbm" in configfile:
+            import wflow_sbm as wf
+        elif "hbv" in configfile:
+            import wflow_sbm as wf
 
-    @abstractmethod
+        myModel = wf.WflowModel(wflow_cloneMap, datadir, runid,inifile)
+        myModel.timestepsecs = timeStepInSeconds
+        self.dynModel = wf.wf_DynamicFramework(myModel, maxNrSteps, firstTimestep = 1)
+        self.dynModel.createRunId(NoOverWrite=0)
+        self.dynModel._runInitial()
+        self.dynModel._runResume()
+
     def finalize(self):
         """
         Shutdown the library and clean up the model.
@@ -30,82 +42,88 @@ class IBmi(object):
         """
         pass
 
-    @abstractmethod
+
     def update(self, dt):
         """
         Return type string, compatible with numpy.
         """
         pass
 
-    @abstractmethod
+
     def get_var_count(self):
         """
         Return number of variables
         """
-        pass
+        return self.dynModel.wf_supplyVariableCount()
 
-    @abstractmethod
+
     def get_var_name(self, i):
         """
         Return variable name
         """
-        pass
+        #TODO: Add mapping here???
+        return self.dynModel.wf_supplyVariableNames(i)
 
-    @abstractmethod
+
     def get_var_type(self, name):
         """
         Return type string, compatible with numpy.
         """
-        return self.get_var(name).dtype
+        npmap = self.dynModel.wf_supplyMapAsNumpy(name)
 
-    @abstractmethod
+        return npmap.dtype
+
+
     def get_var_rank(self, name):
         """
         Return array rank or 0 for scalar.
         """
-        return len(self.get_var(name).shape)
+        npmap = self.dynModel.wf_supplyMapAsNumpy(name)
 
-    @abstractmethod
+        return len(npmap.shape)
+
+
     def get_var_shape(self, name):
         """
         Return shape of the array.
         """
-        return self.get_var(name).shape
+        npmap = self.dynModel.wf_supplyMapAsNumpy(name)
 
-    @abstractmethod
+        return npmap.shape
+
+
     def get_start_time(self):
         """
         returns start time
         """
-        pass
+        return self.dynModel.wf_supplyStartTime()
 
-    @abstractmethod
+
     def get_end_time(self):
         """
         returns end time of simulation
         """
-        pass
+        return self.dynModel.wf_supplyEndTime()
 
-    @abstractmethod
+
     def get_current_time(self):
         """
         returns current time of simulation
         """
-        pass
+        return self.dynModel.wf_supplyCurrentTime()
 
-    @abstractmethod
     def get_var(self, name):
         """
         Return an nd array from model library
         """
         pass
 
-    @abstractmethod
+
     def set_var(self, name, var):
         """Set the variable name with the values of var"""
         pass
 
-    @abstractmethod
+
     def set_var_slice(self, name, start, count, var):
         """
         Overwrite the values in variable name with data
@@ -125,7 +143,7 @@ class IBmi(object):
             tmp[slices]
         self.set_var(name, name, tmp)
 
-    @abstractmethod
+
     def set_var_index(self, name, index, var):
         """
         Overwrite the values in variable "name" with data
@@ -140,14 +158,14 @@ class IBmi(object):
         tmp.flat[index] = var
         self.set_var(name, name, tmp)
 
-    @abstractmethod
+
     def inq_compound(self, name):
         """
         Return the number of fields of a compound type.
         """
         pass
 
-    @abstractmethod
+
     def inq_compound_field(self, name, index):
         """
         Lookup the type,rank and shape of a compound field
