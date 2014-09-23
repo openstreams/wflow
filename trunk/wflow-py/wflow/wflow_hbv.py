@@ -148,15 +148,15 @@ class WflowModel(DynamicModel):
   
   
   def __init__(self, cloneMap,Dir,RunDir,configfile):
-      DynamicModel.__init__(self)   
-      setclone(Dir + "/staticmaps/" + cloneMap)
-      self.runId=RunDir      
-      self.caseName=Dir
-      self.Dir = Dir + "/"
+      DynamicModel.__init__(self)
+      self.caseName = os.path.abspath(Dir)
+      self.clonemappath = os.path.join(os.path.abspath(Dir),"staticmaps",cloneMap)
+      setclone(self.clonemappath)
+      self.runId = RunDir
+      self.Dir = os.path.abspath(Dir)
       self.configfile = configfile
-      self.SaveDir = self.Dir + "/" + self.runId + "/"
+      self.SaveDir = os.path.join(self.Dir,self.runId)
 
-      
         
   
       
@@ -222,25 +222,25 @@ class WflowModel(DynamicModel):
     
     
     self.logger.info("Saving initial conditions...")
-    self.wf_suspend(self.SaveDir + "/outstate/")
+    self.wf_suspend(os.path.join(self.SaveDir,"outstate"))
    
     if self.OverWriteInit:            
         self.logger.info("Saving initial conditions over start conditions...")
-        self.wf_suspend(self.SaveDir + "/instate/")
+        self.wf_suspend(os.path.join(self.SaveDir,"instate"))
 
 
     if self.fewsrun:
         self.logger.info("Saving initial conditions for FEWS...")
-        self.wf_suspend(self.Dir + "/outstate/")
+        self.wf_suspend(os.path.join(self.Dir, "outstate"))
         
-    report(self.sumprecip,self.SaveDir + "/outsum/sumprecip.map")
-    report(self.sumevap,self.SaveDir + "/outsum/sumevap.map")
-    report(self.sumpotevap,self.SaveDir + "/outsum/sumpotevap.map")
-    report(self.sumtemp,self.SaveDir + "/outsum/sumtemp.map")
-    report(self.sumlevel,self.SaveDir + "/outsum/sumlevel.map")
-    report(self.sumrunoff/catchmenttotal(1,self.TopoLdd),self.SaveDir + "/outsum/sumrunoff.map")
+    report(self.sumprecip,os.path.join(self.SaveDir,"outsum","sumprecip.map"))
+    report(self.sumevap,os.path.join(self.SaveDir, "outsum","sumevap.map"))
+    report(self.sumpotevap,os.path.join(self.SaveDir, "outsum","sumpotevap.map"))
+    report(self.sumtemp,os.path.join(self.SaveDir, "outsum","sumtemp.map"))
+    report(self.sumlevel,os.path.join(self.SaveDir, "outsum","sumlevel.map"))
+    report(self.sumrunoff/catchmenttotal(1,self.TopoLdd),os.path.join(self.SaveDir,"outsum","sumrunoff.map"))
 
-    report(self.suminflow,self.SaveDir + "/outsum/suminflow.map")
+    report(self.suminflow,os.path.join(self.SaveDir, "outsum","suminflow.map"))
       
   def initial(self):
       
@@ -357,38 +357,38 @@ class WflowModel(DynamicModel):
     
   
     # 2: Input base maps ########################################################  
-    subcatch=ordinal(readmap(self.Dir + wflow_subcatch)) # Determines the area of calculations (all cells > 0)
+    subcatch=ordinal(readmap(os.path.join(self.Dir, wflow_subcatch))) # Determines the area of calculations (all cells > 0)
     subcatch = ifthen(subcatch > 0, subcatch)
     if self.sCatch > 0:
         subcatch = ifthen(subcatch == sCatch,subcatch)
     
-    self.Altitude=readmap(self.Dir + wflow_dem) * scalar(defined(subcatch)) #: The digital elevation map (DEM)
-    self.TopoLdd=readmap(self.Dir + wflow_ldd)        #: The local drinage definition map (ldd)
-    self.TopoId=readmap(self.Dir + wflow_subcatch)        #: Map define the area over which the calculations are done (mask)
-    self.River=cover(boolean(readmap(self.Dir + wflow_river)),0) #: river network map. Fro those cell that belong to a river a specific width is used in the kinematic wave caulations
-    self.RiverLength=pcrut.readmapSave(self.Dir + wflow_riverlength,0.0)
+    self.Altitude=readmap(os.path.join(self.Dir,wflow_dem)) * scalar(defined(subcatch)) #: The digital elevation map (DEM)
+    self.TopoLdd=readmap(os.path.join(self.Dir, wflow_ldd))        #: The local drinage definition map (ldd)
+    self.TopoId=readmap(os.path.join(self.Dir, wflow_subcatch))        #: Map define the area over which the calculations are done (mask)
+    self.River=cover(boolean(readmap(os.path.join(self.Dir, wflow_river))),0) #: river network map. Fro those cell that belong to a river a specific width is used in the kinematic wave caulations
+    self.RiverLength=pcrut.readmapSave(os.path.join(self.Dir, wflow_riverlength),0.0)
     # Factor to multiply riverlength with (defaults to 1.0)    
-    self.RiverLengthFac=pcrut.readmapSave(self.Dir + wflow_riverlength_fact,1.0)
+    self.RiverLengthFac=pcrut.readmapSave(os.path.join(self.Dir, wflow_riverlength_fact),1.0)
 
     # read landuse and soilmap and make sure there are no missing points related to the
     # subcatchment map. Currently sets the lu and soil type  type to 1
-    self.LandUse=readmap(self.Dir + wflow_landuse)#: Map with lan-use/cover classes
+    self.LandUse=readmap(os.path.join(self.Dir , wflow_landuse))#: Map with lan-use/cover classes
     self.LandUse=cover(self.LandUse,nominal(ordinal(subcatch) > 0))
-    self.Soil=readmap(self.Dir + wflow_soil)#: Map with soil classes
+    self.Soil=readmap(os.path.join(self.Dir , wflow_soil))#: Map with soil classes
     self.Soil=cover(self.Soil,nominal(ordinal(subcatch) > 0))
-    self.OutputLoc=readmap(self.Dir + wflow_gauges)  #: Map with locations of output gauge(s)
-    self.InflowLoc=nominal(pcrut.readmapSave(self.Dir + wflow_inflow,0.0))  #: Map with location of abstractions/inflows.
-    self.SeepageLoc=pcrut.readmapSave(self.Dir + wflow_inflow,0.0)  #: Seapage from external model (if configured)
-    RiverWidth=pcrut.readmapSave(self.Dir + wflow_riverwidth,0.0)
+    self.OutputLoc=readmap(os.path.join(self.Dir , wflow_gauges))  #: Map with locations of output gauge(s)
+    self.InflowLoc=nominal(pcrut.readmapSave(os.path.join(self.Dir , wflow_inflow),0.0))  #: Map with location of abstractions/inflows.
+    self.SeepageLoc=pcrut.readmapSave(os.path.join(self.Dir , wflow_inflow),0.0)  #: Seapage from external model (if configured)
+    RiverWidth=pcrut.readmapSave(os.path.join(self.Dir, wflow_riverwidth),0.0)
     
     
      # Temperature correction per cell to add
-    self.TempCor=pcrut.readmapSave(self.Dir + configget(self.config,"model","TemperatureCorrectionMap","staticmapswflow_tempcor.map"),0.0)
+    self.TempCor=pcrut.readmapSave(os.path.join(self.Dir , configget(self.config,"model","TemperatureCorrectionMap","staticmapswflow_tempcor.map")),0.0)
  
                       
     if self.scalarInput:
-        self.gaugesMap=readmap(self.Dir + wflow_mgauges) #: Map with locations of rainfall/evap/temp gauge(s). Only needed if the input to the model is not in maps
-    self.OutputId=readmap(self.Dir + wflow_subcatch)       # location of subcatchment
+        self.gaugesMap=readmap(os.path.join(self.Dir , wflow_mgauges)) #: Map with locations of rainfall/evap/temp gauge(s). Only needed if the input to the model is not in maps
+    self.OutputId=readmap(os.path.join(self.Dir , wflow_subcatch))       # location of subcatchment
   
     self.ZeroMap=0.0*scalar(defined(self.Altitude))                    #map with only zero's
   
@@ -613,7 +613,7 @@ class WflowModel(DynamicModel):
         self.WaterLevel = cover(0.0) #: Water level in kinimatic wave (state variable [m])
         self.DrySnow=cover(0.0) #: Snow amount (state variable [mm])
     else:
-        self.wf_resume(self.Dir + "/instate/")
+        self.wf_resume(os.path.join(self.Dir, "instate"))
 
     P=self.Bw+(2.0*self.WaterLevel)
     self.Alpha=self.AlpTerm*pow(P,self.AlpPow)
