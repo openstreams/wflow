@@ -92,6 +92,8 @@ import os.path
 import shutil, glob
 import getopt
 
+from  wflow.wf_DynamicFramework import *
+
 try:
     from  wflow.wf_DynamicFramework import *
 except ImportError:

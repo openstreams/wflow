@@ -96,13 +96,14 @@ class WflowModel(DynamicModel):
       
       """
       DynamicModel.__init__(self)   
-      setclone(Dir + "/staticmaps/" + cloneMap)
-      self.runId=RunDir      
-      self.caseName=Dir
-      self.Dir = Dir
+
+      self.caseName = os.path.abspath(Dir)
+      self.clonemappath = os.path.join(os.path.abspath(Dir),"staticmaps",cloneMap)
+      setclone(self.clonemappath)
+      self.runId = RunDir
+      self.Dir = os.path.abspath(Dir)
       self.configfile = configfile
-      self.SaveDir = self.Dir + "/" + self.runId + "/"
-     
+      self.SaveDir = os.path.join(self.Dir,self.runId)
 
 
   def stateVariables(self):
@@ -154,14 +155,14 @@ class WflowModel(DynamicModel):
     #: here which will suspend the variables that are given by stateVariables 
     #: function.
     self.logger.info("Saving initial conditions...")
-    self.wf_suspend(self.SaveDir + "/outstate/")
+    self.wf_suspend(os.path.join(self.SaveDir , "outstate"))
 
     if self.fewsrun:
         self.logger.info("Saving initial conditions for FEWS...")
-        self.wf_suspend(self.Dir + "/outstate/")
+        self.wf_suspend(os.path.join(self.Dir , "outstate"))
         
-    report(ifthen(self.MaxDepth >0.0,self.MaxDepth),self.SaveDir + "/outsum/MaxDepth.map")
-    report(ifthen(scalar(self.MaxExt) > 0.0,self.MaxExt),self.SaveDir + "/outsum/MaxExt.map")
+    report(ifthen(self.MaxDepth >0.0,self.MaxDepth),os.path.join(self.SaveDir , "outsum","MaxDepth.map"))
+    report(ifthen(scalar(self.MaxExt) > 0.0,self.MaxExt),os.path.join(self.SaveDir, "outsum","MaxExt.map"))
 
       
   def initial(self):
@@ -224,7 +225,7 @@ class WflowModel(DynamicModel):
         self.logger.info("Setting initial conditions to default (zero)")
         self.FloodExtent=cover(boolean(0))
     else:
-        self.wf_resume(self.Dir + "/instate/")    
+        self.wf_resume(os.path.join(self.Dir , "instate"))
 
 
     
