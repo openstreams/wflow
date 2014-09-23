@@ -344,20 +344,19 @@ class WflowModel(DynamicModel):
     self.SubCatchFlowOnly = int(configget(self.config, 'model', 'SubCatchFlowOnly', '0'))
 
     # static maps to use (normally default)
-    wflow_subcatch = configget(self.config,"model","wflow_subcatch","/staticmaps/wflow_subcatch.map")
-    wflow_dem  = configget(self.config,"model","wflow_dem","/staticmaps/wflow_dem.map")
-    wflow_ldd = configget(self.config,"model","wflow_ldd","/staticmaps/wflow_ldd.map")
-    wflow_river  = configget(self.config,"model","wflow_river","/staticmaps/wflow_river.map")
-    wflow_riverlength  = configget(self.config,"model","wflow_riverlength","/staticmaps/wflow_riverlength.map")
-    wflow_riverlength_fact  = configget(self.config,"model","wflow_riverlength_fact","/staticmaps/wflow_riverlength_fact.map")
-    wflow_landuse  = configget(self.config,"model","wflow_landuse","/staticmaps/wflow_landuse.map")
-    wflow_soil  = configget(self.config,"model","wflow_soil","/staticmaps/wflow_soil.map")
-    wflow_gauges  = configget(self.config,"model","wflow_gauges","/staticmaps/wflow_gauges.map")
-    wflow_inflow  = configget(self.config,"model","wflow_inflow","/staticmaps/wflow_inflow.map")
-    wflow_mgauges  = configget(self.config,"model","wflow_mgauges","/staticmaps/wflow_mgauges.map")
-    wflow_riverwidth = configget(self.config,"model","wflow_riverwidth","/staticmaps/wflow_riverwidth.map")
-    
-  
+    wflow_subcatch = configget(self.config,"model","wflow_subcatch","staticmaps/wflow_subcatch.map")
+    wflow_dem  = configget(self.config,"model","wflow_dem","staticmaps/wflow_dem.map")
+    wflow_ldd = configget(self.config,"model","wflow_ldd","staticmaps/wflow_ldd.map")
+    wflow_river  = configget(self.config,"model","wflow_river","staticmaps/wflow_river.map")
+    wflow_riverlength  = configget(self.config,"model","wflow_riverlength","staticmaps/wflow_riverlength.map")
+    wflow_riverlength_fact  = configget(self.config,"model","wflow_riverlength_fact","staticmaps/wflow_riverlength_fact.map")
+    wflow_landuse  = configget(self.config,"model","wflow_landuse","staticmaps/wflow_landuse.map")
+    wflow_soil  = configget(self.config,"model","wflow_soil","staticmaps/wflow_soil.map")
+    wflow_gauges  = configget(self.config,"model","wflow_gauges","staticmaps/wflow_gauges.map")
+    wflow_inflow  = configget(self.config,"model","wflow_inflow","staticmaps/wflow_inflow.map")
+    wflow_mgauges  = configget(self.config,"model","wflow_mgauges","staticmaps/wflow_mgauges.map")
+    wflow_riverwidth = configget(self.config,"model","wflow_riverwidth","staticmaps/wflow_riverwidth.map")
+
     # 2: Input base maps ########################################################  
     subcatch=ordinal(readmap(os.path.join(self.Dir, wflow_subcatch))) # Determines the area of calculations (all cells > 0)
     subcatch = ifthen(subcatch > 0, subcatch)
