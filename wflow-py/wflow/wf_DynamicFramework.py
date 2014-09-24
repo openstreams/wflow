@@ -29,6 +29,7 @@ except:
 
 import numpy
 import datetime
+
 import ConfigParser
 #from wf_Timeoutput import *
 import pcrut
@@ -56,7 +57,7 @@ else:
 
 from wflow_lib import *
 #import scipy.io
-
+import time
 
 def log_uncaught_exceptions(ex_cls, ex, tb):
     global logging
@@ -130,9 +131,9 @@ class wf_sumavg():
         self.mode = mode
         self.varname = varname
         self.filename = filename
-        self.data = None
+        self.data = []
         self.count = 0
-        self.result = None
+        self.result = []
         self.availtypes =['sum','avg','min','max']
 
 
@@ -156,7 +157,7 @@ class wf_sumavg():
         Perform final calculations if needed (average, etc) and assign to the
         result variable
         """
-        if self.data != None:
+        if hasattr(self.data,"isSpatial"):
             if self.mode == 'sum' or self.mode == 'min' or self.mode == 'max':
                 self.result = self.data
             if self.mode == 'avg':
@@ -235,9 +236,8 @@ class wf_OutputTimeSeriesArea():
       self.remap_np = pcr2numpy(self.resmap,0)
       self.flatres = self.remap_np.flatten()[self.idx]
 
-      
       thiswriter = self.fnamelist.index(fname)
-      if timestep:
+      if timestep >= 0:
           self.writer[thiswriter].writerow([timestep] + self.flatres.tolist())
           #self.flatres = numpy.insert(self.flatres,0,timestep)
       else:
@@ -560,7 +560,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       """
       for a in self.samplenamecsv:
           exec "tmpvar = " +  self.varnamecsv[a]
-          self.oscv[self.samplenamecsv[a]].writestep(tmpvar,a,self._userModel().currentStep)
+
+          duration = self.currentdatetime - self.datetime_firststep
+          timestep = int(duration.total_seconds()/self.timestepsecs) + 1
+          self.oscv[self.samplenamecsv[a]].writestep(tmpvar,a,timestep=timestep)
 
    
 
@@ -593,10 +596,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       # These are the ones in the _sum _average etc sections
       for a in range(0,len(self.statslst)):
           self.statslst[a].finalise()
-          if self.statslst[a].result != None:
+          if hasattr(self.statslst[a].result,"isSpatial"):
             data = self.statslst[a].result
             fname = self.statslst[a].filename
-            if data != None:
+            if hasattr(data,'isSpatial'):
                 report (data,fname)
 
 
@@ -1185,7 +1188,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       :return: current time as seconds since epoch
       """
 
-      seconds_since_epoch = time.mktime(self.datetime_firststep.timetuple()) * 1000
+      seconds_since_epoch = time.mktime(self.datetime_firststep.timetuple())
 
       return seconds_since_epoch + (self._d_lastTimestep - self._d_firstTimestep) * self._userModel().timestepsecs
 
@@ -1194,7 +1197,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       gets the start time of the model run
       :return: current time as seconds since epoch
       """
-      seconds_since_epoch = time.mktime(self.datetime_firststep.timetuple()) * 1000
+      seconds_since_epoch = time.mktime(self.datetime_firststep.timetuple())
 
       return seconds_since_epoch
 
@@ -1211,8 +1214,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
           Get timestep info from from config file
           
       """
-
-      return (self.currentdatetime - self.datetime_firststep).total_seconds()
+      seconds_since_epoch = time.mktime(self.currentdatetime.timetuple())
+      return seconds_since_epoch
 
          
   def wf_supplyRowCol(self,mapname,xcor,ycor):
@@ -1324,6 +1327,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         for a in range(0,len(self.statslst)):
             data = getattr(self._userModel(),self.statslst[a].varname)
             self.statslst[a].add_one(data)
+
 
       self.currentdatetime = self.currentdatetime + dt.timedelta(seconds=self._userModel().timestepsecs)
       self._userModel().currentdatetime =  self.currentdatetime
