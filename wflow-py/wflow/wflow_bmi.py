@@ -1,8 +1,10 @@
 __author__ = 'schelle'
 
 import os
+import logging
 
-#TODO: Put link to runinfo file in ini ( to get date time)
+#TODO: Set log level also ini to be able to make quiet runs
+#TODO: set re-init in the ini file to be able to make cold start runs
 #TODO: Rework framework to get rid of max timesteps shit
 
 class wflowbmi(object):
@@ -15,7 +17,7 @@ class wflowbmi(object):
         """
         retval = 0;
         wflow_cloneMap = 'wflow_subcatch.map'
-        datadir = os.path.basename(os.path.dirname(configfile))
+        datadir = os.path.dirname(configfile)
         inifile = os.path.basename(configfile)
         runid = "run_default"
         # The current pcraster framework needs a max number of timesteps :-(
@@ -27,10 +29,10 @@ class wflowbmi(object):
         elif "hbv" in configfile:
             import wflow_sbm as wf
 
-        myModel = wf.WflowModel(wflow_cloneMap, datadir, runid,inifile)
+        myModel = wf.WflowModel(wflow_cloneMap, datadir, runid, inifile)
 
         self.dynModel = wf.wf_DynamicFramework(myModel, maxNrSteps, firstTimestep = 1)
-        self.dynModel.createRunId(NoOverWrite=0)
+        self.dynModel.createRunId(NoOverWrite=0,level=logging.ERROR)
         self.dynModel._runInitial()
         self.dynModel._runResume()
 
@@ -68,7 +70,8 @@ class wflowbmi(object):
         Return variable name
         """
 
-        return self.dynModel.wf_supplyVariableNames(i)
+        names = self.dynModel.wf_supplyVariableNames()
+        return names[i]
 
 
     def get_var_type(self, name):

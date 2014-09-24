@@ -399,7 +399,7 @@ class WflowModel(DynamicModel):
         self.updateFile = configget(self.config, "model", "updateFile", "no_set")
         self.origTopogLateral = int(configget(self.config, "model", "origTopogLateral", "0"))
 
-        if self.origTopogLateral:
+        if self.origTopogLateral == 0:
             self.logger.info("Applying the original topog_sbm lateral transfer formulation")
         else:
             self.logger.warn("Using the original (depreciated!!) wflow lateral transfer formulation")
@@ -707,6 +707,7 @@ class WflowModel(DynamicModel):
         self.CumInfiltExcess = self.ZeroMap
         self.CumExfiltWater = self.ZeroMap
         self.CumSurfaceWater = self.ZeroMap
+        self.watbal = self.ZeroMap
         self.CumEvap = self.ZeroMap
         self.CumPotenEvap = self.ZeroMap
         self.CumPotenTrans = self.ZeroMap
@@ -1301,7 +1302,7 @@ def main(argv=None):
     runId = "run_default"
     configfile = "wflow_sbm.ini"
     _lastTimeStep = 0
-    _firstTimeStep = 1
+    _firstTimeStep = 0
     LogFileName = "wflow.log"
     fewsrun = False
     runinfoFile = "runinfo.xml"
