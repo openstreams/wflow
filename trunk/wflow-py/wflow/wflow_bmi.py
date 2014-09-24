@@ -3,7 +3,7 @@ __author__ = 'schelle'
 import os
 import logging
 
-#TODO: Set log level also ini to be able to make quiet runs
+#TODO: Set log level also ini to be able to make quiet or non-quiet runs
 #TODO: set re-init in the ini file to be able to make cold start runs
 #TODO: Rework framework to get rid of max timesteps shit
 
@@ -15,7 +15,8 @@ class wflowbmi(object):
         - the configfile wih be a full path
         - we define the case from the basedir of the configfile
         """
-        retval = 0;
+        retval = 0
+        self.currenttimestep = 1
         wflow_cloneMap = 'wflow_subcatch.map'
         datadir = os.path.dirname(configfile)
         inifile = os.path.basename(configfile)
@@ -54,8 +55,17 @@ class wflowbmi(object):
     def update(self, dt):
         """
         Return type string, compatible with numpy.
+        Propagate the model one timestep?
         """
-        pass
+        #curstep = self.dynModel.wf_
+        if dt == -1:
+            self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep)
+            self.currentTime = self.currenttimestep + 1
+        else:
+            nrsteps = int(dt/self.dynModel.timestepsecs)
+            self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps -1)
+            self.currentTime = self.currenttimestep + nrsteps
+
 
 
     def get_var_count(self):
