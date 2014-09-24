@@ -28,13 +28,14 @@ except:
     from wflow.wf_netcdfio import *
 
 import numpy
+import datetime
 import ConfigParser
 #from wf_Timeoutput import *
 import pcrut
 import shutil, glob
 import sys
 import traceback
-from wflow_adapt import getStartTimefromRuninfo
+from wflow_adapt import getStartTimefromRuninfo, getEndTimefromRuninfo
 
 
 
@@ -131,6 +132,7 @@ class wf_sumavg():
         self.filename = filename
         self.data = None
         self.count = 0
+        self.result = None
         self.availtypes =['sum','avg','min','max']
 
 
@@ -154,10 +156,11 @@ class wf_sumavg():
         Perform final calculations if needed (average, etc) and assign to the
         result variable
         """
-        if self.mode == 'sum' or self.mode == 'min' or self.mode == 'max':
-            self.result = self.data
-        if self.mode == 'avg':
-            self.result = self.data/self.count
+        if self.data != None:
+            if self.mode == 'sum' or self.mode == 'min' or self.mode == 'max':
+                self.result = self.data
+            if self.mode == 'avg':
+                self.result = self.data/self.count
 
 
 
@@ -251,15 +254,17 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
   # \param firstTimestep sets the starting timestep of the model (optional,
   #        default is 1)
   #
-  def __init__(self, userModel, lastTimeStep=0, firstTimestep=1,datetimestart=dt.datetime(1990,01,01)):
+  def __init__(self, userModel, lastTimeStep=0, firstTimestep=1,datetimestart=dt.datetime(1990,01,01),timestepsecs=86400):
     frameworkBase.FrameworkBase.__init__(self)
     
     self.exchnageitems = wf_exchnageVariables()
     self.setQuiet(True)
     self._d_model = userModel
     self._testRequirements()
+    self.timestepsecs = timestepsecs
     self.datetime_firststep = datetimestart
     self.currentdatetime = self.datetime_firststep
+    self.datetime_laststep = datetimestart + datetime.timedelta(seconds=(lastTimeStep - firstTimestep) * self.timestepsecs)
 
     if firstTimestep > lastTimeStep:
       msg = "Cannot run dynamic framework: Start timestep smaller than end timestep"
@@ -276,9 +281,11 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     self._addMethodToClass(self.wf_supplyVariableNamesAndRoles)
     self._addMethodToClass(self.wf_supplyVariableNamesAndRoles)
 
-
     self._userModel()._setNrTimeSteps(lastTimeStep - firstTimestep + 1)
-    self._d_firstTimestep = firstTimestep
+    if firstTimestep == 0:
+        self._d_firstTimestep = 1
+    else:
+        self._d_firstTimestep = firstTimestep
     self._userModel()._setFirstTimeStep(self._d_firstTimestep)
     self._d_lastTimestep = lastTimeStep
     self.APIDebug = 0
@@ -422,6 +429,30 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self.datetime_firststep = getStartTimefromRuninfo(rinfo)
             self.currentdatetime = self.datetime_firststep
             self._userModel().currentdatetime = self.currentdatetime
+            self.datetime_laststep   = getEndTimefromRuninfo(rinfo)
+            self.timestepsecs = int(configget(self._userModel().config,'run','timestepsecs',"86400"))
+            duration = self.datetime_laststep - self.datetime_firststep
+            nrseconds = duration.total_seconds()
+            self._userModel()._setNrTimeSteps(int(nrseconds/self.timestepsecs))
+            self._userModel().timestepsecs =  self.timestepsecs
+            self._d_firstTimestep = 1
+            self._userModel()._setFirstTimeStep(self._d_firstTimestep)
+            self._d_lastTimestep = int(nrseconds/self.timestepsecs)
+    else:
+        self.datetime_firststep=datetime.datetime.strptime(st, "%Y-%m-%d %H:%M:%S")
+        self.currentdatetime = self.datetime_firststep
+        self._userModel().currentdatetime = self.currentdatetime
+        ed = configget(self._userModel().config,'run','endtime',"None")
+        self.datetime_laststep = datetime.datetime.strptime(ed, "%Y-%m-%d %H:%M:%S")
+        self.timestepsecs = int(configget(self._userModel().config,'run','timestepsecs',"86400"))
+        self._userModel().timestepsecs =  self.timestepsecs
+        duration = self.datetime_laststep - self.datetime_firststep
+        nrseconds = duration.total_seconds()
+        self._userModel()._setNrTimeSteps(int(nrseconds/self.timestepsecs))
+        self._d_firstTimestep = 1
+        self._userModel()._setFirstTimeStep(self._d_firstTimestep)
+        self._d_lastTimestep = int(nrseconds/self.timestepsecs)
+
 
 
 
@@ -548,7 +579,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
           b = a.replace('self.','')
           try:
               pcrmap = getattr(self._userModel(),b)
-              report( pcrmap , self._userModel().Dir + "/" + self._userModel().runId + "/outsum/" + self._userModel().config.get("summary",a) )
+              report( pcrmap , os.path.join(self._userModel().Dir, self._userModel().runId, "outsum", self._userModel().config.get("summary",a)) )
           except:
               self._userModel().logger.warn("Could not find or save the configured summary map:"  + a)
 
@@ -557,13 +588,16 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
           for a in self._userModel().default_summarymaps():
               b = a.replace('self.','')
               pcrmap = getattr(self._userModel(),b)
-              report( pcrmap , self._userModel().Dir + "/" + self._userModel().runId + "/outsum/" + b + ".map" )
+              report( pcrmap , os.path.join(self._userModel().Dir, self._userModel().runId, "outsum", b + ".map" ))
+
       # These are the ones in the _sum _average etc sections
       for a in range(0,len(self.statslst)):
           self.statslst[a].finalise()
-          data = self.statslst[a].result
-          fname = self.statslst[a].filename
-          report (data,fname)
+          if self.statslst[a].result != None:
+            data = self.statslst[a].result
+            fname = self.statslst[a].filename
+            if data != None:
+                report (data,fname)
 
 
 
@@ -1259,8 +1293,18 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         
     """
     self._userModel()._setInDynamic(True)
+
+    #
+    if firststep == 0:
+        step = self._d_firstTimestep
+    else:
+        step = firststep
+
+    if laststep == 0:
+        laststep = self._d_lastTimestep
+
     self._userModel()._setNrTimeSteps(laststep)
-    step = firststep
+
 
     while step <= self._userModel().nrTimeSteps():
 
