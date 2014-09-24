@@ -34,6 +34,7 @@ import pcrut
 import shutil, glob
 import sys
 import traceback
+from wflow_adapt import getStartTimefromRuninfo
 
 
 
@@ -398,6 +399,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     self._userModel().logger = self.loggingSetUp(caseName,runId,logfname,model,modelVersion,level=level)
 
     self.logger = self._userModel().logger
+
+
     global logging
     logging= self.logger
 
@@ -408,6 +411,18 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
     self.ncfile = configget(self._userModel().config,'framework','netcdfinput',"None")
     self.ncoutfile = configget(self._userModel().config,'framework','netcdfoutput',"None")
+
+    # Now finally set the start end time. First check if set in ini otherwise check if the ini defines
+    # a runinfo file
+    st = configget(self._userModel().config,'run','starttime',"None")
+
+    if st == "None":
+        rinfo = configget(self._userModel().config,'run','runinfo',"None")
+        if rinfo != "None":
+            self.datetime_firststep = getStartTimefromRuninfo(rinfo)
+            self.currentdatetime = self.datetime_firststep
+            self._userModel().currentdatetime = self.currentdatetime
+
 
 
     if self.ncfile != "None":

@@ -13,6 +13,7 @@ class wflowbmi(object):
         - the configfile wih be a full path
         - we define the case from the basedir of the configfile
         """
+        retval = 0;
         wflow_cloneMap = 'wflow_subcatch.map'
         datadir = os.path.basename(os.path.dirname(configfile))
         inifile = os.path.basename(configfile)
@@ -27,11 +28,14 @@ class wflowbmi(object):
             import wflow_sbm as wf
 
         myModel = wf.WflowModel(wflow_cloneMap, datadir, runid,inifile)
-        myModel.timestepsecs = timeStepInSeconds
+
         self.dynModel = wf.wf_DynamicFramework(myModel, maxNrSteps, firstTimestep = 1)
         self.dynModel.createRunId(NoOverWrite=0)
         self.dynModel._runInitial()
         self.dynModel._runResume()
+
+
+        return retval
 
     def finalize(self):
         """
@@ -40,7 +44,9 @@ class wflowbmi(object):
         so the cleanup is not perfect. Note also that the working directory is
         changed back to the original one.
         """
-        pass
+        self.dynModel._runSuspend()
+        self.dynModel._wf_shutdown()
+
 
 
     def update(self, dt):
@@ -61,7 +67,7 @@ class wflowbmi(object):
         """
         Return variable name
         """
-        #TODO: Add mapping here???
+
         return self.dynModel.wf_supplyVariableNames(i)
 
 
@@ -116,12 +122,17 @@ class wflowbmi(object):
         """
         Return an nd array from model library
         """
-        pass
+        return self.dynModel.wf_supplyMapAsNumpy(name)
 
 
     def set_var(self, name, var):
-        """Set the variable name with the values of var"""
-        pass
+        """
+        Set the variable name with the values of var
+        Assume var is a numpy array
+        """
+        #TODO: check the numpy type
+        self.dynModel.wf_setValuesAsNumpy(name, var)
+
 
 
     def set_var_slice(self, name, start, count, var):
@@ -157,6 +168,8 @@ class wflowbmi(object):
         tmp = self.get_var(name).copy()
         tmp.flat[index] = var
         self.set_var(name, name, tmp)
+
+
 
 
     def inq_compound(self, name):
