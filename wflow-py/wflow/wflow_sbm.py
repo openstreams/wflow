@@ -161,6 +161,7 @@ def actEvap_SBM(RootingDepth, WTable, UStoreDepth, FirstZoneDepth, PotTrans, smo
     # use sCurve to determine if the roots are wet.At the moment this ise set 
     # to be a 0-1 curve
     wetroots = sCurve(WTable, a=RootingDepth, c=smoothpar)
+    #wetroots = ifthenelse(WTable <= RootingDepth, scalar(1.0), scalar(0.0))
     ActEvapSat = min(PotTrans * wetroots, FirstZoneDepth)
 
     FirstZoneDepth = FirstZoneDepth - ActEvapSat
@@ -326,7 +327,7 @@ class WflowModel(DynamicModel):
         """
     Initial part of the model, executed only once. Reads all static data from disk
 
- 
+
     *Soil*
 
     :var M.tbl: M parameter in the SBM model. Governs the decay of Ksat with depth [-]
@@ -397,9 +398,9 @@ class WflowModel(DynamicModel):
         self.OverWriteInit = int(configget(self.config, "model", "OverWriteInit", "0"))
         self.updating = int(configget(self.config, "model", "updating", "0"))
         self.updateFile = configget(self.config, "model", "updateFile", "no_set")
-        self.origTopogLateral = int(configget(self.config, "model", "origTopogLateral", "0"))
+        self.LateralMethod = int(configget(self.config, "model", "lateralmethod", "0"))
 
-        if self.origTopogLateral == 0:
+        if self.LateralMethod == 0:
             self.logger.info("Applying the original topog_sbm lateral transfer formulation")
         else:
             self.logger.warn("Using the original (depreciated!!) wflow lateral transfer formulation")
@@ -1135,10 +1136,10 @@ class WflowModel(DynamicModel):
 
 
         if self.waterdem:
-            if self.origTopogLateral:
+            if self.LateralMethod == 0:
                 Lateral = self.FirstZoneKsatVer * tan(self.waterSlope) *  exp(-self.SaturationDeficit / self.M)
             else:
-                if self.origTopogLateral == 1:
+                if self.LateralMethod == 1:
                     Lateral = self.FirstZoneKsatVer * self.waterSlope * exp(-self.SaturationDeficit / self.M)
                 else:
                     Lateral = Ksat * self.waterSlope
@@ -1151,10 +1152,10 @@ class WflowModel(DynamicModel):
             #MaxHor = max(0,min(self.FirstZoneKsatVer * self.Slope * exp(-SaturationDeficit/self.M),self.FirstZoneDepth*(self.thetaS-self.thetaR))) * timestepsecs/basetimestep
             #MaxHor = max(0.0, min(self.FirstZoneKsatVer * self.Slope * exp(-self.SaturationDeficit / self.M),
             #                      self.FirstZoneDepth))
-            if self.origTopogLateral:
+            if self.LateralMethod:
                 Lateral = self.FirstZoneKsatVer * tan(self.waterSlope) *  exp(-self.SaturationDeficit / self.M)
             else:
-                if self.origTopogLateral == 1:
+                if self.LateralMethod == 1:
                     Lateral = self.FirstZoneKsatVer * self.waterSlope * exp(-self.SaturationDeficit / self.M)
                 else:
                     Lateral = Ksat * self.waterSlope
