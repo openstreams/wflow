@@ -17,12 +17,9 @@ from numpy import *
 import time
 import datetime as dt
 
-try:
-    import wflow.wflow_lib as wflow_lib
-    import wflow.pcrut as _pcrut
-except ImportError:
-    import  wflow_lib  as wflow_lib
-    import  pcrut as _pcrut
+
+import wflow.wflow_lib as wflow_lib
+import wflow.pcrut as _pcrut
 
 globmetadata = {}
 globmetadata['title'] = 'wflow output mapstack'

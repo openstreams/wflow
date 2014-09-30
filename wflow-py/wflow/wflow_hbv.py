@@ -92,19 +92,12 @@ import os.path
 import shutil, glob
 import getopt
 
-from  wflow.wf_DynamicFramework import *
-
-try:
-    from  wflow.wf_DynamicFramework import *
-except ImportError:
-    from  wf_DynamicFramework import *
-    
-try:
-    from  wflow.wflow_adapt  import *
-except ImportError:
-    from  wflow_adapt import *    
+from wflow.wf_DynamicFramework import *
+from wflow.wf_DynamicFramework import *
+from wflow.wflow_adapt import *
+from wflow_adapt import *    
         
-import scipy
+#import scipy
 #import pcrut
 
 

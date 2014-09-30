@@ -10,19 +10,9 @@ from math import *
 import sys
 import csv
 
-if sys.version_info[0] == 2 and sys.version_info[1] >=6:
-    try:
-        from pcraster import *
-        from pcraster.framework import *
-    except:
-        from PCRaster import *
-        from PCRaster.Framework import *
-        from PCRaster.NumPy import *
-else:
-    from PCRaster import *
-    from PCRaster.Framework import *
-    from PCRaster.NumPy import *
-    
+
+from pcraster import *
+from pcraster.framework import *
 import logging
 import logging.handlers
 

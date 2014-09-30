@@ -82,19 +82,10 @@ $Author: schelle $
 $Id: wflow_delwaq.py 813 2013-10-07 09:18:36Z schelle $
 $Rev: 813 $        
 """
-try:
-    import  wflow.wflow_adapt as wflow_adapt
-except ImportError:
-    import  wflow_adapt  as wflow_adapt 
- 
+import  wflow.wflow_adapt as wflow_adapt
+from  wflow.wf_DynamicFramework import *
 
-try:
-    from  wflow.wf_DynamicFramework import *
-except ImportError:
-    from  wf_DynamicFramework import *
- 
 
- 
  
 from datetime import *
 import os

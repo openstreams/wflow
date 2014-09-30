@@ -65,12 +65,9 @@ import logging
 import logging.handlers
 import ConfigParser
 
-try:
-    import  wflow.wflow_lib as wflow_lib
-    import wflow.pcrut as pcrut
-except ImportError:
-    import  wflow_lib  as wflow_lib 
-    import  pcrut as pcrut
+import  wflow.wflow_lib as wflow_lib
+import wflow.pcrut as pcrut
+
  
  
 outMaps = ["run.xml","lev.xml"]

@@ -22,10 +22,7 @@ $Rev: 915 $
 
 #TODO: rmove most exec statements and replace by getattr
 
-try:
-    from wf_netcdfio import *
-except:
-    from wflow.wf_netcdfio import *
+from wflow.wf_netcdfio import *
 
 import numpy
 import datetime
@@ -42,19 +39,8 @@ from wflow_adapt import getStartTimefromRuninfo, getEndTimefromRuninfo
 
 logging = None
 
-if sys.version_info[0] == 2 and sys.version_info[1] >=6:
-    try:
-        from pcraster import *
-        from pcraster.framework import *
-    except:
-        from PCRaster import *
-        from PCRaster.Framework import *
-        from PCRaster.NumPy import *
-else:
-    from PCRaster import *
-    from PCRaster.Framework import *
-    from PCRaster.NumPy import *
-
+from pcraster import *
+from pcraster.framework import *
 from wflow_lib import *
 #import scipy.io
 import time
