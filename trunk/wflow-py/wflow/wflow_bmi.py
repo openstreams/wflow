@@ -27,8 +27,10 @@ class wflowbmi(object):
         maxNrSteps = 10000
         if "_sbm" in configfile:
             import wflow_sbm as wf
-        elif "hbv" in configfile:
+        elif "_hbv" in configfile:
             import wflow_sbm as wf
+        else:
+            raise NotImplementedError
 
         myModel = wf.WflowModel(wflow_cloneMap, datadir, runid, inifile)
 

@@ -65,10 +65,10 @@ import os
 import os.path
 import shutil, glob
 import getopt
-from wf_DynamicFramework import *
+from wflow.wf_DynamicFramework import *
 import scipy
-import wflow_adapt
-import pcrut
+import wflow.wflow_adapt as wflow_adapt
+import wflow.pcrut as pcrut
 
 
 

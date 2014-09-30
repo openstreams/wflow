@@ -11,6 +11,9 @@ unsupported interim release
 + The default formulation of lateral flow is not the original SBM formulation that
   gives much lower lateral flows than the one from the Cqflow model. Use origTopogLateral=0 to fro
   old models! Other options are 1 (default), and 2: use effective Ksat at freatic level
++ Stopped support for pcraster version 3 and python 2.6
++ removed all the try/except from importing wflow. Now you
+  NEED to install wflow as a package
 
 
 Version 1.0 RC5

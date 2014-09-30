@@ -34,16 +34,9 @@ The script uses the pcraster resample program to reduce the maps.
 """
 
 
-try:
-    from  wflow.wflow_lib import *
-except ImportError:
-    from  wflow_lib import *
-    
-try:
-    import  wflow.pcrut as pcrut
-except ImportError:
-    import pcrut    
-    
+
+from  wflow.wflow_lib import *
+import  wflow.pcrut as pcrut
 import os
 import os.path
 import glob

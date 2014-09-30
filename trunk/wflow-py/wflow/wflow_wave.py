@@ -106,18 +106,13 @@ import os
 import os.path
 import shutil, glob
 import getopt
-try:
-    from  wflow.wf_DynamicFramework import *
-except ImportError:
-    from  wf_DynamicFramework import *
-    
-import scipy
 
-try:
-    from  wflow.wflow_adapt  import *
-except ImportError:
-    from  wflow_adapt import * 
-    
+from wflow.wf_DynamicFramework import *
+
+#import scipy
+
+from wflow.wflow_adapt  import *
+
 
 def usage(*args):
     sys.stdout = sys.stderr

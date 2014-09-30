@@ -42,15 +42,9 @@ run the wflow_prepare scripts twice to create the different models.
 """
 
 
-try:
-    from  wflow.wflow_lib import *
-except ImportError:
-    from  wflow_lib import *
-    
-try:
-    import  wflow.pcrut as pcrut
-except ImportError:
-    import pcrut    
+from wflow.wflow_lib import *
+import wflow.pcrut as pcrut
+
     
 import os, sys, shlex, time
 import os.path

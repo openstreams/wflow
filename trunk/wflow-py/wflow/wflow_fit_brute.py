@@ -66,16 +66,9 @@ $Rev: 785 $
 
 import scipy.optimize
 
-try:
-    import  wflow.pcrut  as pcrut
-except ImportError:
-    import  pcrut
-    
-    
-try:
-    import  wflow.stats  as stats
-except ImportError:
-    import  stats
+import  wflow.pcrut  as pcrut
+import  wflow.stats  as stats
+
         
 
 import os.path

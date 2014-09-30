@@ -30,10 +30,8 @@ syntax:
 
 """
 
-try:
-    from wflow.pcrut import *
-except:
-    from pcrut import *
+from wflow.pcrut import *
+
 import getopt
 from pylab import *
 
