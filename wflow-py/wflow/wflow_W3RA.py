@@ -48,7 +48,8 @@ try:
     from  wflow.wf_DynamicFramework import *
 except ImportError:
     from  wf_DynamicFramework import *
-    
+          
+          
 try:
     from  wflow.wflow_adapt  import *
 except ImportError:
@@ -139,7 +140,7 @@ class WflowModel(DynamicModel):
     #: pcraster option to calculate with units or cells. Not really an issue
     #: in this model but always good to keep in mind.
     setglobaloption("unittrue")
-    setglobaloption('radians') # Needed as W3RA was originally written in matlab
+    setglobaloption("radians") # Needed as W3RA was originally written in matlab
 
     # SET GLBOAL PARAMETER VALUES (howevefr not used in original script)
     # Nhru=2
@@ -294,9 +295,10 @@ class WflowModel(DynamicModel):
         doy=self.currentdatetime.timetuple().tm_yday
 
         #conversion daylength
+        setglobaloption("radians")
         m = scalar(1)-tan((self.latitude*scalar(pi)/scalar(180)))*tan(((scalar(23.439)*scalar(pi)/scalar(180))*cos(scalar(2)*scalar(pi)*(doy+scalar(9))/scalar(365.25))))
         self.fday = min(max(scalar(0.02),scalar(acos(scalar(1)-min(max(scalar(0),m),scalar(2))))/scalar(pi)),scalar(1)) #fraction daylength
-
+        
 
         # Assign forcing and estimate effective meteorological variables
 
@@ -310,6 +312,7 @@ class WflowModel(DynamicModel):
         # rescale factor because windspeed climatology is at 50ms
         WindFactor = 0.59904
         u2 = scalar(WindFactor)*self.WINDSPEED*(scalar(1)-(scalar(1)-self.fday)*scalar(0.25))/self.fday
+        self.u2 = scalar(WindFactor)*self.WINDSPEED*(scalar(1)-(scalar(1)-self.fday)*scalar(0.25))/self.fday
         pair = self.AIRPRESS # already in Pa
         ns_alb = self.ALBEDO
 
@@ -456,7 +459,6 @@ class WflowModel(DynamicModel):
         Pwet1 = -ln(1-fER1/fveg1)*Sveg1/fER1
         Ei1 = scalar(Pg<Pwet1)*fveg1*Pg+scalar(Pg>=Pwet1)*(fveg1*Pwet1+fER1*(Pg-Pwet1))
 
-        #zz = ifthenelse(Pg<Pwet1,sdsds,sdsd)
         Sveg2 = self.S_sls2*self.LAI2
         fER2 = self.ER_frac_ref2*fveg2
         Pwet2 = -ln(1-fER2/fveg2)*Sveg2/fER2
@@ -618,10 +620,10 @@ class WflowModel(DynamicModel):
         dMleaf1 = -ln(1-fveq1)*self.LAIref1/self.SLA1-self.Mleaf1
         dMleaf2 = -ln(1-fveq2)*self.LAIref2/self.SLA2-self.Mleaf2
 
-        Mleafnet1 = dMleaf1 * (dMleaf1/self.Tgrow1) + dMleaf1 * dMleaf1/self.Tsenc1
-        Mleafnet2 = dMleaf2 * (dMleaf1/self.Tgrow2) + dMleaf2 * dMleaf2/self.Tsenc2
-        #Mleafnet1 = scalar(dMleaf1>0)*(dMleaf1/self.Tgrow1) +scalar(dMleaf1<0)*dMleaf1/self.Tsenc1
-        #Mleafnet2 = scalar(dMleaf2>0)*(dMleaf2/self.Tgrow2) +scalar(dMleaf2<0)*dMleaf2/self.Tsenc2
+        #Mleafnet1 = dMleaf1 * (dMleaf1/self.Tgrow1) + dMleaf1 * dMleaf1/self.Tsenc1
+        #Mleafnet2 = dMleaf2 * (dMleaf1/self.Tgrow2) + dMleaf2 * dMleaf2/self.Tsenc2
+        Mleafnet1 = scalar(dMleaf1>0)*(dMleaf1/self.Tgrow1) +scalar(dMleaf1<0)*dMleaf1/self.Tsenc1
+        Mleafnet2 = scalar(dMleaf2>0)*(dMleaf2/self.Tgrow2) +scalar(dMleaf2<0)*dMleaf2/self.Tsenc2
 
 
         self.Mleaf1 = self.Mleaf1 + Mleafnet1
@@ -642,107 +644,6 @@ class WflowModel(DynamicModel):
         ws2 = self.Ss2/self.SsFC2
         wd1 = self.Sd1/self.SdFC1     # (2.1)
         wd2 = self.Sd2/self.SdFC2
-
-
-        # ASSIGN OUTPUT VARIABLES
-        # fluxes
-        Pg      =   (self.Fhru1*Pg) + (self.Fhru2*Pg)
-        self.E01     =   self.Fhru1*self.E01
-        self.E02     =   self.Fhru2*self.E02
-        E0      =   self.E01 + self.E02
-
-        Ee1     =   self.Fhru1*(Es1 + Eg1 + Er1 + Ei1)
-        Ee2     =   self.Fhru2*(Es2 + Eg2 + Er2 + Ei2)
-        Ee      =   Ee1 + Ee2
-
-        # out.Eg      =   sum(Fhru*Eg)
-        Et1     =   self.Fhru1*Et1
-        Et2     =   self.Fhru2*Et2
-        Et      =   Et1 + Et2
-        Ei1     =   self.Fhru1*Ei1
-        Ei2     =   self.Fhru2*Ei2
-        Ei      =   Ei1 + Ei2
-        Etot    =   Et + Ee
-        Qtot    =   Qtot
-        # out.Qg      =   Qg;
-        # out.QR      =   sum(Fhru.*QR);
-        gwflux  =   NetGf
-        D1      =   self.Fhru1*Dd1
-        D2      =   self.Fhru2*Dd2
-        D       =   D1 + D2
-        # HRU specific drainage
-        # out.D1    = Dd(1,:);
-        # out.D2    = Dd(2,:);
-        # out.Et1   = Et(1,:);
-        # out.Et2   = Et(2,:);
-        ET1     = Es1 + Eg1 + Er1 + Ei1 + Et1
-        ET2     = Es2 + Eg2 + Er2 + Ei2 + Et2
-        ETtot   = ET1 + ET2
-
-        # states
-        self.S01     =   self.Fhru1 * self.S01
-        self.S02     =   self.Fhru2 * self.S02
-        self.S0      =   self.S01 + self.S02
-        self.Ss1     =   self.Fhru1 * self.Ss1
-        self.Ss2     =   self.Fhru2 *self. Ss2
-        self.Ss      =   self.Ss1 + self.Ss2
-        self.Sd1     =   self.Fhru1 * self.Sd1
-        self.Sd2     =   self.Fhru2 * self.Sd2
-        self.Sd      =   self.Sd1 + self.Sd2
-        self.Sg      =   self.Sg
-        self.Sr      =   self.Sr
-        Ssnow1  =  self.Fhru1 * (self.FreeWater1 + self.DrySnow1)
-        Ssnow2  =   self.Fhru2 * (self.FreeWater2 + self.DrySnow2)
-        Ssnow   =   Ssnow1 + Ssnow2
-        Stot    =   self.S0 + self.Ss + self.Sd + self.Sg + self.Sr + Ssnow + (self.Fhru1 * self.Mleaf1*scalar(4)) + (self.Fhru2 * self.Mleaf2*scalar(4))     # assume 80% water  in biomass
-        self.Mleaf1  =   self.Fhru1 * self.Mleaf1
-        self.Mleaf2  =   self.Fhru2 * self.Mleaf2
-        Mleaf   =   self.Mleaf1 + self.Mleaf2
-        self.LAI1    =   self.Fhru1 * self.LAI1
-        self.LAI2    =   self.Fhru2 * self.LAI2
-        LAI     =   self.LAI1 + self.LAI2
-        fveg1   =   self.Fhru1 * fveg1
-        fveg2   =   self.Fhru2 * fveg2
-        fveg    =   fveg1 + fveg2
-        # out.fveq    =   sum(Fhru * fveq)
-        # satellite equivalent
-        ALBEDO  =   self.Fhru1 * alb1 + self.Fhru2 * alb2
-        self.EVI1    =   self.Fhru1 * (self.Vc1*fveg1+0.07)    # assume 0.07 is EVI for bare soil
-        self.EVI2    =   self.Fhru2 * (self.Vc2*fveg2+0.07)    # assume 0.07 is EVI for bare soil
-        EVI     =   self.EVI1 + self.EVI2
-        fsat1   =   self.Fhru1 * fsat1
-        fsat2   =   self.Fhru2 * fsat2
-        fsat    =   fsat1 + fsat2
-        wunsat1 =   self.Fhru1 * w01
-        wunsat2 =   self.Fhru2 * w02
-        wunsat  =   wunsat1 + wunsat2
-
-        # ASSIGN STATE VARIABLES
-
-        #states = ['S01','S02','Ss2','Ss2','Sd1','Sd2','Sg','Sr',
-        #          'Mleaf1','Mleaf2','FreeWater1','FreeWater2','DrySnow1','DrySnow2', 'LAI1', 'LAI2', 'EVI1', 'EVI2']
-
-
-
-        #report output
-        # QTOT MAPS
-        #report(Qtot,os.path.join(outputDir,'qtot',('qtot0000.'+extension)))
-        #report(PRECIP,os.path.join(outputDir,'precip',('precip00.'+extension)))
-        #report(self.E01,os.path.join(outputDir,'epot1',('epot1000.'+extension)))
-        #report(self.self.E02,os.path.join(outputDir,'epot2',('epot2000.'+extension)))
-
-        #time series of results gridcell down stream Amazone river
-        #FreeWater1/(TotSnow1+1e-5)
-        #test_array1 = pcr2numpy(wSnow1,0)
-        #test1.append(test_array1[87,124])
-
-        #test_array2 = pcr2numpy(FreeWater1,0)
-        #test2.append(test_array2[87,124])
-
-        #test_array3 = pcr2numpy(alb_snow1,0)
-        #test3.append(test_array3[87,124])
-
-      
 
 
 # The main function is used to run the program from the command line
