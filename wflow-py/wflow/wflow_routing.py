@@ -187,6 +187,7 @@ class WflowModel(DynamicModel):
         self.SSSF = False
         setglobaloption("unittrue")
 
+        self.inflowTss = "/intss/Inflow.tss"
         self.logger.info("running for " + str(self.nrTimeSteps()) + " timesteps")
 
 
@@ -196,7 +197,7 @@ class WflowModel(DynamicModel):
         self.OverWriteInit = int(configget(self.config, "model", "OverWriteInit", "0"))
         self.updating = int(configget(self.config, "model", "updating", "0"))
         self.updateFile = configget(self.config, "model", "updateFile", "no_set")
-
+        self.Tslice = int(configget(self.config, "model", "Tslice", "1"))
         self.sCatch = int(configget(self.config, "model", "sCatch", "0"))
         self.intbl = configget(self.config, "model", "intbl", "intbl")
         self.timestepsecs = int(configget(self.config, "model", "timestepsecs", "86400"))
@@ -208,6 +209,7 @@ class WflowModel(DynamicModel):
         self.MaxUpdMult = float(configget(self.config, "model", "MaxUpdMult", "1.3"))
         self.MinUpdMult = float(configget(self.config, "model", "MinUpdMult", "0.7"))
         self.UpFrac = float(configget(self.config, "model", "UpFrac", "0.8"))
+        self.SubCatchFlowOnly = int(configget(self.config, 'model', 'SubCatchFlowOnly', '0'))
 
         WIMaxScale = float(configget(self.config, 'model', 'WIMaxScale', '0.8'))
 
@@ -222,6 +224,9 @@ class WflowModel(DynamicModel):
         wflow_gauges = configget(self.config, "model", "wflow_gauges", "staticmaps/wflow_gauges.map")
         wflow_inflow = configget(self.config, "model", "wflow_inflow", "staticmaps/wflow_inflow.map")
         wflow_riverwidth = configget(self.config, "model", "wflow_riverwidth", "staticmaps/wflow_riverwidth.map")
+        wflow_landuse = configget(self.config, "model", "wflow_landuse", "staticmaps/wflow_landuse.map")
+        wflow_soil = configget(self.config, "model", "wflow_soil", "staticmaps/wflow_soil.map")
+
 
 
         # 2: Input base maps ########################################################
@@ -243,6 +248,7 @@ class WflowModel(DynamicModel):
         self.LandUse = cover(self.LandUse, nominal(ordinal(subcatch) > 0))
         self.Soil = readmap(os.path.join(self.Dir,wflow_soil))
         self.Soil = cover(self.Soil, nominal(ordinal(subcatch) > 0))
+
         self.OutputLoc = readmap(os.path.join(self.Dir,wflow_gauges))  # location of output gauge(s)
         self.InflowLoc = pcrut.readmapSave(os.path.join(self.Dir,wflow_inflow), 0.0)  # location abstractions/inflows.
         self.RiverWidth = pcrut.readmapSave(os.path.join(self.Dir,wflow_riverwidth), 0.0)
@@ -339,6 +345,10 @@ class WflowModel(DynamicModel):
         self.DCL = drainlength * max(1.0, self.RiverLengthFac)
         self.DCL = max(self.DCL, self.RiverLength)  # m
 
+        self.SlopeDCL = self.Slope * self.reallength/self.DCL
+
+
+
         # water depth (m)
         # set width for kinematic wave to cell width for all cells
         self.Bw = detdrainwidth(self.TopoLdd, self.xl, self.yl)
@@ -346,10 +356,10 @@ class WflowModel(DynamicModel):
         # width of the river
         self.Bw = ifthenelse(self.River, self.RiverWidth, self.Bw)
 
-        riverslopecor = drainlength / self.DCL
+        #riverslopecor = drainlength / self.DCL
         #report(riverslopecor,"cor.map")
         #report(self.Slope * riverslopecor,"slope.map")
-        self.AlpTerm = pow((self.N / (sqrt(self.Slope * riverslopecor))), self.Beta)
+        self.AlpTerm = pow((self.N / (sqrt(self.SlopeDCL))), self.Beta)
         # power for Alpha
         self.AlpPow = (2.0 / 3.0) * self.Beta
         # initial approximation for Alpha
@@ -377,7 +387,9 @@ class WflowModel(DynamicModel):
                 'self.xl',
                 'self.yl',
                 'self.DCL',
-                'self.Bw']
+                'self.Bw',
+                'self.Slope',
+                'self.SlopeDCL']
 
           return lst
 
@@ -432,7 +444,10 @@ class WflowModel(DynamicModel):
             "Step: " + str(int(self.thestep + self._d_firstTimeStep)) + "/" + str(int(self._d_nrTimeSteps)))
         self.thestep = self.thestep + 1
 
-        self.Precipitation = cover(self.wf_readmap(self.P_mapstack, 0.0), scalar(0.0))
+        self.InwaterForcing = cover(self.wf_readmap(self.IW_mapstack, 1.0), scalar(0.0))
+
+        if self.thestep > 28:
+            self.InwaterForcing = cover(0.0)
         #self.Inflow=cover(self.wf_readmap(self.Inflow),0)
         if (os.path.exists(self.caseName + self.inflowTss)):
             self.Inflow = cover(timeinputscalar(self.caseName + self.inflowTss, nominal(self.InflowLoc)), 0)
@@ -440,7 +455,7 @@ class WflowModel(DynamicModel):
             self.Inflow = cover(self.wf_readmap(self.Inflow_mapstack, 0.0,verbose=False),0)
 
         # The MAx here may lead to watbal error. Howvere, if inwaterMMM becomes < 0, the kinematic wave becomes very slow......
-        self.InwaterMM = max(0.0,self.ExfiltWater + self.ExcessWater + self.SubCellRunoff + self.SubCellGWRunoff + self.RunoffOpenWater + self.BaseFlow - Reinfilt - self.ActEvapOpenWater)
+        self.InwaterMM = max(0.0,self.InwaterForcing)
         self.Inwater = self.InwaterMM * self.ToCubic  # m3/s
 
         self.Inwater = self.Inwater + self.Inflow  # Add abstractions/inflows in m^3/sec
