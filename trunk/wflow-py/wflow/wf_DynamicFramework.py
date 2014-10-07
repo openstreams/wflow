@@ -22,6 +22,7 @@ $Rev: 915 $
 
 #TODO: rmove most exec statements and replace by getattr
 
+import osgeo.gdal as gdal
 from wflow.wf_netcdfio import *
 
 import numpy

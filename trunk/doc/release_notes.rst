@@ -8,12 +8,12 @@ unsupported interim release
 + added  HBV type lower zone to wflow\_sbm. Use MaxPercolation > 0 to use this zone. MaxLeakege > 0 will send
   water outside of the model
 + Test version of the wflow_W3RA model
-+ The default formulation of lateral flow is not the original SBM formulation that
-  gives much lower lateral flows than the one from the Cqflow model. Use origTopogLateral=0 to fro
-  old models! Other options are 1 (default), and 2: use effective Ksat at freatic level
++ Made two lateral flow options for sbm
 + Stopped support for pcraster version 3 and python 2.6
 + removed all the try/except from importing wflow. Now you
   NEED to install wflow as a package
++ Added seperate wflow\_routing module that includes the kinematic wave routing. This part will be removed from the
+  wflow\_sbm and wflow\_hbv models
 
 
 Version 1.0 RC5
