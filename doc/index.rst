@@ -32,9 +32,11 @@ the following models:
 
 -  the wflow\_gr4 model (a distributed version of the gr4h/d models).
 
--  the wflow\_wave model (a dynamic wave model that can run on the output of the sbm and hbv models).
+-  the wflow\_routing model (a kinematic wave model that can run on the output of tone of the hydrological models).
 
--  the wflow\_floodmap model (a flood mapping model that can use the output of the wflow\_wave model or de sbm and hbv models).
+-  the wflow\_wave model (a dynamic wave model that can run on the output of the wflow\_routing model).
+
+-  the wflow\_floodmap model (a flood mapping model that can use the output of the wflow\_wave model or de wflow\_routing model).
 
 The low level api and links to other frameworks allow the models to be
 linked as part of larger modelling systems:
@@ -98,13 +100,12 @@ the model both PCRaster and Python 2.7 are needed.
 
     .. note::  A pdf version of this version of the documentation can be
                found at
-               (http://publicwiki.deltares.nl/download/attachments/76613461/wflow.pdf)
+               (https://drive.google.com/folderview?id=0B-lQGXSOhXJRc1d0YW82Q21hdEk&usp=sharing)
 
 .. only:: latex
 
     .. note::  A html version of this version of the documentation can be
-               found at (http://schj.home/xs4all.nl/html) or zipped at
-               (http://publicwiki.deltares.nl/download/attachments/76613461/wflow_html.zip)
+               found at (http://wflow.googlecode.com/svn/tags/1.0RC6/doc/_build/html/index.html).
 
 
 The wflow\_hbv model
@@ -127,7 +128,15 @@ The wflow\_gr4 model
    :maxdepth: 2
 
    wflow_gr4   
-   
+
+
+The wflow\_routing model
+=====================
+.. toctree::
+   :maxdepth: 2
+
+   wflow_routing
+
 The wflow\_wave model
 =====================
 .. toctree::
