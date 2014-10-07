@@ -11,6 +11,10 @@ $Rev: 915 $
 
 
 import netCDF4
+# the two below are needed frp bbfreeze
+import netCDF4_utils
+import netcdftime
+
 from pcraster import *
 from numpy import *
 
