@@ -48,9 +48,8 @@ import getopt
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
  
-#import scipy
-
-
+#TODO: Make the script HRU independent (loop over the nr of HRU's)
+#TODO: 
 
 def usage(*args):
     sys.stdout = sys.stderr
@@ -244,7 +243,7 @@ class WflowModel(DynamicModel):
     *Required*
 
     This function is required. Read initial state maps (they are output of a 
-    previous call to suspend()). The implementation showns here is the most basic 
+    previous call to suspend()). The implementation shown here is the most basic
     setup needed.
     
     """
