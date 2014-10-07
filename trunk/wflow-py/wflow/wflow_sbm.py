@@ -390,12 +390,12 @@ class WflowModel(DynamicModel):
         self.OverWriteInit = int(configget(self.config, "model", "OverWriteInit", "0"))
         self.updating = int(configget(self.config, "model", "updating", "0"))
         self.updateFile = configget(self.config, "model", "updateFile", "no_set")
-        self.LateralMethod = int(configget(self.config, "model", "lateralmethod", "0"))
+        self.LateralMethod = int(configget(self.config, "model", "lateralmethod", "1"))
 
-        if self.LateralMethod == 0:
+        if self.LateralMethod == 1:
             self.logger.info("Applying the original topog_sbm lateral transfer formulation")
-        else:
-            self.logger.warn("Using the original (depreciated!!) wflow lateral transfer formulation")
+        elif self.LateralMethod == 2:
+            self.logger.warn("Using alternate wflow lateral transfer formulation")
 
         self.sCatch = int(configget(self.config, "model", "sCatch", "0"))
         self.intbl = configget(self.config, "model", "intbl", "intbl")
@@ -1128,13 +1128,10 @@ class WflowModel(DynamicModel):
 
 
         if self.waterdem:
-            if self.LateralMethod == 0:
-                Lateral = self.FirstZoneKsatVer * tan(self.waterSlope) *  exp(-self.SaturationDeficit / self.M)
-            else:
-                if self.LateralMethod == 1:
-                    Lateral = self.FirstZoneKsatVer * self.waterSlope * exp(-self.SaturationDeficit / self.M)
-                else:
-                    Lateral = Ksat * self.waterSlope
+            if self.LateralMethod == 1:
+                Lateral = self.FirstZoneKsatVer * self.waterSlope * exp(-self.SaturationDeficit / self.M)
+            elif self.LateralMethod == 2:
+                Lateral = Ksat * self.waterSlope
 
             MaxHor = max(0.0, min(Lateral, self.FirstZoneDepth))
             self.FirstZoneFlux = accucapacityflux(waterLdd, self.FirstZoneDepth, MaxHor)
@@ -1144,13 +1141,10 @@ class WflowModel(DynamicModel):
             #MaxHor = max(0,min(self.FirstZoneKsatVer * self.Slope * exp(-SaturationDeficit/self.M),self.FirstZoneDepth*(self.thetaS-self.thetaR))) * timestepsecs/basetimestep
             #MaxHor = max(0.0, min(self.FirstZoneKsatVer * self.Slope * exp(-self.SaturationDeficit / self.M),
             #                      self.FirstZoneDepth))
-            if self.LateralMethod:
-                Lateral = self.FirstZoneKsatVer * tan(self.waterSlope) *  exp(-self.SaturationDeficit / self.M)
-            else:
-                if self.LateralMethod == 1:
-                    Lateral = self.FirstZoneKsatVer * self.waterSlope * exp(-self.SaturationDeficit / self.M)
-                else:
-                    Lateral = Ksat * self.waterSlope
+            if self.LateralMethod == 1:
+                Lateral = self.FirstZoneKsatVer * self.waterSlope * exp(-self.SaturationDeficit / self.M)
+            elif self.LateralMethod == 2:
+                Lateral = Ksat * self.waterSlope
 
             MaxHor = max(0.0, min(Lateral, self.FirstZoneDepth))
             #MaxHor = self.ZeroMap
