@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>The wflow_hbv model &mdash; wflow 1.0-RC6-dev-119M documentation</title>
+    <title>The wflow_hbv model &mdash; wflow 1.0-RC6-dev-147M documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.0-RC6-dev-119M',
+        VERSION:     '1.0-RC6-dev-147M',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="wflow 1.0-RC6-dev-119M documentation" href="index.html" />
+    <link rel="top" title="wflow 1.0-RC6-dev-147M documentation" href="index.html" />
     <link rel="next" title="The wflow_sbm Model" href="wflow_sbm.html" />
     <link rel="prev" title="Welcome to wflow’s documentation!" href="index.html" /> 
   </head>
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="index.html" title="Welcome to wflow’s documentation!"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">wflow 1.0-RC6-dev-119M documentation</a> &raquo;</li> 
+        <li><a href="index.html">wflow 1.0-RC6-dev-147M documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
@@ -66,7 +66,7 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#subcatchment-flow">Subcatchment flow</a><ul>
-<li><a class="reference internal" href="#description-of-the-python-module">Description of the python module</a></li>
+<li><a class="reference internal" href="#module-wflow_hbv">Description of the python module</a></li>
 </ul>
 </li>
 </ul>
@@ -387,8 +387,292 @@ when connecting the result of the model to a water allocation model such as Riba
 <span class="n">SubCatchFlowOnly</span> <span class="o">=</span> <span class="mi">1</span>
 </pre></div>
 </div>
-<div class="section" id="description-of-the-python-module">
-<h2>Description of the python module<a class="headerlink" href="#description-of-the-python-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-wflow_hbv">
+<span id="description-of-the-python-module"></span><h2>Description of the python module<a class="headerlink" href="#module-wflow_hbv" title="Permalink to this headline">¶</a></h2>
+<p>Run the wflow_hbv hydrological model..</p>
+<p>usage: 
+wflow_hbv:</p>
+<div class="highlight-python"><div class="highlight"><pre>[-h][-v level][-F runinfofile][-L logfile][-C casename][-R runId]
+[-c configfile][-T timesteps][-s seconds][-W][-E][-N][-U discharge]
+[-P parameter multiplication][-X][-l loglevel]
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>-F: if set wflow is expected to be run by FEWS. It will determine</dt>
+<dd>the timesteps from the runinfo.xml file and save the output initial
+conditions to an alternate location. Also set fewsrun=1 in the .ini file!</dd>
+</dl>
+<p>-f: Force overwrite of existing results</p>
+<p>-T: Set the number of timesteps to run</p>
+<p>-N: No lateral flow, use runoff response function to generate fast runoff</p>
+<p>-s: Set the model timesteps in seconds</p>
+<p>-I: re-initialize the initial model conditions with default</p>
+<p>-i: Set input table directory (default is intbl)</p>
+<p>-x: run for subcatchment only (e.g. -x 1)</p>
+<p>-C: set the name  of the case (directory) to run</p>
+<p>-R: set the name runId within the current case</p>
+<p>-L: set the logfile</p>
+<p>-c: name of wflow the configuration file (default: Casename/wflow_hbv.ini).</p>
+<p>-h: print usage information</p>
+<dl class="docutils">
+<dt>-U: The argument to this option should be a .tss file with measured discharge in</dt>
+<dd>[m^3/s] which the progam will use to update the internal state to match 
+the measured flow. The number of columns in this file should match the 
+number of gauges in the wflow_gauges.map file.</dd>
+<dt>-u: list of gauges/columns to use in update. Format:</dt>
+<dd>-u [1 , 4 ,13]
+The above example uses column 1, 4 and 13</dd>
+<dt>-P: set parameter multiply dictionary (e.g: -P {&#8216;self.FirstZoneDepth&#8217; <span class="classifier-delimiter">:</span> <span class="classifier">1.2}</span></dt>
+<dd>to increase self.FirstZoneDepth by 20%, multiply with 1.2)</dd>
+<dt>-p: set input parameter (dynamic, e.g. precip) multiply dictionary </dt>
+<dd>(e.g: -p {&#8216;self.Precipitation&#8217; : 1.2} to increase Precipitation 
+by 20%, multiply with 1.2)</dd>
+</dl>
+<p>-l: loglevel (most be one of DEBUG, WARNING, ERROR)</p>
+<p>-X overwrites the initial values at the end of each timestep</p>
+<p>$Author$
+$Id$
+$Rev$</p>
+<dl class="class">
+<dt id="wflow_hbv.WflowModel">
+<em class="property">class </em><tt class="descclassname">wflow_hbv.</tt><tt class="descname">WflowModel</tt><big>(</big><em>cloneMap</em>, <em>Dir</em>, <em>RunDir</em>, <em>configfile</em><big>)</big><a class="headerlink" href="#wflow_hbv.WflowModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>The user defined model class. All maps are defined here for documentation 
+purposes</p>
+<dl class="method">
+<dt id="wflow_hbv.WflowModel.default_summarymaps">
+<tt class="descname">default_summarymaps</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_hbv.WflowModel.default_summarymaps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of default summary-maps at the end of a run.
+This is model specific. You can also add them to the [summary]section of the ini file but stuff
+you think is crucial to the model should be listed here</p>
+<blockquote>
+<div>Example:</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_hbv.WflowModel.dynamic">
+<tt class="descname">dynamic</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_hbv.WflowModel.dynamic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Below a list of variables that can be save to disk as maps or as 
+timeseries (see ini file for syntax):</p>
+<p><em>Dynamic variables</em></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>self.SurfaceRunoff</strong> &#8211; Surface runoff in the kinematic wave [m^3/s]</li>
+<li><strong>self.WaterLevel</strong> &#8211; Water level in the kinematic wave [m] (above the bottom)</li>
+<li><strong>self.InterceptionStorage</strong> &#8211; actual interception storage [mm]</li>
+<li><strong>self.Snow</strong> &#8211; Snow depth [mm]</li>
+<li><strong>self.SnowWater</strong> &#8211; water content of the snow [mm]</li>
+<li><strong>self.LowerZoneStorage</strong> &#8211; water content of the lower zone [mm]</li>
+<li><strong>self.UpperZoneStorage</strong> &#8211; water content of the Upper zone [mm]</li>
+<li><strong>self.BaseFlow</strong> &#8211; Specific runoff (baseflow part) per cell [mm]</li>
+<li><strong>self.Percolation</strong> &#8211; actual percolation to the lower zone [mm]</li>
+<li><strong>self.SoilMoisture</strong> &#8211; actual soil moisture [mm]</li>
+<li><strong>self.QuickFlow</strong> &#8211; specific runoff (quickflow part) [mm]</li>
+<li><strong>self.RealQuickFlow</strong> &#8211; specific runoff (quickflow), If K upper zone is precalculated [mm]</li>
+<li><strong>self.CapFlux</strong> &#8211; capilary rise [mm]</li>
+<li><strong>self.SurfaceRunoffMM</strong> &#8211; SurfaceRunoff in mm</li>
+<li><strong>self.KinWaveVolume</strong> &#8211; Volume in the kinematic wave reservoir</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><em>Static variables</em></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>self.Altitude</strong> &#8211; The altitude of each cell [m]</li>
+<li><strong>self.Bw</strong> &#8211; Width of the river [m]</li>
+<li><strong>self.River</strong> &#8211; booolean map indicating the presence of a river [-]</li>
+<li><strong>self.DLC</strong> &#8211; length of the river within a cell [m]</li>
+<li><strong>self.ToCubic</strong> &#8211; Mutiplier to convert mm to m^3/s for fluxes</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_hbv.WflowModel.initial">
+<tt class="descname">initial</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_hbv.WflowModel.initial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initial part of the model, executed only once. Reads all static model
+information (parameters) and sets-up the variables used in modelling.</p>
+<p><em>HBV Soil</em></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>FC.tbl</strong> &#8211; Field Capacity (260.0) [mm]</li>
+<li><strong>BetaSeepage.tbl</strong> &#8211; exponent in soil runoff generation equation (1.8)  [-]</li>
+<li><strong>LP.tbl</strong> &#8211; fraction of Fieldcapacity below which actual evaporation=potential evaporation (0.53000)</li>
+<li><strong>K4.tbl</strong> &#8211; Recession constant baseflow (0.02307)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><em>If SetKquickFlow is set to 1</em></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>KQuickFlow.tbl</strong> &#8211; (0.09880)</li>
+<li><strong>SUZ.tbl</strong> &#8211; Level over wich K0 is used (100.0)</li>
+<li><strong>K0.tbl</strong> &#8211; (0.3)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><em>If SetKquickFlow is set to 0</em></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>KHQ.tbl</strong> &#8211; recession rate at flow HQ (0.09880)</li>
+<li><strong>HQ.tbl</strong> &#8211; high flow rate HQ for which recession rate of upper reservoir is known (3.27000)</li>
+<li><strong>AlphaNL.tbl</strong> &#8211; measure of non-linearity of upper reservoir (1.1)</li>
+<li><strong>PERC.tbl</strong> &#8211; Percolation from Upper to Lowerzone (0.4000)  [mm/day]</li>
+<li><strong>CFR.tbl</strong> &#8211; Refreezing efficiency constant in refreezing of freewater in snow (0.05000)</li>
+<li><strong>Pcorr.tbl</strong> &#8211; Correction factor for precipitation (1.0)</li>
+<li><strong>RFCF.tbl</strong> &#8211; Correction factor for rainfall (1.0)</li>
+<li><strong>SFCF.tbl</strong> &#8211; Correction factor for snowfall(1.0)</li>
+<li><strong>Cflux.tbl</strong> &#8211; Maximum capillary rise from runoff response routine to soil moisture routine     (2.0)</li>
+<li><strong>ICF.tbl</strong> &#8211; Maximum interception storage (in forested AND non-forested areas) (2.0)</li>
+<li><strong>CEVPF.tbl</strong> &#8211; Correction factor for potential evaporation (1.0)</li>
+<li><strong>EPF.tbl</strong> &#8211; Exponent of correction factor for evaporation on days with precipitation(0.0)</li>
+<li><strong>ECORR.tbl</strong> &#8211; Evap correction (1.0)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><em>Snow modelling parameters</em></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>TTI.tbl</strong> &#8211; critical temperature for snowmelt and refreezing  (1.000) [oC]</li>
+<li><strong>TT.tbl</strong> &#8211; defines interval in which precipitation falls as rainfall and snowfall (-1.41934) [oC]</li>
+<li><strong>Cfmax.tbl</strong> &#8211; meltconstant in temperature-index ( 3.75653) [-]</li>
+<li><strong>WHC.tbl</strong> &#8211; fraction of Snowvolume that can store water (0.1) [-]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_hbv.WflowModel.resume">
+<tt class="descname">resume</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_hbv.WflowModel.resume" title="Permalink to this definition">¶</a></dt>
+<dd><p>read initial state maps (they are output of a previous call to suspend())</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_hbv.WflowModel.stateVariables">
+<tt class="descname">stateVariables</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_hbv.WflowModel.stateVariables" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>returns a list of state variables that are essential to the model. 
+This list is essential for the resume and suspend functions to work.</p>
+<p>This function is specific for each model and <strong>must</strong> be present.</p>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>self.SurfaceRunoff</strong> &#8211; Surface runoff in the kin-wave resrvoir [m^3/s]</li>
+<li><strong>self.WaterLevel</strong> &#8211; Water level in the kin-wave resrvoir [m]</li>
+<li><strong>self.DrySnow</strong> &#8211; Snow pack [mm]</li>
+<li><strong>self.FreeWater</strong> &#8211; Available free water [mm]</li>
+<li><strong>self.UpperZoneStorage</strong> &#8211; Water in the upper zone [mm]</li>
+<li><strong>self.LowerZoneStorage</strong> &#8211; Water in the lower zone [mm]</li>
+<li><strong>self.SoilMoisture</strong> &#8211; Soil moisture [mm]</li>
+<li><strong>self.InterceptionStorage</strong> &#8211; Amount of water on the Canopy [mm]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_hbv.WflowModel.supplyCurrentTime">
+<tt class="descname">supplyCurrentTime</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_hbv.WflowModel.supplyCurrentTime" title="Permalink to this definition">¶</a></dt>
+<dd><p>gets the current time in seconds after the start of the run</p>
+<dl class="docutils">
+<dt>Ouput:</dt>
+<dd><ul class="first last simple">
+<li>time in seconds since the start of the model run</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_hbv.WflowModel.suspend">
+<tt class="descname">suspend</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_hbv.WflowModel.suspend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Suspends the model to disk. All variables needed to restart the model
+are saved to disk as pcraster maps. Use resume() to re-read them</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_hbv.WflowModel.updateRunOff">
+<tt class="descname">updateRunOff</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_hbv.WflowModel.updateRunOff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the kinematic wave reservoir</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_hbv.main">
+<tt class="descclassname">wflow_hbv.</tt><tt class="descname">main</tt><big>(</big><em>argv=None</em><big>)</big><a class="headerlink" href="#wflow_hbv.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform command line execution of the model.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="wflow_hbv.multdynapars">
+<tt class="descclassname">wflow_hbv.</tt><tt class="descname">multdynapars</tt><em class="property"> = {}</em><a class="headerlink" href="#wflow_hbv.multdynapars" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dictionary with parameters and multipliers (dynamic) (used in calibration)</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="wflow_hbv.multpars">
+<tt class="descclassname">wflow_hbv.</tt><tt class="descname">multpars</tt><em class="property"> = {}</em><a class="headerlink" href="#wflow_hbv.multpars" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dictionary with parameters and multipliers (static) (used in calibration)</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="wflow_hbv.updateCols">
+<tt class="descclassname">wflow_hbv.</tt><tt class="descname">updateCols</tt><em class="property"> = []</em><a class="headerlink" href="#wflow_hbv.updateCols" title="Permalink to this definition">¶</a></dt>
+<dd><p>Column sused in updating</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_hbv.usage">
+<tt class="descclassname">wflow_hbv.</tt><tt class="descname">usage</tt><big>(</big><em>*args</em><big>)</big><a class="headerlink" href="#wflow_hbv.usage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print usage information</p>
+<ul class="simple">
+<li><a href="#id1"><span class="problematic" id="id2">*</span></a>args: command line arguments given</li>
+</ul>
+</dd></dl>
+
+<dl class="data">
+<dt id="wflow_hbv.wflowVersion">
+<tt class="descclassname">wflow_hbv.</tt><tt class="descname">wflowVersion</tt><em class="property"> = '$Revision$  $Date$'</em><a class="headerlink" href="#wflow_hbv.wflowVersion" title="Permalink to this definition">¶</a></dt>
+<dd><p>revision of the model</p>
+</dd></dl>
+
 </div>
 </div>
 
@@ -413,7 +697,7 @@ when connecting the result of the model to a water allocation model such as Riba
         <li class="right" >
           <a href="index.html" title="Welcome to wflow’s documentation!"
              >previous</a> |</li>
-        <li><a href="index.html">wflow 1.0-RC6-dev-119M documentation</a> &raquo;</li> 
+        <li><a href="index.html">wflow 1.0-RC6-dev-147M documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

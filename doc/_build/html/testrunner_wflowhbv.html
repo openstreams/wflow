@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>run wflow_hbv via API &mdash; wflow 1.0-RC6-dev-119M documentation</title>
+    <title>run wflow_hbv via API &mdash; wflow 1.0-RC6-dev-147M documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.0-RC6-dev-119M',
+        VERSION:     '1.0-RC6-dev-147M',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="wflow 1.0-RC6-dev-119M documentation" href="index.html" />
+    <link rel="top" title="wflow 1.0-RC6-dev-147M documentation" href="index.html" />
     <link rel="next" title="Calibration of the wflow_sbm model for the Rhine catchment using EOBS data" href="calib_report.html" />
     <link rel="prev" title="wflow_delwaq Module" href="wflow_delwaq.html" /> 
   </head>
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="wflow_delwaq.html" title="wflow_delwaq Module"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">wflow 1.0-RC6-dev-119M documentation</a> &raquo;</li> 
+        <li><a href="index.html">wflow 1.0-RC6-dev-147M documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
@@ -54,7 +54,10 @@
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">run wflow_hbv via API</a><ul>
-<li><a class="reference internal" href="#settings-in-the-ini-file">Settings in the ini file</a></li>
+<li><a class="reference internal" href="#settings-in-the-ini-file">Settings in the ini file</a><ul>
+<li><a class="reference internal" href="#controlling-the-model-via-the-api">Controlling the model via the API</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -173,6 +176,23 @@
 <span class="c"># IntEvap=int</span>
 <span class="c"># PotEvaporation=pot</span>
 </pre></div>
+</div>
+<span class="target" id="module-testrunner_wflowhbv"></span><div class="section" id="controlling-the-model-via-the-api">
+<h3>Controlling the model via the API<a class="headerlink" href="#controlling-the-model-via-the-api" title="Permalink to this headline">¶</a></h3>
+<p>Example of how to use the framework to control the wflow_* models
+from other software, in this case a python script.</p>
+<p>In this example case the controlling piece of software (this script)
+provides the forcing data using the API. It also interrogates the model
+to get results and display them on screen.</p>
+<p>Each wflow_* model should provide a def supplyVariableNamesAndRoles function
+that returns a list of variables and their roles. This function can than
+be used by the controlling program to interrogate the model.</p>
+<p>Some important things to consider:</p>
+<ul class="simple">
+<li>when initialzing the framework you must do so for the maximum number of timesteps you want to run the model for. This is needed for the pcrastertimeseries output functions.</li>
+<li>the framework internally saves the state variable for the last timesteps. As such it is possible to redo the previous timesteps after calling the quickresume function. If you want to go back more than one timesteps you will need to call the normal resume function wich will restore the states to the last time the suspend function was call. Administering this is left to the controlling application.</li>
+<li>Inputs (forcing variables) must be set at the start of a timesteps, results should be read after each timestep.</li>
+</ul>
 </div>
 <div class="highlight-python"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Controlling the model via the API</span>
@@ -307,7 +327,7 @@
         <li class="right" >
           <a href="wflow_delwaq.html" title="wflow_delwaq Module"
              >previous</a> |</li>
-        <li><a href="index.html">wflow 1.0-RC6-dev-119M documentation</a> &raquo;</li> 
+        <li><a href="index.html">wflow 1.0-RC6-dev-147M documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
