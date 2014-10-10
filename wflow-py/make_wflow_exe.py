@@ -3,6 +3,9 @@ from bbfreeze import Freezer
 from _version import *
 import ctypes
 
+def dependencies_for_freeezing():
+	import netCDF4_utils 
+
 nrbits = str(ctypes.sizeof(ctypes.c_voidp) * 8)
 
 
