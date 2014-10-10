@@ -657,7 +657,13 @@ def main(argv=None):
     _lastTimeStep = 10
     _firstTimeStep = 1
     timestepsecs=86400
+    fewsrun = False
     wflow_cloneMap = 'wflow_subcatch.map'
+    runinfoFile = "runinfo.xml"
+    _NoOverWrite=False
+    loglevel = logging.DEBUG
+    LogFileName = "wflow.log"
+
     
     # This allows us to use the model both on the command line and to call 
     # the model usinge main function from another python script.
@@ -668,9 +674,12 @@ def main(argv=None):
             usage()
             return     
 
-    opts, args = getopt.getopt(argv, 'C:S:T:c:s:R:')
+    opts, args = getopt.getopt(argv, 'C:S:T:c:s:R:F:')
     
     for o, a in opts:
+        if o == '-F':
+            runinfoFile = a
+            fewsrun = True
         if o == '-C': caseName = a
         if o == '-R': runId = a
         if o == '-c': configfile = a
@@ -680,14 +689,30 @@ def main(argv=None):
         
     if (len(opts) <=1):
         usage()
-        
+
+    if fewsrun:
+        ts = getTimeStepsfromRuninfo(runinfoFile, timestepsecs)
+        starttime = getStartTimefromRuninfo(runinfoFile)
+        if (ts):
+            _lastTimeStep = ts
+            _firstTimeStep = 1
+        else:
+            print "Failed to get timesteps from runinfo file: " + runinfoFile
+            exit(2)
+    else:
+        starttime = dt.datetime(1990,01,01)
+
+
     myModel = WflowModel(wflow_cloneMap, caseName,runId,configfile)
-    dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep,firstTimestep=_firstTimeStep)
-    dynModelFw.createRunId(NoOverWrite=False,level=logging.DEBUG)    
+    dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep,firstTimestep=_firstTimeStep,datetimestart=starttime)
+    dynModelFw.createRunId(NoOverWrite=_NoOverWrite, level=loglevel, logfname=LogFileName)
+
     dynModelFw._runInitial()
     dynModelFw._runResume()
     dynModelFw._runDynamic(_firstTimeStep,_lastTimeStep)
     dynModelFw._runSuspend()
+    fp = open(caseName + "/" + runId + "/runinfo/configofrun.ini", 'wb')
+    myModel.config.write(fp)
     dynModelFw._wf_shutdown()
     
 
