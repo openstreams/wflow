@@ -1,0 +1,181 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The wflow_gr4 model &mdash; wflow 1.0-RC6-dev-119M documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0-RC6-dev-119M',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="wflow 1.0-RC6-dev-119M documentation" href="index.html" />
+    <link rel="next" title="THe wflow_routing Model" href="wflow_routing.html" />
+    <link rel="prev" title="The wflow_sbm Model" href="wflow_sbm.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="wflow_routing.html" title="THe wflow_routing Model"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="wflow_sbm.html" title="The wflow_sbm Model"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">wflow 1.0-RC6-dev-119M documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">The wflow_gr4 model</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li><a class="reference internal" href="#configuration">Configuration</a></li>
+<li><a class="reference internal" href="#wflow-gr4-module-documentation">wflow_gr4 module documentation</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="wflow_sbm.html"
+                        title="previous chapter">The wflow_sbm Model</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="wflow_routing.html"
+                        title="next chapter">THe wflow_routing Model</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/wflow_gr4.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-wflow-gr4-model">
+<h1>The wflow_gr4 model<a class="headerlink" href="#the-wflow-gr4-model" title="Permalink to this headline">¶</a></h1>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The documentation is incomplete</p>
+</div>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>An <em>experimental</em> implementation of the gr4 model. It is based on the hourly (gr4h) version</p>
+</div>
+<div class="section" id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<p>[PM]</p>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<p>The model  needs a number of settings in the ini file. The default name for the ini file
+is wflow_gr4.ini.</p>
+<p>See below for an example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">model</span><span class="p">]</span>
+
+<span class="n">Tslice</span><span class="o">=</span><span class="mi">1</span>
+<span class="c"># Maximum upstream distance to update the flow in metres</span>
+
+
+<span class="p">[</span><span class="n">gr4</span><span class="p">]</span>
+<span class="n">dt</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">B</span> <span class="o">=</span> <span class="mf">0.9</span>
+<span class="n">D</span> <span class="o">=</span> <span class="mf">1.25</span>
+<span class="n">X4</span> <span class="o">=</span> <span class="mf">32.83</span>
+<span class="c"># X1,X2 and X3 are given as .tbl files or maps</span>
+
+<span class="p">[</span><span class="n">layout</span><span class="p">]</span>
+<span class="c"># if set to zero the cell-size is given in lat/long (the default)</span>
+<span class="n">sizeinmetres</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="p">[</span><span class="n">outputmaps</span><span class="p">]</span>
+<span class="c"># Add maps here</span>
+
+<span class="c"># List all timeseries in tss format to save in this section. Timeseries are</span>
+<span class="c"># produced as averages per subcatchment. The discharge (run) timeseries</span>
+<span class="c"># is always saved (as samples at the gauge location)s.</span>
+<span class="p">[</span><span class="n">outputtss</span><span class="p">]</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">S_X1</span><span class="o">=</span><span class="n">S_X1</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">R_X3</span><span class="o">=</span><span class="n">R_X3</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">Pr</span><span class="o">=</span><span class="n">Pr</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">Q</span><span class="o">=</span><span class="n">Q</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="wflow-gr4-module-documentation">
+<h2>wflow_gr4 module documentation<a class="headerlink" href="#wflow-gr4-module-documentation" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="wflow_routing.html" title="THe wflow_routing Model"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="wflow_sbm.html" title="The wflow_sbm Model"
+             >previous</a> |</li>
+        <li><a href="index.html">wflow 1.0-RC6-dev-119M documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

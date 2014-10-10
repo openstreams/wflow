@@ -1,0 +1,424 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The wflow_hbv model &mdash; wflow 1.0-RC6-dev-119M documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0-RC6-dev-119M',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="wflow 1.0-RC6-dev-119M documentation" href="index.html" />
+    <link rel="next" title="The wflow_sbm Model" href="wflow_sbm.html" />
+    <link rel="prev" title="Welcome to wflow’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="wflow_sbm.html" title="The wflow_sbm Model"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to wflow’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">wflow 1.0-RC6-dev-119M documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">The wflow_hbv model</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#description">Description</a><ul>
+<li><a class="reference internal" href="#the-snow-routine">The snow routine</a></li>
+<li><a class="reference internal" href="#potential-evaporation">Potential Evaporation</a></li>
+<li><a class="reference internal" href="#interception">Interception</a></li>
+<li><a class="reference internal" href="#the-soil-routine">The soil routine</a></li>
+<li><a class="reference internal" href="#the-runoff-response-routine">The runoff response routine</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#subcatchment-flow">Subcatchment flow</a><ul>
+<li><a class="reference internal" href="#description-of-the-python-module">Description of the python module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to wflow&#8217;s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="wflow_sbm.html"
+                        title="next chapter">The wflow_sbm Model</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/wflow_hbv.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-wflow-hbv-model">
+<h1>The wflow_hbv model<a class="headerlink" href="#the-wflow-hbv-model" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>The Hydrologiska Byrans Vattenbalansavdelning (HBV) model was introduced
+back in 1972 by the Swedisch Meteological and Hydrological Institute
+(SMHI).  The HBV model is mainly used for runoff simulation
+and hydrological forecasting. The model is particularly useful for
+catchments where snow fall and snow melt are dominant factors, but
+application of the model is by no means restricted to these type of
+catchments.</p>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>The model is based on the HBV-96 model. However, the hydrological
+routing represent in HBV by a triangular function controlled by the
+MAXBAS parameter has been removed. Instead, the kinematic wave function
+is used to route the water downstream. All runoff that is generated
+in a cell in one of the HBV reservoirs is added to the kinematic wave
+reservoir at the end of a timestep. There is no connection between
+the different HBV cells within the model. Wherever possible all functions
+that describe the distribution of parameters within a subbasin have
+been removed as this is not needed in a distributed application/</p>
+<p>A catchment is divided into a number of grid cells. For each of the
+cells individually, daily runoff is computed through application of
+the HBV-96 of the HBV model. The use of the grid cells offers the
+possibility to turn the HBV modelling concept, which is originally
+lumped, into a distributed model.</p>
+<div class="figure">
+<a class="reference internal image-reference" href="_images/hbv96.png"><img alt="_images/hbv96.png" src="_images/hbv96.png" style="width: 600px;" /></a>
+<p class="caption">Schematic view of the relevant components of the HBV model</p>
+</div>
+<p>The figure above shows a schematic view of hydrological response
+simulation with the HBV-modelling concept. The land-phase of the hydrological
+cycle is represented by three different components: a snow routine,
+a soil routine and a runoff response routine. Each component is discussed
+separately below.</p>
+<div class="section" id="the-snow-routine">
+<h3>The snow routine<a class="headerlink" href="#the-snow-routine" title="Permalink to this headline">¶</a></h3>
+<p>Precipitation enters the model via the snow routine. If the air temperature,
+<span class="math">T_{a}</span>, is below a user-defined threshold <span class="math">TT (\approx0^{o}C)</span>
+precipitation occurs as snowfall, whereas it occurs as rainfall if
+<span class="math">T_{a}\geq TT</span>. A another parameter <span class="math">TTI</span> defines how precipitation
+can occur partly as rain of snowfall (see the figure below).
+If precipitation occurs as snowfall, it is added to the dry snow component
+within the snow pack. Otherwise it ends up in the free water reservoir,
+which represents the liquid water content of the snow pack. Between
+the two components of the snow pack, interactions take place, either
+through snow melt (if temperatures are above a threshold <span class="math">TT</span>) or
+through snow refreezing (if temperatures are below threshold <span class="math">TT</span>).
+The respective rates of snow melt and refreezing are:</p>
+<div class="math">
+<p><span class="math">Q_{m}  =  cfmax(T_{a}-TT)\;\;;T_{a}&gt;TT
+
+Q_{r}  =  cfmax*cfr(TT-T_{a})\;;T_{a}&lt;TT</span></p>
+</div><p>where <span class="math">Q_{m}</span> is the rate of snow melt, <span class="math">Q_{r}</span> is the rate of snow
+refreezing, and $cfmax$ and $cfr$ are user defined model parameters
+(the melting factor <span class="math">mm/(^{o}C*day)</span> and the refreezing factor
+respectively)</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The FoCFMAX parameter from the original HBV version is not used. instead
+the CFMAX is presumed to be for the landuse per pixel. Normally for
+forested pixels the CFMAX is 0.6 {*} CFMAX</p>
+</div>
+<p>The air temperature, <span class="math">T_{a}</span>, is related to measured daily average
+temperatures. In the original HBV-concept, elevation differences within
+the catchment are represented through a distribution function (i.e.
+a hypsographic curve) which makes the snow module semi-distributed.
+In the modified version that is applied here, the temperature, <span class="math">T_{a}</span>,
+is represented in a fully distributed manner, which means for each
+grid cell the temperature is related to the grid elevation.</p>
+<p>The fraction of liquid water in the snow pack (free water) is at most
+equal to a user defined fraction, <span class="math">WHC</span>, of the water equivalent
+of the dry snow content. If the liquid water concentration exceeds
+<span class="math">WHC</span>, either through snow melt or incoming rainfall, the surpluss
+water becomes available for infiltration into the soil:</p>
+<div class="math">
+<p><span class="math">Q_{in}=max\{(SW-WHC*SD);\;0.0\}</span></p>
+</div><p>where <span class="math">Q_{in}</span> is the volume of water added to the soil module, <span class="math">SW</span>
+is the free water content of the snow pack and <span class="math">SD</span> is the dry snow
+content of the snow pack.</p>
+<div class="figure">
+<a class="reference internal image-reference" href="_images/hbv-snow.png"><img alt="_images/hbv-snow.png" src="_images/hbv-snow.png" style="width: 600px;" /></a>
+<p class="caption">Schematic view of the snow routine</p>
+</div>
+<p>The snow model als has an optional (experimental) &#8216;mass-wasting&#8217; routine. This transports snow downhill
+using the local drainage network. To use it set the variable MassWasting in the model section to 1.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Masswasting of snow</span>
+<span class="c"># 5.67 = tan 80 graden</span>
+<span class="n">SnowFluxFrac</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">Slope</span><span class="o">/</span><span class="mf">5.67</span><span class="p">)</span> <span class="o">*</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">DrySnow</span><span class="o">/</span><span class="n">MaxSnowPack</span><span class="p">)</span>
+<span class="n">MaxFlux</span> <span class="o">=</span> <span class="n">SnowFluxFrac</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">DrySnow</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">DrySnow</span> <span class="o">=</span> <span class="n">accucapacitystate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TopoLdd</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">DrySnow</span><span class="p">,</span> <span class="n">MaxFlux</span><span class="p">)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">FreeWater</span> <span class="o">=</span> <span class="n">accucapacitystate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TopoLdd</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">FreeWater</span><span class="p">,</span><span class="n">SnowFluxFrac</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">FreeWater</span> <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="potential-evaporation">
+<h3>Potential Evaporation<a class="headerlink" href="#potential-evaporation" title="Permalink to this headline">¶</a></h3>
+<p>The original HBV version includes both a multiplication factor for
+potential evaporation and a exponential reduction factor for potential
+evapotranspiration during rain events. The <span class="math">CEVPF</span> factor is used
+to connect potential evapotranspiration per landuse. In the original
+version the <span class="math">CEVPFO</span> is used and it is used for forest landuse only.</p>
+</div>
+<div class="section" id="interception">
+<h3>Interception<a class="headerlink" href="#interception" title="Permalink to this headline">¶</a></h3>
+<p>The parameters <span class="math">ICF0</span> and <span class="math">ICFI</span> introduce interception storage
+for forested and non-forested zones respectively in the original model.
+Within our application this is replaced by a single $ICF$ parameter
+assuming the parameter is set for each grid cell according to the
+land-use. In the original application it is not clear if interception
+evaporation is subtracted from the potential evaporation. In this
+implementation we dos subtract the interception evaporation to ensure
+total evaporation does not exceed potential evaporation. From this
+storage evaporation equal to the potential rate <span class="math">ET_{p}</span> will occur
+as long as water is available, even if it is stored as snow. All water
+enters this store first, there is no concept of free throughfall (e.g.
+through gaps in the canopy). In the model a running water budget is
+kept of the interception store:</p>
+<blockquote>
+<div><ul class="simple">
+<li>The available storage (ICF-Actual storage) is filled with the water
+coming from the snow routine (<span class="math">Q_{in}</span>)</li>
+<li>Any surplus water now becomes the new <span class="math">Q_{in}</span></li>
+<li>Interception evaporation is determined as the minimum of the current
+interception storage and the potential evaporation</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="the-soil-routine">
+<h3>The soil routine<a class="headerlink" href="#the-soil-routine" title="Permalink to this headline">¶</a></h3>
+<p>The incoming water from the snow and interception routines, <span class="math">Q_{in}</span>,
+is available for infiltration in the soil routine. The soil layer
+has a limited capacity, <span class="math">F_{c}</span>, to hold soil water, which means
+if <span class="math">F_{c}</span> is exceeded the abundant water cannot infiltrate and,
+consequently, becomes directly available for runoff.</p>
+<div class="math">
+<p><span class="math">Q_{dr}=max\{(SM+Q_{in}-F_{c});\;0.0\}</span></p>
+</div><p>where <span class="math">Q_{dr}</span> is the abundant soil water (also referred to as direct
+runoff) and <span class="math">SM</span> is the soil moisture content. Consequently, the
+net amount of water that infiltrates into the soil, <span class="math">I_{net}</span>, equals:</p>
+<div class="math">
+<p><span class="math">I_{net}=Q_{in}-Q_{dr}</span></p>
+</div><p>Part of the infiltrating water, <span class="math">I_{net}</span>, will runoff through the
+soil layer (seepage). This runoff volume, <span class="math">SP</span>, is related to the
+soil moisture content, <span class="math">SM</span>, through the following power relation:</p>
+<div class="math">
+<p><span class="math">SP=\left(\frac{SM}{F_{c}}\right)^{\beta}I_{net}\label{eq:SP}</span></p>
+</div><p>where <span class="math">\beta</span> is an empirically based parameter. Application of this equation
+implies that the amount of seepage water increases with
+increasing soil moisture content. The fraction of the infiltrating
+water which doesn&#8217;t runoff, <span class="math">I_{net}-SP</span>, is added
+to the available amount of soil moisture, <span class="math">SM</span>. The <span class="math">\beta</span> parameter
+affects the amount of supply to the soil moisture reservoir that is
+transferred to the quick response reservoir. Values of <span class="math">\beta</span> vary
+generally between 1 and 3. Larger values of <span class="math">\beta</span> reduce runoff
+and indicate a higher absorption capacity of the soil (see Figure
+ref{fig:HBV-Beta}).</p>
+<div class="figure">
+<a class="reference internal image-reference" href="_images/hbv-soilmoist.png"><img alt="_images/hbv-soilmoist.png" src="_images/hbv-soilmoist.png" style="width: 600px;" /></a>
+<p class="caption">Schematic view of the soil moisture routine</p>
+</div>
+<div class="figure">
+<a class="reference internal image-reference" href="_images/beta-hbv.png"><img alt="_images/beta-hbv.png" src="_images/beta-hbv.png" style="width: 600px;" /></a>
+<p class="caption">Figure showing the relation between <span class="math">SM/F_{c}</span> (x-axis) and the
+fraction of water running off (y-axis) for three values of <span class="math">\beta</span> :1,
+2 and 3</p>
+</div>
+<p>A percentage of the soil moisture will evaporate. This percentage
+is related to the measured potential evaporation and the available
+amount of soil moisture:</p>
+<div class="math">
+<p><span class="math">E_{a}  =  \frac{SM}{T_{m}}E_{p\;\;};SM&lt;T_{m}\\
+
+E_{a}  =  E_{p}\;\;\;;SM\geq T_{m}</span></p>
+</div><p>where <span class="math">E_{a}</span> is the actual evaporation, <span class="math">E_{p}</span> is the potential
+evaporation and <span class="math">T_{m}</span> (<span class="math">\leq F_{c}</span>) is a user defined threshold,
+above which the actual evaporation equals the potential evaporation.
+<span class="math">T_{m}</span> is defined as <span class="math">LP*F_{c}\;</span> in which <span class="math">LP</span> is a soil dependent
+evaporation factor <span class="math">(LP\leq1)</span>.</p>
+<p>In the original model (Berglov, 2009 XX), a correction to <span class="math">Ea</span> is
+applied in case of interception. If <span class="math">Ea</span> from the soil moisture storage
+plus <span class="math">Ei</span> exceeds <span class="math">ETp - Ei</span> (<span class="math">Ei</span> = interception
+evaporation) then the exceeding part is multiplied by a factor (1-ered),
+where the parameter ered varies between 0 and 1. This correction is presently not present in the wflow_hbv model.</p>
+</div>
+<div class="section" id="the-runoff-response-routine">
+<h3>The runoff response routine<a class="headerlink" href="#the-runoff-response-routine" title="Permalink to this headline">¶</a></h3>
+<p>The volume of water which becomes available for runoff, <span class="math">S_{dr}+SP</span>,
+is transferred to the runoff response routine. In this routine the
+runoff delay is simulated through the use of a number of linear reservoirs.</p>
+<p>Two linear reservoir are defined to simulate the different runoff
+processes: the upper zone (generating quick runoff and interflow)
+and the lower zone (generating slow runoff). The available runoff
+water from the soil routine (i.e. direct runoff, <span class="math">S_{dr}</span>, and seepage,
+<span class="math">SP</span>) in principle ends up in the lower zone, unless the percolation
+threshold, <span class="math">PERC</span>, is exceeded, in which case the redundant water
+ends up in the upper zone:</p>
+<div class="math">
+<p><span class="math">\triangle V_{LZ}  =  min\{PERC;(S_{dr}+SP)\}\\
+
+\triangle V_{UZ}  =  max\{0.0;(S_{dr}+SP-PERC)\}</span></p>
+</div><p>where <span class="math">V_{UZ}</span> is the content of the upper zone, <span class="math">V_{LZ}</span> is the
+content of the lower zone and <span class="math">\triangle</span> means increase
+of.</p>
+<p>Capillary flow from the upper zone to the soil moisture reservoir
+is modeled according to:</p>
+<div class="math">
+<p><span class="math">Q_{cf}=cflux*(F_{c}-SM)/F_{c}</span></p>
+</div><p>where <span class="math">cflux</span> is the maximum capilary flux in <span class="math">mm/day</span>.</p>
+<p>The Upper zone generates quick runoff <span class="math">(Q_{q})</span> using:</p>
+<div class="math">
+<p><span class="math">Q_{q}=K*UZ^{(1+alpha)}</span></p>
+</div><p>here <span class="math">K</span> is the upper zone recession coefficient, and <span class="math">\alpha</span> determines
+the amount of non-linearity. Within HBV-96, the value of <span class="math">K</span> is determined
+from three other parameters: <span class="math">\alpha</span>, <span class="math">KHQ</span>, and <span class="math">HQ</span> (mm/day).
+The value of <span class="math">HQ</span> represents an outflow rate of the upper zone for
+which the recession rate is equal to <span class="math">KHQ</span>. if we define <span class="math">UZ_{HQ}</span> to
+be the content of the upper zone at outflow rate <span class="math">HQ</span> we can write
+the following equation:</p>
+<div class="math">
+<p><span class="math">HQ=K*UZ_{HQ}^{(1+\alpha)}=KHQ*UZ_{HQ}</span></p>
+</div><p>If we eliminate <span class="math">UZ_{HQ}</span> we obtain:</p>
+<div class="math">
+<p><span class="math">HQ=K*\left(\frac{HQ}{KHQ}\right)^{(1+\alpha)}</span></p>
+</div><p>Rewriting for <span class="math">K</span> results in:</p>
+<div class="math">
+<p><span class="math">K=KQH^{(1-alpha)}HQ^{-alpha}</span></p>
+</div><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Note that the HBV-96 manual mentions that for a recession rate larger
+than 1 the timestap in the model will be adjusted.</p>
+</div>
+<p>The lower zone is a linear reservoir, which means the rate of slow
+runoff, <span class="math">Q_{LZ}</span>, which leaves this zone during one time step equals:</p>
+<div class="math">
+<p><span class="math">Q_{LZ}=K_{LZ}*V_{LZ}</span></p>
+</div><p>where <span class="math">K_{LZ}</span> is the reservoir constant.</p>
+<p>The upper zone is also a linear reservoir, but it is slightly more
+complicated than the lower zone because it is divided into two zones:
+A lower part in which interflow is generated and an upper part in
+which quick flow is generated (see Figure ref{fig:upper}).</p>
+<div class="figure">
+<a class="reference internal image-reference" href="_images/hbv-upper.png"><img alt="_images/hbv-upper.png" src="_images/hbv-upper.png" style="width: 600px;" /></a>
+<p class="caption">Schematic view of the Upper zone</p>
+</div>
+<p>If the total water content of the upper zone, <span class="math">V_{UZ}</span>, is lower
+than a threshold <span class="math">UZ1</span>, the upper zone only generates interflow.
+On the other hand, if <span class="math">V_{UZ}</span> exceeds <span class="math">UZ1</span>, part of the upper
+zone water will runoff as quick flow:</p>
+<div class="math">
+<p><span class="math">Q_{i}  =  K_{i}*min\{UZ1;V_{uz}\}
+
+Q_{q}  =  K_{q}*max\{(V_{UZ}-UZ1);0.0\}</span></p>
+</div><p>Where <span class="math">Q_{i}</span> is the amount of generated interflow in one time step,
+<span class="math">Q_{q}</span> is the amount of generated quick flow in one time step and
+<span class="math">K_{i}</span> and <span class="math">K_{q}</span> are reservoir constants for interflow and quick
+flow respectively.</p>
+<p>The total runoff rate, <span class="math">Q</span>, is equal to the sum of the three different
+runoff components:</p>
+<div class="math">
+<p><span class="math">Q=Q_{LZ}+Q_{i}+Q_{q}</span></p>
+</div><p>The runoff behaviour in the runoff response routine is controlled
+by two threshold values <span class="math">P_{m}</span> and <span class="math">UZ1</span> in combination with three
+reservoir parameters, <span class="math">K_{LZ}</span>, <span class="math">K_{i}</span> and <span class="math">K_{q}</span>. In order to
+represent the differences in delay times between the three runoff
+components, the reservoir constants have to meet the following requirement:</p>
+<div class="math">
+<p><span class="math">K_{LZ}&lt;K_{i}&lt;K_{q}</span></p>
+</div></div>
+</div>
+</div>
+<div class="section" id="subcatchment-flow">
+<h1>Subcatchment flow<a class="headerlink" href="#subcatchment-flow" title="Permalink to this headline">¶</a></h1>
+<p>Normally the the kinematic wave is continuous throughout the model. By using the
+the SubCatchFlowOnly entry in the model section of the ini file all flow is at the
+subcatchment only and no flow is transferred from one subcatchment to another. This can be handy
+when connecting the result of the model to a water allocation model such as Ribasim.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">model</span><span class="p">]</span>
+<span class="n">SubCatchFlowOnly</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<div class="section" id="description-of-the-python-module">
+<h2>Description of the python module<a class="headerlink" href="#description-of-the-python-module" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="wflow_sbm.html" title="The wflow_sbm Model"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to wflow’s documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">wflow 1.0-RC6-dev-119M documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>
