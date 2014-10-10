@@ -19,6 +19,8 @@ a = open("wflow/__init__.py","w")
 a.write("__all__ = [\"wflow_funcs\",\"wflow_adapt\",\"wflow_lib\",\"pcrut\",\"wf_DynamicFramework\",\"stats\"]\n")
 a.write("__version__=\"" + manualmainversion + "\"\n")
 a.write("__release__=\"" + manualversion + "\"\n")
+a.write("import osgeo.gdal as gdal")
+
 
 print "============================================================================="
 print "Now install wflow using setup.py install and regenerate the documentation...."

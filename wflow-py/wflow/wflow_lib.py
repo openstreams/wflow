@@ -35,21 +35,19 @@ $Rev: 808 $
 
 
 
-from numpy import *
 import getopt
 import os
 import os.path
 import sys
 
 
+import osgeo.gdal as gdal
+from osgeo.gdalconst import *
 from pcraster import *
 from pcraster.framework import *
 import scipy
 import netCDF4 as nc4
 import gzip, zipfile
-import osgeo.gdal as gdal
-from osgeo.gdalconst import *
-
 
 
 Verbose=0
