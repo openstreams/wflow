@@ -1,0 +1,269 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The wflow_fit module &mdash; wflow 1.0-RC6-dev-119M documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0-RC6-dev-119M',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="wflow 1.0-RC6-dev-119M documentation" href="index.html" />
+    <link rel="next" title="wflow_lib Module" href="wflow_lib.html" />
+    <link rel="prev" title="Using the models" href="wflow_usage.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="wflow_lib.html" title="wflow_lib Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="wflow_usage.html" title="Using the models"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">wflow 1.0-RC6-dev-119M documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">The wflow_fit module</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#the-ini-file">The ini file</a></li>
+<li><a class="reference internal" href="#fitting-results">Fitting results</a></li>
+<li><a class="reference internal" href="#how-to-fit">How to fit</a></li>
+<li><a class="reference internal" href="#module-wflow_fit">Description of the python module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="wflow_usage.html"
+                        title="previous chapter">Using the models</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="wflow_lib.html"
+                        title="next chapter">wflow_lib Module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/wflow_fit.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-wflow-fit-module">
+<h1>The wflow_fit module<a class="headerlink" href="#the-wflow-fit-module" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>The wflow_fit module provides simple automated least square fitting
+for the wflow models. It uses the scipy.optimize function to perform
+the fitting.</p>
+<p>The program works mu multipling the fit parameter with a factor and optimise this
+factor. To get the new optimised parameters for your model you have to
+multiply your original parameters with the optimised factor. You
+can specify measured and simulated Q pairs to use and which area of the model
+you wan to adjust for each Simulated/Measured pair</p>
+<p>In order to use the fit module you must have a:</p>
+<ul class="simple">
+<li>A working wflow model</li>
+<li>a tss file with measured discharge</li>
+<li>an [fit] section in the ini file</li>
+</ul>
+</div>
+<div class="section" id="the-ini-file">
+<h2>The ini file<a class="headerlink" href="#the-ini-file" title="Permalink to this headline">¶</a></h2>
+<p>To be able to use the fit module you must add a [fit] section to the
+.ini file of the wflow model you want to fit.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">fit</span><span class="p">]</span>
+  <span class="c"># The parameters are name parameter_0 to parameter_n</span>
+<span class="n">parameter_0</span> <span class="o">=</span> <span class="n">M</span>
+<span class="n">parameter_1</span> <span class="o">=</span> <span class="n">RootingDepth</span>
+  <span class="c"># Q specifies the tss file with measure discharge data</span>
+  <span class="c"># the path is relative to the case directory</span>
+<span class="n">Q</span> <span class="o">=</span> <span class="n">testing</span><span class="o">.</span><span class="n">tss</span>
+  <span class="c"># The columns in the measured Q you want to fit to</span>
+<span class="n">ColMeas</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span>
+  <span class="c"># The columns in the measured Q you want to fit</span>
+<span class="n">ColSim</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span>
+  <span class="c"># Number of warup timesteps. This are not used in fitting</span>
+<span class="n">WarmUpSteps</span> <span class="o">=</span> <span class="mi">1</span>
+  <span class="c"># The map defining the areas you want to adjust</span>
+<span class="n">areamap</span><span class="o">=</span><span class="n">staticmaps</span><span class="o">/</span><span class="n">wflow_catchment</span><span class="o">.</span><span class="n">map</span>
+  <span class="c"># The areas you want to adjust for each Qmeas/Qsim combination</span>
+<span class="n">areacode</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="fitting-results">
+<h2>Fitting results<a class="headerlink" href="#fitting-results" title="Permalink to this headline">¶</a></h2>
+<p>Results are saved in the wflow_fit.res file in the case/runid directory. In addition,
+the program saves a graph of modelled and observed data in the file fit.png and maps
+of the original and fitted parameters are also saved.</p>
+<p>If you specify the -U option the resulting maps are saved in the staticmaps directory
+after each steps. As such, next steps (if you calibrate multiple subcatchments/areas)
+also include the results of the previous steps. Note that this will overwrite your
+maps if you already have those!</p>
+</div>
+<div class="section" id="how-to-fit">
+<h2>How to fit<a class="headerlink" href="#how-to-fit" title="Permalink to this headline">¶</a></h2>
+<p>Although wflow_sbm has a fairly large number of parameters most should not be
+fitted automatically. The parameters that are most suited for fitting are:</p>
+<ul class="simple">
+<li>M</li>
+<li>FirstZoneKsatVer</li>
+<li>RunoffGeneratingGWPerc (if this is switched on. It is usually best to first
+setup the model without this parameter!)</li>
+<li>RootingDepth</li>
+</ul>
+<p>It is recommended to only fit one or two parameters at one time.</p>
+<p>The wflow_rhine_sbm example can be used to test the fitting procedure.</p>
+<div class="highlight-python"><div class="highlight"><pre>wflow_fit.py -M wflow\_sbm -T 300 -C wflow\rhine\_sbm
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-wflow_fit">
+<span id="description-of-the-python-module"></span><h2>Description of the python module<a class="headerlink" href="#module-wflow_fit" title="Permalink to this headline">¶</a></h2>
+<p>Fit a wflow_ hydrological model using scipy.leastsq.</p>
+<p>usage</p>
+<div class="highlight-python"><div class="highlight"><pre>wflow_fit -M ModelName [-h][-F runinfofile][-C casename]
+      [-c configfile][-T last_step][-S first_step][-s seconds]
+      
+
+-M: model to fit (e.g. wflow_sbm, wflow_hbv, wflow_cqf)          
+                  
+-T: Set last timestep
+
+-S: Set the start timestep (default = 1)
+
+-C: set the name  of the case (directory) to run
+
+-R: set the name runId within the current case
+
+-U: save the map after each step ti the input (staticmaps) dir so 
+    that next steps (colums) use the previous results
+
+-c: name of wflow the configuration file (default: Casename/wflow_sbm.ini). 
+
+-h: print usage information
+</pre></div>
+</div>
+<p>For this program to work you must add a [fit] section to the
+ini file of the program to fit (e.g. the wflow_hbv program)</p>
+<p>$Author$
+$Id$
+$Rev$</p>
+<dl class="function">
+<dt id="wflow_fit.configget">
+<tt class="descclassname">wflow_fit.</tt><tt class="descname">configget</tt><big>(</big><em>config</em>, <em>section</em>, <em>var</em>, <em>default</em><big>)</big><a class="headerlink" href="#wflow_fit.configget" title="Permalink to this definition">¶</a></dt>
+<dd><p>gets parameter from config file and returns a default value
+if the parameter is not found</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="wflow_fit.wfmodel_fit_API">
+<em class="property">class </em><tt class="descclassname">wflow_fit.</tt><tt class="descname">wfmodel_fit_API</tt><big>(</big><em>startTime</em>, <em>stopTime</em>, <em>casename</em>, <em>runId='_fitrun'</em>, <em>modeltofit='wflow_sbm'</em>, <em>config='wflow_sbm.ini'</em>, <em>clonemap='wflow_subcatch.map'</em><big>)</big><a class="headerlink" href="#wflow_fit.wfmodel_fit_API" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class that initializes and runs a wflow model</p>
+<dl class="method">
+<dt id="wflow_fit.wfmodel_fit_API.multVarWithPar">
+<tt class="descname">multVarWithPar</tt><big>(</big><em>pars</em><big>)</big><a class="headerlink" href="#wflow_fit.wfmodel_fit_API.multVarWithPar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multiply a parameter in the model with the fit parameters.
+Use a map to limit the area to adjust</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_fit.wfmodel_fit_API.run">
+<tt class="descname">run</tt><big>(</big><em>pars</em><big>)</big><a class="headerlink" href="#wflow_fit.wfmodel_fit_API.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the model for the number of timesteps.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_fit.wfmodel_fit_API.savemaps">
+<tt class="descname">savemaps</tt><big>(</big><em>pars</em>, <em>savetoinput=False</em><big>)</big><a class="headerlink" href="#wflow_fit.wfmodel_fit_API.savemaps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ssave the adjusted (and original) parameter maps</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_fit.wfmodel_fit_API.shutdown">
+<tt class="descname">shutdown</tt><big>(</big><em>pars</em><big>)</big><a class="headerlink" href="#wflow_fit.wfmodel_fit_API.shutdown" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shutdown the model</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="wflow_lib.html" title="wflow_lib Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="wflow_usage.html" title="Using the models"
+             >previous</a> |</li>
+        <li><a href="index.html">wflow 1.0-RC6-dev-119M documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>
