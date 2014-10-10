@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>The wflow_sbm Model &mdash; wflow 1.0-RC6-dev-119M documentation</title>
+    <title>The wflow_sbm Model &mdash; wflow 1.0-RC6-dev-147M documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.0-RC6-dev-119M',
+        VERSION:     '1.0-RC6-dev-147M',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="wflow 1.0-RC6-dev-119M documentation" href="index.html" />
+    <link rel="top" title="wflow 1.0-RC6-dev-147M documentation" href="index.html" />
     <link rel="next" title="The wflow_gr4 model" href="wflow_gr4.html" />
     <link rel="prev" title="The wflow_hbv model" href="wflow_hbv.html" /> 
   </head>
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="wflow_hbv.html" title="The wflow_hbv model"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">wflow 1.0-RC6-dev-119M documentation</a> &raquo;</li> 
+        <li><a href="index.html">wflow 1.0-RC6-dev-147M documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
@@ -82,7 +82,7 @@
 <li><a class="reference internal" href="#processing-of-meteorological-forcing-data">Processing of meteorological forcing data</a></li>
 <li><a class="reference internal" href="#guidelines-for-wflowsbm-model-parameters">Guidelines for wflowsbm model parameters</a></li>
 <li><a class="reference internal" href="#references">References</a></li>
-<li><a class="reference internal" href="#wflow-sbm-module-documentation">wflow_sbm module documentation</a></li>
+<li><a class="reference internal" href="#module-wflow_sbm">wflow_sbm module documentation</a></li>
 </ul>
 </li>
 </ul>
@@ -842,8 +842,344 @@ file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/WHC.tbl
 </tbody>
 </table>
 </div>
-<div class="section" id="wflow-sbm-module-documentation">
-<h2>wflow_sbm module documentation<a class="headerlink" href="#wflow-sbm-module-documentation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-wflow_sbm">
+<span id="wflow-sbm-module-documentation"></span><h2>wflow_sbm module documentation<a class="headerlink" href="#module-wflow_sbm" title="Permalink to this headline">¶</a></h2>
+<p>Run the wflow_sbm hydrological model..</p>
+<p>usage</p>
+<div class="highlight-python"><div class="highlight"><pre>wflow_sbm [-h][-v level][-F runinfofile][-L logfile][-C casename][-R runId]
+      [-c configfile][-T last_step][-S first_step][-s seconds][-W][-E][-N][-U discharge]
+      [-P parameter multiplication][-X][-f][-I][-i tbl_dir][-x subcatchId][-u updatecols]
+      [-p inputparameter multiplication][-l loglevel]
+      
+-F: if set wflow is expected to be run by FEWS. It will determine
+    the timesteps from the runinfo.xml file and save the output initial
+    conditions to an alternate location. Also set fewsrun=1 in the .ini file!
+    
+-X: save state at the end of the run over the initial conditions at the start        
+
+-f: Force overwrite of existing results    
+
+-T: Set last timestep
+
+-S: Set the start timestep (default = 1)
+
+-s: Set the model timesteps in seconds
+
+-I: re-initialize the initial model conditions with default
+
+-i: Set input table directory (default is intbl)
+
+-x: Apply multipliers (-P/-p ) for subcatchment only (e.g. -x 1)
+
+-C: set the name  of the case (directory) to run
+
+-R: set the name runId within the current case
+
+-L: set the logfile
+
+-E: Switch on reinfiltration of overland flow
+
+-c: name of wflow the configuration file (default: Casename/wflow_sbm.ini). 
+
+-h: print usage information
+
+-W: If set, this flag indicates that an ldd is created for the water level
+    for each timestep. If not the water is assumed to flow according to the 
+    DEM. Wflow will run a lot slower with this option. Most of the time
+    (shallow soil, steep topography) you do not need this option. Also, if you 
+    need it you migth actually need another model.
+    
+-U: The argument to this option should be a .tss file with measured discharge in
+    [m^3/s] which the progam will use to update the internal state to match 
+    the measured flow. The number of columns in this file should match the 
+    number of gauges in the wflow\_gauges.map file.
+
+-u: list of gauges/columns to use in update. Format:
+    -u [1 , 4 ,13]
+    The above example uses column 1, 4 and 13
+    
+-P: set parameter multiply dictionary (e.g: -P {&#39;self.FirstZoneDepth&#39; : 1.2}
+    to increase self.FirstZoneDepth by 20%, multiply with 1.2)
+    
+-p: set input parameter (dynamic, e.g. precip) multiply dictionary 
+    (e.g: -p {&#39;self.Precipitation&#39; : 1.2} to increase Precipitation 
+    by 20%, multiply with 1.2)    
+    
+-l: loglevel (most be one of DEBUG, WARNING, ERROR)
+</pre></div>
+</div>
+<p>$Author$
+$Id$
+$Rev$</p>
+<dl class="function">
+<dt id="wflow_sbm.SnowPackHBV">
+<tt class="descclassname">wflow_sbm.</tt><tt class="descname">SnowPackHBV</tt><big>(</big><em>Snow</em>, <em>SnowWater</em>, <em>Precipitation</em>, <em>Temperature</em>, <em>TTI</em>, <em>TT</em>, <em>Cfmax</em>, <em>WHC</em><big>)</big><a class="headerlink" href="#wflow_sbm.SnowPackHBV" title="Permalink to this definition">¶</a></dt>
+<dd><p>HBV Type snowpack modelling using a Temperature degree factor. All correction
+factors (RFCF and SFCF) are set to 1. The refreezing efficiency factor is set to 0.05.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first simple">
+<li><strong>Snow</strong> &#8211; </li>
+<li><strong>SnowWater</strong> &#8211; </li>
+<li><strong>Precipitation</strong> &#8211; </li>
+<li><strong>Temperature</strong> &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Snow,SnowMelt,Precipitation</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="wflow_sbm.WflowModel">
+<em class="property">class </em><tt class="descclassname">wflow_sbm.</tt><tt class="descname">WflowModel</tt><big>(</big><em>cloneMap</em>, <em>Dir</em>, <em>RunDir</em>, <em>configfile</em><big>)</big><a class="headerlink" href="#wflow_sbm.WflowModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">pcraster.framework.dynamicPCRasterBase.DynamicModel</span></tt></p>
+<div class="versionchanged">
+<p><span class="versionmodified">Changed in version 0.91: </span>- Calculation of GWScale moved to resume() to allow fitting.</p>
+</div>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.91: </span>- added S-curve for freezing soil infiltration reduction calculations</p>
+</div>
+<dl class="method">
+<dt id="wflow_sbm.WflowModel.default_summarymaps">
+<tt class="descname">default_summarymaps</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_sbm.WflowModel.default_summarymaps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of default summary-maps at the end of a run.
+This is model specific. You can also add them to the [summary]section of the ini file but stuff
+you think is crucial to the model should be listed here</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_sbm.WflowModel.dynamic">
+<tt class="descname">dynamic</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_sbm.WflowModel.dynamic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stuf that is done for each timestep</p>
+<p>Below a list of variables that can be save to disk as maps or as
+timeseries (see ini file for syntax):</p>
+<p><em>Dynamic variables</em></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>self.Precipitation</strong> &#8211; Gross precipitation [mm]</li>
+<li><strong>self.Temperature</strong> &#8211; Air temperature [oC]</li>
+<li><strong>self.PotenEvap</strong> &#8211; Potential evapotranspiration [mm]</li>
+<li><strong>self.PotTrans</strong> &#8211; Potential Transpiration (after subtracting Interception from PotenEvap) [mm]</li>
+<li><strong>self.Interception</strong> &#8211; Actual rainfall interception [mm]</li>
+<li><strong>self.ActEvap</strong> &#8211; Actual evaporation [mm]</li>
+<li><strong>self.SurfaceRunoff</strong> &#8211; Surface runoff in the kinematic wave [m^3/s]</li>
+<li><strong>self.SurfaceRunoffDyn</strong> &#8211; Surface runoff in the dyn-wave resrvoir [m^3/s]</li>
+<li><strong>self.WaterLevelDyn</strong> &#8211; Water level in the dyn-wave resrvoir [m^]</li>
+<li><strong>self.ActEvap</strong> &#8211; Actual EvapoTranspiration [mm] (minus interception losses)</li>
+<li><strong>self.ExcessWater</strong> &#8211; Water that cannot infiltrate due to saturated soil [mm]</li>
+<li><strong>self.InfiltExcess</strong> &#8211; Infiltration excess water [mm]</li>
+<li><strong>self.WaterLevel</strong> &#8211; Water level in the kinematic wave [m] (above the bottom)</li>
+<li><strong>self.ActInfilt</strong> &#8211; Actual infiltration into the unsaturated zone [mm]</li>
+<li><strong>self.CanopyStorage</strong> &#8211; actual canopystorage (only for subdaily timesteps) [mm]</li>
+<li><strong>self.FirstZoneDepth</strong> &#8211; Amount of water in the saturated store [mm]</li>
+<li><strong>self.UStoreDepth</strong> &#8211; Amount of water in the unsaturated store [mm]</li>
+<li><strong>self.Snow</strong> &#8211; Snow depth [mm]</li>
+<li><strong>self.SnowWater</strong> &#8211; water content of the snow [mm]</li>
+<li><strong>self.TSoil</strong> &#8211; Top soil temperature [oC]</li>
+<li><strong>self.FirstZoneDepth</strong> &#8211; amount of available water in the saturated part of the soil [mm]</li>
+<li><strong>self.UStoreDepth</strong> &#8211; amount of available water in the unsaturated zone [mm]</li>
+<li><strong>self.Transfer</strong> &#8211; downward flux from unsaturated to saturated zone [mm]</li>
+<li><strong>self.CapFlux</strong> &#8211; capilary flux from saturated to unsaturated zone [mm]</li>
+<li><strong>self.CanopyStorage</strong> &#8211; Amount of water on the Canopy [mm]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><em>Static variables</em></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>self.Altitude</strong> &#8211; The altitude of each cell [m]</li>
+<li><strong>self.Bw</strong> &#8211; Width of the river [m]</li>
+<li><strong>self.River</strong> &#8211; booolean map indicating the presence of a river [-]</li>
+<li><strong>self.DLC</strong> &#8211; length of the river within a cell [m]</li>
+<li><strong>self.ToCubic</strong> &#8211; Mutiplier to convert mm to m^3/s for fluxes</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_sbm.WflowModel.initial">
+<tt class="descname">initial</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_sbm.WflowModel.initial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initial part of the model, executed only once. Reads all static data from disk</p>
+<p><em>Soil</em></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>M.tbl</strong> &#8211; M parameter in the SBM model. Governs the decay of Ksat with depth [-]</li>
+<li><strong>thetaR.tbl</strong> &#8211; Residual water content [mm/mm]</li>
+<li><strong>thetaS.tbl</strong> &#8211; Saturated water content (porosity) [mm/mm]</li>
+<li><strong>FirstZoneKsatVer.tbl</strong> &#8211; Saturated conductivity [mm/d]</li>
+<li><strong>PathFrac.tbl</strong> &#8211; Fraction of compacted area per grid cell [-]</li>
+<li><strong>InfiltCapSoil.tbl</strong> &#8211; Soil infiltration capacity [m/d]</li>
+<li><strong>InfiltCapPath.tbl</strong> &#8211; Infiltration capacity of the compacted areas [mm/d]</li>
+<li><strong>FirstZoneMinCapacity.tbl</strong> &#8211; Minimum wdepth of the soil [mm]</li>
+<li><strong>FirstZoneCapacity.tbl</strong> &#8211; Maximum depth of the soil [m]</li>
+<li><strong>RootingDepth.tbl</strong> &#8211; Depth of the roots [mm]</li>
+<li><strong>MaxLeakage.tbl</strong> &#8211; Maximum leakage out of the soil profile [mm/d]</li>
+<li><strong>CapScale.tbl</strong> &#8211; Scaling factor in the Capilary rise calculations (100) [mm/d]</li>
+<li><strong>RunoffGeneratingGWPerc</strong> &#8211; Fraction of the soil depth that contributes to subcell runoff (0.1) [-]</li>
+<li><strong>rootdistpar.tbl</strong> &#8211; Determine how roots are linked to water table. The number 
+should be negative. A more negative  number means that all roots are wet if the water 
+table is above the lowest part of the roots. 
+A less negative number smooths this. [mm] (default = -80000)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><em>Canopy</em></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>CanopyGapFraction.tbl</strong> &#8211; Fraction of precipitation that does not hit the canopy directly [-]</li>
+<li><strong>MaxCanopyStorage.tbl</strong> &#8211; Canopy interception storage capacity [mm]</li>
+<li><strong>EoverR.tbl</strong> &#8211; Ratio of average wet canopy evaporation rate over rainfall rate [-]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><em>Surface water</em></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>N.tbl</strong> &#8211; Manning&#8217;s N parameter</li>
+<li><strong>N_river.tbl</strong> &#8211; Manning&#8217;s N parameter fro cells marked as river</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><em>Snow and frozen soil modelling parameters</em></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cf_soil.tbl</strong> &#8211; Soil infiltration reduction factor when soil is frozen [-] (&lt; 1.0)</li>
+<li><strong>TTI.tbl</strong> &#8211; critical temperature for snowmelt and refreezing  (1.000) [oC]</li>
+<li><strong>TT.tbl</strong> &#8211; defines interval in which precipitation falls as rainfall and snowfall (-1.41934) [oC]</li>
+<li><strong>Cfmax.tbl</strong> &#8211; meltconstant in temperature-index ( 3.75653) [-]</li>
+<li><strong>WHC.tbl</strong> &#8211; fraction of Snowvolume that can store water (0.1) [-]</li>
+<li><strong>w_soil.tbl</strong> &#8211; Soil temperature smooth factor. Given for daily timesteps. (0.1125) [-] Wigmosta, M. S., L. J. Lane, J. D. Tagestad, and A. M. Coleman (2009).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_sbm.WflowModel.resume">
+<tt class="descname">resume</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_sbm.WflowModel.resume" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="wflow_sbm.WflowModel.stateVariables">
+<tt class="descname">stateVariables</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_sbm.WflowModel.stateVariables" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>returns a list of state variables that are essential to the model.
+This list is essential for the resume and suspend functions to work.</p>
+<p>This function is specific for each model and <strong>must</strong> be present.</p>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>self.SurfaceRunoff</strong> &#8211; Surface runoff in the kin-wave resrvoir [m^3/s]</li>
+<li><strong>self.SurfaceRunoffDyn</strong> &#8211; Surface runoff in the dyn-wave resrvoir [m^3/s]</li>
+<li><strong>self.WaterLevel</strong> &#8211; Water level in the kin-wave resrvoir [m]</li>
+<li><strong>self.WaterLevelDyn</strong> &#8211; Water level in the dyn-wave resrvoir [m^]</li>
+<li><strong>self.Snow</strong> &#8211; Snow pack [mm]</li>
+<li><strong>self.SnowWater</strong> &#8211; Snow pack water [mm]</li>
+<li><strong>self.TSoil</strong> &#8211; Top soil temperature [oC]</li>
+<li><strong>self.UStoreDepth</strong> &#8211; Water in the Unsaturated Store [mm]</li>
+<li><strong>self.FirstZoneDepth</strong> &#8211; Water in the saturated store [mm]</li>
+<li><strong>self.CanopyStorage</strong> &#8211; Amount of water on the Canopy [mm]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_sbm.WflowModel.supplyCurrentTime">
+<tt class="descname">supplyCurrentTime</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_sbm.WflowModel.supplyCurrentTime" title="Permalink to this definition">¶</a></dt>
+<dd><p>gets the current time in seconds after the start of the run</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_sbm.WflowModel.suspend">
+<tt class="descname">suspend</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_sbm.WflowModel.suspend" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="wflow_sbm.WflowModel.updateRunOff">
+<tt class="descname">updateRunOff</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_sbm.WflowModel.updateRunOff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the kinematic wave reservoir. Should be run after updates to Q</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_sbm.actEvap_SBM">
+<tt class="descclassname">wflow_sbm.</tt><tt class="descname">actEvap_SBM</tt><big>(</big><em>RootingDepth</em>, <em>WTable</em>, <em>UStoreDepth</em>, <em>FirstZoneDepth</em>, <em>PotTrans</em>, <em>smoothpar</em><big>)</big><a class="headerlink" href="#wflow_sbm.actEvap_SBM" title="Permalink to this definition">¶</a></dt>
+<dd><p>Actual evaporation function:</p>
+<ul class="simple">
+<li>first try to get demand from the saturated zone, using the rootingdepth as a limiting factor</li>
+<li>secondly try to get the remaining water from the unsaturated store</li>
+<li>it uses an S-Curve the make sure roots het wet/dry gradually (basically)
+representing a root-depth distribution</li>
+</ul>
+<p>Input:</p>
+<blockquote>
+<div><ul class="simple">
+<li>RootingDepth,WTable, UStoreDepth,FirstZoneDepth, PotTrans, smoothpar</li>
+</ul>
+</div></blockquote>
+<p>Output:</p>
+<blockquote>
+<div><ul class="simple">
+<li>ActEvap,  FirstZoneDepth,  UStoreDepth ActEvapUStore</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_sbm.main">
+<tt class="descclassname">wflow_sbm.</tt><tt class="descname">main</tt><big>(</big><em>argv=None</em><big>)</big><a class="headerlink" href="#wflow_sbm.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform command line execution of the model.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_sbm.usage">
+<tt class="descclassname">wflow_sbm.</tt><tt class="descname">usage</tt><big>(</big><em>*args</em><big>)</big><a class="headerlink" href="#wflow_sbm.usage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
 </div>
 
@@ -868,7 +1204,7 @@ file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/WHC.tbl
         <li class="right" >
           <a href="wflow_hbv.html" title="The wflow_hbv model"
              >previous</a> |</li>
-        <li><a href="index.html">wflow 1.0-RC6-dev-119M documentation</a> &raquo;</li> 
+        <li><a href="index.html">wflow 1.0-RC6-dev-147M documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Building a model &mdash; wflow 1.0-RC6-dev-119M documentation</title>
+    <title>Building a model &mdash; wflow 1.0-RC6-dev-147M documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.0-RC6-dev-119M',
+        VERSION:     '1.0-RC6-dev-147M',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="wflow 1.0-RC6-dev-119M documentation" href="index.html" />
+    <link rel="top" title="wflow 1.0-RC6-dev-147M documentation" href="index.html" />
     <link rel="next" title="Using the models" href="wflow_usage.html" />
     <link rel="prev" title="wflow_adapt Module" href="wflow_adapt.html" /> 
   </head>
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="wflow_adapt.html" title="wflow_adapt Module"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">wflow 1.0-RC6-dev-119M documentation</a> &raquo;</li> 
+        <li><a href="index.html">wflow 1.0-RC6-dev-147M documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
@@ -64,7 +64,11 @@
 <li><a class="reference internal" href="#problems">Problems</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#script-documentation">Script documentation</a></li>
+<li><a class="reference internal" href="#module-wflow_prepare_step1">Script documentation</a><ul>
+<li><a class="reference internal" href="#wflow-prepare-step1">wflow_prepare_step1</a></li>
+<li><a class="reference internal" href="#wflow-prepare-step2">wflow_prepare_step2</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#setting-up-a-case">Setting Up a Case</a></li>
 <li><a class="reference internal" href="#input-parameters-lookup-tables-or-maps">Input parameters (lookup tables or maps)</a></li>
 <li><a class="reference internal" href="#calibrating-the-wflow-sbm-model">Calibrating the  wflow_sbm model</a><ul>
@@ -413,8 +417,103 @@ to find the nearest river cell fro a gauge.</li>
 <p>If you still run into problems you can adjust the scripts yourself to get better results.</p>
 </div>
 </div>
-<div class="section" id="script-documentation">
-<h2>Script documentation<a class="headerlink" href="#script-documentation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-wflow_prepare_step1">
+<span id="script-documentation"></span><h2>Script documentation<a class="headerlink" href="#module-wflow_prepare_step1" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="wflow-prepare-step1">
+<h3>wflow_prepare_step1<a class="headerlink" href="#wflow-prepare-step1" title="Permalink to this headline">¶</a></h3>
+<p>wflow data preparation script. Data preparation can be done by hand or using 
+the two scripts. This script does the first step. The second script does 
+the resampling. This scripts need the pcraster and gdal executables to be
+available in you search path.</p>
+<p>Usage:</p>
+<div class="highlight-python"><div class="highlight"><pre>wflow_prepare_step1 [-W workdir][-f][-h] -I inifile 
+
+-f force recreation of ldd if it already exists
+-h show this information
+-W set the working directory, default is current dir
+-I name of the ini file with settings
+</pre></div>
+</div>
+<p>$Id$</p>
+<dl class="function">
+<dt id="wflow_prepare_step1.OpenConf">
+<tt class="descclassname">wflow_prepare_step1.</tt><tt class="descname">OpenConf</tt><big>(</big><em>fn</em><big>)</big><a class="headerlink" href="#wflow_prepare_step1.OpenConf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="wflow_prepare_step1.configget">
+<tt class="descclassname">wflow_prepare_step1.</tt><tt class="descname">configget</tt><big>(</big><em>config</em>, <em>section</em>, <em>var</em>, <em>default</em><big>)</big><a class="headerlink" href="#wflow_prepare_step1.configget" title="Permalink to this definition">¶</a></dt>
+<dd><p>gets parameter from config file and returns a default value
+if the parameter is not found</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_prepare_step1.main">
+<tt class="descclassname">wflow_prepare_step1.</tt><tt class="descname">main</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_prepare_step1.main" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>masterdem</strong> &#8211; digital elevation model</li>
+<li><strong>dem</strong> &#8211; digital elevation model</li>
+<li><strong>river</strong> &#8211; optional river map</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_prepare_step1.usage">
+<tt class="descclassname">wflow_prepare_step1.</tt><tt class="descname">usage</tt><big>(</big><em>*args</em><big>)</big><a class="headerlink" href="#wflow_prepare_step1.usage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<span class="target" id="module-wflow_prepare_step2"></span><div class="section" id="wflow-prepare-step2">
+<h3>wflow_prepare_step2<a class="headerlink" href="#wflow-prepare-step2" title="Permalink to this headline">¶</a></h3>
+<p>wflow data preparation script. Data preparation can be done by hand or using 
+the two scripts. This script does the resampling. This scripts need the pcraster and gdal executables to be
+available in you search path.</p>
+<p>Usage:</p>
+<div class="highlight-python"><div class="highlight"><pre>wflow_prepare_step2 [-W workdir][-f][-h] -I inifile 
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>-f force recreation of ldd if it already exists
+-h show this information
+-W set the working directory, default is current dir
+-I name of the ini file with settings
+</pre></div>
+</div>
+<p>$Id$</p>
+<dl class="function">
+<dt id="wflow_prepare_step2.OpenConf">
+<tt class="descclassname">wflow_prepare_step2.</tt><tt class="descname">OpenConf</tt><big>(</big><em>fn</em><big>)</big><a class="headerlink" href="#wflow_prepare_step2.OpenConf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="wflow_prepare_step2.configget">
+<tt class="descclassname">wflow_prepare_step2.</tt><tt class="descname">configget</tt><big>(</big><em>config</em>, <em>section</em>, <em>var</em>, <em>default</em><big>)</big><a class="headerlink" href="#wflow_prepare_step2.configget" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="wflow_prepare_step2.main">
+<tt class="descclassname">wflow_prepare_step2.</tt><tt class="descname">main</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_prepare_step2.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="wflow_prepare_step2.resamplemaps">
+<tt class="descclassname">wflow_prepare_step2.</tt><tt class="descname">resamplemaps</tt><big>(</big><em>step1dir</em>, <em>step2dir</em><big>)</big><a class="headerlink" href="#wflow_prepare_step2.resamplemaps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resample the maps from step1 and rename them in the process</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_prepare_step2.usage">
+<tt class="descclassname">wflow_prepare_step2.</tt><tt class="descname">usage</tt><big>(</big><em>*args</em><big>)</big><a class="headerlink" href="#wflow_prepare_step2.usage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
 </div>
 <div class="section" id="setting-up-a-case">
 <span id="setting-up"></span><h2>Setting Up a Case<a class="headerlink" href="#setting-up-a-case" title="Permalink to this headline">¶</a></h2>
@@ -630,7 +729,7 @@ for more information</div></blockquote>
         <li class="right" >
           <a href="wflow_adapt.html" title="wflow_adapt Module"
              >previous</a> |</li>
-        <li><a href="index.html">wflow 1.0-RC6-dev-119M documentation</a> &raquo;</li> 
+        <li><a href="index.html">wflow 1.0-RC6-dev-147M documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

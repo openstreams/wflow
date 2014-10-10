@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>wflow_delwaq Module &mdash; wflow 1.0-RC6-dev-119M documentation</title>
+    <title>wflow_delwaq Module &mdash; wflow 1.0-RC6-dev-147M documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.0-RC6-dev-119M',
+        VERSION:     '1.0-RC6-dev-147M',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="wflow 1.0-RC6-dev-119M documentation" href="index.html" />
+    <link rel="top" title="wflow 1.0-RC6-dev-147M documentation" href="index.html" />
     <link rel="next" title="run wflow_hbv via API" href="testrunner_wflowhbv.html" />
     <link rel="prev" title="wflow_lib Module" href="wflow_lib.html" /> 
   </head>
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="wflow_lib.html" title="wflow_lib Module"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">wflow 1.0-RC6-dev-119M documentation</a> &raquo;</li> 
+        <li><a href="index.html">wflow 1.0-RC6-dev-147M documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
@@ -57,7 +57,10 @@
 <li><a class="reference internal" href="#how-the-script-works">How the script works</a></li>
 <li><a class="reference internal" href="#very-simple-example">Very simple example:</a></li>
 <li><a class="reference internal" href="#case-study-for-malaysia-and-singapore">Case study for Malaysia and Singapore</a></li>
-<li><a class="reference internal" href="#wflow-delwaq-module-documentation">wflow_delwaq module documentation</a></li>
+<li><a class="reference internal" href="#module-wflow_delwaq">wflow_delwaq module documentation</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -330,8 +333,257 @@ node[shape=record,width=.1,height=.1];
 }" />
 </p>
 </div>
-<div class="section" id="wflow-delwaq-module-documentation">
-<h2>wflow_delwaq module documentation<a class="headerlink" href="#wflow-delwaq-module-documentation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-wflow_delwaq">
+<span id="wflow-delwaq-module-documentation"></span><h2>wflow_delwaq module documentation<a class="headerlink" href="#module-wflow_delwaq" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="introduction">
+<h3>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h3>
+<p>Simple export library for pcraster/python delwaq link. The module can be
+used to export an ldd to a delwaq pointer file and fill the input arrays.
+The library includes a command-line interface that allows you to setup
+a delwaq model and feed it with forcing data.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This is an experimental version. A complete redesign is needed as this 
+version is unstable and very poorly structured!</p>
+</div>
+<p>the wflow run should have saved at least the folowing mapstacks:</p>
+<div class="highlight-python"><div class="highlight"><pre>- self.OldKinWaveVolume=vol
+- self.WaterLevel=lev
+- self.SurfaceRunoff=run
+- self.Inwater=inw  (or the different components that make up this flux)
+</pre></div>
+</div>
+<p>The script always sets-up at least two Substances, Initial and Check. Initial
+is present everywhere at startup and the concentration is zero
+in all inputs. Check is not present at startup and set to 1 in all inputs.</p>
+<p>The script takes an areamap that can be used to tag water as it enters the
+model. This can be a landuse map, a subcatchment map etc. Furthermore water
+can also be tagged based on the flux into the model.</p>
+<p>The naming of the sustances is as follows: &#8220;Area&#8221; areamap_class inflow_number</p>
+<p>Command line options:</p>
+<div class="highlight-python"><div class="highlight"><pre>-C: caseDir - set the wflow case directory to use
+-R: runId - set the wflow runId to use
+-T: Set last timestep
+-O: set starttime (&#39;%Y-%m-%d% H:%M:%S&#39;)
+-a: Also write dynamic area data if this option is set
+-j: if this option is set the static data is not generated (default is on) 
+-A: sets the areamap used to specify the fraction sources. This can be
+    a subcatcment map, a soil type map, a land use maps etc. Default is:
+    staticmaps/wflow_subcatch.map (relative to the caseDir directory)
+-D: delwaqdir - set the basedir to create the delwaq schematisation in 
+-S: sourcemap - name of the wflow output map to use as source. 
+    it should be a variable that flows into the kinematic wave routine
+    inw is normally used as it contain all water per cell that flows into
+    the kinematic wave function.
+    Use multiple -S options to include multiple maps
+-s: Set the model timesteps in seconds (default 86400)
+-F: if set the model is expected to be run by FEWS. It will determine
+    the timesteps from the runinfo.xml file and save the output initial
+    conditions to an alternate location. The runinfo.xml file should be located
+    in the inmaps directory of the case. 
+-c: Name of the wflow configuration file
+</pre></div>
+</div>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">add support for a coarser delwaq network based on supplied map.</p>
+</div>
+<div class="admonition-todo admonition" id="index-1">
+<p class="first admonition-title">Todo</p>
+<p class="last">Test option to seperate construction of network from filling of the input
+arrays</p>
+</div>
+<div class="admonition-todo admonition" id="index-2">
+<p class="first admonition-title">Todo</p>
+<p>Ad support to not only follow the kinematic wave reservoir but also
+the flow trough the soil reservoirs. Basically make three layers:</p>
+<blockquote class="last">
+<div><ol class="arabic simple">
+<li>kinematic wave reservoir (surface water)</li>
+<li>unsaturated store (only vertical flow)</li>
+<li>saturated store (horizontal and vertical flow)</li>
+</ol>
+</div></blockquote>
+</div>
+<p>$Author$
+$Id$
+$Rev$</p>
+<dl class="function">
+<dt id="wflow_delwaq.dw_CreateDwRun">
+<tt class="descclassname">wflow_delwaq.</tt><tt class="descname">dw_CreateDwRun</tt><big>(</big><em>thedir</em><big>)</big><a class="headerlink" href="#wflow_delwaq.dw_CreateDwRun" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#8221;
+create the dir to save delwaq info in</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_delwaq.dw_WriteBoundData">
+<tt class="descclassname">wflow_delwaq.</tt><tt class="descname">dw_WriteBoundData</tt><big>(</big><em>fname</em>, <em>areas</em><big>)</big><a class="headerlink" href="#wflow_delwaq.dw_WriteBoundData" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes B5_bounddata.inc</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_delwaq.dw_WriteBoundlist">
+<tt class="descclassname">wflow_delwaq.</tt><tt class="descname">dw_WriteBoundlist</tt><big>(</big><em>fname</em>, <em>pointer</em>, <em>areas</em>, <em>of</em>, <em>inflowtypes</em><big>)</big><a class="headerlink" href="#wflow_delwaq.dw_WriteBoundlist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes the boundary list file
+B5_boundlist.inc
+Numbering is abs(exchnage id)</p>
+<dl class="docutils">
+<dt>Input: </dt>
+<dd><ul class="first last simple">
+<li>fname, pointer</li>
+</ul>
+</dd>
+</dl>
+<div class="admonition-todo admonition" id="index-3">
+<p class="first admonition-title">Todo</p>
+<ul class="last simple">
+<li>add labeling of different inflows ( the information is already present)</li>
+</ul>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_delwaq.dw_WriteInitials">
+<tt class="descclassname">wflow_delwaq.</tt><tt class="descname">dw_WriteInitials</tt><big>(</big><em>fname</em>, <em>inmaps</em><big>)</big><a class="headerlink" href="#wflow_delwaq.dw_WriteInitials" title="Permalink to this definition">¶</a></dt>
+<dd><p>B8_initials.inc</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_delwaq.dw_WriteNrExChnages">
+<tt class="descclassname">wflow_delwaq.</tt><tt class="descname">dw_WriteNrExChnages</tt><big>(</big><em>fname</em>, <em>nr</em><big>)</big><a class="headerlink" href="#wflow_delwaq.dw_WriteNrExChnages" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes the number of exchnages to file (number of rows in the pointer file)</p>
+<p>B4_nrofexch.inc</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_delwaq.dw_WriteNrSegments">
+<tt class="descclassname">wflow_delwaq.</tt><tt class="descname">dw_WriteNrSegments</tt><big>(</big><em>fname</em>, <em>nr</em><big>)</big><a class="headerlink" href="#wflow_delwaq.dw_WriteNrSegments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes the number of segments to B3 file</p>
+<p>B3_nrofseg.inc</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_delwaq.dw_WritePointer">
+<tt class="descclassname">wflow_delwaq.</tt><tt class="descname">dw_WritePointer</tt><big>(</big><em>fname</em>, <em>pointer</em><big>)</big><a class="headerlink" href="#wflow_delwaq.dw_WritePointer" title="Permalink to this definition">¶</a></dt>
+<dd><p>WRites the pointer file
+B4_pointer.inc</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_delwaq.dw_WriteSegmentOrExchangeData">
+<tt class="descclassname">wflow_delwaq.</tt><tt class="descname">dw_WriteSegmentOrExchangeData</tt><big>(</big><em>ttime</em>, <em>fname</em>, <em>datablock</em>, <em>boundids</em>, <em>WriteAscii=True</em><big>)</big><a class="headerlink" href="#wflow_delwaq.dw_WriteSegmentOrExchangeData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes a timestep to a segment/exchange data file (appends to an existing
+file or creates a new one).</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>time - time for this timestep</li>
+<li>fname - File path of the segment/exchange data file&lt;/param&gt;</li>
+<li>datablock - array with data</li>
+<li>boundids to write more than 1 block</li>
+<li>WriteAscii - set to 1 to alse make an ascii dump</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_delwaq.dw_Write_B2_outlocs">
+<tt class="descclassname">wflow_delwaq.</tt><tt class="descname">dw_Write_B2_outlocs</tt><big>(</big><em>fname</em>, <em>gauges</em>, <em>segs</em><big>)</big><a class="headerlink" href="#wflow_delwaq.dw_Write_B2_outlocs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write an output loc file based on the wflow_gauges
+map.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_delwaq.dw_Write_Substances">
+<tt class="descclassname">wflow_delwaq.</tt><tt class="descname">dw_Write_Substances</tt><big>(</big><em>fname</em>, <em>areas</em><big>)</big><a class="headerlink" href="#wflow_delwaq.dw_Write_Substances" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes the B1_sublist.inc file
+input:</p>
+<blockquote>
+<div>it writes substances for the areas and an initial and mass balance 
+check substance</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_delwaq.dw_Write_Times">
+<tt class="descclassname">wflow_delwaq.</tt><tt class="descname">dw_Write_Times</tt><big>(</big><em>dwdir</em>, <em>T0</em>, <em>timeSteps</em>, <em>timeStepSec</em><big>)</big><a class="headerlink" href="#wflow_delwaq.dw_Write_Times" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes B1_T0.inc, B2_outputtimers.inc, B2_sysclock.inc and /B2_simtimers.inc
+Assumes daily timesteps for now!</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_delwaq.dw_mkDelwaqPointers">
+<tt class="descclassname">wflow_delwaq.</tt><tt class="descname">dw_mkDelwaqPointers</tt><big>(</big><em>ldd</em>, <em>amap</em>, <em>difboun</em>, <em>layers</em><big>)</big><a class="headerlink" href="#wflow_delwaq.dw_mkDelwaqPointers" title="Permalink to this definition">¶</a></dt>
+<dd><p>An ldd is used to determine the from-to relations for delwaq using
+the PCraster up/downstreams commands.
+<em>amap</em> is used to link boundaries to the segments for delwaq (negative 
+numbers). These are area based boundaries. Diffboun is a 
+python dictionary with inflows for each
+cell.</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>ldd</li>
+<li>map to determine the active points)</li>
+<li>difboun : number of inflow boundaries per cell</li>
+<li>layers [nr of soil layers (only vertical flow)].</li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Only one layer at present (layers must be 1)</p>
+</div>
+<dl class="docutils">
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>pointer, fromto, outflows, boundaries, segment</li>
+<li>matrix with 4 colums: from to, zero, zero.</li>
+<li>catchid</li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">use savetxt(&#8220;pointer.inc&#8221;,pointer,fmt=&#8217;%10.0f&#8217;) to save this
+for use with delwaq</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The pointers list first contains the &#8220;internal&#8221; fluxes in
+the kinematic wave reservoir, next the fluxes (1-n) into the 
+kinematic wave reservoir.</p>
+</div>
+<div class="admonition-todo admonition" id="index-4">
+<p class="first admonition-title">Todo</p>
+<p class="last">Add exta column with boundary labels (of the inflows)</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_delwaq.dw_pcrToDataBlock">
+<tt class="descclassname">wflow_delwaq.</tt><tt class="descname">dw_pcrToDataBlock</tt><big>(</big><em>pcrmap</em><big>)</big><a class="headerlink" href="#wflow_delwaq.dw_pcrToDataBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a pcrmap to a numpy array.that is flattend and from which
+missing values are removed. Used for generating delwaq data</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_delwaq.main">
+<tt class="descclassname">wflow_delwaq.</tt><tt class="descname">main</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_delwaq.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="wflow_delwaq.readTS">
+<tt class="descclassname">wflow_delwaq.</tt><tt class="descname">readTS</tt><big>(</big><em>name</em>, <em>ts</em><big>)</big><a class="headerlink" href="#wflow_delwaq.readTS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a pcraster map for a timestep without using the dynamic framework</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_delwaq.usage">
+<tt class="descclassname">wflow_delwaq.</tt><tt class="descname">usage</tt><big>(</big><em>*args</em><big>)</big><a class="headerlink" href="#wflow_delwaq.usage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
 </div>
 </div>
 
@@ -356,7 +608,7 @@ node[shape=record,width=.1,height=.1];
         <li class="right" >
           <a href="wflow_lib.html" title="wflow_lib Module"
              >previous</a> |</li>
-        <li><a href="index.html">wflow 1.0-RC6-dev-119M documentation</a> &raquo;</li> 
+        <li><a href="index.html">wflow 1.0-RC6-dev-147M documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

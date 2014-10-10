@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>THe wflow_routing Model &mdash; wflow 1.0-RC6-dev-119M documentation</title>
+    <title>THe wflow_routing Model &mdash; wflow 1.0-RC6-dev-147M documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.0-RC6-dev-119M',
+        VERSION:     '1.0-RC6-dev-147M',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="wflow 1.0-RC6-dev-119M documentation" href="index.html" />
+    <link rel="top" title="wflow 1.0-RC6-dev-147M documentation" href="index.html" />
     <link rel="next" title="THe wflow_wave Model" href="wflow_wave.html" />
     <link rel="prev" title="The wflow_gr4 model" href="wflow_gr4.html" /> 
   </head>
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="wflow_gr4.html" title="The wflow_gr4 model"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">wflow 1.0-RC6-dev-119M documentation</a> &raquo;</li> 
+        <li><a href="index.html">wflow 1.0-RC6-dev-147M documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
@@ -57,7 +57,7 @@
 <li><a class="reference internal" href="#introduction">Introduction</a></li>
 <li><a class="reference internal" href="#dependencies">Dependencies</a></li>
 <li><a class="reference internal" href="#configuration">Configuration</a></li>
-<li><a class="reference internal" href="#wflow-routing-module-documentation">wflow_routing module documentation</a></li>
+<li><a class="reference internal" href="#module-wflow_routing">wflow_routing module documentation</a></li>
 </ul>
 </li>
 </ul>
@@ -123,8 +123,171 @@ wflow_sbm or wflow_hbv ini file and point to that file.</p>
 <p>In addition to the settings in the ini file you need to give the model additional maps
 or lookuptables in the staticmaps or intbl directories:</p>
 </div>
-<div class="section" id="wflow-routing-module-documentation">
-<h2>wflow_routing module documentation<a class="headerlink" href="#wflow-routing-module-documentation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-wflow_routing">
+<span id="wflow-routing-module-documentation"></span><h2>wflow_routing module documentation<a class="headerlink" href="#module-wflow_routing" title="Permalink to this headline">¶</a></h2>
+<p>Run the wflow_routing model..</p>
+<p>usage</p>
+<div class="highlight-python"><div class="highlight"><pre>wflow_routing [-h][-v level][-F runinfofile][-L logfile][-C casename][-R runId]
+      [-c configfile][-T last_step][-S first_step][-s seconds][-l loglevel]
+      
+-F: if set wflow is expected to be run by FEWS. It will determine
+    the timesteps from the runinfo.xml file and save the output initial
+    conditions to an alternate location. Also set fewsrun=1 in the .ini file!
+    
+-X: save state at the end of the run over the initial conditions at the start        
+
+-T: Set last timestep
+
+-S: Set the start timestep (default = 1)
+
+-s: Set the model timesteps in seconds
+
+-I: re-initialize the initial model conditions with default
+
+-C: set the name  of the case (directory) to run
+
+-R: set the name runId within the current case
+
+-L: set the logfile
+
+-c: name of wflow the configuration file (default: Casename/wflow_routing.ini).
+
+-h: print usage information
+
+-l: loglevel (most be one of DEBUG, WARNING, ERROR)
+</pre></div>
+</div>
+<p>$Author$
+$Id$
+$Rev$</p>
+<dl class="class">
+<dt id="wflow_routing.WflowModel">
+<em class="property">class </em><tt class="descclassname">wflow_routing.</tt><tt class="descname">WflowModel</tt><big>(</big><em>cloneMap</em>, <em>Dir</em>, <em>RunDir</em>, <em>configfile</em><big>)</big><a class="headerlink" href="#wflow_routing.WflowModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">pcraster.framework.dynamicPCRasterBase.DynamicModel</span></tt></p>
+<div class="versionchanged">
+<p><span class="versionmodified">Changed in version 0.1: </span>- initial version.</p>
+</div>
+<dl class="method">
+<dt id="wflow_routing.WflowModel.default_summarymaps">
+<tt class="descname">default_summarymaps</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_routing.WflowModel.default_summarymaps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of default summary-maps at the end of a run.
+This is model specific. You can also add them to the [summary]section of the ini file but stuff
+you think is crucial to the model should be listed here</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_routing.WflowModel.dynamic">
+<tt class="descname">dynamic</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_routing.WflowModel.dynamic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stuf that is done for each timestep</p>
+<p>Below a list of variables that can be save to disk as maps or as
+timeseries (see ini file for syntax):</p>
+<p><em>Dynamic variables</em></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>self.SurfaceRunoff</strong> &#8211; Surface runoff in the kinematic wave [m^3/s]</li>
+<li><strong>self.WaterLevel</strong> &#8211; Water level in the kinematic wave [m] (above the bottom)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><em>Static variables</em></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>self.Altitude</strong> &#8211; The altitude of each cell [m]</li>
+<li><strong>self.Bw</strong> &#8211; Width of the river [m]</li>
+<li><strong>self.River</strong> &#8211; booolean map indicating the presence of a river [-]</li>
+<li><strong>self.DLC</strong> &#8211; length of the river within a cell [m]</li>
+<li><strong>self.ToCubic</strong> &#8211; Mutiplier to convert mm to m^3/s for fluxes</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_routing.WflowModel.initial">
+<tt class="descname">initial</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_routing.WflowModel.initial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initial part of the model, executed only once. Reads all static data from disk</p>
+<p><em>Surface water</em></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>N.tbl</strong> &#8211; Manning&#8217;s N parameter</li>
+<li><strong>N_river.tbl</strong> &#8211; Manning&#8217;s N parameter fro cells marked as river</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_routing.WflowModel.resume">
+<tt class="descname">resume</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_routing.WflowModel.resume" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="wflow_routing.WflowModel.stateVariables">
+<tt class="descname">stateVariables</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_routing.WflowModel.stateVariables" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>returns a list of state variables that are essential to the model.
+This list is essential for the resume and suspend functions to work.</p>
+<p>This function is specific for each model and <strong>must</strong> be present.</p>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>self.SurfaceRunoff</strong> &#8211; Surface runoff in the kin-wave resrvoir [m^3/s]</li>
+<li><strong>self.WaterLevel</strong> &#8211; Water level in the kin-wave resrvoir [m]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_routing.WflowModel.supplyCurrentTime">
+<tt class="descname">supplyCurrentTime</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_routing.WflowModel.supplyCurrentTime" title="Permalink to this definition">¶</a></dt>
+<dd><p>gets the current time in seconds after the start of the run</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_routing.WflowModel.suspend">
+<tt class="descname">suspend</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_routing.WflowModel.suspend" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="wflow_routing.WflowModel.updateRunOff">
+<tt class="descname">updateRunOff</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_routing.WflowModel.updateRunOff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the kinematic wave reservoir. Should be run after updates to Q</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_routing.main">
+<tt class="descclassname">wflow_routing.</tt><tt class="descname">main</tt><big>(</big><em>argv=None</em><big>)</big><a class="headerlink" href="#wflow_routing.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform command line execution of the model.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_routing.usage">
+<tt class="descclassname">wflow_routing.</tt><tt class="descname">usage</tt><big>(</big><em>*args</em><big>)</big><a class="headerlink" href="#wflow_routing.usage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
 </div>
 
@@ -149,7 +312,7 @@ or lookuptables in the staticmaps or intbl directories:</p>
         <li class="right" >
           <a href="wflow_gr4.html" title="The wflow_gr4 model"
              >previous</a> |</li>
-        <li><a href="index.html">wflow 1.0-RC6-dev-119M documentation</a> &raquo;</li> 
+        <li><a href="index.html">wflow 1.0-RC6-dev-147M documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
