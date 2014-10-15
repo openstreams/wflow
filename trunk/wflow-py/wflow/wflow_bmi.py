@@ -25,17 +25,19 @@ class wflowbmi(object):
         # This cannot be avoided at the moment (needs a rework)
         # set to 10000 for now
         maxNrSteps = 10000
-        if "_sbm" in configfile:
+        if "wflow_sbm.ini" in configfile:
             import wflow_sbm as wf
-        elif "_hbv" in configfile:
+        elif "wflow_hbv.ini" in configfile:
             import wflow_sbm as wf
+        elif "wflow_routing.ini" in configfile:
+            import wflow_routing as wf
         else:
             raise NotImplementedError
 
         myModel = wf.WflowModel(wflow_cloneMap, datadir, runid, inifile)
 
         self.dynModel = wf.wf_DynamicFramework(myModel, maxNrSteps, firstTimestep = 1)
-        self.dynModel.createRunId(NoOverWrite=0,level=logging.ERROR)
+        self.dynModel.createRunId(NoOverWrite=0,level=logging.DEBUG)
         self.dynModel._runInitial()
         self.dynModel._runResume()
 
@@ -45,9 +47,7 @@ class wflowbmi(object):
     def finalize(self):
         """
         Shutdown the library and clean up the model.
-        Note that the Fortran library's cleanup code is not up to snuff yet,
-        so the cleanup is not perfect. Note also that the working directory is
-        changed back to the original one.
+
         """
         self.dynModel._runSuspend()
         self.dynModel._wf_shutdown()

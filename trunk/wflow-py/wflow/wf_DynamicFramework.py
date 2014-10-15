@@ -22,6 +22,7 @@ $Rev: 915 $
 
 #TODO: rmove most exec statements and replace by getattr
 #TODO: Remove command-line options from models such as -F that is now in the ini
+#TODO: Fix timestep not forewarding in BMI runs (for reading writing maps)
 
 import osgeo.gdal as gdal
 from wflow.wf_netcdfio import *
