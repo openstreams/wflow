@@ -21,6 +21,7 @@ $Rev: 915 $
 """
 
 #TODO: rmove most exec statements and replace by getattr
+#TODO: Remove command-line options from models such as -F that is now in the ini
 
 import osgeo.gdal as gdal
 from wflow.wf_netcdfio import *
@@ -246,6 +247,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     
     self.exchnageitems = wf_exchnageVariables()
     self.setQuiet(True)
+    self.reinit=0
     self._d_model = userModel
     self._testRequirements()
     self.timestepsecs = timestepsecs
@@ -406,6 +408,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     self.ncfile = configget(self._userModel().config,'framework','netcdfinput',"None")
     self.ncoutfile = configget(self._userModel().config,'framework','netcdfoutput',"None")
 
+
+    # Set teh re-init hint fro the local model
+    self.reinit = int(configget(self._userModel().config,'run','reinit',str(self.reinit)))
+    self._userModel().reinit = self.reinit
     # Now finally set the start end time. First check if set in ini otherwise check if the ini defines
     # a runinfo file
     st = configget(self._userModel().config,'run','starttime',"None")
