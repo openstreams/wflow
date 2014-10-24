@@ -9,7 +9,7 @@ import logging
 
 class wflowbmi(object):
 
-    def initialize(self, configfile=None):
+    def initialize(self, configfile=None,loglevel=logging.DEBUG):
         """
         Assumptions for now:
         - the configfile wih be a full path
@@ -37,7 +37,7 @@ class wflowbmi(object):
         myModel = wf.WflowModel(wflow_cloneMap, datadir, runid, inifile)
 
         self.dynModel = wf.wf_DynamicFramework(myModel, maxNrSteps, firstTimestep = 1)
-        self.dynModel.createRunId(NoOverWrite=0,level=logging.DEBUG)
+        self.dynModel.createRunId(NoOverWrite=0,level=loglevel,model=os.path.basename(configfile))
         self.dynModel._runInitial()
         self.dynModel._runResume()
 
@@ -62,11 +62,11 @@ class wflowbmi(object):
         #curstep = self.dynModel.wf_
         if dt == -1:
             self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep)
-            self.currentTime = self.currenttimestep + 1
+            self.currenttimestep = self.currenttimestep + 1
         else:
             nrsteps = int(dt/self.dynModel.timestepsecs)
             self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps -1)
-            self.currentTime = self.currenttimestep + nrsteps
+            self.currenttimestep = self.currenttimestep + nrsteps
 
 
 

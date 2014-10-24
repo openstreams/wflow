@@ -444,6 +444,7 @@ def getEndTimefromRuninfo(xmlfile):
         ed = datetime.strptime(edate.attrib['date'] + edate.attrib['time'],'%Y-%m-%d%H:%M:%S')
     else:
         print xmlfile + " does not exists."
+        ed = None
         
     return ed
 
