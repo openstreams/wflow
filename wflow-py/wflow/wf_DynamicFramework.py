@@ -1312,6 +1312,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       self._incrementIndentLevel()
       self._atStartOfTimeStep(step)
       self._userModel()._setCurrentTimeStep(step)
+
       if hasattr(self._userModel(), 'dynamic'):
         self._incrementIndentLevel()
         self._traceIn("dynamic")
@@ -1411,8 +1412,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       if self._userModel()._inDynamic() or self._inUpdateWeight():
         newName = generateNameT(name, self._userModel().currentTimeStep())
 
-
     path = os.path.join(directoryPrefix, newName)
+
     
     if self.outputFormat == 1:
         if sys.version_info[0] == 2 and sys.version_info[1] >=6:
@@ -1530,7 +1531,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             if verbose:
                 self.logger.warn("Forcing data (" + path + ") for timestep not present, returning " + str(default))
             return scalar(default)
-    elif style == 2: # Assyming they are set in memory by the API
+    elif style == 2: # Assuming they are set in memory by the API
         # first get basename (last bit of path)
         name = os.path.basename(name)
         if hasattr(self._userModel(),name):
