@@ -52,7 +52,7 @@ def rainfall_interception_hbv(Rainfall,PotEvaporation,Cmax,InterceptionStorage):
     return TF,Interception,IntEvap,InterceptionStorage
 
 
-def rainfall_interception_gash(Cmax,EoverR,CanopyGapFraction, Precipitation, CanopyStorage):
+def rainfall_interception_gash(Cmax,EoverR,CanopyGapFraction, Precipitation, CanopyStorage,maxevap=9999):
     """
     Interception according to the Gash model (For daily timesteps). 
     """
@@ -82,6 +82,12 @@ def rainfall_interception_gash(Cmax,EoverR,CanopyGapFraction, Precipitation, Can
     ThroughFall=ifthenelse(Cmax <= scalar(0.0), Precipitation,ThroughFall)
     Interception=ifthenelse(Cmax <= scalar(0.0), scalar(0.0),Interception)
     StemFlow=ifthenelse(Cmax <= scalar(0.0), scalar(0.0),StemFlow)
+
+    # Now corect for amximum potential evap
+    OverEstimate = ifthenelse(Interception > maxevap,Interception - maxevap,scalar(0.0))
+    Interception = min(Interception,maxevap)
+    # Add surpluss to the thoughdfall
+    ThroughFall = ThroughFall + OverEstimate
     
     return ThroughFall, Interception, StemFlow, CanopyStorage
         
