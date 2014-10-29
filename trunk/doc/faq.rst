@@ -10,6 +10,10 @@ Questions
 
 [3]_ Why do I have missing values in my model output?
 
+[4]_ wflow stops and complains about types not matching
+
+[5]_ wflow complains about missing initial state maps
+
 Answers
 -------
 
@@ -19,13 +23,32 @@ Answers
     Missing values are routed downstream so any missing values upstreams of a discharge
     will cause the discharge to eventually become a missing value. To resolve this check the following:
 
-    - Check if the .tbl files are correct ( do that cover all values in the landuse soil and subcatchment maps)
+    - Check if the .tbl files are correct (do they cover all values in the landuse soil and subcatchment maps)
     - check for missing values in the input maps
-    - check of model parameters are within the working range
+    - check of model parameters are within the working range: e.g. you have set a parameter (e.g. the canopy gap fraction in the interception model > 1) to an unrealistic value
     - check all maps in the runId/outsum directory so see at which stage the missing values starts
+    - the soil/landuse/catchment maps does not cover the whole domain
+
+    .. note::
+		note that missing values in upstreams cells are routed down and will eventually make
+		all downstreams values missing. Check the maps in the runid/outsum directory to see if the tbl files are correct
+
 
 .. [2] *How do a setup a wflow model?*
     First read the section on :ref:`Setting-up a-new-model`. Next check one of the supplied example models
 
 .. [3] *Why do I have missing values in my model output?*
     See question [1]_
+
+
+.. [4] *wflow stops and complains about types not matching*
+	The underlying pcraster framework is very picky about data types. As such the maps must all be of the
+	expected type. e.g. your landuse map MUST be nominal. See the pcraster documentation at pcraster.eu
+	for more information
+
+     .. note::
+          If you create maps with qgis (or gdal) specify the right output type (e.g. Float32 for scalar maps)
+
+.. [5] *wflow complains about missing initial state maps*
+    run the model with the -I option first and copy the resulting files in runid/outstate back to the instate directory
+

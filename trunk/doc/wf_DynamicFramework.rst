@@ -2,7 +2,52 @@ Using the .ini file
 ===================
 
 
-A number of settings of the framwork can be set in the ini file for each model. The settings are shown below:
+A number of settings of the framework can be set in the ini file for each model.
+The settings are explained din the section below.
+
+
+Settings in the run section
+===========================
+
+Information for the current run can be given in the run section. Here the start
+and end-time of the run as well as the timestep can be given. Alternatively a link
+to a Delft-FEWS runinfo.xml file can be given. An example is shown below.
+
+::
+
+    [run]
+    # either a runinfo file or a start and end-time are required
+    #runinfofile=runinfo.xml
+    starttime= 1995-01-31 00:00:00
+    endtime= 1995-02-28 00:00:00
+    # required, base timestep of the model
+    timestepsecs = 86400
+
+
+
+Settings in the framework section
+=================================
+
+The in/output file formats can be specified in the framework section. At present only pcraster mapstacks and netcdf are
+available fot input. See the supplied pcr2netcdf.py script for information on the layout of the netcdf files.
+If netcdf files are used the name of the mapstack is used as the standardname in the netcdf file.
+
+::
+
+    [framework]
+    # outputformat for the *dynamic* mapstacks (not the states and summary maps)
+    # 1: pcraster
+    # 2: numpy
+    # 3: matlab
+    outputformat=1
+
+    # netcdfoutput requires also outputformat = 1 (default) and additionally the name of the file
+    netcdfoutput = outmaps.nc
+    netcdfwritebuffer=100
+    netcdfinput= inmaps.nc
+
+    # Provide a lot of debug info
+    # debug=1
 
 
 
@@ -67,40 +112,6 @@ example:
 
 
 
-Information for the current run can be given in the run section. Here the start
-and end-time of the run as well as the timestep can be given. Alternatively a link
-to a Delft-FEWS runinfo.xml file can be given. An example is shown below.
-
-::
-
-    [run]
-    # either a runinfo file or a start and end-time are required
-    #runinfofile=runinfo.xml
-    starttime= 1995-01-31 00:00:00
-    endtime= 1995-02-28 00:00:00
-    # required, base timestep of the model
-    timestepsecs = 86400
-
-The in/output file formats can be specified here also. At present only pcraster mapstacks and netcdf are
-available fot input. See the supplied pcr2netcdf.py script fro information of the layout of the netcdf files.
-If netcdf files are used the name of the mapstack is used as the standardname in the netcdf file.
-
-::
-
-    [framework]
-    # outputformat for the *dynamic* mapstacks (not the states and summary maps)
-    # 1: pcraster
-    # 2: numpy
-    # 3: matlab
-    outputformat=1
-
-    # netcdfoutput requires also outputformat = 1 (default) and additionally the name of the file
-    netcdfoutput = outmaps.nc
-    netcdfwritebuffer=100
-    netcdfinput= inmaps.nc
-
-    # Provide a lot of debug info
-    # debug=1
 
 
 
