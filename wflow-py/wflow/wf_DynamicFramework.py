@@ -418,9 +418,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     st = configget(self._userModel().config,'run','starttime',"None")
 
     if st == "None":
-        rinfo = configget(self._userModel().config,'run','runinfo',"None")
-        rinfo = os.path.join(self._userModel().Dir,rinfo)
-        if rinfo != "None":
+        rinfo_str = configget(self._userModel().config,'run','runinfo',"None")
+        rinfo = os.path.join(self._userModel().Dir,rinfo_str)
+        if rinfo_str != "None":
             self.datetime_firststep = getStartTimefromRuninfo(rinfo)
             self.currentdatetime = self.datetime_firststep
             self._userModel().currentdatetime = self.currentdatetime
@@ -434,7 +434,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self._userModel()._setFirstTimeStep(self._d_firstTimestep)
             self._d_lastTimestep = int(nrseconds/self.timestepsecs)
         else:
-            self.logger.warn("Not enough information in the [run] section. Need start and end time or a runifo file...")
+            self.logger.warn("Not enough information in the [run] section. Need start and end time or a runinfo.xml file.... Reverting to default date/time")
     else:
         self.datetime_firststep=datetime.datetime.strptime(st, "%Y-%m-%d %H:%M:%S")
         self.currentdatetime = self.datetime_firststep
@@ -449,9 +449,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self._d_firstTimestep = 1
         self._userModel()._setFirstTimeStep(self._d_firstTimestep)
         self._d_lastTimestep = int(nrseconds/self.timestepsecs)
-
-
-
 
 
     if self.ncfile != "None":
