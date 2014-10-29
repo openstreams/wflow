@@ -560,7 +560,7 @@ class WflowModel(DynamicModel):
         self.WaterFrac = self.readtblDefault(self.Dir + "/" + self.intbl + "/WaterFrac.tbl", self.LandUse, subcatch,
                                              self.Soil, 0.0)  # Fraction Open water
         self.et_RefToPot = self.readtblDefault(self.Dir + "/" + self.intbl + "/et_reftopot.tbl", self.LandUse, subcatch,
-                                             self.Soil, 0.0)  # Fraction Open water
+                                             self.Soil, 1.0)  # Fraction Open water
         if self.modelSnow:
             # HBV Snow parameters
             # critical temperature for snowmelt and refreezing:  TTI= 1.000
@@ -971,7 +971,8 @@ class WflowModel(DynamicModel):
             ThroughFall, Interception, StemFlow, self.CanopyStorage = rainfall_interception_gash(self.Cmax, self.EoverR,
                                                                                                  self.CanopyGapFraction,
                                                                                                  self.PrecipitationPlusMelt,
-                                                                                                 self.CanopyStorage)
+                                                                                                 self.CanopyStorage,maxevap=self.PotEvap)
+
             PotTrans = cover(max(0.0, self.PotEvap - Interception), 0.0)  # now in mm
             self.Interception=Interception
         else:
