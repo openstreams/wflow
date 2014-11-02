@@ -1308,6 +1308,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
       self._incrementIndentLevel()
       self._atStartOfTimeStep(step)
+      #TODO: Check why the timestep setting doesn not work.....
       self._userModel()._setCurrentTimeStep(step)
 
       if hasattr(self._userModel(), 'dynamic'):
