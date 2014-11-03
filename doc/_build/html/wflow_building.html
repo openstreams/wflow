@@ -60,7 +60,7 @@
 <li><a class="reference internal" href="#introduction">Introduction</a></li>
 <li><a class="reference internal" href="#using-the-scripts">Using the scripts</a></li>
 <li><a class="reference internal" href="#command-line-parameters">Command line parameters</a></li>
-<li><a class="reference internal" href="#contents-of-the-configuration-file">contents of the configuration file</a></li>
+<li><a class="reference internal" href="#contents-of-the-configuration-file-fro-the-preprocessing">contents of the configuration file fro the preprocessing</a></li>
 <li><a class="reference internal" href="#problems">Problems</a></li>
 </ul>
 </li>
@@ -71,13 +71,6 @@
 </li>
 <li><a class="reference internal" href="#setting-up-a-case">Setting Up a Case</a></li>
 <li><a class="reference internal" href="#input-parameters-lookup-tables-or-maps">Input parameters (lookup tables or maps)</a></li>
-<li><a class="reference internal" href="#calibrating-the-wflow-sbm-model">Calibrating the  wflow_sbm model</a><ul>
-<li><a class="reference internal" href="#id2">Introduction</a></li>
-<li><a class="reference internal" href="#parameters">Parameters</a></li>
-<li><a class="reference internal" href="#changes-in-hydrographs-for-different-values-of-parameters">Changes in hydrographs for different values of parameters</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#common-problems">Common problems</a></li>
 </ul>
 </li>
 </ul>
@@ -144,6 +137,8 @@ can also be used)</li>
 adapter. The model itself comes with the necessary reading/writing
 routines for the Delft-FEWS pi XML files. An example of the link to
 Delft-FEWS is given in section <a class="reference internal" href="wflow_adapt.html#wflow-adapt"><em>wflow_adapt Module</em></a></p>
+<p>In addition, each model should have an ini file (given the same basename as the model) that
+contains models specific information but also information for the framework (see <em class="xref std std-ref">wf_DynamicFramework</em>)</p>
 </div>
 <div class="section" id="setting-up-a-new-model">
 <span id="id1"></span><h2>Setting-up a new model<a class="headerlink" href="#setting-up-a-new-model" title="Permalink to this headline">¶</a></h2>
@@ -171,6 +166,7 @@ a google maps or openstreetmaps layer using the qgis openlayers plugin.</p>
 <ol class="arabic simple">
 <li>Run the wflow_prepare_step1 and 2 scripts or prepare the input maps by hand (see <a class="reference internal" href="#preparing"><em>Preparing static input maps</em></a>)</li>
 <li>Setup the wflow model directory structure (Setup a case) and copy the files (results from step2 of the prepare scripts) there (see <a class="reference internal" href="#setting-up"><em>Setting Up a Case</em></a>)</li>
+<li>Setup the .ini file</li>
 <li>Test run the model</li>
 <li>Supply all the .tbl files (or complete maps) for the model parameters (see <a class="reference internal" href="#input-parameters"><em>Input parameters (lookup tables or maps)</em></a>)</li>
 <li>Calibrate the model</li>
@@ -329,8 +325,8 @@ the first script.</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="contents-of-the-configuration-file">
-<h3>contents of the configuration file<a class="headerlink" href="#contents-of-the-configuration-file" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="contents-of-the-configuration-file-fro-the-preprocessing">
+<h3>contents of the configuration file fro the preprocessing<a class="headerlink" href="#contents-of-the-configuration-file-fro-the-preprocessing" title="Permalink to this headline">¶</a></h3>
 <p>An example can be found <a class="reference download internal" href="_downloads/prep.ini"><tt class="xref download docutils literal"><span class="pre">here.</span></tt></a></p>
 <div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">directories</span><span class="p">]</span>
 <span class="c"># all paths are relative to the workdir set on the command line</span>
@@ -523,6 +519,8 @@ available in you search path.</p>
 <p class="last">Describes how to setup a model case structure. Probably need to write a script
 that does it automatically.</p>
 </div>
+<p>See <em class="xref std std-ref">wf_DynamicFramework</em> for information on the settings in the ini file.
+The model specific settings are described seperately for each model.</p>
 </div>
 <div class="section" id="input-parameters-lookup-tables-or-maps">
 <span id="input-parameters"></span><h2>Input parameters (lookup tables or maps)<a class="headerlink" href="#input-parameters-lookup-tables-or-maps" title="Permalink to this headline">¶</a></h2>
@@ -569,142 +567,6 @@ all cells used in the model you will get missing values in the
 output. Check the maps in the runid/outsum directory to see if
 this is the case.</p>
 </div>
-<dl class="docutils">
-<dt>Beta.tbl</dt>
-<dd>Beta parameter used in the kinematic wave function. Should be set to
-0.6 (will ebe removed later)</dd>
-<dt>CanopyGapFraction.tbl</dt>
-<dd>Gash interception model parameter: the free throughfall coefficient.</dd>
-<dt>EoverR.tbl</dt>
-<dd>Gash interception model parameter. Ratio of average wet canopy
-evaporation rate over average precipitation rate.</dd>
-<dt>FirstZoneCapacity.tbl</dt>
-<dd>Maximum capacity of the saturated store [mm]</dd>
-<dt>MaxLeakage.tbl</dt>
-<dd>Maximum leakage [mm/day]. Leakage is lost to the model. Usually
-only used for i.e. linking to a dedicated groundwater model.
-Normally set to zero in all other cases.</dd>
-<dt>FirstZoneKsatVer.tbl</dt>
-<dd>Saturated conductivity of the store at the surface. The M parameter
-determines how this decreases with depth.</dd>
-<dt>FirstZoneMinCapacity.tbl</dt>
-<dd>Minimum capacity of the saturated store [mm]</dd>
-<dt>InfiltCapPath.tbl</dt>
-<dd>Infiltration capacity [mm/day] of the compacted soil (or paved
-area) fraction of each gridcell</dd>
-<dt>InfiltCapSoil.tbl</dt>
-<dd>Infiltration capacity [mm/day] of the non-compacted soil
-fraction (unpaved area) of each gridcell</dd>
-<dt>M.tbl</dt>
-<dd>Soil parameter determining the decrease of saturated conductivity
-with depth. Usually between 20 and 2000 (if the soil depth is in mm)</dd>
-<dt>MaxCanopyStorage.tbl</dt>
-<dd>Canopy storage [mm]. Used in the Gash interception model</dd>
-<dt>N.tbl</dt>
-<dd>Manning N parameter for the Kinematic wave function. Higher values
-dampen the discharge peak.</dd>
-<dt>PathFrac.tbl</dt>
-<dd>Fraction of compacted area per gridcell</dd>
-<dt>RootingDepth.tbl</dt>
-<dd>Rooting depth of the vegetation [mm]</dd>
-<dt>thetaR.tbl</dt>
-<dd>Residual water content</dd>
-<dt>thetaS.tbl</dt>
-<dd>Water content at saturation</dd>
-</dl>
-</div>
-<div class="section" id="calibrating-the-wflow-sbm-model">
-<h2>Calibrating the  wflow_sbm model<a class="headerlink" href="#calibrating-the-wflow-sbm-model" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id2">
-<h3>Introduction<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
-<p>As with all hydrological models calibration is needed for optimal performance.
-Currently we are working on getting the link with the OpenDA calibration
-environment running (not tested yet). We have calibrated the Rhine/Meuse
-models using simple shell scripts and the XX and XX command-line parameters
-to multiply selected model parameters and evaluate the results later.</p>
-</div>
-<div class="section" id="parameters">
-<h3>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h3>
-<dl class="docutils">
-<dt>M</dt>
-<dd>Once the depth of the soil has been set for the different land-use
-types the M parameter is the most important variable in calibrating
-the model. The decay of the conductivity with depth controls the
-baseflow resession and part of the stormflow curve.</dd>
-<dt>N</dt>
-<dd>The Manning N parameter controls the shape of the hydrograph (the
-peak parts). In general it is advised to set N to realistic values
-for the rivers, for the land phase higher values are usually needed.</dd>
-<dt>Ksat</dt>
-<dd>Increasing the Ksat will lower the hydrograph (baseflow) and
-flatten the peaks. The latter also depend on the shape of the
-catchment.</dd>
-<dt>FirstZoneCapacity</dt>
-<dd>Increasing the storage capacity of the soil will decrease the
-outflow</dd>
-<dt>RunoffGeneratingGWPerc</dt>
-<dd>Default is 0.1. Determines the (upper) part of the groudwater that
-can generate runoff in a cell. This is only used of the
-RunoffGenSigmaFunction option is set to 1. In general generating
-more runoff before a cell is completely saturated (which is the case
-if RunoffGenSigmaFunction is set to 0) will lead to more baseflow
-and flattening of the peaks.</dd>
-</dl>
-</div>
-<div class="section" id="changes-in-hydrographs-for-different-values-of-parameters">
-<h3>Changes in hydrographs for different values of parameters<a class="headerlink" href="#changes-in-hydrographs-for-different-values-of-parameters" title="Permalink to this headline">¶</a></h3>
-<blockquote>
-<div><div class="figure align-center">
-<a class="reference internal image-reference" href="_images/mult_firstzonemin.png"><img alt="image" src="_images/mult_firstzonemin.png" style="height: 600px;" /></a>
-</div>
-<div class="figure align-center">
-<a class="reference internal image-reference" href="_images/mult_ksat_rhine.png"><img alt="image" src="_images/mult_ksat_rhine.png" style="height: 600px;" /></a>
-</div>
-<div class="figure align-center">
-<a class="reference internal image-reference" href="_images/mult_m_rhine.png"><img alt="_images/mult_m_rhine.png" src="_images/mult_m_rhine.png" style="height: 600px;" /></a>
-</div>
-</div></blockquote>
-</div>
-</div>
-<div class="section" id="common-problems">
-<h2>Common problems<a class="headerlink" href="#common-problems" title="Permalink to this headline">¶</a></h2>
-<dl class="docutils">
-<dt>Missing values in output</dt>
-<dd><p class="first">This can have a number of reasons, the most common are:
-(1) one of the input tables does not have an entry for the landuse soil
-or catchment catchment map. For example, you forgot to put in an entry for a
-reclassified LU map and now all cell for that new class have a missing value.
-(2) the soil/landuse/catchment maps does not cover the whole domain
-(3) you have set a parameter (e.g. the canopy gap fraction in the interception model &gt; 1)
-to an unrealistic value</p>
-<div class="last admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">note that missing values in upstreams cells are routed down and will eventually make
-all downstreams values missing. Check the maps in the runid/outsum directory to see if the tbl files are correct</p>
-</div>
-</dd>
-<dt>wflow stops and complains about types not matching</dt>
-<dd><blockquote class="first">
-<div>The underlying pcraster framework is very picky about data types. As such the maps must all be of the
-expected type. e.g. your landuse map MUST be nominal. See the pcraster documentation at pcraster.eu
-for more information</div></blockquote>
-<div class="last admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">If you create maps with qgis (or gdal) specify the rigth output type (e.g. Float32 for scalar maps)</p>
-</div>
-</dd>
-<dt>Missing values in the discharge</dt>
-<dd><ul class="first last simple">
-<li>make sure thereare no missing values in any of the input maps</li>
-<li>make sure all values in the intbl are set to realistic values.</li>
-</ul>
-</dd>
-<dt>No initial conditions</dt>
-<dd><ul class="first last simple">
-<li>run the model with the -I option first and copy the resulting files in runid\outstate back to the instate directory</li>
-</ul>
-</dd>
-</dl>
 </div>
 </div>
 

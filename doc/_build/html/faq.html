@@ -96,41 +96,72 @@
 <h1>Questions and answers<a class="headerlink" href="#questions-and-answers" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="questions">
 <h2>Questions<a class="headerlink" href="#questions" title="Permalink to this headline">¶</a></h2>
-<p><a class="footnote-reference" href="#id4" id="id1">[1]</a> The discharge in the timeseries output gives weird numbers (1E31) what is going wrong?</p>
-<p><a class="footnote-reference" href="#id5" id="id2">[2]</a> How do a setup a wflow model?</p>
-<p><a class="footnote-reference" href="#id6" id="id3">[3]</a> Why do I have missing values in my model output?</p>
+<p><a class="footnote-reference" href="#id6" id="id1">[1]</a> The discharge in the timeseries output gives weird numbers (1E31) what is going wrong?</p>
+<p><a class="footnote-reference" href="#id7" id="id2">[2]</a> How do a setup a wflow model?</p>
+<p><a class="footnote-reference" href="#id8" id="id3">[3]</a> Why do I have missing values in my model output?</p>
+<p><a class="footnote-reference" href="#id10" id="id4">[4]</a> wflow stops and complains about types not matching</p>
+<p><a class="footnote-reference" href="#id11" id="id5">[5]</a> wflow complains about missing initial state maps</p>
 </div>
 <div class="section" id="answers">
 <h2>Answers<a class="headerlink" href="#answers" title="Permalink to this headline">¶</a></h2>
-<table class="docutils footnote" frame="void" id="id4" rules="none">
+<table class="docutils footnote" frame="void" id="id6" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label">[1]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id7">2</a>)</em> <p><em>The discharge in the timeseries output gives weird numbers (1E31) what is going wrong?</em>
+<tr><td class="label">[1]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id9">2</a>)</em> <p><em>The discharge in the timeseries output gives weird numbers (1E31) what is going wrong?</em>
 The 1E31 values indicate missing values. This probably means that at least one
 of the cells in the part upstreasm of the discharge points has a missing value.
 Missing values are routed downstream so any missing values upstreams of a discharge
 will cause the discharge to eventually become a missing value. To resolve this check the following:</p>
-<ul class="last simple">
-<li>Check if the .tbl files are correct ( do that cover all values in the landuse soil and subcatchment maps)</li>
+<ul class="simple">
+<li>Check if the .tbl files are correct (do they cover all values in the landuse soil and subcatchment maps)</li>
 <li>check for missing values in the input maps</li>
-<li>check of model parameters are within the working range</li>
+<li>check of model parameters are within the working range: e.g. you have set a parameter (e.g. the canopy gap fraction in the interception model &gt; 1) to an unrealistic value</li>
 <li>check all maps in the runId/outsum directory so see at which stage the missing values starts</li>
+<li>the soil/landuse/catchment maps does not cover the whole domain</li>
 </ul>
+<div class="last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">note that missing values in upstreams cells are routed down and will eventually make
+all downstreams values missing. Check the maps in the runid/outsum directory to see if the tbl files are correct</p>
+</div>
 </td></tr>
 </tbody>
 </table>
-<table class="docutils footnote" frame="void" id="id5" rules="none">
+<table class="docutils footnote" frame="void" id="id7" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
 <tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td><em>How do a setup a wflow model?</em>
 First read the section on <a class="reference internal" href="wflow_building.html#setting-up-a-new-model"><em>Setting-up a new model</em></a>. Next check one of the supplied example models</td></tr>
 </tbody>
 </table>
-<table class="docutils footnote" frame="void" id="id6" rules="none">
+<table class="docutils footnote" frame="void" id="id8" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
 <tr><td class="label"><a class="fn-backref" href="#id3">[3]</a></td><td><em>Why do I have missing values in my model output?</em>
-See question <a class="footnote-reference" href="#id4" id="id7">[1]</a></td></tr>
+See question <a class="footnote-reference" href="#id6" id="id9">[1]</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id10" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[4]</a></td><td><dl class="first docutils">
+<dt><em>wflow stops and complains about types not matching</em></dt>
+<dd>The underlying pcraster framework is very picky about data types. As such the maps must all be of the
+expected type. e.g. your landuse map MUST be nominal. See the pcraster documentation at pcraster.eu
+for more information</dd>
+</dl>
+<div class="last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you create maps with qgis (or gdal) specify the right output type (e.g. Float32 for scalar maps)</p>
+</div>
+</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id11" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id5">[5]</a></td><td><em>wflow complains about missing initial state maps</em>
+run the model with the -I option first and copy the resulting files in runid/outstate back to the instate directory</td></tr>
 </tbody>
 </table>
 </div>
