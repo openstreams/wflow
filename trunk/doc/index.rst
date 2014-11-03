@@ -32,6 +32,8 @@ the following models:
 
 -  the wflow\_gr4 model (a distributed version of the gr4h/d models).
 
+-  the wflow\_W3RA model.
+
 -  the wflow\_routing model (a kinematic wave model that can run on the output of tone of the hydrological models).
 
 -  the wflow\_wave model (a dynamic wave model that can run on the output of the wflow\_routing model).
@@ -129,6 +131,12 @@ The wflow\_gr4 model
 
    wflow_gr4   
 
+The wflow\_W3RA model
+====================
+.. toctree::
+   :maxdepth: 2
+
+   wflow_W3RA
 
 The wflow\_routing model
 =====================
