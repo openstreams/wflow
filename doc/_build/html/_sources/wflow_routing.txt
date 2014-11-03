@@ -20,7 +20,7 @@ Configuration
 -------------
 
 
-It needs anumber of settings in the ini file. The default name for the file
+It needs a number of settings in the ini file. The default name for the file
 is wflow\_routing.ini. it is also possible to insert this section in the
 wflow\_sbm or wflow\_hbv ini file and point to that file.
 
