@@ -755,7 +755,136 @@ file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/Cfmax.tbl
 
 
 
-    
+
+
+Beta.tbl
+    Beta parameter used in the kinematic wave function. Should be set to
+    0.6 (will be removed later)
+
+CanopyGapFraction.tbl
+    Gash interception model parameter: the free throughfall coefficient.
+
+EoverR.tbl
+    Gash interception model parameter. Ratio of average wet canopy
+    evaporation rate over average precipitation rate.
+
+FirstZoneCapacity.tbl
+    Maximum capacity of the saturated store [mm]
+
+MaxLeakage.tbl
+    Maximum leakage [mm/day]. Leakage is lost to the model. Usually
+    only used for i.e. linking to a dedicated groundwater model.
+    Normally set to zero in all other cases.
+
+FirstZoneKsatVer.tbl
+    Saturated conductivity of the store at the surface. The M parameter
+    determines how this decreases with depth.
+
+FirstZoneMinCapacity.tbl
+    Minimum capacity of the saturated store [mm]
+
+InfiltCapPath.tbl
+    Infiltration capacity [mm/day] of the compacted soil (or paved
+    area) fraction of each gridcell
+
+InfiltCapSoil.tbl
+    Infiltration capacity [mm/day] of the non-compacted soil
+    fraction (unpaved area) of each gridcell
+
+M.tbl
+    Soil parameter determining the decrease of saturated conductivity
+    with depth. Usually between 20 and 2000 (if the soil depth is in mm)
+
+MaxCanopyStorage.tbl
+    Canopy storage [mm]. Used in the Gash interception model
+
+N.tbl
+    Manning N parameter for the Kinematic wave function. Higher values
+    dampen the discharge peak.
+
+PathFrac.tbl
+    Fraction of compacted area per gridcell
+
+RootingDepth.tbl
+    Rooting depth of the vegetation [mm]
+
+thetaR.tbl
+    Residual water content
+
+thetaS.tbl
+    Water content at saturation
+
+
+
+
+
+Calibrating the  wflow\_sbm model
+---------------------------------
+
+Introduction
+~~~~~~~~~~~~
+As with all hydrological models calibration is needed for optimal performance.
+Currently we are working on getting the link with the OpenDA calibration
+environment running (not tested yet). We have calibrated the Rhine/Meuse
+models using simple shell scripts and the XX and XX command-line parameters
+to multiply selected model parameters and evaluate the results later.
+
+
+
+Parameters
+~~~~~~~~~~
+
+M
+    Once the depth of the soil has been set for the different land-use
+    types the M parameter is the most important variable in calibrating
+    the model. The decay of the conductivity with depth controls the
+    baseflow resession and part of the stormflow curve.
+
+N
+    The Manning N parameter controls the shape of the hydrograph (the
+    peak parts). In general it is advised to set N to realistic values
+    for the rivers, for the land phase higher values are usually needed.
+
+Ksat
+    Increasing the Ksat will lower the hydrograph (baseflow) and
+    flatten the peaks. The latter also depend on the shape of the
+    catchment.
+
+FirstZoneCapacity
+    Increasing the storage capacity of the soil will decrease the
+    outflow
+
+RunoffGeneratingGWPerc
+    Default is 0.1. Determines the (upper) part of the groudwater that
+    can generate runoff in a cell. This is only used of the
+    RunoffGenSigmaFunction option is set to 1. In general generating
+    more runoff before a cell is completely saturated (which is the case
+    if RunoffGenSigmaFunction is set to 0) will lead to more baseflow
+    and flattening of the peaks.
+
+
+Changes in hydrographs for different values of parameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    .. figure:: _images/mult_firstzonemin.png
+       :align: center
+       :alt: image
+       :height: 600px
+
+
+
+    .. figure:: _images/mult_ksat_rhine.png
+       :align: center
+       :alt: image
+       :height: 600px
+
+
+
+    .. figure:: _images/mult_m_rhine.png
+       :align: center
+       :height: 600px
+
+
 References
 ----------
 

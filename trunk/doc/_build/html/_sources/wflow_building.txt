@@ -36,6 +36,9 @@ routines for the Delft-FEWS pi XML files. An example of the link to
 Delft-FEWS is given in section :ref:`wflow_adapt`
 
 
+In addition, each model should have an ini file (given the same basename as the model) that
+contains models specific information but also information for the framework (see :ref:`wf_DynamicFramework`)
+
 .. _Setting-up a-new-model:
 
 Setting-up a new model
@@ -69,6 +72,7 @@ When all data is available setting up the model requires the following steps:
 
 #. Run the wflow_prepare_step1 and 2 scripts or prepare the input maps by hand (see :ref:`Preparing`)
 #. Setup the wflow model directory structure (Setup a case) and copy the files (results from step2 of the prepare scripts) there (see :ref:`Setting_Up`)
+#. Setup the .ini file
 #. Test run the model 
 #. Supply all the .tbl files (or complete maps) for the model parameters (see :ref:`Input-Parameters`)
 #. Calibrate the model
@@ -252,8 +256,8 @@ Both scripts take the same command-line parameters:
         -W set the working directory, default is current dir
         -I name of the ini file with settings
 
-contents of the configuration file
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+contents of the configuration file fro the preprocessing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 An example can be found :download:`here. <_download/prep.ini>`
 ::
 
@@ -358,6 +362,9 @@ PM
     that does it automatically.
 
 
+See :ref:`wf_DynamicFramework` for information on the settings in the ini file.
+The model specific settings are described seperately for each model.
+
 .. _Input-Parameters:
 
 Input parameters (lookup tables or maps)
@@ -409,163 +416,4 @@ but is different for each landuse type. See the pcraster documentation
 	output. Check the maps in the runid/outsum directory to see if
 	this is the case.
 
-Beta.tbl
-    Beta parameter used in the kinematic wave function. Should be set to
-    0.6 (will ebe removed later)
-
-CanopyGapFraction.tbl
-    Gash interception model parameter: the free throughfall coefficient.
-
-EoverR.tbl
-    Gash interception model parameter. Ratio of average wet canopy
-    evaporation rate over average precipitation rate.
-
-FirstZoneCapacity.tbl
-    Maximum capacity of the saturated store [mm]
-
-MaxLeakage.tbl
-    Maximum leakage [mm/day]. Leakage is lost to the model. Usually
-    only used for i.e. linking to a dedicated groundwater model.
-    Normally set to zero in all other cases.
-
-FirstZoneKsatVer.tbl
-    Saturated conductivity of the store at the surface. The M parameter
-    determines how this decreases with depth.
-
-FirstZoneMinCapacity.tbl
-    Minimum capacity of the saturated store [mm]
-
-InfiltCapPath.tbl
-    Infiltration capacity [mm/day] of the compacted soil (or paved
-    area) fraction of each gridcell
-
-InfiltCapSoil.tbl
-    Infiltration capacity [mm/day] of the non-compacted soil
-    fraction (unpaved area) of each gridcell
-
-M.tbl
-    Soil parameter determining the decrease of saturated conductivity
-    with depth. Usually between 20 and 2000 (if the soil depth is in mm)
-
-MaxCanopyStorage.tbl
-    Canopy storage [mm]. Used in the Gash interception model
-
-N.tbl
-    Manning N parameter for the Kinematic wave function. Higher values
-    dampen the discharge peak.
-
-PathFrac.tbl
-    Fraction of compacted area per gridcell
-
-RootingDepth.tbl
-    Rooting depth of the vegetation [mm]
-
-thetaR.tbl
-    Residual water content
-
-thetaS.tbl
-    Water content at saturation
-
-
-
-
-
-Calibrating the  wflow\_sbm model 
----------------------------------
-
-Introduction
-~~~~~~~~~~~~
-As with all hydrological models calibration is needed for optimal performance.
-Currently we are working on getting the link with the OpenDA calibration
-environment running (not tested yet). We have calibrated the Rhine/Meuse
-models using simple shell scripts and the XX and XX command-line parameters
-to multiply selected model parameters and evaluate the results later.
-
-
-
-Parameters
-~~~~~~~~~~
-
-M
-    Once the depth of the soil has been set for the different land-use
-    types the M parameter is the most important variable in calibrating
-    the model. The decay of the conductivity with depth controls the
-    baseflow resession and part of the stormflow curve.
-
-N
-    The Manning N parameter controls the shape of the hydrograph (the
-    peak parts). In general it is advised to set N to realistic values
-    for the rivers, for the land phase higher values are usually needed.
-
-Ksat
-    Increasing the Ksat will lower the hydrograph (baseflow) and
-    flatten the peaks. The latter also depend on the shape of the
-    catchment.
-
-FirstZoneCapacity
-    Increasing the storage capacity of the soil will decrease the
-    outflow
-
-RunoffGeneratingGWPerc
-    Default is 0.1. Determines the (upper) part of the groudwater that
-    can generate runoff in a cell. This is only used of the
-    RunoffGenSigmaFunction option is set to 1. In general generating
-    more runoff before a cell is completely saturated (which is the case
-    if RunoffGenSigmaFunction is set to 0) will lead to more baseflow
-    and flattening of the peaks.
-
-
-Changes in hydrographs for different values of parameters
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    .. figure:: _images/mult_firstzonemin.png
-       :align: center
-       :alt: image
-       :height: 600px
-
-       
-
-    .. figure:: _images/mult_ksat_rhine.png
-       :align: center
-       :alt: image
-       :height: 600px
-
-       
-
-    .. figure:: _images/mult_m_rhine.png
-       :align: center
-       :height: 600px
-       
-       
-Common problems
----------------
-
-Missing values in output
-	This can have a number of reasons, the most common are:
-	(1) one of the input tables does not have an entry for the landuse soil 
-	or catchment catchment map. For example, you forgot to put in an entry for a 
-	reclassified LU map and now all cell for that new class have a missing value.
-	(2) the soil/landuse/catchment maps does not cover the whole domain
-	(3) you have set a parameter (e.g. the canopy gap fraction in the interception model > 1) 
-	to an unrealistic value
-
-	.. note::
-		note that missing values in upstreams cells are routed down and will eventually make
-		all downstreams values missing. Check the maps in the runid/outsum directory to see if the tbl files are correct
-
-		
-wflow stops and complains about types not matching
-	The underlying pcraster framework is very picky about data types. As such the maps must all be of the 
-	expected type. e.g. your landuse map MUST be nominal. See the pcraster documentation at pcraster.eu 
-	for more information
-
-     .. note::
-          If you create maps with qgis (or gdal) specify the rigth output type (e.g. Float32 for scalar maps)
-
-Missing values in the discharge
-    - make sure thereare no missing values in any of the input maps
-    - make sure all values in the intbl are set to realistic values. 
-
-No initial conditions
-    - run the model with the -I option first and copy the resulting files in runid\\outstate back to the instate directory
 

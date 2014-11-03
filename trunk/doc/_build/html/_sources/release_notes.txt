@@ -14,6 +14,7 @@ unsupported interim release
   NEED to install wflow as a package
 + Added seperate wflow\_routing module that includes the kinematic wave routing. This part will be removed from the
   wflow\_sbm and wflow\_hbv models
++ Added check in gash interception not to have more interception than available potential evap
 
 
 Version 1.0 RC5
