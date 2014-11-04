@@ -14,6 +14,8 @@ Questions
 
 [5]_ wflow complains about missing initial state maps
 
+[6]_ in some areas the mass balance error seems large
+
 Answers
 -------
 
@@ -52,3 +54,6 @@ Answers
 .. [5] *wflow complains about missing initial state maps*
     run the model with the -I option first and copy the resulting files in runid/outstate back to the instate directory
 
+.. [6] *in some areas the mass balance error seems large*
+   The simple explicit solution of most models can cuase this, especially when parameter values are outside
+   the nomally used range and with large timsteps. For example, setting the soil depth to zero will usually cuase large errors. The solution is usually to check the parameters throughout the model.
