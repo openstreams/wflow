@@ -4,7 +4,9 @@ TODO:
 
 - Use partial wetness of cell in kinematic wave
 - Add add_reservoir function to framework
+- fix open water treatment (together with reservoirs)
 - split kinematic wave from SBM and HBV
+
 
 
 DONE:
