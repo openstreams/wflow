@@ -270,7 +270,7 @@ def main(argv=None):
             var.append(a)
             varname.append(a)
     
-    # USe first timestep as clone-map
+    # Use first timestep as clone-map
     logger = _pcrut.setlogger('pcr2netcdf.log','pcr2netcdf', thelevel = _pcrut.logging.DEBUG)
 
     count = 1
