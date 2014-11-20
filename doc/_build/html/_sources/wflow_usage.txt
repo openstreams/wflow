@@ -195,11 +195,11 @@ Specific options for  wflow\_sbm :
 
 RunoffGenSigmaFunction = 0
     Use subcell runoff generation based on fitting a Sigmoid function to
-    percentile Dems.(wflow\_sbm only) 
+    percentile Dems. (wflow\_sbm only) 
 
     
 reinit = 0
-    If set to 1 (one) the model will not read the save initial state files
+    If set to 1 (one) the model will not read the saved initial state files
     from the instates directory but start with cold states.
     
 OverWriteInit = 0
@@ -212,9 +212,9 @@ updateFile
     If updating is set to 1 specify a 
 
 sCatch = 0
-    If set to another value than 0 the model will only use only the specified subcatchment
+    If set to another value than 0 the model will only use the specified subcatchment
     
-inblt = intbl
+intbl = intbl
     directory from which to read the lookup tables (relative to the case directory)
     
 timestepsecs = 86400
@@ -227,16 +227,16 @@ AnnualDischarge = 300
     Average annual discharge at the outlet of the catchment for the river wiidth estimation function.
     
 UpdMaxDist = 100
-    Maximum distance from the gauge used in updating for which to update the kinamatic wave reservoir (in model units, metres or degree lat lon)
+    Maximum distance from the gauge used in updating for which to update the kinematic wave reservoir (in model units, metres or degree lat lon)
 
 waterdem = 0
-    if set to 1 the ldd will be recalculate each timestep based on the DEM + the water level
+    if set to 1 the ldd will be recalculated each timestep based on the DEM + the water level
     
 reInfilt = 0
     If set to 1 water from the kinamatic wave reservoir can reinfiltrate in the soil
 
 
-The options below should normally not be needed.Here you can chnage the location of some of the input maps.
+The options below should normally not be needed. Here you can change the location of some of the input maps.
 
 
 wflow_subcatch=staticmaps/wflow_subcatch.map
@@ -270,7 +270,7 @@ wflow_inflow=staticmaps/wflow_inflow.map
 	map with forced inflow points (optional)
 	
 wflow_mgauges=staticmaps/wflow_mgauges.map
-	map with locations of the meteorological gauges (only neede if you use scalar timeseries as input)
+	map with locations of the meteorological gauges (only needed if you use scalar timeseries as input)
 	
 wflow_riverwidth=staticmaps/wflow_riverwidth.map
 	map with the width of the river

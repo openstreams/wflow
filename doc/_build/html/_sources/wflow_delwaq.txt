@@ -180,7 +180,7 @@ have been setup. Next these models where linked to delwaq as follows:
    groundwater flow.
 #. Next the flow types are combined with the available land-use classes. 
    As such a Luclass times flowtypes matrix of constituents is made. 
-   Each constituent (e.g. Slow flow of LU class 1) is traced troughout 
+   Each constituent (e.g. Slow flow of LU class 1) is traced throughout 
    the system. All constituents are conservative and have a 
    concentration of 1 as they flow in each segement.
 #. To check for consistency an Initial water type and a Check water 

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Using the models &mdash; wflow 1.0-RC6-dev-147M documentation</title>
+    <title>Using the models &mdash; wflow 1.0-RC6-dev-159-163 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.0-RC6-dev-147M',
+        VERSION:     '1.0-RC6-dev-159-163',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="wflow 1.0-RC6-dev-147M documentation" href="index.html" />
+    <link rel="top" title="wflow 1.0-RC6-dev-159-163 documentation" href="index.html" />
     <link rel="next" title="The wflow_fit module" href="wflow_fit.html" />
     <link rel="prev" title="Building a model" href="wflow_building.html" /> 
   </head>
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="wflow_building.html" title="Building a model"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">wflow 1.0-RC6-dev-147M documentation</a> &raquo;</li> 
+        <li><a href="index.html">wflow 1.0-RC6-dev-159-163 documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
@@ -268,9 +268,9 @@ you force the model with measured discharge</dd>
 <dl class="docutils">
 <dt>RunoffGenSigmaFunction = 0</dt>
 <dd>Use subcell runoff generation based on fitting a Sigmoid function to
-percentile Dems.(wflow_sbm only)</dd>
+percentile Dems. (wflow_sbm only)</dd>
 <dt>reinit = 0</dt>
-<dd>If set to 1 (one) the model will not read the save initial state files
+<dd>If set to 1 (one) the model will not read the saved initial state files
 from the instates directory but start with cold states.</dd>
 <dt>OverWriteInit = 0</dt>
 <dd>If set to one the initial states will be overwritten</dd>
@@ -279,8 +279,8 @@ from the instates directory but start with cold states.</dd>
 <dt>updateFile</dt>
 <dd>If updating is set to 1 specify a</dd>
 <dt>sCatch = 0</dt>
-<dd>If set to another value than 0 the model will only use only the specified subcatchment</dd>
-<dt>inblt = intbl</dt>
+<dd>If set to another value than 0 the model will only use the specified subcatchment</dd>
+<dt>intbl = intbl</dt>
 <dd>directory from which to read the lookup tables (relative to the case directory)</dd>
 <dt>timestepsecs = 86400</dt>
 <dd>timestep of the model in seconds</dd>
@@ -289,13 +289,13 @@ from the instates directory but start with cold states.</dd>
 <dt>AnnualDischarge = 300</dt>
 <dd>Average annual discharge at the outlet of the catchment for the river wiidth estimation function.</dd>
 <dt>UpdMaxDist = 100</dt>
-<dd>Maximum distance from the gauge used in updating for which to update the kinamatic wave reservoir (in model units, metres or degree lat lon)</dd>
+<dd>Maximum distance from the gauge used in updating for which to update the kinematic wave reservoir (in model units, metres or degree lat lon)</dd>
 <dt>waterdem = 0</dt>
-<dd>if set to 1 the ldd will be recalculate each timestep based on the DEM + the water level</dd>
+<dd>if set to 1 the ldd will be recalculated each timestep based on the DEM + the water level</dd>
 <dt>reInfilt = 0</dt>
 <dd>If set to 1 water from the kinamatic wave reservoir can reinfiltrate in the soil</dd>
 </dl>
-<p>The options below should normally not be needed.Here you can chnage the location of some of the input maps.</p>
+<p>The options below should normally not be needed. Here you can change the location of some of the input maps.</p>
 <dl class="docutils">
 <dt>wflow_subcatch=staticmaps/wflow_subcatch.map</dt>
 <dd>map with the subcatchments</dd>
@@ -318,7 +318,7 @@ from the instates directory but start with cold states.</dd>
 <dt>wflow_inflow=staticmaps/wflow_inflow.map</dt>
 <dd>map with forced inflow points (optional)</dd>
 <dt>wflow_mgauges=staticmaps/wflow_mgauges.map</dt>
-<dd>map with locations of the meteorological gauges (only neede if you use scalar timeseries as input)</dd>
+<dd>map with locations of the meteorological gauges (only needed if you use scalar timeseries as input)</dd>
 <dt>wflow_riverwidth=staticmaps/wflow_riverwidth.map</dt>
 <dd>map with the width of the river</dd>
 </dl>
@@ -548,12 +548,12 @@ waterdem = 0
         <li class="right" >
           <a href="wflow_building.html" title="Building a model"
              >previous</a> |</li>
-        <li><a href="index.html">wflow 1.0-RC6-dev-147M documentation</a> &raquo;</li> 
+        <li><a href="index.html">wflow 1.0-RC6-dev-159-163 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>
