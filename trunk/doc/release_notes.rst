@@ -1,8 +1,8 @@
 Release notes
 =============
 
-Trunc
------
+Version 1.0RC6
+--------------
 unsupported interim release
 
 + added  HBV type lower zone to wflow\_sbm. Use MaxPercolation > 0 to use this zone. MaxLeakege > 0 will send
@@ -15,7 +15,7 @@ unsupported interim release
 + Added seperate wflow\_routing module that includes the kinematic wave routing. This part will be removed from the
   wflow\_sbm and wflow\_hbv models
 + Added check in gash interception not to have more interception than available potential evap
-
++ Fixed capillary rise calculation to include timestep. This means that daily models may need to be recalibrated
 
 Version 1.0 RC5
 ---------------
