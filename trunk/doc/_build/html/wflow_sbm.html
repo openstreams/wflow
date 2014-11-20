@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>The wflow_sbm Model &mdash; wflow 1.0-RC6-dev-147M documentation</title>
+    <title>The wflow_sbm Model &mdash; wflow 1.0-RC6-dev-159-163 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.0-RC6-dev-147M',
+        VERSION:     '1.0-RC6-dev-159-163',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="wflow 1.0-RC6-dev-147M documentation" href="index.html" />
+    <link rel="top" title="wflow 1.0-RC6-dev-159-163 documentation" href="index.html" />
     <link rel="next" title="The wflow_gr4 model" href="wflow_gr4.html" />
     <link rel="prev" title="The wflow_hbv model" href="wflow_hbv.html" /> 
   </head>
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="wflow_hbv.html" title="The wflow_hbv model"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">wflow 1.0-RC6-dev-147M documentation</a> &raquo;</li> 
+        <li><a href="index.html">wflow 1.0-RC6-dev-159-163 documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
@@ -172,9 +172,9 @@ to be potential.</p>
 <div class="section" id="the-analytical-gash-model">
 <h3>The analytical (Gash) model<a class="headerlink" href="#the-analytical-gash-model" title="Permalink to this headline">¶</a></h3>
 <p>The analytical model of rainfall interception is based on Rutter’s
-numerical model . The simplifications that introduced allow the model to
+numerical model. The simplifications that introduced allow the model to
 be applied on a daily basis, although a storm-based approach will yield
-better results in situations with more than one storm per day . The
+better results in situations with more than one storm per day. The
 amount of water needed to completely saturate the canopy is defined as:</p>
 <div class="math">
 <p><img src="_images/math/5a63f3b5ae3fa5029d092fc9c6d8b6176c21333c.png" alt="P'=\frac{-\overline{R}S}{\overline{E}_{w}}ln\left[1-\frac{\overline{E}_{w}}{\overline{R}}(1-p-p_{t})^{-1}\right]"/></p>
@@ -186,10 +186,10 @@ interception loss during different phases of a storm.
 An analytical integration of the total evaporation and rainfall under
 saturated canopy conditions is then done for each storm to determine
 average values of <img class="math" src="_images/math/c5d2f6c40538494b14ac7dddc2ee90642c0e38d8.png" alt="\overline{E}_{w}"/> and <img class="math" src="_images/math/c6d4cd125fffe3a9fbeb96336544dbd9fd61350e.png" alt="\overline{R}"/>.
-The total evaporation from the canopy ( the
+The total evaporation from the canopy (the
 total interception loss) is calculated as the sum of the components
 listed in the table below. Interception losses from the stems are
-calculated for days with <img class="math" src="_images/math/3596cdf2e487a5a218113f7579b39d626aa61f11.png" alt="P\geq S_{t}/p_{t}"/> . <img class="math" src="_images/math/11fa6eb4f307883318b5aeb905dde18741c330db.png" alt="p_t"/> and <img class="math" src="_images/math/640cd6ce2ad9f6f4826d45cd0b0f205043d8ef46.png" alt="S_t"/> are
+calculated for days with <img class="math" src="_images/math/3596cdf2e487a5a218113f7579b39d626aa61f11.png" alt="P\geq S_{t}/p_{t}"/>. <img class="math" src="_images/math/11fa6eb4f307883318b5aeb905dde18741c330db.png" alt="p_t"/> and <img class="math" src="_images/math/640cd6ce2ad9f6f4826d45cd0b0f205043d8ef46.png" alt="S_t"/> are
 small and neglected in the wflow_sbm model.</p>
 <p>Table: Formulation of the components of interception loss  according to Gash:</p>
 <table border="1" class="docutils">
@@ -222,15 +222,15 @@ small and neglected in the wflow_sbm model.</p>
 </table>
 <p>In applying the analytical model, saturated conditions are assumed to
 occur when the hourly rainfall exceeds a certain threshold. Often a
-threshold of 0.5 mm/hr is used . <img class="math" src="_images/math/c6d4cd125fffe3a9fbeb96336544dbd9fd61350e.png" alt="\overline{R}"/> is calculated for all hours when the
+threshold of 0.5 mm/hr is used. <img class="math" src="_images/math/c6d4cd125fffe3a9fbeb96336544dbd9fd61350e.png" alt="\overline{R}"/> is calculated for all hours when the
 rainfall exceeds the threshold to give an estimate of the mean rainfall
 rate onto a saturated canopy.</p>
 <p>Gash (1979) has shown that in a regression of interception loss on rainfall (on a
 storm basis) the regression coefficient should equal to <img class="math" src="_images/math/707c74587e4f568120ea8d4f3dc7a5ff9ace5685.png" alt="\overline{E}_w/\overline{R}"/>. Assuming that
 neither <img class="math" src="_images/math/7eb95bb0ad0fd63fd50e453661374366fbffcfc2.png" alt="\overline{E}_w"/> nor <img class="math" src="_images/math/c6d4cd125fffe3a9fbeb96336544dbd9fd61350e.png" alt="\overline{R}"/> vary considerably in time, <img class="math" src="_images/math/7eb95bb0ad0fd63fd50e453661374366fbffcfc2.png" alt="\overline{E}_w"/> can be estimated in this
-way from <img class="math" src="_images/math/c6d4cd125fffe3a9fbeb96336544dbd9fd61350e.png" alt="\overline{R}"/> in the absence of above-canopy climatic observations .
+way from <img class="math" src="_images/math/c6d4cd125fffe3a9fbeb96336544dbd9fd61350e.png" alt="\overline{R}"/> in the absence of above-canopy climatic observations.
 Values derived in this way generally tend to be (much) higher than
-those calculated with the penman-montieth equation .</p>
+those calculated with the penman-monteith equation.</p>
 </div>
 <div class="section" id="the-modified-rutter-model">
 <h3>The modified rutter model<a class="headerlink" href="#the-modified-rutter-model" title="Permalink to this headline">¶</a></h3>
@@ -302,7 +302,7 @@ the remaining water is determined as follows:</p>
 <p>First the soil infiltration capacity is adjusted in case the soil is
 frozen. The remaining storage capacity of the unsaturated store is
 determined. The infiltrating water is split is two parts, the part that
-fall on compacted areas and the part that fall on non-compacted areas.
+falls on compacted areas and the part that falls on non-compacted areas.
 First the amount of water that infiltrates in non-compacted areas is
 calculated by taking the mimimum of the remaining storage capacity, the
 maximum soil infiltration rate and the water on non-compacted areas.
@@ -377,7 +377,7 @@ according to:</p>
 <p>with <img class="math" src="_images/math/2de38926392ba23abeac75effc66c37a5f5be5fd.png" alt="M"/> and <img class="math" src="_images/math/f6d014760b523ad4c8cc3f5f49113784cb0f75de.png" alt="S_{d}"/> as defined previously. A schematic
 representation of the various hydrological processes and pathways
 modelled by SBM (infiltration, exfiltration, Hortonian and saturation
-overland flow, subsurface flow) is provided by verstessy (1999).</p>
+overland flow, subsurface flow) is provided by Vertessy (1999).</p>
 <p>The original SBM model does not include transpiration or a notion of
 capilary rise. In  wflow_sbm  transpiration is first taken from the
 <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> store if the roots reach the water table <img class="math" src="_images/math/29716ce86360aa89ea80309cbbaf42144675258f.png" alt="z_{i}"/>. If
@@ -440,7 +440,7 @@ using the following steps:<ol class="arabic">
 over the saturated part and the available water in each cell</li>
 <li>water is routed downslope (using the PCRaster accucapacityflux
 operator) by multiplying the {} by the slope and limiting the flux
-the the maximum determined in the previous step</li>
+maximum determined in the previous step</li>
 <li>the program can either use the DEM to route the water or (more
 appropriate in flat areas) the actual slope of the water table.
 The latter option slows down the program considerably</li>
@@ -1306,12 +1306,12 @@ representing a root-depth distribution</li>
         <li class="right" >
           <a href="wflow_hbv.html" title="The wflow_hbv model"
              >previous</a> |</li>
-        <li><a href="index.html">wflow 1.0-RC6-dev-147M documentation</a> &raquo;</li> 
+        <li><a href="index.html">wflow 1.0-RC6-dev-159-163 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

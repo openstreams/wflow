@@ -62,9 +62,9 @@ The analytical (Gash) model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The analytical model of rainfall interception is based on Rutter’s
-numerical model . The simplifications that introduced allow the model to
+numerical model. The simplifications that introduced allow the model to
 be applied on a daily basis, although a storm-based approach will yield
-better results in situations with more than one storm per day . The
+better results in situations with more than one storm per day. The
 amount of water needed to completely saturate the canopy is defined as:
 
 .. math:: 
@@ -79,10 +79,10 @@ interception loss during different phases of a storm.
 An analytical integration of the total evaporation and rainfall under
 saturated canopy conditions is then done for each storm to determine
 average values of :math:`\overline{E}_{w}` and :math:`\overline{R}`. 
-The total evaporation from the canopy ( the
+The total evaporation from the canopy (the
 total interception loss) is calculated as the sum of the components
 listed in the table below. Interception losses from the stems are
-calculated for days with :math:`P\geq S_{t}/p_{t}` . :math:`p_t` and :math:`S_t` are
+calculated for days with :math:`P\geq S_{t}/p_{t}`. :math:`p_t` and :math:`S_t` are
 small and neglected in the wflow\_sbm model.
 
 Table: Formulation of the components of interception loss  according to Gash:
@@ -104,16 +104,16 @@ Table: Formulation of the components of interception loss  according to Gash:
 
 In applying the analytical model, saturated conditions are assumed to
 occur when the hourly rainfall exceeds a certain threshold. Often a
-threshold of 0.5 mm/hr is used . :math:`\overline{R}` is calculated for all hours when the
+threshold of 0.5 mm/hr is used. :math:`\overline{R}` is calculated for all hours when the
 rainfall exceeds the threshold to give an estimate of the mean rainfall
 rate onto a saturated canopy.
 
 Gash (1979) has shown that in a regression of interception loss on rainfall (on a
 storm basis) the regression coefficient should equal to :math:`\overline{E}_w/\overline{R}`. Assuming that
 neither :math:`\overline{E}_w` nor :math:`\overline{R}` vary considerably in time, :math:`\overline{E}_w` can be estimated in this
-way from :math:`\overline{R}` in the absence of above-canopy climatic observations .
+way from :math:`\overline{R}` in the absence of above-canopy climatic observations.
 Values derived in this way generally tend to be (much) higher than
-those calculated with the penman-montieth equation .
+those calculated with the penman-monteith equation.
 
 
 
@@ -194,7 +194,7 @@ the remaining water is determined as follows:
 First the soil infiltration capacity is adjusted in case the soil is
 frozen. The remaining storage capacity of the unsaturated store is
 determined. The infiltrating water is split is two parts, the part that
-fall on compacted areas and the part that fall on non-compacted areas.
+falls on compacted areas and the part that falls on non-compacted areas.
 First the amount of water that infiltrates in non-compacted areas is
 calculated by taking the mimimum of the remaining storage capacity, the
 maximum soil infiltration rate and the water on non-compacted areas.
@@ -301,7 +301,7 @@ where:
 with :math:`M` and :math:`S_{d}` as defined previously. A schematic
 representation of the various hydrological processes and pathways
 modelled by SBM (infiltration, exfiltration, Hortonian and saturation
-overland flow, subsurface flow) is provided by verstessy (1999).
+overland flow, subsurface flow) is provided by Vertessy (1999).
 
 The original SBM model does not include transpiration or a notion of
 capilary rise. In  wflow\_sbm  transpiration is first taken from the
@@ -378,7 +378,7 @@ to zero thus setting the capilary rise to zero.
 
    #. water is routed downslope (using the PCRaster accucapacityflux
       operator) by multiplying the {} by the slope and limiting the flux
-      the the maximum determined in the previous step
+      maximum determined in the previous step
 
    #. the program can either use the DEM to route the water or (more
       appropriate in flat areas) the actual slope of the water table.
