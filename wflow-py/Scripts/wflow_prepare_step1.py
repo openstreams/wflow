@@ -34,10 +34,8 @@ $Id: $
     # reporting in python
 """
 
-try:
-    import wflow.wflow_lib as tr
-except ImportError:
-    import wflow_lib as tr
+import wflow.wflow_lib as tr
+
 
 import os
 import os.path
@@ -45,6 +43,7 @@ import getopt
 import ConfigParser
 import sys
 import gc
+import numpy as np
 
 
 
@@ -152,8 +151,8 @@ def main():
     lu_paved= configget(config,"files","lu_paved","")
     
     # X/Y coordinates of the gauges the system
-    exec "X=tr.array(" + gauges_x + ")" 
-    exec "Y=tr.array(" + gauges_y + ")" 
+    exec "X=np.array(" + gauges_x + ")"
+    exec "Y=np.array(" + gauges_y + ")"
 
     tr.Verbose=1
 

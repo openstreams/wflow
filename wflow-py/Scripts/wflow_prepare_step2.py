@@ -24,10 +24,8 @@ $Id: $
 """
 
 
-try:
-    import wflow.wflow_lib as tr
-except ImportError:
-    import wflow_lib as tr
+import wflow.wflow_lib as tr
+
 import os
 import os.path
 import getopt
@@ -190,7 +188,8 @@ def main():
     dem = tr.readmap(step2dir + "/wflow_dem.map")
     demmin = tr.readmap(step2dir + "/wflow_demmin.map")
     demmax = tr.readmap(step2dir + "/wflow_demmax.map")
-    catchcut = tr.readmap(step2dir + "/catchment_cut.map")
+    #catchcut = tr.readmap(step2dir + "/catchment_cut.map")
+    catchcut = tr.readmap(step2dir + "/cutout.map")
     # now apply the area of interest (catchcut) to the DEM
     #dem=tr.ifthen(catchcut >=1 , dem)
     #
