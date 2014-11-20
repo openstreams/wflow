@@ -549,6 +549,9 @@ class WflowModel(DynamicModel):
         # FirstZoneKsatVer = $2\inmaps\FirstZoneKsatVer.map
         self.FirstZoneKsatVer = self.readtblDefault(self.Dir + "/" + self.intbl + "/FirstZoneKsatVer.tbl", self.LandUse,
                                                     subcatch, self.Soil, 3000.0) * self.timestepsecs / self.basetimestep
+        self.MporeFrac = self.readtblDefault(self.Dir + "/" + self.intbl + "/MporeFrac.tbl", self.LandUse,
+                                                    subcatch, self.Soil, 0.0)
+
         self.Beta = scalar(0.6)  # For sheetflow
 
         self.M = self.readtblDefault(self.Dir + "/" + self.intbl + "/M.tbl", self.LandUse, subcatch, self.Soil,
@@ -1045,9 +1048,12 @@ class WflowModel(DynamicModel):
 
         self.ActInfilt = InfiltPath + InfiltSoil
 
+
         self.InfiltExcess = ifthenelse(UStoreCapacity > 0.0, self.AvailableForInfiltration, 0.0)
         self.ExcessWater = self.AvailableForInfiltration # Saturation overland flow
         self.CumInfiltExcess = self.CumInfiltExcess + self.InfiltExcess
+
+
 
         # Determine transpiration
         self.ActEvap, self.FirstZoneDepth, self.UStoreDepth, self.ActEvapUStore = actEvap_SBM(self.RootingDepth,
@@ -1061,12 +1067,17 @@ class WflowModel(DynamicModel):
         self.ActEvapOpenWater =  min(self.WaterLevel * 1000.0 * self.WaterFrac ,self.WaterFrac * self.EvapRest)
         self.ActEvap = self.ActEvap + self.ActEvapOpenWater
 
-
         ##########################################################################
         # Transfer of water from unsaturated to saturated store...################
         ##########################################################################
         # Determine saturation deficit. NB, as noted by Vertessy and Elsenbeer 1997
         # this deficit does NOT take into account the water in the unsaturated zone
+
+        # Optional Macrco-Pore transfer
+        self.MporeTransfer = self.ActInfilt * self.MporeFrac
+        self.FirstZoneDepth = self.FirstZoneDepth + self.MporeTransfer
+        self.UStoreDepth = self.UStoreDepth - self.MporeTransfer
+
         self.SaturationDeficit = self.FirstZoneCapacity - self.FirstZoneDepth
 
         self.zi = max(0.0, self.FirstZoneThickness - self.FirstZoneDepth / (
@@ -1074,7 +1085,6 @@ class WflowModel(DynamicModel):
         Ksat = self.FirstZoneKsatVer * exp(-self.f * self.zi)
 
         self.DeepKsat = self.FirstZoneKsatVer * exp(-self.f * self.FirstZoneThickness)
-
 
         # now the actual transfer to the saturated store..
         self.Transfer = min(self.UStoreDepth, ifthenelse(self.SaturationDeficit <= 0.00001, 0.0,
@@ -1084,7 +1094,7 @@ class WflowModel(DynamicModel):
         MaxCapFlux = max(0.0, min(Ksat, self.ActEvapUStore, UStoreCapacity, self.FirstZoneDepth))
         # No capilary flux is roots are in water, max flux if very near to water, lower flux if distance is large
         CapFluxScale = ifthenelse(self.zi > self.RootingDepth,
-                                  self.CapScale / (self.CapScale + self.zi - self.RootingDepth), 0.0)
+                                  self.CapScale / (self.CapScale + self.zi - self.RootingDepth) * self.timestepsecs/self.basetimestep, 0.0)
         self.CapFlux = MaxCapFlux * CapFluxScale
 
 
@@ -1121,7 +1131,7 @@ class WflowModel(DynamicModel):
         self.WaterDem = self.Altitude - (self.zi * 0.001)
         self.waterSlope = max(0.000001, slope(self.WaterDem) * celllength() / self.reallength)
         if self.waterdem:
-            waterLdd = lddcreate(self.WaterDem, 1E35, 1E35, 1E35, 1E35)
+            self.waterLdd = lddcreate(self.WaterDem, 1E35, 1E35, 1E35, 1E35)
             #waterLdd = lddcreate(waterDem,1,1,1,1)
 
 
@@ -1132,8 +1142,8 @@ class WflowModel(DynamicModel):
                 Lateral = Ksat * self.waterSlope
 
             MaxHor = max(0.0, min(Lateral, self.FirstZoneDepth))
-            self.FirstZoneFlux = accucapacityflux(waterLdd, self.FirstZoneDepth, MaxHor)
-            self.FirstZoneDepth = accucapacitystate(waterLdd, self.FirstZoneDepth, MaxHor)
+            self.FirstZoneFlux = accucapacityflux(self.waterLdd, self.FirstZoneDepth, MaxHor)
+            self.FirstZoneDepth = accucapacitystate(self.waterLdd, self.FirstZoneDepth, MaxHor)
         else:
             #
             #MaxHor = max(0,min(self.FirstZoneKsatVer * self.Slope * exp(-SaturationDeficit/self.M),self.FirstZoneDepth*(self.thetaS-self.thetaR))) * timestepsecs/basetimestep
