@@ -1,4 +1,4 @@
-THe wflow_W3RA Model
+The wflow_W3RA Model
 ====================
 
 

@@ -15,7 +15,7 @@ unsupported interim release
 + Added seperate wflow\_routing module that includes the kinematic wave routing. This part will be removed from the
   wflow\_sbm and wflow\_hbv models
 + Added check in gash interception not to have more interception than available potential evap
-+ Fixed capillary rise calculation to include timestep. This means that daily models may need to be recalibrated
++ Fixed capillary rise calculation to include timestep. This means that sub-daily models may need to be recalibrated
 
 Version 1.0 RC5
 ---------------
