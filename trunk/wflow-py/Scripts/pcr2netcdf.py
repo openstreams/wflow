@@ -2,7 +2,7 @@
 """
 syntax:
     pcr2netcdf -S date -E date - N mapstackname -I mapstack_folder 
-               -O netcdf_name [-b buffersize]
+               -O netcdf_name [-b buffersize] [-c inifile]
 
     -S startdate in "%d-%m-%Y %H:%M:%S" e.g. 31-12-1990 00:00:00
     -E endDate in "%d-%m-%Y %H:%M:%S"
@@ -15,6 +15,7 @@ syntax:
     -t timestep - (set timestep in seconds, default = 86400) Only 86400 and 3600 supported
     -F FORMAT (default = NETCDF4, use NETCDF3_CLASSIC for OpenDA)
     -z switch on zlib compression (default=Off)
+    -c inifile (contains netcdf meta data)
 
 This utility is made to simplify running wflow models with OpenDA. The
 OpenDA link needs the forcing timeseries to be in netcdf format. Use this to convert
@@ -29,12 +30,6 @@ based on GLOFRIS_utils.py by H Winsemius
 
 """
 
-try:
-    import  wflow.wflow_lib as wflow_lib
-    import wflow.pcrut as _pcrut
-except ImportError:
-    import  wflow_lib  as wflow_lib 
-    import  pcrut as _pcrut
     
 import time
 import datetime as dt
@@ -44,7 +39,9 @@ from numpy import *
 import netCDF4 as nc4
 import osgeo.gdal as gdal
 import os
-
+import logging
+import logging.handlers
+import ConfigParser
 
 def usage(*args):
     sys.stdout = sys.stderr
@@ -83,6 +80,28 @@ def readMap(fileName, fileFormat,logger):
     ds = None
     return x, y, data, FillVal
     
+
+def getnetcdfmetafromini(inifile):
+    """
+    Gets a netcdf mete data dictionary from an ini file
+
+    :param inifile: inifile with a metadata section
+    :return : dictionary with meta data
+    """
+    metadata = {}
+
+    config = ConfigParser.SafeConfigParser()
+    config.optionxform = str
+    if os.path.exists(inifile):
+        config.read(inifile)
+    else:
+        print ("Cannot open ini file: " +  inifile)
+        exit(1)
+
+    config.
+
+    return metadata
+
 
 def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trgName, timeList, logger,maxbuf=600,Format="NETCDF4",zlib=False):
     """
@@ -203,7 +222,35 @@ def prepare_nc(trgFile, timeList, x, y, metadata, logger, units='Days since 1900
     nc_trg.close()
 
 
+def setlogger(logfilename,loggername, thelevel=logging.INFO):
+    """
+    Set-up the logging system and return a logger object. Exit if this fails
+    """
 
+    try:
+        #create logger
+        logger = logging.getLogger(loggername)
+        if not isinstance(thelevel, int):
+            logger.setLevel(logging.DEBUG)
+        else:
+            logger.setLevel(thelevel)
+        ch = logging.FileHandler(logfilename,mode='w')
+        console = logging.StreamHandler()
+        console.setLevel(logging.DEBUG)
+        ch.setLevel(logging.DEBUG)
+        #create formatter
+        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+        #add formatter to ch
+        ch.setFormatter(formatter)
+        console.setFormatter(formatter)
+        #add ch to logger
+        logger.addHandler(ch)
+        logger.addHandler(console)
+        logger.debug("File logging to " + logfilename)
+        return logger
+    except IOError:
+        print "ERROR: Failed to initialize logger with logfile: " + logfilename
+        sys.exit(2)
 
 def date_range(start, end, tdelta="days"):
     
@@ -230,6 +277,7 @@ def main(argv=None):
      
     ncoutfile = "inmaps.nc"
     mapstackfolder="inmaps"
+    inifile = None
     mapstackname=[]
     var=[]
     varname=[]
@@ -271,7 +319,7 @@ def main(argv=None):
             varname.append(a)
     
     # Use first timestep as clone-map
-    logger = _pcrut.setlogger('pcr2netcdf.log','pcr2netcdf', thelevel = _pcrut.logging.DEBUG)
+    logger = setlogger('pcr2netcdf.log','pcr2netcdf', thelevel = logging.DEBUG)
 
     count = 1
     below_thousand = count % 1000

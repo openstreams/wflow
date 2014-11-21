@@ -993,6 +993,7 @@ class WflowModel(DynamicModel):
         # Determine infiltration into Unsaturated store...########################
         ##########################################################################
         # Add precipitation surplus  FreeWater storage...
+
         self.AvailableForInfiltration = ThroughFall + StemFlow
         UStoreCapacity = self.FirstZoneCapacity - self.FirstZoneDepth - self.UStoreDepth
 
