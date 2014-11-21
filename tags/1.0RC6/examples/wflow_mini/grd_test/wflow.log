@@ -1,2 +1,0 @@
-2013-12-31 11:15:05,584 - model - ERROR - Problem saving state variable: QUH1
-2013-12-31 11:15:05,585 - model - ERROR - report(self._userModel().QUH1,"wflow_mini/grd_test//outstate/QUH1.map")
