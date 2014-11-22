@@ -1,4 +1,23 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/python
+
+# pcr2netcdf is Free software, see below:
+#
+# Copyright (c) J. Schellekens 2014
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
 """
 syntax:
     pcr2netcdf -S date -E date - N mapstackname -I mapstack_folder 
@@ -42,6 +61,7 @@ import os
 import logging
 import logging.handlers
 import ConfigParser
+import wflow.pcrut as _pcrut
 
 def usage(*args):
     sys.stdout = sys.stderr
@@ -98,7 +118,7 @@ def getnetcdfmetafromini(inifile):
         print ("Cannot open ini file: " +  inifile)
         exit(1)
 
-    config.
+    metadata = config.items('metadata')
 
     return metadata
 
@@ -283,7 +303,7 @@ def main(argv=None):
     varname=[]
     unit="mm"
     startstr="1-1-1990 00:00:00"
-    endstr="2-2-1990 :00:00:00"
+    endstr="2-2-1990 00:00:00"
     mbuf=600
     timestepsecs = 86400
     
@@ -299,7 +319,7 @@ def main(argv=None):
     ## Main model starts here
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, 'S:E:N:I:O:b:t:F:z')
+        opts, args = getopt.getopt(argv, 'c:S:E:N:I:O:b:t:F:z')
     except getopt.error, msg:
         usage(msg)
 
@@ -307,6 +327,7 @@ def main(argv=None):
         if o == '-S': startstr = a
         if o == '-E': endstr = a
         if o == '-O': ncoutfile = a
+        if o == '-c': inifile = a
         if o == '-I': mapstackfolder = a
         if o == '-b': mbuf = int(a)
         if o == '-z': zlib=True
@@ -317,7 +338,8 @@ def main(argv=None):
             mapstackname.append(a)
             var.append(a)
             varname.append(a)
-    
+
+
     # Use first timestep as clone-map
     logger = setlogger('pcr2netcdf.log','pcr2netcdf', thelevel = logging.DEBUG)
 
@@ -339,7 +361,11 @@ def main(argv=None):
     else:   
         timeList = date_range(start, end, tdelta="hours")
 
-    
+    if inifile is not None:
+        inimetadata = getnetcdfmetafromini(inifile)
+        metadata.update(inimetadata)
+
+
     prepare_nc(ncoutfile, timeList, x, y, metadata, logger,Format=Format,zlib=zlib)
     
     idx = 0
