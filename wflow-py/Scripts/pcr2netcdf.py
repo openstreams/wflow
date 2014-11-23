@@ -118,12 +118,34 @@ def getnetcdfmetafromini(inifile):
         print ("Cannot open ini file: " +  inifile)
         exit(1)
 
-    metadata = config.items('metadata')
+    metadata = dict(config.items('metadata'))
 
     return metadata
 
 
-def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trgName, timeList, logger,maxbuf=600,Format="NETCDF4",zlib=False):
+def getvarmetadatafromini(inifile,var):
+    """
+
+    :param inifile: inifile
+    :param var: Name of the mapstack
+    :return: dictionary
+    """
+    metadata = {}
+
+    config = ConfigParser.SafeConfigParser()
+    config.optionxform = str
+    if os.path.exists(inifile):
+        config.read(inifile)
+    else:
+        print ("Cannot open ini file: " +  inifile)
+        exit(1)
+
+    metadata = dict(config.items(var))
+
+    return metadata
+
+
+def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trgName, timeList, metadata, logger,maxbuf=600,Format="NETCDF4",zlib=False):
     """
     Write pcraster mapstack to netcdf file. Taken from GLOFRIS_Utils.py
     
@@ -133,7 +155,8 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
     - tgrVar - variable in nc file
     - trgUnits - units for the netcdf file
     - timeLists - list of times
-    
+    - metadata - dict with metedata for var
+
     Optional argumenrs
     - maxbuf = 600: number of timesteps to buffer before writing
     
@@ -157,6 +180,11 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
         nc_var = nc_trg.createVariable(trgVar, 'f4', ('time', 'lat', 'lon',), fill_value=-9999., zlib=False)
         nc_var.units = trgUnits
         nc_var.standard_name = trgName
+        print metadata
+        for attr in metadata:
+            print metadata[attr]
+            nc_var.setncattr(attr, metadata[attr])
+
     
     nc_Fill = nc_var._FillValue
     # Create a buffer of a number of timesteps to speed-up writing    
@@ -371,7 +399,10 @@ def main(argv=None):
     idx = 0
     for mname in mapstackname:
         logger.info("Converting mapstack: " + mname + " to " + ncoutfile)
-        write_netcdf_timeseries(mapstackfolder, mname, ncoutfile, var[idx], unit, varname[idx], timeList, logger,maxbuf=mbuf,Format=Format,zlib=zlib)
+        # get name from ini here
+        varmeta = getvarmetadatafromini(inifile,var[idx])
+
+        write_netcdf_timeseries(mapstackfolder, mname, ncoutfile, var[idx], unit, varname[idx], timeList, varmeta, logger,maxbuf=mbuf,Format=Format,zlib=zlib)
         idx = idx + 1
     
 
