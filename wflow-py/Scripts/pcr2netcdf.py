@@ -399,7 +399,7 @@ def main(argv=None):
     idx = 0
     for mname in mapstackname:
         logger.info("Converting mapstack: " + mname + " to " + ncoutfile)
-        # get name from ini here
+        # get variable attributes from ini file here
         varmeta = getvarmetadatafromini(inifile,var[idx])
 
         write_netcdf_timeseries(mapstackfolder, mname, ncoutfile, var[idx], unit, varname[idx], timeList, varmeta, logger,maxbuf=mbuf,Format=Format,zlib=zlib)
