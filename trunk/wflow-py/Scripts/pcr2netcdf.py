@@ -62,6 +62,7 @@ import logging
 import logging.handlers
 import ConfigParser
 import wflow.pcrut as _pcrut
+import osgeo.gdal as gdal
 
 def usage(*args):
     sys.stdout = sys.stderr
@@ -74,15 +75,17 @@ def readMap(fileName, fileFormat,logger):
     """ 
     Read geographical file into memory
     """
-    import osgeo.gdal as gdal 
+
     # Open file for binary-reading
     mapFormat = gdal.GetDriverByName(fileFormat)
     mapFormat.Register()
+    logger.debug("Open: " + fileName)
     ds = gdal.Open(fileName)
     if ds is None:
         logger.error('Could not open ' + fileName + '. Something went wrong!! Shutting down')
         sys.exit(1)
         # Retrieve geoTransform info
+    logger.debug("Geodata...")
     geotrans = ds.GetGeoTransform()
     originX = geotrans[0]
     originY = geotrans[3]
@@ -94,10 +97,12 @@ def readMap(fileName, fileFormat,logger):
     y = linspace(originY+resY/2,originY+resY/2+resY*(rows-1),rows)
     # Retrieve raster
     RasterBand = ds.GetRasterBand(1) # there's only 1 band, starting from 1
+    logger.debug("Read array...")
     data = RasterBand.ReadAsArray(0,0,cols,rows)
     FillVal = RasterBand.GetNoDataValue()
     RasterBand = None
     ds = None
+
     return x, y, data, FillVal
     
 
