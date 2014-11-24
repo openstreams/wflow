@@ -197,12 +197,14 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
         logger.debug("Adding time: " + str(curTime))
         idx = where(timeObj==curTime)[0]
         count = nn + startidx
+
         below_thousand = count % 1000
         above_thousand = count / 1000
         # read the file of interest
         pcraster_file  = str(srcPrefix + '%0' + str(8-len(srcPrefix)) + '.f.%03.f') % (above_thousand, below_thousand)
         pcraster_path = os.path.join(srcFolder, pcraster_file)
         # write grid to PCRaster file
+        logger.debug("processing map: " + pcraster_file)
         x, y, data, FillVal = readMap(pcraster_path, 'PCRaster',logger)
        
         data[data==FillVal] = nc_Fill
