@@ -183,7 +183,7 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
         nc_var.standard_name = trgName
         print metadata
         for attr in metadata:
-            print metadata[attr]
+            #print metadata[attr]
             nc_var.setncattr(attr, metadata[attr])
 
     
@@ -215,10 +215,11 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
         # Weird, the flupud is no longer needed!!!!
         timestepbuffer[bufpos,:,:] =  data
 
-        if buffreset == 0 or idx ==  bufsize -1:
+        if buffreset == 0 or idx ==  bufsize -1 or nn + 1 == len(timeList):
             logger.debug("Writing buffer to file at: " + str(curTime) + " " + str(int(bufpos) + 1) + " timesteps")
             nc_var[idx-bufsize+1:idx+1,:,:] = timestepbuffer
             nc_trg.sync()
+
 
     nc_trg.sync()
     nc_trg.close()
