@@ -102,6 +102,7 @@ def readMap(fileName, fileFormat,logger):
     FillVal = RasterBand.GetNoDataValue()
     RasterBand = None
     ds = None
+    logger.debug("return...")
 
     return x, y, data, FillVal
     
