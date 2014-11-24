@@ -170,6 +170,7 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
     # read time axis and convert to time objects
     logger.debug("Creating time object..")
     time = nc_trg.variables['time']
+    nc_trg.set_fill_off()
     timeObj = nc4.num2date(time[:], units=time.units, calendar=time.calendar)
 
     
