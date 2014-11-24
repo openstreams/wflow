@@ -178,7 +178,7 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
         nc_var = nc_trg.variables[trgVar]
     except:
         # prepare the variable
-        nc_var = nc_trg.createVariable(trgVar, 'f4', ('time', 'lat', 'lon',), fill_value=-9999., zlib=zlib,complevel=9)
+        nc_var = nc_trg.createVariable(trgVar, 'f4', ('time', 'lat', 'lon',), fill_value=-9999., zlib=zlib)
         nc_var.units = trgUnits
         nc_var.standard_name = trgName
         print metadata
@@ -217,7 +217,7 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
         timestepbuffer[bufpos,:,:] =  data
 
         if buffreset == 0 or idx ==  bufsize -1 or nn + 1 == len(timeList):
-            logger.debug("Writing buffer to file at: " + str(curTime) + " " + str(int(bufpos) + 1) + " timesteps")
+            logger.info("Writing buffer to file at: " + str(curTime) + " " + str(int(bufpos) + 1) + " timesteps")
             nc_var[idx-bufsize+1:idx+1,:,:] = timestepbuffer
             nc_trg.sync()
 
