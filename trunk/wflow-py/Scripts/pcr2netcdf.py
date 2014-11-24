@@ -414,7 +414,7 @@ def main(argv=None):
 
     startmapstack = 1
     for yr_timelist in timeList:
-        ncoutfile_yr = ncoutfile + "_" + str(yr_timelist[0].year)
+        ncoutfile_yr = os.path.splitext(ncoutfile)[0] + "_" + str(yr_timelist[0].year) + os.path.splitext(ncoutfile)[1]
         prepare_nc(ncoutfile_yr, yr_timelist, x, y, metadata, logger,Format=Format,zlib=zlib)
 
         idx = 0
