@@ -140,6 +140,7 @@ class netcdfoutput():
         # Open target netCDF file
         var = os.path.basename(var)
         self.nc_trg = netCDF4.Dataset(self.ncfile, 'a',format=netcdfformat,zlib=True,complevel=1)
+        self.nc_trg.set_fill_off()
         # read time axis and convert to time objects
         time = self.nc_trg.variables['time']
         timeObj = netCDF4.num2date(time[:], units=time.units, calendar=time.calendar)
@@ -172,6 +173,7 @@ class netcdfoutput():
             spos = idx-bufpos
             self.logger.debug("Writing buffer for " + var + " to file at: " + str(spos) + " " + str(int(bufpos) + 1) + " timesteps")
             nc_var[spos:idx+1,:,:] = self.bufflst[var][0:bufpos+1,:,:]
+            self.nc_trg.sync()
 
 
     def finish(self):
