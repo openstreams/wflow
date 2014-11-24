@@ -145,7 +145,7 @@ def getvarmetadatafromini(inifile,var):
     return metadata
 
 
-def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trgName, timeList, metadata, logger,maxbuf=600,Format="NETCDF4",zlib=False):
+def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trgName, timeList, metadata, logger,maxbuf=600,Format="NETCDF4",zlib=False,startidx=0):
     """
     Write pcraster mapstack to netcdf file. Taken from GLOFRIS_Utils.py
     
@@ -195,7 +195,7 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
     for nn, curTime in enumerate(timeList):
         logger.debug("Adding time: " + str(curTime))
         idx = where(timeObj==curTime)[0]
-        count = nn + 1
+        count = nn + startidx
         below_thousand = count % 1000
         above_thousand = count / 1000
         # read the file of interest
@@ -301,7 +301,9 @@ def setlogger(logfilename,loggername, thelevel=logging.INFO):
         sys.exit(2)
 
 def date_range(start, end, tdelta="days"):
-    
+
+
+
     if tdelta == "days":
         r = (end+dt.timedelta(days=1)-start).days
         return [start+dt.timedelta(days=i) for i in range(r)]
@@ -309,7 +311,21 @@ def date_range(start, end, tdelta="days"):
         r = (end+dt.timedelta(days=1)-start).days * 24
         return [start+dt.timedelta(hours=i) for i in range(r)]
 
- 
+def date_range_peryear(start, end, tdelta="days"):
+
+    ret = []
+
+    for yrs in range(start.year,end.year+1):
+        print yrs
+        if tdelta == "days":
+            r = (dt.datetime(yrs+1,1,1)-dt.datetime(yrs,1,1)).days
+            ret.append([dt.datetime(yrs,1,1)+dt.timedelta(days=i) for i in range(r)])
+        else:
+            r = (dt.datetime(yrs+1,1,1)-dt.datetime(yrs,1,1)).days * 24
+            ret.append([dt.datetime(yrs,1,1)+dt.timedelta(hours=i) for i in range(r)])
+
+    return ret
+
 def main(argv=None):
     """
     Perform command line execution of the model.
@@ -385,26 +401,32 @@ def main(argv=None):
     start=dt.datetime.strptime(startstr,"%d-%m-%Y %H:%M:%S")
     end=dt.datetime.strptime(endstr,"%d-%m-%Y %H:%M:%S")
     if timestepsecs == 86400:
-        timeList = date_range(start, end, tdelta="days")
+        timeList = date_range_peryear(start, end, tdelta="days")
     else:   
-        timeList = date_range(start, end, tdelta="hours")
+        timeList = date_range_peryear(start, end, tdelta="hours")
 
     if inifile is not None:
         inimetadata = getnetcdfmetafromini(inifile)
         metadata.update(inimetadata)
 
 
-    prepare_nc(ncoutfile, timeList, x, y, metadata, logger,Format=Format,zlib=zlib)
-    
-    idx = 0
-    for mname in mapstackname:
-        logger.info("Converting mapstack: " + mname + " to " + ncoutfile)
-        # get variable attributes from ini file here
-        varmeta = getvarmetadatafromini(inifile,var[idx])
+    # break up into separate years
 
-        write_netcdf_timeseries(mapstackfolder, mname, ncoutfile, var[idx], unit, varname[idx], timeList, varmeta, logger,maxbuf=mbuf,Format=Format,zlib=zlib)
-        idx = idx + 1
-    
+    startmapstack = 1
+    for yr_timelist in timeList:
+        ncoutfile_yr = ncoutfile + "_" + str(yr_timelist[0])
+        prepare_nc(ncoutfile_yr, yr_timelist, x, y, metadata, logger,Format=Format,zlib=zlib)
+
+        idx = 0
+        for mname in mapstackname:
+            logger.info("Converting mapstack: " + mname + " to " + ncoutfile)
+            # get variable attributes from ini file here
+            varmeta = getvarmetadatafromini(inifile,var[idx])
+
+            write_netcdf_timeseries(mapstackfolder, mname, ncoutfile_yr, var[idx], unit, varname[idx], yr_timelist, varmeta, logger,maxbuf=mbuf,Format=Format,zlib=zlib,startidx=startmapstack)
+            startmapstack = startmapstack + len(yr_timelist)
+            idx = idx + 1
+
 
 if __name__ == "__main__":
     main()
