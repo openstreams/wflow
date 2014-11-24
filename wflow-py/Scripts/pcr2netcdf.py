@@ -206,13 +206,14 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
         # write grid to PCRaster file
         logger.debug("processing map: " + pcraster_file)
         x, y, data, FillVal = readMap(pcraster_path, 'PCRaster',logger)
-       
+        logger.debug("Setting fillval...")
         data[data==FillVal] = nc_Fill
         
         buffreset = (idx + 1) % maxbuf
         bufpos = (idx) % maxbuf
         #timestepbuffer[bufpos,:,:] =  flipud(data)
         # Weird, the flupud is no longer needed!!!!
+        logger.debug("Adding data to array...")
         timestepbuffer[bufpos,:,:] =  data
 
         if buffreset == 0 or idx ==  bufsize -1 or nn + 1 == len(timeList):
