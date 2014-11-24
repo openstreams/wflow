@@ -215,6 +215,7 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
         if buffreset == 0 or idx ==  bufsize -1:
             logger.debug("Writing buffer to file at: " + str(curTime) + " " + str(int(bufpos) + 1) + " timesteps")
             nc_var[idx-bufsize+1:idx+1,:,:] = timestepbuffer
+            nc_trg.sync()
 
     nc_trg.sync()
     nc_trg.close()
@@ -314,9 +315,7 @@ def date_range(start, end, tdelta="days"):
 def date_range_peryear(start, end, tdelta="days"):
 
     ret = []
-
     for yrs in range(start.year,end.year+1):
-        print yrs
         if tdelta == "days":
             r = (dt.datetime(yrs+1,1,1)-dt.datetime(yrs,1,1)).days
             ret.append([dt.datetime(yrs,1,1)+dt.timedelta(days=i) for i in range(r)])
