@@ -365,6 +365,7 @@ class WflowModel(DynamicModel):
         global multpars
         global updateCols
 
+
         self.thestep = scalar(0)
         self.basetimestep = 86400
         self.SSSF = False
