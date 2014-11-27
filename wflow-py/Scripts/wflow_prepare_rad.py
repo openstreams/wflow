@@ -25,7 +25,7 @@
 """
 
     Usage:
-    wflow_prepare_rad -D DEM [-M][-x lon][-y lat][-h][-l loglevel]
+    wflow_prepare_rad -D DEM [-S start day][-E end day][-M][-x lon][-y lat][-h][-l loglevel]
 
     -D DEM Filename of the digital elevation model
     -M The DEM xy units are in metres (instead of lat/lon)
@@ -38,8 +38,10 @@
 """
 
 
-
-from pcrut import *
+from pcraster import *
+import sys
+import logging
+import wflow.pcrut as pcr
 import getopt
 
 
@@ -73,7 +75,10 @@ def correctrad(Day,Hour,Lat,Lon,Slope,Aspect,Altitude,Altitude_UnitLatLon):
     Sc  = 1367.0          # Solar constant (Gates, 1980) [W/m2]
     Trans   = 0.6             # Transmissivity tau (Gates, 1980)    
     pi = 3.1416
-    AtmPcor = pow(((288.0-0.0065*Altitude)/288.0),5.256) 
+    a = pow(100,5.256)
+    #report(a,"zz.map")
+
+    AtmPcor = pow(((288.0-0.0065*Altitude)/288.0),5.256)
     #Lat = Lat * pi/180
     ##########################################################################
     # Calculate Solar Angle and correct radiation ############################
@@ -161,22 +166,22 @@ def correctrad(Day,Hour,Lat,Lon,Slope,Aspect,Altitude,Altitude_UnitLatLon):
     return Stot, StotCor, StotFlat, Shade, 
 
 
-def GenRadMaps(SaveDir,Lat,Lon,Slope,Aspect,Altitude,DegreeDem):
+def GenRadMaps(SaveDir,Lat,Lon,Slope,Aspect,Altitude,DegreeDem,logje,start=1,end=2):
     """ 
     Generates daily radiation maps for a whole year.
     It does so by running correctrad for a whole year with hourly
     steps and averaging this per day.
     """
 
-    
-    for Day in range(1,365):
+    report(Altitude,"tt.map")
+    for Day in range(start,end+1):
         avgrad = 0.0 * Altitude
         _avgrad = 0.0 * Altitude
         _flat = 0.0 * Altitude
         avshade = 0.0 * Altitude
         id = 1
+        logje.info("Calulations for day: " + str(Day))
         for Hour in range(4,22):
-            print "day: " + str(Day) + " Hour: " + str(Hour)
             cradnodem, crad,  flat, shade = correctrad(Day,Hour,Lat,Lon,Slope,Aspect,Altitude,DegreeDem)           
             avgrad=avgrad + crad
             _flat = _flat + flat
@@ -191,9 +196,15 @@ def GenRadMaps(SaveDir,Lat,Lon,Slope,Aspect,Altitude,DegreeDem):
         nr = "%0.3d" % Day
         report(avgrad/24.0,SaveDir + "/RAD00000." + nr)
         report(_avgrad/24.0,SaveDir + "/_RAD0000." + nr)
-        report(avshade/24.0,SaveDir + "/SHADE000." + nr)
+        report(avshade,SaveDir + "/SHADE000." + nr)
         report(_flat/24.0,SaveDir + "/FLAT0000." + nr)
-        report(ifthen(Altitude + 300) > 0.0, cover(avgrad/_flat,1.0)),SaveDir + "/RATI0000." + nr)
+        report(ifthen((Altitude + 300) > 0.0, cover(avgrad/_flat,1.0)),SaveDir + "/RATI0000." + nr)
+
+def usage(*args):
+    sys.stdout = sys.stderr
+    for msg in args: print msg
+    print __doc__
+    sys.exit(0)
 
 
 def main(argv=None):
@@ -209,7 +220,7 @@ def main(argv=None):
 
 
     try:
-        opts, args = getopt.getopt(argv, 'hD:Mx:y:l:O:')
+        opts, args = getopt.getopt(argv, 'hD:Mx:y:l:O:S:E:')
     except getopt.error, msg:
         usage(msg)
 
@@ -218,29 +229,35 @@ def main(argv=None):
     xymetres = False
     lat = 52
     lon = 10
-    loglevel = logging.INFO
+    loglevel = logging.DEBUG
     outputdir="output_rad"
+    startday = 1
+    endday = 2
 
     for o, a in opts:
         if o == '-h': usage()
-        if o == '-D': outputdir = a
+        if o == '-O': outputdir = a
         if o == '-D': thedem = a
         if o == '-M': xymetres = true
         if o == '-x': lat = int(a)
         if o == '-y': lon = int(a)
+        if o == '-S': startday = int(a)
+        if o == '-E': endday = int(a)
         if o == '-l': exec "thelevel = logging." + a
 
 
-    logger = setlogger("wflow_prepare_rad.log","wflow_prepare_rad",thelevel=loglevel)
+    logger = pcr.setlogger("wflow_prepare_rad.log","wflow_prepare_rad",thelevel=loglevel)
     if not os.path.exists(thedem):
         logger.error("Cannot find dem: " + thedem + " exiting.")
         sys.exit(1)
+    if not os.path.exists(outputdir):
+        os.mkdir(outputdir)
 
-    logging.debug("Reading dem: " " thedem")
+    logger.debug("Reading dem: " " thedem")
     setclone(thedem)
     dem = readmap(thedem)
 
-    logging.debug("Calculating slope and aspect...")
+    logger.debug("Calculating slope and aspect...")
     if xymetres:
         LAT = spatial(scalar(lat))
         LON= spatial(scalar(lon))
@@ -250,7 +267,7 @@ def main(argv=None):
         LAT= ycoordinate(boolean(dem))
         LON = xcoordinate(boolean(dem))
         Slope = slope(dem)
-        xl, yl, reallength = detRealCellLength(dem * 0.0, 0)
+        xl, yl, reallength = pcr.detRealCellLength(dem * 0.0, 0)
         Slope = max(0.00001, Slope * celllength() / reallength)
         DEMxyUnits = dem * celllength() / reallength
 
@@ -258,7 +275,8 @@ def main(argv=None):
     Slope = scalar(atan(Slope))
     Aspect = cover(scalar(aspect(dem)),0.0)
 
-    GenRadMaps(outputdir,LAT,LON,Slope,Aspect,dem,DEMxyUnits)
+    GenRadMaps(outputdir,LAT,LON,Slope,Aspect,dem,DEMxyUnits,logger,start=startday,end=endday)
+
 
 
 
