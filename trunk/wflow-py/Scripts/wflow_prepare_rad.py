@@ -1,64 +1,49 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/python
+
+# Wflow is Free software, see below:
+#
+# Copyright (c) J. Schellekens/Deltares 2005-2014
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+# $Rev:: 904           $:  Revision of last commit
+# $Author:: schelle    $:  Author of last commit
+# $Date:: 2014-01-13 1#$:  Date of last commit
 """
-Created on Tue Nov 25 08:22:48 2014
 
-@author: schelle
+    Usage:
+    wflow_prepare_rad -D DEM [-M][-x lon][-y lat][-h][-l loglevel]
+
+    -D DEM Filename of the digital elevation model
+    -M The DEM xy units are in metres (instead of lat/lon)
+    -x longitute of the map left (if map xy in metres)
+    -y lattitude of the map bottom (if map xy in metres)
+    -l loglevel Set loglevel (DEBUG, INFO, WARNING,ERROR)
+
+    -h This information
+
 """
 
-# test radiation
 
 
-from pcraster import *
+from pcrut import *
+import getopt
 
-setglobaloption("degrees")
 
-def lattometres(lat):
-    """"
-    Determines the length of one degree lat/long at a given latitude (in meter).
-    Code taken from http:www.nga.mil/MSISiteContent/StaticFiles/Calculators/degree.html
-    Input: map with lattitude values for each cell
-    Returns: length of a cell lat, length of a cell long
-    """
-    #radlat = spatial(lat * ((2.0 * math.pi)/360.0))
-    #radlat = lat * (2.0 * math.pi)/360.0
-    radlat = spatial(lat) # pcraster cos/sin work in degrees!
-    
-    
-    m1 = 111132.92        # latitude calculation term 1
-    m2 = -559.82        # latitude calculation term 2
-    m3 = 1.175            # latitude calculation term 3
-    m4 = -0.0023        # latitude calculation term 4
-    p1 = 111412.84        # longitude calculation term 1
-    p2 = -93.5            # longitude calculation term 2
-    p3 = 0.118            # longitude calculation term 3
-    # # Calculate the length of a degree of latitude and longitude in meters
-    
-    latlen = m1 + (m2 * cos(2.0 * radlat)) + (m3 * cos(4.0 * radlat)) + (m4 * cos(6.0 * radlat))
-    longlen = (p1 * cos(radlat)) + (p2 * cos(3.0 * radlat)) + (p3 * cos(5.0 * radlat))
-        
-    return latlen, longlen  
-    
-def detRealCellLength(ZeroMap,sizeinmetres):
-    """
-    Determine cellength. Always returns the length
-    in meters.
-    """
-    
-    if sizeinmetres:
-            reallength = celllength()
-            xl = celllength()
-            yl = celllength()
-    else:
-        aa = ycoordinate(boolean(cover(ZeroMap + 1,1)))
-        yl, xl = lattometres(aa)
-           
-        xl = xl * celllength()
-        yl = yl * celllength()
-        # Average length for surface area calculations. 
-        
-        reallength = (xl + yl) * 0.5
-        
-    return xl,yl,reallength
+
 
 
 
@@ -84,8 +69,7 @@ def correctrad(Day,Hour,Lat,Lon,Slope,Aspect,Altitude,Altitude_UnitLatLon):
     :return StotFlat: Total radiation on the dem assuming a flat surface
     :return Shade: Map with shade (0) or no shade (1) pixels
     """
-    
-    print "Soldec..."
+
     Sc  = 1367.0          # Solar constant (Gates, 1980) [W/m2]
     Trans   = 0.6             # Transmissivity tau (Gates, 1980)    
     pi = 3.1416
@@ -116,7 +100,7 @@ def correctrad(Day,Hour,Lat,Lon,Slope,Aspect,Altitude,Altitude_UnitLatLon):
     SolAzi = scalar(acos((sin(SolDec)*cos(Lat)-cos(SolDec)* sin(Lat)*cos(HourAng))/cos(SolAlt)))
     SolAzi = ifthenelse(Hour <= 12, SolAzi, 360 - SolAzi)
     
-    print "Solazi..."
+
     # Surface azimuth
     # ----------------------------
     # cosIncident :cosine of angle of incident; angle solar beams to angle surface
@@ -128,7 +112,7 @@ def correctrad(Day,Hour,Lat,Lon,Slope,Aspect,Altitude,Altitude_UnitLatLon):
     # Fro flat surface..    
     #cosIncident = sin(SolAlt) + cos(SolAzi-Aspect)
 
-    print "Shading ..."
+
     # Critical angle sun
     # ----------------------------
     # HoriAng  :tan maximum angle over DEM in direction sun, 0 if neg 
@@ -145,7 +129,7 @@ def correctrad(Day,Hour,Lat,Lon,Slope,Aspect,Altitude,Altitude_UnitLatLon):
     # Radiation outer atmosphere
     # ----------------------------
     #report(HoriAng,"hor.map")
-    print "Radiation..."
+
     OpCorr = Trans**((sqrt(1229+(614*sin(SolAlt))**2) -614*sin(SolAlt))*AtmPcor)    # correction for air masses [-] 
     Sout   = Sc*(1+0.034*cos(360*Day/365.0)) # radiation outer atmosphere [W/m2]
     Snor   = Sout*OpCorr                   # rad on surface normal to the beam [W/m2]
@@ -177,7 +161,7 @@ def correctrad(Day,Hour,Lat,Lon,Slope,Aspect,Altitude,Altitude_UnitLatLon):
     return Stot, StotCor, StotFlat, Shade, 
 
 
-def GenRadMaps(SaveDir,SaveName,Lat,Lon,Slope,Aspect,Altitude,DegreeDem):
+def GenRadMaps(SaveDir,Lat,Lon,Slope,Aspect,Altitude,DegreeDem):
     """ 
     Generates daily radiation maps for a whole year.
     It does so by running correctrad for a whole year with hourly
@@ -205,42 +189,79 @@ def GenRadMaps(SaveDir,SaveName,Lat,Lon,Slope,Aspect,Altitude,DegreeDem):
             id = id + 1
         
         nr = "%0.3d" % Day
-        report(avgrad/24.0,SaveDir + "/" + SaveName + "00000." + nr)
-        report(_avgrad/24.0,SaveDir + "/_" + SaveName + "0000." + nr)
+        report(avgrad/24.0,SaveDir + "/RAD00000." + nr)
+        report(_avgrad/24.0,SaveDir + "/_RAD0000." + nr)
         report(avshade/24.0,SaveDir + "/SHADE000." + nr)
         report(_flat/24.0,SaveDir + "/FLAT0000." + nr)
-        report(cover(avgrad/_flat,1.0),SaveDir + "/RATI0000." + nr)
+        report(ifthen(Altitude + 300) > 0.0, cover(avgrad/_flat,1.0)),SaveDir + "/RATI0000." + nr)
+
+
+def main(argv=None):
+    """
+    Perform command line execution of the model.
+    """
+
+    if argv is None:
+        argv = sys.argv[1:]
+        if len(argv) == 0:
+            usage()
+            return
+
+
+    try:
+        opts, args = getopt.getopt(argv, 'hD:Mx:y:l:O:')
+    except getopt.error, msg:
+        usage(msg)
+
+
+    thedem = "mydem.map"
+    xymetres = False
+    lat = 52
+    lon = 10
+    loglevel = logging.INFO
+    outputdir="output_rad"
+
+    for o, a in opts:
+        if o == '-h': usage()
+        if o == '-D': outputdir = a
+        if o == '-D': thedem = a
+        if o == '-M': xymetres = true
+        if o == '-x': lat = int(a)
+        if o == '-y': lon = int(a)
+        if o == '-l': exec "thelevel = logging." + a
+
+
+    logger = setlogger("wflow_prepare_rad.log","wflow_prepare_rad",thelevel=loglevel)
+    if not os.path.exists(thedem):
+        logger.error("Cannot find dem: " + thedem + " exiting.")
+        sys.exit(1)
+
+    logging.debug("Reading dem: " " thedem")
+    setclone(thedem)
+    dem = readmap(thedem)
+
+    logging.debug("Calculating slope and aspect...")
+    if xymetres:
+        LAT = spatial(scalar(lat))
+        LON= spatial(scalar(lon))
+        Slope = max(0.00001,slope(dem))
+        DEMxyUnits = dem
+    else:
+        LAT= ycoordinate(boolean(dem))
+        LON = xcoordinate(boolean(dem))
+        Slope = slope(dem)
+        xl, yl, reallength = detRealCellLength(dem * 0.0, 0)
+        Slope = max(0.00001, Slope * celllength() / reallength)
+        DEMxyUnits = dem * celllength() / reallength
+
+    # Get slope in degrees
+    Slope = scalar(atan(Slope))
+    Aspect = cover(scalar(aspect(dem)),0.0)
+
+    GenRadMaps(outputdir,LAT,LON,Slope,Aspect,dem,DEMxyUnits)
 
 
 
 
-print "Load and create slope..."
-thedem = "SRTM2_V3_NASA30_blkmean_gtopo_north_SMALL.map"   
-#thedem ="demaa.map"
-setclone(thedem)
-dem = readmap(thedem)
-
-LAT= ycoordinate(boolean(dem))
-LON = xcoordinate(boolean(dem))
-#LAT = spatial(scalar(53))
-#LON= spatial(scalar(10))
-Slope = slope(dem)
-xl, yl, reallength = detRealCellLength(dem * 0.0, 0)
-Slope = max(0.00001, Slope * celllength() / reallength)
-#Slope = max(0.00001,slope(dem))
-# Convert to degrees
-Slope = scalar(atan(Slope))
-
-print "Aspect etc.."
-Aspect = cover(scalar(aspect(dem)),0.0)
-report(Slope,"slope.map")
-report(Aspect,"aspect.map")
-#report(reallength,"reallength.map")
-degreedem = dem * celllength() / reallength
-
-#report(degreedem,"degreedem.map")
-#dem = 300
-#crad = correctrad(Day,Hour,LAT,LON,Slope,Aspect,dem)
-
-GenRadMaps("OUTPUT","RAD",LAT,LON,Slope,Aspect,dem,degreedem)
-#GenRadMaps("OUTPUT","RAD",LAT,LON,Slope,Aspect,dem,dem)
+if __name__ == "__main__":
+    main()
