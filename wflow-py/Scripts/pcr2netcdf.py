@@ -277,7 +277,7 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
             nc_trg.sync()
 
 
-    nc_trg.sync()
+    #nc_trg.sync()
     nc_trg.close()
 
     
