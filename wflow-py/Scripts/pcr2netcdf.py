@@ -78,6 +78,48 @@ def readMap(fileName, fileFormat,logger):
 
     # Open file for binary-reading
     #pcrdata = _pcrut.readmap(fileName)
+    # mapFormat = gdal.GetDriverByName(fileFormat)
+    # mapFormat.Register()
+    # ds = gdal.Open(fileName)
+    # if ds is None:
+    #     logger.error('Could not open ' + fileName + '. Something went wrong!! Shutting down')
+    #     sys.exit(1)
+    #     # Retrieve geoTransform info
+    # geotrans = ds.GetGeoTransform()
+    # originX = geotrans[0]
+    # originY = geotrans[3]
+    # resX    = geotrans[1]
+    # resY    = geotrans[5]
+    # cols = ds.RasterXSize
+    # rows = ds.RasterYSize
+    # x = linspace(originX+resX/2,originX+resX/2+resX*(cols-1),cols)
+    # y = linspace(originY+resY/2,originY+resY/2+resY*(rows-1),rows)
+    # # Retrieve raster
+    # RasterBand = ds.GetRasterBand(1) # there's only 1 band, starting from 1
+    # data = RasterBand.ReadAsArray(0,0,cols,rows)
+    # FillVal = RasterBand.GetNoDataValue()
+    # RasterBand = None
+    # del ds
+    # #ds = None
+
+    pcrdata =  _pcrut.readmap(fileName)
+    x = _pcrut.pcr2numpy(_pcrut.xcoordinate(_pcrut.boolean(_pcrut.cover(1.0))),NaN)[0,:]
+    y = _pcrut.pcr2numpy(_pcrut.ycoordinate(_pcrut.boolean(_pcrut.cover(1.0))),NaN)[:,0]
+
+    FillVal =  float(1E31)
+    data = _pcrut.pcr2numpy(pcrdata,FillVal)
+
+
+    return x, y, data, FillVal
+    
+
+def _readMap(fileName, fileFormat,logger):
+    """
+    Read geographical file into memory
+    """
+
+    #Open file for binary-reading
+
     mapFormat = gdal.GetDriverByName(fileFormat)
     mapFormat.Register()
     ds = gdal.Open(fileName)
@@ -100,11 +142,13 @@ def readMap(fileName, fileFormat,logger):
     FillVal = RasterBand.GetNoDataValue()
     RasterBand = None
     del ds
-    #ds = None
+    # #ds = None
+
+
 
 
     return x, y, data, FillVal
-    
+
 
 def getnetcdfmetafromini(inifile):
     """
@@ -211,9 +255,15 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
         # write grid to PCRaster file
         logger.debug("processing map: " + pcraster_file)
         x, y, data, FillVal = readMap(pcraster_path, 'PCRaster',logger)
+        #xx, yy, ddata, dFillVal = _readMap(pcraster_path, 'PCRaster',logger)
         logger.debug("Setting fillval...")
         data[data==FillVal] = nc_Fill
-        
+
+        # print x
+        # print ddata
+        # print data
+        # _pcrut.report(_pcrut.numpy2pcr(_pcrut.Scalar,data,1E31),"tt.map")
+        # _pcrut.report(_pcrut.numpy2pcr(_pcrut.Scalar,ddata,1E31),"ttt.map")
         buffreset = (idx + 1) % maxbuf
         bufpos = (idx) % maxbuf
         #timestepbuffer[bufpos,:,:] =  flipud(data)
@@ -326,11 +376,13 @@ def date_range_peryear(start, end, tdelta="days"):
 
     ret = []
     for yrs in range(start.year,end.year+1):
+        ed = min(dt.datetime(yrs+1,1,1), end)
+
         if tdelta == "days":
-            r = (dt.datetime(yrs+1,1,1)-dt.datetime(yrs,1,1)).days
+            r = (ed-dt.datetime(yrs,1,1)).days
             ret.append([dt.datetime(yrs,1,1)+dt.timedelta(days=i) for i in range(r)])
         else:
-            r = (dt.datetime(yrs+1,1,1)-dt.datetime(yrs,1,1)).days * 24
+            r = (ed-dt.datetime(yrs,1,1)).days * 24
             ret.append([dt.datetime(yrs,1,1)+dt.timedelta(hours=i) for i in range(r)])
 
     return ret
@@ -420,6 +472,7 @@ def main(argv=None):
 
 
     # break up into separate years
+
 
     startmapstack = 1
     for yr_timelist in timeList:
