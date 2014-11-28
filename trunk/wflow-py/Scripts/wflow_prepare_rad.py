@@ -25,14 +25,18 @@
 """
 
     Usage:
-    wflow_prepare_rad -D DEM [-S start day][-E end day][-M][-x lon][-y lat][-h][-l loglevel]
+    wflow_prepare_rad -D DEM [-S start day][-E end day][-M][-x lon][-y lat][-h][-l loglevel][-T minutes]
 
     -D DEM Filename of the digital elevation model
+    -S Startday - Start day of the simulation (1 Jan is 1)
+    -E EndDay - End day of the simulation
+    -T minuts - timeresolution in minutss (60 default is 1 hour)
     -M The DEM xy units are in metres (instead of lat/lon)
     -x longitute of the map left (if map xy in metres)
     -y lattitude of the map bottom (if map xy in metres)
     -l loglevel Set loglevel (DEBUG, INFO, WARNING,ERROR)
-
+    -s start hour (per day) of the calculations (default =1)
+    -e end hour (per day) of the calculations (default = 23)
     -h This information
 
 """
@@ -43,6 +47,7 @@ import sys
 import logging
 import wflow.pcrut as pcr
 import getopt
+import numpy as np
 
 
 
@@ -57,7 +62,7 @@ def correctrad(Day,Hour,Lat,Lon,Slope,Aspect,Altitude,Altitude_UnitLatLon):
     :var Day: Day of the year (1-366)
     :var Hour: Hour of the day (0-23)
     :var Lat: map with latitudes for each grid cell
-    :var Lon: map with lonitudes for each grid cell
+    :var Lon: map with longitudes for each grid cell
     :var Slope: Slope in degrees
     :var Aspect: Aspect in degrees relative to north for each cell
     :var Altitude: Elevation in metres
@@ -93,7 +98,7 @@ def correctrad(Day,Hour,Lat,Lon,Slope,Aspect,Altitude,Altitude_UnitLatLon):
     #theta    =(Day-1)*2 * pi/365  # day expressed in radians
     theta    =(Day-1)*360.0/365.0  # day expressed in degrees
      
-    SolDec =180/pi *  (0.006918-0.399912 * cos(theta)+0.070257 * sin(theta) -  0.006758 * cos(2*theta)+0.000907 * sin(2*theta) -  0.002697 *           cos(3*theta)+0.001480 * sin(3*theta))
+    SolDec =180/pi *  (0.006918-0.399912 * cos(theta)+0.070257 * sin(theta) -  0.006758 * cos(2*theta)+0.000907 * sin(2*theta) -  0.002697 *  cos(3*theta)+0.001480 * sin(3*theta))
     
     #HourAng = 180/pi * 15*(Hour-12.01)
     HourAng = 15.0*(Hour-12.01) 
@@ -166,14 +171,19 @@ def correctrad(Day,Hour,Lat,Lon,Slope,Aspect,Altitude,Altitude_UnitLatLon):
     return Stot, StotCor, StotFlat, Shade, 
 
 
-def GenRadMaps(SaveDir,Lat,Lon,Slope,Aspect,Altitude,DegreeDem,logje,start=1,end=2):
+def GenRadMaps(SaveDir,Lat,Lon,Slope,Aspect,Altitude,DegreeDem,logje,start=1,end=2,interval=60,shour=1,ehour=23):
     """ 
     Generates daily radiation maps for a whole year.
     It does so by running correctrad for a whole year with hourly
     steps and averaging this per day.
     """
 
-    report(Altitude,"tt.map")
+    Intperday = 1440./interval
+    Starthour = shour
+    EndHour = ehour
+    Calcsteps = Intperday/24 * 24
+    calchours = np.arange(Starthour,EndHour,24/Intperday)
+
     for Day in range(start,end+1):
         avgrad = 0.0 * Altitude
         _avgrad = 0.0 * Altitude
@@ -181,8 +191,9 @@ def GenRadMaps(SaveDir,Lat,Lon,Slope,Aspect,Altitude,DegreeDem,logje,start=1,end
         avshade = 0.0 * Altitude
         id = 1
         logje.info("Calulations for day: " + str(Day))
-        for Hour in range(4,22):
-            cradnodem, crad,  flat, shade = correctrad(Day,Hour,Lat,Lon,Slope,Aspect,Altitude,DegreeDem)           
+        for Hour in calchours:
+            logje.info("Hour: " + str(Hour))
+            cradnodem, crad,  flat, shade = correctrad(Day,float(Hour),Lat,Lon,Slope,Aspect,Altitude,DegreeDem)
             avgrad=avgrad + crad
             _flat = _flat + flat
             _avgrad=_avgrad + cradnodem
@@ -194,10 +205,10 @@ def GenRadMaps(SaveDir,Lat,Lon,Slope,Aspect,Altitude,DegreeDem,logje,start=1,end
             id = id + 1
         
         nr = "%0.3d" % Day
-        report(avgrad/24.0,SaveDir + "/RAD00000." + nr)
-        report(_avgrad/24.0,SaveDir + "/_RAD0000." + nr)
+        report(avgrad/Calcsteps,SaveDir + "/RAD00000." + nr)
+        report(_avgrad/Calcsteps,SaveDir + "/_RAD0000." + nr)
         report(avshade,SaveDir + "/SHADE000." + nr)
-        report(_flat/24.0,SaveDir + "/FLAT0000." + nr)
+        report(_flat/Calcsteps,SaveDir + "/FLAT0000." + nr)
         report(ifthen((Altitude + 300) > 0.0, cover(avgrad/_flat,1.0)),SaveDir + "/RATI0000." + nr)
 
 def usage(*args):
@@ -220,7 +231,7 @@ def main(argv=None):
 
 
     try:
-        opts, args = getopt.getopt(argv, 'hD:Mx:y:l:O:S:E:')
+        opts, args = getopt.getopt(argv, 'hD:Mx:y:l:O:S:E:T:s:e:')
     except getopt.error, msg:
         usage(msg)
 
@@ -233,6 +244,9 @@ def main(argv=None):
     outputdir="output_rad"
     startday = 1
     endday = 2
+    calc_interval = 60
+    shour=1
+    ehour=23
 
     for o, a in opts:
         if o == '-h': usage()
@@ -243,7 +257,10 @@ def main(argv=None):
         if o == '-y': lon = int(a)
         if o == '-S': startday = int(a)
         if o == '-E': endday = int(a)
+        if o == '-T': calc_interval = int(a)
         if o == '-l': exec "thelevel = logging." + a
+        if o == '-s': shour = int(a)
+        if o == '-e': ehour = int(a)
 
 
     logger = pcr.setlogger("wflow_prepare_rad.log","wflow_prepare_rad",thelevel=loglevel)
@@ -275,8 +292,7 @@ def main(argv=None):
     Slope = scalar(atan(Slope))
     Aspect = cover(scalar(aspect(dem)),0.0)
 
-    GenRadMaps(outputdir,LAT,LON,Slope,Aspect,dem,DEMxyUnits,logger,start=startday,end=endday)
-
+    GenRadMaps(outputdir,LAT,LON,Slope,Aspect,dem,DEMxyUnits,logger,start=startday,end=endday,interval=calc_interval,shour=shour,ehour=ehour)
 
 
 
