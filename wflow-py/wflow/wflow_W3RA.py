@@ -116,6 +116,9 @@ class WflowModel(DynamicModel):
     #: function.
     self.wf_suspend(self.SaveDir + "/outstate/")
 
+    if self.fewsrun:
+        self.logger.info("Saving initial conditions for FEWS...")
+        self.wf_suspend(self.Dir + "/outstate/")
       
   def initial(self):
       
@@ -162,6 +165,8 @@ class WflowModel(DynamicModel):
     self.ALBEDO_mapstack=self.Dir + configget(self.config,"inputmapstacks","ALBEDO","/inmaps/ALBEDO")
 
     self.Altitude=readmap(self.Dir + "/staticmaps/wflow_dem")
+
+    self.fewsrun = int(configget(self.config, "model", "fewsrun", "0"))
 
     self.latitude = ycoordinate(boolean(self.Altitude))
 
