@@ -127,7 +127,8 @@ def usage(*args):
 def actEvap_SBM(RootingDepth, WTable, UStoreDepth, FirstZoneDepth, PotTrans, smoothpar):
     """
     Actual evaporation function:
-        
+    Actual evaporation function:
+
     - first try to get demand from the saturated zone, using the rootingdepth as a limiting factor
     - secondly try to get the remaining water from the unsaturated store
     - it uses an S-Curve the make sure roots het wet/dry gradually (basically)
@@ -389,6 +390,8 @@ class WflowModel(DynamicModel):
         self.updating = int(configget(self.config, "model", "updating", "0"))
         self.updateFile = configget(self.config, "model", "updateFile", "no_set")
         self.LateralMethod = int(configget(self.config, "model", "lateralmethod", "1"))
+
+        self.DynamicVegetation =int(configget(self.config, "model", "DynamicVegetation", "0"))
 
         if self.LateralMethod == 1:
             self.logger.info("Applying the original topog_sbm lateral transfer formulation")
@@ -932,6 +935,22 @@ class WflowModel(DynamicModel):
                 self.Temperature = cover(self.wf_readmap(self.TEMP_mapstack, 10.0), scalar(10.0))
                 self.Temperature = self.Temperature + self.TempCor
 
+        # Read dynamic vegetationmaps - not tested at all....
+        # Fixed parameter for now, these should become maps
+        if self.DynamicVegetation:
+            self.LAI = self.wf_readmapClimatology(os.path.join(self.Dir,self.runId,"LAI") ,kind=1, default=self.LAI, verbose=True)
+            self.Cmax = self.LAI * 0.467
+            self.CanopyGapFraction = exp(-1.457 * self.LAI)
+            """
+            Pitman, Rainfall interception by bracken in open habitats  1989
+            throughfall coefficient
+            p = exp[-1.457( _+ 0.063)LAI],
+            (short vegetation)
+            Cmax - 0.467( _+ O.O04)LAI
+
+            (Talll vegetation)
+            Cmax =  K *LAI (K == 0.2, Dickinson, 1984]
+            """
 
         # Multiply input parameters with a factor (for calibration etc) -p option in command line
         for k, v in multdynapars.iteritems():
@@ -1056,7 +1075,8 @@ class WflowModel(DynamicModel):
         self.CumInfiltExcess = self.CumInfiltExcess + self.InfiltExcess
 
 
-
+        # Limit rootingdepth (if set externally)
+        self.RootingDepth = min(self.FirstZoneThickness * 0.99, self.RootingDepth)
         # Determine transpiration
         self.ActEvap, self.FirstZoneDepth, self.UStoreDepth, self.ActEvapUStore = actEvap_SBM(self.RootingDepth,
                                                                                               self.zi, self.UStoreDepth,
