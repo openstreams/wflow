@@ -1,0 +1,415 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>THe wflow_wave Model &mdash; wflow 1.0-RC7-fin-190-201M documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0-RC7-fin-190-201M',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="wflow 1.0-RC7-fin-190-201M documentation" href="index.html" />
+    <link rel="next" title="The wflow_floodmap model" href="wflow_floodmap.html" />
+    <link rel="prev" title="THe wflow_routing Model" href="wflow_routing.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="wflow_floodmap.html" title="The wflow_floodmap model"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="wflow_routing.html" title="THe wflow_routing Model"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">wflow 1.0-RC7-fin-190-201M documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">THe wflow_wave Model</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li><a class="reference internal" href="#configuration">Configuration</a></li>
+<li><a class="reference internal" href="#module-wflow_wave">wflow_wave module documentation</a><ul>
+<li><a class="reference internal" href="#definition-of-the-wflow-wave-model">Definition of the wflow_wave model.</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="wflow_routing.html"
+                        title="previous chapter">THe wflow_routing Model</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="wflow_floodmap.html"
+                        title="next chapter">The wflow_floodmap model</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/wflow_wave.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-wflow-wave-model">
+<h1>THe wflow_wave Model<a class="headerlink" href="#the-wflow-wave-model" title="Permalink to this headline">¶</a></h1>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The documentation of this model is incomplete</p>
+</div>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>An <em>experimental</em> implementation of the full dynamic wave equations has been
+implemented. The current implementation is fairly unstable and <em>very</em> slow.</p>
+<p>However, in flat of tidal areas and areas that flood the dynamic wave can provide
+much better results. The plot below is from the Rio Mamore in Bolivia in the
+lower partes of the river with extensive wetlands that flood nearly each year.</p>
+<p>(<a class="reference external" href="./plots/kin-dyn.py">Source code</a>, <a class="reference external" href="./plots/kin-dyn.png">png</a>, <a class="reference external" href="./plots/kin-dyn.hires.png">hires.png</a>, <a class="reference external" href="./plots/kin-dyn.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/kin-dyn.png" src="_images/kin-dyn.png" />
+</div>
+</div>
+<div class="section" id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<p>This module is setup to be run in <em>an existing case and runid</em> of a wflow_sbm
+or wflow_hbv model. In order for wflow_wave to run they must have saved
+discharge and waterlevel for each timesteps. This output will be used as a forcing
+for the dynamic wave module. The wflow_wave module will also use the existing ldd
+and DEM</p>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<p>It needs anumber of settings in the ini file. The default name for the file
+is wflow_wave.ini. it is also possible to insert this section in the
+wflow_sbm or wflow_hbv ini file and point to that file.</p>
+<p>See below for an example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">inputmapstacks</span><span class="p">]</span>
+<span class="c"># Name of the mapstack with discharge (output from the hydrological model)</span>
+<span class="n">Q</span> <span class="o">=</span> <span class="n">run</span>
+<span class="c"># Name of the mapstack with waterlevel (output from the hydrological model)</span>
+<span class="n">H</span> <span class="o">=</span> <span class="n">lev</span>
+
+<span class="p">[</span><span class="n">dynamicwave</span><span class="p">]</span>
+
+<span class="c"># Number of timeslices per dynamic wave substep</span>
+<span class="n">TsliceDyn</span><span class="o">=</span><span class="mi">100</span>
+
+<span class="c"># number of substeps for the dynamic wave with respect to the model timesteps</span>
+<span class="n">dynsubsteps</span><span class="o">=</span><span class="mi">24</span>
+
+<span class="c"># map with level boundary points</span>
+<span class="n">wflow_hboun</span> <span class="o">=</span> <span class="n">staticmaps</span><span class="o">/</span><span class="n">wflow_outlet</span><span class="o">.</span><span class="n">map</span>
+
+<span class="c"># Optional river map for the dynamic wave that must be the same size or smaller as that of the</span>
+<span class="c"># kinematic wave</span>
+<span class="n">wflow_dynriver</span> <span class="o">=</span> <span class="n">staticmaps</span><span class="o">/</span><span class="n">wflow_dynriver</span><span class="o">.</span><span class="n">map</span>
+
+<span class="c"># a fixed water level for each non-zero point in the wflow_hboun map</span>
+<span class="c"># level &gt; 0.0 use that level</span>
+<span class="c"># level == 0.0 use supplied timeseries (see levelTss)</span>
+<span class="c"># level &lt; 0.0 use upstream water level</span>
+<span class="n">fixedLevel</span> <span class="o">=</span> <span class="mf">3.0</span>
+
+<span class="c"># if this is set the program will try to keep the volume at the pits at</span>
+<span class="c"># a constant value</span>
+<span class="n">lowerflowbound</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="c"># instead of a fixed level a tss file with levels for each timesteps and each</span>
+<span class="c"># non-zero value in the wflow_hboun map</span>
+<span class="c">#levelTss=intss/Hboun.tss</span>
+
+<span class="c"># If set to 1 the program will try to optimise the timestep</span>
+<span class="c"># Experimental, mintimestep is the smallest to be used</span>
+<span class="n">AdaptiveTimeStepping</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">mintimestep</span> <span class="o">=</span><span class="mf">0.1</span>
+</pre></div>
+</div>
+<p>A description of the implementation of the dynamicwave is given on the
+<a class="reference external" href="http://pcraster.geo.uu.nl/documentation/PCRaster/html/op_dynamicwave.html">pcraster website</a>.</p>
+<p>In addition to the settings in the ini file you need to give the model additional maps
+or lookuptables in the staticmaps or intbl directories:</p>
+<ul class="simple">
+<li>ChannelDepth.[map|tbl] - depth of the main channel in metres</li>
+<li>ChannelRoughness.[map|tbl] - 1/n n = manning roughness coefficient (default = 1/0.03)</li>
+<li>ChannelForm.[map|tbl] - form of the channel (default = 1.0)</li>
+<li>FloodplainWidth.[map|tbl] - width of the floodplain in metres (default = 0)</li>
+</ul>
+<p>The following variables for the dynamicwave function are set as follows and are taken from the
+hydrological model run by default:</p>
+<ul class="simple">
+<li>ChannelBottomLevel - Taken from the dem (wflow_dem.map in the staticmaps dir)</li>
+<li>ChannelLength - Taken from the length in the kinematic wave (DCL.map from the outsum dir)</li>
+<li>ChannelBottomWidth - taken from the wflow_riverwidth map from the outsum dir</li>
+</ul>
+</div>
+<div class="section" id="module-wflow_wave">
+<span id="wflow-wave-module-documentation"></span><h2>wflow_wave module documentation<a class="headerlink" href="#module-wflow_wave" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="definition-of-the-wflow-wave-model">
+<h3>Definition of the wflow_wave model.<a class="headerlink" href="#definition-of-the-wflow-wave-model" title="Permalink to this headline">¶</a></h3>
+<p>Runs the pcraster dynamic wave based on the output from the
+kinematic wave.</p>
+<p>The wflow_sbm|hbv model must have saved mapstacks for
+water level and discharge for each timestep (run*****.*** and lev*****.***).
+If the name of you Q and/or H maps are different specify these in the
+[inputmapstacks] section, e.g:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">inputmapstacks</span><span class="p">]</span>
+<span class="n">Q</span> <span class="o">=</span> <span class="n">run</span>
+<span class="n">H</span> <span class="o">=</span> <span class="n">lev</span>
+</pre></div>
+</div>
+<p>The Settings for the dynamic wave itself should be put in the [dynamicwave] section
+of the ini file.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">dynamicwave</span><span class="p">]</span>
+<span class="c"># Switch on dynamic wave for main rivers</span>
+    
+<span class="c"># Number of timeslices per dynamic waven substep</span>
+<span class="n">TsliceDyn</span><span class="o">=</span><span class="mi">900</span>
+
+<span class="c"># number of substeps for the dynamic wave with respect to the model timesteps</span>
+<span class="n">dynsubsteps</span><span class="o">=</span><span class="mi">24</span>
+
+<span class="c"># map with level boundary points</span>
+<span class="c">#wflow_hboun = staticmaps/wflow_outlet.map</span>
+
+<span class="c"># Optional river map for the dynamic wave that must be the same size or smaller as that of the</span>
+<span class="c"># kinematic wave</span>
+<span class="n">wflow_dynriver</span> <span class="o">=</span> <span class="n">staticmaps</span><span class="o">/</span><span class="n">wflow_dynriver</span><span class="o">.</span><span class="n">map</span>
+
+<span class="c"># a fixed water level for each non-zero point in the wflow_hboun map </span>
+<span class="c"># level &gt; 0.0 use that level</span>
+<span class="c"># level == 0.0 use timeseries</span>
+<span class="c"># level &lt; 0.0 use upstream water level</span>
+<span class="n">fixedLevel</span> <span class="o">=</span> <span class="o">-</span><span class="mf">8.0</span>
+
+<span class="c"># If this is set to one the program will try to keep the volume at the pits at a constant level</span>
+<span class="n">lowerflowbound</span><span class="o">=</span><span class="mi">1</span>
+
+<span class="c"># instead of a fixed level a tss file with levels for each timesteps and each </span>
+<span class="c"># non-zero value in the wflow_hboun map</span>
+<span class="c">#levelTss=intss/Hboun.tss</span>
+<span class="c">#AdaptiveTimeStepping=1</span>
+</pre></div>
+</div>
+<p>Usage:
+wflow_wave  -C case -R Runid -c inifile -h</p>
+<blockquote>
+<div><p>-C: set the name  of the case (directory) to run</p>
+<p>-R: set the name runId within the current case</p>
+<p>-I: generate initial conditions from scratchs</p>
+<p>-c name of the config file (in the case directory)</p>
+<dl class="docutils">
+<dt>-F: if set wflow is expected to be run by FEWS. It will determine</dt>
+<dd>the timesteps from the runinfo.xml file and save the output initial
+conditions to an alternate location. The runinfo.xml file should be located
+in the inmaps directory of the case. Also set fewsrun=1 in the .ini file!</dd>
+</dl>
+<p>-h displays help information</p>
+<p>-l: loglevel (most be one of DEBUG, WARNING, ERROR)</p>
+</div></blockquote>
+<p>$Author$
+$Id$
+$Rev$</p>
+<dl class="class">
+<dt id="wflow_wave.WflowModel">
+<em class="property">class </em><tt class="descclassname">wflow_wave.</tt><tt class="descname">WflowModel</tt><big>(</big><em>cloneMap</em>, <em>Dir</em>, <em>RunDir</em>, <em>configfile</em><big>)</big><a class="headerlink" href="#wflow_wave.WflowModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">pcraster.framework.dynamicPCRasterBase.DynamicModel</span></tt></p>
+<p>The user defined model class. This is your work!</p>
+<dl class="method">
+<dt id="wflow_wave.WflowModel.dynamic">
+<tt class="descname">dynamic</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_wave.WflowModel.dynamic" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Required</em></p>
+<p>This is where all the time dependent functions are executed. Time dependent
+output should also be saved here.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>self.FloodPlainVol</strong> &#8211; Volume of water in the floodplain [m^3]</li>
+<li><strong>self.ChannelVol</strong> &#8211; Volume of water in the channel [m^3]</li>
+<li><strong>self.WaterLevelDyn</strong> &#8211; Water Level [m]</li>
+<li><strong>self.SurfaceRunoffDyn</strong> &#8211; Discharge [m^3/s]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_wave.WflowModel.initial">
+<tt class="descname">initial</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_wave.WflowModel.initial" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Required</em></p>
+<p>Initial part of the model, executed only once. It reads all static model
+information (parameters) and sets-up the variables used in modelling.</p>
+<p>This function is required. The contents is free. However, in order to
+easily connect to other models it is advised to adhere to the directory
+structure used in the other models.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_wave.WflowModel.resume">
+<tt class="descname">resume</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_wave.WflowModel.resume" title="Permalink to this definition">¶</a></dt>
+<dd><p>reads the initial conditions:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>self.WaterLevelDyn</strong> &#8211; Dynamic wave waterlevel [m]</li>
+<li><strong>self.SurfaceRunoffDyn</strong> &#8211; Dynamic wave surface runoff [m^3/s]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_wave.WflowModel.runDynamicWave">
+<tt class="descname">runDynamicWave</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_wave.WflowModel.runDynamicWave" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs the dynamic wave for the main river
+Beware: Experimental, <em>very</em> slow and unstable</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_wave.WflowModel.stateVariables">
+<tt class="descname">stateVariables</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_wave.WflowModel.stateVariables" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Required</em></p>
+<p>Returns a list of state variables that are essential to the model. 
+This list is essential for the resume and suspend functions to work.</p>
+<p>This function is specific for each model and <strong>must</strong> be present. This is
+where you specify the state variables of you model. If your model is stateless
+this function must return and empty array (states = [])</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>SurfaceRunoffDyn.map</strong> &#8211; Discharge in m^3/sec</li>
+<li><strong>WaterLevelDyn.map</strong> &#8211; Discharge in m</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_wave.WflowModel.supplyCurrentTime">
+<tt class="descname">supplyCurrentTime</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_wave.WflowModel.supplyCurrentTime" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Optional</em></p>
+<p>Supplies the current time in seconds after the start of the run
+This function is optional. If it is not set the framework assumes
+the model runs with daily timesteps.</p>
+<p>Ouput:</p>
+<blockquote>
+<div><ul class="simple">
+<li>time in seconds since the start of the model run</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="wflow_wave.WflowModel.suspend">
+<tt class="descname">suspend</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_wave.WflowModel.suspend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Suspends the model to disk. All variables needed to restart the model
+are saved to disk as pcraster maps. Use resume() to re-read them</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_wave.main">
+<tt class="descclassname">wflow_wave.</tt><tt class="descname">main</tt><big>(</big><em>argv=None</em><big>)</big><a class="headerlink" href="#wflow_wave.main" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Optional</em></p>
+<p>Perform command line execution of the model. This example uses the getopt
+module to parse the command line options.</p>
+<p>The user can set the caseName, the runDir, the timestep and the configfile.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_wave.usage">
+<tt class="descclassname">wflow_wave.</tt><tt class="descname">usage</tt><big>(</big><em>*args</em><big>)</big><a class="headerlink" href="#wflow_wave.usage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="wflow_floodmap.html" title="The wflow_floodmap model"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="wflow_routing.html" title="THe wflow_routing Model"
+             >previous</a> |</li>
+        <li><a href="index.html">wflow 1.0-RC7-fin-190-201M documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,602 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Building a model &mdash; wflow 1.0-RC7-fin-190-201M documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0-RC7-fin-190-201M',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="wflow 1.0-RC7-fin-190-201M documentation" href="index.html" />
+    <link rel="next" title="Using the models" href="wflow_usage.html" />
+    <link rel="prev" title="wflow_adapt Module" href="wflow_adapt.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="wflow_usage.html" title="Using the models"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="wflow_adapt.html" title="wflow_adapt Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">wflow 1.0-RC7-fin-190-201M documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Building a model</a><ul>
+<li><a class="reference internal" href="#data-requirements">Data requirements</a></li>
+<li><a class="reference internal" href="#setting-up-a-new-model">Setting-up a new model</a></li>
+<li><a class="reference internal" href="#preparing-static-input-maps">Preparing static input maps</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#using-the-scripts">Using the scripts</a></li>
+<li><a class="reference internal" href="#command-line-parameters">Command line parameters</a></li>
+<li><a class="reference internal" href="#contents-of-the-configuration-file-fro-the-preprocessing">contents of the configuration file fro the preprocessing</a></li>
+<li><a class="reference internal" href="#problems">Problems</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-wflow_prepare_step1">Script documentation</a><ul>
+<li><a class="reference internal" href="#wflow-prepare-step1">wflow_prepare_step1</a></li>
+<li><a class="reference internal" href="#wflow-prepare-step2">wflow_prepare_step2</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#setting-up-a-case">Setting Up a Case</a></li>
+<li><a class="reference internal" href="#input-parameters-lookup-tables-or-maps">Input parameters (lookup tables or maps)</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="wflow_adapt.html"
+                        title="previous chapter">wflow_adapt Module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="wflow_usage.html"
+                        title="next chapter">Using the models</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/wflow_building.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="building-a-model">
+<h1>Building a model<a class="headerlink" href="#building-a-model" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="data-requirements">
+<h2>Data requirements<a class="headerlink" href="#data-requirements" title="Permalink to this headline">¶</a></h2>
+<p>The actual data requirements depend on the application of the model. The
+following list summarizes the data requirements:</p>
+<ul class="simple">
+<li>Static data<ul>
+<li>Digital Evelevation Model (DEM)</li>
+<li>A Land Cover map</li>
+<li>A map representing Soil physical parameters (the Land Cover map
+can also be used)</li>
+</ul>
+</li>
+<li>Dynamic data (spatial time series, map-stacks)<ul>
+<li>Precipitation</li>
+<li>Potential evapotranspiration</li>
+<li>Temperature (optional, only needed for snow pack modelling)</li>
+</ul>
+</li>
+<li>Model parameters (per land use/soil type)<ul>
+<li>Soil Depth</li>
+<li>etc... (see <a class="reference internal" href="#input-parameters-lookup-tables-or-maps">Input parameters (lookup tables or maps)</a>)</li>
+</ul>
+</li>
+</ul>
+<p>The module can be linked to the Delft-FEWS system using the general
+adapter. The model itself comes with the necessary reading/writing
+routines for the Delft-FEWS pi XML files. An example of the link to
+Delft-FEWS is given in section <a class="reference internal" href="wflow_adapt.html#wflow-adapt"><em>wflow_adapt Module</em></a></p>
+<p>In addition, each model should have an ini file (given the same basename as the model) that
+contains models specific information but also information for the framework (see <em class="xref std std-ref">wf_DynamicFramework</em>)</p>
+</div>
+<div class="section" id="setting-up-a-new-model">
+<span id="id1"></span><h2>Setting-up a new model<a class="headerlink" href="#setting-up-a-new-model" title="Permalink to this headline">¶</a></h2>
+<p>Setting-up a new model first starts with making a number of decisions and gathering the
+required data:</p>
+<ol class="arabic simple">
+<li>Do I have the static input maps in pcraster fromat (DEM ,land-use map, soil map)?</li>
+<li>what resolution do I want to run the model on?</li>
+<li>do i need to define multiple sub-catchments to report totals/flows for seperately?</li>
+<li>what forcing data do i have available for the model (P, Temp, ET)?</li>
+<li>do I have gridded forcing data or scalar timeseries?</li>
+</ol>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Quantum Gis (QGIS) can read and write pcraster maps (via gdal) and is a very handy tool
+to support data preparation.</p>
+</div>
+<p>Depending on the formats of the data some converting of data may be needed. The
+procedure described below assumes you have the main maps available in pcraster
+format. If that is not the case free tools like Qgis (www.qgis.org) and gdal can be
+used to convert the maps to the required format. Qgis is also very handy
+to see if the results of the scripts match reality by overlaying it with
+a google maps or openstreetmaps layer using the qgis openlayers plugin.</p>
+<p>When all data is available setting up the model requires the following steps:</p>
+<ol class="arabic simple">
+<li>Run the wflow_prepare_step1 and 2 scripts or prepare the input maps by hand (see <a class="reference internal" href="#preparing"><em>Preparing static input maps</em></a>)</li>
+<li>Setup the wflow model directory structure (Setup a case) and copy the files (results from step2 of the prepare scripts) there (see <a class="reference internal" href="#setting-up"><em>Setting Up a Case</em></a>)</li>
+<li>Setup the .ini file</li>
+<li>Test run the model</li>
+<li>Supply all the .tbl files (or complete maps) for the model parameters (see <a class="reference internal" href="#input-parameters"><em>Input parameters (lookup tables or maps)</em></a>)</li>
+<li>Calibrate the model</li>
+</ol>
+</div>
+<div class="section" id="preparing-static-input-maps">
+<span id="preparing"></span><h2>Preparing static input maps<a class="headerlink" href="#preparing-static-input-maps" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="introduction">
+<h3>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h3>
+<p>Preparing the input maps for a distributed model is not always trivial.
+wflow comes with two scripts that help in this process. The scripts are
+made with the assumption that the base DEM you have is a higher
+resolution as the DEM you want to use for the final model. When
+upscaling the scripts try to maintain as much information from the high
+resolution DEM as possible. The procedure described here can be used for
+all  wflow models (wflow_sbm  or  wflow_hbv).</p>
+</div>
+<div class="section" id="using-the-scripts">
+<h3>Using the scripts<a class="headerlink" href="#using-the-scripts" title="Permalink to this headline">¶</a></h3>
+<p>The scripts assume you have a DEM, landuse  and soil map available in pcraster
+format. If you do not have a soil or landuse map the you can generate a uniform map.
+The resolution and domain of these maps does not need to be the
+same, the scripts will take care of resampling. The process is devided
+in two scripts, wflow_prepare_step1.py and wflow_prepare_step2.py.
+In order to run the scripts the following maps/files need to be
+prepared.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Both scripts need pcraster and gdal executables (version &gt;= 1.10) to be available
+in your computers search path</p>
+</div>
+<ul class="simple">
+<li>a DEM in pcraster format</li>
+<li>a land use map in pcraster format. If the resolution is different
+from the DEM the scripts will resample this map to match the DEM (or
+the DEM cutout). If no landuse map is found a uniform map will be
+created.</li>
+<li>a soil map in pcraster format. If no soil map is found a unifrom map will be created.</li>
+<li>a configuration file for the prepare scripts that defines how they operate
+(.ini format) file (see below)</li>
+<li>an optional shape file with a river network</li>
+<li>an optional catchment mask file</li>
+</ul>
+<p>The scripts work in two steps, each script need to be given at least one
+command-line option, the configuration file. The first script performs
+the following tasks:</p>
+<ul>
+<li><p class="first">wflow_prepare_step1.py</p>
+<ol class="arabic">
+<li><p class="first">Performs an initial upscaling of the DEM if required (set in the
+configuration file). This initial upscaling may be needed if the
+processing steps (such as determining the drainage network) take a
+very long time or if the amount of available memory is not
+sufficient. The latter may be the case on 32bit systems. For
+example a 90x90 m grid for the Rhine/Meuse catchment could not be
+handled on a 32 bit system.</p>
+</li>
+<li><p class="first">Create the local drainage network. If the ldd is already present
+if will use the existing ldd. Use the force option to overwrite an
+existing ldd.</p>
+</li>
+<li><p class="first">Optionally use a shape file with a river network to &#8220;burn-in&#8221; this network
+and force the ldd to follow the river. In flat areas wher the river can
+be higher than the surrounding area having a river shape is crucial.</p>
+<div class="admonition tip">
+<p class="first admonition-title">Tip</p>
+<p class="last">Another option is to prepare a &#8220;pseudo dem&#8221; from a shape file with already
+defined catchment boundaries and outlets. Here all non boundary points would get a
+value of 1, all boundaries a value of 2 and all outlets a value of -10. This
+helps in generating a ldd for polder areas or other areas where the topography
+is not the major factor in determining the drainage network.</p>
+</div>
+</li>
+<li><p class="first">Determine various statistics and also the largest catchment
+present in the DEM. This area will be used later on to make sure
+the catchments derived in the second step will match the catchment
+derived from the high resolution DEM</p>
+</li>
+</ol>
+</li>
+<li><p class="first">wflow_prepare_step1.py</p>
+<ol class="arabic">
+<li><p class="first">Create a map with the extend and resolution defined in the
+configuration file and resample all maps from the first step to
+this resolution</p>
+</li>
+<li><p class="first">Create a new LDD using the following approach:</p>
+<ul class="simple">
+<li>Construct a new dem to derive the ldd from suing the minimum
+dem from the first step for all the pixels that are located on
+a river and the maximum dem from the first step for all other
+pixels.</li>
+<li>In addition raise all cells outside of the largest catchment
+defined in the first step with 1000 meter divided by the
+distance of each cell to the largest catchment.</li>
+<li>Derive the ldd and determine the catchments</li>
+</ul>
+<blockquote>
+<div><div class="figure align-center">
+<img alt="Steps in creating the wflow model input" src="_images/dataprepare.png" />
+<p class="caption">Steps in creating the wflow model input</p>
+</div>
+</div></blockquote>
+</li>
+</ol>
+</li>
+</ul>
+<p>Once the script is finished successfully the following maps should have
+been created, the data type is shown between brackets:</p>
+<ul class="simple">
+<li>wflow_catchment.map (ordinal)</li>
+<li>wflow_dem.map (scalar)</li>
+<li>wflow_demmax.map (scalar)</li>
+<li>wflow_demmin.map (scalar)</li>
+<li>wflow-dem*percentile* - (10,25,33,50,66,75,90) (scalar)</li>
+<li>wflow_gauges.map (ordinal)</li>
+<li>wflow_landuse.map (nominal)</li>
+<li>wflow_soil.map (nominal)</li>
+<li>wflow_ldd.map (ldd)</li>
+<li>wflow_outlet.map (scalar)</li>
+<li>wflow_riverburnin.map (boolean)</li>
+<li>wflow_riverlength_fact.map (scalar)</li>
+<li>wflow_river.map (ordinal)</li>
+<li>wflow_streamorder.map (ordinal)</li>
+<li>wflow_subcatch.map (ordinal)</li>
+</ul>
+<p>The maps are created in the data processing directory. To use the maps
+in the model copy them to the staticmaps directory of the case you have
+created.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Getting the subcatchment right can be a bit of a problem. In order
+for the subcatchment calculations to succeed the gauges that determine
+the outlets must be on a river grid cell. If the subcatchment
+creation causes problems the best way to check what is going on is
+to import both wflow_gauges,map en wflow_streamorder.map in qgis so
+you can check if the gauges are on a river cell. In the ini file you define
+the order above which a grid cell is regarded as a river.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If the cellsize of the output maps is identical to the input DEM
+the second script shoudl NOT be run. All data will be produced by
+the first script.</p>
+</div>
+</div>
+<div class="section" id="command-line-parameters">
+<h3>Command line parameters<a class="headerlink" href="#command-line-parameters" title="Permalink to this headline">¶</a></h3>
+<p>Both scripts take the same command-line parameters:</p>
+<div class="highlight-python"><div class="highlight"><pre>wflow_prepare_step1 -I inifile [-W workdir][-f][-h]
+
+    -f force recreation of ldd if it already exists
+    -h show this information
+    -W set the working directory, default is current dir
+    -I name of the ini file with settings
+</pre></div>
+</div>
+</div>
+<div class="section" id="contents-of-the-configuration-file-fro-the-preprocessing">
+<h3>contents of the configuration file fro the preprocessing<a class="headerlink" href="#contents-of-the-configuration-file-fro-the-preprocessing" title="Permalink to this headline">¶</a></h3>
+<p>An example can be found <a class="reference download internal" href="_downloads/prep.ini"><tt class="xref download docutils literal"><span class="pre">here.</span></tt></a></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">directories</span><span class="p">]</span>
+<span class="c"># all paths are relative to the workdir set on the command line</span>
+<span class="c"># The directories in which the scripts store the output:</span>
+<span class="n">step1dir</span> <span class="o">=</span> <span class="n">step1</span>
+<span class="n">step2dir</span> <span class="o">=</span> <span class="n">step2</span>
+
+<span class="p">[</span><span class="n">files</span><span class="p">]</span>
+<span class="c"># Name of the DEM to use</span>
+<span class="n">masterdem</span><span class="o">=</span><span class="n">srtm_58_14</span><span class="o">.</span><span class="n">map</span>
+<span class="c"># name of the lad-use map to use</span>
+<span class="n">landuse</span><span class="o">=</span><span class="n">globcover_javabali</span><span class="o">.</span><span class="n">map</span>
+<span class="n">soil</span><span class="o">=</span><span class="n">soil</span><span class="o">.</span><span class="n">map</span>
+<span class="c"># Shape file with river/drain network. Use to &quot;burn in&quot; into the dem.</span>
+<span class="n">river</span><span class="o">=</span><span class="n">river</span><span class="o">.</span><span class="n">shp</span>
+<span class="n">riverattr</span><span class="o">=</span><span class="n">river</span>
+<span class="c"># The riverattr above should be the shapefile-name without the .shp extension</span>
+
+<span class="p">[</span><span class="n">settings</span><span class="p">]</span>
+<span class="c"># Nr to reduce the initial map with in step 1. This means that all work is done</span>
+<span class="c"># on an upscaled version of the initial DEM. May be usefull for very</span>
+<span class="c"># large maps. If set to 1 (default) no scaling is taking place</span>
+<span class="n">initialscale</span><span class="o">=</span><span class="mi">1</span>
+
+<span class="c"># Set lddmethod to dem (other methods are not working at the moment)</span>
+<span class="n">lddmethod</span><span class="o">=</span><span class="n">dem</span>
+
+<span class="c"># If set to 1 the gauge points are moved to the neares river point on a river</span>
+<span class="c"># with a strahler order higher of identical as defined in this ini file</span>
+<span class="n">snapgaugestoriver</span><span class="o">=</span><span class="mi">1</span>
+
+<span class="c"># The strahler order above (and including) a pixel is defined as a river cell</span>
+<span class="n">riverorder</span><span class="o">=</span><span class="mi">4</span>
+
+<span class="c"># X and y cooordinates of gauges (subcatchments). Please note the the locations</span>
+<span class="c"># are based on the river network of the DEM used in step2 (the lower resuolution</span>
+<span class="c"># DEM). This may need some experimenting... is most case the snap function</span>
+<span class="c"># will work by ymmv. To set multiple gauges use [x_gauge_1, x_gauge_2]</span>
+
+<span class="n">gauges_y</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">6.1037</span><span class="p">]</span>
+<span class="n">gauges_x</span> <span class="o">=</span> <span class="p">[</span><span class="mf">107.4357</span><span class="p">]</span>
+
+
+<span class="c"># settings for subgrid to create. This also determines how the</span>
+<span class="c"># original dem is (up)scaled. If the cellsize is the same</span>
+<span class="c"># as the original dem no scaling is performed. This grid will</span>
+<span class="c"># be the grid the final model runs on</span>
+<span class="n">Yul</span> <span class="o">=</span> <span class="o">-</span><span class="mf">6.07</span>
+<span class="n">Xul</span> <span class="o">=</span> <span class="mf">106.9</span>
+<span class="n">Ylr</span> <span class="o">=</span> <span class="o">-</span><span class="mf">7.30271</span>
+<span class="n">Xlr</span> <span class="o">=</span> <span class="mf">107.992</span>
+<span class="n">cellsize</span> <span class="o">=</span> <span class="mf">0.009166666663</span>
+
+<span class="c"># tweak ldd creation. Default should be fine</span>
+<span class="n">lddoutflowdepth</span><span class="o">=</span><span class="mf">1E35</span>
+<span class="n">lddglobaloption</span><span class="o">=</span><span class="n">lddout</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="problems">
+<h3>Problems<a class="headerlink" href="#problems" title="Permalink to this headline">¶</a></h3>
+<p>In many cases the scripts will not produce the maps the way you want them
+in the first try. The most common problems are:</p>
+<ol class="arabic">
+<li><p class="first">The gauges do not coincide with a river and thus the subcatchment is not correct</p>
+<blockquote>
+<div><ul class="simple">
+<li>Move the gauges to a location on the rivers as determiend by the scripts. The
+best way to do this is to load the wflow_subcatch.map in qgis and use the cursor
+to find the nearest river cell fro a gauge.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">The delimited catchment is not correct even if the gauges is at the rigth location</p>
+<blockquote>
+<div><ul class="simple">
+<li>Get a better DEM or fix the current DEM.</li>
+<li>Use a river shape file to fix the river location</li>
+<li>Use a catchment mask to force the catchment delineated to use that. Or just clip the DEM with the catchment mask.</li>
+</ul>
+</div></blockquote>
+</li>
+</ol>
+<p>If you still run into problems you can adjust the scripts yourself to get better results.</p>
+</div>
+</div>
+<div class="section" id="module-wflow_prepare_step1">
+<span id="script-documentation"></span><h2>Script documentation<a class="headerlink" href="#module-wflow_prepare_step1" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="wflow-prepare-step1">
+<h3>wflow_prepare_step1<a class="headerlink" href="#wflow-prepare-step1" title="Permalink to this headline">¶</a></h3>
+<p>wflow data preparation script. Data preparation can be done by hand or using 
+the two scripts. This script does the first step. The second script does 
+the resampling. This scripts need the pcraster and gdal executables to be
+available in you search path.</p>
+<p>Usage:</p>
+<div class="highlight-python"><div class="highlight"><pre>wflow_prepare_step1 [-W workdir][-f][-h] -I inifile 
+
+-f force recreation of ldd if it already exists
+-h show this information
+-W set the working directory, default is current dir
+-I name of the ini file with settings
+</pre></div>
+</div>
+<p>$Id$</p>
+<dl class="function">
+<dt id="wflow_prepare_step1.OpenConf">
+<tt class="descclassname">wflow_prepare_step1.</tt><tt class="descname">OpenConf</tt><big>(</big><em>fn</em><big>)</big><a class="headerlink" href="#wflow_prepare_step1.OpenConf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="wflow_prepare_step1.configget">
+<tt class="descclassname">wflow_prepare_step1.</tt><tt class="descname">configget</tt><big>(</big><em>config</em>, <em>section</em>, <em>var</em>, <em>default</em><big>)</big><a class="headerlink" href="#wflow_prepare_step1.configget" title="Permalink to this definition">¶</a></dt>
+<dd><p>gets parameter from config file and returns a default value
+if the parameter is not found</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_prepare_step1.main">
+<tt class="descclassname">wflow_prepare_step1.</tt><tt class="descname">main</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_prepare_step1.main" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>masterdem</strong> &#8211; digital elevation model</li>
+<li><strong>dem</strong> &#8211; digital elevation model</li>
+<li><strong>river</strong> &#8211; optional river map</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_prepare_step1.usage">
+<tt class="descclassname">wflow_prepare_step1.</tt><tt class="descname">usage</tt><big>(</big><em>*args</em><big>)</big><a class="headerlink" href="#wflow_prepare_step1.usage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<span class="target" id="module-wflow_prepare_step2"></span><div class="section" id="wflow-prepare-step2">
+<h3>wflow_prepare_step2<a class="headerlink" href="#wflow-prepare-step2" title="Permalink to this headline">¶</a></h3>
+<p>wflow data preparation script. Data preparation can be done by hand or using 
+the two scripts. This script does the resampling. This scripts need the pcraster and gdal executables to be
+available in you search path.</p>
+<p>Usage:</p>
+<div class="highlight-python"><div class="highlight"><pre>wflow_prepare_step2 [-W workdir][-f][-h] -I inifile 
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>-f force recreation of ldd if it already exists
+-h show this information
+-W set the working directory, default is current dir
+-I name of the ini file with settings
+</pre></div>
+</div>
+<p>$Id$</p>
+<dl class="function">
+<dt id="wflow_prepare_step2.OpenConf">
+<tt class="descclassname">wflow_prepare_step2.</tt><tt class="descname">OpenConf</tt><big>(</big><em>fn</em><big>)</big><a class="headerlink" href="#wflow_prepare_step2.OpenConf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="wflow_prepare_step2.configget">
+<tt class="descclassname">wflow_prepare_step2.</tt><tt class="descname">configget</tt><big>(</big><em>config</em>, <em>section</em>, <em>var</em>, <em>default</em><big>)</big><a class="headerlink" href="#wflow_prepare_step2.configget" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="wflow_prepare_step2.main">
+<tt class="descclassname">wflow_prepare_step2.</tt><tt class="descname">main</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_prepare_step2.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="wflow_prepare_step2.resamplemaps">
+<tt class="descclassname">wflow_prepare_step2.</tt><tt class="descname">resamplemaps</tt><big>(</big><em>step1dir</em>, <em>step2dir</em><big>)</big><a class="headerlink" href="#wflow_prepare_step2.resamplemaps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resample the maps from step1 and rename them in the process</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wflow_prepare_step2.usage">
+<tt class="descclassname">wflow_prepare_step2.</tt><tt class="descname">usage</tt><big>(</big><em>*args</em><big>)</big><a class="headerlink" href="#wflow_prepare_step2.usage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+<div class="section" id="setting-up-a-case">
+<span id="setting-up"></span><h2>Setting Up a Case<a class="headerlink" href="#setting-up-a-case" title="Permalink to this headline">¶</a></h2>
+<p>PM</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Describes how to setup a model case structure. Probably need to write a script
+that does it automatically.</p>
+</div>
+<p>See <em class="xref std std-ref">wf_DynamicFramework</em> for information on the settings in the ini file.
+The model specific settings are described seperately for each model.</p>
+</div>
+<div class="section" id="input-parameters-lookup-tables-or-maps">
+<span id="input-parameters"></span><h2>Input parameters (lookup tables or maps)<a class="headerlink" href="#input-parameters-lookup-tables-or-maps" title="Permalink to this headline">¶</a></h2>
+<p>The PCRaster lookup tables listed below are used by the model to create
+input parameter maps. Each table should have at least four columns. The
+first column is used to identify the land-use class in the wflow_landuse
+map, the second column indicates the subcatchment (wflow_subcatch),
+the third column the soil type (wflow_soil.map) and the last column
+list the value that will be assigned based on the first three columns.</p>
+<p>Alternatively the lookup table can be replaced by a PCRaster map (in
+the staticmaps directory) with the same name as the tbl file (but with
+a .map extension).</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The order in which the model look for the parameters is as follows:
+- at first the staticmaps directory is checked for a map of the parameter
+- next the intbl directory is checked fo a lookup table
+- if both options fail a default value is used</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Note that the list model parameters is out of date. Getting the .tbl
+files from the example models (default_sbm and default_hbv) is
+probably the best way to start. In any case wflow will use default
+vaues for the tbl files that are missing. (shown in the log
+messages).</p>
+</div>
+<p>Below the contents of an example .tbl file is shown. In this case
+the parameters are identical for each subcatchment (and soil type)
+but is different for each landuse type. See the pcraster documentation
+(<a class="reference external" href="http://www.pcraster.eu">http://www.pcraster.eu</a>) for details on how to create .tbl files.</p>
+<div class="highlight-python"><div class="highlight"><pre>1   &lt;,14]   1 0.11
+2   &lt;,14]   1 0.11
+3   &lt;,14]   1 0.15
+4   &lt;,14]   1 0.11
+5   &lt;,14]   1 0.11
+6   &lt;,14]   1 0.11
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">please note that if the rules in the tble file do not cover
+all cells used in the model you will get missing values in the
+output. Check the maps in the runid/outsum directory to see if
+this is the case.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="wflow_usage.html" title="Using the models"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="wflow_adapt.html" title="wflow_adapt Module"
+             >previous</a> |</li>
+        <li><a href="index.html">wflow 1.0-RC7-fin-190-201M documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013-2014, Deltares/Jaap Schellekens.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>
