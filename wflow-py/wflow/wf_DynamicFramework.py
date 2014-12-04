@@ -1437,13 +1437,13 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
   def wf_readmapClimatology(self,name,kind=1,default=0.0,verbose=1):
       """
-      Read a climatology map. The current date/time is onverted to:
-      1: a month and the file fro the current month is returend
-      2: days of year and the file for the current day is implmented
+      Read a climatology map. The current date/time is converted to:
+      1: a month and the file for the current month is returned
+      2: days of year and the file for the current day is returned
       3: hour of day and the file for the current hours is returned
 
       :param name: name if the mapstack
-      :param kind: time of the climatology
+      :param kind: type of the climatology
       :return: a map
       """
       directoryPrefix = ""
@@ -1459,6 +1459,19 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 self.logger.warn("Climatology data (" + path + ") for timestep not present, returning " + str(default))
 
             return scalar(default)
+      elif kind == 2:
+          yday = self.currentdatetime.timetuple().tm_yday
+          newName = generateNameT(name, yday)
+          path = os.path.join(directoryPrefix, newName)
+          if os.path.isfile(path):
+            mapje=readmap(path)
+            return mapje
+          else:
+            if verbose:
+                self.logger.warn("Climatology data (" + path + ") for timestep not present, returning " + str(default))
+
+            return scalar(default)
+
       else:
           self.logger.error("This Kind of climatology not implemented yet: " + str(kind))
 
