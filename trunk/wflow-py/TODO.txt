@@ -6,6 +6,7 @@ TODO:
 - Add add_reservoir function to framework
 - fix open water treatment (together with reservoirs)
 - split kinematic wave from SBM and HBV
+- Add configurable data to netcdf export (now only wgs84)
 
 
 
