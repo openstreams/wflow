@@ -313,6 +313,29 @@ class WflowModel(DynamicModel):
         report(self.CumExfiltWater, self.SaveDir + "/outsum/CumExfiltWater.map")
         report(self.watbal, self.SaveDir + "/outsum/watbal.map")
 
+    def parameters(self):
+        """
+        Define all model parameters here that the framework should handle for the model
+        See wf_updateparameters and the parameters section of the ini file
+        If you use this make sure to all wf_updateparameters at the start of the dynamic section
+        and at the start/end of the initial section
+        """
+        modelparameters = []
+
+        #Static model parameters
+        modelparameters.append(self.ParamType(name="RunoffGeneratingGWPerc",stack="RunoffGeneratingGWPerc.tbl",type="static",default=0.1))
+
+        # Meteo and other forcing
+        modelparameters.append(self.ParamType(name="Precipitation",stack="P",type="timeseries",default=0.0))
+        modelparameters.append(self.ParamType(name="PotenEvap",stack="PET",type="timeseries",default=0.0))
+        modelparameters.append(self.ParamType(name="Temperature",stack="TEMP",type="timeseries",default=10.0))
+        modelparameters.append(self.ParamType(name="Inflow",stack="IF",type="timeseries",default=0.0))
+
+        #etc...
+        return modelparameters
+
+
+
     def initial(self):
         """
     Initial part of the model, executed only once. Reads all static data from disk
@@ -381,7 +404,7 @@ class WflowModel(DynamicModel):
 
 
         # Set and get defaults from ConfigFile here ###################################
-        self.scalarInput = int(configget(self.config, "model", "ScalarInput", "0"))
+
         self.Tslice = int(configget(self.config, "model", "Tslice", "1"))
         self.interpolMethod = configget(self.config, "model", "InterpolationMethod", "inv")
         self.reinit = int(configget(self.config, "model", "reinit", "0"))
@@ -463,8 +486,6 @@ class WflowModel(DynamicModel):
         self.SubCatchFlowOnly = int(configget(self.config, 'model', 'SubCatchFlowOnly', '0'))
         self.RunoffGeneratingGWPerc = float(configget(self.config, 'defaultfortbl', 'RunoffGeneratingGWPerc', '0.1'))
 
-        if self.scalarInput:
-            self.gaugesMap = readmap(os.path.join(self.Dir, wflow_mgauges))  # location of rainfall/evap/temp gauge(s)
         self.OutputId = readmap(os.path.join(self.Dir,wflow_subcatch))  # location of subcatchment
         # Temperature correction poer cell to add
 
@@ -493,7 +514,13 @@ class WflowModel(DynamicModel):
         self.Latitude = ycoordinate(boolean(self.Altitude))
         self.Longitude = xcoordinate(boolean(self.Altitude))
 
+
+        # Read parameters NEW Method
+
         self.logger.info("Linking parameters to landuse, catchment and soil...")
+
+        self.wf_updateparameters()
+
         self.RunoffGeneratingGWPerc = self.readtblDefault(self.Dir + "/" + self.intbl + "/RunoffGeneratingGWPerc.tbl",
                                                           self.LandUse, subcatch, self.Soil,
                                                           self.RunoffGeneratingGWPerc)
@@ -903,54 +930,18 @@ class WflowModel(DynamicModel):
         :var self.ToCubic: Mutiplier to convert mm to m^3/s for fluxes
         """
 
+
+
         self.logger.debug(
             "Step: " + str(int(self.thestep + self._d_firstTimeStep)) + "/" + str(int(self._d_nrTimeSteps)))
         self.thestep = self.thestep + 1
 
-        if self.scalarInput:
-            # gaugesmap not yet finished. Should be a map with cells that
-            # hold the gauges with an unique id
-            self.Precipitation = timeinputscalar(self.caseName + self.precipTss, self.gaugesMap)
-            if (os.path.exists(self.caseName + self.inflowTss)):
-                self.Inflow = cover(timeinputscalar(self.caseName + self.inflowTss, nominal(self.InflowLoc)), 0)
-            else:
-                self.Inflow = self.ZeroMap
-            self.Precipitation = pcrut.interpolategauges(self.Precipitation, self.interpolMethod)
-            self.PotenEvap = timeinputscalar(self.caseName + self.evapTss, self.gaugesMap)
-            self.PotenEvap = pcrut.interpolategauges(self.PotenEvap, self.interpolMethod) * self.et_RefToPot
-            if self.modelSnow:
-                self.Temperature = timeinputscalar(self.caseName + self.tempTss, self.gaugesMap)
-                self.Temperature = pcrut.interpolategauges(self.Temperature, self.interpolMethod)
-                self.Temperature = self.Temperature + self.TempCor
-        else:
-            self.Precipitation = cover(self.wf_readmap(self.P_mapstack, 0.0), scalar(0.0))
-            self.PotenEvap = cover(self.wf_readmap(self.PET_mapstack, 0.0), scalar(0.0)) * self.et_RefToPot
-            #self.Inflow=cover(self.wf_readmap(self.Inflow),0)
-            if (os.path.exists(self.caseName + self.inflowTss)):
-                self.Inflow = cover(timeinputscalar(self.caseName + self.inflowTss, nominal(self.InflowLoc)), 0)
-            else:
-                self.Inflow = cover(self.wf_readmap(self.Inflow_mapstack, 0.0,verbose=False),0)
-
-            if self.modelSnow:
-                self.Temperature = cover(self.wf_readmap(self.TEMP_mapstack, 10.0), scalar(10.0))
-                self.Temperature = self.Temperature + self.TempCor
-
-        # Read dynamic vegetationmaps - not tested at all....
-        # Fixed parameter for now, these should become maps
-        if self.DynamicVegetation:
-            self.LAI = self.wf_readmapClimatology(os.path.join(self.Dir,self.runId,"LAI") ,kind=1, default=self.LAI, verbose=True)
-            self.Cmax = self.LAI * 0.467
-            self.CanopyGapFraction = exp(-1.457 * self.LAI)
-            """
-            Pitman, Rainfall interception by bracken in open habitats  1989
-            throughfall coefficient
-            p = exp[-1.457( _+ 0.063)LAI],
-            (short vegetation)
-            Cmax - 0.467( _+ O.O04)LAI
-
-            (Talll vegetation)
-            Cmax =  K *LAI (K == 0.2, Dickinson, 1984]
-            """
+        # Read forcing data and dynamic parameters
+        self.wf_updateparameters()
+        #Apply forcing data corrections
+        self.PotenEvap = self.PotenEvap * self.et_RefToPot
+        if self.modelSnow:
+            self.Temperature = self.Temperature + self.TempCor
 
         # Multiply input parameters with a factor (for calibration etc) -p option in command line
         for k, v in multdynapars.iteritems():
@@ -965,7 +956,8 @@ class WflowModel(DynamicModel):
         """
         .. todo::
         
-        Snow modelling if enabled _ needs to be moved as it breaks the scalar input
+            Snow modelling if enabled _ needs to be moved as it breaks the scalar input
+
         """
         if self.modelSnow:
             self.TSoil = self.TSoil + self.w_soil * (self.Temperature - self.TSoil)

@@ -147,7 +147,7 @@ def _readMap(fileName, fileFormat,logger):
 
 
 
-    return x, y, data, FillVal
+
 
 
 def getnetcdfmetafromini(inifile):

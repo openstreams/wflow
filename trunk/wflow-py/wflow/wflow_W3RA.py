@@ -160,8 +160,8 @@ class WflowModel(DynamicModel):
     self.TMIN_mapstack=self.Dir + configget(self.config,"inputmapstacks","TMIN","/inmaps/TMIN")
     self.PRECIP_mapstack=self.Dir + configget(self.config,"inputmapstacks","PRECIP","/inmaps/PRECIP")
     self.RAD_mapstack=self.Dir + configget(self.config,"inputmapstacks","RAD","/inmaps/RAD")
-    self.WINDSPEED_mapstack=self.Dir + configget(self.config,"inputmapstacks","WINDSPEED","/inmaps/WINDSPEED")
-    self.AIRPRESS_mapstack=self.Dir + configget(self.config,"inputmapstacks","AIRPRESS","/inmaps/AIRPRESS")
+    self.WINDSPEED_mapstack=self.Dir + configget(self.config,"inputmapstacks","WIND","/inmaps/WIND")
+    self.AIRPRESS_mapstack=self.Dir + configget(self.config,"inputmapstacks","PRES","/inmaps/PRES")
     self.ALBEDO_mapstack=self.Dir + configget(self.config,"inputmapstacks","ALBEDO","/inmaps/ALBEDO")
 
     self.Altitude=readmap(self.Dir + "/staticmaps/wflow_dem")
@@ -282,12 +282,14 @@ class WflowModel(DynamicModel):
         #Put the W3RA here. Stuff from W3RA_timestep_model.m
         #read meteo from file
         self.logger.debug("Running for: " + str(self.currentdatetime))
-        self.TMAX=cover(self.wf_readmap(self.TMAX_mapstack, 10.0), scalar(10.0))
-        self.TMIN=cover(self.wf_readmap(self.TMIN_mapstack, 10.0), scalar(10.0))
-        self.PRECIP=cover(self.wf_readmap(self.PRECIP_mapstack, 0.0), scalar(0.0))
-        self.RAD=cover(self.wf_readmap(self.RAD_mapstack, 10.0), scalar(10.0))
-        self.WINDSPEED=cover(self.wf_readmapClimatology(self.WINDSPEED_mapstack, default=1.0), scalar(1.0))
-        self.AIRPRESS=cover(self.wf_readmapClimatology(self.AIRPRESS_mapstack, default=980.0), scalar(980.0))
+        self.TMAX=cover(self.wf_readmap(self.TMAX_mapstack, 10.0), scalar(10.0))# T in degC
+        self.TMIN=cover(self.wf_readmap(self.TMIN_mapstack, 10.0), scalar(10.0))# T in degC
+        self.PRECIP=cover(self.wf_readmap(self.PRECIP_mapstack, 0.0), scalar(0.0)) #mm
+        self.RAD=cover(self.wf_readmap(self.RAD_mapstack, 10.0), scalar(10.0))# W m-2 s-1
+        self.AIRPRESS=cover(self.wf_readmap(self.AIRPRESS_mapstack, 10.0), scalar(10.0))# Pa
+        self.WINDSPEED=cover(self.wf_readmap(self.WINDSPEED_mapstack, 10.0), scalar(10.0))# ms-1
+        #self.WINDSPEED=cover(self.wf_readmapClimatology(self.WINDSPEED_mapstack, default=1.0), scalar(1.0))
+        #self.AIRPRESS=cover(self.wf_readmapClimatology(self.AIRPRESS_mapstack, default=980.0), scalar(980.0))
         self.ALBEDO=cover(self.wf_readmapClimatology(self.ALBEDO_mapstack, default=0.1), scalar(0.1))
 
         doy=self.currentdatetime.timetuple().tm_yday
@@ -300,15 +302,15 @@ class WflowModel(DynamicModel):
 
         # Assign forcing and estimate effective meteorological variables
 
-        Pg = self.PRECIP*24*60*60 # from kg m-2 s-1 to mm d-1
+        Pg = self.PRECIP # mm 
         Rg = max(self.RAD,scalar(0.0001)) # already in W m-2 s-1; set minimum of 0.01 to avoid numerical problems
-        Ta = (self.TMIN+scalar(0.75)*(self.TMAX-self.TMIN))-273.15 # from K to degC
-        T24 = (self.TMIN+scalar(0.5)*(self.TMAX-self.TMIN))-273.15 # from K to degC
-        pex = min(scalar(17.27)*(self.TMIN-scalar(273.15))/(scalar(237.3)+self.TMIN-scalar(273.15)),scalar(10))
+        Ta = self.TMIN+scalar(0.75)*(self.TMAX-self.TMIN)# T in degC
+        T24 = self.TMIN+scalar(0.5)*(self.TMAX-self.TMIN)# T in degC
+        pex = min(scalar(17.27)*(self.TMIN)/(scalar(237.3)+self.TMIN),scalar(10)) # T in degC
         pe = min(scalar(610.8)*(exp(pex)),scalar(10000.0))
 
-        # rescale factor because windspeed climatology is at 50ms
-        WindFactor = 0.59904
+        # rescale factor because windspeed climatology is at 2m
+        WindFactor = 1.0
         u2 = scalar(WindFactor)*self.WINDSPEED*(scalar(1)-(scalar(1)-self.fday)*scalar(0.25))/self.fday
         self.u2 = scalar(WindFactor)*self.WINDSPEED*(scalar(1)-(scalar(1)-self.fday)*scalar(0.25))/self.fday
         pair = self.AIRPRESS # already in Pa
