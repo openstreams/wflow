@@ -154,24 +154,23 @@ may be added by you if needed.</p>
 <dl class="method">
 <dt id="wflow_sceleton.WflowModel.parameters">
 <tt class="descname">parameters</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_sceleton.WflowModel.parameters" title="Permalink to this definition">¶</a></dt>
-<dd><p>List all the parameters (both static and forcing here). USe the wf_updateparameters()
+<dd><p>List all the parameters (both static and forcing here). Use the wf_updateparameters()
 function to update them in the initial section (static) and the dynamic section for
 dynamic parameters.</p>
 <p>Possible parameter types are:</p>
-<div class="highlight-python"><div class="highlight"><pre>- staticmap: Read at startup from map
-- statictbl: Read at startup from tbl, falback to map (nee Landuse, Soil and TopoId (subcatch) maps!
-- timeseries: read map for each timestep
-- monthlyclim: read a map corresponding to the current month (12 maps in total)
-- dailyclim: read a map corresponding to the current day of the year
-- hourlyclim: read a map corresponding to the current hour of the day (24 in total)
-</pre></div>
-</div>
+<ul class="simple">
+<li>staticmap: Read at startup from map</li>
+<li>statictbl: Read at startup from tbl, fallback to map (need Landuse, Soil and TopoId (subcatch) maps!</li>
+<li>timeseries: read map for each timestep</li>
+<li>monthlyclim: read a map corresponding to the current month (12 maps in total)</li>
+<li>dailyclim: read a map corresponding to the current day of the year</li>
+<li>hourlyclim: read a map corresponding to the current hour of the day (24 in total)</li>
+</ul>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name" colspan="2">Return list of modelparameters:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"></td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">List of modelparameters</td>
 </tr>
 </tbody>
 </table>
@@ -336,21 +335,21 @@ module to parse the command line options.</p>
 
   <span class="k">def</span> <span class="nf">parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
       <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">      List all the parameters (both static and forcing here). USe the wf_updateparameters()</span>
+<span class="sd">      List all the parameters (both static and forcing here). Use the wf_updateparameters()</span>
 <span class="sd">      function to update them in the initial section (static) and the dynamic section for</span>
 <span class="sd">      dynamic parameters.</span>
 
-<span class="sd">      Possible parameter types are::</span>
+<span class="sd">      Possible parameter types are:</span>
 
-<span class="sd">            - staticmap: Read at startup from map</span>
-<span class="sd">            - statictbl: Read at startup from tbl, falback to map (nee Landuse, Soil and TopoId (subcatch) maps!</span>
-<span class="sd">            - timeseries: read map for each timestep</span>
-<span class="sd">            - monthlyclim: read a map corresponding to the current month (12 maps in total)</span>
-<span class="sd">            - dailyclim: read a map corresponding to the current day of the year</span>
-<span class="sd">            - hourlyclim: read a map corresponding to the current hour of the day (24 in total)</span>
+<span class="sd">      + staticmap: Read at startup from map</span>
+<span class="sd">      + statictbl: Read at startup from tbl, fallback to map (need Landuse, Soil and TopoId (subcatch) maps!</span>
+<span class="sd">      + timeseries: read map for each timestep</span>
+<span class="sd">      + monthlyclim: read a map corresponding to the current month (12 maps in total)</span>
+<span class="sd">      + dailyclim: read a map corresponding to the current day of the year</span>
+<span class="sd">      + hourlyclim: read a map corresponding to the current hour of the day (24 in total)</span>
 
 
-<span class="sd">      :return list of modelparameters:</span>
+<span class="sd">      :return: List of modelparameters</span>
 <span class="sd">      &quot;&quot;&quot;</span>
       <span class="n">modelparameters</span> <span class="o">=</span> <span class="p">[]</span>
 

@@ -207,14 +207,14 @@ to for example force the model to read RootingDepth from an external data source
 <li>default - Default value if map/tbl is not present</li>
 </ul>
 <p>Possible parameter types (the second option)are:</p>
-<div class="highlight-python"><div class="highlight"><pre>staticmap: Read at startup from map
-statictbl: Read at startup from tbl, falback to map (need Landuse, Soil and TopoId (subcatch) maps)!
-timeseries: read map for each timestep
-monthlyclim: read a map corresponding to the current month (12 maps in total)
-dailyclim: read a map corresponding to the current day of the year (366 maps in total)
-hourlyclim: read a map corresponding to the current hour of the day (24 maps in total)
-</pre></div>
-</div>
+<ul class="simple">
+<li>staticmap: Read at startup from map</li>
+<li>statictbl: Read at startup from tbl, falback to map (need Landuse, Soil and TopoId (subcatch) maps)!</li>
+<li>timeseries: read map for each timestep</li>
+<li>monthlyclim: read a map corresponding to the current month (12 maps in total)</li>
+<li>dailyclim: read a map corresponding to the current day of the year (366 maps in total)</li>
+<li>hourlyclim: read a map corresponding to the current hour of the day (24 maps in total)</li>
+</ul>
 <p>Example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">modelparameters</span><span class="p">]</span>
 <span class="n">RootingDepth</span><span class="o">=</span><span class="n">monthlyclim</span><span class="o">/</span><span class="n">ROOTS</span><span class="p">,</span><span class="n">monthlyclim</span><span class="p">,</span><span class="mi">75</span>
@@ -952,22 +952,10 @@ Also saves the summary maps</p>
 <dl class="method">
 <dt id="wf_DynamicFramework.wf_DynamicFramework.wf_updateparameters">
 <tt class="descname">wf_updateparameters</tt><big>(</big><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_updateparameters" title="Permalink to this definition">¶</a></dt>
-<dd><p>Update the model [arameters</p>
-<p>input:</p>
-<div class="highlight-python"><div class="highlight"><pre>- pname - Name of the parameter (internal variable)
-- pstack - Name of the mapstack (representation on disk or in mem)
-- ptype - Type of parameter (default = static)
-</pre></div>
-</div>
-<p>Possible parameter types are:</p>
-<div class="highlight-python"><div class="highlight"><pre>- staticmap: Read at startup from map
-- statictbl: Read at startup from tbl, falback to map (nee Landuse, Soil and TopoId (subcatch) maps!
-- timeseries: read map for each timestep
-- monthlyclim: read a map corresponding to the current month (12 maps in total)
-- dailyclim: read a map corresponding to the current day of the year
-- hourlyclim: read a map corresponding to the current hour of the day (24 in total)
-</pre></div>
-</div>
+<dd><p>Update the model Parameters (can be used in static and dynamic part of the model)</p>
+<p>It does this by looking at the parameters listed in [parameters] section in the
+ini file and those defined in the parameters() function in the actual model
+(defined by the model developer).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />

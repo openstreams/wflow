@@ -130,14 +130,14 @@ The format of entries in this section is as follows::
 + type - Type of parameter (default = static)
 + default - Default value if map/tbl is not present
 
-Possible parameter types (the second option)are::
+Possible parameter types (the second option)are:
 
-    staticmap: Read at startup from map
-    statictbl: Read at startup from tbl, falback to map (need Landuse, Soil and TopoId (subcatch) maps)!
-    timeseries: read map for each timestep
-    monthlyclim: read a map corresponding to the current month (12 maps in total)
-    dailyclim: read a map corresponding to the current day of the year (366 maps in total)
-    hourlyclim: read a map corresponding to the current hour of the day (24 maps in total)
++ staticmap: Read at startup from map
++ statictbl: Read at startup from tbl, falback to map (need Landuse, Soil and TopoId (subcatch) maps)!
++ timeseries: read map for each timestep
++ monthlyclim: read a map corresponding to the current month (12 maps in total)
++ dailyclim: read a map corresponding to the current day of the year (366 maps in total)
++ hourlyclim: read a map corresponding to the current hour of the day (24 maps in total)
 
 
 Example::
