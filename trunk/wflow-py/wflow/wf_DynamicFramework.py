@@ -302,7 +302,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         Possible parameter types are::
 
-            - static: Read at startup from map or tbl
+            - staticmap: Read at startup from map
+            - statictbl: Read at startup from tbl, falback to map (nee Landuse, Soil and TopoId (subcatch) maps!
             - timeseries: read map for each timestep
             - monthlyclim: read a map corresponding to the current month (12 maps in total)
             - dailyclim: read a map corresponding to the current day of the year
@@ -313,15 +314,26 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         for par in self.modelparameters:
             if self._userModel()._inInitial():
-                if par.type == 'static':
-                    if hasattr(self._userModel(),par.name):
-                        tblname = os.path.join(self._userModel().Dir, self._userModel().intbl, par.stack)
-                        theparmap = self.readtblDefault(tblname,
-                                                          self._userModel().LandUse, self._userModel().TopoId, self._userModel().Soil,
-                                                          par.default)
-                        setattr(self._userModel(),par.name,theparmap)
+                if par.type == 'statictbl':
+                    if not hasattr(self._userModel(),par.name):
+                        self._userModel().logger.info("Adding " + par.name + " to model.")
+                    tblname = os.path.join(self._userModel().Dir, "intbl", par.stack)
+                    theparmap = self.readtblDefault(tblname,
+                                                      self._userModel().LandUse, self._userModel().TopoId, self._userModel().Soil,
+                                                      par.default)
+                    setattr(self._userModel(),par.name,theparmap)
+                if par.type == 'staticmap':
+                    if not hasattr(self._userModel(),par.name):
+                        self._userModel().logger.info("Adding " + par.name + " to model.")
+                    fname = os.path.join(self._userModel().Dir, "staticmaps", par.stack)
+                    fileName, fileExtension = os.path.splitext(fname)
+                    if fileExtension == '.map':
+                        theparmap = readmap(fname)
                     else:
-                        print "cannot find " + par.name + par.stack
+                        self._userModel().logger.error(fname + " Does not have a .map extension")
+
+                    setattr(self._userModel(),par.name,theparmap)
+
             if self._userModel()._inDynamic():
                 if par.type == 'timeseries':
                     if not hasattr(self._userModel(),par.name):

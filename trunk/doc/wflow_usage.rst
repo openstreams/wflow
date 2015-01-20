@@ -321,40 +321,7 @@ Example content:
     self.FirstZoneDepth=fir
      
 
-[outputtss]
 
-.. note::
-
-    Depricated. This is the old method. Use outputcsv_0 or outputtss_0 instead (see below)
-
-List all timeseries here that you want to have saved (in tss format).
-Timeseries are produced as averages per subcatchment. Note that each
-timeseries you add here slows down the program so only save what you
-need, especially in operational applications. Possible values are: 
-
-    Note the run.tss and lev.tss are always saved (runoff and water
-    level at the gauge locations)
-
-
-
-::
-
-    [outputtss]
-    self.ActEvap=aet
-    self.watbal=wat
-    self.PotEvap=pot
-    self.FirstZoneDepth=fir
-    self.Interception=int
-    self.UStoreDepth=ust
-    self.zi=zi_
-    self.ExfiltWater=exf
-    self.UStoreCapacity=tde
-    self.Transfer=tra   
-    self.Ksat=ksa
-    self.Snow=sno
-    self.SnowMelt=snm
-    self.SnowWater=snw
-    self.FirstZoneFlux=fzf
 
 
 [outputcsv_0-n]
@@ -449,9 +416,6 @@ All possible options in wflow\_sbm.ini file
 
 ::
 
-
-	[outputtss]
-	# All variables in the dynamic section can be put here
 
 	[defaultfortbl]
 	RunoffGeneratingGWPerc = 0.1

@@ -60,6 +60,33 @@ class WflowModel(DynamicModel):
       self.configfile = configfile
      
 
+  def parameters(self):
+      """
+      List all the parameters (both static and forcing here). USe the wf_updateparameters()
+      function to update them in the initial section (static) and the dynamic section for
+      dynamic parameters.
+
+      Possible parameter types are::
+
+            - staticmap: Read at startup from map
+            - statictbl: Read at startup from tbl, falback to map (nee Landuse, Soil and TopoId (subcatch) maps!
+            - timeseries: read map for each timestep
+            - monthlyclim: read a map corresponding to the current month (12 maps in total)
+            - dailyclim: read a map corresponding to the current day of the year
+            - hourlyclim: read a map corresponding to the current hour of the day (24 in total)
+
+
+      :return list of modelparameters:
+      """
+      modelparameters = []
+
+      #Static model parameters
+      modelparameters.append(self.ParamType(name="Altitude",stack="wflow_dem.map",type="staticmap",default=0.0))
+
+      # Meteo and other forcing
+      modelparameters.append(self.ParamType(name="Temperature",stack="TEMP",type="timeseries",default=10.0))
+
+      return modelparameters
 
   def stateVariables(self):
       """ 
@@ -135,11 +162,8 @@ class WflowModel(DynamicModel):
 
 
     self.timestepsecs = int(configget(self.config,'model','timestepsecs','86400'))
-    
     self.basetimestep=86400
-    self.SaveMapDir = self.Dir + "/" + self.runId + "/outmaps"
-    self.TEMP_mapstack=self.Dir + configget(self.config,"inputmapstacks","Temperature","/inmaps/TEMP") 
-    self.Altitude=readmap(self.Dir + "/staticmaps/wflow_dem")
+    self.wf_updateparameters()
     self.logger.info("Starting Dynamic run...")
 
 
@@ -168,6 +192,7 @@ class WflowModel(DynamicModel):
       *Optional*
 
       Return a default list of variables to report as summary maps in the outsum dir.
+      The ini file has more option, including average and sum
       """
       return ['self.Altitude']
 
@@ -178,9 +203,10 @@ class WflowModel(DynamicModel):
       This is where all the time dependent functions are executed. Time dependent
       output should also be saved here.
       """
-      
-      Temperature = self.wf_readmap(self.TEMP_mapstack,0.0)     
-      self.TSoil = self.TSoil + 0.1125 * (Temperature - self.TSoil) * self.timestepsecs/self.basetimestep 
+
+      self.wf_updateparameters() # read the temperature map fo each step (see parameters())
+
+      self.TSoil = self.TSoil + 0.1125 * (self.Temperature - self.TSoil) * self.timestepsecs/self.basetimestep
       
       # reporting of maps and csv timeseries is done by the framework (see ini file)
     

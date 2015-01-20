@@ -112,7 +112,40 @@ example:
 
 
 
+Settings in the modelparameters section
+---------------------------------------
 
+Most of the time this section is not needed as this will mostly be configured
+in the python code by the model developer. Howevere, in some case this section can be used
+to for example force the model to read RootingDepth from an external data source.
+
+The format of entries in this section is as follows::
+
+    name=stack,type,default
+    # example:
+    # RootingDepth=monthlyclim/ROOT,monthyclim,100
+
++ name - Name of the parameter (internal variable, without the self.)
++ stack - Name of the mapstack (representation on disk or in mem) relative to case
++ type - Type of parameter (default = static)
++ default - Default value if map/tbl is not present
+
+Possible parameter types (the second option)are::
+
+    staticmap: Read at startup from map
+    statictbl: Read at startup from tbl, falback to map (need Landuse, Soil and TopoId (subcatch) maps)!
+    timeseries: read map for each timestep
+    monthlyclim: read a map corresponding to the current month (12 maps in total)
+    dailyclim: read a map corresponding to the current day of the year
+    hourlyclim: read a map corresponding to the current hour of the day (24 in total)
+
+
+Example::
+
+    [modelparameters]
+    RootingDepth=monthlyclim/ROOTS,monthlyclim,75
+    # Force the model to read monthly climatology of P
+    Precipitation=inmaps/P,monthlyclim,0.0
 
 
 
