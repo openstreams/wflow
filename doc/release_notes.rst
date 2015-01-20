@@ -1,7 +1,17 @@
 Release notes
 =============
 
-Version 1.0RC6
+Trunc
+-----
+Under heavy development
+
++ added wf_updateparameters to framework. This allows the user to set parameters to update
+  in the ini file but alse list them in the parameters function in the model itself. This
+  functionality should replace all manual reading of forcing data and static parameters
+
+
+
+Version 1.0RC7
 --------------
 unsupported interim release
 
