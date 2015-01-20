@@ -1,7 +1,7 @@
 Using the framework
 ===================
 
-This section only gives a brief description of the framework focussing on the extensions
+This section only gives a brief description of the framework focusing on the extensions
 made for OpenStreams. A full description of the current version of the framework can be found
 at http://www.pcraster.eu.
 
@@ -10,8 +10,8 @@ to the class to describe the model behaviour. The easiest way to get started is 
 and modify the ``wflow_sceleton.py`` example model. You can also use the other models
 for inspiration.
 
-In order to facilitate reusing data between models the data is stored in the following directory
-tree:
+In order to facilitate reusing data between models the data is stored in the following
+directory tree:
 
 .. digraph:: file_system
 
