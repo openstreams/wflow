@@ -1,10 +1,11 @@
 Release notes
 =============
 
-Trunc
+Trunk
 -----
 Under heavy development
 
++ support for scalar input to wflow\_sbm has been removed.
 + added wf_updateparameters to framework. This allows the user to set parameters to update
   in the ini file but alse list them in the parameters function in the model itself. This
   functionality should replace all manual reading of forcing data and static parameters
