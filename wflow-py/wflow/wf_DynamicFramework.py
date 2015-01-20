@@ -24,25 +24,20 @@ $Rev: 915 $
 #TODO: Remove command-line options from models such as -F that is now in the ini
 #TODO: Fix timestep not forewarding in BMI runs (for reading writing maps)
 
-import osgeo.gdal as gdal
-from wflow.wf_netcdfio import *
-
-import numpy
 import datetime
-
 import ConfigParser
+
+from wflow.wf_netcdfio import *
 #from wf_Timeoutput import *
 import pcrut
-import shutil, glob
-import sys
+import glob
 import traceback
 from wflow_adapt import getStartTimefromRuninfo, getEndTimefromRuninfo
-
+from collections import namedtuple
 
 
 logging = None
 
-from pcraster import *
 from pcraster.framework import *
 from wflow_lib import *
 #import scipy.io
@@ -107,6 +102,12 @@ class wf_exchnageVariables():
                 else:
                     return 1
         return 1   
+
+
+
+
+
+
 
 
 class wf_sumavg():
@@ -245,7 +246,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
   #
   def __init__(self, userModel, lastTimeStep=0, firstTimestep=1,datetimestart=dt.datetime(1990,01,01),timestepsecs=86400):
     frameworkBase.FrameworkBase.__init__(self)
-    
+
+    self.ParamType = namedtuple("ParamType", "name stack type default")
+    self.modelparameters = [] # list of model parameters
     self.exchnageitems = wf_exchnageVariables()
     self.setQuiet(True)
     self.reinit=0
@@ -270,6 +273,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     self._addMethodToClass(self.readtblDefault)
     self._addMethodToClass(self.wf_supplyVariableNamesAndRoles)
     self._addMethodToClass(self.wf_supplyVariableNamesAndRoles)
+    self._addMethodToClass(self.wf_updateparameters)
+    self._addAttributeToClass("ParamType",self.ParamType)
+
 
     self._userModel()._setNrTimeSteps(lastTimeStep - firstTimestep + 1)
     if firstTimestep == 0:
@@ -284,7 +290,71 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
 
 
-  
+  def wf_updateparameters(self):
+        """
+        Update the model [arameters
+
+        input::
+
+            - pname - Name of the parameter (internal variable)
+            - pstack - Name of the mapstack (representation on disk or in mem)
+            - ptype - Type of parameter (default = static)
+
+        Possible parameter types are::
+
+            - static: Read at startup from map or tbl
+            - timeseries: read map for each timestep
+            - monthlyclim: read a map corresponding to the current month (12 maps in total)
+            - dailyclim: read a map corresponding to the current day of the year
+            - hourlyclim: read a map corresponding to the current hour of the day (24 in total)
+
+        :return nothing:
+        """
+
+        for par in self.modelparameters:
+            if self._userModel()._inInitial():
+                if par.type == 'static':
+                    if hasattr(self._userModel(),par.name):
+                        tblname = os.path.join(self._userModel().Dir, self._userModel().intbl, par.stack)
+                        theparmap = self.readtblDefault(tblname,
+                                                          self._userModel().LandUse, self._userModel().TopoId, self._userModel().Soil,
+                                                          par.default)
+                        setattr(self._userModel(),par.name,theparmap)
+                    else:
+                        print "cannot find " + par.name + par.stack
+            if self._userModel()._inDynamic():
+                if par.type == 'timeseries':
+                    if not hasattr(self._userModel(),par.name):
+                        self._userModel().logger.info("Adding " + par.name + " to model.")
+                    theparmap = self.wf_readmap(os.path.join(self._userModel().caseName,"inmaps",par.stack), par.default)
+                    theparmap = cover(theparmap,par.default)
+                    setattr(self._userModel(),par.name,theparmap)
+
+                if par.type == 'monthlyclim':
+                    if not hasattr(self._userModel(),par.name):
+                        self._userModel().logger.info("Adding " + par.name + " to model.")
+                    theparmap = self.wf_readmapClimatology(os.path.join(self._userModel().caseName,"monthlyclim",par.stack) ,kind=1, default=par.default, verbose=True)
+                    theparmap = cover(theparmap,par.default)
+                    setattr(self._userModel(),par.name,theparmap)
+
+                if par.type == 'hourlyclim':
+                    if not hasattr(self._userModel(),par.name):
+                        self._userModel().logger.info("Adding " + par.name + " to model.")
+                    print "hourlyclim has " + par.name + par.stack
+                    print "Not implemented yet"
+
+                if par.type == 'dailyclim':
+                    if not hasattr(self._userModel(),par.name):
+                        self._userModel().logger.info(par.name + " is not defined yet, adding anyway.")
+                    theparmap = self.wf_readmapClimatology(os.path.join(self._userModel().caseName,"dailyclim",par.stack) ,kind=2, default=par.default, verbose=True)
+                    setattr(self._userModel(),par.name,theparmap)
+
+
+
+
+
+
+
   def _wf_shutdown(self):
       """
       Makes sure the logging closed
@@ -475,6 +545,19 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             thismapname = caseName + "/" + runId + "/outsum/" + self._userModel().config.get("summary_" + sttype,thismap)
             thismap = thismap.split('self.')[1]
             self.statslst.append(wf_sumavg(thismap,mode=sttype,filename=thismapname))
+
+
+    # Get model parameters from model object
+    self.modelparameters = self._userModel().parameters()
+    # Read extra model parameters from ini file
+    modpars =  configsection(self._userModel().config,"modelparameters")
+    for par in modpars:
+        aline = self._userModel().config.get("modelparameters",par)
+        vals = aline.split(',')
+        if len(vals) == 3:
+            self.modelparameters.append(self.ParamType(name=par,stack=vals[0],type=vals[1],default=float(vals[2])))
+        else:
+            logging.error("Parameter line in ini not valid: " + aline)
 
     # Add the summary/statistics variable to the class
     # self._addAttributeToClass("summap",self._userModel().clone)
