@@ -136,8 +136,8 @@ Possible parameter types (the second option)are::
     statictbl: Read at startup from tbl, falback to map (need Landuse, Soil and TopoId (subcatch) maps)!
     timeseries: read map for each timestep
     monthlyclim: read a map corresponding to the current month (12 maps in total)
-    dailyclim: read a map corresponding to the current day of the year
-    hourlyclim: read a map corresponding to the current hour of the day (24 in total)
+    dailyclim: read a map corresponding to the current day of the year (366 maps in total)
+    hourlyclim: read a map corresponding to the current hour of the day (24 maps in total)
 
 
 Example::
@@ -147,6 +147,40 @@ Example::
     # Force the model to read monthly climatology of P
     Precipitation=inmaps/P,monthlyclim,0.0
 
+
+Settings in the summary_* sections
+----------------------------------
+
+By adding variable in one or several of these sectiosn the framework will save
+these variables to disk (using the value at the end, sum, min, max or avg) at the end of a run.
+
+the available sections are:
+
++ summary - Saves the actual value of the variable
++ summary_avg - Saves the average value over all timesteps of the variable
++ summary_sum - Saves the sum over all timesteps of the variable
++ summary_min - Saves the minimum value over all timesteps of the variable
++ summary_max - Saves the maximum value over all timesteps of the variable
+
+All maps are saved in the outsum directory of the current runid.
+
+Example::
+
+    [summary]
+    self.MaxLeakage=MaxLeakage.map
+    # Save and average these per LU type
+
+    [summary_sum]
+    self.Precipitation=Sumprecip.map
+
+    [summary_max]
+    self.Precipitation=maxprecip.map
+
+    [summary_min]
+    self.Temperature=mintemp.map
+
+    [summary_avg]
+    self.Precipitation=avgprecip.map
 
 
 wf_DynamicFramework Module

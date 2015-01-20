@@ -5,7 +5,7 @@ vers=os.popen('svnversion -n').read().replace(":","-")
 
 # SET THESE
 ###################################
-manualversion = "1.0-RC7-fin" + "-" + vers
+manualversion = "1.0-RC8-fin" + "-" + vers
 manualmainversion = "1.0-fin"
 ###################################
 a = open("_version.py","w")
