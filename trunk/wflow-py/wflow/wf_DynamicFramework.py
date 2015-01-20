@@ -292,26 +292,15 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
   def wf_updateparameters(self):
         """
-        Update the model [arameters
+        Update the model Parameters (can be used in static and dynamic part of the model)
 
-        input::
-
-            - pname - Name of the parameter (internal variable)
-            - pstack - Name of the mapstack (representation on disk or in mem)
-            - ptype - Type of parameter (default = static)
-
-        Possible parameter types are::
-
-            - staticmap: Read at startup from map
-            - statictbl: Read at startup from tbl, falback to map (nee Landuse, Soil and TopoId (subcatch) maps!
-            - timeseries: read map for each timestep
-            - monthlyclim: read a map corresponding to the current month (12 maps in total)
-            - dailyclim: read a map corresponding to the current day of the year
-            - hourlyclim: read a map corresponding to the current hour of the day (24 in total)
+        It does this by looking at the parameters listed in [parameters] section in the
+        ini file and those defined in the parameters() function in the actual model
+        (defined by the model developer).
 
         :return nothing:
         """
-
+        retval = 0
         for par in self.modelparameters:
             if self._userModel()._inInitial():
                 if par.type == 'statictbl':

@@ -62,21 +62,21 @@ class WflowModel(DynamicModel):
 
   def parameters(self):
       """
-      List all the parameters (both static and forcing here). USe the wf_updateparameters()
+      List all the parameters (both static and forcing here). Use the wf_updateparameters()
       function to update them in the initial section (static) and the dynamic section for
       dynamic parameters.
 
-      Possible parameter types are::
+      Possible parameter types are:
 
-            - staticmap: Read at startup from map
-            - statictbl: Read at startup from tbl, falback to map (nee Landuse, Soil and TopoId (subcatch) maps!
-            - timeseries: read map for each timestep
-            - monthlyclim: read a map corresponding to the current month (12 maps in total)
-            - dailyclim: read a map corresponding to the current day of the year
-            - hourlyclim: read a map corresponding to the current hour of the day (24 in total)
+      + staticmap: Read at startup from map
+      + statictbl: Read at startup from tbl, fallback to map (need Landuse, Soil and TopoId (subcatch) maps!
+      + timeseries: read map for each timestep
+      + monthlyclim: read a map corresponding to the current month (12 maps in total)
+      + dailyclim: read a map corresponding to the current day of the year
+      + hourlyclim: read a map corresponding to the current hour of the day (24 in total)
 
 
-      :return list of modelparameters:
+      :return: List of modelparameters
       """
       modelparameters = []
 
