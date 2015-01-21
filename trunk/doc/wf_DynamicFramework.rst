@@ -133,7 +133,7 @@ The format of entries in this section is as follows::
 Possible parameter types (the second option)are:
 
 + staticmap: Read at startup from map
-+ statictbl: Read at startup from tbl, falback to map (need Landuse, Soil and TopoId (subcatch) maps)!
++ statictbl: Read at startup from tbl, fallback to map (need Landuse, Soil and TopoId (subcatch) maps)!
 + timeseries: read map for each timestep
 + monthlyclim: read a map corresponding to the current month (12 maps in total)
 + dailyclim: read a map corresponding to the current day of the year (366 maps in total)
