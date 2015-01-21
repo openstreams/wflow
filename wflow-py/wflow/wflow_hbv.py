@@ -207,6 +207,29 @@ class WflowModel(DynamicModel):
       """
       return self.currentTimeStep() * int(configget(self.config,'model','timestepsecs','86400'))
   
+  def parameters(self):
+    """
+    Define all model parameters here that the framework should handle for the model
+    See wf_updateparameters and the parameters section of the ini file
+    If you use this make sure to all wf_updateparameters at the start of the dynamic section
+    and at the start/end of the initial section
+    """
+    modelparameters = []
+
+    #Static model parameters e.g.
+    #modelparameters.append(self.ParamType(name="RunoffGeneratingGWPerc",stack="intbl/RunoffGeneratingGWPerc.tbl",type="static",default=0.1))
+
+    # Meteo and other forcing
+
+    modelparameters.append(self.ParamType(name="Precipitation",stack="inmaps/P",type="timeseries",default=0.0))
+    modelparameters.append(self.ParamType(name="PotEvaporation",stack="inmaps/PET",type="timeseries",default=0.0))
+    modelparameters.append(self.ParamType(name="Temperature",stack="inmaps/TEMP",type="timeseries",default=10.0))
+    modelparameters.append(self.ParamType(name="Inflow",stack="inmaps/IF",type="timeseries",default=0.0))
+    modelparameters.append(self.ParamType(name="Seepage",stack="inmaps/SE",type="timeseries",default=0.0))
+
+
+
+    return modelparameters
 
 
   def suspend(self):
@@ -661,30 +684,20 @@ class WflowModel(DynamicModel):
     self.logger.debug("Step: "+str(int(self.thestep + self._d_firstTimeStep))+"/"+str(int(self._d_nrTimeSteps)))
     self.thestep = self.thestep + 1
 
-    
-    if self.scalarInput:
-            self.Precipitation = timeinputscalar(self.precipTss,self.gaugesMap) * self.Pcorr
-            self.Inflow=cover(timeinputscalar(self.inflowTss,self.InflowLoc),0.0)
-            #self.Seepage = cover(timeinputscalar(self.SeepageTss,self.SeepageLoc),0)
-            self.Precipitation = pcrut.interpolategauges(self.Precipitation,self.interpolMethod)
-            self.PotEvaporation=timeinputscalar(self.evapTss,self.gaugesMap)
-            self.PotEvaporation = pcrut.interpolategauges(self.PotEvaporation,self.interpolMethod)
-            #self.report(self.PotEvaporation,'p')
-            self.Temperature=timeinputscalar(self.tempTss,self.gaugesMap)
-            self.Temperature = pcrut.interpolategauges(self.Temperature,self.interpolMethod)
-            self.Temperature = self.Temperature + self.TempCor
+
+    self.wf_updateparameters() # read forcing an dynamic parameters
+
+    #self.Precipitation=cover(self.wf_readmap(self.P_mapstack,0.0),0.0) * self.Pcorr
+    #self.PotEvaporation=cover(self.wf_readmap(self.PET_mapstack,0.0),0.0)
+    #self.Inflow=cover(self.wf_readmap(self.Inflow_mapstack,0.0,verbose=False),0.0)
+    # These ar ALWAYS 0 at present!!!
+    #self.Inflow=pcrut.readmapSave(self.Inflow_mapstack,0.0)
+    if self.ExternalQbase:
+        self.Seepage = cover(self.wf_readmap(self.Seepage_mapstack,0.0),0.0)
     else:
-            self.Precipitation=cover(self.wf_readmap(self.P_mapstack,0.0),0.0) * self.Pcorr
-            self.PotEvaporation=cover(self.wf_readmap(self.PET_mapstack,0.0),0.0)
-            self.Inflow=cover(self.wf_readmap(self.Inflow_mapstack,0.0,verbose=False),0.0)
-            # These ar ALWAYS 0 at present!!!
-            #self.Inflow=pcrut.readmapSave(self.Inflow_mapstack,0.0)
-            if self.ExternalQbase:
-                self.Seepage = cover(self.wf_readmap(self.Seepage_mapstack,0.0),0.0)
-            else:
-                self.Seepage=cover(0.0)
-            self.Temperature=cover(self.wf_readmap(self.TEMP_mapstack,10.0),10.0)
-            self.Temperature = self.Temperature + self.TempCor
+        self.Seepage=cover(0.0)
+    self.Temperature=cover(self.wf_readmap(self.TEMP_mapstack,10.0),10.0)
+    self.Temperature = self.Temperature + self.TempCor
 
     # Multiply input parameters with a factor (for calibration etc) -p option in command line
     for k, v in multdynapars.iteritems():

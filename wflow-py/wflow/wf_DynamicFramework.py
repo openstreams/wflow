@@ -306,7 +306,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 if par.type == 'statictbl':
                     if not hasattr(self._userModel(),par.name):
                         self._userModel().logger.info("Adding " + par.name + " to model.")
-                    tblname = os.path.join(self._userModel().Dir, "intbl", par.stack)
+                    tblname = os.path.join(self._userModel().Dir, par.stack)
                     theparmap = self.readtblDefault(tblname,
                                                       self._userModel().LandUse, self._userModel().TopoId, self._userModel().Soil,
                                                       par.default)
@@ -314,7 +314,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 if par.type == 'staticmap':
                     if not hasattr(self._userModel(),par.name):
                         self._userModel().logger.info("Adding " + par.name + " to model.")
-                    fname = os.path.join(self._userModel().Dir, "staticmaps", par.stack)
+                    fname = os.path.join(self._userModel().Dir, par.stack)
                     fileName, fileExtension = os.path.splitext(fname)
                     if fileExtension == '.map':
                         theparmap = readmap(fname)
@@ -327,14 +327,14 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 if par.type == 'timeseries':
                     if not hasattr(self._userModel(),par.name):
                         self._userModel().logger.info("Adding " + par.name + " to model.")
-                    theparmap = self.wf_readmap(os.path.join(self._userModel().caseName,"inmaps",par.stack), par.default)
+                    theparmap = self.wf_readmap(os.path.join(self._userModel().caseName,par.stack), par.default)
                     theparmap = cover(theparmap,par.default)
                     setattr(self._userModel(),par.name,theparmap)
 
                 if par.type == 'monthlyclim':
                     if not hasattr(self._userModel(),par.name):
                         self._userModel().logger.info("Adding " + par.name + " to model.")
-                    theparmap = self.wf_readmapClimatology(os.path.join(self._userModel().caseName,"monthlyclim",par.stack) ,kind=1, default=par.default, verbose=True)
+                    theparmap = self.wf_readmapClimatology(os.path.join(self._userModel().caseName,par.stack) ,kind=1, default=par.default, verbose=True)
                     theparmap = cover(theparmap,par.default)
                     setattr(self._userModel(),par.name,theparmap)
 
@@ -347,7 +347,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 if par.type == 'dailyclim':
                     if not hasattr(self._userModel(),par.name):
                         self._userModel().logger.info(par.name + " is not defined yet, adding anyway.")
-                    theparmap = self.wf_readmapClimatology(os.path.join(self._userModel().caseName,"dailyclim",par.stack) ,kind=2, default=par.default, verbose=True)
+                    theparmap = self.wf_readmapClimatology(os.path.join(self._userModel().caseName,par.stack) ,kind=2, default=par.default, verbose=True)
                     setattr(self._userModel(),par.name,theparmap)
 
 
@@ -556,12 +556,23 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         aline = self._userModel().config.get("modelparameters",par)
         vals = aline.split(',')
         if len(vals) == 3:
-            self.modelparameters.append(self.ParamType(name=par,stack=vals[0],type=vals[1],default=float(vals[2])))
+            # check if par already present
+            present = par in [xxx[0] for xxx in self.modelparameters]
+            if present:
+                pos = [xxx[0] for xxx in self.modelparameters].index(par)
+                # Check if the existing definition is static, in that case append, otherwise overwrite
+                if 'static' in self.modelparameters[pos].type:
+                    self._userModel().logger.debug("Creating extra parameter specification for par: " + par + " (" + str(vals) + ")")
+                    self.modelparameters.append(self.ParamType(name=par,stack=vals[0],type=vals[1],default=float(vals[2])))
+                else:
+                    self._userModel().logger.debug("Updating existing parameter specification for par: " + par + " (" + str(vals) + ")")
+                    self.modelparameters[pos] = self.ParamType(name=par,stack=vals[0],type=vals[1],default=float(vals[2]))
+            else:
+                self._userModel().logger.debug("Creating parameter specification for par: " + par + " (" + str(vals) + ")")
+                self.modelparameters.append(self.ParamType(name=par,stack=vals[0],type=vals[1],default=float(vals[2])))
         else:
             logging.error("Parameter line in ini not valid: " + aline)
 
-    # Add the summary/statistics variable to the class
-    # self._addAttributeToClass("summap",self._userModel().clone)
 
     # Now gather all the csv/tss/txt etc timeseries output objects
     # Print .ini defined outputmaps per timestep
@@ -1623,8 +1634,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             mapje=readmap(path)
             return mapje
         else:
+            print verbose
             if verbose:
-                self.logger.warn("Forcing data (" + path + ") for timestep not present, returning " + str(default))
+                self.logger.debug("Forcing data (" + path + ") for timestep not present, returning " + str(default))
             return scalar(default)
     elif style == 2: # Assuming they are set in memory by the API
         # first get basename (last bit of path)

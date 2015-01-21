@@ -81,10 +81,10 @@ class WflowModel(DynamicModel):
       modelparameters = []
 
       #Static model parameters
-      modelparameters.append(self.ParamType(name="Altitude",stack="wflow_dem.map",type="staticmap",default=0.0))
+      modelparameters.append(self.ParamType(name="Altitude",stack="staticmaps/wflow_dem.map",type="staticmap",default=0.0))
 
       # Meteo and other forcing
-      modelparameters.append(self.ParamType(name="Temperature",stack="TEMP",type="timeseries",default=10.0))
+      modelparameters.append(self.ParamType(name="Temperature",stack="inmaps/TEMP",type="timeseries",default=10.0))
 
       return modelparameters
 

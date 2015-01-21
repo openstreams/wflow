@@ -322,16 +322,16 @@ class WflowModel(DynamicModel):
         """
         modelparameters = []
 
-        #Static model parameters
-        modelparameters.append(self.ParamType(name="RunoffGeneratingGWPerc",stack="RunoffGeneratingGWPerc.tbl",type="static",default=0.1))
+        #Static model parameters e.g.
+        #modelparameters.append(self.ParamType(name="RunoffGeneratingGWPerc",stack="intbl/RunoffGeneratingGWPerc.tbl",type="static",default=0.1))
 
         # Meteo and other forcing
-        modelparameters.append(self.ParamType(name="Precipitation",stack="P",type="timeseries",default=0.0))
-        modelparameters.append(self.ParamType(name="PotenEvap",stack="PET",type="timeseries",default=0.0))
-        modelparameters.append(self.ParamType(name="Temperature",stack="TEMP",type="timeseries",default=10.0))
-        modelparameters.append(self.ParamType(name="Inflow",stack="IF",type="timeseries",default=0.0))
+        modelparameters.append(self.ParamType(name="Precipitation",stack="inmaps/P",type="timeseries",default=0.0))
+        modelparameters.append(self.ParamType(name="PotenEvap",stack="inmaps/PET",type="timeseries",default=0.0))
+        modelparameters.append(self.ParamType(name="Temperature",stack="inmaps/TEMP",type="timeseries",default=10.0))
+        modelparameters.append(self.ParamType(name="Inflow",stack="inmaps/IF",type="timeseries",default=0.0))
 
-        #etc...
+
         return modelparameters
 
 
