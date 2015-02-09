@@ -1198,22 +1198,22 @@ class WflowModel(DynamicModel):
         # - self.MaxReinFilt: a map with reinfilt locations (usually the river mak) can be supplied)
         # - take into account that the river may not cover the whole cell
         if self.reInfilt:
-            Reinfilt = min(self.MaxReinfilt,max(0, min(SurfaceWater * self.RiverWidth/self.reallength * 0.9,
+            self.reinfiltwater = min(self.MaxReinfilt,max(0, min(SurfaceWater * self.RiverWidth/self.reallength * 0.9,
                                                        min(self.InfiltCapSoil * (1.0 - self.PathFrac), UStoreCapacity))))
-            self.CumReinfilt = self.CumReinfilt + Reinfilt
-            self.UStoreDepth = self.UStoreDepth + Reinfilt
+            self.CumReinfilt = self.CumReinfilt + self.reinfiltwater
+            self.UStoreDepth = self.UStoreDepth + self.reinfiltwater
         else:
-            Reinfilt = self.ZeroMap
+            self.reinfiltwater = self.ZeroMap
 
         # The MAx here may lead to watbal error. Howvere, if inwaterMMM becomes < 0, the kinematic wave becomes very slow......
-        self.InwaterMM = max(0.0,self.ExfiltWater + self.ExcessWater + self.SubCellRunoff + self.SubCellGWRunoff + self.RunoffOpenWater + self.BaseFlow - Reinfilt - self.ActEvapOpenWater)
+        self.InwaterMM = max(0.0,self.ExfiltWater + self.ExcessWater + self.SubCellRunoff + self.SubCellGWRunoff + self.RunoffOpenWater + self.BaseFlow - self.reinfiltwater - self.ActEvapOpenWater)
         self.Inwater = self.InwaterMM * self.ToCubic  # m3/s
 
         self.ExfiltWaterCubic = self.ExfiltWater * self.ToCubic
         self.SubCellGWRunoffCubic = self.SubCellGWRunoff * self.ToCubic
         self.SubCellRunoffCubic = self.SubCellRunoff * self.ToCubic
         self.InfiltExcessCubic = self.InfiltExcess * self.ToCubic
-        self.ReinfiltCubic = -1.0 * Reinfilt * self.ToCubic
+        self.ReinfiltCubic = -1.0 * self.reinfiltwater * self.ToCubic
         self.Inwater = self.Inwater + self.Inflow  # Add abstractions/inflows in m^3/sec
 
         ##########################################################################
@@ -1294,7 +1294,7 @@ class WflowModel(DynamicModel):
         # Water budget: Need to make this into seperate budgets
         #self.watbal = self.CumPrec- self.CumEvap - self.CumInt - self.CumInwaterMM - DeltaStorage  - self.CumOutFlow + self.CumIF
         self.SoilWatbal = self.ActInfilt - self.ActEvap  -self.ExfiltWater  +\
-                      self.SubCellGWRunoff - self.BaseFlow + Reinfilt - \
+                      self.SubCellGWRunoff - self.BaseFlow + self.reinfiltwater - \
                       self.DeltaStorage - \
                       self.FirstZoneFlux + CellInFlow
 

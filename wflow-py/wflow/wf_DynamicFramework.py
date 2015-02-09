@@ -1312,8 +1312,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       Supplies the time epoch as a CF string
       Output:
          - current model time (since start of the run)
-
-
       """
       epoch = time.gmtime(0)
 
