@@ -24,6 +24,9 @@ class wflowbmi(object):
         # The current pcraster framework needs a max number of timesteps :-(
         # This cannot be avoided at the moment (needs a rework)
         # set to 10000 for now
+        # .. todo::
+        #       Get name of module from ini file name
+
         maxNrSteps = 10000
         if "wflow_sbm.ini" in configfile:
             import wflow_sbm as wf
@@ -68,6 +71,16 @@ class wflowbmi(object):
             self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps -1)
             self.currenttimestep = self.currenttimestep + nrsteps
 
+
+
+    def get_time_units(self):
+        """
+
+        :return: time units as a CF convention string (http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/build/cf-conventions.html#time-coordinate)
+
+        """
+
+        return self.dynModel.wf_supplyEpoch()
 
 
     def get_var_count(self):
