@@ -247,7 +247,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
   def __init__(self, userModel, lastTimeStep=0, firstTimestep=1,datetimestart=dt.datetime(1990,01,01),timestepsecs=86400):
     frameworkBase.FrameworkBase.__init__(self)
 
-    self.ParamType = namedtuple("ParamType", "name stack type default")
+    self.ParamType = namedtuple("ParamType", "name stack type default verbose")
     self.modelparameters = [] # list of model parameters
     self.exchnageitems = wf_exchnageVariables()
     self.setQuiet(True)
@@ -327,14 +327,14 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 if par.type == 'timeseries':
                     if not hasattr(self._userModel(),par.name):
                         self._userModel().logger.info("Adding " + par.name + " to model.")
-                    theparmap = self.wf_readmap(os.path.join(self._userModel().caseName,par.stack), par.default)
+                    theparmap = self.wf_readmap(os.path.join(self._userModel().caseName,par.stack), par.default,verbose=par.verbose)
                     theparmap = cover(theparmap,par.default)
                     setattr(self._userModel(),par.name,theparmap)
 
                 if par.type == 'monthlyclim':
                     if not hasattr(self._userModel(),par.name):
                         self._userModel().logger.info("Adding " + par.name + " to model.")
-                    theparmap = self.wf_readmapClimatology(os.path.join(self._userModel().caseName,par.stack) ,kind=1, default=par.default, verbose=True)
+                    theparmap = self.wf_readmapClimatology(os.path.join(self._userModel().caseName,par.stack) ,kind=1, default=par.default, verbose=par.verbose)
                     theparmap = cover(theparmap,par.default)
                     setattr(self._userModel(),par.name,theparmap)
 
@@ -347,7 +347,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 if par.type == 'dailyclim':
                     if not hasattr(self._userModel(),par.name):
                         self._userModel().logger.info(par.name + " is not defined yet, adding anyway.")
-                    theparmap = self.wf_readmapClimatology(os.path.join(self._userModel().caseName,par.stack) ,kind=2, default=par.default, verbose=True)
+                    theparmap = self.wf_readmapClimatology(os.path.join(self._userModel().caseName,par.stack) ,kind=2, default=par.default, verbose=par.verbose)
                     setattr(self._userModel(),par.name,theparmap)
 
 
@@ -549,13 +549,16 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
 
     # Get model parameters from model object
-    self.modelparameters = self._userModel().parameters()
+    if hasattr(self._userModel(),"parameters"):
+        self.modelparameters = self._userModel().parameters()
+    else:
+        self.modelparameters = []
     # Read extra model parameters from ini file
     modpars =  configsection(self._userModel().config,"modelparameters")
     for par in modpars:
         aline = self._userModel().config.get("modelparameters",par)
         vals = aline.split(',')
-        if len(vals) == 3:
+        if len(vals) == 4:
             # check if par already present
             present = par in [xxx[0] for xxx in self.modelparameters]
             if present:
@@ -563,13 +566,13 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 # Check if the existing definition is static, in that case append, otherwise overwrite
                 if 'static' in self.modelparameters[pos].type:
                     self._userModel().logger.debug("Creating extra parameter specification for par: " + par + " (" + str(vals) + ")")
-                    self.modelparameters.append(self.ParamType(name=par,stack=vals[0],type=vals[1],default=float(vals[2])))
+                    self.modelparameters.append(self.ParamType(name=par,stack=vals[0],type=vals[1],default=float(vals[2])),silent=vals[3])
                 else:
                     self._userModel().logger.debug("Updating existing parameter specification for par: " + par + " (" + str(vals) + ")")
-                    self.modelparameters[pos] = self.ParamType(name=par,stack=vals[0],type=vals[1],default=float(vals[2]))
+                    self.modelparameters[pos] = self.ParamType(name=par,stack=vals[0],type=vals[1],default=float(vals[2]),silent=vals[3])
             else:
                 self._userModel().logger.debug("Creating parameter specification for par: " + par + " (" + str(vals) + ")")
-                self.modelparameters.append(self.ParamType(name=par,stack=vals[0],type=vals[1],default=float(vals[2])))
+                self.modelparameters.append(self.ParamType(name=par,stack=vals[0],type=vals[1],default=float(vals[2])),silent=vals[3])
         else:
             logging.error("Parameter line in ini not valid: " + aline)
 
@@ -1298,16 +1301,27 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       
       Output:
          - current model time (since start of the run)
-      
-      .. todo::
-          
-          Get timestep info from from config file
+
           
       """
       seconds_since_epoch = time.mktime(self.currentdatetime.timetuple())
       return seconds_since_epoch
 
-         
+  def wf_supplyEpoch(self):
+      """
+      Supplies the time epoch as a CF string
+      Output:
+         - current model time (since start of the run)
+
+
+      """
+      epoch = time.gmtime(0)
+
+      epochstr = 'seconds since %04d-%02d-%02d %02d:%02d:%02d.0 00:00' % (epoch.tm_year, epoch.tm_mon, epoch.tm_mday, epoch.tm_hour,epoch.tm_min, epoch.tm_sec)
+      return epochstr
+
+
+
   def wf_supplyRowCol(self,mapname,xcor,ycor):
       """ 
       returns a tuple (Row,Col) for the given X and y coordinate
@@ -1634,7 +1648,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             mapje=readmap(path)
             return mapje
         else:
-            print verbose
             if verbose:
                 self.logger.debug("Forcing data (" + path + ") for timestep not present, returning " + str(default))
             return scalar(default)

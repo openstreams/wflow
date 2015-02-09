@@ -1,14 +1,13 @@
 #!/usr/bin/python
 
 """
-Definition of the wflow_sceleton model.
+Sceleton of a wflow_vegetation model.
 ---------------------------------------
 
-This simple model calculates soil temperature using
-air temperature as a forcing.
+
 
 Usage:
-wflow_sceleton  -C case -R Runid -c inifile
+wflow_vegatation  -C case -R Runid -c inifile
 
     -C: set the name  of the case (directory) to run
     
@@ -104,7 +103,7 @@ class WflowModel(DynamicModel):
       
       :var TSoil: Temperature of the soil [oC]
       """
-      states = ['TSoil']
+      states = ['RootingDepth','LAI']
       
       return states
       
@@ -206,7 +205,8 @@ class WflowModel(DynamicModel):
 
       self.wf_updateparameters() # read the temperature map fo each step (see parameters())
 
-      self.TSoil = self.TSoil + 0.1125 * (self.Temperature - self.TSoil) * self.timestepsecs/self.basetimestep
+      self.LAI = self.LAI * 0.9
+      self.RootingDepth = self.LAI * 0.6
       
       # reporting of maps and csv timeseries is done by the framework (see ini file)
     

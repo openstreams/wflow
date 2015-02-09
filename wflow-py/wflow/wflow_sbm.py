@@ -326,10 +326,10 @@ class WflowModel(DynamicModel):
         #modelparameters.append(self.ParamType(name="RunoffGeneratingGWPerc",stack="intbl/RunoffGeneratingGWPerc.tbl",type="static",default=0.1))
 
         # Meteo and other forcing
-        modelparameters.append(self.ParamType(name="Precipitation",stack="inmaps/P",type="timeseries",default=0.0))
-        modelparameters.append(self.ParamType(name="PotenEvap",stack="inmaps/PET",type="timeseries",default=0.0))
-        modelparameters.append(self.ParamType(name="Temperature",stack="inmaps/TEMP",type="timeseries",default=10.0))
-        modelparameters.append(self.ParamType(name="Inflow",stack="inmaps/IF",type="timeseries",default=0.0))
+        modelparameters.append(self.ParamType(name="Precipitation",stack="inmaps/P",type="timeseries",default=0.0,verbose=True))
+        modelparameters.append(self.ParamType(name="PotenEvap",stack="inmaps/PET",type="timeseries",default=0.0,verbose=True))
+        modelparameters.append(self.ParamType(name="Temperature",stack="inmaps/TEMP",type="timeseries",default=10.0,verbose=True))
+        modelparameters.append(self.ParamType(name="Inflow",stack="inmaps/IF",type="timeseries",default=0.0,verbose=False))
 
 
         return modelparameters
@@ -650,6 +650,10 @@ class WflowModel(DynamicModel):
             max(0.0001, windowaverage(self.Slope, celllength() * 4.0))) ** (-0.1875) * self.N ** (0.375)
         # Use supplied riverwidth if possible, else calulate
         self.RiverWidth = ifthenelse(self.RiverWidth <= 0.0, W, self.RiverWidth)
+        # Only allow rinfiltration in rover cells
+        self.MaxReinfilt = self.ZeroMap
+
+        self.MaxReinfilt = ifthenelse(self.River, self.ZeroMap + 999.0, self.ZeroMap)
 
 
 
@@ -952,13 +956,7 @@ class WflowModel(DynamicModel):
         self.OrgStorage = self.UStoreDepth + self.FirstZoneDepth + self.LowerZoneStorage
         self.OldCanopyStorage = self.CanopyStorage
         self.PotEvap = self.PotenEvap  #
-        #TODO: Snow modelling if enabled _ need to be moved as it breaks the scalar input
-        """
-        .. todo::
-        
-            Snow modelling if enabled _ needs to be moved as it breaks the scalar input
 
-        """
         if self.modelSnow:
             self.TSoil = self.TSoil + self.w_soil * (self.Temperature - self.TSoil)
             # return Snow,SnowWater,SnowMelt,RainFall
@@ -1196,8 +1194,12 @@ class WflowModel(DynamicModel):
         self.CumSurfaceWater = self.CumSurfaceWater + SurfaceWater
 
         # Estimate water that may re-infiltrate
+        # - Never more that 90% of the available water
+        # - self.MaxReinFilt: a map with reinfilt locations (usually the river mak) can be supplied)
+        # - take into account that the river may not cover the whole cell
         if self.reInfilt:
-            Reinfilt = max(0, min(SurfaceWater, min(self.InfiltCapSoil, UStoreCapacity)))
+            Reinfilt = min(self.MaxReinfilt,max(0, min(SurfaceWater * self.RiverWidth/self.reallength * 0.9,
+                                                       min(self.InfiltCapSoil * (1.0 - self.PathFrac), UStoreCapacity))))
             self.CumReinfilt = self.CumReinfilt + Reinfilt
             self.UStoreDepth = self.UStoreDepth + Reinfilt
         else:

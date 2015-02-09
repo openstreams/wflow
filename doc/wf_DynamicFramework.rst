@@ -116,19 +116,21 @@ Settings in the modelparameters section
 ---------------------------------------
 
 Most of the time this section is not needed as this will mostly be configured
-in the python code by the model developer. Howevere, in some case this section can be used
-to for example force the model to read RootingDepth from an external data source.
+in the python code by the model developer. However, in some case this section can be used
+alter the modell for example force the model to read RootingDepth from an external data source.
 
 The format of entries in this section is as follows::
 
     name=stack,type,default
     # example:
-    # RootingDepth=monthlyclim/ROOT,monthyclim,100
+    # RootingDepth=monthlyclim/ROOT,monthyclim,100,1
 
 + name - Name of the parameter (internal variable, without the self.)
 + stack - Name of the mapstack (representation on disk or in mem) relative to case
 + type - Type of parameter (default = static)
 + default - Default value if map/tbl is not present
++ verbose - If set to 1 (True) the maps a log log message will be generated is a default values is used
+             instead of a map
 
 Possible parameter types (the second option)are:
 
@@ -143,9 +145,9 @@ Possible parameter types (the second option)are:
 Example::
 
     [modelparameters]
-    RootingDepth=monthlyclim/ROOTS,monthlyclim,75
+    RootingDepth=monthlyclim/ROOTS,monthlyclim,75,0
     # Force the model to read monthly climatology of P
-    Precipitation=inmaps/P,monthlyclim,0.0
+    Precipitation=inmaps/P,monthlyclim,0.0,1
 
 
 Settings in the summary_* sections

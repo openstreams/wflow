@@ -61,6 +61,14 @@ required data:
     to support data preparation.
 
 
+.. note::
+
+    Within the earth2observe project tools are being made to automatically download
+    and downscale reanalysis date to be used as forcing to the wflow models. See
+    https://code.google.com/p/e2o-downscaling-tools/
+
+
+
 Depending on the formats of the data some converting of data may be needed. The 
 procedure described below assumes you have the main maps available in pcraster
 format. If that is not the case free tools like Qgis (www.qgis.org) and gdal can be
