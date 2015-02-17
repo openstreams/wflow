@@ -10,6 +10,22 @@ Welcome to wflow's documentation!
       This documentation is for version |version| of wflow, release |release|
       This documentation was generated |today|
 
+
+.. note::
+
+    wflow is released under version 3 of the GPL
+
+    wflow uses pcraster/python (see http://www.pcraster.eu) as it's calculation engine.
+
+    In order to tun the python code you must install the following python packages:
+
+    + pcraster
+    + netcdf4
+    + numpy
+    + matplotlib
+    + gdal
+
+
 Introduction
 ============
 
@@ -20,7 +36,7 @@ set of python programs that can be run on the command line and perform
 hydrological simulations. The models are based on the PCRaster python
 framework. In wflow this framework is extended (the ``wf_DynamicFramework``
 class) so that models build using the framework can be controlled using
-the API. Links to OpenMI (www.openmi.org) and OpenDAP (www.openda.org) 
+the API. Links to OpenMI (www.openmi.org), BMI and OpenDA (www.openda.org)
 are being tested.
 
 The  wflow distributed hydrological model platform currently includes
@@ -53,12 +69,14 @@ linked as part of larger modelling systems:
     WFLOWAPI -> OpenMI  [dir=both];
     ModelX -> OpenMI;
     ModelY -> OpenMI;
+    ModelY -> BMI;
     WFLOWAPI -> OpenDA  [dir=both];
     Calibration -> OpenDA;
     Assimilation -> OpenDA;
     WFLOWAPI [shape=square];
     OpenDA [shape=square];
     OpenMI [shape=square];
+    BMI [shape=square];
     "PI" [shape=square];
     dpi=69;
     
