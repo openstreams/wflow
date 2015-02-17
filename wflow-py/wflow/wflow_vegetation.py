@@ -199,8 +199,7 @@ class WflowModel(DynamicModel):
       """
       *Required*
       
-      This is where all the time dependent functions are executed. Time dependent
-      output should also be saved here.
+      This is where all the time dependent functions are executed.
       """
 
       self.wf_updateparameters() # read the temperature map fo each step (see parameters())
