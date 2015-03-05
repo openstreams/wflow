@@ -437,7 +437,12 @@ class wflowbmi_csdms(object):
     def set_value_at_indices(self, long_var_name, inds, src):
         raise NotImplementedError
 
-
+class BmiGridType(object):
+    UNKNOWN = 0
+    UNIFORM = 1
+    RECTILINEAR = 2
+    STRUCTURED = 3
+    UNSTRUCTURED = 4
 
 class BmiRaster(wflowbmi_csdms):
     def get_grid_shape(self, long_var_name):
