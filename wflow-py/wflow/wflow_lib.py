@@ -50,6 +50,7 @@ import netCDF4 as nc4
 import gzip, zipfile
 
 
+
 Verbose=0
 
 def lddcreate_save(lddname,dem,force, corevolume=1E35,catchmentprecipitation=1E35,corearea=1E35,outflowdepth=1E35):
@@ -165,7 +166,7 @@ def getrows():
     Output:
         - nr of rows in the current clonemap as a scalar
     """
-    a = pcr2numpy(celllength(),NaN).shape[0]
+    a = pcr2numpy(celllength(),numpy.nan).shape[0]
     
     return a
 
@@ -179,7 +180,7 @@ def getcols():
     Output:
         - nr of columns in the current clonemap as a scalar
     """
-    a = pcr2numpy(celllength(),NaN).shape[1]
+    a = pcr2numpy(celllength(),numpy.nan).shape[1]
     
     return a   
 
@@ -198,9 +199,9 @@ def getgridparams():
     """
     
     # x and Y are the same for now
-    xy = pcr2numpy(celllength(),NaN)[0,0]
-    xu = pcr2numpy(xcoordinate(1),NaN)[0,0]
-    yu = pcr2numpy(ycoordinate(1),NaN)[0,0]
+    xy = pcr2numpy(celllength(),numpy.nan)[0,0]
+    xu = pcr2numpy(xcoordinate(1),numpy.nan)[0,0]
+    yu = pcr2numpy(ycoordinate(1),numpy.nan)[0,0]
     
     return [xu, yu, xy, xy, getrows(), getcols()]
         
@@ -513,15 +514,15 @@ def getRowColPoint(in_map,xcor,ycor):
     Output:
         - row, column
     """
-    x = pcr2numpy(xcoordinate(boolean(scalar(in_map) + 1.0)),NaN)
-    y = pcr2numpy(ycoordinate(boolean(scalar(in_map) + 1.0)),NaN)
+    x = pcr2numpy(xcoordinate(boolean(scalar(in_map) + 1.0)),numpy.nan)
+    y = pcr2numpy(ycoordinate(boolean(scalar(in_map) + 1.0)),numpy.nan)
     XX = pcr2numpy(celllength(),0.0)
     tolerance = 0.5 # takes a single point
 
     diffx = x - xcor
     diffy = y - ycor
-    col_ =  absolute(diffx) <= (XX[0,0] * tolerance)  # cellsize
-    row_ =  absolute(diffy) <= (XX[0,0] * tolerance)# cellsize
+    col_ =  numpy.absolute(diffx) <= (XX[0,0] * tolerance)  # cellsize
+    row_ =  numpy.absolute(diffy) <= (XX[0,0] * tolerance)# cellsize
     point = (col_ * row_)
     
     
@@ -540,16 +541,16 @@ def getValAtPoint(in_map,xcor,ycor):
     Output:
         - value
     """
-    x = pcr2numpy(xcoordinate(defined(in_map)),NaN)
-    y = pcr2numpy(ycoordinate(defined(in_map)),NaN)
+    x = pcr2numpy(xcoordinate(defined(in_map)),numpy.nan)
+    y = pcr2numpy(ycoordinate(defined(in_map)),numpy.nan)
     XX = pcr2numpy(celllength(),0.0)
-    themap =pcr2numpy(in_map,NaN) 
+    themap =pcr2numpy(in_map,numpy.nan)
     tolerance = 0.5 # takes a single point
 
     diffx = x - xcor
     diffy = y - ycor
-    col_ =  absolute(diffx) <= (XX[0,0] * tolerance)  # cellsize
-    row_ =  absolute(diffy) <= (XX[0,0] * tolerance)# cellsize
+    col_ =  numpy.absolute(diffx) <= (XX[0,0] * tolerance)  # cellsize
+    row_ =  numpy.absolute(diffy) <= (XX[0,0] * tolerance)# cellsize
     point = (col_ * row_)
     pt = point.argmax()
     
@@ -577,8 +578,8 @@ def points_to_map(in_map,xcor,ycor,tolerance):
     """
     point = in_map * 0.0
     
-    x = pcr2numpy(xcoordinate(defined(in_map)),NaN)
-    y = pcr2numpy(ycoordinate(defined(in_map)),NaN)
+    x = pcr2numpy(xcoordinate(defined(in_map)),numpy.nan)
+    y = pcr2numpy(ycoordinate(defined(in_map)),numpy.nan)
     XX = pcr2numpy(celllength(),0.0)
     
     # simple check to use both floats and numpy arrays
@@ -594,9 +595,9 @@ def points_to_map(in_map,xcor,ycor,tolerance):
             print(n)
         diffx = x - xcor[n]
         diffy = y - ycor[n]        
-        col_ =  absolute(diffx) <= (XX[0,0] * tolerance)  # cellsize
-        row_ =  absolute(diffy) <= (XX[0,0] * tolerance)# cellsize
-        point =  point + numpy2pcr(Scalar,((col_ * row_) * (n+1)),NaN)
+        col_ =  numpy.absolute(diffx) <= (XX[0,0] * tolerance)  # cellsize
+        row_ =  numpy.absolute(diffy) <= (XX[0,0] * tolerance)# cellsize
+        point =  point + numpy2pcr(Scalar,((col_ * row_) * (n+1)),numpy.nan)
     
     return ordinal(point)
 
