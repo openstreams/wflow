@@ -436,3 +436,13 @@ class wflowbmi_csdms(object):
 
     def set_value_at_indices(self, long_var_name, inds, src):
         raise NotImplementedError
+
+
+
+class BmiRaster(wflowbmi_csdms):
+    def get_grid_shape(self, long_var_name):
+        raise NotImplementedError
+    def get_grid_spacing(self, long_var_name):
+        raise NotImplementedError
+    def get_grid_origin(self, long_var_name):
+        raise NotImplementedError
