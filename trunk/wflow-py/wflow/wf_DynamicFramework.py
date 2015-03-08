@@ -300,7 +300,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         :return nothing:
         """
-        retval = 0
+
         for par in self.modelparameters:
             if self._userModel()._inInitial():
                 if par.type == 'statictbl':
