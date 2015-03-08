@@ -391,7 +391,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     in the staticmaps directory. next try to
     read a tbl file to match a landuse, catchment and soil map. Returns 
     the default value if the tbl file is not found.
-    
+
+    Finally check of a tbl file exists with a .mult postfix (e.g. Cmax.tbl.mult) and apply the
+    multiplication to the loaded data.
+
     Input:
         -  pathtotbl: full path to table file
         -  landuse: landuse map
@@ -431,10 +434,18 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         
         if resttotal[0,0] < totalzeromap[0,0]:
             self.logger.warn("Not all catchment cells have a value for [" + pathtotbl + "] : " + str(resttotal[0,0]) + "!=" + str(totalzeromap[0,0]))
- 
+
+    # Apply multiplication table if present
+    multname = os.path.dirname(pathtotbl) + ".mult"
+    if os.path.exists(multname):
+        multfac=lookupscalar(multname,landuse,subcatch,soil)
+        rest = rest * multfac
+        self.logger.info("Applying multiplication from table: " + multname)
+
     return rest
     
-  def createRunId(self,intbl="intbl",logfname="wflow.log",NoOverWrite=True,model="model",modelVersion="no version",level=pcrut.logging.DEBUG):   
+
+  def createRunId(self,intbl="intbl",logfname="wflow.log",NoOverWrite=True,model="model",modelVersion="no version",level=pcrut.logging.DEBUG):
     """
     Create runId dir and copy table files to it
     Also changes the working dir to the case/runid directory
