@@ -485,6 +485,17 @@ class wflowbmi_csdms(bmi.Bmi):
 
         return dim[4,5]
 
+   def get_grid_spacing(self, long_var_name):
+        """
+        Only return something for variables with a uniform grid. Otherwise raise ValueError.
+
+        :var long_var_name: identifier of a variable in the model.
+
+        :return the size of a grid cell for each of the dimensions of the given variable, e.g. [width, height]: for a 2D grid cell.
+        """
+        raise NotImplementedError
+
+
     def get_grid_origin(self, long_var_name):
         """
         Only return something for variables with a uniform grid. Otherwise raise ValueError.
@@ -508,10 +519,22 @@ class wflowbmi_csdms(bmi.Bmi):
         Numpy array of doubles: x coordinate of grid cell center for each grid cell, in the same order as the values returned by function get_value.
                          For a rectilinear grid: x coordinate of column center for each column.
         """
-        return self.myModel.xcoordinate(1)
+        return self.myModel.pcr2numpy(self.myModel.xcoordinate(1),0.0)
+
+    def get_grid_y(self, long_var_name):
+        """
+        Only return something for variables with a rectilinear, structured or unstructured grid. Otherwise raise ValueError.
+
+        Input parameters:
+        String long_var_name: identifier of a variable in the model.
+
+        Return value:
+        Numpy array of doubles: x coordinate of grid cell center for each grid cell, in the same order as the values returned by function get_value.
+                         For a rectilinear grid: x coordinate of column center for each column.
+        """
+        return self.myModel.pcr2numpy(self.myModel.ycoordinate(1),0.0)
 
 
-XXXXXXXXXXXXX HIer gebleven
     def get_var_count(self):
         """
         Return number of variables
