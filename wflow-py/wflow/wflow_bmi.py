@@ -242,16 +242,13 @@ class wflowbmi_csdms(bmi.Bmi):
     .. todo::
 
         implement translation of long_var_names
-
     """
-
     def __init__(self):
         """
         Initialises the object
 
-        :return nothing:
+        :return: nothing
         """
-
         self.currenttimestep = 0
         self.name = "undefined"
         self.myModel = None
@@ -260,7 +257,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
     def initialize(self, filename,loglevel=logging.DEBUG):
         """
-        Initialise the model. Shoudl be call before any other method.
+        Initialise the model. Should be call before any other method.
 
         :var filename: full path to the wflow ini file
         :var loglevel: optional loglevel (default == DEBUG)
@@ -270,8 +267,11 @@ class wflowbmi_csdms(bmi.Bmi):
             - the configfile wih be a full path
             - we define the case from the basedir of the configfile
 
+        .. todo::
+
+            Get name of module from ini file name
+
         """
-        retval = 0
         self.currenttimestep = 1
         wflow_cloneMap = 'wflow_subcatch.map'
         datadir = os.path.dirname(filename)
@@ -280,22 +280,22 @@ class wflowbmi_csdms(bmi.Bmi):
         # The current pcraster framework needs a max number of timesteps :-(
         # This cannot be avoided at the moment (needs a rework)
         # set to 10000 for now
-        # .. todo::
-        #       Get name of module from ini file name
-
+        #
         maxNrSteps = 10000
 
         if "wflow_sbm.ini" in filename:
-            import wflow_sbm as wf
+            import wflow.wflow_sbm as wf
             self.name = "wflow_sbm"
         elif "wflow_hbv.ini" in filename:
-            import wflow_sbm as wf
+            import wflow.wflow_sbm as wf
             self.name = "wflow_hbv"
         elif "wflow_routing.ini" in filename:
-            import wflow_routing as wf
+            import wflow.wflow_routing as wf
             self.name = "wflow_routing"
         else:
-            raise ValueError
+            modname = os.path.splitext(os.path.basename(filename))[0]
+            exec "import wflow." + modname + " as wf"
+            self.name = modname
 
 
         self.myModel = wf.WflowModel(wflow_cloneMap, datadir, runid, inifile)
@@ -304,7 +304,6 @@ class wflowbmi_csdms(bmi.Bmi):
         self.dynModel.createRunId(NoOverWrite=0,level=loglevel,model=os.path.basename(filename))
         self.dynModel._runInitial()
         self.dynModel._runResume()
-        return retval
 
     def update(self):
         """
@@ -575,7 +574,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :return: X, Y: ,the lower left corner of the grid.
         """
 
-        return self.dynModel.wf_supplyGridDim()
+        return self.dynModel.wf_supplyGridDim()[0:2]
 
 
     def get_grid_x(self, long_var_name):
