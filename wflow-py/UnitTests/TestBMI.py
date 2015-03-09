@@ -9,8 +9,6 @@ Simple test for wflow bmi framework
 
 class MyTest(unittest.TestCase):
 
-
-
     def testbmirun(self):
         bmiobj = bmi.wflowbmi_csdms()
         bmiobj.initialize('wflow_sceleton/wflow_sceleton.ini')
@@ -57,7 +55,6 @@ class MyTest(unittest.TestCase):
 
         print("-------------- End time: ")
         print(bmiobj.get_end_time())
-
 
         bmiobj.finalize()
 
