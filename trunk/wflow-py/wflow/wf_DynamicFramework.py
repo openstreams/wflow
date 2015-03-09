@@ -40,7 +40,6 @@ logging = None
 
 from pcraster.framework import *
 from wflow_lib import *
-#import scipy.io
 import time
 
 def log_uncaught_exceptions(ex_cls, ex, tb):
@@ -1146,7 +1145,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       Missing value is -999
       """
 
-      x = xcoordinate(boolean(spatial(1.0)))
+      x = xcoordinate((spatial(boolean(1.0))))
       retval = pcr_as_numpy(x)
 
       return retval
@@ -1160,7 +1159,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       Missing value is -999
       """
 
-      y = ycoordinate(boolean(spatial(1.0)))
+      y = ycoordinate((spatial(boolean(1.0))))
       retval = pcr_as_numpy(y)
 
       return retval
