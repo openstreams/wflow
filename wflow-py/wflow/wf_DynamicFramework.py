@@ -1138,6 +1138,66 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       return retval
 
 
+  def wf_supplyMapXAsNumpy(self):
+      """
+
+      :return x-coordinates of the current clone map:
+
+      Missing value is -999
+      """
+
+      x = xcoordinate(boolean(spatial(1.0)))
+      retval = pcr_as_numpy(x)
+
+      return retval
+
+
+  def wf_supplyMapYAsNumpy(self):
+      """
+
+      :return y-coordinates of the current clone map:
+
+      Missing value is -999
+      """
+
+      y = ycoordinate(boolean(spatial(1.0)))
+      retval = pcr_as_numpy(y)
+
+      return retval
+
+
+  def wf_supplyMapZAsNumpy(self):
+      """
+
+      :return z-coordinates of the current clone map:
+
+      Assumes an Altitude map is present, otherwise return empty numpy
+      Missing value is -999
+      """
+
+      if hasattr(self._userModel(), 'Altitude'):
+          retval =  getattr(self._userModel(), 'Altitude')
+
+          return pcr2numpy(retval,-999)
+      else:
+          self.logger.warn("Altitude is not defined in the usermodel, returning empty list")
+          return []
+
+  def wf_supplyMapOrigin(self):
+      """
+
+      :return: lower left corner of the map as X, Y
+
+      """
+      a = boolean(1)
+
+      Y = self.wf_supplyMapYAsNumpy()
+      X = self.wf_supplyMapXAsNumpy()
+
+      return numpy.array([X.flatten.min(),Y.flatten.min()])
+
+
+
   def wf_supplyMapAsPcrMap(self,mapname):
       """
       Returns a pcrmap for the specified map and the current
