@@ -251,6 +251,15 @@ OpenDA
 
    wflow_openda
 
+
+BMI Basic modeling interface
+============================
+.. toctree::
+   :maxdepth: 2
+
+   wflow_bmi
+
+
 Indices and tables
 ==================
 

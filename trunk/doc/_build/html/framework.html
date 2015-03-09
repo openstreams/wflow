@@ -262,7 +262,7 @@ output should also be saved here.</p>
 <dl class="function">
 <dt id="wflow_sceleton.main">
 <tt class="descclassname">wflow_sceleton.</tt><tt class="descname">main</tt><big>(</big><em>argv=None</em><big>)</big><a class="headerlink" href="#wflow_sceleton.main" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>Optional</em></p>
+<dd><p><em>Optional but needed it you want to run the model from the command line</em></p>
 <p>Perform command line execution of the model. This example uses the getopt
 module to parse the command line options.</p>
 <p>The user can set the caseName, the runDir, the timestep and the configfile.</p>
@@ -354,10 +354,10 @@ module to parse the command line options.</p>
       <span class="n">modelparameters</span> <span class="o">=</span> <span class="p">[]</span>
 
       <span class="c">#Static model parameters</span>
-      <span class="n">modelparameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ParamType</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Altitude&quot;</span><span class="p">,</span><span class="n">stack</span><span class="o">=</span><span class="s">&quot;wflow_dem.map&quot;</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="s">&quot;staticmap&quot;</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="mf">0.0</span><span class="p">))</span>
+      <span class="n">modelparameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ParamType</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Altitude&quot;</span><span class="p">,</span><span class="n">stack</span><span class="o">=</span><span class="s">&quot;staticmaps/wflow_dem.map&quot;</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="s">&quot;staticmap&quot;</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="mf">0.0</span><span class="p">))</span>
 
       <span class="c"># Meteo and other forcing</span>
-      <span class="n">modelparameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ParamType</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Temperature&quot;</span><span class="p">,</span><span class="n">stack</span><span class="o">=</span><span class="s">&quot;TEMP&quot;</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="s">&quot;timeseries&quot;</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="mf">10.0</span><span class="p">))</span>
+      <span class="n">modelparameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ParamType</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Temperature&quot;</span><span class="p">,</span><span class="n">stack</span><span class="o">=</span><span class="s">&quot;inmaps/TEMP&quot;</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="s">&quot;timeseries&quot;</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="mf">10.0</span><span class="p">))</span>
 
       <span class="k">return</span> <span class="n">modelparameters</span>
 
@@ -488,7 +488,7 @@ module to parse the command line options.</p>
 
 <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>  
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    *Optional*</span>
+<span class="sd">    *Optional but needed it you want to run the model from the command line*</span>
 <span class="sd">    </span>
 <span class="sd">    Perform command line execution of the model. This example uses the getopt</span>
 <span class="sd">    module to parse the command line options.</span>

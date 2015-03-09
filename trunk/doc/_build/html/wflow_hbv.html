@@ -573,6 +573,15 @@ information (parameters) and sets-up the variables used in modelling.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="wflow_hbv.WflowModel.parameters">
+<tt class="descname">parameters</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_hbv.WflowModel.parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define all model parameters here that the framework should handle for the model
+See wf_updateparameters and the parameters section of the ini file
+If you use this make sure to all wf_updateparameters at the start of the dynamic section
+and at the start/end of the initial section</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="wflow_hbv.WflowModel.resume">
 <tt class="descname">resume</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_hbv.WflowModel.resume" title="Permalink to this definition">¶</a></dt>
 <dd><p>read initial state maps (they are output of a previous call to suspend())</p>

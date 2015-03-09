@@ -50,7 +50,9 @@ intbl
     Directory holding the lookup tables. These hold the model parameters
     specified per landuse/soiltype class. Note that you can use the -i
     option to specify an alternative name (e.g. to support an
-    alternative model calibration)
+    alternative model calibration). Optionally a .tbl.mult file can be given
+    for each parameter. This file is used after loading the .tbl file or
+    .map file to multiply the results with. Can be used for calibration etc.
 
 intss
     Directory holding the scalar input timeseries. Scalar input data is

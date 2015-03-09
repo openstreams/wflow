@@ -67,6 +67,7 @@
 <li><a class="reference internal" href="#faq">FAQ</a></li>
 <li><a class="reference internal" href="#release-notes">Release notes</a></li>
 <li><a class="reference internal" href="#openda">OpenDA</a></li>
+<li><a class="reference internal" href="#bmi-basic-modeling-interface">BMI Basic modeling interface</a></li>
 <li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
 <li><a class="reference internal" href="#references">References</a></li>
 <li><a class="reference internal" href="#todo">TODO</a></li>
@@ -111,7 +112,20 @@
 <div>$Id$
 $HeadURL$</div></blockquote>
 <p class="last">This documentation is for version 1.0-fin of wflow, release 1.0-RC8-fin-203-210
-This documentation was generated January 20, 2015</p>
+This documentation was generated March 09, 2015</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>wflow is released under version 3 of the GPL</p>
+<p>wflow uses pcraster/python (see <a class="reference external" href="http://www.pcraster.eu">http://www.pcraster.eu</a>) as it&#8217;s calculation engine.</p>
+<p>In order to tun the python code you must install the following python packages:</p>
+<ul class="last simple">
+<li>pcraster</li>
+<li>netcdf4</li>
+<li>numpy</li>
+<li>matplotlib</li>
+<li>gdal</li>
+</ul>
 </div>
 <div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
@@ -122,7 +136,7 @@ set of python programs that can be run on the command line and perform
 hydrological simulations. The models are based on the PCRaster python
 framework. In wflow this framework is extended (the <tt class="docutils literal"><span class="pre">wf_DynamicFramework</span></tt>
 class) so that models build using the framework can be controlled using
-the API. Links to OpenMI (www.openmi.org) and OpenDAP (www.openda.org)
+the API. Links to OpenMI (www.openmi.org), BMI and OpenDA (www.openda.org)
 are being tested.</p>
 <p>The  wflow distributed hydrological model platform currently includes
 the following models:</p>
@@ -138,7 +152,7 @@ the following models:</p>
 <p>The low level api and links to other frameworks allow the models to be
 linked as part of larger modelling systems:</p>
 <p class="graphviz">
-<img src="_images/graphviz-9b4734543e9bdd1070fcd22e7c9b0cc065e5c72e.png" alt="digraph Linking {
+<img src="_images/graphviz-4cc1ea9819bf971d70a5154f145abb34810f46f7.png" alt="digraph Linking {
 WFLOW_HBV -&gt; WFLOWAPI;
 WFLOW_SBM -&gt; WFLOWAPI;
 WFLOWAPI -&gt; &quot;PI&quot;  [dir=both];
@@ -146,12 +160,14 @@ WFLOWAPI -&gt; &quot;PI&quot;  [dir=both];
 WFLOWAPI -&gt; OpenMI  [dir=both];
 ModelX -&gt; OpenMI;
 ModelY -&gt; OpenMI;
+ModelY -&gt; BMI;
 WFLOWAPI -&gt; OpenDA  [dir=both];
 Calibration -&gt; OpenDA;
 Assimilation -&gt; OpenDA;
 WFLOWAPI [shape=square];
 OpenDA [shape=square];
 OpenMI [shape=square];
+BMI [shape=square];
 &quot;PI&quot; [shape=square];
 dpi=69;
 }" />
@@ -426,7 +442,7 @@ found at
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="release_notes.html">Release notes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="release_notes.html#trunc">Trunc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_notes.html#trunk">Trunk</a></li>
 <li class="toctree-l2"><a class="reference internal" href="release_notes.html#version-1-0rc7">Version 1.0RC7</a></li>
 <li class="toctree-l2"><a class="reference internal" href="release_notes.html#version-1-0-rc5">Version 1.0 RC5</a></li>
 <li class="toctree-l2"><a class="reference internal" href="release_notes.html#version-1-0-rc4">Version 1.0 RC4</a></li>
@@ -440,6 +456,19 @@ found at
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="wflow_openda.html">Linking wflow to OpenDA</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="bmi-basic-modeling-interface">
+<h2>BMI Basic modeling interface<a class="headerlink" href="#bmi-basic-modeling-interface" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wflow_bmi.html">The wflow_bmi interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wflow_bmi.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_bmi.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wflow_bmi.html#module-wflow_bmi">wflow_bmi module documentation</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -465,21 +494,6 @@ initial reference to northern Costa Rica.,, 2006.</td></tr>
 </div>
 <div class="section" id="todo">
 <h2>TODO<a class="headerlink" href="#todo" title="Permalink to this headline">¶</a></h2>
-<div class="admonition-todo admonition">
-<p class="first admonition-title">Todo</p>
-<p class="last">Add checking for missing values</p>
-</div>
-<p class="todo-source">(The <a class="reference internal" href="wf_DynamicFramework.html#index-0"><em>original entry</em></a> is located in  C:\repos\wflow\wflow-py\wflow\wf_DynamicFramework.py:docstring of wf_DynamicFramework.wf_DynamicFramework.readtblDefault, line 17.)</p>
-<div class="admonition-todo admonition">
-<p class="first admonition-title">Todo</p>
-<p class="last">Save maps to be used in memory at startup and do not call the ini file each time</p>
-</div>
-<p class="todo-source">(The <a class="reference internal" href="wf_DynamicFramework.html#index-1"><em>original entry</em></a> is located in  C:\repos\wflow\wflow-py\wflow\wf_DynamicFramework.py:docstring of wf_DynamicFramework.wf_DynamicFramework.wf_savedynMaps, line 3.)</p>
-<div class="admonition-todo admonition">
-<p class="first admonition-title">Todo</p>
-<p class="last">Get timestep info from from config file</p>
-</div>
-<p class="todo-source">(The <a class="reference internal" href="wf_DynamicFramework.html#index-2"><em>original entry</em></a> is located in  C:\repos\wflow\wflow-py\wflow\wf_DynamicFramework.py:docstring of wf_DynamicFramework.wf_DynamicFramework.wf_supplyCurrentTime, line 7.)</p>
 <div class="admonition-todo admonition">
 <p class="first admonition-title">Todo</p>
 <p class="last">rewrite and simplify
@@ -527,6 +541,16 @@ the flow trough the soil reservoirs. Basically make three layers:</p>
 <p class="last">add routing state vars</p>
 </div>
 <p class="todo-source">(The <a class="reference internal" href="wflow_gr4.html#index-0"><em>original entry</em></a> is located in  C:\repos\wflow\wflow-py\wflow\wflow_gr4.py:docstring of wflow_gr4.WflowModel.stateVariables, line 10.)</p>
+<div class="admonition-todo admonition">
+<p class="first admonition-title">Todo</p>
+<p class="last">Add checking for missing values</p>
+</div>
+<p class="todo-source">(The <a class="reference internal" href="wf_DynamicFramework.html#index-0"><em>original entry</em></a> is located in  C:\repos\wflow\wflow-py\wflow\wf_DynamicFramework.py:docstring of wf_DynamicFramework.wf_DynamicFramework.readtblDefault, line 20.)</p>
+<div class="admonition-todo admonition">
+<p class="first admonition-title">Todo</p>
+<p class="last">Save maps to be used in memory at startup and do not call the ini file each time</p>
+</div>
+<p class="todo-source">(The <a class="reference internal" href="wf_DynamicFramework.html#index-1"><em>original entry</em></a> is located in  C:\repos\wflow\wflow-py\wflow\wf_DynamicFramework.py:docstring of wf_DynamicFramework.wf_DynamicFramework.wf_savedynMaps, line 3.)</p>
 </div>
 </div>
 
