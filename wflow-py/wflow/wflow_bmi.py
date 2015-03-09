@@ -235,11 +235,11 @@ class wflowbmi_csdms(bmi.Bmi):
     """
     csdms BMI implementation for pcraster/python models
 
-    todo::
+    .. todo::
 
         implement translation of units
 
-    todo::
+    .. todo::
 
         implement translation of long_var_names
 
