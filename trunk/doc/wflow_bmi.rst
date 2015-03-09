@@ -19,7 +19,7 @@ Configuration
 -------------
 
 Mapping of long_var_name to model variables not yet implemented. The long_var_name
-should be model vr names for now
+should be model for names for now
 
 
 wflow_bmi module documentation

@@ -234,6 +234,15 @@ class wflowbmi_ligth(object):
 class wflowbmi_csdms(bmi.Bmi):
     """
     csdms BMI implementation for pcraster/python models
+
+    todo::
+
+        implement translation of units
+
+    todo::
+
+        implement translation of long_var_names
+
     """
 
     def __init__(self):
