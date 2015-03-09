@@ -42,7 +42,6 @@ Issues:
  .. todo::
 
      rewrite and simplify
-     convert log to XML
 
 $Author: schelle $
 $Id: wflow_adapt.py 915 2014-02-10 07:33:56Z schelle $

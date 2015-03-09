@@ -123,6 +123,8 @@ class netcdfoutput():
         self.bufflst={}
 
         globmetadata.update(metadata)
+
+
         prepare_nc(self.ncfile,timeList,x,y,globmetadata,logger,Format=netcdfformat)
 
 
@@ -198,7 +200,13 @@ class netcdfinput():
         logging: python logging object
         vars: list of variables to get from file
         """
-        self.dataset = netCDF4.Dataset(netcdffile,mode='r')
+
+        if os.path.exists(netcdffile):
+            self.dataset = netCDF4.Dataset(netcdffile,mode='r')
+        else:
+            logging.error(netcdffile + " not found!")
+            exit(ValueError)
+
         logging.info("Reading input from netCDF file: " + netcdffile + ": " + str(self.dataset).replace('\n',' '))
         self.alldat ={}
         a = pcr2numpy(cover(0.0),0.0).flatten()

@@ -538,7 +538,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         for ms in mstacks:
             varlst.append(os.path.basename(configget(self._userModel().config,'inputmapstacks',ms,'None')))
         self.logger.debug("Found following input variables to get from netcdf file: " + str(varlst))
-        self.NcInput = netcdfinput('inmaps.nc',self.logger,varlst)
+        self.NcInput = netcdfinput(self.ncfile,self.logger,varlst)
 
     if self.ncoutfile != 'None': # Ncoutput
         buffer = int(configget(self._userModel().config,'framework','netcdfwritebuffer',"50"))
