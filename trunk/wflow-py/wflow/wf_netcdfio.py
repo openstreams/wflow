@@ -204,7 +204,7 @@ class netcdfinput():
         if os.path.exists(netcdffile):
             self.dataset = netCDF4.Dataset(netcdffile,mode='r')
         else:
-            logging.error(netcdffile + " not found!")
+            logging.error(os.path.abspath(netcdffile) + " not found!")
             exit(ValueError)
 
         logging.info("Reading input from netCDF file: " + netcdffile + ": " + str(self.dataset).replace('\n',' '))

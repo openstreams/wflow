@@ -129,7 +129,7 @@ The format of entries in this section is as follows::
 + stack - Name of the mapstack (representation on disk or in mem) relative to case
 + type - Type of parameter (default = static)
 + default - Default value if map/tbl is not present
-+ verbose - If set to 1 (True) the maps a log log message will be generated is a default values is used
++ verbose - If set to 1 (True) the maps a log message will be generated is a default values is used
              instead of a map
 
 Possible parameter types (the second option)are:
