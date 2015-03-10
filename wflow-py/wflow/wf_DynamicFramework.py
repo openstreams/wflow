@@ -538,7 +538,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         for ms in mstacks:
             varlst.append(os.path.basename(configget(self._userModel().config,'inputmapstacks',ms,'None')))
         self.logger.debug("Found following input variables to get from netcdf file: " + str(varlst))
-        self.NcInput = netcdfinput(self.ncfile,self.logger,varlst)
+        self.NcInput = netcdfinput(os.path.join(caseName,self.ncfile),self.logger,varlst)
 
     if self.ncoutfile != 'None': # Ncoutput
         buffer = int(configget(self._userModel().config,'framework','netcdfwritebuffer',"50"))
@@ -576,13 +576,13 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 # Check if the existing definition is static, in that case append, otherwise overwrite
                 if 'static' in self.modelparameters[pos].type:
                     self._userModel().logger.debug("Creating extra parameter specification for par: " + par + " (" + str(vals) + ")")
-                    self.modelparameters.append(self.ParamType(name=par,stack=vals[0],type=vals[1],default=float(vals[2])),silent=vals[3])
+                    self.modelparameters.append(self.ParamType(name=par,stack=vals[0],type=vals[1],default=float(vals[2])),verbose=vals[3])
                 else:
                     self._userModel().logger.debug("Updating existing parameter specification for par: " + par + " (" + str(vals) + ")")
-                    self.modelparameters[pos] = self.ParamType(name=par,stack=vals[0],type=vals[1],default=float(vals[2]),silent=vals[3])
+                    self.modelparameters[pos] = self.ParamType(name=par,stack=vals[0],type=vals[1],default=float(vals[2]),verbose=vals[3])
             else:
                 self._userModel().logger.debug("Creating parameter specification for par: " + par + " (" + str(vals) + ")")
-                self.modelparameters.append(self.ParamType(name=par,stack=vals[0],type=vals[1],default=float(vals[2])),silent=vals[3])
+                self.modelparameters.append(self.ParamType(name=par,stack=vals[0],type=vals[1],default=float(vals[2]),verbose=vals[3]))
         else:
             logging.error("Parameter line in ini not valid: " + aline)
 
