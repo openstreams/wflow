@@ -102,13 +102,6 @@ class wf_exchnageVariables():
                     return 1
         return 1   
 
-
-
-
-
-
-
-
 class wf_sumavg():
 
     def __init__(self,varname,mode='sum',filename=None):
@@ -151,7 +144,6 @@ class wf_sumavg():
                 self.result = self.data
             if self.mode == 'avg':
                 self.result = self.data/self.count
-
 
 
 class wf_OutputTimeSeriesArea():
