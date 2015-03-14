@@ -21,10 +21,10 @@ The goal of this module is to make a series functions to upscale maps (DEM)
 and to  maintain as much of the information in a detailled dem when upscaling
 to a coarser DEM. These include:
 
-	- river length (per cell)
-	- river network location
-	- elevation distribution
-	- other terrain analysis
+    - river length (per cell)
+    - river network location
+    - elevation distribution
+    - other terrain analysis
 
 the wflow_prepare scripts use this library extensively.
 
@@ -53,7 +53,7 @@ import gzip, zipfile
 
 Verbose=0
 
-def lddcreate_save(lddname,dem,force, corevolume=1E35,catchmentprecipitation=1E35,corearea=1E35,outflowdepth=1E35):
+def lddcreate_save(lddname, dem, force, corevolume=1E35, catchmentprecipitation=1E35, corearea=1E35, outflowdepth=1E35):
     """
     Creates an ldd if a file does not exists or if the force flag is used
 
@@ -68,16 +68,16 @@ def lddcreate_save(lddname,dem,force, corevolume=1E35,catchmentprecipitation=1E3
         
     """
     if os.path.exists(lddname) and not force:
-	if Verbose:
-	  print("Returning existing ldd", lddname)
-        return readmap(lddname)
+        if Verbose:
+            print("Returning existing ldd", lddname)
+            return readmap(lddname)
     else:
-	if Verbose:
-	  print("Creating ldd", lddname)
-        LDD = lddcreate(dem, 10.0E35, outflowdepth, 10.0E35, 10.0E35)
-        report(LDD,lddname)
-        return LDD
-        
+        if Verbose:
+          print("Creating ldd", lddname)
+            LDD = lddcreate(dem, 10.0E35, outflowdepth, 10.0E35, 10.0E35)
+            report(LDD, lddname)
+            return LDD
+
         
 def configget(config,section,var,default):
     """
@@ -358,10 +358,10 @@ def find_outlet(ldd):
     Tries to find the outlet of the largest catchment in the Ldd
     
     Input: 
-    	- Ldd
+        - Ldd
         
     Output: 
-    	- outlet map (single point in the map)
+        - outlet map (single point in the map)
     """
     largest = mapmaximum(catchmenttotal(spatial(scalar(1.0)),ldd))
     outlet = ifthen(catchmenttotal(1.0,ldd) == largest,spatial(scalar(1.0)))
@@ -839,22 +839,22 @@ def writeMap(fileName, fileFormat, x, y, data, FillVal):
     driver1 = gdal.GetDriverByName('GTiff')
     driver2 = gdal.GetDriverByName(fileFormat)
 
-		# Processing
+        # Processing
     if verbose:
         print 'Writing to temporary file ' + fileName + '.tif'
-	# Create Output filename from (FEWS) product name and data and open for writing
+    # Create Output filename from (FEWS) product name and data and open for writing
     TempDataset = driver1.Create(fileName + '.tif',data.shape[1],data.shape[0],1,gdal.GDT_Float32)
-	# Give georeferences
+    # Give georeferences
     xul = x[0]-(x[1]-x[0])/2
     yul = y[0]+(y[0]-y[1])/2
     TempDataset.SetGeoTransform( [ xul, x[1]-x[0], 0, yul, 0, y[1]-y[0] ] )
-	# get rasterband entry
+    # get rasterband entry
     TempBand = TempDataset.GetRasterBand(1)
-	# fill rasterband with array
+    # fill rasterband with array
     TempBand.WriteArray(data,0,0)
     TempBand.FlushCache()
     TempBand.SetNoDataValue(FillVal)
-	# Create data to write to correct format (supported by 'CreateCopy')
+    # Create data to write to correct format (supported by 'CreateCopy')
     if verbose:
         print 'Writing to ' + fileName + '.map'
     outDataset = driver2.CreateCopy(fileName, TempDataset, 0)

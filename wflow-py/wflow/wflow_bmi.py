@@ -4,6 +4,7 @@ import os
 import logging
 
 import wflow.bmi as bmi
+import numpy as np
 
 #TODO: Set log level also ini to be able to make quiet or non-quiet runs
 #TODO: set re-init in the ini file to be able to make cold start runs
@@ -196,6 +197,7 @@ class wflowbmi_ligth(object):
             # otherwise we have to loop over all dimensions
             slices = [np.s_[i:(i+n)] for i,n in zip(start, count)]
             tmp[slices]
+
         self.set_var(name, name, tmp)
 
 

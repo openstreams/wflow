@@ -15,7 +15,7 @@ requires = [
     'netCDF4',
     'numpy',
     'matplotlib',
-    'pcraster']
+    'pcraster', 'osgeo']
 
 
 #setup(**config)

@@ -128,6 +128,15 @@ the model both PCRaster and Python 2.7 are needed.
                found at (http://wflow.googlecode.com/svn/tags/1.0RC6/doc/_build/html/index.html).
 
 
+
+Installation
+============
+.. toctree::
+   :maxdepth: 2
+
+   installation
+
+
 The wflow\_hbv model
 ====================
 .. toctree::
