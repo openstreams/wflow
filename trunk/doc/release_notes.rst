@@ -10,6 +10,7 @@ Under heavy development
   in the ini file but alse list them in the parameters function in the model itself. This
   functionality should replace all manual reading of forcing data and static parameters
 + Added .mult postfix for tbl files to apply multiplication
++ Added bmi support
 
 
 
