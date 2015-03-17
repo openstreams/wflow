@@ -11,6 +11,8 @@ Under heavy development
   functionality should replace all manual reading of forcing data and static parameters
 + Added .mult postfix for tbl files to apply multiplication
 + Added bmi support
++ wflow_sbm s-curve sharpness of height distribution now based on upper and lower
+  half of the distribution (average)
 
 
 

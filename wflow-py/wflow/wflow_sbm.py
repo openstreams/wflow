@@ -671,10 +671,13 @@ class WflowModel(DynamicModel):
         # limit roots to top 99% of first zone
         self.RootingDepth = min(self.FirstZoneThickness * 0.99, self.RootingDepth)
 
-        # subgrid runoff generation
+        # subgrid runoff generation, determine CC (shorpness of S-Curve) for upper
+        # en lower part and take average
         self.DemMax = readmap(self.Dir + "/staticmaps/wflow_demmax")
         self.DrainageBase = readmap(self.Dir + "/staticmaps/wflow_demmin")
-        self.CC = min(100.0, -log(1.0 / 0.1 - 1) / min(-0.1, self.DrainageBase - self.Altitude))
+        self.CClow = min(100.0, - ln(1.0 / 0.1 - 1) / min(-0.1, self.DrainageBase - self.Altitude))
+        self.CCup = min(100.0, - ln(1.0 / 0.1 - 1) / min(-0.1, self.Altitude - self.DemMax))
+        self.CC = (self.CClow + self.CCup) * 0.5
 
         #self.GWScale = (self.DemMax-self.DrainageBase)/self.FirstZoneThickness / self.RunoffGeneratingGWPerc
         # Which columns/gauges to use/ignore in updating
@@ -1390,6 +1393,7 @@ def main(argv=None):
             configset(myModel.config, 'model', 'updateFile', a, overwrite=True)
             configset(myModel.config, 'model', 'updating', "1", overwrite=True)
         if o == '-u':
+            zz = []
             exec "zz =" + a
             updateCols = zz
         if o == '-E': configset(myModel.config, 'model', 'reInfilt', '1', overwrite=True)
