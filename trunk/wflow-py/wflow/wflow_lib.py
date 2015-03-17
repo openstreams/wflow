@@ -73,7 +73,7 @@ def lddcreate_save(lddname, dem, force, corevolume=1E35, catchmentprecipitation=
             return readmap(lddname)
     else:
         if Verbose:
-          print("Creating ldd", lddname)
+            print("Creating ldd", lddname)
             LDD = lddcreate(dem, 10.0E35, outflowdepth, 10.0E35, 10.0E35)
             report(LDD, lddname)
             return LDD

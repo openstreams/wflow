@@ -486,8 +486,8 @@ where:
 
 .. note::
 
-    at present the model uses the drainage base (minimum DEM) and treats this as the 10% percentile
-    to which the curve is fitted. So at present only two points are used (10 % and 50%) 
+    The model determines the C for the upper hals and the lower half of the curve
+     seperate and averages the results.
 
 .. warning::
 
