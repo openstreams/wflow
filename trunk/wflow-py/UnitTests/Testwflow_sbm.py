@@ -1,7 +1,7 @@
 __author__ = 'schelle'
 
 import unittest
-import wflow.wflow_sceleton as wf
+import wflow.wflow_sbm as wf
 import os
 """
 Run sceleton for 10 steps and checks if the outcome is approx that of the reference run
@@ -32,6 +32,9 @@ class MyTest(unittest.TestCase):
         dynModelFw._runResume() # gets the state variables
 
         for ts in range(startTime,stopTime):
+            dynModelFw.wf_setValues('P', 10.0)
+            dynModelFw.wf_setValues('PET', 2.0)
+            dynModelFw.wf_setValues('TEMP', 10.0)
             dynModelFw._runDynamic(ts,ts) # runs for all timesteps
             dynModelFw.logger.info("Doing step: " + str(ts))
         dynModelFw._runSuspend() # saves the state variables
