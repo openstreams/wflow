@@ -13,7 +13,7 @@ Under heavy development
 + Added bmi support
 + wflow_sbm s-curve sharpness of height distribution now based on upper and lower
   half of the distribution (average)
-+ Added seperate soil evap to wflow_sbm
++ Added separate soil evap and RootZoneSoilMoisture to wflow_sbm
 
 
 
