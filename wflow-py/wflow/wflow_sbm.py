@@ -904,9 +904,12 @@ class WflowModel(DynamicModel):
         :var self.Precipitation: Gross precipitation [mm]
         :var self.Temperature: Air temperature [oC]
         :var self.PotenEvap: Potential evapotranspiration [mm]
-        :var self.PotTrans: Potential Transpiration (after subtracting Interception from PotenEvap) [mm]
+        :var self.PotTransSoil: Potential Transpiration/Openwater and soil evap (after subtracting Interception from PotenEvap) [mm]
+        :var self.Transpiration: plant/tree transpiration [mm]
+        :var self.ActEvapOpenWater: actual open water evaporation [mm]
+        :var self.soilevap: base soil evaporation [mm]
         :var self.Interception: Actual rainfall interception [mm]
-        :var self.ActEvap: Actual evaporation [mm]
+        :var self.ActEvap: Actual evaporation (transpiration + Soil evap + open water evap) [mm]
         :var self.SurfaceRunoff: Surface runoff in the kinematic wave [m^3/s]
         :var self.SurfaceRunoffDyn: Surface runoff in the dyn-wave resrvoir [m^3/s]
         :var self.WaterLevelDyn: Water level in the dyn-wave resrvoir [m^]
@@ -989,12 +992,12 @@ class WflowModel(DynamicModel):
                                                                                                  self.PrecipitationPlusMelt,
                                                                                                  self.CanopyStorage,maxevap=self.PotEvap)
 
-            PotTrans = cover(max(0.0, self.PotEvap - Interception), 0.0)  # now in mm
+            self.PotTransSoil = cover(max(0.0, self.PotEvap - Interception), 0.0)  # now in mm
             self.Interception=Interception
         else:
             NetInterception, ThroughFall, StemFlow, LeftOver, Interception, self.CanopyStorage = rainfall_interception_modrut(
                 self.PrecipitationPlusMelt, self.PotEvap, self.CanopyStorage, self.CanopyGapFraction, self.Cmax)
-            PotTrans = cover(max(0.0, LeftOver), 0.0)  # now in mm
+            self.PotTransSoil = cover(max(0.0, LeftOver), 0.0)  # now in mm
             self.Interception=NetInterception
 
 
@@ -1071,14 +1074,24 @@ class WflowModel(DynamicModel):
         # Limit rootingdepth (if set externally)
         self.RootingDepth = min(self.FirstZoneThickness * 0.99, self.RootingDepth)
         # Determine transpiration
-        self.ActEvap, self.FirstZoneDepth, self.UStoreDepth, self.ActEvapUStore = actEvap_SBM(self.RootingDepth,
+
+        # Split between bare soil and vegetation
+        self.potsoilevap = (1.0 - self.CanopyGapFraction) * self.PotTransSoil
+        self.PotTrans = self.CanopyGapFraction * self.PotTransSoil
+        self.SaturationDeficit = self.FirstZoneCapacity - self.FirstZoneDepth
+        # Linear reduction of soil moisture evaporation based on deficit
+        self.soilevap = self.potsoilevap * min(1.0, self.SaturationDeficit/self.FirstZoneCapacity)
+
+        self.Transpiration, self.FirstZoneDepth, self.UStoreDepth, self.ActEvapUStore = actEvap_SBM(self.RootingDepth,
                                                                                               self.zi, self.UStoreDepth,
                                                                                               self.FirstZoneDepth,
-                                                                                              PotTrans,
+                                                                                              self.PotTrans,
                                                                                               self.rootdistpar)
+
+        self.ActEvap = self.Transpiration + self.soilevap
         # Determine Open Water EVAP. Later subtract this from water that
         # enters the Kinematic wave
-        self.EvapRest = PotTrans - self.ActEvap
+        self.EvapRest = self.PotTransSoil - self.ActEvap
         self.ActEvapOpenWater =  min(self.WaterLevel * 1000.0 * self.WaterFrac ,self.WaterFrac * self.EvapRest)
         self.ActEvap = self.ActEvap + self.ActEvapOpenWater
 
@@ -1286,7 +1299,7 @@ class WflowModel(DynamicModel):
         self.CumCellInFlow = self.CumCellInFlow + CellInFlow
         self.CumPrec = self.CumPrec + self.Precipitation
         self.CumEvap = self.CumEvap + self.ActEvap
-        self.CumPotenTrans = self.CumPotenTrans + PotTrans
+        self.CumPotenTrans = self.CumPotenTrans + self.PotTrans
         self.CumPotenEvap = self.CumPotenEvap + self.PotenEvap
 
         self.CumInt = self.CumInt + self.Interception
@@ -1296,7 +1309,7 @@ class WflowModel(DynamicModel):
         self.CumExfiltWater = self.CumExfiltWater + self.ExfiltWater
         # Water budget: Need to make this into seperate budgets
         #self.watbal = self.CumPrec- self.CumEvap - self.CumInt - self.CumInwaterMM - DeltaStorage  - self.CumOutFlow + self.CumIF
-        self.SoilWatbal = self.ActInfilt - self.ActEvap  -self.ExfiltWater  +\
+        self.SoilWatbal = self.ActInfilt - self.Transpiration - self.soilevap  -self.ExfiltWater  +\
                       self.SubCellGWRunoff - self.BaseFlow + self.reinfiltwater - \
                       self.DeltaStorage - \
                       self.FirstZoneFlux + CellInFlow
