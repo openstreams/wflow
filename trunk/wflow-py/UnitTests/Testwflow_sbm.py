@@ -11,7 +11,7 @@ class MyTest(unittest.TestCase):
 
     def testapirun(self):
         startTime = 1
-        stopTime = 10
+        stopTime = 30
         currentTime = 1
 
           # set runid, clonemap and casename. Also define the ini file
@@ -30,9 +30,16 @@ class MyTest(unittest.TestCase):
         dynModelFw._runInitial() # Runs initial part
 
         dynModelFw._runResume() # gets the state variables
-
+        sump = 0.0
         for ts in range(startTime,stopTime):
-            dynModelFw.wf_setValues('P', 10.0)
+            if ts <10:
+                dynModelFw.wf_setValues('P', 0.0)
+            elif ts <= 15:
+                dynModelFw.wf_setValues('P', 10.0)
+                sump = sump + 10.0
+            else:
+                dynModelFw.wf_setValues('P', 0.0)
+
             dynModelFw.wf_setValues('PET', 2.0)
             dynModelFw.wf_setValues('TEMP', 10.0)
             dynModelFw._runDynamic(ts,ts) # runs for all timesteps
@@ -42,9 +49,16 @@ class MyTest(unittest.TestCase):
 
         # nore read the csv results acn check of they match the first run
         # Sum should be approx c 4.569673676
-        my_data = wf.genfromtxt(os.path.join(caseName,runId,"tes.csv"), delimiter=',')
+        my_data = wf.genfromtxt(os.path.join(caseName,runId,"wbsurf.csv"), delimiter=',')
 
-        self.assertAlmostEquals(4.569673676,my_data[:,2].sum())
+        print("Checking surface water budget ....")
+        self.assertAlmostEquals(-2.4355218783966848e-06,my_data[:,2].sum())
+        my_data = wf.genfromtxt(os.path.join(caseName,runId,"wbsoil.csv"), delimiter=',')
+        print("Checking soil water budget ....")
+        self.assertAlmostEquals(-4.6162970761542965e-06,my_data[:,2].sum())
+        print("Checking precip sum ....")
+        my_data = wf.genfromtxt(os.path.join(caseName,runId,"P.csv"), delimiter=',')
+        self.assertAlmostEquals(sump,my_data[:,2].sum())
 
 
 if __name__ == '__main__':
