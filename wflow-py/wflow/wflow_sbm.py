@@ -1087,7 +1087,8 @@ class WflowModel(DynamicModel):
                                                                                               self.FirstZoneDepth,
                                                                                               self.PotTrans,
                                                                                               self.rootdistpar)
-
+        self.soilevap = min(self.soilevap, self.UStoreDepth)
+        self.UStoreDepth = self.UStoreDepth - self.soilevap
         self.ActEvap = self.Transpiration + self.soilevap
         # Determine Open Water EVAP. Later subtract this from water that
         # enters the Kinematic wave
