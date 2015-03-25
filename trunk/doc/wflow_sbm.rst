@@ -303,6 +303,21 @@ representation of the various hydrological processes and pathways
 modelled by SBM (infiltration, exfiltration, Hortonian and saturation
 overland flow, subsurface flow) is provided by Vertessy (1999).
 
+
+Transpiration and soil evaporation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The potential eveporation left over after the interception is split
+in potential soil evaporation and potential transpiration base on the canopy gap fraction (assumed to be identical
+to the amount of bare soil).
+
+Soi evaporation is scaled according to:
+
+:math:`soilevap = potensoilevap * SaturationDeficit/FirstZoneCapacity`
+
+As such, evaporation will be potential if the soil is fully wetted and it decreases linear
+with increasing soil moisture deficit.
+
 The original SBM model does not include transpiration or a notion of
 capilary rise. In  wflow\_sbm  transpiration is first taken from the
 :math:`S` store if the roots reach the water table :math:`z_{i}`. If
