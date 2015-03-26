@@ -153,7 +153,8 @@ class wfmodel_fit_API():
             self.calibpars.append(configget(self.conf,"fit","parameter_"+str(item),"M"))
             self.pars.append(1.0)
             item = item + 1           
-        self.qmeasname = configget(self.conf,"fit","Q","calib.tss") 
+        self.qmeasname = configget(self.conf,"fit","Q","calib.tss")
+        self.qmodname = configget(self.conf,"fit","Qmod","run.tss")
         self.epsfcn= float(configget(self.conf,"fit","epsfcn","0.00001"))
         self.ftol= float(configget(self.conf,"fit","ftol","0.0001"))
         self.xtol= float(configget(self.conf,"fit","xtol","0.0001"))
@@ -232,7 +233,7 @@ class wfmodel_fit_API():
         self.dynModelFw._runSuspend()
         self.dynModelFw._wf_shutdown()
 
-        tssfile = os.path.join(self.caseName,self.runId,"run.tss")
+        tssfile = os.path.join(self.caseName,self.runId,self.qmodname)
         
         results, head = pcrut.readtss(tssfile)
         return results[self.WarmUpSteps:,self.ColSim].astype(np.float64)
