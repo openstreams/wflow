@@ -719,7 +719,10 @@ class WflowModel(DynamicModel):
         # Used to seperate output per LandUse/management classes
         OutZones = self.LandUse
 
-        self.QMMConv = self.timestepsecs / (self.reallength * self.reallength * 0.001)  #m3/s --> mm
+        self.QMMConv = self.timestepsecs / (self.reallength * self.reallength * 0.001)  #m3/s --> actial mm of water over the cell
+        #self.QMMConvUp = 1000.0 * self.timestepsecs / ( catchmenttotal(cover(1.0), self.TopoLdd) * self.reallength * self.reallength)  #m3/s --> mm over upstreams
+        temp = catchmenttotal(cover(1.0), self.TopoLdd) * self.reallength * 0.001 * 0.001 *  self.reallength
+        self.QMMConvUp = cover(self.timestepsecs * 0.001)/temp
         self.ToCubic = (self.reallength * self.reallength * 0.001) / self.timestepsecs  # m3/s
         self.KinWaveVolume = self.ZeroMap
         self.OldKinWaveVolume = self.ZeroMap
@@ -878,7 +881,7 @@ class WflowModel(DynamicModel):
         self.KinWaveVolume = self.WaterLevel * self.Bw * self.DCL
         self.OldKinWaveVolume = self.KinWaveVolume
 
-        self.SurfaceRunoffMM = self.SurfaceRunoff * self.QMMConv
+        self.QCatchmentMM = self.SurfaceRunoff * self.QMMConvUp
         self.InitialStorage = self.FirstZoneDepth + self.UStoreDepth + self.CanopyStorage + self.LowerZoneStorage
         self.CellStorage = self.FirstZoneDepth + self.UStoreDepth
 
@@ -912,6 +915,7 @@ class WflowModel(DynamicModel):
         :var self.ActEvap: Actual evaporation (transpiration + Soil evap + open water evap) [mm]
         :var self.SurfaceRunoff: Surface runoff in the kinematic wave [m^3/s]
         :var self.SurfaceRunoffDyn: Surface runoff in the dyn-wave resrvoir [m^3/s]
+        :var self.SurfaceRunoffCatchmentMM: Surface runoff in the dyn-wave reservoir expressed in mm over the upstream (catchment) area
         :var self.WaterLevelDyn: Water level in the dyn-wave resrvoir [m^]
         :var self.ActEvap: Actual EvapoTranspiration [mm] (minus interception losses)
         :var self.ExcessWater: Water that cannot infiltrate due to saturated soil [mm]
@@ -1249,6 +1253,7 @@ class WflowModel(DynamicModel):
         self.MassBalKinWave = (self.KinWaveVolume - self.OldKinWaveVolume) / self.timestepsecs + self.InflowKinWaveCell + self.Inwater - self.SurfaceRunoff
 
         Runoff = self.SurfaceRunoff
+        self.QCatchmentMM = self.SurfaceRunoff * self.QMMConvUp
 
         # Updating
         # --------
