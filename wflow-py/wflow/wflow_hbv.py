@@ -869,7 +869,7 @@ class WflowModel(DynamicModel):
         
 
     self.QCatchmentMM = self.SurfaceRunoff * self.QMMConvUp
-    self.RunoffCoeff = self.QCatchmentMM/catchmenttotal(self.Precipitation, self.TopoLdd)/catchmenttotal(cover(1.0), self.TopoLdd)
+    #self.RunoffCoeff = self.QCatchmentMM/catchmenttotal(self.Precipitation, self.TopoLdd)/catchmenttotal(cover(1.0), self.TopoLdd)
 
     self.sumprecip=self.sumprecip  +  self.Precipitation                     #accumulated rainfall for water balance
     self.sumevap=self.sumevap + ActEvap                           #accumulated evaporation for water balance
