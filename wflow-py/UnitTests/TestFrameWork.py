@@ -37,7 +37,7 @@ class MyTest(unittest.TestCase):
         dynModelFw._runSuspend() # saves the state variables
         dynModelFw._wf_shutdown()
 
-        # nore read the csv results acn check of they match the first run
+        # Now read the csv results acn check of they match the first run
         # Sum should be approx c 4.569673676
         my_data = wf.genfromtxt(os.path.join(caseName,runId,"tes.csv"), delimiter=',')
 

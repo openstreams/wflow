@@ -723,6 +723,7 @@ class WflowModel(DynamicModel):
         #self.QMMConvUp = 1000.0 * self.timestepsecs / ( catchmenttotal(cover(1.0), self.TopoLdd) * self.reallength * self.reallength)  #m3/s --> mm over upstreams
         temp = catchmenttotal(cover(1.0), self.TopoLdd) * self.reallength * 0.001 * 0.001 *  self.reallength
         self.QMMConvUp = cover(self.timestepsecs * 0.001)/temp
+
         self.ToCubic = (self.reallength * self.reallength * 0.001) / self.timestepsecs  # m3/s
         self.KinWaveVolume = self.ZeroMap
         self.OldKinWaveVolume = self.ZeroMap
@@ -793,8 +794,6 @@ class WflowModel(DynamicModel):
         self.AlpPow = (2.0 / 3.0) * self.Beta
         # initial approximation for Alpha
 
-        #self.initstorage=areaaverage(self.FirstZoneDepth,self.TopoId)+areaaverage(self.UStoreDepth,self.TopoId)#+areaaverage(self.Snow,self.TopoId)
-
         # calculate catchmentsize
         self.upsize = catchmenttotal(self.xl * self.yl, self.TopoLdd)
         self.csize = areamaximum(self.upsize, self.TopoId)
@@ -815,17 +814,11 @@ class WflowModel(DynamicModel):
           Returns a list of default summary-maps at the end of a run.
           This is model specific. You can also add them to the [summary]section of the ini file but stuff
           you think is crucial to the model should be listed here
-
-
           """
           lst = ['self.RiverWidth',
-                'self.Cmax',
-                'self.csize',
-                'self.upsize',
-                'self.EoverR',
-                'self.RootingDepth',
-                'self.CanopyGapFraction',
-                'self.InfiltCapSoil',
+                'self.Cmax', 'self.csize', 'self.upsize',
+                'self.EoverR', 'self.RootingDepth',
+                'self.CanopyGapFraction',  'self.InfiltCapSoil',
                 'self.InfiltCapPath',
                 'self.PathFrac',
                 'self.thetaR',
@@ -840,11 +833,10 @@ class WflowModel(DynamicModel):
                 'self.N',
                 'self.RiverFrac',
                 'self.WaterFrac',
-                'self.xl',
-                'self.yl',
-                'self.reallength',
+                'self.xl', 'self.yl', 'self.reallength',
                 'self.DCL',
-                'self.Bw']
+                'self.Bw',
+                'self.PathInfiltExceeded','self.SoilInfiltExceeded']
 
           return lst
 
@@ -897,12 +889,16 @@ class WflowModel(DynamicModel):
 
     def dynamic(self):
         """
-        Stuf that is done for each timestep
+        Stuf that is done for each timestep of the model
+        ------------------------------------------------
 
         Below a list of variables that can be save to disk as maps or as
         timeseries (see ini file for syntax):
 
-        *Dynamic variables*
+        Dynamic variables
+        ~~~~~~~~~~~~~~~~~
+
+        All these can be saved per timestep if needed (see the config file [outputmaps] section).
 
         :var self.Precipitation: Gross precipitation [mm]
         :var self.Temperature: Air temperature [oC]
@@ -933,9 +929,11 @@ class WflowModel(DynamicModel):
         :var self.Transfer: downward flux from unsaturated to saturated zone [mm]
         :var self.CapFlux: capilary flux from saturated to unsaturated zone [mm]
         :var self.CanopyStorage: Amount of water on the Canopy [mm]
+        :var self.RunoffCoeff: Runoff coefficient (Q/P) for each cell taking into accoutn the whole upstream area [-]
 
 
-        *Static variables*
+        Static variables
+        ~~~~~~~~~~~~~~~~
 
         :var self.Altitude: The altitude of each cell [m]
         :var self.Bw: Width of the river [m]
@@ -1005,14 +1003,10 @@ class WflowModel(DynamicModel):
             self.Interception=NetInterception
 
 
-        ##########################################################################
-        # Start with the soil calculations  ######################################
-        ##########################################################################
 
-        ##########################################################################
-        # Determine infiltration into Unsaturated store...########################
-        ##########################################################################
-        # Add precipitation surplus  FreeWater storage...
+        # Start with the soil calculations
+        # --------------------------------
+
 
         self.AvailableForInfiltration = ThroughFall + StemFlow
         UStoreCapacity = self.FirstZoneCapacity - self.FirstZoneDepth - self.UStoreDepth
@@ -1060,7 +1054,6 @@ class WflowModel(DynamicModel):
         self.AvailableForInfiltration = self.AvailableForInfiltration - InfiltSoil
 
         MaxInfiltPath = min(self.InfiltCapPath * soilInfRedu, PathInf)
-        #self.PathInfiltExceeded=self.PathInfiltExceeded + ifthenelse(self.InfiltCapPath < FreeWaterDepth, scalar(1), scalar(0))
         self.PathInfiltExceeded = self.PathInfiltExceeded + scalar(self.InfiltCapPath * soilInfRedu < PathInf)
         InfiltPath = min(MaxInfiltPath, UStoreCapacity)
         self.UStoreDepth = self.UStoreDepth + InfiltPath
@@ -1253,7 +1246,6 @@ class WflowModel(DynamicModel):
         self.MassBalKinWave = (self.KinWaveVolume - self.OldKinWaveVolume) / self.timestepsecs + self.InflowKinWaveCell + self.Inwater - self.SurfaceRunoff
 
         Runoff = self.SurfaceRunoff
-        self.QCatchmentMM = self.SurfaceRunoff * self.QMMConvUp
 
         # Updating
         # --------
@@ -1293,6 +1285,10 @@ class WflowModel(DynamicModel):
         ##########################################################################
         # water balance ###########################################
         ##########################################################################
+
+
+        self.QCatchmentMM = self.SurfaceRunoff * self.QMMConvUp
+        self.RunoffCoeff = self.QCatchmentMM/catchmenttotal(self.PrecipitationPlusMelt, self.TopoLdd)/catchmenttotal(cover(1.0), self.TopoLdd)
 
         # Single cell based water budget. snow not included yet.
         CellStorage = self.CanopyStorage
