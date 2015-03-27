@@ -480,6 +480,9 @@ class WflowModel(DynamicModel):
     self.Slope= slope(self.Altitude)
     self.Slope=ifthen(boolean(self.TopoId),max(0.001,self.Slope*celllength()/self.reallength))
     Terrain_angle=scalar(atan(self.Slope))
+    temp = catchmenttotal(cover(1.0), self.TopoLdd) * self.reallength * 0.001 * 0.001 *  self.reallength
+    self.QMMConvUp = cover(self.timestepsecs * 0.001)/temp
+
    
     # Multiply parameters with a factor (for calibration etc) -P option in command line
     for k, v in multpars.iteritems():
@@ -865,7 +868,9 @@ class WflowModel(DynamicModel):
         Runoff=self.SurfaceRunoff
         
 
-    
+    self.QCatchmentMM = self.SurfaceRunoff * self.QMMConvUp
+    self.RunoffCoeff = self.QCatchmentMM/catchmenttotal(self.Precipitation, self.TopoLdd)/catchmenttotal(cover(1.0), self.TopoLdd)
+
     self.sumprecip=self.sumprecip  +  self.Precipitation                     #accumulated rainfall for water balance
     self.sumevap=self.sumevap + ActEvap                           #accumulated evaporation for water balance
     self.sumpotevap=self.sumpotevap + self.PotEvaporation 
