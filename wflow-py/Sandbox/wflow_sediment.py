@@ -19,8 +19,9 @@
 
 
 """
-Run the wflow_sbm hydrological model..
+Run the wflow_sedmiment hydrological model..
 
+TEST/SANDBOX VERSION!!!!!!!!
 usage
 
 ::
