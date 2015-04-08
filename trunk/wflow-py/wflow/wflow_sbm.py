@@ -219,7 +219,9 @@ class WflowModel(DynamicModel):
 
     .. versionadded:: 0.91
         - added S-curve for freezing soil infiltration reduction calculations
-      
+
+    .. todo::
+        - add slope based quick-runoff -> less percolation on hillslopes...
   """
 
     def __init__(self, cloneMap, Dir, RunDir, configfile):
@@ -381,7 +383,7 @@ class WflowModel(DynamicModel):
     *Surface water*
     
     :var N.tbl: Manning's N parameter
-    :var N_river.tbl: Manning's N parameter fro cells marked as river
+    :var N_river.tbl: Manning's N parameter for cells marked as river
     
     
     *Snow and frozen soil modelling parameters*
