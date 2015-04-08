@@ -184,13 +184,12 @@ def interpolategauges(inputmap,method):
         result = spreadzone(ordinal(cover(Unq,0)),0,1)
         result = areaaverage(inputmap,result);
     
-    return result 
+    return result
 
 
 
 
-_tableToMap_LastTbl = {}
-_tableToMap_LastMap = {}
+
 
 
 def tableToMapSparse (step, table, map):
@@ -221,34 +220,36 @@ def tableToMapSparse (step, table, map):
     
     
     """
-    global _tableToMap_LastTbl
-    global _tableToMap_LastMap
     global debug
-    
+
+    if not hasattr(tableToMapSparse,"_tableToMap_LastTbl"):
+        _tableToMap_LastTbl = {}
+        _tableToMap_LastMap = {}
+
     # construct filenames
     fname_map = map + str(step) + ".map"
     fname_tbl = table + str(step) + ".tbl"
 
-    
+
     if os.path.exists(fname_map):
-	    print "found: " + fname_map
-	    _tableToMap_LastMap[map] = step
-  	    
+        print "found: " + fname_map
+        tableToMapSparse._tableToMap_LastMap[map] = step
+
     if os.path.exists(fname_tbl):
-	    print "found: " + fname_tbl
-	    _tableToMap_LastTbl[table] = step
+        print "found: " + fname_tbl
+        tableToMapSparse._tableToMap_LastTbl[table] = step
 
-    if _tableToMap_LastTbl.has_key(table) == False:
-	    fname_tbl = table + ".tbl"
+    if tableToMapSparse._tableToMap_LastTbl.has_key(table) == False:
+        fname_tbl = table + ".tbl"
     else:
-	    fname_tbl = table + str(_tableToMap_LastTbl[table]) + ".tbl"
+        fname_tbl = table + str(tableToMapSparse._tableToMap_LastTbl[table]) + ".tbl"
 
-    if _tableToMap_LastMap.has_key(map) == False:
-	    fname_map = map + ".map"
+    if tableToMapSparse._tableToMap_LastMap.has_key(map) == False:
+        fname_map = map + ".map"
     else:
-	    fname_map = map + str(_tableToMap_LastMap[map]) + ".map"
-        
-    
+        fname_map = map + str(tableToMapSparse._tableToMap_LastMap[map]) + ".map"
+
+
     rmat = lookupscalar(str(fname_tbl),str(fname_map))
 
     return rmat
