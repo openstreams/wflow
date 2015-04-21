@@ -64,7 +64,7 @@ class WflowModel(DynamicModel):
       """
       List all the parameters (both static and forcing here). Use the wf_updateparameters()
       function to update them in the initial section (static) and the dynamic section for
-      dynamic parameters.
+      dynamic parameters and forcing date.
 
       Possible parameter types are:
 
@@ -117,7 +117,7 @@ class WflowModel(DynamicModel):
       This function is optional. If it is not set the framework assumes
       the model runs with daily timesteps.
       
-      Ouput:
+      Output:
       
           - time in seconds since the start of the model run
           
@@ -163,6 +163,7 @@ class WflowModel(DynamicModel):
 
     self.timestepsecs = int(configget(self.config,'model','timestepsecs','86400'))
     self.basetimestep=86400
+    # Reads all parameter from disk
     self.wf_updateparameters()
     self.logger.info("Starting Dynamic run...")
 
@@ -172,7 +173,7 @@ class WflowModel(DynamicModel):
     *Required*
 
     This function is required. Read initial state maps (they are output of a 
-    previous call to suspend()). The implementation showns here is the most basic 
+    previous call to suspend()). The implementation shown here is the most basic
     setup needed.
     
     """
@@ -192,7 +193,7 @@ class WflowModel(DynamicModel):
       *Optional*
 
       Return a default list of variables to report as summary maps in the outsum dir.
-      The ini file has more option, including average and sum
+      The ini file has more options, including average and sum
       """
       return ['self.Altitude']
 
@@ -204,11 +205,10 @@ class WflowModel(DynamicModel):
       output should also be saved here.
       """
 
-      self.wf_updateparameters() # read the temperature map fo each step (see parameters())
+      self.wf_updateparameters() # read the temperature map for each step (see parameters())
 
       self.TSoil = self.TSoil + 0.1125 * (self.Temperature - self.TSoil) * self.timestepsecs/self.basetimestep
-      
-      # reporting of maps and csv timeseries is done by the framework (see ini file)
+
     
 
 # The main function is used to run the program from the command line

@@ -93,8 +93,6 @@ $Id: wflow_sbm.py 900 2014-01-09 17:41:06Z schelle $
 $Rev: 900 $
 """
 
-#TODO: add Et reduction in unsat zone based on deficit
-
 import numpy
 #import pcrut
 import os
@@ -128,20 +126,20 @@ def usage(*args):
 def actEvap_SBM(RootingDepth, WTable, UStoreDepth, FirstZoneDepth, PotTrans, smoothpar):
     """
     Actual evaporation function:
-    Actual evaporation function:
+
 
     - first try to get demand from the saturated zone, using the rootingdepth as a limiting factor
     - secondly try to get the remaining water from the unsaturated store
     - it uses an S-Curve the make sure roots het wet/dry gradually (basically)
       representing a root-depth distribution
 
-    Input:
-    
-        - RootingDepth,WTable, UStoreDepth,FirstZoneDepth, PotTrans, smoothpar
-        
-    Output: 
-    
-        - ActEvap,  FirstZoneDepth,  UStoreDepth ActEvapUStore
+    :param RootingDepth:
+    :param WTable:
+    :param UStoreDepth:
+    :param FirstZoneDepth:
+    :param PotTrans:
+    :param smoothpar:
+    :return ActEvap,  FirstZoneDepth,  UStoreDepth ActEvapUStore:
     """
 
 
