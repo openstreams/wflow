@@ -644,6 +644,8 @@ class WflowModel(DynamicModel):
         # Determine initial kinematic wave volume
     self.KinWaveVolume = self.WaterLevel * self.Bw * self.DCL
     self.OldKinWaveVolume = self.KinWaveVolume
+    self.initstorage=self.FreeWater + self.DrySnow + self.SoilMoisture + self.UpperZoneStorage + self.LowerZoneStorage \
+                    + self.InterceptionStorage
     
     if not self.SetKquickFlow:
         self.KQuickFlow=(self.KHQ**(1.0+self.AlphaNL))*(self.HQ**-self.AlphaNL)   # recession rate of the upper reservoir, KHQ*UHQ=HQ=kquickflow*(UHQ**alpha)
@@ -721,9 +723,7 @@ class WflowModel(DynamicModel):
     PotSnowMelt=ifthenelse(self.Temperature > self.TT,self.Cfmax*(self.Temperature-self.TT),scalar(0.0)) #Potential snow melt, based on temperature
     PotRefreezing=ifthenelse(self.Temperature < self.TT, self.Cfmax*self.CFR*(self.TT-self.Temperature),0.0)    #Potential refreezing, based on temperature
     
-    
-    #PotSnowMelt=self.FoCfmax*PotSnowMelt     	#correction for forest zones 0.6)
-    #PotRefreezing=self.FoCfmax*PotRefreezing
+
     Refreezing=ifthenelse(self.Temperature < self.TT,min(PotRefreezing,self.FreeWater),0.0)   	#actual refreezing    
     self.SnowMelt=min(PotSnowMelt,self.DrySnow)          #actual snow melt
     self.DrySnow=self.DrySnow+SnowFall+Refreezing-self.SnowMelt     #dry snow content 
@@ -875,10 +875,11 @@ class WflowModel(DynamicModel):
     self.sumevap=self.sumevap + ActEvap                           #accumulated evaporation for water balance
     self.sumpotevap=self.sumpotevap + self.PotEvaporation 
     self.sumtemp=self.sumtemp + self.Temperature
-    self.sumrunoff=self.sumrunoff  + self.SurfaceRunoffMM                        #accumulated runoff for water balance
+    self.sumrunoff=self.sumrunoff  + self.InwaterMM          #accumulated Cell runoff for water balance
     self.sumlevel=self.sumlevel  + self.WaterLevel
     self.suminflow=self.suminflow  + self.Inflow
-    
+    self.storage=self.FreeWater + self.DrySnow + self.SoilMoisture + self.UpperZoneStorage + self.LowerZoneStorage + self.InterceptionStorage
+    self.watbal=self.initstorage+self.sumprecip-self.sumevap-self.sumrunoff-self.storage
     
 
 

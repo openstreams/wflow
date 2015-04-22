@@ -344,9 +344,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
 
 
-
-
-
   def _wf_shutdown(self):
       """
       Makes sure the logging closed
@@ -1648,7 +1645,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
     
     
-  def wf_readmap(self, name, default,verbose=True,filetype='PCRaster'):
+  def wf_readmap(self, name, default,verbose=True):
     """
       Adjusted version of readmapNew. the style variable is used to indicated
       how the data is read::
@@ -1656,11 +1653,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
           1 - default: reads pcrmaps
           2 - memory: assumes the map is made available (in memory) using
           the in-memory interface
-          
-      .. note:
-          
-          the style variable is set using the variable list from the API
-          section in the ini file
+
           
     """
     directoryPrefix = ""
