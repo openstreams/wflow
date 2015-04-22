@@ -1,6 +1,7 @@
 __author__ = 'schelle'
 
 import unittest
+import logging
 import wflow.wflow_bmi as bmi
 import os
 """
@@ -11,7 +12,7 @@ class MyTest(unittest.TestCase):
 
     def testbmirun(self):
         bmiobj = bmi.wflowbmi_csdms()
-        bmiobj.initialize('wflow_sceleton/wflow_sceleton.ini')
+        bmiobj.initialize('wflow_sceleton/wflow_sceleton.ini',loglevel=logging.ERROR)
 
         et = bmiobj.get_end_time()
         bmiobj.update_until(et)
@@ -20,7 +21,7 @@ class MyTest(unittest.TestCase):
     def testbmifuncs(self):
 
         bmiobj = bmi.wflowbmi_csdms()
-        bmiobj.initialize('wflow_sceleton/wflow_sceleton.ini')
+        bmiobj.initialize('wflow_sceleton/wflow_sceleton.ini',loglevel=logging.ERROR)
 
         print("-------------- Grid origin: ")
         gorigin = bmiobj.get_grid_origin('Altitude')
