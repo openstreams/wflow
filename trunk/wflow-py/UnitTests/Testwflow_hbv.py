@@ -51,13 +51,11 @@ class MyTest(unittest.TestCase):
 
         # nore read the csv results acn check of they match the first run
         # Sum should be approx c 4.569673676
-        my_data = wf.genfromtxt(os.path.join(caseName,runId,"wbsurf.csv"), delimiter=',')
+        my_data = wf.genfromtxt(os.path.join(caseName,runId,"watbal.csv"), delimiter=',')
 
         print("Checking  water budget ....")
-        self.assertAlmostEquals(-2.4355218783966848e-06,my_data[:,2].sum())
-        my_data = wf.genfromtxt(os.path.join(caseName,runId,"wbsoil.csv"), delimiter=',')
-        print("Checking soil water budget ....")
-        self.assertAlmostEquals(-4.6162970761542965e-06,my_data[:,2].sum())
+        self.assertAlmostEquals( 0.00018204912482389091,my_data[:,2].sum())
+
         print("Checking precip sum ....")
         my_data = wf.genfromtxt(os.path.join(caseName,runId,"P.csv"), delimiter=',')
         self.assertAlmostEquals(sump,my_data[:,2].sum())
