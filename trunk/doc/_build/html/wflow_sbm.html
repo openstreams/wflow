@@ -68,6 +68,7 @@
 <li><a class="reference internal" href="#the-soil-model">The soil model</a><ul>
 <li><a class="reference internal" href="#infiltration">Infiltration</a></li>
 <li><a class="reference internal" href="#the-wflow-sbm-soil-water-accounting-scheme">The wflow_sbm soil water accounting scheme</a></li>
+<li><a class="reference internal" href="#transpiration-and-soil-evaporation">Transpiration and soil evaporation</a></li>
 <li><a class="reference internal" href="#lower-zone-and-leakage">Lower zone and leakage</a></li>
 <li><a class="reference internal" href="#soil-temperature">Soil temperature</a></li>
 <li><a class="reference internal" href="#sub-grid-runoff-generation">Sub-grid runoff generation</a></li>
@@ -378,6 +379,16 @@ according to:</p>
 representation of the various hydrological processes and pathways
 modelled by SBM (infiltration, exfiltration, Hortonian and saturation
 overland flow, subsurface flow) is provided by Vertessy (1999).</p>
+</div>
+<div class="section" id="transpiration-and-soil-evaporation">
+<h3>Transpiration and soil evaporation<a class="headerlink" href="#transpiration-and-soil-evaporation" title="Permalink to this headline">¶</a></h3>
+<p>The potential eveporation left over after the interception is split
+in potential soil evaporation and potential transpiration base on the canopy gap fraction (assumed to be identical
+to the amount of bare soil).</p>
+<p>Soi evaporation is scaled according to:</p>
+<p><img class="math" src="_images/math/feb0c6a88347dabaee47a6c2f0693a44a9b3faf0.png" alt="soilevap = potensoilevap * SaturationDeficit/FirstZoneCapacity"/></p>
+<p>As such, evaporation will be potential if the soil is fully wetted and it decreases linear
+with increasing soil moisture deficit.</p>
 <p>The original SBM model does not include transpiration or a notion of
 capilary rise. In  wflow_sbm  transpiration is first taken from the
 <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> store if the roots reach the water table <img class="math" src="_images/math/29716ce86360aa89ea80309cbbaf42144675258f.png" alt="z_{i}"/>. If
@@ -531,8 +542,10 @@ soil profile generated runoff</p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">at present the model uses the drainage base (minimum DEM) and treats this as the 10% percentile
-to which the curve is fitted. So at present only two points are used (10 % and 50%)</p>
+<dl class="last docutils">
+<dt>The model determines the C for the upper hals and the lower half of the curve</dt>
+<dd>seperate and averages the results.</dd>
+</dl>
 </div>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
@@ -1047,6 +1060,12 @@ factors (RFCF and SFCF) are set to 1. The refreezing efficiency factor is set to
 <div class="versionadded">
 <p><span class="versionmodified">New in version 0.91: </span>- added S-curve for freezing soil infiltration reduction calculations</p>
 </div>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<ul class="last simple">
+<li>add slope based quick-runoff -&gt; less percolation on hillslopes...</li>
+</ul>
+</div>
 <dl class="method">
 <dt id="wflow_sbm.WflowModel.default_summarymaps">
 <tt class="descname">default_summarymaps</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_sbm.WflowModel.default_summarymaps" title="Permalink to this definition">¶</a></dt>
@@ -1058,10 +1077,10 @@ you think is crucial to the model should be listed here</p>
 <dl class="method">
 <dt id="wflow_sbm.WflowModel.dynamic">
 <tt class="descname">dynamic</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_sbm.WflowModel.dynamic" title="Permalink to this definition">¶</a></dt>
-<dd><p>Stuf that is done for each timestep</p>
+<dd><p>Stuf that is done for each timestep of the model</p>
 <p>Below a list of variables that can be save to disk as maps or as
 timeseries (see ini file for syntax):</p>
-<p><em>Dynamic variables</em></p>
+<p>All these can be saved per timestep if needed (see the config file [outputmaps] section).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1070,11 +1089,15 @@ timeseries (see ini file for syntax):</p>
 <li><strong>self.Precipitation</strong> &#8211; Gross precipitation [mm]</li>
 <li><strong>self.Temperature</strong> &#8211; Air temperature [oC]</li>
 <li><strong>self.PotenEvap</strong> &#8211; Potential evapotranspiration [mm]</li>
-<li><strong>self.PotTrans</strong> &#8211; Potential Transpiration (after subtracting Interception from PotenEvap) [mm]</li>
+<li><strong>self.PotTransSoil</strong> &#8211; Potential Transpiration/Openwater and soil evap (after subtracting Interception from PotenEvap) [mm]</li>
+<li><strong>self.Transpiration</strong> &#8211; plant/tree transpiration [mm]</li>
+<li><strong>self.ActEvapOpenWater</strong> &#8211; actual open water evaporation [mm]</li>
+<li><strong>self.soilevap</strong> &#8211; base soil evaporation [mm]</li>
 <li><strong>self.Interception</strong> &#8211; Actual rainfall interception [mm]</li>
-<li><strong>self.ActEvap</strong> &#8211; Actual evaporation [mm]</li>
+<li><strong>self.ActEvap</strong> &#8211; Actual evaporation (transpiration + Soil evap + open water evap) [mm]</li>
 <li><strong>self.SurfaceRunoff</strong> &#8211; Surface runoff in the kinematic wave [m^3/s]</li>
 <li><strong>self.SurfaceRunoffDyn</strong> &#8211; Surface runoff in the dyn-wave resrvoir [m^3/s]</li>
+<li><strong>self.SurfaceRunoffCatchmentMM</strong> &#8211; Surface runoff in the dyn-wave reservoir expressed in mm over the upstream (catchment) area</li>
 <li><strong>self.WaterLevelDyn</strong> &#8211; Water level in the dyn-wave resrvoir [m^]</li>
 <li><strong>self.ActEvap</strong> &#8211; Actual EvapoTranspiration [mm] (minus interception losses)</li>
 <li><strong>self.ExcessWater</strong> &#8211; Water that cannot infiltrate due to saturated soil [mm]</li>
@@ -1092,12 +1115,12 @@ timeseries (see ini file for syntax):</p>
 <li><strong>self.Transfer</strong> &#8211; downward flux from unsaturated to saturated zone [mm]</li>
 <li><strong>self.CapFlux</strong> &#8211; capilary flux from saturated to unsaturated zone [mm]</li>
 <li><strong>self.CanopyStorage</strong> &#8211; Amount of water on the Canopy [mm]</li>
+<li><strong>self.RunoffCoeff</strong> &#8211; Runoff coefficient (Q/P) for each cell taking into accoutn the whole upstream area [-]</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p><em>Static variables</em></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1168,7 +1191,7 @@ A less negative number smooths this. [mm] (default = -80000)</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
 <li><strong>N.tbl</strong> &#8211; Manning&#8217;s N parameter</li>
-<li><strong>N_river.tbl</strong> &#8211; Manning&#8217;s N parameter fro cells marked as river</li>
+<li><strong>N_river.tbl</strong> &#8211; Manning&#8217;s N parameter for cells marked as river</li>
 </ul>
 </td>
 </tr>
