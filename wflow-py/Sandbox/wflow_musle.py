@@ -5,9 +5,8 @@ Definition of the wflow_musle model.
 ---------------------------------------
 
 
-
 Usage:
-musle  -C case -R Runid -c inifile
+wflow_musle  -C case -R Runid -c inifile -T last timestep [-S Firststimestep]
 
     -C: set the name  of the case (directory) to run
     
