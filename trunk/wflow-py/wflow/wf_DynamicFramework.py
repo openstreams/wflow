@@ -373,7 +373,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     
     
     
-  def readtblDefault(self,pathtotbl,landuse,subcatch,soil, default,cloneMap=None):
+  def readtblDefault(self,pathtotbl,landuse,subcatch,soil, default):
     """
     First check if a prepared  maps of the same name is present
     in the staticmaps directory. next try to
@@ -389,7 +389,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         -  subcatch: subcatchment map
         -  soil: soil map
         -  default: default value
-        -  optional clonemap to check maps against
+
     
     Output: 
         - map constructed from tbl file or map with default value
@@ -410,11 +410,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         else:
             self.logger.warn("tbl file not found (" + pathtotbl + ") returning default value: " + str(default))
             rest = spatial(scalar(default))
-        
-        if cloneMap == None:
-            cmask = self._userModel().OutputId
-        else:
-            cmask = cloneMap
+
+
+        cmask = self._userModel().TopoId
 
         cmask = ifthen(cmask > 0,cmask)
         totalzeromap = pcr2numpy(maptotal(scalar(defined(cmask))),0)
