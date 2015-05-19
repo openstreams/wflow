@@ -5,15 +5,20 @@ Trunk
 -----
 Under heavy development
 
-+ support for scalar input to wflow\_sbm has been removed.
++ support for scalar input to wflow\_sbm/hbv has been removed.
 + added wf_updateparameters to framework. This allows the user to set parameters to update
-  in the ini file but alse list them in the parameters function in the model itself. This
+  in the ini file but also list them in the parameters function in the model itself. This
   functionality should replace all manual reading of forcing data and static parameters
 + Added .mult postfix for tbl files to apply multiplication
++ Added bmi support
++ wflow_sbm s-curve sharpness of height distribution now based on upper and lower
+  half of the distribution (average)
++ Added separate soil evap and RootZoneSoilMoisture to wflow_sbm
 
 
-Version 1.0RC7
---------------
+
+Version 1.0R C7
+---------------
 unsupported interim release
 
 + added  HBV type lower zone to wflow\_sbm. Use MaxPercolation > 0 to use this zone. MaxLeakege > 0 will send

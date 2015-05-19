@@ -916,3 +916,7 @@ wflow_sbm module documentation
     :members:
     :undoc-members:
     :show-inheritance:
+
+    .. autoattribute:: usage
+
+

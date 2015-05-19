@@ -118,7 +118,9 @@ multdynapars = {}
 
 
 def usage(*args):
+    #: Ha die Jaap
     sys.stdout = sys.stderr
+    """Way"""
     for msg in args: print msg
     print __doc__
     sys.exit(0)
@@ -892,7 +894,6 @@ class WflowModel(DynamicModel):
     def dynamic(self):
         """
         Stuf that is done for each timestep of the model
-        ------------------------------------------------
 
         Below a list of variables that can be save to disk as maps or as
         timeseries (see ini file for syntax):
@@ -1017,6 +1018,7 @@ class WflowModel(DynamicModel):
         self.RunoffOpenWater = min(1.0,self.RiverFrac + self.WaterFrac) * self.AvailableForInfiltration
         #self.RunoffOpenWater = self.ZeroMap
         self.AvailableForInfiltration = self.AvailableForInfiltration - self.RunoffOpenWater
+
 
         if self.RunoffGenSigmaFunction:
             self.AbsoluteGW = self.DemMax - (self.zi * self.GWScale)

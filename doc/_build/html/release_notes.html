@@ -55,7 +55,7 @@
   <ul>
 <li><a class="reference internal" href="#">Release notes</a><ul>
 <li><a class="reference internal" href="#trunk">Trunk</a></li>
-<li><a class="reference internal" href="#version-1-0rc7">Version 1.0RC7</a></li>
+<li><a class="reference internal" href="#version-1-0r-c7">Version 1.0R C7</a></li>
 <li><a class="reference internal" href="#version-1-0-rc5">Version 1.0 RC5</a></li>
 <li><a class="reference internal" href="#version-1-0-rc4">Version 1.0 RC4</a></li>
 </ul>
@@ -100,15 +100,19 @@
 <h2>Trunk<a class="headerlink" href="#trunk" title="Permalink to this headline">¶</a></h2>
 <p>Under heavy development</p>
 <ul class="simple">
-<li>support for scalar input to wflow_sbm has been removed.</li>
+<li>support for scalar input to wflow_sbm/hbv has been removed.</li>
 <li>added wf_updateparameters to framework. This allows the user to set parameters to update
-in the ini file but alse list them in the parameters function in the model itself. This
+in the ini file but also list them in the parameters function in the model itself. This
 functionality should replace all manual reading of forcing data and static parameters</li>
 <li>Added .mult postfix for tbl files to apply multiplication</li>
+<li>Added bmi support</li>
+<li>wflow_sbm s-curve sharpness of height distribution now based on upper and lower
+half of the distribution (average)</li>
+<li>Added separate soil evap and RootZoneSoilMoisture to wflow_sbm</li>
 </ul>
 </div>
-<div class="section" id="version-1-0rc7">
-<h2>Version 1.0RC7<a class="headerlink" href="#version-1-0rc7" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="version-1-0r-c7">
+<h2>Version 1.0R C7<a class="headerlink" href="#version-1-0r-c7" title="Permalink to this headline">¶</a></h2>
 <p>unsupported interim release</p>
 <ul class="simple">
 <li>added  HBV type lower zone to wflow_sbm. Use MaxPercolation &gt; 0 to use this zone. MaxLeakege &gt; 0 will send
