@@ -21,10 +21,11 @@
 """
 syntax:
     pcr2netcdf -S date -E date -N mapstackname -I mapstack_folder
-               -O netcdf_name [-b buffersize] [-c inifile]
+               -O netcdf_name [-b buffersize] [-c inifile][-s start]
 
     -S startdate in "%d-%m-%Y %H:%M:%S" e.g. 31-12-1990 00:00:00
     -E endDate in "%d-%m-%Y %H:%M:%S"
+    -s startstep (in the mapstack, default = 1)
     -N Mapstack-name (prefix)
        You can sepcify multiple input mapstack  to merge them into one netcdf
        e.g. -M P -M TEMP -M PET
@@ -71,7 +72,7 @@ def usage(*args):
     sys.exit(0)
 
 
-def readMap(fileName, fileFormat,logger,unzipcmd='pigz -d'):
+def readMap(fileName, fileFormat,logger,unzipcmd='pigz -d -k'):
     """ 
     Read PCRaster geographical file into memory
     """
@@ -79,7 +80,8 @@ def readMap(fileName, fileFormat,logger,unzipcmd='pigz -d'):
     if not os.path.exists(fileName):
         # try and unzip
         if os.path.exists(fileName + ".gz"):
-            os.system(unzipcmd + ' ' + fileName)
+            os.system(unzipcmd + ' ' + fileName + ".gz")
+            print "unzipping: " + fileName + ".gz"
             unzipped = 1
 
     pcrdata =  _pcrut.readmap(fileName)
@@ -91,6 +93,7 @@ def readMap(fileName, fileFormat,logger,unzipcmd='pigz -d'):
     if unzipped:
         #Delete uncomrpssed file if compressed exsists
         if os.path.exists(fileName + ".gz"):
+            print "Removing: " + fileName
             os.remove(fileName)
 
 
@@ -399,6 +402,7 @@ def main(argv=None):
     clonemap=None
     Format="NETCDF4"
     zlib=False
+    startstep = 1
     if argv is None:
         argv = sys.argv[1:]
         if len(argv) == 0:
@@ -408,12 +412,13 @@ def main(argv=None):
     ## Main model starts here
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, 'c:S:E:N:I:O:b:t:F:z')
+        opts, args = getopt.getopt(argv, 'c:S:E:N:I:O:b:t:F:zs:')
     except getopt.error, msg:
         usage(msg)
 
     for o, a in opts:
         if o == '-S': startstr = a
+        if o == '-s': startstep = int(a)
         if o == '-E': endstr = a
         if o == '-O': ncoutfile = a
         if o == '-c': inifile = a
@@ -458,7 +463,7 @@ def main(argv=None):
     # break up into separate years
 
 
-    startmapstack = 1
+    startmapstack = startstep
     for yr_timelist in timeList:
         ncoutfile_yr = os.path.splitext(ncoutfile)[0] + "_" + str(yr_timelist[0].year) + os.path.splitext(ncoutfile)[1]
         prepare_nc(ncoutfile_yr, yr_timelist, x, y, metadata, logger,Format=Format,zlib=zlib)
