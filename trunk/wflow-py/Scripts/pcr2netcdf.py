@@ -71,7 +71,7 @@ def usage(*args):
     sys.exit(0)
 
 
-def readMap(fileName, fileFormat,logger):
+def readMap(fileName, fileFormat,logger,unzipcmd='pigz -d'):
     """ 
     Read PCRaster geographical file into memory
     """
@@ -79,7 +79,7 @@ def readMap(fileName, fileFormat,logger):
     if not os.path.exists(fileName):
         # try and unzip
         if os.path.exists(fileName + ".gz"):
-            os.system("pigz -d " + fileName)
+            os.system(unzipcmd + ' ' + fileName)
             unzipped = 1
 
     pcrdata =  _pcrut.readmap(fileName)
