@@ -73,34 +73,14 @@ def usage(*args):
 
 def readMap(fileName, fileFormat,logger):
     """ 
-    Read geographical file into memory
+    Read PCRaster geographical file into memory
     """
-
-    # Open file for binary-reading
-    #pcrdata = _pcrut.readmap(fileName)
-    # mapFormat = gdal.GetDriverByName(fileFormat)
-    # mapFormat.Register()
-    # ds = gdal.Open(fileName)
-    # if ds is None:
-    #     logger.error('Could not open ' + fileName + '. Something went wrong!! Shutting down')
-    #     sys.exit(1)
-    #     # Retrieve geoTransform info
-    # geotrans = ds.GetGeoTransform()
-    # originX = geotrans[0]
-    # originY = geotrans[3]
-    # resX    = geotrans[1]
-    # resY    = geotrans[5]
-    # cols = ds.RasterXSize
-    # rows = ds.RasterYSize
-    # x = linspace(originX+resX/2,originX+resX/2+resX*(cols-1),cols)
-    # y = linspace(originY+resY/2,originY+resY/2+resY*(rows-1),rows)
-    # # Retrieve raster
-    # RasterBand = ds.GetRasterBand(1) # there's only 1 band, starting from 1
-    # data = RasterBand.ReadAsArray(0,0,cols,rows)
-    # FillVal = RasterBand.GetNoDataValue()
-    # RasterBand = None
-    # del ds
-    # #ds = None
+    unzipped = 0
+    if not os.path.exists(fileName):
+        # try and unzip
+        if os.path.exists(fileName + ".gz"):
+            os.system("pigz -d " + fileName)
+            unzipped = 1
 
     pcrdata =  _pcrut.readmap(fileName)
     x = _pcrut.pcr2numpy(_pcrut.xcoordinate(_pcrut.boolean(_pcrut.cover(1.0))),NaN)[0,:]
@@ -108,6 +88,10 @@ def readMap(fileName, fileFormat,logger):
 
     FillVal =  float(1E31)
     data = _pcrut.pcr2numpy(pcrdata,FillVal)
+    if unzipped:
+        #Delete uncomrpssed file if compressed exsists
+        if os.path.exists(fileName + ".gz"):
+            os.remove(fileName)
 
 
     return x, y, data, FillVal
