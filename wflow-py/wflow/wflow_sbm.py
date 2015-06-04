@@ -924,6 +924,7 @@ class WflowModel(DynamicModel):
         :var self.CanopyStorage: actual canopystorage (only for subdaily timesteps) [mm]
         :var self.FirstZoneDepth: Amount of water in the saturated store [mm]
         :var self.UStoreDepth: Amount of water in the unsaturated store [mm]
+        :var self.zi: depth of the water table in mm below the surface [mm]
         :var self.Snow: Snow depth [mm]
         :var self.SnowWater: water content of the snow [mm]
         :var self.TSoil: Top soil temperature [oC]
