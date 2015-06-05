@@ -339,10 +339,10 @@ class WflowModel(DynamicModel):
                                                     "/inmaps/IF")  # timeseries for rainfall "/inmaps/IF" # in/outflow locations (abstractions)
 
         # Meteo and other forcing
-        modelparameters.append(self.ParamType(name="Precipitation",stack=self.P_mapstack,type="timeseries",default=0.0,verbose=True))
-        modelparameters.append(self.ParamType(name="PotenEvap",stack=self.PET_mapstack,type="timeseries",default=0.0,verbose=True))
-        modelparameters.append(self.ParamType(name="Temperature",stack=self.TEMP_mapstack,type="timeseries",default=10.0,verbose=True))
-        modelparameters.append(self.ParamType(name="Inflow",stack=self.Inflow_mapstack,type="timeseries",default=0.0,verbose=False))
+        modelparameters.append(self.ParamType(name="Precipitation",stack=self.P_mapstack,type="timeseries",default=0.0,verbose=True,lookupmaps=[]))
+        modelparameters.append(self.ParamType(name="PotenEvap",stack=self.PET_mapstack,type="timeseries",default=0.0,verbose=True,lookupmaps=[]))
+        modelparameters.append(self.ParamType(name="Temperature",stack=self.TEMP_mapstack,type="timeseries",default=10.0,verbose=True,lookupmaps=[]))
+        modelparameters.append(self.ParamType(name="Inflow",stack=self.Inflow_mapstack,type="timeseries",default=0.0,verbose=False,lookupmaps=[]))
 
 
         return modelparameters
@@ -525,17 +525,25 @@ class WflowModel(DynamicModel):
 
         self.wf_updateparameters()
 
+
         self.RunoffGeneratingGWPerc = self.readtblDefault(self.Dir + "/" + self.intbl + "/RunoffGeneratingGWPerc.tbl",
                                                           self.LandUse, subcatch, self.Soil,
                                                           self.RunoffGeneratingGWPerc)
 
-        self.Cmax = self.readtblDefault(self.Dir + "/" + self.intbl + "/MaxCanopyStorage.tbl", self.LandUse, subcatch,
+        if hasattr(self,"LAI"):
+            # Sl must also be defined
+            self.Cmax = self.Sl * self.LAI + self.Swood
+            self.CanopyGapFraction = exp(-self.Kext * self.LAI)
+        else:
+            self.Cmax = self.readtblDefault(self.Dir + "/" + self.intbl + "/MaxCanopyStorage.tbl", self.LandUse, subcatch,
                                         self.Soil, 1.0)
+            self.CanopyGapFraction = self.readtblDefault(self.Dir + "/" + self.intbl + "/CanopyGapFraction.tbl",
+                                        self.LandUse, subcatch, self.Soil, 0.1)
+
         self.EoverR = self.readtblDefault(self.Dir + "/" + self.intbl + "/EoverR.tbl", self.LandUse, subcatch,
                                           self.Soil, 0.1)
-        # self.Albedo=lookupscalar(self.Dir + "\intbl\Albedo.tbl",self.LandUse) # Not used anymore
-        self.CanopyGapFraction = self.readtblDefault(self.Dir + "/" + self.intbl + "/CanopyGapFraction.tbl",
-                                                     self.LandUse, subcatch, self.Soil, 0.1)
+
+
         self.RootingDepth = self.readtblDefault(self.Dir + "/" + self.intbl + "/RootingDepth.tbl", self.LandUse,
                                                 subcatch, self.Soil, 750.0)  #rooting depth
         #: rootdistpar determien how roots are linked to water table.
@@ -954,6 +962,11 @@ class WflowModel(DynamicModel):
 
         # Read forcing data and dynamic parameters
         self.wf_updateparameters()
+        if hasattr(self,"LAI"):
+            # Sl must also be defined
+            self.Cmax = self.Sl * self.LAI + self.Swood
+            self.CanopyGapFraction = exp(-self.Kext * self.LAI)
+
         #Apply forcing data corrections
         self.PotenEvap = self.PotenEvap * self.et_RefToPot
         if self.modelSnow:

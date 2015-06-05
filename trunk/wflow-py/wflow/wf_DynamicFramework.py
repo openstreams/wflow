@@ -238,7 +238,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
   def __init__(self, userModel, lastTimeStep=0, firstTimestep=1,datetimestart=dt.datetime(1990,01,01),timestepsecs=86400):
     frameworkBase.FrameworkBase.__init__(self)
 
-    self.ParamType = namedtuple("ParamType", "name stack type default verbose")
+    self.ParamType = namedtuple("ParamType", "name stack type default verbose lookupmaps")
     self.modelparameters = [] # list of model parameters
     self.exchnageitems = wf_exchnageVariables()
     self.setQuiet(True)
@@ -294,6 +294,13 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         for par in self.modelparameters:
             if self._userModel()._inInitial():
+                if par.type == 'tbl':
+                    if not hasattr(self._userModel(),par.name):
+                        self._userModel().logger.info("Adding " + par.name + " to model.")
+                    tblname = os.path.join(self._userModel().Dir, par.stack)
+                    theparmap = self.readtblFlexDefault(tblname, par.default, *par.lookupmaps)
+                    setattr(self._userModel(),par.name,theparmap)
+
                 if par.type == 'statictbl':
                     if not hasattr(self._userModel(),par.name):
                         self._userModel().logger.info("Adding " + par.name + " to model.")
@@ -314,7 +321,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
                     setattr(self._userModel(),par.name,theparmap)
 
-            if self._userModel()._inDynamic():
+            if self._userModel()._inDynamic() or self._userModel()._inInitial():
                 if par.type == 'timeseries':
                     if not hasattr(self._userModel(),par.name):
                         self._userModel().logger.info("Adding " + par.name + " to model.")
@@ -327,6 +334,13 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         self._userModel().logger.info("Adding " + par.name + " to model.")
                     theparmap = self.wf_readmapClimatology(os.path.join(self._userModel().caseName,par.stack) ,kind=1, default=par.default, verbose=par.verbose)
                     theparmap = cover(theparmap,par.default)
+                    setattr(self._userModel(),par.name,theparmap)
+
+                if par.type == 'tbl':
+                    if not hasattr(self._userModel(),par.name):
+                        self._userModel().logger.info("Adding " + par.name + " to model.")
+                    tblname = os.path.join(self._userModel().Dir, par.stack)
+                    theparmap = self.readtblFlexDefault(tblname, par.default, *par.lookupmaps)
                     setattr(self._userModel(),par.name,theparmap)
 
                 if par.type == 'hourlyclim':
@@ -429,7 +443,73 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self.logger.info("Applying multiplication from table: " + multname)
 
     return rest
-    
+
+
+  def readtblFlexDefault(self,pathtotbl,default, *args):
+    """
+    First check if a prepared  maps of the same name is present
+    in the staticmaps directory. next try to
+    read a tbl file to match a a number of maps. Returns
+    the default value if the tbl file is not found.
+
+    Finally check of a tbl file exists with a .mult postfix (e.g. Cmax.tbl.mult) and apply the
+    multiplication to the loaded data.
+
+    Input:
+        -  pathtotbl: full path to table file
+        -  default: default value
+        - *args: maps for the lookup table directly fed to lookupscalar
+
+    Output:
+        - map constructed from tbl file or map with default value
+
+    .. todo::
+
+        Add checking for missing values
+    """
+
+    mapname = os.path.dirname(pathtotbl) + "/../staticmaps/" + os.path.splitext(os.path.basename(pathtotbl))[0]+".map"
+    if os.path.exists(mapname):
+        self.logger.info("Reading map parameter file: " + mapname)
+        rest = cover(readmap(mapname),default)
+    else:
+        if os.path.isfile(pathtotbl):
+            newargs = []
+            args = list(args)
+            for mapje in args:
+                if len(os.path.splitext(mapje)[1]) > 1:
+                    newargs.append(os.path.join(self._userModel().caseName,mapje))
+                    # we specify a full map
+                else:
+                    # Assume we have monthly climatology
+                    theparmap = self.wf_readmapClimatology(os.path.join(self._userModel().caseName,mapje) ,kind=1, default=default, verbose=True)
+                    theparmap = cover(theparmap,default)
+                    newargs.append(theparmap)
+
+            rest = lookupscalar(pathtotbl,*newargs)
+        else:
+            self.logger.warn("tbl file not found (" + pathtotbl + ") returning default value: " + str(default))
+            rest = spatial(scalar(default))
+
+
+        #cmask = self._userModel().TopoId
+
+        #cmask = ifthen(cmask > 0,cmask)
+        #totalzeromap = pcr2numpy(maptotal(scalar(defined(cmask))),0)
+        #resttotal = pcr2numpy(maptotal(scalar(defined(rest))),0)
+
+        #if resttotal[0,0] < totalzeromap[0,0]:
+        #    self.logger.warn("Not all catchment cells have a value for [" + pathtotbl + "] : " + str(resttotal[0,0]) + "!=" + str(totalzeromap[0,0]))
+
+    # Apply multiplication table if present
+    multname = os.path.dirname(pathtotbl) + ".mult"
+    if os.path.exists(multname):
+        multfac=lookupscalar(multname,*args)
+        rest = rest * multfac
+        self.logger.info("Applying multiplication from table: " + multname)
+
+    return rest
+
 
   def createRunId(self,intbl="intbl",logfname="wflow.log",NoOverWrite=True,model="model",modelVersion="no version",level=pcrut.logging.DEBUG):
     """
@@ -555,7 +635,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     for par in modpars:
         aline = self._userModel().config.get("modelparameters",par)
         vals = aline.split(',')
-        if len(vals) == 4:
+        if len(vals) >= 4:
             # check if par already present
             present = par in [xxx[0] for xxx in self.modelparameters]
             if present:
@@ -563,13 +643,13 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 # Check if the existing definition is static, in that case append, otherwise overwrite
                 if 'static' in self.modelparameters[pos].type:
                     self._userModel().logger.debug("Creating extra parameter specification for par: " + par + " (" + str(vals) + ")")
-                    self.modelparameters.append(self.ParamType(name=par,stack=vals[0],type=vals[1],default=float(vals[2])),verbose=vals[3])
+                    self.modelparameters.append(self.ParamType(name=par,stack=vals[0],type=vals[1],default=float(vals[2])),verbose=vals[3],lookupmaps=vals[4:])
                 else:
                     self._userModel().logger.debug("Updating existing parameter specification for par: " + par + " (" + str(vals) + ")")
-                    self.modelparameters[pos] = self.ParamType(name=par,stack=vals[0],type=vals[1],default=float(vals[2]),verbose=vals[3])
+                    self.modelparameters[pos] = self.ParamType(name=par,stack=vals[0],type=vals[1],default=float(vals[2]),verbose=vals[3],lookupmaps=vals[4:])
             else:
                 self._userModel().logger.debug("Creating parameter specification for par: " + par + " (" + str(vals) + ")")
-                self.modelparameters.append(self.ParamType(name=par,stack=vals[0],type=vals[1],default=float(vals[2]),verbose=vals[3]))
+                self.modelparameters.append(self.ParamType(name=par,stack=vals[0],type=vals[1],default=float(vals[2]),verbose=vals[3],lookupmaps=vals[4:]))
         else:
             logging.error("Parameter line in ini not valid: " + aline)
 

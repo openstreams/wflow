@@ -221,11 +221,11 @@ class WflowModel(DynamicModel):
 
     # Meteo and other forcing
 
-    modelparameters.append(self.ParamType(name="Precipitation",stack="inmaps/P",type="timeseries",default=0.0,verbose=False))
-    modelparameters.append(self.ParamType(name="PotEvaporation",stack="inmaps/PET",type="timeseries",default=0.0,verbose=False))
-    modelparameters.append(self.ParamType(name="Temperature",stack="inmaps/TEMP",type="timeseries",default=10.0,verbose=False))
-    modelparameters.append(self.ParamType(name="Inflow",stack="inmaps/IF",type="timeseries",default=0.0,verbose=False))
-    modelparameters.append(self.ParamType(name="Seepage",stack="inmaps/SE",type="timeseries",default=0.0,verbose=False))
+    modelparameters.append(self.ParamType(name="Precipitation",stack="inmaps/P",type="timeseries",default=0.0,verbose=False,lookupmaps=[]))
+    modelparameters.append(self.ParamType(name="PotEvaporation",stack="inmaps/PET",type="timeseries",default=0.0,verbose=False,lookupmaps=[]))
+    modelparameters.append(self.ParamType(name="Temperature",stack="inmaps/TEMP",type="timeseries",default=10.0,verbose=False,lookupmaps=[]))
+    modelparameters.append(self.ParamType(name="Inflow",stack="inmaps/IF",type="timeseries",default=0.0,verbose=False,lookupmaps=[]))
+    modelparameters.append(self.ParamType(name="Seepage",stack="inmaps/SE",type="timeseries",default=0.0,verbose=False,lookupmaps=[]))
 
 
 
