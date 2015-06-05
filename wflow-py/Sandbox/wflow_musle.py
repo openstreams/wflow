@@ -79,21 +79,21 @@ class WflowModel(DynamicModel):
       modelparameters = []
 
       #Static map model parameters
-      modelparameters.append(self.ParamType(name="Altitude",stack="staticmaps/wflow_dem.map",type="staticmap",default=0.0,verbose=False))
-      modelparameters.append(self.ParamType(name="LandUse",stack="staticmaps/wflow_landuse.map",type="staticmap",default=1,verbose=False))
-      modelparameters.append(self.ParamType(name="Soil",stack="staticmaps/wflow_soil.map",type="staticmap",default=1,verbose=False))
-      modelparameters.append(self.ParamType(name="TopoId",stack="staticmaps/wflow_subcatch.map",type="staticmap",default=1,verbose=False))
-      modelparameters.append(self.ParamType(name="TopoLdd",stack="staticmaps/wflow_ldd.map",type="staticmap",default=1,verbose=False))
+      modelparameters.append(self.ParamType(name="Altitude",stack="staticmaps/wflow_dem.map",type="staticmap",default=0.0,verbose=False,lookupmaps=[]))
+      modelparameters.append(self.ParamType(name="LandUse",stack="staticmaps/wflow_landuse.map",type="staticmap",default=1,verbose=False,lookupmaps=[]))
+      modelparameters.append(self.ParamType(name="Soil",stack="staticmaps/wflow_soil.map",type="staticmap",default=1,verbose=False,lookupmaps=[]))
+      modelparameters.append(self.ParamType(name="TopoId",stack="staticmaps/wflow_subcatch.map",type="staticmap",default=1,verbose=False,lookupmaps=[]))
+      modelparameters.append(self.ParamType(name="TopoLdd",stack="staticmaps/wflow_ldd.map",type="staticmap",default=1,verbose=False,lookupmaps=[]))
 
       # These should be linked to soil type
-      modelparameters.append(self.ParamType(name="percent_clay",stack="intbl/percent_clay.tbl",type="statictbl",default=0.1, verbose=False))
-      modelparameters.append(self.ParamType(name="percent_silt",stack="intbl/percent_silt.tbl",type="statictbl",default=0.1, verbose=False))
+      modelparameters.append(self.ParamType(name="percent_clay",stack="intbl/percent_clay.tbl",type="statictbl",default=0.1, verbose=False,lookupmaps=[]))
+      modelparameters.append(self.ParamType(name="percent_silt",stack="intbl/percent_silt.tbl",type="statictbl",default=0.1, verbose=False,lookupmaps=[]))
       # Impervious area fraction == Pathfrac from wfow_sbm
-      modelparameters.append(self.ParamType(name="PathFrac",stack="intbl/PathFrac.tbl",type="statictbl",default=0.1, verbose=False))
-      modelparameters.append(self.ParamType(name="idplt",stack="intbl/idplt.tbl",type="statictbl",default=0.1, verbose=False))
+      modelparameters.append(self.ParamType(name="PathFrac",stack="intbl/PathFrac.tbl",type="statictbl",default=0.1, verbose=False,lookupmaps=[]))
+      modelparameters.append(self.ParamType(name="idplt",stack="intbl/idplt.tbl",type="statictbl",default=0.1, verbose=False,lookupmaps=[]))
       # These should be linked to LAI and/or land use
-      modelparameters.append(self.ParamType(name="canopy_height",stack="intbl/canopy_height.tbl",type="statictbl",default=0.1, verbose=False))
-      modelparameters.append(self.ParamType(name="LAI",stack="intbl/LAI.tbl",type="statictbl",default=3.0, verbose=False))
+      modelparameters.append(self.ParamType(name="canopy_height",stack="intbl/canopy_height.tbl",type="statictbl",default=0.1, verbose=False,lookupmaps=[]))
+      modelparameters.append(self.ParamType(name="LAI",stack="intbl/LAI.tbl",type="statictbl",default=3.0, verbose=False,lookupmaps=[]))
 
 
       # Sediment delivery ratio
