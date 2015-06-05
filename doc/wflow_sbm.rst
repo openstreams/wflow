@@ -116,6 +116,24 @@ Values derived in this way generally tend to be (much) higher than
 those calculated with the penman-monteith equation.
 
 
+Running with parameters derived from LAI
+````````````````````````````````````````
+The model can determine the Gash parameters from an LAI maps. In order to switch this on
+you must define the LAI variable to the model (as in the example below).
+
+    [modelparameters]
+    LAI=inmaps/clim/LAI,monthlyclim,1.0,1
+    Sl=inmaps/clim/LCtoSpecificLeafStorage.tbl,tbl,0.5,1,inmaps/clim/LC.map
+    Kext=inmaps/clim/LCtoSpecificLeafStorage.tbl,tbl,0.5,1,inmaps/clim/LC.map
+    Swood=inmaps/clim/LCtoBranchTrunkStorage.tbl,tbl,0.5,1,inmaps/clim/LC.map
+
+Here LAI refers to a MAP with LAI (in this case one per month), Sl to a lookuptable
+result of land cover to specific leaf storage, Kext to a lookuptable result of
+land cover to extinction coefficient and Swood  to a lookuptable result of
+"canopy" capacity of the vegetation woody fraction.
+
+
+
 
 The modified rutter model
 ~~~~~~~~~~~~~~~~~~~~~~~~~
