@@ -676,7 +676,7 @@ The correction grid is optional.
 	If the entry is not in the file the correction will not be applied
 
 
-Guidelines for wflow\sbm model parameters
+Guidelines for wflow_sbm model parameters
 -----------------------------------------
 
 The tables below shows the most important parameters and suggested ranges
@@ -773,8 +773,8 @@ thetaS.tbl
 
 
 
-Calibrating the  wflow\_sbm model
----------------------------------
+Calibrating the  wflow_sbm model
+--------------------------------
 
 Introduction
 ~~~~~~~~~~~~
