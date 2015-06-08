@@ -113,19 +113,7 @@ available as a Python extension. As such, the structure of the model is
 transparent, can be changed by other modellers easily, and the system
 allows for rapid development. The PCRaster version used here is a beta
 version that comes with bindings to the Python language. In order to run
-the model both PCRaster and Python 2.7 are needed.
-
-
-.. only:: html
-
-    .. note::  A pdf version of this version of the documentation can be
-               found at
-               (https://drive.google.com/folderview?id=0B-lQGXSOhXJRc1d0YW82Q21hdEk&usp=sharing)
-
-.. only:: latex
-
-    .. note::  A html version of this version of the documentation can be
-               found at (http://wflow.googlecode.com/svn/tags/1.0RC6/doc/_build/html/index.html).
+the model both PCRaster 4.* and Python 2.7 are needed.
 
 
 

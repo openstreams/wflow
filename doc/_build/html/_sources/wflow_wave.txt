@@ -1,4 +1,4 @@
-THe wflow_wave Model
+The wflow_wave Model
 ====================
 
 
