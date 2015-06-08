@@ -193,11 +193,9 @@ for outputs, role 2 for state variables and role3 for model parameters.</p>
 <h2>Settings in the modelparameters section<a class="headerlink" href="#settings-in-the-modelparameters-section" title="Permalink to this headline">¶</a></h2>
 <p>Most of the time this section is not needed as this will mostly be configured
 in the python code by the model developer. However, in some case this section can be used
-alter the modell for example force the model to read RootingDepth from an external data source.</p>
+alter the model for example force the model to read RootingDepth from an external data source.</p>
 <p>The format of entries in this section is as follows:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">name</span><span class="o">=</span><span class="n">stack</span><span class="p">,</span><span class="nb">type</span><span class="p">,</span><span class="n">default</span>
-<span class="c"># example:</span>
-<span class="c"># RootingDepth=monthlyclim/ROOT,monthyclim,100,1</span>
+<div class="highlight-python"><div class="highlight"><pre>name=stack,type,default,verbose,[lookupmap_1],[lookupmap_2],lookupmap_n]
 </pre></div>
 </div>
 <ul>
@@ -210,26 +208,38 @@ alter the modell for example force the model to read RootingDepth from an extern
 <li><p class="first">default - Default value if map/tbl is not present</p>
 </li>
 <li><dl class="first docutils">
-<dt>verbose - If set to 1 (True) the maps a log log message will be generated is a default values is used</dt>
+<dt>verbose - If set to 1 (True) the maps a log message will be generated is a default values is used</dt>
 <dd><p class="first last">instead of a map</p>
 </dd>
 </dl>
+</li>
+<li><p class="first">lookupmap - map(s) [0 to n] to be used in the lookuptable in the case the type is tbl</p>
 </li>
 </ul>
 <p>Possible parameter types (the second option)are:</p>
 <ul class="simple">
 <li>staticmap: Read at startup from map</li>
-<li>statictbl: Read at startup from tbl, fallback to map (need Landuse, Soil and TopoId (subcatch) maps)!</li>
+<li>statictbl: [deprecated] Read at startup from tbl, fallback to map (need Landuse, Soil and TopoId (subcatch) maps)!</li>
+<li>tbl: Read at startup from tbl and ar runtime fallback to map, lookuptable maps define here.</li>
 <li>timeseries: read map for each timestep</li>
 <li>monthlyclim: read a map corresponding to the current month (12 maps in total)</li>
 <li>dailyclim: read a map corresponding to the current day of the year (366 maps in total)</li>
-<li>hourlyclim: read a map corresponding to the current hour of the day (24 maps in total)</li>
+<li>hourlyclim: [not implemented yet] read a map corresponding to the current hour of the day (24 maps in total)</li>
 </ul>
 <p>Example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">modelparameters</span><span class="p">]</span>
 <span class="n">RootingDepth</span><span class="o">=</span><span class="n">monthlyclim</span><span class="o">/</span><span class="n">ROOTS</span><span class="p">,</span><span class="n">monthlyclim</span><span class="p">,</span><span class="mi">75</span><span class="p">,</span><span class="mi">0</span>
 <span class="c"># Force the model to read monthly climatology of P</span>
 <span class="n">Precipitation</span><span class="o">=</span><span class="n">inmaps</span><span class="o">/</span><span class="n">P</span><span class="p">,</span><span class="n">monthlyclim</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mi">1</span>
+</pre></div>
+</div>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">modelparameters</span><span class="p">]</span>
+<span class="n">RootingDepth</span><span class="o">=</span><span class="n">monthlyclim</span><span class="o">/</span><span class="n">ROOT</span><span class="p">,</span><span class="n">monthyclim</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">1</span>
+<span class="n">Sl</span><span class="o">=</span><span class="n">inmaps</span><span class="o">/</span><span class="n">clim</span><span class="o">/</span><span class="n">LCtoSpecificLeafStorage</span><span class="o">.</span><span class="n">tbl</span><span class="p">,</span><span class="n">tbl</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">inmaps</span><span class="o">/</span><span class="n">clim</span><span class="o">/</span><span class="n">LC</span><span class="o">.</span><span class="n">map</span>
+<span class="n">Kext</span><span class="o">=</span><span class="n">inmaps</span><span class="o">/</span><span class="n">clim</span><span class="o">/</span><span class="n">LCtoSpecificLeafStorage</span><span class="o">.</span><span class="n">tbl</span><span class="p">,</span><span class="n">tbl</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">inmaps</span><span class="o">/</span><span class="n">clim</span><span class="o">/</span><span class="n">LC</span><span class="o">.</span><span class="n">map</span>
+<span class="n">Swood</span><span class="o">=</span><span class="n">inmaps</span><span class="o">/</span><span class="n">clim</span><span class="o">/</span><span class="n">LCtoBranchTrunkStorage</span><span class="o">.</span><span class="n">tbl</span><span class="p">,</span><span class="n">tbl</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">inmaps</span><span class="o">/</span><span class="n">clim</span><span class="o">/</span><span class="n">LC</span><span class="o">.</span><span class="n">map</span>
+<span class="n">LAI</span><span class="o">=</span><span class="n">inmaps</span><span class="o">/</span><span class="n">clim</span><span class="o">/</span><span class="n">LAI</span><span class="p">,</span><span class="n">monthlyclim</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mi">1</span>
 </pre></div>
 </div>
 </div>
@@ -323,7 +333,7 @@ Also changes the working dir to the case/runid directory</p>
 
 <dl class="method">
 <dt id="wf_DynamicFramework.wf_DynamicFramework.readtblDefault">
-<tt class="descname">readtblDefault</tt><big>(</big><em>pathtotbl</em>, <em>landuse</em>, <em>subcatch</em>, <em>soil</em>, <em>default</em>, <em>cloneMap=None</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.readtblDefault" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">readtblDefault</tt><big>(</big><em>pathtotbl</em>, <em>landuse</em>, <em>subcatch</em>, <em>soil</em>, <em>default</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.readtblDefault" title="Permalink to this definition">¶</a></dt>
 <dd><p>First check if a prepared  maps of the same name is present
 in the staticmaps directory. next try to
 read a tbl file to match a landuse, catchment and soil map. Returns 
@@ -338,7 +348,6 @@ multiplication to the loaded data.</p>
 <li>subcatch: subcatchment map</li>
 <li>soil: soil map</li>
 <li>default: default value</li>
-<li>optional clonemap to check maps against</li>
 </ul>
 </dd>
 <dt>Output: </dt>
@@ -348,6 +357,35 @@ multiplication to the loaded data.</p>
 </dd>
 </dl>
 <div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">Add checking for missing values</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="wf_DynamicFramework.wf_DynamicFramework.readtblFlexDefault">
+<tt class="descname">readtblFlexDefault</tt><big>(</big><em>pathtotbl</em>, <em>default</em>, <em>*args</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.readtblFlexDefault" title="Permalink to this definition">¶</a></dt>
+<dd><p>First check if a prepared  maps of the same name is present
+in the staticmaps directory. next try to
+read a tbl file to match a a number of maps. Returns
+the default value if the tbl file is not found.</p>
+<p>Finally check of a tbl file exists with a .mult postfix (e.g. Cmax.tbl.mult) and apply the
+multiplication to the loaded data.</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>pathtotbl: full path to table file</li>
+<li>default: default value</li>
+<li><a href="#id1"><span class="problematic" id="id2">*</span></a>args: maps for the lookup table directly fed to lookupscalar</li>
+</ul>
+</dd>
+<dt>Output:</dt>
+<dd><ul class="first last simple">
+<li>map constructed from tbl file or map with default value</li>
+</ul>
+</dd>
+</dl>
+<div class="admonition-todo admonition" id="index-1">
 <p class="first admonition-title">Todo</p>
 <p class="last">Add checking for missing values</p>
 </div>
@@ -434,7 +472,7 @@ value for area with id area only. Current settings for dimensions are assumed.</
 
 <dl class="method">
 <dt id="wf_DynamicFramework.wf_DynamicFramework.wf_readmap">
-<tt class="descname">wf_readmap</tt><big>(</big><em>name</em>, <em>default</em>, <em>verbose=True</em>, <em>filetype='PCRaster'</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_readmap" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">wf_readmap</tt><big>(</big><em>name</em>, <em>default</em>, <em>verbose=True</em><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_readmap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adjusted version of readmapNew. the style variable is used to indicated
 how the data is read:</p>
 <div class="highlight-python"><div class="highlight"><pre>1 - default: reads pcrmaps
@@ -485,7 +523,7 @@ a _? postfix)</p>
 <dt id="wf_DynamicFramework.wf_DynamicFramework.wf_savedynMaps">
 <tt class="descname">wf_savedynMaps</tt><big>(</big><big>)</big><a class="headerlink" href="#wf_DynamicFramework.wf_DynamicFramework.wf_savedynMaps" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the maps defined in the ini file for the dynamic section</p>
-<div class="admonition-todo admonition" id="index-1">
+<div class="admonition-todo admonition" id="index-2">
 <p class="first admonition-title">Todo</p>
 <p class="last">Save maps to be used in memory at startup and do not call the ini file each time</p>
 </div>

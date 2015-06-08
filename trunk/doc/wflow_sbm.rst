@@ -214,7 +214,7 @@ frozen. The remaining storage capacity of the unsaturated store is
 determined. The infiltrating water is split is two parts, the part that
 falls on compacted areas and the part that falls on non-compacted areas.
 First the amount of water that infiltrates in non-compacted areas is
-calculated by taking the mimimum of the remaining storage capacity, the
+calculated by taking the minimum of the remaining storage capacity, the
 maximum soil infiltration rate and the water on non-compacted areas.
 After adding the infiltrated water to the unsaturated store the same is
 done for the compacted areas after updating the remaining storage
@@ -602,7 +602,7 @@ significantly higher. (Use N.tbl for non-river cells and N_River.tbl for river c
     "bottom: cobbles with large boulders", 0.04,  0.05, 0.07 
  
 Subcatchment flow
-=================
+-----------------
 Normally the the kinematic wave is continuous throughout the model. By using the
 the SubCatchFlowOnly entry in the model section of the ini file all flow is at the
 subcatchment only and no flow is transferred from one subcatchment to another. This can be handy
@@ -615,85 +615,7 @@ Example:
     [model]
     SubCatchFlowOnly = 1
 
-Dynamic wave
-------------
 
-.. warning::
-
-    As of version 0.93 this is moved to the wflow\_wave module.
-
-An *experimental* implementation of the full dynamic wave equations has been 
-implemented. The current implementation is fairly unstable and *very* slow.
-It can be switched on by setting dynamicwave=1 in the [dynamicwave] 
-section of the ini file. See below for an example: 
-
-
-::
-
-    [dynamicwave]
-    # Switch on dynamic wave for main rivers
-    dynamicwave=1
-    
-    # Number of timeslices per dynamic wave substep
-    TsliceDyn=100
-    
-    # number of substeps for the dynamic wave with respect to the model timesteps
-    dynsubsteps=24
-    
-    # map with level boundary points
-    wflow_hboun = staticmaps/wflow_outlet.map
-    
-    # Optional river map for the dynamic wave that must be the same size or smaller as that of the
-    # kinematic wave
-    wflow_dynriver = staticmaps/wflow_dynriver.map
-    
-    # a fixed water level for each non-zero point in the wflow_hboun map 
-    # level > 0.0 use that level
-    # level == 0.0 use supplied timeseries (see levelTss)
-    # level < 0.0 use upstream water level
-    fixedLevel = 3.0
-
-    # if this is set the program will try to keep the volume at the pits at
-    # a constant value
-    lowerflowbound = 1
-    
-    # instead of a fixed level a tss file with levels for each timesteps and each 
-    # non-zero value in the wflow_hboun map
-    #levelTss=intss/Hboun.tss
-    
-    # If set to 1 the program will try to optimise the timestep
-    # Experimental, mintimestep is the smallest to be used
-    #AdaptiveTimeStepping = 1
-    #mintimestep =1.0
-
-
-
-A description of the implementation of the dynamicwave is given on the 
-`pcraster website <http://pcraster.geo.uu.nl/documentation/PCRaster/html/op_dynamicwave.html>`_.
- 
-In addition to the settings in the ini file you need to give the model additional maps
-or lookuptables:
-
-- ChannelDepth.[map|tbl] - depth of the main channel in metres
-- ChannelRoughness.[map|tbl] - manning roughness coefficient (default = 0.03)
-- ChannelForm.[map|tbl] - form of the chnaggel (default = 0.0)
-- FloodplainWidth.[map|tbl] - width of the floodplain in metres (default = )
-
-The following variables for the dynamicwave function are set as follows:
-
-- ChannelBottomLevel - Taken from the dem
-- ChannelLength - Taken from the length in the kinematic wave
-- ChannelBottomWidth - taken from the wflow_riverwidth map (this map can be user supplied 
-  or when it is not supplied a geomorphological relation is used)
-
-
-Becuase the dynamic wave can be unstable priming the model with new initial 
-conditions is best done in several steps:
-
-#. Run the model with the -I option and the dynamic wave switch off
-#. Copy back the resulting state files to the instate directory
-#. Re-run the model with the without the -I option
-#. Copy back the resulting states of the Dynamic wave to the instate directory
 
 
 
