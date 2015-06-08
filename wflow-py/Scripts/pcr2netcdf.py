@@ -81,7 +81,7 @@ def readMap(fileName, fileFormat,logger,unzipcmd='pigz -d -k'):
         # try and unzip
         if os.path.exists(fileName + ".gz"):
             os.system(unzipcmd + ' ' + fileName + ".gz")
-            print "unzipping: " + fileName + ".gz"
+            logger.info("unzipping: " + fileName + ".gz")
             unzipped = 1
 
     pcrdata =  _pcrut.readmap(fileName)
@@ -91,9 +91,9 @@ def readMap(fileName, fileFormat,logger,unzipcmd='pigz -d -k'):
     FillVal =  float(1E31)
     data = _pcrut.pcr2numpy(pcrdata,FillVal)
     if unzipped:
-        #Delete uncomrpssed file if compressed exsists
+        #Delete uncompressed file if compressed exsists
         if os.path.exists(fileName + ".gz"):
-            print "Removing: " + fileName
+            logger.info("Removing: " + fileName)
             os.remove(fileName)
 
 
@@ -366,10 +366,10 @@ def date_range_peryear(start, end, tdelta="days"):
         ed = min(dt.datetime(yrs+1,1,1), end)
 
         if tdelta == "days":
-            r = (ed-dt.datetime(yrs,1,1)).days
+            r = (ed-dt.datetime(yrs,1,1)).days + 1
             ret.append([dt.datetime(yrs,1,1)+dt.timedelta(days=i) for i in range(r)])
         else:
-            r = (ed-dt.datetime(yrs,1,1)).days * 24
+            r = ((ed-dt.datetime(yrs,1,1)).days + 1) * 24
             ret.append([dt.datetime(yrs,1,1)+dt.timedelta(hours=i) for i in range(r)])
 
     return ret
