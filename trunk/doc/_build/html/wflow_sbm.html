@@ -78,13 +78,10 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#kinematic-wave-and-river-width">Kinematic wave and River Width</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#subcatchment-flow">Subcatchment flow</a><ul>
-<li><a class="reference internal" href="#dynamic-wave">Dynamic wave</a></li>
+<li><a class="reference internal" href="#subcatchment-flow">Subcatchment flow</a></li>
 <li><a class="reference internal" href="#model-variables-stores-and-fluxes">Model variables stores and fluxes</a></li>
 <li><a class="reference internal" href="#processing-of-meteorological-forcing-data">Processing of meteorological forcing data</a></li>
-<li><a class="reference internal" href="#guidelines-for-wflowsbm-model-parameters">Guidelines for wflowsbm model parameters</a></li>
+<li><a class="reference internal" href="#guidelines-for-wflow-sbm-model-parameters">Guidelines for wflow_sbm model parameters</a></li>
 <li><a class="reference internal" href="#calibrating-the-wflow-sbm-model">Calibrating the  wflow_sbm model</a><ul>
 <li><a class="reference internal" href="#id4">Introduction</a></li>
 <li><a class="reference internal" href="#parameters">Parameters</a></li>
@@ -693,9 +690,8 @@ significantly higher. (Use N.tbl for non-river cells and N_River.tbl for river c
 </tbody>
 </table>
 </div>
-</div>
 <div class="section" id="subcatchment-flow">
-<h1>Subcatchment flow<a class="headerlink" href="#subcatchment-flow" title="Permalink to this headline">¶</a></h1>
+<h2>Subcatchment flow<a class="headerlink" href="#subcatchment-flow" title="Permalink to this headline">¶</a></h2>
 <p>Normally the the kinematic wave is continuous throughout the model. By using the
 the SubCatchFlowOnly entry in the model section of the ini file all flow is at the
 subcatchment only and no flow is transferred from one subcatchment to another. This can be handy
@@ -705,78 +701,6 @@ when connecting the result of the model to a water allocation model such as Riba
 <span class="n">SubCatchFlowOnly</span> <span class="o">=</span> <span class="mi">1</span>
 </pre></div>
 </div>
-<div class="section" id="dynamic-wave">
-<h2>Dynamic wave<a class="headerlink" href="#dynamic-wave" title="Permalink to this headline">¶</a></h2>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">As of version 0.93 this is moved to the wflow_wave module.</p>
-</div>
-<p>An <em>experimental</em> implementation of the full dynamic wave equations has been
-implemented. The current implementation is fairly unstable and <em>very</em> slow.
-It can be switched on by setting dynamicwave=1 in the [dynamicwave]
-section of the ini file. See below for an example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="n">dynamicwave</span><span class="p">]</span>
-<span class="c"># Switch on dynamic wave for main rivers</span>
-<span class="n">dynamicwave</span><span class="o">=</span><span class="mi">1</span>
-
-<span class="c"># Number of timeslices per dynamic wave substep</span>
-<span class="n">TsliceDyn</span><span class="o">=</span><span class="mi">100</span>
-
-<span class="c"># number of substeps for the dynamic wave with respect to the model timesteps</span>
-<span class="n">dynsubsteps</span><span class="o">=</span><span class="mi">24</span>
-
-<span class="c"># map with level boundary points</span>
-<span class="n">wflow_hboun</span> <span class="o">=</span> <span class="n">staticmaps</span><span class="o">/</span><span class="n">wflow_outlet</span><span class="o">.</span><span class="n">map</span>
-
-<span class="c"># Optional river map for the dynamic wave that must be the same size or smaller as that of the</span>
-<span class="c"># kinematic wave</span>
-<span class="n">wflow_dynriver</span> <span class="o">=</span> <span class="n">staticmaps</span><span class="o">/</span><span class="n">wflow_dynriver</span><span class="o">.</span><span class="n">map</span>
-
-<span class="c"># a fixed water level for each non-zero point in the wflow_hboun map</span>
-<span class="c"># level &gt; 0.0 use that level</span>
-<span class="c"># level == 0.0 use supplied timeseries (see levelTss)</span>
-<span class="c"># level &lt; 0.0 use upstream water level</span>
-<span class="n">fixedLevel</span> <span class="o">=</span> <span class="mf">3.0</span>
-
-<span class="c"># if this is set the program will try to keep the volume at the pits at</span>
-<span class="c"># a constant value</span>
-<span class="n">lowerflowbound</span> <span class="o">=</span> <span class="mi">1</span>
-
-<span class="c"># instead of a fixed level a tss file with levels for each timesteps and each</span>
-<span class="c"># non-zero value in the wflow_hboun map</span>
-<span class="c">#levelTss=intss/Hboun.tss</span>
-
-<span class="c"># If set to 1 the program will try to optimise the timestep</span>
-<span class="c"># Experimental, mintimestep is the smallest to be used</span>
-<span class="c">#AdaptiveTimeStepping = 1</span>
-<span class="c">#mintimestep =1.0</span>
-</pre></div>
-</div>
-<p>A description of the implementation of the dynamicwave is given on the
-<a class="reference external" href="http://pcraster.geo.uu.nl/documentation/PCRaster/html/op_dynamicwave.html">pcraster website</a>.</p>
-<p>In addition to the settings in the ini file you need to give the model additional maps
-or lookuptables:</p>
-<ul class="simple">
-<li>ChannelDepth.[map|tbl] - depth of the main channel in metres</li>
-<li>ChannelRoughness.[map|tbl] - manning roughness coefficient (default = 0.03)</li>
-<li>ChannelForm.[map|tbl] - form of the chnaggel (default = 0.0)</li>
-<li>FloodplainWidth.[map|tbl] - width of the floodplain in metres (default = )</li>
-</ul>
-<p>The following variables for the dynamicwave function are set as follows:</p>
-<ul class="simple">
-<li>ChannelBottomLevel - Taken from the dem</li>
-<li>ChannelLength - Taken from the length in the kinematic wave</li>
-<li>ChannelBottomWidth - taken from the wflow_riverwidth map (this map can be user supplied
-or when it is not supplied a geomorphological relation is used)</li>
-</ul>
-<p>Becuase the dynamic wave can be unstable priming the model with new initial
-conditions is best done in several steps:</p>
-<ol class="arabic simple">
-<li>Run the model with the -I option and the dynamic wave switch off</li>
-<li>Copy back the resulting state files to the instate directory</li>
-<li>Re-run the model with the without the -I option</li>
-<li>Copy back the resulting states of the Dynamic wave to the instate directory</li>
-</ol>
 </div>
 <div class="section" id="model-variables-stores-and-fluxes">
 <h2>Model variables stores and fluxes<a class="headerlink" href="#model-variables-stores-and-fluxes" title="Permalink to this headline">¶</a></h2>
@@ -829,8 +753,8 @@ TemperatureCorrectionMap=NameOfTheMap</p>
 <p class="last">If the entry is not in the file the correction will not be applied</p>
 </div>
 </div>
-<div class="section" id="guidelines-for-wflowsbm-model-parameters">
-<h2>Guidelines for wflowsbm model parameters<a class="headerlink" href="#guidelines-for-wflowsbm-model-parameters" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="guidelines-for-wflow-sbm-model-parameters">
+<h2>Guidelines for wflow_sbm model parameters<a class="headerlink" href="#guidelines-for-wflow-sbm-model-parameters" title="Permalink to this headline">¶</a></h2>
 <p>The tables below shows the most important parameters and suggested ranges</p>
 <p>CanopyGapFraction
 <a class="reference external" href="file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/Cfmax.tbl">file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/Cfmax.tbl</a></p>
