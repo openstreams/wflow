@@ -532,6 +532,19 @@ class WflowModel(DynamicModel):
 
         if hasattr(self,"LAI"):
             # Sl must also be defined
+            if not hasattr(self,"Sl"):
+                logging.error("Sl (specific leaf storage) not defined! Needed becausee LAI is defined.")
+                logging.error("Please add it to the modelparameters section. e.g.:")
+                logging.error("Sl=inmaps/clim/LCtoSpecificLeafStorage.tbl,tbl,0.5,1,inmaps/clim/LC.map")
+            if not hasattr(self,"Kext"):
+                logging.error("Kext (canopy extinction coefficient) not defined! Needed becausee LAI is defined.")
+                logging.error("Please add it to the modelparameters section. e.g.:")
+                logging.error("Kext=inmaps/clim/LCtoSpecificLeafStorage.tbl,tbl,0.5,1,inmaps/clim/LC.map")
+            if not hasattr(self,"Swood"):
+                logging.error("Swood wood (branches, trunks) canopy storage not defined! Needed becausee LAI is defined.")
+                logging.error("Please add it to the modelparameters section. e.g.:")
+                logging.error("Swood=inmaps/clim/LCtoBranchTrunkStorage.tbl,tbl,0.5,1,inmaps/clim/LC.map")
+
             self.Cmax = self.Sl * self.LAI + self.Swood
             self.CanopyGapFraction = exp(-self.Kext * self.LAI)
         else:
