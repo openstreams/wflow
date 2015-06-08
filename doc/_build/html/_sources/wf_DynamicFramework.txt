@@ -117,29 +117,31 @@ Settings in the modelparameters section
 
 Most of the time this section is not needed as this will mostly be configured
 in the python code by the model developer. However, in some case this section can be used
-alter the modell for example force the model to read RootingDepth from an external data source.
+alter the model for example force the model to read RootingDepth from an external data source.
 
 The format of entries in this section is as follows::
 
-    name=stack,type,default
-    # example:
-    # RootingDepth=monthlyclim/ROOT,monthyclim,100,1
+    name=stack,type,default,verbose,[lookupmap_1],[lookupmap_2],lookupmap_n]
+
 
 + name - Name of the parameter (internal variable, without the self.)
 + stack - Name of the mapstack (representation on disk or in mem) relative to case
 + type - Type of parameter (default = static)
 + default - Default value if map/tbl is not present
-+ verbose - If set to 1 (True) the maps a log log message will be generated is a default values is used
++ verbose - If set to 1 (True) the maps a log message will be generated is a default values is used
              instead of a map
++ lookupmap - map(s) [0 to n] to be used in the lookuptable in the case the type is tbl
+
 
 Possible parameter types (the second option)are:
 
 + staticmap: Read at startup from map
-+ statictbl: Read at startup from tbl, fallback to map (need Landuse, Soil and TopoId (subcatch) maps)!
++ statictbl: [deprecated] Read at startup from tbl, fallback to map (need Landuse, Soil and TopoId (subcatch) maps)!
++ tbl: Read at startup from tbl and ar runtime fallback to map, lookuptable maps define here.
 + timeseries: read map for each timestep
 + monthlyclim: read a map corresponding to the current month (12 maps in total)
 + dailyclim: read a map corresponding to the current day of the year (366 maps in total)
-+ hourlyclim: read a map corresponding to the current hour of the day (24 maps in total)
++ hourlyclim: [not implemented yet] read a map corresponding to the current hour of the day (24 maps in total)
 
 
 Example::
@@ -148,6 +150,16 @@ Example::
     RootingDepth=monthlyclim/ROOTS,monthlyclim,75,0
     # Force the model to read monthly climatology of P
     Precipitation=inmaps/P,monthlyclim,0.0,1
+
+
+Example::
+
+    [modelparameters]
+    RootingDepth=monthlyclim/ROOT,monthyclim,100,1
+    Sl=inmaps/clim/LCtoSpecificLeafStorage.tbl,tbl,0.5,1,inmaps/clim/LC.map
+    Kext=inmaps/clim/LCtoSpecificLeafStorage.tbl,tbl,0.5,1,inmaps/clim/LC.map
+    Swood=inmaps/clim/LCtoBranchTrunkStorage.tbl,tbl,0.5,1,inmaps/clim/LC.map
+    LAI=inmaps/clim/LAI,monthlyclim,1.0,1
 
 
 Settings in the summary_* sections

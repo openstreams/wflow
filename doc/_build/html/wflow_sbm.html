@@ -61,7 +61,10 @@
 <li><a class="reference internal" href="#potential-and-reference-evaporation">Potential and Reference evaporation</a></li>
 <li><a class="reference internal" href="#snow">Snow</a></li>
 <li><a class="reference internal" href="#the-rainfall-interception-model">The rainfall interception model</a><ul>
-<li><a class="reference internal" href="#the-analytical-gash-model">The analytical (Gash) model</a></li>
+<li><a class="reference internal" href="#the-analytical-gash-model">The analytical (Gash) model</a><ul>
+<li><a class="reference internal" href="#running-with-parameters-derived-from-lai">Running with parameters derived from LAI</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#the-modified-rutter-model">The modified rutter model</a></li>
 </ul>
 </li>
@@ -232,6 +235,21 @@ neither <img class="math" src="_images/math/7eb95bb0ad0fd63fd50e453661374366fbff
 way from <img class="math" src="_images/math/c6d4cd125fffe3a9fbeb96336544dbd9fd61350e.png" alt="\overline{R}"/> in the absence of above-canopy climatic observations.
 Values derived in this way generally tend to be (much) higher than
 those calculated with the penman-monteith equation.</p>
+<div class="section" id="running-with-parameters-derived-from-lai">
+<h4>Running with parameters derived from LAI<a class="headerlink" href="#running-with-parameters-derived-from-lai" title="Permalink to this headline">¶</a></h4>
+<p>The model can determine the Gash parameters from an LAI maps. In order to switch this on
+you must define the LAI variable to the model (as in the example below).</p>
+<blockquote>
+<div>[modelparameters]
+LAI=inmaps/clim/LAI,monthlyclim,1.0,1
+Sl=inmaps/clim/LCtoSpecificLeafStorage.tbl,tbl,0.5,1,inmaps/clim/LC.map
+Kext=inmaps/clim/LCtoSpecificLeafStorage.tbl,tbl,0.5,1,inmaps/clim/LC.map
+Swood=inmaps/clim/LCtoBranchTrunkStorage.tbl,tbl,0.5,1,inmaps/clim/LC.map</div></blockquote>
+<p>Here LAI refers to a MAP with LAI (in this case one per month), Sl to a lookuptable
+result of land cover to specific leaf storage, Kext to a lookuptable result of
+land cover to extinction coefficient and Swood  to a lookuptable result of
+&#8220;canopy&#8221; capacity of the vegetation woody fraction.</p>
+</div>
 </div>
 <div class="section" id="the-modified-rutter-model">
 <h3>The modified rutter model<a class="headerlink" href="#the-modified-rutter-model" title="Permalink to this headline">¶</a></h3>
@@ -305,7 +323,7 @@ frozen. The remaining storage capacity of the unsaturated store is
 determined. The infiltrating water is split is two parts, the part that
 falls on compacted areas and the part that falls on non-compacted areas.
 First the amount of water that infiltrates in non-compacted areas is
-calculated by taking the mimimum of the remaining storage capacity, the
+calculated by taking the minimum of the remaining storage capacity, the
 maximum soil infiltration rate and the water on non-compacted areas.
 After adding the infiltrated water to the unsaturated store the same is
 done for the compacted areas after updating the remaining storage
@@ -1107,6 +1125,7 @@ timeseries (see ini file for syntax):</p>
 <li><strong>self.CanopyStorage</strong> &#8211; actual canopystorage (only for subdaily timesteps) [mm]</li>
 <li><strong>self.FirstZoneDepth</strong> &#8211; Amount of water in the saturated store [mm]</li>
 <li><strong>self.UStoreDepth</strong> &#8211; Amount of water in the unsaturated store [mm]</li>
+<li><strong>self.zi</strong> &#8211; depth of the water table in mm below the surface [mm]</li>
 <li><strong>self.Snow</strong> &#8211; Snow depth [mm]</li>
 <li><strong>self.SnowWater</strong> &#8211; water content of the snow [mm]</li>
 <li><strong>self.TSoil</strong> &#8211; Top soil temperature [oC]</li>

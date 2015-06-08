@@ -156,7 +156,7 @@ may be added by you if needed.</p>
 <tt class="descname">parameters</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_sceleton.WflowModel.parameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>List all the parameters (both static and forcing here). Use the wf_updateparameters()
 function to update them in the initial section (static) and the dynamic section for
-dynamic parameters.</p>
+dynamic parameters and forcing date.</p>
 <p>Possible parameter types are:</p>
 <ul class="simple">
 <li>staticmap: Read at startup from map</li>
@@ -204,7 +204,7 @@ for the model.</p>
 <p>Supplies the current time in seconds after the start of the run
 This function is optional. If it is not set the framework assumes
 the model runs with daily timesteps.</p>
-<p>Ouput:</p>
+<p>Output:</p>
 <blockquote>
 <div><ul class="simple">
 <li>time in seconds since the start of the model run</li>
@@ -237,7 +237,7 @@ structure used in the other models.</p>
 <tt class="descname">resume</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_sceleton.WflowModel.resume" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>Required</em></p>
 <p>This function is required. Read initial state maps (they are output of a 
-previous call to suspend()). The implementation showns here is the most basic 
+previous call to suspend()). The implementation shown here is the most basic
 setup needed.</p>
 </dd></dl>
 
@@ -246,7 +246,7 @@ setup needed.</p>
 <tt class="descname">default_summarymaps</tt><big>(</big><big>)</big><a class="headerlink" href="#wflow_sceleton.WflowModel.default_summarymaps" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>Optional</em></p>
 <p>Return a default list of variables to report as summary maps in the outsum dir.
-The ini file has more option, including average and sum</p>
+The ini file has more options, including average and sum</p>
 </dd></dl>
 
 <dl class="method">
@@ -337,7 +337,7 @@ module to parse the command line options.</p>
       <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">      List all the parameters (both static and forcing here). Use the wf_updateparameters()</span>
 <span class="sd">      function to update them in the initial section (static) and the dynamic section for</span>
-<span class="sd">      dynamic parameters.</span>
+<span class="sd">      dynamic parameters and forcing date.</span>
 
 <span class="sd">      Possible parameter types are:</span>
 
@@ -354,10 +354,10 @@ module to parse the command line options.</p>
       <span class="n">modelparameters</span> <span class="o">=</span> <span class="p">[]</span>
 
       <span class="c">#Static model parameters</span>
-      <span class="n">modelparameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ParamType</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Altitude&quot;</span><span class="p">,</span><span class="n">stack</span><span class="o">=</span><span class="s">&quot;staticmaps/wflow_dem.map&quot;</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="s">&quot;staticmap&quot;</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">))</span>
+      <span class="n">modelparameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ParamType</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Altitude&quot;</span><span class="p">,</span><span class="n">stack</span><span class="o">=</span><span class="s">&quot;staticmaps/wflow_dem.map&quot;</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="s">&quot;staticmap&quot;</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">lookupmaps</span><span class="o">=</span><span class="p">[]))</span>
 
       <span class="c"># Meteo and other forcing</span>
-      <span class="n">modelparameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ParamType</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Temperature&quot;</span><span class="p">,</span><span class="n">stack</span><span class="o">=</span><span class="s">&quot;inmaps/TEMP&quot;</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="s">&quot;timeseries&quot;</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">))</span>
+      <span class="n">modelparameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ParamType</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Temperature&quot;</span><span class="p">,</span><span class="n">stack</span><span class="o">=</span><span class="s">&quot;inmaps/TEMP&quot;</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="s">&quot;timeseries&quot;</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">lookupmaps</span><span class="o">=</span><span class="p">[]))</span>
 
       <span class="k">return</span> <span class="n">modelparameters</span>
 
@@ -390,7 +390,7 @@ module to parse the command line options.</p>
 <span class="sd">      This function is optional. If it is not set the framework assumes</span>
 <span class="sd">      the model runs with daily timesteps.</span>
 <span class="sd">      </span>
-<span class="sd">      Ouput:</span>
+<span class="sd">      Output:</span>
 <span class="sd">      </span>
 <span class="sd">          - time in seconds since the start of the model run</span>
 <span class="sd">          </span>
@@ -436,6 +436,7 @@ module to parse the command line options.</p>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">timestepsecs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">configget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span><span class="s">&#39;model&#39;</span><span class="p">,</span><span class="s">&#39;timestepsecs&#39;</span><span class="p">,</span><span class="s">&#39;86400&#39;</span><span class="p">))</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">basetimestep</span><span class="o">=</span><span class="mi">86400</span>
+    <span class="c"># Reads all parameter from disk</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">wf_updateparameters</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Starting Dynamic run...&quot;</span><span class="p">)</span>
 
@@ -445,7 +446,7 @@ module to parse the command line options.</p>
 <span class="sd">    *Required*</span>
 
 <span class="sd">    This function is required. Read initial state maps (they are output of a </span>
-<span class="sd">    previous call to suspend()). The implementation showns here is the most basic </span>
+<span class="sd">    previous call to suspend()). The implementation shown here is the most basic</span>
 <span class="sd">    setup needed.</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -465,7 +466,7 @@ module to parse the command line options.</p>
 <span class="sd">      *Optional*</span>
 
 <span class="sd">      Return a default list of variables to report as summary maps in the outsum dir.</span>
-<span class="sd">      The ini file has more option, including average and sum</span>
+<span class="sd">      The ini file has more options, including average and sum</span>
 <span class="sd">      &quot;&quot;&quot;</span>
       <span class="k">return</span> <span class="p">[</span><span class="s">&#39;self.Altitude&#39;</span><span class="p">]</span>
 
@@ -477,11 +478,10 @@ module to parse the command line options.</p>
 <span class="sd">      output should also be saved here.</span>
 <span class="sd">      &quot;&quot;&quot;</span>
 
-      <span class="bp">self</span><span class="o">.</span><span class="n">wf_updateparameters</span><span class="p">()</span> <span class="c"># read the temperature map fo each step (see parameters())</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">wf_updateparameters</span><span class="p">()</span> <span class="c"># read the temperature map for each step (see parameters())</span>
 
       <span class="bp">self</span><span class="o">.</span><span class="n">TSoil</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TSoil</span> <span class="o">+</span> <span class="mf">0.1125</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Temperature</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">TSoil</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestepsecs</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">basetimestep</span>
-      
-      <span class="c"># reporting of maps and csv timeseries is done by the framework (see ini file)</span>
+
     
 
 <span class="c"># The main function is used to run the program from the command line</span>
