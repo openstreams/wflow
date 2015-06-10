@@ -1040,10 +1040,8 @@ class WflowModel(DynamicModel):
         # Start with the soil calculations
         # --------------------------------
         # Code to be able to force zi from the outside
-        #self.zi = min(self.zi, self.FirstZoneThickness)
-
+        #
         self.FirstZoneDepth = (self.thetaS - self.thetaR) * (self.FirstZoneThickness - self.zi)
-        # Update Ustore
 
 
         self.AvailableForInfiltration = ThroughFall + StemFlow
