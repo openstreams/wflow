@@ -1039,9 +1039,12 @@ class WflowModel(DynamicModel):
 
         # Start with the soil calculations
         # --------------------------------
-        #self.zi = max(0.0, self.FirstZoneThickness - self.FirstZoneDepth / (self.thetaS - self.thetaR))
-        self.zi = min(self.zi, self.FirstZoneThickness)
+        # Code to be able to force zi from the outside
+        #self.zi = min(self.zi, self.FirstZoneThickness)
+
         self.FirstZoneDepth = (self.thetaS - self.thetaR) * (self.FirstZoneThickness - self.zi)
+        # Update Ustore
+
 
         self.AvailableForInfiltration = ThroughFall + StemFlow
         UStoreCapacity = self.FirstZoneCapacity - self.FirstZoneDepth - self.UStoreDepth
