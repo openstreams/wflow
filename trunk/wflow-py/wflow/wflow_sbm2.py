@@ -277,7 +277,7 @@ class WflowModel(DynamicModel):
        :var self.CanopyStorage: Amount of water on the Canopy [mm]
        """
         states = ['SurfaceRunoff', 'WaterLevel',
-                  'FirstZoneDepth',
+                  'SatWaterDepth',
                   'Snow',
                   'TSoil',
                   'UStoreDepth',
@@ -1376,7 +1376,7 @@ def main(argv=None):
     caseName = "default_sbm"
     global multpars
     runId = "run_default"
-    configfile = "wflow_sbm.ini"
+    configfile = "wflow_sbm2.ini"
     _lastTimeStep = 0
     _firstTimeStep = 0
     LogFileName = "wflow.log"
