@@ -17,6 +17,16 @@ Under heavy development
 + Added support in wflow_SBM to get vegetation parameters for Gash from LAI
 + Moved non-mature scripts to SandBox dir
 + Added unit tests for wflow_sbm, hbv and bmi
++ Started with wflow_sbm2 -> New version with new (more logical) variable names. This version will
+  also have a better unsaturated zone (for G4INDO project). New Names:
+  + FirstZoneDepth -> SatWaterDepth
+  + FirstZoneKsatVer -> KsatVer
+  + FirstZoneMinCapacity -> SoilMinThickness
+  + FirstZoneCapacity -> SoilThickness
+  + FirstZoneThickness -> SoilThickness
+  + FirstZoneCapacity -> SoilWaterCapacity
+  + FirstZoneFlux -> SatWaterFlux
+  + FirstZoneDepth -> SatWaterDepth
 
 
 
