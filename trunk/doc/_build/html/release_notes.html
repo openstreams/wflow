@@ -55,7 +55,7 @@
   <ul>
 <li><a class="reference internal" href="#">Release notes</a><ul>
 <li><a class="reference internal" href="#trunk">Trunk</a></li>
-<li><a class="reference internal" href="#version-1-0r-c7">Version 1.0R C7</a></li>
+<li><a class="reference internal" href="#version-1-0-rc7">Version 1.0 RC7</a></li>
 <li><a class="reference internal" href="#version-1-0-rc5">Version 1.0 RC5</a></li>
 <li><a class="reference internal" href="#version-1-0-rc4">Version 1.0 RC4</a></li>
 </ul>
@@ -104,15 +104,28 @@
 <li>added wf_updateparameters to framework. This allows the user to set parameters to update
 in the ini file but also list them in the parameters function in the model itself. This
 functionality should replace all manual reading of forcing data and static parameters</li>
-<li>Added .mult postfix for tbl files to apply multiplication</li>
+<li>Added .mult postfix for tbl files to apply multiplication (untested)</li>
 <li>Added bmi support</li>
 <li>wflow_sbm s-curve sharpness of height distribution now based on upper and lower
 half of the distribution (average)</li>
 <li>Added separate soil evap and RootZoneSoilMoisture to wflow_sbm</li>
+<li>Added support in wflow_SBM to get vegetation parameters for Gash from LAI</li>
+<li>Moved non-mature scripts to SandBox dir</li>
+<li>Added unit tests for wflow_sbm, hbv and bmi</li>
+<li>Started with wflow_sbm2 -&gt; New version with new (more logical) variable names. This version will
+also have a better unsaturated zone (for G4INDO project). New Names:<ul>
+<li>FirstZoneKsatVer -&gt; KsatVer</li>
+<li>FirstZoneMinCapacity -&gt; SoilMinThickness</li>
+<li>FirstZoneCapacity (FirstZoneThickness) -&gt; SoilThickness</li>
+<li>FirstZoneCapacity -&gt; SoilWaterCapacity</li>
+<li>FirstZoneFlux -&gt; SatWaterFlux</li>
+<li>FirstZoneDepth -&gt; SatWaterDepth</li>
+</ul>
+</li>
 </ul>
 </div>
-<div class="section" id="version-1-0r-c7">
-<h2>Version 1.0R C7<a class="headerlink" href="#version-1-0r-c7" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="version-1-0-rc7">
+<h2>Version 1.0 RC7<a class="headerlink" href="#version-1-0-rc7" title="Permalink to this headline">¶</a></h2>
 <p>unsupported interim release</p>
 <ul class="simple">
 <li>added  HBV type lower zone to wflow_sbm. Use MaxPercolation &gt; 0 to use this zone. MaxLeakege &gt; 0 will send

@@ -9,15 +9,27 @@ Under heavy development
 + added wf_updateparameters to framework. This allows the user to set parameters to update
   in the ini file but also list them in the parameters function in the model itself. This
   functionality should replace all manual reading of forcing data and static parameters
-+ Added .mult postfix for tbl files to apply multiplication
++ Added .mult postfix for tbl files to apply multiplication (untested)
 + Added bmi support
 + wflow_sbm s-curve sharpness of height distribution now based on upper and lower
   half of the distribution (average)
 + Added separate soil evap and RootZoneSoilMoisture to wflow_sbm
++ Added support in wflow_SBM to get vegetation parameters for Gash from LAI
++ Moved non-mature scripts to SandBox dir
++ Added unit tests for wflow_sbm, hbv and bmi
++ Started with wflow_sbm2 -> New version with new (more logical) variable names. This version will
+  also have a better unsaturated zone (for G4INDO project). New Names:
+
+  + FirstZoneKsatVer -> KsatVer
+  + FirstZoneMinCapacity -> SoilMinThickness
+  + FirstZoneCapacity (FirstZoneThickness) -> SoilThickness
+  + FirstZoneCapacity -> SoilWaterCapacity
+  + FirstZoneFlux -> SatWaterFlux
+  + FirstZoneDepth -> SatWaterDepth
 
 
 
-Version 1.0R C7
+Version 1.0 RC7
 ---------------
 unsupported interim release
 
