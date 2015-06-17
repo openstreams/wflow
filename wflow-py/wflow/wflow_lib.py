@@ -709,7 +709,7 @@ def sCurve(X,a=0.0,b=1.0,c=1.0):
 
 def sCurveSlope(X,a=0.0,b=1.0,c=1.0):
     """
-    First derivitive of the sCurve defined by a,b,c at point X
+    First derivative of the sCurve defined by a,b,c at point X
     
     Input:
         - X - value to calculate for
@@ -718,7 +718,7 @@ def sCurveSlope(X,a=0.0,b=1.0,c=1.0):
         - c
     
     Output:
-        - first derivitive (slope) of the curve at point X
+        - first derivative (slope) of the curve at point X
     """
     sc = sCurve(X,a=a,b=b,c=c)
     slope = sc * (1 - sc)
