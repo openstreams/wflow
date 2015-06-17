@@ -1319,6 +1319,13 @@ class WflowModel(DynamicModel):
             self.updateRunOff()
             Runoff = self.SurfaceRunoff
 
+
+
+        # Determine Soil moisture profile
+        # 1: average volumetric soil in total unsat store
+        self.SMVol = (cover(self.UStoreDepth/self.zi,0.0) + self.thetaR) * (self. thetaS - self.thetaR)
+
+        # 2:
         ##########################################################################
         # water balance ###########################################
         ##########################################################################
