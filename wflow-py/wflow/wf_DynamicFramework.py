@@ -793,6 +793,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
           if hasattr(self._userModel(),a.replace('self.','')):
               thevar = getattr(self._userModel(),a.replace('self.',''))
               self._reportNew(thevar,self._userModel().Dir + "/" + self._userModel().runId + "/outmaps/" +  self._userModel().config.get("outputmaps",a),longname=a)
+          else:
+              self.logger.warn("outputmap " + a + " not found in usermodel")
 
       
   def wf_resume(self, directory):
