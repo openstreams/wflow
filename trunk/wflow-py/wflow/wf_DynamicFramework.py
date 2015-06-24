@@ -325,6 +325,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 if par.type == 'timeseries':
                     if not hasattr(self._userModel(),par.name):
                         self._userModel().logger.info("Adding " + par.name + " to model.")
+
                     theparmap = self.wf_readmap(os.path.join(self._userModel().caseName,par.stack), par.default,verbose=par.verbose)
                     theparmap = cover(theparmap,par.default)
                     setattr(self._userModel(),par.name,theparmap)
@@ -558,7 +559,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     self.ncoutfile = configget(self._userModel().config,'framework','netcdfoutput',"None")
 
 
-    # Set teh re-init hint fro the local model
+    # Set the re-init hint for the local model
     self.reinit = int(configget(self._userModel().config,'run','reinit',str(self.reinit)))
     self._userModel().reinit = self.reinit
     # Now finally set the start end time. First check if set in ini otherwise check if the ini defines
@@ -620,7 +621,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     for sttype in _type.availtypes:
         _maps = configsection(self._userModel().config,"summary_" + sttype)
         for thismap in _maps:
-            thismapname = caseName + "/" + runId + "/outsum/" + self._userModel().config.get("summary_" + sttype,thismap)
+            thismapname = os.path.join(caseName,runId,'outsum',self._userModel().config.get("summary_" + sttype,thismap))
             thismap = thismap.split('self.')[1]
             self.statslst.append(wf_sumavg(thismap,mode=sttype,filename=thismapname))
 

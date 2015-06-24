@@ -555,7 +555,7 @@ class wflowbmi_csdms(bmi.Bmi):
         dim =  self.dynModel.wf_supplyGridDim()
         #[ Xul, Yul, xsize, ysize, rows, cols]
 
-        return dim[4,5]
+        return [dim[4], dim[5]]
 
     def get_grid_spacing(self, long_var_name):
         """
@@ -565,7 +565,8 @@ class wflowbmi_csdms(bmi.Bmi):
 
         :return: The size of a grid cell for each of the dimensions of the given variable, e.g. [width, height]: for a 2D grid cell.
         """
-        raise NotImplementedError
+
+        return self.dynModel.wf_supplyGridDim()[2:4]
 
     def get_grid_origin(self, long_var_name):
         """

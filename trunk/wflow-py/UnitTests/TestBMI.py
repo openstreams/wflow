@@ -54,6 +54,9 @@ class MyTest(unittest.TestCase):
         print("-------------- Current time: ")
         print(bmiobj.get_current_time())
 
+        print("-------------- Grid shape: ")
+        print(bmiobj.get_grid_shape('Altitude'))
+
         print("-------------- End time: ")
         print(bmiobj.get_end_time())
 
