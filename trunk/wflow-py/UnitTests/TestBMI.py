@@ -3,6 +3,7 @@ __author__ = 'schelle'
 import unittest
 import logging
 import wflow.wflow_bmi as bmi
+import time
 import os
 """
 Simple test for wflow bmi framework
@@ -53,9 +54,22 @@ class MyTest(unittest.TestCase):
 
         print("-------------- Current time: ")
         print(bmiobj.get_current_time())
+        print(time.localtime(bmiobj.get_current_time()))
+
+        print("-------------- update: ")
+        bmiobj.update()
+
+        print("-------------- Current time after update: ")
+        print(bmiobj.get_current_time())
+        print(time.localtime(bmiobj.get_current_time()))
 
         print("-------------- Start time: ")
         print(bmiobj.get_start_time())
+        print(time.localtime(bmiobj.get_start_time()))
+
+        print("-------------- End time: ")
+        print(bmiobj.get_end_time())
+        print(time.localtime(bmiobj.get_end_time()))
 
         print("-------------- Grid shape: ")
         print(bmiobj.get_grid_shape('Altitude'))
@@ -70,8 +84,7 @@ class MyTest(unittest.TestCase):
         print("-------------- Var type: ")
         print(bmiobj.get_var_type('Altitude'))
 
-        print("-------------- End time: ")
-        print(bmiobj.get_end_time())
+
 
         print("-------------- Var rank: ")
         print(bmiobj.get_var_rank('Altitude'))
