@@ -54,14 +54,45 @@ class MyTest(unittest.TestCase):
         print("-------------- Current time: ")
         print(bmiobj.get_current_time())
 
+        print("-------------- Start time: ")
+        print(bmiobj.get_start_time())
+
         print("-------------- Grid shape: ")
         print(bmiobj.get_grid_shape('Altitude'))
+
+
+        print("-------------- Grid spacing: ")
+        print(bmiobj.get_grid_spacing('Altitude'))
+
+        print("-------------- Grid type: ")
+        print(bmiobj.get_grid_type('Altitude'))
+
+        print("-------------- Var type: ")
+        print(bmiobj.get_var_type('Altitude'))
 
         print("-------------- End time: ")
         print(bmiobj.get_end_time())
 
-        bmiobj.finalize()
+        print("-------------- Var rank: ")
+        print(bmiobj.get_var_rank('Altitude'))
 
+        print("-------------- Var size: ")
+        print(bmiobj.get_var_size('Altitude'))
+
+        print("-------------- Var nbytes: ")
+        print(bmiobj.get_var_nbytes('Altitude'))
+
+        print("-------------- Getvalue: ")
+        print(bmiobj.get_value('Altitude'))
+
+        bmiobj.finalize()
+        #update
+        #update_until
+        #update_frac
+        #save_state
+        ## finalize
+        # get_value_at_indices
+        # set_value_at_indices
 
 
 
