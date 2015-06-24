@@ -1423,7 +1423,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
       seconds_since_epoch = time.mktime(self.datetime_firststep.timetuple())
 
-      return seconds_since_epoch + (self._d_lastTimestep - self._d_firstTimestep) * self._userModel().timestepsecs
+      return seconds_since_epoch + (self._d_lastTimestep - self._d_firstTimestep + 1) * self._userModel().timestepsecs
 
   def wf_supplyStartTime(self):
       """
