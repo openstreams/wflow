@@ -124,7 +124,6 @@ class netcdfoutput():
 
         globmetadata.update(metadata)
 
-
         prepare_nc(self.ncfile,timeList,x,y,globmetadata,logger,Format=netcdfformat)
 
 

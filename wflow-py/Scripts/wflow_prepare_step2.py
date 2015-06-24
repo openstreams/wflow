@@ -31,6 +31,7 @@ import os.path
 import getopt
 import ConfigParser
 import sys
+import numpy as np
 
 tr.Verbose=1
 
@@ -249,8 +250,8 @@ def main():
 
     # make subcatchments
     #os.system("col2map --clone " + step2dir + "/cutout.map gauges.col " + step2dir + "/wflow_gauges.map")
-    exec "X=tr.array(" + gauges_x + ")" 
-    exec "Y=tr.array(" + gauges_y + ")" 
+    exec "X=np.array(" + gauges_x + ")"
+    exec "Y=np.array(" + gauges_y + ")"
 
 
     tr.setglobaloption("unittrue")
