@@ -8,7 +8,11 @@ so that models build using the framework can be controlled using the API.
 Links to BMI, OpenMI and OpenDAP have been made.
 
 A link to the latest version can always be found at http://www.openstreams.nl or
-https://github.com/jaapschellekens/wflow  http://jaapschellekens.github.io/wflow
+https://github.com/jaapschellekens/wflow 
+
+Reference documentation at:
+
++ http://jaapschellekens.github.io/wflow
 
 INSTALL
 =======
