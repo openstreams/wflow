@@ -19,16 +19,32 @@ html_theme = "sphinxdoc"
 
 html_theme_path = ["."]
 
+from mock import Mock as MagicMock
+
+class Mock(MagicMock):
+    __all__ = []
+    __version__ = "1.6"
+    @classmethod
+    def __getattr__(cls, name):
+            return Mock()
+ 
+MOCK_MODULES = ['osgeo.gdal','osgeo.gdalconst','numpy', 'scipy', 'matplotlib', 'matplotlib.pyplot',
+                'scipy.interpolate','osgeo','netCDF4',
+                '_pcraster','numpy.ma']
+
+
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('../wflow-py/wflow/'))
-sys.path.insert(0, os.path.abspath('../wflow-py/'))
-sys.path.insert(0, os.path.abspath('../wflow-py/Scripts/'))
+#sys.path.insert(0, os.path.abspath('../wflow-py/wflow/'))
+#sys.path.insert(0, os.path.abspath('../wflow-py/'))
+#sys.path.insert(0, os.path.abspath('../wflow-py/Scripts/'))
 
 import wflow
-from wflow import *
+#from wflow import *
 
 # -- General configuration -----------------------------------------------------
 
@@ -37,12 +53,18 @@ from wflow import *
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
+# extensions = ['sphinx.ext.todo','sphinx.ext.pngmath' ,
+#           'matplotlib.sphinxext.only_directives',
+#           'matplotlib.sphinxext.plot_directive',
+#           'sphinx.ext.autodoc',
+#           'sphinx.ext.graphviz',
+#           'sphinx.ext.doctest']
+
 extensions = ['sphinx.ext.todo','sphinx.ext.pngmath' ,
-          'matplotlib.sphinxext.only_directives',
-          'matplotlib.sphinxext.plot_directive',
           'sphinx.ext.autodoc',
           'sphinx.ext.graphviz',
           'sphinx.ext.doctest']
+
 
 todo_include_todos=True
 # Add any paths that contain templates here, relative to this directory.
@@ -51,6 +73,7 @@ todo_include_todos=True
 # The suffix of source filenames.
 source_suffix = '.rst'
 
+print sys.path
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
 
@@ -59,7 +82,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'wflow'
-copyright = u'2013-2014, Deltares/Jaap Schellekens'
+copyright = u'2013-2015, Deltares/Jaap Schellekens'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
