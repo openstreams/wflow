@@ -11,8 +11,7 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import wflow
-from wflow import *
+
 import sys, os
 #import sphinx_rtd_theme
 
@@ -25,7 +24,11 @@ html_theme_path = ["."]
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('../wflow-py/wflow/'))
+sys.path.insert(0, os.path.abspath('../wflow-py/'))
 sys.path.insert(0, os.path.abspath('../wflow-py/Scripts/'))
+
+import wflow
+from wflow import *
 
 # -- General configuration -----------------------------------------------------
 
