@@ -14,31 +14,37 @@ Reference documentation at:
 
 + http://wflow.readthedocs.org/
 
+
+Obtaining wflow
+===============
+
+Goto https://github.com/jaapschellekens/wflow. There you can download the source or a release. Also make sure
+you get the required third party models first (see below). The documentation can be found at
+http://wflow.readthedocs.org
+
 INSTALL
 =======
 
-Assuming you have all supporting packages install installen a new wflow 
+Assuming you have all supporting packages install installing a new wflow
 distribution entails running the setup.py script. This script follows
-the general python setup.py syntax. As such install using
+the general python setup.py syntax. As such running:
 
 ./setup.py install
 
 should install the package as part of your local python installation.
 
-requirements for windows:
 
-- install python-2.7.?.msi, install in c:\python27
-- install pcraster4.0 (see pcraster.eu web site)
-  (we have found the Anaconda distribution to work very well in combination
-   with pcraster)
+in order to run wflow requires the following packages:
 
-Optional but highly recommended:
-- install matplotlib for python 2.7
-- install pyreadline
-- install ipython
-- install pyqt
-- install spyder
++ netCDF4
++ numpy
++ matplotlib
++ pcraster
++ osgeo
 
+The setup.py script will try to install these dependencies but it is best to make
+sure you have installed and tested those before running the setup.py script.
+Make sure to have 64 bit versions of all packages.
 
 Freezer
 =======
@@ -49,5 +55,7 @@ You need the bbfreeze package installed to do this yourself.
 
 Credits
 =======
-the stats.py script was made by Keith Cherkauer
-(https://engineering.purdue.edu/~cherkaue/software.htm)
+
++ The stats.py script was made by Keith Cherkauer (https://engineering.purdue.edu/~cherkaue/software.htm)
+
++ pcraster is developed and maintained by Utrecht University (http://www.pcraster.eu)

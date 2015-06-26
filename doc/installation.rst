@@ -4,9 +4,9 @@ Installation
 Introduction and targets
 ------------------------
 
-The best way to install wflow is to use the setup.py install script. Depending on
-the way you want to use the models you can choose the instal or develop targets
-(e.g. python setup.py install). If you choose the develope target the installer
+The best way to install wflow is to use the setup.py install script (found in the wflow-py directory). Depending on
+the way you want to use the models you can choose the install or develop targets
+(e.g. python setup.py install). If you choose the develop target the installer
 will make a link from the python library to the version you are working on
 and ech chnage you make will end up in the library immediately. If you just want to
 use the model it is best to choose the install target.
@@ -28,18 +28,18 @@ Make sure to have 64 bit versions of all packages.
 
 Windows
 -------
+We recommend installing Anaconda and install the required packages using the conda tool.
 
 
 Linux
 -----
 
 Although you can get everything with the python packages bundled with most linux distributions
-(CentOS, Ubuntu, etc) we have found that the easiest wasy is to install the linux version of Anaconda
-and use the conda tool to install all requirements apart from pcraster which has to ben install by hand.
+(CentOS, Ubuntu, etc) we have found that the easiest way is to install the linux version of Anaconda
+and use the conda tool to install all requirements apart from pcraster which has to ben install manually.
 
 
 OSX
 ---
-
-Unfortunately there is not pcraster build for osx yet. If anybody want to pick this up please let
+Unfortunately there is not pcraster build for osx yet. If anybody wants to pick this up please let
 the guys at pcraster.eu know!

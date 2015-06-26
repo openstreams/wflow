@@ -27,10 +27,10 @@ The sections below describe the working of the model in more detail.
 Limitations
 ~~~~~~~~~~~
 
-The \_sbm concept has been developed for small catchments and relatively thin soils. In addition, the numerical
-solution of the soil water flow is a simple explicit scheme and the lateral groundwater flow follows topography rather than true
-hydraulic head. Although the waterdem=1 forces the model to recalculate the flow direction each timestep -- thus giving a more
-realistic groundwater flow -- the following limitation apply:
+The \_sbm concept has been developed for small catchments and relatively thin soils. In addition, the numerical solution
+of the soil water flow is a simple explicit scheme and the lateral groundwater flow follows topography rather than true
+hydraulic head. Although the waterdem=1 forces the model to recalculate the flow direction each timestep -- thus giving
+a more realistic groundwater flow -- the following limitation apply:
 
 + Results for deep soils > 2m may be unrealistic (also due to the simple representation of the unsaturated zone)
 
@@ -109,12 +109,11 @@ threshold of 0.5 mm/hr is used. :math:`\overline{R}` is calculated for all hours
 rainfall exceeds the threshold to give an estimate of the mean rainfall
 rate onto a saturated canopy.
 
-Gash (1979) has shown that in a regression of interception loss on rainfall (on a
-storm basis) the regression coefficient should equal to :math:`\overline{E}_w/\overline{R}`. Assuming that
-neither :math:`\overline{E}_w` nor :math:`\overline{R}` vary considerably in time, :math:`\overline{E}_w` can be estimated in this
-way from :math:`\overline{R}` in the absence of above-canopy climatic observations.
-Values derived in this way generally tend to be (much) higher than
-those calculated with the penman-monteith equation.
+Gash (1979) has shown that in a regression of interception loss on rainfall (on a storm basis) the regression
+coefficient should equal to :math:`\overline{E}_w/\overline{R}`. Assuming that neither :math:`\overline{E}_w` nor
+:math:`\overline{R}` vary considerably in time, :math:`\overline{E}_w` can be estimated in this way from
+:math:`\overline{R}` in the absence of above-canopy climatic observations. Values derived in this way generally tend to
+be (much) higher than those calculated with the penman-monteith equation.
 
 
 Running with parameters derived from LAI
