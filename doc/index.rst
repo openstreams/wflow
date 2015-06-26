@@ -101,12 +101,12 @@ wflow\_hbv model is derived from the HBV-96 model but does not
 include the routing functions, instead it uses the same kinematic wave
 routine as the wflow\_sbm  model to route the water downstream.
 
-The models are programmed in a dynamic GIS language called PCRaster
-available as a Python extension. As such, the structure of the model is
+The models are programmed python using the pcraster python extension.
+As such, the structure of the model is
 transparent, can be changed by other modellers easily, and the system
 allows for rapid development. In order to run
 the model both PCRaster 4.* and Python 2.7 are needed. At the moment
-only 64 bit versiosn are supported.
+only 64 bit versions are supported.
 
 
 
@@ -218,6 +218,13 @@ Examples and tests
    calib_report
 
 
+BMI Basic modeling interface
+============================
+.. toctree::
+   :maxdepth: 2
+
+   wflow_bmi
+
 Adding a new model using the framework
 ======================================
 .. toctree::
@@ -243,12 +250,7 @@ OpenDA
    wflow_openda
 
 
-BMI Basic modeling interface
-============================
-.. toctree::
-   :maxdepth: 2
 
-   wflow_bmi
 
 
 Indices and tables
