@@ -30,7 +30,7 @@ class Mock(MagicMock):
  
 MOCK_MODULES = ['osgeo.gdal','osgeo.gdalconst',
                 'osgeo','netCDF4',
-                '_pcraster','pcraster','pcraster.framework','netCDF4_utils','netcdftime','wflow.wf_DynamicFramework','wf_DynamicFramework']
+                '_pcraster','pcraster','pcraster.framework','netCDF4_utils','netcdftime']
 
 
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
@@ -42,6 +42,7 @@ sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 sys.path.insert(0, os.path.abspath('../wflow-py/wflow/'))
 sys.path.insert(0, os.path.abspath('../wflow-py/'))
 sys.path.insert(0, os.path.abspath('../wflow-py/Scripts/'))
+sys.path.insert(0, os.path.abspath('../wflow-py/pcraster/'))
 
 import wflow
 #from wflow import *
