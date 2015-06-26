@@ -85,10 +85,6 @@ linked as part of larger modelling systems:
     progress. Wflow functions as a toolkit for distributed hydrological
     models within OpenStreams.
 
-.. warning::
-
-    At the moment the models and documentation are being worked on. Things
-    that worked yesterday may stop working tomorrow. 
 
 The different wflow models share the same structure but are fairly
 different with respect to the conceptualisation. The shared software
@@ -108,9 +104,9 @@ routine as the wflow\_sbm  model to route the water downstream.
 The models are programmed in a dynamic GIS language called PCRaster
 available as a Python extension. As such, the structure of the model is
 transparent, can be changed by other modellers easily, and the system
-allows for rapid development. The PCRaster version used here is a beta
-version that comes with bindings to the Python language. In order to run
-the model both PCRaster 4.* and Python 2.7 are needed.
+allows for rapid development. In order to run
+the model both PCRaster 4.* and Python 2.7 are needed. At the moment
+only 64 bit versiosn are supported.
 
 
 
@@ -121,6 +117,29 @@ Installation
 
    installation
 
+
+How to use the models
+=====================
+.. toctree::
+   :maxdepth: 2
+
+   wflow_usage
+
+
+Building a model
+================
+.. toctree::
+   :maxdepth: 2
+
+   wflow_building
+
+
+FAQ
+===
+.. toctree::
+   :maxdepth: 2
+
+   faq
 
 The wflow\_hbv model
 ====================
@@ -179,21 +198,6 @@ The wflow Delft-FEWS adapter
 
    wflow_adapt
 
-Building a model
-================
-.. toctree::
-   :maxdepth: 1
-
-   wflow_building
-
-How to use the models
-=====================
-.. toctree::
-   :maxdepth: 2
-   
-   wflow_usage
-
-
 
 wflow modules and libraries
 ===========================
@@ -221,13 +225,6 @@ Adding a new model using the framework
 
    framework
    wf_DynamicFramework
-
-FAQ
-===
-.. toctree::
-   :maxdepth: 2
-
-   faq
 
    
 Release notes
