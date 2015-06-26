@@ -12,7 +12,7 @@ https://github.com/jaapschellekens/wflow
 
 Reference documentation at:
 
-+ http://jaapschellekens.github.io/wflow
++ http://wflow.readthedocs.org/
 
 INSTALL
 =======

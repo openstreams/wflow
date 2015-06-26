@@ -29,24 +29,25 @@ Limitations
 
 The \_sbm concept has been developed for small catchments and relatively thin soils. In addition, the numerical
 solution of the soil water flow is a simple explicit scheme and the lateral groundwater flow follows topography rather than true
-hydraulic head. As such, the following limitation apply:
+hydraulic head. Although the waterdem=1 forces the model to recalculate the flow direction each timestep -- thus giving a more
+realistic groundwater flow -- the following limitation apply:
 
-+ Results for deep soils > 2m may be unrealistic
++ Results for deep soils > 2m may be unrealistic (also due to the simple representation of the unsaturated zone)
 
-+ The lateral movement of groundwater may be very wrong in terrain that is not steep
++ The lateral movement of groundwater may be very wrong in terrain that is not steep (use the waterdem=1 option)
 
-+ The simple numerical solution means that results from a daily timestep model may be very different from those
-  with an hourly timestep.
++ The simple numerical solution means that results from a daily timestep model may be  different from those
+  with an hourly timestep. This caa also cause water budget problems
 
 
 
 Potential and Reference evaporation
 -----------------------------------
 
-The wflow\_sbm model assumes the input to be potential eveporation. In many case the evaporation
-will be a refercen evaporation fro a different land cover. In that case you can use the
+The wflow\_sbm model assumes the input to be potential evaporation. In many case the evaporation
+will be a reference evaporation for a different land cover. In that case you can use the
 et_reftopot.tbl file to set the mutiplication per landuse to go from the supplied evaporation
-to the potential evaporation for each land cover. By default al is set to 1.0 assuming the eveaporation
+to the potential evaporation for each land cover. By default al is set to 1.0 assuming the evaporation
 to be potential.
 
 
@@ -120,6 +121,8 @@ Running with parameters derived from LAI
 ````````````````````````````````````````
 The model can determine the Gash parameters from an LAI maps. In order to switch this on
 you must define the LAI variable to the model (as in the example below).
+
+::
 
     [modelparameters]
     LAI=inmaps/clim/LAI,monthlyclim,1.0,1
