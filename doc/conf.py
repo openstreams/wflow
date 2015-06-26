@@ -28,9 +28,9 @@ class Mock(MagicMock):
     def __getattr__(cls, name):
             return Mock()
  
-MOCK_MODULES = ['osgeo.gdal','osgeo.gdalconst','numpy', 'scipy', 'matplotlib', 'matplotlib.pyplot',
-                'scipy.interpolate','osgeo','netCDF4',
-                '_pcraster','numpy.ma']
+MOCK_MODULES = ['osgeo.gdal','osgeo.gdalconst',
+                'osgeo','netCDF4',
+                '_pcraster']
 
 
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
@@ -53,17 +53,17 @@ sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
+extensions = ['sphinx.ext.todo','sphinx.ext.pngmath' ,
+           'matplotlib.sphinxext.only_directives',
+           'matplotlib.sphinxext.plot_directive',
+           'sphinx.ext.autodoc',
+           'sphinx.ext.graphviz',
+           'sphinx.ext.doctest']
+
 # extensions = ['sphinx.ext.todo','sphinx.ext.pngmath' ,
-#           'matplotlib.sphinxext.only_directives',
-#           'matplotlib.sphinxext.plot_directive',
 #           'sphinx.ext.autodoc',
 #           'sphinx.ext.graphviz',
 #           'sphinx.ext.doctest']
-
-extensions = ['sphinx.ext.todo','sphinx.ext.pngmath' ,
-          'sphinx.ext.autodoc',
-          'sphinx.ext.graphviz',
-          'sphinx.ext.doctest']
 
 
 todo_include_todos=True
