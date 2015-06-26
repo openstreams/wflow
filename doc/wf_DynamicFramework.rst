@@ -3,7 +3,7 @@ Using the .ini file
 
 
 A number of settings of the framework can be set in the ini file for each model.
-The settings are explained din the section below.
+The settings are explained in the section below.
 
 
 Settings in the run section
@@ -23,6 +23,9 @@ to a Delft-FEWS runinfo.xml file can be given. An example is shown below.
     # required, base timestep of the model
     timestepsecs = 86400
 
+
+If this section is not present and a runinfo.xml is also not used you will need
+to specify the number of timesteps using the -T option on the command line (for most models).
 
 
 Settings in the framework section
@@ -119,7 +122,9 @@ Most of the time this section is not needed as this will mostly be configured
 in the python code by the model developer. However, in some case this section can be used
 alter the model for example force the model to read RootingDepth from an external data source.
 
-The format of entries in this section is as follows::
+The format of entries in this section is as follows:
+
+::
 
     name=stack,type,default,verbose,[lookupmap_1],[lookupmap_2],lookupmap_n]
 

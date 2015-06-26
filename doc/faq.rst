@@ -56,4 +56,5 @@ Answers
 
 .. [6] *in some areas the mass balance error seems large*
    The simple explicit solution of most models can cuase this, especially when parameter values are outside
-   the nomally used range and with large timsteps. For example, setting the soil depth to zero will usually cuase large errors. The solution is usually to check the parameters throughout the model.
+   the nomally used range and with large timsteps. For example, setting the soil depth to zero will usually cause large errors.
+   The solution is usually to check the parameters throughout the model.
