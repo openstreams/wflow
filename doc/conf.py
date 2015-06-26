@@ -30,7 +30,7 @@ class Mock(MagicMock):
  
 MOCK_MODULES = ['osgeo.gdal','osgeo.gdalconst',
                 'osgeo','netCDF4',
-                '_pcraster','pcraster']
+                '_pcraster','pcraster','pcraster.framework']
 
 
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
