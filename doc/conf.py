@@ -28,9 +28,9 @@ class Mock(MagicMock):
     def __getattr__(cls, name):
             return Mock()
  
-MOCK_MODULES = ['osgeo.gdal','osgeo.gdalconst',
-                'osgeo','netCDF4',
-                '_pcraster','netCDF4_utils','netcdftime']
+MOCK_MODULES = ['_pcraster','_pcraster_modflow','PCRaster.NumPy',
+                'osgeo.gdal','osgeo.gdalconst','osgeo','netCDF4',
+                'netCDF4_utils','netcdftime','PCRaster','PCRaster.Framework']
 
 
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
@@ -39,10 +39,11 @@ sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
+sys.path.insert(0, os.path.abspath('pcraster-for-doc-only/'))
 sys.path.insert(0, os.path.abspath('../wflow-py/wflow/'))
 sys.path.insert(0, os.path.abspath('../wflow-py/'))
 sys.path.insert(0, os.path.abspath('../wflow-py/Scripts/'))
-sys.path.insert(0, os.path.abspath('../wflow-py/pcraster/'))
+
 
 import wflow
 #from wflow import *

@@ -13,13 +13,11 @@ if sys.platform == "win32":
     if os.path.exists(pcraster_dll_pathname):
         os.environ["PATH"] = pcraster_dll_pathname + os.pathsep + path_
 
-try:
-    from operations import *
-    import operators
-    from _pcraster import *
-    from _pcraster_modflow import *
-    from aguila import *
-    from numpy_operations import *
-finally:
-    if sys.platform == "win32":
-        os.environ["PATH"] = path_
+from _pcraster import *
+from operations import *
+import operators
+
+from _pcraster_modflow import *
+from aguila import *
+from numpy_operations import *
+
