@@ -44,7 +44,6 @@ clean:
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
-	(cd $(BUILDDIR); zip -r -q wflow_html.zip html/)
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
 dirhtml:
