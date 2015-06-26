@@ -1336,10 +1336,10 @@ class WflowModel(DynamicModel):
         #self.AA = catchmenttotal(self.PrecipitationPlusMelt, self.TopoLdd)
         #self.BB = catchmenttotal(cover(1.0), self.TopoLdd)
         # Single cell based water budget. snow not included yet.
-        CellStorage = self.CanopyStorage
-        CellStorage = self.UStoreDepth + self.FirstZoneDepth  + self.LowerZoneStorage
 
-        self.DeltaStorage = CellStorage - self.OrgStorage
+        self.CellStorage = self.UStoreDepth + self.FirstZoneDepth + self.LowerZoneStorage
+
+        self.DeltaStorage = self.CellStorage - self.OrgStorage
         OutFlow = self.FirstZoneFlux
         CellInFlow = upstream(self.TopoLdd, scalar(self.FirstZoneFlux))
 

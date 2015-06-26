@@ -4,9 +4,6 @@ Welcome to wflow's documentation!
 
 .. note::
 
-	$Id: index.rst 908 2014-01-16 11:42:57Z schelle $
-	$HeadURL: https://repos.deltares.nl/repos/Hydrology/trunk/OpenStreams/doc/wflow/sphinx/index.rst $
-
       This documentation is for version |version| of wflow, release |release|
       This documentation was generated |today|
 
