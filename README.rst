@@ -22,8 +22,14 @@ Goto https://github.com/jaapschellekens/wflow. There you can download the source
 you get the required third party models first (see below). The documentation can be found at
 http://wflow.readthedocs.org
 
-INSTALL
-=======
+
+Binaries for windows
+====================
+For windows binaries check the releases (https://github.com/openstreams/wflow/releases). These can be used 
+if you do not have a python installation. However, it is recommende to install wflow as a python package (see below).
+
+Install as a python package
+===========================
 
 Assuming you have all supporting packages install installing a new wflow
 distribution entails running the setup.py script. This script follows
