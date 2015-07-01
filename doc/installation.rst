@@ -28,7 +28,10 @@ Make sure to have 64 bit versions of all packages.
 
 Windows
 -------
-We recommend installing Anaconda and install the required packages using the conda tool.
+We recommend installing Anaconda and install the required packages using the conda tool. We have
+binary releases for windows available that allow you to run the models without installing python and all required packages:
+
++ https://github.com/openstreams/wflow/releases
 
 
 Linux
