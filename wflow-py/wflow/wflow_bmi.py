@@ -613,14 +613,16 @@ class wflowbmi_csdms(bmi.Bmi):
 
     def get_var_units(self, long_var_name):
         """
-        Not implemented yet
+        Supply units as defined in the API section of the ini file
 
         :var long_var_name: identifier of a variable in the model.
 
         :return:   String: unit of the values of the given variable. Return a string formatted
-        using the UDUNITS standard from Unidata.
+        using the UDUNITS standard from Unidata. (only if set properly in the ini file)
         """
-        raise NotImplementedError
+
+        units = self.dynModel.wf_supplyVariableUnits(long_var_name)
+        return  str(units)
 
     def set_value(self, long_var_name, src):
         """
