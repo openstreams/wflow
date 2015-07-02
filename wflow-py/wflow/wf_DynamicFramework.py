@@ -1330,6 +1330,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       res = self.exchnageitems.getvars()
       
       # Fill object with data from ini file
+      # TODO: clean up!!
       if size(res) == 0:
           API = configsection(self._userModel().config,'API')
           for a in API:
@@ -1337,7 +1338,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
               line = self._userModel().config.get("API",a)
               tt.append(a)
               tt.append(int(line.split(',')[0]))
-              tt.append(int(line.split(',')[1]))
+              tt.append((line.split(',')[1]))
               res.append(tt)
               self.exchnageitems.addvar(tt[0],tt[1],tt[2])
           

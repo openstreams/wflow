@@ -621,8 +621,15 @@ class wflowbmi_csdms(bmi.Bmi):
         using the UDUNITS standard from Unidata. (only if set properly in the ini file)
         """
 
-        units = self.dynModel.wf_supplyVariableUnits(long_var_name)
-        return  str(units)
+        nru = self.dynModel.wf_supplyVariableNamesAndRoles()
+
+        unit ='mm'
+
+        for it in nru:
+            if long_var_name == it[0]:
+                unit = it[2]
+
+        return unit
 
     def set_value(self, long_var_name, src):
         """

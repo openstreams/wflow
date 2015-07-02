@@ -43,6 +43,12 @@ class MyTest(unittest.TestCase):
         print("-------------- Input var names: ")
         print(bmiobj.get_input_var_names())
 
+        print("-------------- UNit of var TEMP: ")
+        print(bmiobj.get_var_units('TEMP'))
+
+        print("-------------- UNit of var P: ")
+        print(bmiobj.get_var_units('P'))
+
         print("-------------- Output var names: ")
         print(bmiobj.get_output_var_names())
 
