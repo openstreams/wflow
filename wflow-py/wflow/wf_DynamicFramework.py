@@ -584,11 +584,14 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         else:
             self.logger.warn("Not enough information in the [run] section. Need start and end time or a runinfo.xml file.... Reverting to default date/time")
     else:
-        self.datetime_firststep=datetime.datetime.strptime(st, "%Y-%m-%d %H:%M:%S")
+        from dateutil import parser
+        #self.datetime_firststep=datetime.datetime.strptime(st, "%Y-%m-%d %H:%M:%S")
+        self.datetime_firststep=parser.parse(st)
         self.currentdatetime = self.datetime_firststep
         self._userModel().currentdatetime = self.currentdatetime
         ed = configget(self._userModel().config,'run','endtime',"None")
-        self.datetime_laststep = datetime.datetime.strptime(ed, "%Y-%m-%d %H:%M:%S")
+        #self.datetime_laststep = datetime.datetime.strptime(ed, "%Y-%m-%d %H:%M:%S")
+        self.datetime_laststep=parser.parse(ed)
         self.timestepsecs = int(configget(self._userModel().config,'run','timestepsecs',"86400"))
         self._userModel().timestepsecs =  self.timestepsecs
         duration = self.datetime_laststep - self.datetime_firststep
