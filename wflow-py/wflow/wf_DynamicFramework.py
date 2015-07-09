@@ -1196,7 +1196,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       if hasattr(self._userModel(), mapname):
           #exec "retval = pcr2numpy(self._userModel()." + mapname + ",-999)"
           pcrmap = getattr(self._userModel(),mapname)
-          retval = pcr_as_numpy(pcrmap)
+          if isinstance(pcrmap,pcraster._pcraster.Field):
+              retval = pcr_as_numpy(pcrmap)
+          else:
+              retval = pcrmap
           if self.APIDebug:
               self.logger.debug("wf_supplyMapAsNumpy returning: " + mapname)
       else:
