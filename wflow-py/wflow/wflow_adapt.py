@@ -452,6 +452,8 @@ def getStartTimefromRuninfo(xmlfile):
     """ 
     Gets the starttime from the FEWS runinfo file
     """
+
+    #TODO: return the timezone information...
     if os.path.exists(xmlfile):
         file = open(xmlfile, "r")
         tree = parse(file)
@@ -461,6 +463,7 @@ def getStartTimefromRuninfo(xmlfile):
         if len(ttime) ==  12: # Hack for millisecons in testrunner runinfo.xml...
             ttime = ttime.split('.')[0]
         ed = datetime.strptime(edate.attrib['date'] + ttime,'%Y-%m-%d%H:%M:%S')
+        ed = pa
     else:
         return None
         
