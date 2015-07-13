@@ -197,6 +197,7 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
     - maxbuf = 600: number of timesteps to buffer before writing
     
     """
+    complevel=9
 
     # if necessary, make trgPrefix maximum of 8 characters    
     if len(srcPrefix) > 8:
@@ -214,7 +215,7 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
         nc_var = nc_trg.variables[trgVar]
     except:
         # prepare the variable
-        nc_var = nc_trg.createVariable(trgVar, 'f4', ('time', 'lat', 'lon',), fill_value=-9999., zlib=zlib,least_significant_digit=least_significant_digit)
+        nc_var = nc_trg.createVariable(trgVar, 'f4', ('time', 'lat', 'lon',), fill_value=-9999., zlib=zlib,least_significant_digit=least_significant_digit,complevel=complevel)
         nc_var.units = trgUnits
         nc_var.standard_name = trgName
         print metadata
