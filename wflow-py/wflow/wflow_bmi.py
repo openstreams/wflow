@@ -412,7 +412,7 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         npmap = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
 
-        return npmap.dtype
+        return str(npmap.dtype)
 
 
     def get_var_rank(self, long_var_name):
