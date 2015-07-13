@@ -42,7 +42,6 @@ This utility is made to simplify running wflow models with OpenDA. The
 OpenDA link needs the forcing timeseries to be in netcdf format. Use this to convert
 all the input mapstacks to netcdf.
 
-
 (c) J. Schellekens
 
 Created on Tue May 13 07:37:04 2014
