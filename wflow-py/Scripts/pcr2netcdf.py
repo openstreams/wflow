@@ -21,7 +21,7 @@
 """
 syntax:
     pcr2netcdf -S date -E date -N mapstackname -I mapstack_folder
-               -O netcdf_name [-b buffersize] [-c inifile][-s start]
+               -O netcdf_name [-b buffersize] [-c inifile][-s start][-d digit]
 
     -S startdate in "%d-%m-%Y %H:%M:%S" e.g. 31-12-1990 00:00:00
     -E endDate in "%d-%m-%Y %H:%M:%S"
@@ -34,7 +34,8 @@ syntax:
     -b maxbuf - maximum number of timesteps to buffer before writing (default = 600)
     -t timestep - (set timestep in seconds, default = 86400) Only 86400 and 3600 supported
     -F FORMAT (default = NETCDF4, use NETCDF3_CLASSIC for OpenDA)
-    -z switch on zlib compression (default=Off)
+    -z switch on zlib compression (default=On)
+    -d least_significant_digit (set precision for more compression)
     -c inifile (contains netcdf meta data)
 
 This utility is made to simplify running wflow models with OpenDA. The
@@ -181,7 +182,7 @@ def getvarmetadatafromini(inifile,var):
     return metadata
 
 
-def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trgName, timeList, metadata, logger,maxbuf=600,Format="NETCDF4",zlib=False,startidx=0):
+def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trgName, timeList, metadata, logger,maxbuf=600,Format="NETCDF4",zlib=True,least_significant_digit=None,startidx=0):
     """
     Write pcraster mapstack to netcdf file. Taken from GLOFRIS_Utils.py
     
@@ -214,7 +215,7 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
         nc_var = nc_trg.variables[trgVar]
     except:
         # prepare the variable
-        nc_var = nc_trg.createVariable(trgVar, 'f4', ('time', 'lat', 'lon',), fill_value=-9999., zlib=zlib)
+        nc_var = nc_trg.createVariable(trgVar, 'f4', ('time', 'lat', 'lon',), fill_value=-9999., zlib=zlib,least_significant_digit=least_significant_digit)
         nc_var.units = trgUnits
         nc_var.standard_name = trgName
         print metadata
@@ -401,7 +402,8 @@ def main(argv=None):
     
     clonemap=None
     Format="NETCDF4"
-    zlib=False
+    zlib=True
+    least_significant_digit=None
     startstep = 1
     if argv is None:
         argv = sys.argv[1:]
@@ -412,7 +414,7 @@ def main(argv=None):
     ## Main model starts here
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, 'c:S:E:N:I:O:b:t:F:zs:')
+        opts, args = getopt.getopt(argv, 'c:S:E:N:I:O:b:t:F:zs:d:')
     except getopt.error, msg:
         usage(msg)
 
@@ -426,6 +428,7 @@ def main(argv=None):
         if o == '-b': mbuf = int(a)
         if o == '-z': zlib=True
         if o == '-F': Format=a
+        if o == '-d': least_significant_digit = int(a)
         if o == '-t': 
             timestepsecs = int(a)
         if o == '-N': 
@@ -474,7 +477,7 @@ def main(argv=None):
             # get variable attributes from ini file here
             varmeta = getvarmetadatafromini(inifile,var[idx])
 
-            write_netcdf_timeseries(mapstackfolder, mname, ncoutfile_yr, var[idx], unit, varname[idx], yr_timelist, varmeta, logger,maxbuf=mbuf,Format=Format,zlib=zlib,startidx=startmapstack)
+            write_netcdf_timeseries(mapstackfolder, mname, ncoutfile_yr, var[idx], unit, varname[idx], yr_timelist, varmeta, logger,maxbuf=mbuf,Format=Format,zlib=zlib,least_significant_digit=least_significant_digit,startidx=startmapstack)
             startmapstack = startmapstack + len(yr_timelist)
             idx = idx + 1
 
