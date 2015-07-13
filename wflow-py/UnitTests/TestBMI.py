@@ -63,12 +63,18 @@ class MyTest(unittest.TestCase):
 
         print("-------------- Current time: ")
         print(bmiobj.get_current_time())
+        a= bmiobj.get_current_time()
         #print(time.localtime(bmiobj.get_current_time()))
 
         os.environ['TZ'] = 'Europe/London'
 
         print("-------------- Current time (set to london): ")
         print(bmiobj.get_current_time())
+        b = bmiobj.get_current_time()
+
+        self.assertAlmostEquals(a,b)
+
+
         #print(time.localtime(bmiobj.get_current_time()))
 
         print("-------------- update: ")
