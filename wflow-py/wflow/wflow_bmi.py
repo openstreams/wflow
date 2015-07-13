@@ -122,7 +122,7 @@ class wflowbmi_ligth(object):
         """
         npmap = self.dynModel.wf_supplyMapAsNumpy(name)
 
-        return npmap.dtype
+        return str(npmap.dtype)
 
 
     def get_var_rank(self, name):
