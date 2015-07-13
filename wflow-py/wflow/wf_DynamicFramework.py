@@ -1427,7 +1427,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       :return: current time as seconds since epoch
       """
 
-      seconds_since_epoch = time.mktime(self.datetime_firststep.timetuple())
+      seconds_since_epoch = time.mktime(self.datetime_firststep.utctimetuple())
 
       return seconds_since_epoch + (self._d_lastTimestep - self._d_firstTimestep + 1) * self._userModel().timestepsecs
 
@@ -1436,7 +1436,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       gets the start time of the model run
       :return: current time as seconds since epoch
       """
-      seconds_since_epoch = time.mktime(self.datetime_firststep.timetuple())
+      seconds_since_epoch = time.mktime(self.datetime_firststep.utctimetuple())
 
       return seconds_since_epoch
 
@@ -1450,7 +1450,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
           
       """
-      seconds_since_epoch = time.mktime(self.currentdatetime.timetuple())
+      seconds_since_epoch = time.mktime(self.currentdatetime.utctimetuple())
       return seconds_since_epoch
 
   def wf_supplyEpoch(self):

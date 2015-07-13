@@ -12,7 +12,7 @@ $Rev: 915 $
 
 import netCDF4
 # the two below are needed fpr bbfreeze
-import netCDF4_utils
+import netCDF4.utils
 import netcdftime
 
 from pcraster import *

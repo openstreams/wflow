@@ -58,9 +58,18 @@ class MyTest(unittest.TestCase):
         print("-------------- Time step: ")
         print(bmiobj.get_time_step())
 
+        print("-------------- Start time: ")
+        print(bmiobj.get_start_time())
+
         print("-------------- Current time: ")
         print(bmiobj.get_current_time())
-        print(time.localtime(bmiobj.get_current_time()))
+        #print(time.localtime(bmiobj.get_current_time()))
+
+        os.environ['TZ'] = 'Europe/London'
+
+        print("-------------- Current time (set to london): ")
+        print(bmiobj.get_current_time())
+        #print(time.localtime(bmiobj.get_current_time()))
 
         print("-------------- update: ")
         bmiobj.update()
