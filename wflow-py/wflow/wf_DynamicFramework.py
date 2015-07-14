@@ -559,6 +559,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
     self.ncfile = configget(self._userModel().config,'framework','netcdfinput',"None")
     self.ncoutfile = configget(self._userModel().config,'framework','netcdfoutput',"None")
+    self.ncoutfilestatic = configget(self._userModel().config,'framework','netcdfstaticoutput',"None")
 
 
     # Set the re-init hint for the local model
@@ -579,11 +580,12 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self.timestepsecs = int(configget(self._userModel().config,'run','timestepsecs',"86400"))
             duration = self.datetime_laststep - self.datetime_firststep
             nrseconds = duration.total_seconds()
-            self._userModel()._setNrTimeSteps(int(nrseconds/self.timestepsecs))
+            self._userModel()._setNrTimeSteps(int(nrseconds/self.timestepsecs) + 1)
             self._userModel().timestepsecs =  self.timestepsecs
             self._d_firstTimestep = 1
             self._userModel()._setFirstTimeStep(self._d_firstTimestep)
-            self._d_lastTimestep = int(nrseconds/self.timestepsecs)
+            self._d_lastTimestep = int(nrseconds/self.timestepsecs) + 1
+            s
         else:
             self.logger.warn("Not enough information in the [run] section. Need start and end time or a runinfo.xml file.... Reverting to default date/time")
     else:
@@ -599,10 +601,11 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self._userModel().timestepsecs =  self.timestepsecs
         duration = self.datetime_laststep - self.datetime_firststep
         nrseconds = duration.total_seconds()
-        self._userModel()._setNrTimeSteps(int(nrseconds/self.timestepsecs))
+        self._userModel()._setNrTimeSteps(int(nrseconds/self.timestepsecs) + 1)
         self._d_firstTimestep = 1
         self._userModel()._setFirstTimeStep(self._d_firstTimestep)
-        self._d_lastTimestep = int(nrseconds/self.timestepsecs)
+        self._d_lastTimestep = int(nrseconds/self.timestepsecs) + 1
+
 
 
     if self.ncfile != "None":
@@ -619,6 +622,14 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         meta['caseName'] = caseName
         meta['runId'] = runId
         self.NcOutput = netcdfoutput(caseName + "/" + runId + "/" + self.ncoutfile,self.logger,self.datetime_firststep,self._d_lastTimestep - self._d_firstTimestep + 1,maxbuf=buffer,metadata=meta)
+
+
+    if self.ncoutfilestatic != 'None': # Ncoutput
+        buffer = int(configget(self._userModel().config,'framework','netcdfwritebuffer',"2"))
+        meta ={}
+        meta['caseName'] = caseName
+        meta['runId'] = runId
+        self.NcOutputStatic = netcdfoutput(caseName + "/" + runId + "/" + self.ncoutfilestatic,self.logger,self.datetime_laststep,1,maxbuf=buffer,metadata=meta)
 
     # Fill the summary (stat) list from the ini file
     self.statslst = []
@@ -765,7 +776,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
           try:
             pcrmap = getattr(self._userModel(),b)
               #report( pcrmap , os.path.join(self._userModel().Dir, self._userModel().runId, "outsum", self._userModel().config.get("summary",a)) )
-            self._reportNew( pcrmap , os.path.join(self._userModel().Dir, self._userModel().runId, "outsum",self._userModel().config.get("summary",a)), style=1)
+            self.reportStatic( pcrmap , os.path.join(self._userModel().Dir, self._userModel().runId, "outsum",self._userModel().config.get("summary",a)), style=1)
 
           except:
             self._userModel().logger.warn("Could not find or save the configured summary map:"  + a)
@@ -776,7 +787,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
               b = a.replace('self.','')
               pcrmap = getattr(self._userModel(),b)
               #report( pcrmap , os.path.join(self._userModel().Dir, self._userModel().runId, "outsum", b + ".map" ))
-              self._reportNew( pcrmap , os.path.join(self._userModel().Dir, self._userModel().runId, "outsum", b + ".map" ), style=1)
+              self.reportStatic( pcrmap , os.path.join(self._userModel().Dir, self._userModel().runId, "outsum", b + ".map" ), style=1)
 
       # These are the ones in the _sum _average etc sections
       for a in range(0,len(self.statslst)):
@@ -786,7 +797,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             fname = self.statslst[a].filename
             if hasattr(data,'isSpatial'):
                 #report (data,fname)
-                self._reportNew( data , fname, style=1)
+                self.reportStatic( data , fname, style=1)
 
 
 
@@ -1451,7 +1462,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
       seconds_since_epoch = calendar.timegm(self.datetime_firststep.utctimetuple())
 
-      return seconds_since_epoch + (self._d_lastTimestep - self._d_firstTimestep + 1) * self._userModel().timestepsecs
+      return seconds_since_epoch + (self._d_lastTimestep - self._d_firstTimestep) * self._userModel().timestepsecs
 
   def wf_supplyStartTime(self):
       """
@@ -1641,6 +1652,44 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       self._runSuspend()
 
     return 0
+
+  def reportStatic(self, variable, name, style=1,gzipit=False, longname=None):
+        """
+
+        :param variable:
+        :param name:
+        :param style:
+        :param gzipit:
+        :param longname:
+        :return:
+        """
+        if longname == None:
+            longname = name
+        path = name
+
+        if self.outputFormat == 1:
+            if sys.version_info[0] == 2 and sys.version_info[1] >=6:
+                try:
+                    import pcraster as PCRaster
+                except:
+                    import PCRaster as PCRaster
+            else:
+                import PCRaster
+            if not hasattr(self,'NcOutputStatic'):
+                PCRaster.report(variable, path)
+                if gzipit:
+                    Gzip(path,storePath=True)
+            else:
+                self.NcOutputStatic.savetimestep(self._userModel().currentTimeStep(),variable,var=name,name=longname)
+
+        elif self.outputFormat == 2:
+            numpy.savez(path,pcr2numpy(variable,-999))
+        elif self.outputFormat == 3:
+            numpy.savez(path,pcr2numpy(variable,-999))
+        elif self.outputFormat == 4:
+            numpy.savetxt(path,pcr2numpy(variable,-999),fmt="%0.6g")
+
+
     
   def _reportNew(self, variable, name, style=1,gzipit=False, longname=None):
     """
@@ -1669,6 +1718,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     directoryPrefix = ""
     nameSuffix = ".map"
     newName = ""
+
 
     if hasattr(self._userModel(), "_inStochastic"):
       if self._userModel()._inStochastic():
@@ -1702,10 +1752,11 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             import PCRaster
         if not hasattr(self,'NcOutput'):
             PCRaster.report(variable, path)
+            if gzipit:
+                Gzip(path,storePath=True)
         else:
             self.NcOutput.savetimestep( self._userModel().currentTimeStep(),variable,var=name,name=longname)
-        if gzipit:
-            Gzip(path,storePath=True)
+
     elif self.outputFormat == 2:
         numpy.savez(path,pcr2numpy(variable,-999))
     elif self.outputFormat == 3:

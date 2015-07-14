@@ -43,14 +43,16 @@ def prepare_nc(trgFile, timeList, x, y, metadata, logger, units='Days since 1900
     import datetime as dt
 
     logger.info('Setting up netcdf output: ' + trgFile)
-    print timeList[0]
     startDayNr = netCDF4.date2num(timeList[0].replace(tzinfo=None), units=units, calendar=calendar)
     endDayNr   = netCDF4.date2num(timeList[-1].replace(tzinfo=None), units=units, calendar=calendar)
     time       = arange(startDayNr,endDayNr+1)
     nc_trg     = netCDF4.Dataset(trgFile,'w',format=Format,zlib=zlib)
 
-    logger.info('Setting up dimensions and attributes.Steps: ' + str(len(timeList)) + ' lat: ' + str(len(y))+ " lon: " + str(len(x)))
-    nc_trg.createDimension('time', 0) #NrOfDays*8
+    logger.info('Setting up dimensions and attributes. Steps: ' + str(len(timeList)) + ' lat: ' + str(len(y))+ " lon: " + str(len(x)))
+    if len(time) ==1:
+        nc_trg.createDimension('time', 1)
+    else:
+        nc_trg.createDimension('time', 0) #NrOfDays*8
     nc_trg.createDimension('lat', len(y))
     nc_trg.createDimension('lon', len(x))
     DateHour = nc_trg.createVariable('time','f8',('time',))
@@ -125,6 +127,7 @@ class netcdfoutput():
 
         globmetadata.update(metadata)
 
+
         prepare_nc(self.ncfile,timeList,x,y,globmetadata,logger,Format=netcdfformat)
 
 
@@ -144,8 +147,9 @@ class netcdfoutput():
         self.nc_trg = netCDF4.Dataset(self.ncfile, 'a',format=netcdfformat,zlib=True,complevel=1)
         self.nc_trg.set_fill_off()
         # read time axis and convert to time objects
-        time = self.nc_trg.variables['time']
-        timeObj = netCDF4.num2date(time[:], units=time.units, calendar=time.calendar)
+        #TODO: use this to append time
+        #time = self.nc_trg.variables['time']
+        #timeObj = netCDF4.num2date(time[:], units=time.units, calendar=time.calendar)
 
         idx = timestep -1
 
