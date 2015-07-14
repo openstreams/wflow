@@ -211,6 +211,8 @@ class wf_OutputTimeSeriesArea():
                self.ofile[-1].write("timestep\n")
                for idd in self.flatarea:
                    self.ofile[-1].write(str(idd) +"\n")
+           if self.oformat=='netcdf':
+                print('Not implemented yet')
  
       self.steps = self.steps + 1
       tmpvar = scalar(spatial(variable))
@@ -701,6 +703,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       Also saves the summary maps
       
       """
+
+      self._incrementIndentLevel()
+      self._traceIn("suspend")
+
       allvars = self._userModel().stateVariables()
       
       for var in allvars:
@@ -725,6 +731,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
       # Save the summary maps
       self.wf_savesummarymaps()
+      self._traceOut("suspend")
+      self._decrementIndentLevel()
 
 
 
@@ -755,17 +763,20 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       for a in toprint:
           b = a.replace('self.','')
           try:
-              pcrmap = getattr(self._userModel(),b)
-              report( pcrmap , os.path.join(self._userModel().Dir, self._userModel().runId, "outsum", self._userModel().config.get("summary",a)) )
+            pcrmap = getattr(self._userModel(),b)
+              #report( pcrmap , os.path.join(self._userModel().Dir, self._userModel().runId, "outsum", self._userModel().config.get("summary",a)) )
+            self._reportNew( pcrmap , os.path.join(self._userModel().Dir, self._userModel().runId, "outsum",self._userModel().config.get("summary",a)), style=1)
+
           except:
-              self._userModel().logger.warn("Could not find or save the configured summary map:"  + a)
+            self._userModel().logger.warn("Could not find or save the configured summary map:"  + a)
 
       # Check of the usermodel has a list of summary maps defined and save those
       if hasattr(self._userModel(),'default_summarymaps'):
           for a in self._userModel().default_summarymaps():
               b = a.replace('self.','')
               pcrmap = getattr(self._userModel(),b)
-              report( pcrmap , os.path.join(self._userModel().Dir, self._userModel().runId, "outsum", b + ".map" ))
+              #report( pcrmap , os.path.join(self._userModel().Dir, self._userModel().runId, "outsum", b + ".map" ))
+              self._reportNew( pcrmap , os.path.join(self._userModel().Dir, self._userModel().runId, "outsum", b + ".map" ), style=1)
 
       # These are the ones in the _sum _average etc sections
       for a in range(0,len(self.statslst)):
@@ -774,7 +785,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             data = self.statslst[a].result
             fname = self.statslst[a].filename
             if hasattr(data,'isSpatial'):
-                report (data,fname)
+                #report (data,fname)
+                self._reportNew( data , fname, style=1)
+
 
 
 
@@ -807,6 +820,11 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       a _? postfix)
       
       """
+
+      self._incrementIndentLevel()
+      self._traceIn("resume")
+
+
       allvars = self._userModel().stateVariables()
       
       for var in allvars:
@@ -833,6 +851,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
               except:
                   self.logger.warn("problem while reading state variable from disk: " + mpath + " Suggest to use the -I uption to restart")
                   exit(1)
+
+      self._traceOut("resume")
+      self._decrementIndentLevel()
                
  
   def wf_QuickSuspend(self):
@@ -1640,9 +1661,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         longname = name
     head, tail = os.path.split(name)
 
-    if re.search("\.", tail):
-      msg = "File extension given in '" + name + "' not allowed, provide filename without extension"
-      raise FrameworkError(msg)
+    #if re.search("\.", tail):
+    #  msg = "File extension given in '" + name + "' not allowed, provide filename without extension"
+    #  raise FrameworkError(msg)
 
 
     directoryPrefix = ""
@@ -1664,6 +1685,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     if hasattr(self._userModel(), "_inDynamic"):
       if self._userModel()._inDynamic() or self._inUpdateWeight():
         newName = generateNameT(name, self._userModel().currentTimeStep())
+
+    if newName == '': # For files from suspend
+        newName = name
 
     path = os.path.join(directoryPrefix, newName)
 

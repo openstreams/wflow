@@ -11,12 +11,12 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, '../README.rst')).read()
 TODO = open(os.path.join(here, 'TODO.txt')).read()
 
-requires = [
-    'netCDF4',
-    'numpy',
-    'matplotlib',
-    'pcraster', 'osgeo']
 
+try:
+    import pcraster
+except:
+    print("Could not import pcraster, make sure it is installed including the python extensions")
+    print("see www.pcraster.eu")
 
 #setup(**config)
 
@@ -38,5 +38,9 @@ setup(name='wflow',
                'wflow/wflow_sbm.py','wflow/wflow_hbv.py','wflow/wflow_W3RA.py',
                'wflow/wflow_upscale.py','wflow/wflow_routing.py'],
       description='the wflow hydrological models (part of OpenStreams)',
+      install_requires = [ 'netCDF4>=1.1.8',
+    'numpy',
+    'matplotlib',
+     'gdal'],
       )
 

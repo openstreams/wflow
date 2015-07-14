@@ -43,8 +43,9 @@ def prepare_nc(trgFile, timeList, x, y, metadata, logger, units='Days since 1900
     import datetime as dt
 
     logger.info('Setting up netcdf output: ' + trgFile)
-    startDayNr = netCDF4.date2num(timeList[0], units=units, calendar=calendar)
-    endDayNr   = netCDF4.date2num(timeList[-1], units=units, calendar=calendar)
+    print timeList[0]
+    startDayNr = netCDF4.date2num(timeList[0].replace(tzinfo=None), units=units, calendar=calendar)
+    endDayNr   = netCDF4.date2num(timeList[-1].replace(tzinfo=None), units=units, calendar=calendar)
     time       = arange(startDayNr,endDayNr+1)
     nc_trg     = netCDF4.Dataset(trgFile,'w',format=Format,zlib=zlib)
 

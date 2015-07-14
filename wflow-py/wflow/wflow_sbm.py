@@ -306,16 +306,16 @@ class WflowModel(DynamicModel):
             self.logger.info("Saving initial conditions for FEWS...")
             self.wf_suspend(self.Dir + "/outstate/")
 
-        report(self.CumInwaterMM, self.SaveDir + "/outsum/CumInwaterMM.map")
-        report(self.CumReinfilt, self.SaveDir + "/outsum/CumReinfilt.map")
-        report(self.CumPrec, self.SaveDir + "/outsum/CumPrec.map")
-        report(self.CumEvap, self.SaveDir + "/outsum/CumEvap.map")
-        report(self.CumPotenTrans, self.SaveDir + "/outsum/CumPotenTrans.map")
-        report(self.CumInt, self.SaveDir + "/outsum/CumInt.map")
-        report(self.CumLeakage, self.SaveDir + "/outsum/CumLeakage.map")
-        report(self.CumPotenEvap, self.SaveDir + "/outsum/CumPotenEvap.map")
-        report(self.CumExfiltWater, self.SaveDir + "/outsum/CumExfiltWater.map")
-        report(self.watbal, self.SaveDir + "/outsum/watbal.map")
+        #report(self.CumInwaterMM, self.SaveDir + "/outsum/CumInwaterMM.map")
+        #report(self.CumReinfilt, self.SaveDir + "/outsum/CumReinfilt.map")
+        #report(self.CumPrec, self.SaveDir + "/outsum/CumPrec.map")
+        #report(self.CumEvap, self.SaveDir + "/outsum/CumEvap.map")
+        #report(self.CumPotenTrans, self.SaveDir + "/outsum/CumPotenTrans.map")
+        #report(self.CumInt, self.SaveDir + "/outsum/CumInt.map")
+        #report(self.CumLeakage, self.SaveDir + "/outsum/CumLeakage.map")
+        #report(self.CumPotenEvap, self.SaveDir + "/outsum/CumPotenEvap.map")
+        #report(self.CumExfiltWater, self.SaveDir + "/outsum/CumExfiltWater.map")
+        #report(self.watbal, self.SaveDir + "/outsum/watbal.map")
 
     def parameters(self):
         """
