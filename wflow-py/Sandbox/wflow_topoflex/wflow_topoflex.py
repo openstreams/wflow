@@ -36,15 +36,13 @@ import os.path
 import shutil, glob
 import getopt
 
-#from wflow.wf_DynamicFramework import *
-from wf_DynamicFramework import *
+from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
 #import scipy
 from copy import copy as copylist
 
 # TODO: see below
 """
-Configuratie file aanpassen (reservoir-naam gebruiken ipv nummer)
 Inlezen tijdseries (grids)
 Nieuwe manier van wegschrijven tijdseries
 Nieuwe lezen parameters
@@ -52,6 +50,7 @@ Lijstjes reservoirs en fluxen
 Reservoir nul een doorgeefreservoir maken
 Multiplication with cell surface aanpassen
 Verwijderen IRURFR_L statements?
+Documentatie updaten!
 """
 
 
@@ -264,17 +263,31 @@ class WflowModel(DynamicModel):
     self.Classes = [x for x in range(len(self.NamesClasses))]  # numbering of classes
     
     # selection of reservoir conceputalisatie - codes are described in reservoir files
-    self.selectSi = eval(str(configget(self.config,
-                                       "model", "selectSi", "[0,0,0]")))    
-    self.selectSu = eval(str(configget(self.config,
-                                       "model", "selectSu", "[0,0,0]")))
-    self.selectSus = eval(str(configget(self.config,
-                                        "model", "selectSus", "[0,0,0]")))
-    self.selectSf = eval(str(configget(self.config,
-                                       "model", "selectSf", "[0,0,0]")))
-    self.selectSr = eval(str(configget(self.config,
-                                       "model", "selectSr", "[0,0,0]")))
-    
+    self.selectSi = configget(self.config, "model",
+                             "selectSi", "0, 0, 0").replace(
+                             ' ', '').replace('[', '').replace(
+                             ']', '').replace(
+                             'None', '').split(',')
+    self.selectSu = configget(self.config, "model",
+                              "selectSu", "0, 0, 0").replace(
+                             ' ', '').replace('[', '').replace(
+                             ']', '').replace(
+                             'None', '').split(',')
+    self.selectSus = configget(self.config, "model",
+                               "selectSus", "0, 0, 0").replace(
+                             ' ', '').replace('[', '').replace(
+                             ']', '').replace(
+                             'None', '').split(',')
+    self.selectSf = configget(self.config, "model",
+                              "selectSf", "0, 0, 0").replace(
+                             ' ', '').replace('[', '').replace(
+                             ']', '').replace(
+                             'None', '').split(',')
+    self.selectSr = configget(self.config, "model",
+                              "selectSr", "0, 0, 0").replace(
+                             ' ', '').replace('[', '').replace(
+                             ']', '').replace(
+                             'None', '').split(',')
     # static maps to use (normally default)
     wflow_subcatch = configget(self.config,
                                "model", "wflow_subcatch", "staticmaps/wflow_subcatch.map")
@@ -393,7 +406,45 @@ class WflowModel(DynamicModel):
 
     # Define timeseries outputs There seems to be a bug and the .tss files are 
     # saved in the current dir...
-        
+    tssName = os.path.join(self.Dir, "outtss", "exf")
+    self.logger.info("Create timeseries outputs...")
+    toprinttss = configsection(self.config,'outputtss')
+
+    tssName = self.Dir + "/" + self.runId + "/runLag"   
+    estr = "self.runLagTss=wf_TimeoutputTimeseries('" + tssName + "', self, self.OutputIdRunoff,noHeader=False)"
+    exec estr
+    tssName = self.Dir + "/" + self.runId + "/Ss"   
+    estr = "self.SsTss=wf_TimeoutputTimeseries('" + tssName + "', self, self.OutputIdRunoff,noHeader=False)"
+    exec estr 
+    tssName = self.Dir + "/" + self.runId + "/Qs" 
+    estr = "self.QsTss=wf_TimeoutputTimeseries('" + tssName + "', self, self.OutputIdRunoff,noHeader=False)"
+    exec estr    
+    tssName = self.Dir + "/" + self.runId + "/WB"   
+    estr = "self.WBTss=wf_TimeoutputTimeseries('" + tssName + "', self, self.OutputIdRunoff,noHeader=False)"
+    exec estr 
+
+    if self.IRURFR_L:
+        self.check=nominal(i*scalar(self.TopoId))
+        self.OutputGaugeId=boolean(ifthenelse(self.gaugesMap == self.check,1*scalar(self.TopoId),0*scalar(self.TopoId)))
+        for a in toprinttss:
+            tssName = self.Dir + "/" + self.runId + "/" +  self.config.get("outputtss", a) 
+            estr = "self." + self.config.get("outputtss", a) + "Tss=wf_TimeoutputTimeseries('" + tssName + "', self, self.OutputIdRunoff,noHeader=False)"
+            self.logger.info("Creating tss output: " + a + "(" + self.config.get('outputtss', a) + ")")
+            exec estr
+    else:
+        self.allGaugeId = []
+        for i in range(1,self.maxGaugeId+1):
+            self.check=nominal(i*scalar(self.TopoId))
+            self.OutputGaugeId=boolean(ifthenelse(self.gaugesMap == self.check,1*scalar(self.TopoId),0*scalar(self.TopoId)))
+            if any(pcr2numpy(self.OutputGaugeId,nan) > 0):
+                self.allGaugeId.append(i)
+                for a in toprinttss:
+                    tssName = self.Dir + "/" + self.runId + "/" +  self.config.get("outputtss",a) + str(i)
+                    estr = "self." + self.config.get("outputtss",a) + str(i) + "Tss=wf_TimeoutputTimeseries('" + tssName + "', self, self.OutputGaugeId,noHeader=False)"
+                    self.logger.info("Creating tss output: " + a + "(" + self.config.get('outputtss',a) + ")")
+                    exec estr
+
+    
     self.SaveDir = os.path.join(self.Dir, self.runId)
     self.logger.info("Starting Dynamic run...")
 
@@ -498,32 +549,32 @@ class WflowModel(DynamicModel):
         
         if self.scalarInput:
             if self.InputSeries == 1:
-                self.Precipitation = timeinputscalar(self.precipTss,self.gaugesMap)
-                self.PotEvaporation = timeinputscalar(self.evapTss,self.gaugesMap)
-                self.Temperature = timeinputscalar(self.tempTss,self.gaugesMap)
+                self.Precipitation = timeinputscalar(self.precipTss, self.gaugesMap)
+                self.PotEvaporation = timeinputscalar(self.evapTss, self.gaugesMap)
+                self.Temperature = timeinputscalar(self.tempTss, self.gaugesMap)
             elif self.InputSeries == 2:        
-                self.Precipitation = timeinputscalar(self.precipTss2,self.gaugesMap)            
-                self.EpDay = timeinputscalar(self.evapTss2,self.gaugesMap)            
-                self.Tmean = timeinputscalar(self.tempDMTss,self.gaugesMap)
-                self.Rn = timeinputscalar(self.radnTss,self.gaugesMap)
-                self.rad_si = timeinputscalar(self.radsTss,self.gaugesMap)
-                self.sgamma = timeinputscalar(self.sgammaTss,self.gaugesMap)
-                self.vpd = timeinputscalar(self.vpdTss,self.gaugesMap)
-                self.wind2m = timeinputscalar(self.windTss,self.gaugesMap)
-                self.DS = timeinputscalar(self.daySTss,self.gaugesMap)
-                self.DE = timeinputscalar(self.dayETss,self.gaugesMap)
+                self.Precipitation = timeinputscalar(self.precipTss2, self.gaugesMap)            
+                self.EpDay = timeinputscalar(self.evapTss2, self.gaugesMap)            
+                self.Tmean = timeinputscalar(self.tempDMTss, self.gaugesMap)
+                self.Rn = timeinputscalar(self.radnTss, self.gaugesMap)
+                self.rad_si = timeinputscalar(self.radsTss, self.gaugesMap)
+                self.sgamma = timeinputscalar(self.sgammaTss, self.gaugesMap)
+                self.vpd = timeinputscalar(self.vpdTss, self.gaugesMap)
+                self.wind2m = timeinputscalar(self.windTss, self.gaugesMap)
+                self.DS = timeinputscalar(self.daySTss, self.gaugesMap)
+                self.DE = timeinputscalar(self.dayETss, self.gaugesMap)
     #            self.LAI = timeinputscalar(self.laiTss,self.gaugesMap)
-                self.rst_lai = [timeinputscalar(self.rst_laiTss[i],self.gaugesMap) for i in self.Classes]
+                self.rst_lai = [timeinputscalar(self.rst_laiTss[i], self.gaugesMap) for i in self.Classes]
     
         else:
-           self.Precipitation=cover(self.wf_readmap(self.P_mapstack,0.0),0.0)
-           self.PotEvaporation=cover(self.wf_readmap(self.PET_mapstack,0.0),0.0)
-           self.Inflow=pcrut.readmapSave(self.Inflow_mapstack,0.0)
+           self.Precipitation=cover(self.wf_readmap(self.P_mapstack, 0.0), 0.0)
+           self.PotEvaporation=cover(self.wf_readmap(self.PET_mapstack, 0.0), 0.0)
+           self.Inflow=pcrut.readmapSave(self.Inflow_mapstack, 0.0)
            if self.ExternalQbase:
-               self.Seepage = cover(self.wf_readmap(self.Seepage_mapstack,0.0),0.0)
+               self.Seepage = cover(self.wf_readmap(self.Seepage_mapstack, 0.0), 0.0)
            else:
                self.Seepage=cover(0.0)
-           self.Temperature=self.wf_readmap(self.TEMP_mapstack,0.0)
+           self.Temperature=self.wf_readmap(self.TEMP_mapstack, 0.0)
            
         if self.IRURFR_L:
             self.PotEvaporation = areatotal(self.PotEvaporation * self.percentArea, nominal(self.TopoId))
@@ -540,30 +591,28 @@ class WflowModel(DynamicModel):
         
         
         #INTERCEPTION =========================================================================================
-            if self.selectSi[k] > 0:
-                version = reservoir_Si.selectSiR(self.selectSi[k])
-                eval('reservoir_Si.' + version + '(self,k)')
-            
+            if self.selectSi[k]:
+                eval_str = 'reservoir_Si.{:s}(self, k)'.format(self.selectSi[k])
+                eval(eval_str)
         #UNSATURATED ZONE ======================================================================================
-            if self.selectSu[k] > 0:
-                version = reservoir_Su.selectSuR(self.selectSu[k])
-                eval('reservoir_Su.' + version + '(self,k)')
+            if self.selectSu[k]:
+                eval_str = 'reservoir_Su.{:s}(self, k)'.format(self.selectSu[k])
+                eval(eval_str)
             
         #COMBINED SATURATED AND UNSATURATED ZONE ========================================================================        
-            if self.selectSus[k] > 0:
-                version = reservoir_Sus.selectSusR(self.selectSus[k])
-                eval('reservoir_Sus.' + version + '(self,k)')        
+            if self.selectSus[k]:
+                eval_str = 'reservoir_Sus.{:s}(self, k)'.format(self.selectSus[k])
+                eval(eval_str)
             
         #FAST RUNOFF RESERVOIR ===================================================================================
-            if self.selectSf[k] > 0:
-                version = reservoir_Sf.selectSfR(self.selectSf[k])
-                eval('reservoir_Sf.' + version + '(self,k)')        
+            if self.selectSf[k]:
+                eval_str = 'reservoir_Sf.{:s}(self, k)'.format(self.selectSf[k])
+                eval(eval_str)
                 
          #RIPARIAN ZONE RESERVOIR ==================================================================================
-            if self.selectSr[k] > 0:
-                 version = reservoir_Sr.selectSrR(self.selectSr[k])
-                 eval('reservoir_Sr.' + version + '(self,k)')
-        
+            if self.selectSr[k]:
+                eval_str = 'reservoir_Sr.{:s}(self, k)'.format(self.selectSr[k])
+                eval(eval_str)
         
         #SLOW RUNOFF RESERVOIR ===========================================================================
                        
@@ -630,7 +679,30 @@ class WflowModel(DynamicModel):
         self.sumwb=self.sumwb + self.WB
     
         self.sumE = sum(multiply(self.Ei_,self.percent)) + sum(multiply(self.Eu_,self.percent)) + sum(multiply(self.Er_,self.percent))
-     
+        # EXPORTING TSS ==========================================================================================
+      
+        if self.teller > self.Ctime:
+            estr = "self.runLagTss.sample(self.QLagTot)"
+            eval(estr) 
+            estr = "self.SsTss.sample(self.Ss)"
+            eval(estr)
+            estr = "self.QsTss.sample(self.Qs)"
+            eval(estr)
+            estr = "self.WBTss.sample(self.WBtot)"
+            eval(estr)
+            if self.IRURFR_L:
+                toprinttss = configsection(self.config,'outputtss')
+                for a in toprinttss:
+                    estr = "self." + self.config.get("outputtss",a) + "Tss.sample(" + a +")"
+                    eval(estr)
+            else:
+                for i in range(1,self.maxGaugeId+1): 
+                    if i in self.allGaugeId:
+                        toprinttss = configsection(self.config,'outputtss')
+                        for a in toprinttss:
+                            estr = "self." + self.config.get("outputtss",a) + str(i) + "Tss.sample(" + a +")"
+                            eval(estr)
+
     
 
 # The main function is used to run the program from the command line
