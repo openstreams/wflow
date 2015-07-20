@@ -147,7 +147,7 @@ Possible parameter types (the second option)are:
 + monthlyclim: read a map corresponding to the current month (12 maps in total)
 + dailyclim: read a map corresponding to the current day of the year (366 maps in total)
 + hourlyclim: [not implemented yet] read a map corresponding to the current hour of the day (24 maps in total)
-
++ tss: read a tss file and link to lookupmap (only one allowed) a map using timeinputscalar
 
 Example::
 
