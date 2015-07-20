@@ -95,6 +95,7 @@ class WflowModel(DynamicModel):
       + monthlyclim: read a map corresponding to the current month (12 maps in total)
       + dailyclim: read a map corresponding to the current day of the year
       + hourlyclim: read a map corresponding to the current hour of the day (24 in total)
+      + tss: time series of scalars
 
 
       :return: List of modelparameters
@@ -105,7 +106,9 @@ class WflowModel(DynamicModel):
       modelparameters.append(self.ParamType(name="Altitude",stack="staticmaps/wflow_dem.map",type="staticmap",default=0.0,verbose=False,lookupmaps=[]))
 
       # Meteo and other forcing
-      modelparameters.append(self.ParamType(name="Temperature",stack="inmaps/TEMP",type="timeseries",default=10.0,verbose=False,lookupmaps=[]))
+      modelparameters.append(self.ParamType(name="Temperature",stack='intss/T.tss',type="timeseries",default=10.0,verbose=False,lookupmaps=['staticmaps/wflow_subcatch.map']))
+      modelparameters.append(self.ParamType(name="Precipitation",stack='intss/P.tss',type="timeseries",default=0.0,verbose=False,lookupmaps=['staticmaps/wflow_subcatch.map']))
+      modelparameters.append(self.ParamType(name="PotEvaporation",stack='intss/PET.tss',type="timeseries",default=0.0,verbose=False,lookupmaps=['staticmaps/wflow_subcatch.map']))
 
       return modelparameters
 
@@ -161,6 +164,7 @@ class WflowModel(DynamicModel):
     #: It is advised to use the wf_suspend() function 
     #: here which will suspend the variables that are given by stateVariables 
     #: function.
+    print self.SaveDir
     [report(self.Si[i], self.SaveDir + "/outmaps/Si" + self.NamesClasses[i] +".map") for i in self.Classes]        
     [report(self.Su[i], self.SaveDir + "/outmaps/Su" + self.NamesClasses[i] +".map") for i in self.Classes]        
     [report(self.Sus[i], self.SaveDir + "/outmaps/Sus" + self.NamesClasses[i] +".map") for i in self.Classes]        
@@ -199,6 +203,7 @@ class WflowModel(DynamicModel):
     setglobaloption("unittrue")
 
     self.teller=0
+
     
     self.thestep = scalar(0)
     #: files to be used in case of timesries (scalar) input to the model
@@ -295,7 +300,9 @@ class WflowModel(DynamicModel):
     self.rst_laiTss = [configget(self.config,
                                  "model","rst_lai_" + str(self.Classes[i]),
                                  "staticmaps/rst_lai_" + str(self.Classes[i]) +".map") for i in self.Classes]
-    
+
+
+    self.wf_updateparameters()
     # 2: Input base maps ########################################################  
     subcatch = ordinal(readmap(os.path.join(self.Dir, wflow_subcatch))) # Determines the area of calculations (all cells > 0)
     subcatch = ifthen(subcatch > 0, subcatch)
@@ -392,43 +399,43 @@ class WflowModel(DynamicModel):
 
     # Define timeseries outputs There seems to be a bug and the .tss files are 
     # saved in the current dir...
-    tssName = os.path.join(self.Dir, "outtss", "exf")
-    self.logger.info("Create timeseries outputs...")
-    toprinttss = configsection(self.config,'outputtss')
-
-    tssName = self.Dir + "/" + self.runId + "/runLag"   
-    estr = "self.runLagTss=wf_TimeoutputTimeseries('" + tssName + "', self, self.OutputIdRunoff,noHeader=False)"
-    exec estr
-    tssName = self.Dir + "/" + self.runId + "/Ss"   
-    estr = "self.SsTss=wf_TimeoutputTimeseries('" + tssName + "', self, self.OutputIdRunoff,noHeader=False)"
-    exec estr 
-    tssName = self.Dir + "/" + self.runId + "/Qs" 
-    estr = "self.QsTss=wf_TimeoutputTimeseries('" + tssName + "', self, self.OutputIdRunoff,noHeader=False)"
-    exec estr    
-    tssName = self.Dir + "/" + self.runId + "/WB"   
-    estr = "self.WBTss=wf_TimeoutputTimeseries('" + tssName + "', self, self.OutputIdRunoff,noHeader=False)"
-    exec estr 
-
-    if self.IRURFR_L:
-        self.check=nominal(i*scalar(self.TopoId))
-        self.OutputGaugeId=boolean(ifthenelse(self.gaugesMap == self.check,1*scalar(self.TopoId),0*scalar(self.TopoId)))
-        for a in toprinttss:
-            tssName = self.Dir + "/" + self.runId + "/" +  self.config.get("outputtss", a) 
-            estr = "self." + self.config.get("outputtss", a) + "Tss=wf_TimeoutputTimeseries('" + tssName + "', self, self.OutputIdRunoff,noHeader=False)"
-            self.logger.info("Creating tss output: " + a + "(" + self.config.get('outputtss', a) + ")")
-            exec estr
-    else:
-        self.allGaugeId = []
-        for i in range(1,self.maxGaugeId+1):
-            self.check=nominal(i*scalar(self.TopoId))
-            self.OutputGaugeId=boolean(ifthenelse(self.gaugesMap == self.check,1*scalar(self.TopoId),0*scalar(self.TopoId)))
-            if any(pcr2numpy(self.OutputGaugeId,nan) > 0):
-                self.allGaugeId.append(i)
-                for a in toprinttss:
-                    tssName = self.Dir + "/" + self.runId + "/" +  self.config.get("outputtss",a) + str(i)
-                    estr = "self." + self.config.get("outputtss",a) + str(i) + "Tss=wf_TimeoutputTimeseries('" + tssName + "', self, self.OutputGaugeId,noHeader=False)"
-                    self.logger.info("Creating tss output: " + a + "(" + self.config.get('outputtss',a) + ")")
-                    exec estr
+    # tssName = os.path.join(self.Dir, "outtss", "exf")
+    # self.logger.info("Create timeseries outputs...")
+    # toprinttss = configsection(self.config,'outputtss')
+    #
+    # tssName = self.Dir + "/" + self.runId + "/runLag"
+    # estr = "self.runLagTss=wf_TimeoutputTimeseries('" + tssName + "', self, self.OutputIdRunoff,noHeader=False)"
+    # exec estr
+    # tssName = self.Dir + "/" + self.runId + "/Ss"
+    # estr = "self.SsTss=wf_TimeoutputTimeseries('" + tssName + "', self, self.OutputIdRunoff,noHeader=False)"
+    # exec estr
+    # tssName = self.Dir + "/" + self.runId + "/Qs"
+    # estr = "self.QsTss=wf_TimeoutputTimeseries('" + tssName + "', self, self.OutputIdRunoff,noHeader=False)"
+    # exec estr
+    # tssName = self.Dir + "/" + self.runId + "/WB"
+    # estr = "self.WBTss=wf_TimeoutputTimeseries('" + tssName + "', self, self.OutputIdRunoff,noHeader=False)"
+    # exec estr
+    #
+    # if self.IRURFR_L:
+    #     self.check=nominal(i*scalar(self.TopoId))
+    #     self.OutputGaugeId=boolean(ifthenelse(self.gaugesMap == self.check,1*scalar(self.TopoId),0*scalar(self.TopoId)))
+    #     for a in toprinttss:
+    #         tssName = self.Dir + "/" + self.runId + "/" +  self.config.get("outputtss", a)
+    #         estr = "self." + self.config.get("outputtss", a) + "Tss=wf_TimeoutputTimeseries('" + tssName + "', self, self.OutputIdRunoff,noHeader=False)"
+    #         self.logger.info("Creating tss output: " + a + "(" + self.config.get('outputtss', a) + ")")
+    #         exec estr
+    # else:
+    #     self.allGaugeId = []
+    #     for i in range(1,self.maxGaugeId+1):
+    #         self.check=nominal(i*scalar(self.TopoId))
+    #         self.OutputGaugeId=boolean(ifthenelse(self.gaugesMap == self.check,1*scalar(self.TopoId),0*scalar(self.TopoId)))
+    #         if any(pcr2numpy(self.OutputGaugeId,nan) > 0):
+    #             self.allGaugeId.append(i)
+    #             for a in toprinttss:
+    #                 tssName = self.Dir + "/" + self.runId + "/" +  self.config.get("outputtss",a) + str(i)
+    #                 estr = "self." + self.config.get("outputtss",a) + str(i) + "Tss=wf_TimeoutputTimeseries('" + tssName + "', self, self.OutputGaugeId,noHeader=False)"
+    #                 self.logger.info("Creating tss output: " + a + "(" + self.config.get('outputtss',a) + ")")
+    #                 exec estr
 
     
     self.SaveDir = os.path.join(self.Dir, self.runId)
@@ -517,10 +524,10 @@ class WflowModel(DynamicModel):
         output should also be saved here.
         """
         # TODO: change rainfall .tss files into grids
-        # self.wf_updateparameters() # read the temperature map for each step (see parameters())
+        self.wf_updateparameters() # read the temperature map for each step (see parameters())
         self.teller=self.teller+1
         
-        #self.logger.debug("Step: "+str(int(self.thestep + self._d_firstTimeStep))+"/"+str(int(self._d_nrTimeSteps)))
+        self.logger.debug("Step: "+str(int(self.thestep + self._d_firstTimeStep))+"/"+str(int(self._d_nrTimeSteps)))
         self.thestep = self.thestep + 1
         
         self.Si_t = copylist(self.Si)
@@ -669,27 +676,27 @@ class WflowModel(DynamicModel):
         self.sumE = sum(multiply(self.Ei_,self.percent)) + sum(multiply(self.Eu_,self.percent)) + sum(multiply(self.Er_,self.percent))
         # EXPORTING TSS ==========================================================================================
       
-        if self.teller > self.Ctime:
-            estr = "self.runLagTss.sample(self.QLagTot)"
-            eval(estr) 
-            estr = "self.SsTss.sample(self.Ss)"
-            eval(estr)
-            estr = "self.QsTss.sample(self.Qs)"
-            eval(estr)
-            estr = "self.WBTss.sample(self.WBtot)"
-            eval(estr)
-            if self.IRURFR_L:
-                toprinttss = configsection(self.config,'outputtss')
-                for a in toprinttss:
-                    estr = "self." + self.config.get("outputtss",a) + "Tss.sample(" + a +")"
-                    eval(estr)
-            else:
-                for i in range(1,self.maxGaugeId+1): 
-                    if i in self.allGaugeId:
-                        toprinttss = configsection(self.config,'outputtss')
-                        for a in toprinttss:
-                            estr = "self." + self.config.get("outputtss",a) + str(i) + "Tss.sample(" + a +")"
-                            eval(estr)
+        # if self.teller > self.Ctime:
+        #     estr = "self.runLagTss.sample(self.QLagTot)"
+        #     eval(estr)
+        #     estr = "self.SsTss.sample(self.Ss)"
+        #     eval(estr)
+        #     estr = "self.QsTss.sample(self.Qs)"
+        #     eval(estr)
+        #     estr = "self.WBTss.sample(self.WBtot)"
+        #     eval(estr)
+        #     if self.IRURFR_L:
+        #         toprinttss = configsection(self.config,'outputtss')
+        #         for a in toprinttss:
+        #             estr = "self." + self.config.get("outputtss",a) + "Tss.sample(" + a +")"
+        #             eval(estr)
+        #     else:
+        #         for i in range(1,self.maxGaugeId+1):
+        #             if i in self.allGaugeId:
+        #                 toprinttss = configsection(self.config,'outputtss')
+        #                 for a in toprinttss:
+        #                     estr = "self." + self.config.get("outputtss",a) + str(i) + "Tss.sample(" + a +")"
+        #                     eval(estr)
 
     
 
