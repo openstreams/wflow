@@ -76,8 +76,8 @@ class WflowModel(DynamicModel):
       DynamicModel.__init__(self)   
       setclone(os.path.join(Dir, 'staticmaps', cloneMap))
       self.runId = RunDir
-      self.caseName = Dir
-      self.Dir = Dir
+      self.caseName = os.path.abspath(Dir)
+      self.Dir = os.path.abspath(Dir)
       self.configfile = configfile
      
 
@@ -363,7 +363,7 @@ class WflowModel(DynamicModel):
     self.OutputId = readmap(os.path.join(self.Dir, wflow_subcatch))  # location of subcatchment
     self.OutputIdRunoff = boolean(ifthenelse(self.gaugesR == 1,1*scalar(self.TopoId),0*scalar(self.TopoId)))       # location of subcatchment  
 
-    self.ZeroMap=0.0*scalar(subcatch)                    #map with only zero's
+    self.ZeroMap = 0.0*scalar(subcatch)                    #map with only zero's
   
   
     # For in memory override:
@@ -378,16 +378,16 @@ class WflowModel(DynamicModel):
     # Initializing of variables
 
     self.logger.info("Initializing of model variables..")
-    self.TopoLdd=lddmask(self.TopoLdd,boolean(self.TopoId))   
-    catchmentcells=maptotal(scalar(self.TopoId))
+    self.TopoLdd = lddmask(self.TopoLdd,boolean(self.TopoId))   
+    catchmentcells = maptotal(scalar(self.TopoId))
  
-    self.sumprecip=self.ZeroMap #: accumulated rainfall for water balance
-    self.sumevap=self.ZeroMap   #: accumulated evaporation for water balance
-    self.sumrunoff=self.ZeroMap                          #: accumulated runoff for water balance (weigthted for upstream area)
-    self.sumpotevap=self.ZeroMap                          #accumulated runoff for water balance
-    self.sumtemp=self.ZeroMap                          #accumulated runoff for water balance
-    self.Q=self.ZeroMap
-    self.sumwb=self.ZeroMap
+    self.sumprecip = self.ZeroMap  # accumulated rainfall for water balance
+    self.sumevap = self.ZeroMap  # accumulated evaporation for water balance
+    self.sumrunoff = self.ZeroMap  # accumulated runoff for water balance (weigthted for upstream area)
+    self.sumpotevap = self.ZeroMap  # accumulated runoff for water balance
+    self.sumtemp = self.ZeroMap                          #accumulated runoff for water balance
+    self.Q = self.ZeroMap
+    self.sumwb = self.ZeroMap
        
 
     # Define timeseries outputs There seems to be a bug and the .tss files are 
@@ -413,9 +413,9 @@ class WflowModel(DynamicModel):
         self.check=nominal(i*scalar(self.TopoId))
         self.OutputGaugeId=boolean(ifthenelse(self.gaugesMap == self.check,1*scalar(self.TopoId),0*scalar(self.TopoId)))
         for a in toprinttss:
-            tssName = self.Dir + "/" + self.runId + "/" +  self.config.get("outputtss",a) 
-            estr = "self." + self.config.get("outputtss",a) + "Tss=wf_TimeoutputTimeseries('" + tssName + "', self, self.OutputIdRunoff,noHeader=False)"
-            self.logger.info("Creating tss output: " + a + "(" + self.config.get('outputtss',a) + ")")
+            tssName = self.Dir + "/" + self.runId + "/" +  self.config.get("outputtss", a) 
+            estr = "self." + self.config.get("outputtss", a) + "Tss=wf_TimeoutputTimeseries('" + tssName + "', self, self.OutputIdRunoff,noHeader=False)"
+            self.logger.info("Creating tss output: " + a + "(" + self.config.get('outputtss', a) + ")")
             exec estr
     else:
         self.allGaugeId = []
@@ -431,9 +431,8 @@ class WflowModel(DynamicModel):
                     exec estr
 
     
-    self.SaveDir = self.Dir + "/" + self.runId + "/"
+    self.SaveDir = os.path.join(self.Dir, self.runId)
     self.logger.info("Starting Dynamic run...")
-
 
   def resume(self):
     """ 
