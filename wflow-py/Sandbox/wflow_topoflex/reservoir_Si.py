@@ -30,6 +30,16 @@ def selectSiR(i):
         name = 'interception_overflow_Ep'        
     return name
 
+def interception_no_reservoir(self, k):
+    """
+    Effective rainfall = rainfall
+    Interception evaporation = 0.
+    Storage in interception = 0.
+    """
+    self.Pe_[k] = max(self.Precipitation, 0)
+    self.Ei_[k] = 0.
+    self.Si_[k] = 0.
+    self.wbSi_[k] = self.Precipitation - self.Ei - self.Pe - self.Si[k] + self.Si_t[k]
 
 def interception_overflow2(self, k):
     """

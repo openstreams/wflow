@@ -28,7 +28,19 @@ def selectSfR(i):
         name = 'fastRunoff_lag2'
     return name
 
-def fastRunoff_lag2(self,k):
+def fastRunoff_no_reservoir(self, k):
+    """
+    This function is used when no unsaturated zone reservoir is used and only
+    passes fluxes from the upper reservoirs to the lower
+    Qf = 0.
+    Storage in fast reservoir = 0.
+    """
+    self.Qfin_[k] = self.Qu * (1 - self.D)
+    self.Qf_[k] = self.Qfin_[k]
+    self.Sf_[k] = 0.
+    self.wbSf_[k] = self.Qfin_[k] - self.Qf_[k] - self.Sf[k] + self.Sf_t[k]
+
+def fastRunoff_lag2(self, k):
     """
     - Lag is applied before inflow into the fast reservoir 
     - Lag formula is derived from Fenicia (2011)

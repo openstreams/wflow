@@ -44,7 +44,6 @@ from copy import copy as copylist
 # TODO: see below
 """
 Inlezen tijdseries (grids)
-Nieuwe manier van wegschrijven tijdseries
 Nieuwe lezen parameters
 Lijstjes reservoirs en fluxen
 Reservoir nul een doorgeefreservoir maken
@@ -283,6 +282,7 @@ class WflowModel(DynamicModel):
                              ' ', '').replace('[', '').replace(
                              ']', '').replace(
                              'None', '').split(',')
+    self.selectSs = configget(self.config, "model", "selectSs", "groundWaterCombined3")
     self.selectSr = configget(self.config, "model",
                               "selectSr", "0, 0, 0").replace(
                              ' ', '').replace('[', '').replace(
@@ -364,7 +364,7 @@ class WflowModel(DynamicModel):
     self.rhoA = eval(str(configget(self.config, "model", "rhoA", "[0]")))
     self.rhoW = eval(str(configget(self.config, "model", "rhoW", "[0]")))
     self.lamda = eval(str(configget(self.config, "model", "lamda", "[0]")))
-
+    
     # initialise list for routing
     self.trackQ = [0*scalar(self.TopoId)] * int(self.maxTransit)
     
@@ -554,11 +554,15 @@ class WflowModel(DynamicModel):
         #INTERCEPTION =========================================================================================
             if self.selectSi[k]:
                 eval_str = 'reservoir_Si.{:s}(self, k)'.format(self.selectSi[k])
-                eval(eval_str)
+            else:
+                eval_str = 'reservoir_Si.interception_no_reservoir(self, k)'
+            eval(eval_str)
         #UNSATURATED ZONE ======================================================================================
             if self.selectSu[k]:
                 eval_str = 'reservoir_Su.{:s}(self, k)'.format(self.selectSu[k])
-                eval(eval_str)
+            else:
+                eval_str = 'reservoir_Si.unsatZone_no_reservoir(self, k)'
+            eval(eval_str)
             
         #COMBINED SATURATED AND UNSATURATED ZONE ========================================================================        
             if self.selectSus[k]:
@@ -568,7 +572,9 @@ class WflowModel(DynamicModel):
         #FAST RUNOFF RESERVOIR ===================================================================================
             if self.selectSf[k]:
                 eval_str = 'reservoir_Sf.{:s}(self, k)'.format(self.selectSf[k])
-                eval(eval_str)
+            else:
+                eval_str = 'reservoir_Si.fastRunoff_no_reservoir(self, k)'
+            eval(eval_str)
                 
          #RIPARIAN ZONE RESERVOIR ==================================================================================
             if self.selectSr[k]:
@@ -583,7 +589,12 @@ class WflowModel(DynamicModel):
         self.Qfcub = (sum([x*y for x,y in zip(self.Qf_,self.percent)]))/ 1000 * self.surfaceArea
         reservoir_Sf.routingQf_combined(self)
         
-        reservoir_Ss.groundWaterCombined3(self)
+        if self.selectSs:
+            eval_str = 'reservoir_Ss.{:s}(self)'.format(self.selectSs)
+        else:
+            eval_str = 'reservoir_Ss.groundWater_no_reservoir(self)'
+        eval(eval_str)
+        # pdb.set_trace()
         # for separate gw reservoir per class    
         # self.Qtlag = self.Qflag_/ self.timestepsecs + sum([x*y for x,y in zip(self.Qs_,self.percent)])/ 1000 * self.surfaceArea/ self.timestepsecs
         # for combinzed gw reservoir    

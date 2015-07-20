@@ -65,6 +65,22 @@ def selectSuR(i):
         name = 'unsatZone_LP_beta_Ep_cropG'
     return name
 
+def unsatZone_no_reservoir(self, k):
+    """
+    This function is used when no unsaturated zone reservoir is used and only
+    passes fluxes from the upper reservoirs to the lower
+    Qu = Pe
+    Eu = 0.
+    Perc = 0.
+    Cap = 0.
+    Storage in unsaturated zone = 0.
+    """
+    self.Qu_[k] = max(self.Pe_[k], 0)
+    self.Eu_[k] = 0.
+    self.Perc_[k] = 0.
+    self.Su_[k] = 0.
+    self.Cap_[k] = 0.
+    self.wbSu_[k] = self.Pe - self.Eu - self.Qu - self.Perc + self.Cap - self.Su[k] + self.Su_t[k]
 
 def unsatZone_LP_beta(self,k):
     """

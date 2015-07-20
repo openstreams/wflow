@@ -20,6 +20,22 @@ except ImportError:
     from  wf_DynamicFramework import *
 import scipy
 
+def groundWater_no_reservoir(self):
+    """
+    Recharge = Qu * D (per class)
+    QsinClass = sum of recharge, percolation and capillary rise per class
+    Qsin = QsinClass, summed over areal fraction and all classes
+
+    """
+
+    self.Recharge = [x*y for x,y in zip(self.Qu_, self.D)]    
+    self.QsinClass = [a+b-c for a,b,c in zip(self.Recharge, self.Perc_, self.Cap_)]  # all fluxes are summed per class
+    self.QsinTemp = sum([a*b for a,b in zip(self.QsinClass ,self.percent)])     #fluxes are summed per cell according to percentage of class
+    self.Qsin = areatotal(self.QsinTemp * self.percentArea ,nominal(self.TopoId))  #areatotal is taken, according to area percentage of cell
+ 
+    self.Qs = self.Qsin
+    self.Ss = 0.
+    self.wbSs = self.Qsin - self.Qs - self.Ss + self.Ss_t
     
 def groundWaterCombined3(self):
     """
