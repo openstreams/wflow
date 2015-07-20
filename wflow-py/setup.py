@@ -38,9 +38,5 @@ setup(name='wflow',
                'wflow/wflow_sbm.py','wflow/wflow_hbv.py','wflow/wflow_W3RA.py',
                'wflow/wflow_upscale.py','wflow/wflow_routing.py'],
       description='the wflow hydrological models (part of OpenStreams)',
-      install_requires = [ 'netCDF4>=1.1.8',
-    'numpy',
-    'matplotlib',
-     'gdal'],
       )
 

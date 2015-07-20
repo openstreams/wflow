@@ -12,7 +12,8 @@ $Rev: 915 $
 
 import netCDF4
 # the two below are needed fpr bbfreeze
-import netCDF4.utils
+
+#import netCDF4.utils
 import netcdftime
 
 from pcraster import *
@@ -32,10 +33,9 @@ globmetadata['source'] = 'wflow'
 globmetadata['history'] = time.ctime()
 globmetadata['references'] = 'http://wflow.googlecode.com'
 globmetadata['Conventions'] = 'CF-1.4'
-# 'NETCDF4', 'NETCDF4_CLASSIC', 'NETCDF3_64BIT', or 'NETCDF3_CLASSIC'
 netcdfformat = "NETCDF4"
 
-def prepare_nc(trgFile, timeList, x, y, metadata, logger, units='Days since 1900-01-01 00:00:00', calendar='gregorian',Format="NETCDF4",complevel=1,zlib=True):
+def prepare_nc(trgFile, timeList, x, y, metadata, logger, units='Days since 1900-01-01 00:00:00', calendar='gregorian',Format="NETCDF4",complevel=9,zlib=True):
     """
     This function prepares a NetCDF file with given metadata, for a certain year, daily basis data
     The function assumes a gregorian calendar and a time unit 'Days since 1900-01-01 00:00:00'
@@ -46,7 +46,7 @@ def prepare_nc(trgFile, timeList, x, y, metadata, logger, units='Days since 1900
     startDayNr = netCDF4.date2num(timeList[0].replace(tzinfo=None), units=units, calendar=calendar)
     endDayNr   = netCDF4.date2num(timeList[-1].replace(tzinfo=None), units=units, calendar=calendar)
     time       = arange(startDayNr,endDayNr+1)
-    nc_trg     = netCDF4.Dataset(trgFile,'w',format=Format,zlib=zlib)
+    nc_trg     = netCDF4.Dataset(trgFile,'w',format=Format,zlib=zlib,complevel=complevel)
 
     logger.info('Setting up dimensions and attributes. Steps: ' + str(len(timeList)) + ' lat: ' + str(len(y))+ " lon: " + str(len(x)))
     if len(time) ==1:
@@ -90,7 +90,7 @@ def prepare_nc(trgFile, timeList, x, y, metadata, logger, units='Days since 1900
 
 class netcdfoutput():
 
-    def __init__(self,netcdffile,logger,starttime,timesteps,timestepsecs=86400,metadata={},maxbuf=25):
+    def __init__(self,netcdffile,logger,starttime,timesteps,timestepsecs=86400,metadata={},maxbuf=25,least_significant_digit=None):
         """
         Under construction
         """
@@ -103,6 +103,7 @@ class netcdfoutput():
                 r = (end+dt.timedelta(days=1)-start).days * 24
                 return [start+dt.timedelta(hours=i) for i in range(r)]
 
+        self.least_significant_digit=least_significant_digit
         self.logger = logger
         # Do not allow a max buffer larger than the number of timesteps
         self.maxbuf =  maxbuf if timesteps >= maxbuf else timesteps
@@ -160,7 +161,7 @@ class netcdfoutput():
              nc_var = self.nc_trg.variables[var]
         except:
             self.logger.debug("Creating variable " + var + " in netcdf file. Format: " + netcdfformat)
-            nc_var = self.nc_trg.createVariable(var, 'f4', ('time', 'lat', 'lon',), fill_value=-9999.0, zlib=True,complevel=1)
+            nc_var = self.nc_trg.createVariable(var, 'f4', ('time', 'lat', 'lon',), fill_value=-9999.0, zlib=True,complevel=9,least_significant_digit=self.least_significant_digit)
             nc_var.units = unit
             nc_var.standard_name = name
             self.nc_trg.sync()

@@ -51,6 +51,8 @@ import gzip, zipfile
 
 
 
+
+
 Verbose=0
 
 def lddcreate_save(lddname, dem, force, corevolume=1E35, catchmentprecipitation=1E35, corearea=1E35, outflowdepth=1E35):
@@ -586,8 +588,8 @@ def points_to_map(in_map,xcor,ycor,tolerance):
     try:
         c = xcor.ndim
     except:
-        xcor = array([xcor])
-        ycor = array([ycor])
+        xcor = numpy.array([xcor])
+        ycor = numpy.array([ycor])
 
     # Loop over points and "burn in" map
     for n in range(0,xcor.size):
@@ -821,8 +823,8 @@ def readMap(fileName, fileFormat):
     resY    = geotrans[5]
     cols = ds.RasterXSize
     rows = ds.RasterYSize
-    x = linspace(originX+resX/2,originX+resX/2+resX*(cols-1),cols)
-    y = linspace(originY+resY/2,originY+resY/2+resY*(rows-1),rows)
+    x = numpy.linspace(originX+resX/2,originX+resX/2+resX*(cols-1),cols)
+    y = numpy.linspace(originY+resY/2,originY+resY/2+resY*(rows-1),rows)
     # Retrieve raster
     RasterBand = ds.GetRasterBand(1) # there's only 1 band, starting from 1
     data = RasterBand.ReadAsArray(0,0,cols,rows)

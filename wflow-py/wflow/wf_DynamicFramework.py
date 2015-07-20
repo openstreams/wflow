@@ -358,6 +358,21 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     theparmap = self.wf_readmapClimatology(os.path.join(self._userModel().caseName,par.stack) ,kind=2, default=par.default, verbose=par.verbose)
                     setattr(self._userModel(),par.name,theparmap)
 
+            if self._userModel()._inDynamic():
+                if par.type == 'tss':
+                    if not hasattr(self._userModel(),par.name):
+                        self._userModel().logger.info(par.name + " is not defined yet, adding anyway.")
+                    theparmap = self.wf_timeinputscalar(os.path.join(self._userModel().caseName,par.stack),os.path.join(self._userModel().caseName,par.lookupmaps[0]),par.default)
+                    setattr(self._userModel(),par.name,theparmap)
+
+  def wf_timeinputscalar(self,tssfile,areamap,default):
+        """
+
+        :param tssfile:
+        :param areamap:
+        :return:
+        """
+        return cover(timeinputscalar(tssfile,areamap),default)
 
 
 
