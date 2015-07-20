@@ -41,6 +41,17 @@ from wflow.wflow_adapt import *
 #import scipy
 from copy import copy as copylist
 
+# TODO: see below
+"""
+Configuratie file aanpassen (reservoir-naam gebruiken ipv nummer)
+Inlezen tijdseries (grids)
+Nieuwe manier van wegschrijven tijdseries
+Nieuwe lezen parameters
+Lijstjes reservoirs en fluxen
+Reservoir nul een doorgeefreservoir maken
+Multiplication with cell surface aanpassen
+Verwijderen IRURFR_L statements?
+"""
 
 
 def usage(*args):
@@ -65,8 +76,8 @@ class WflowModel(DynamicModel):
       DynamicModel.__init__(self)   
       setclone(os.path.join(Dir, 'staticmaps', cloneMap))
       self.runId = RunDir
-      self.caseName = Dir
-      self.Dir = Dir
+      self.caseName = os.path.abspath(Dir)
+      self.Dir = os.path.abspath(Dir)
       self.configfile = configfile
      
 
@@ -192,19 +203,32 @@ class WflowModel(DynamicModel):
     self.thestep = scalar(0)
     #: files to be used in case of timesries (scalar) input to the model
     #files for forcing data
-    self.precipTss = os.path.join(self.Dir, configget(self.config,"model","Pfile_1",""))
-    self.evapTss = os.path.join(self.Dir, configget(self.config,"model","Efile_1",""))
-    self.tempTss = os.path.join(self.Dir, configget(self.config,"model","Tfile_1",""))
-    self.precipTss2 = os.path.join(self.Dir, configget(self.config,"model","Pfile_2","")) 
-    self.evapTss2 = os.path.join(self.Dir, configget(self.config,"model","Efile_2",""))
-    self.tempDMTss = os.path.join(self.Dir, configget(self.config,"model","TDMfile_2",""))
-    self.radnTss = os.path.join(self.Dir, configget(self.config,"model","RNfile_2",""))
-    self.radsTss = os.path.join(self.Dir, configget(self.config,"model","RSfile_2",""))
-    self.sgammaTss = os.path.join(self.Dir, configget(self.config,"model","SGfile_2",""))
-    self.vpdTss = os.path.join(self.Dir, configget(self.config,"model","VPDfile_2",""))
-    self.windTss = os.path.join(self.Dir, configget(self.config,"model","Wfile_2",""))
-    self.daySTss = os.path.join(self.Dir, configget(self.config,"model","DSfile_2",""))
-    self.dayETss = os.path.join(self.Dir, configget(self.config,"model","DEfile_2",""))
+    self.precipTss = os.path.join(self.Dir,
+                                  configget(self.config, "model", "Pfile_1", ""))
+    self.evapTss = os.path.join(self.Dir,
+                                configget(self.config, "model", "Efile_1", ""))
+    self.tempTss = os.path.join(self.Dir,
+                                configget(self.config, "model", "Tfile_1", ""))
+    self.precipTss2 = os.path.join(self.Dir,
+                                   configget(self.config, "model", "Pfile_2", "")) 
+    self.evapTss2 = os.path.join(self.Dir,
+                                 configget(self.config, "model", "Efile_2", ""))
+    self.tempDMTss = os.path.join(self.Dir,
+                                  configget(self.config, "model", "TDMfile_2", ""))
+    self.radnTss = os.path.join(self.Dir,
+                                configget(self.config, "model", "RNfile_2", ""))
+    self.radsTss = os.path.join(self.Dir,
+                                configget(self.config, "model", "RSfile_2", ""))
+    self.sgammaTss = os.path.join(self.Dir,
+                                  configget(self.config, "model", "SGfile_2", ""))
+    self.vpdTss = os.path.join(self.Dir,
+                               configget(self.config, "model", "VPDfile_2", ""))
+    self.windTss = os.path.join(self.Dir,
+                                configget(self.config, "model", "Wfile_2", ""))
+    self.daySTss = os.path.join(self.Dir,
+                                configget(self.config, "model", "DSfile_2", ""))
+    self.dayETss = os.path.join(self.Dir,
+                                configget(self.config, "model", "DEfile_2", ""))
 #    self.laiTss = configget(self.config,"model","LAIfile_2","")
          
   
@@ -212,37 +236,65 @@ class WflowModel(DynamicModel):
     
         
     # Set and get defaults from ConfigFile here ###################################
-    self.timestepsecs = int(configget(self.config,"model","timestepsecs","3600"))       #number of seconds in a timestep   
-    self.scalarInput = int(configget(self.config,"model","ScalarInput","1"))            #forcing data in maps (0) or timeseries (1)
-    self.InputSeries = int(configget(self.config,"model","InputSeries","1"))            #forcing data in maps (0) or timeseries (1)
-    self.reinit = int(configget(self.config,"model","reinit","0"))    
-    self.maxTransit=float(configget(self.config,"model","maxTransitTime","34"))         #maximum Transit time in cacthment
-    self.distForcing=int(configget(self.config,"model","DistForcing","10"))             #number of different forcing inputs (eg. number of rainfall stations)
-    self.maxGaugeId=int(configget(self.config,"model","maxGaugeId","10"))               #highest index of all used meteo stations
-    self.IRURFR_L=int(configget(self.config,"model","L_IRURFR","0"))                    #combination of reservoirs that are distributed (1: all these reservoirs are distributed)        
-    self.URFR_L=int(configget(self.config,"model","L_URFR","0"))                        #combination of reservoirs that are distributed (1: all these reservoirs are distributed)            
-    self.FR_L=int(configget(self.config,"model","L_FR","0"))                            #combination of reservoirs that are distributed (1: all these reservoirs are distributed)        
-    self.Ctime = int(configget(self.config,"model","spinUp_time","7775"))               #number of timesteps for which no data needs to be recorded
-    self.NamesClasses = eval(str(configget(self.config,"model","classes","['W','H','P']")))     #classes used in model
-    self.Classes = [x for x in range(len(self.NamesClasses))]                                   #numbering of classes
+    self.timestepsecs = int(configget(self.config,
+                                      "model", "timestepsecs", "3600"))  # number of seconds in a timestep   
+    self.scalarInput = int(configget(self.config,
+                                     "model", "ScalarInput", "1"))  # forcing data in maps (0) or timeseries (1)
+    self.InputSeries = int(configget(self.config,
+                                     "model", "InputSeries", "1"))  # forcing data in maps (0) or timeseries (1)
+    self.reinit = int(configget(self.config,
+                                "model", "reinit", "0"))    
+    self.maxTransit = float(configget(self.config,
+                                    "model", "maxTransitTime", "34"))  # maximum Transit time in cacthment
+    self.distForcing = int(configget(self.config,
+                                     "model", "DistForcing", "10"))             #number of different forcing inputs (eg. number of rainfall stations)
+    self.maxGaugeId = int(configget(self.config,
+                                    "model", "maxGaugeId", "10"))  # highest index of all used meteo stations
+    self.IRURFR_L = int(configget(self.config,
+                                  "model", "L_IRURFR", "0"))  # combination of reservoirs that are distributed (1: all these reservoirs are distributed)        
+    self.URFR_L = int(configget(self.config,
+                                "model", "L_URFR", "0"))  # combination of reservoirs that are distributed (1: all these reservoirs are distributed)            
+    self.FR_L = int(configget(self.config,
+                              "model", "L_FR", "0"))  # combination of reservoirs that are distributed (1: all these reservoirs are distributed)        
+    self.Ctime = int(configget(self.config,
+                               "model", "spinUp_time", "7775"))  # number of timesteps for which no data needs to be recorded
+    self.NamesClasses = eval(str(configget(self.config,
+                                           "model", "classes", "['W','H','P']")))  # classes used in model
+    self.Classes = [x for x in range(len(self.NamesClasses))]  # numbering of classes
     
     # selection of reservoir conceputalisatie - codes are described in reservoir files
-    self.selectSi = eval(str(configget(self.config,"model","selectSi","[0,0,0]")))    
-    self.selectSu = eval(str(configget(self.config,"model","selectSu","[0,0,0]")))
-    self.selectSus = eval(str(configget(self.config,"model","selectSus","[0,0,0]")))
-    self.selectSf = eval(str(configget(self.config,"model","selectSf","[0,0,0]")))
-    self.selectSr = eval(str(configget(self.config,"model","selectSr","[0,0,0]")))
+    self.selectSi = eval(str(configget(self.config,
+                                       "model", "selectSi", "[0,0,0]")))    
+    self.selectSu = eval(str(configget(self.config,
+                                       "model", "selectSu", "[0,0,0]")))
+    self.selectSus = eval(str(configget(self.config,
+                                        "model", "selectSus", "[0,0,0]")))
+    self.selectSf = eval(str(configget(self.config,
+                                       "model", "selectSf", "[0,0,0]")))
+    self.selectSr = eval(str(configget(self.config,
+                                       "model", "selectSr", "[0,0,0]")))
     
     # static maps to use (normally default)
-    wflow_subcatch = configget(self.config,"model","wflow_subcatch","staticmaps/wflow_subcatch.map")
-    wflow_dem  = configget(self.config,"model","wflow_dem","staticmaps/wflow_dem.map")
-    wflow_ldd = configget(self.config,"model","wflow_ldd","staticmaps/wflow_ldd.map")
-    wflow_gauges  = configget(self.config,"model","wflow_gauges","staticmaps/wflow_gauges.map")
-    wflow_mgauges  = configget(self.config,"model","wflow_mgauges","staticmaps/wflow_mgauges.map")
-    wflow_surfaceArea = configget(self.config,"model","wflow_surfaceArea","staticmaps/wflow_surfaceArea.map")
-    wflow_transit = configget(self.config,"model","wflow_transit","staticmaps/wflow_transit.map")  
-    wflow_percent = [configget(self.config,"model","wflow_percent_" + str(self.Classes[i]),"staticmaps/wflow_percent" + str(self.Classes[i]) +".map") for i in self.Classes]        
-    self.rst_laiTss = [configget(self.config,"model","rst_lai_" + str(self.Classes[i]),"staticmaps/rst_lai_" + str(self.Classes[i]) +".map") for i in self.Classes]   
+    wflow_subcatch = configget(self.config,
+                               "model", "wflow_subcatch", "staticmaps/wflow_subcatch.map")
+    wflow_dem  = configget(self.config,
+                           "model", "wflow_dem", "staticmaps/wflow_dem.map")
+    wflow_ldd = configget(self.config,
+                          "model", "wflow_ldd", "staticmaps/wflow_ldd.map")
+    wflow_gauges  = configget(self.config,
+                              "model", "wflow_gauges", "staticmaps/wflow_gauges.map")
+    wflow_mgauges  = configget(self.config,
+                               "model", "wflow_mgauges", "staticmaps/wflow_mgauges.map")
+    wflow_surfaceArea = configget(self.config,
+                                  "model", "wflow_surfaceArea", "staticmaps/wflow_surfaceArea.map")
+    wflow_transit = configget(self.config,
+                              "model", "wflow_transit", "staticmaps/wflow_transit.map")  
+    wflow_percent = [configget(self.config,
+                               "model", "wflow_percent_" + str(self.Classes[i]),
+                               "staticmaps/wflow_percent" + str(self.Classes[i]) +".map") for i in self.Classes]
+    self.rst_laiTss = [configget(self.config,
+                                 "model","rst_lai_" + str(self.Classes[i]),
+                                 "staticmaps/rst_lai_" + str(self.Classes[i]) +".map") for i in self.Classes]
     
     # 2: Input base maps ########################################################  
     subcatch = ordinal(readmap(os.path.join(self.Dir, wflow_subcatch))) # Determines the area of calculations (all cells > 0)
@@ -261,44 +313,43 @@ class WflowModel(DynamicModel):
     for i in self.Classes:
         self.percent.append(readmap(os.path.join(self.Dir, wflow_percent[i])))
 
-    
     #MODEL PARAMETERS
-    self.sumax = eval(str(configget(self.config,"model","sumax","[0]")))
-    self.sumin = eval(str(configget(self.config,"model","sumin","[0]")))
-    self.samax = eval(str(configget(self.config,"model","samax","[0]")))
-    self.susmax1 = eval(str(configget(self.config,"model","susmax1","[0]")))
-    self.susmax2 = eval(str(configget(self.config,"model","susmax2","[0]")))
-    self.susmax3 = eval(str(configget(self.config,"model","susmax3","[0]")))
-    self.srmax = eval(str(configget(self.config,"model","sumax","[0]")))
-    self.beta = eval(str(configget(self.config,"model","beta","[0]")))
-    self.famax = eval(str(configget(self.config,"model","famax","[0]")))
-    self.Ce = eval(str(configget(self.config,"model","Ce","[0]"))) 
-    self.Co = eval(str(configget(self.config,"model","Co","[0]")))
-    self.D = eval(str(configget(self.config,"model","D","[0]")))
-    self.Kf = eval(str(configget(self.config,"model","Kf","[0]")))
-    self.Tf = eval(str(configget(self.config,"model","Tf","[0]")))
-    self.imax = eval(str(configget(self.config,"model","imax","[0]")))
-    self.perc = eval(str(configget(self.config,"model","perc","[0]")))
-    self.cap = eval(str(configget(self.config,"model","cap","[0]")))
-    self.Kd = eval(str(configget(self.config,"model","Kd","[0]")))
-    self.Kr = eval(str(configget(self.config,"model","Kr","[0]")))
-    self.LP = eval(str(configget(self.config,"model","LP","[0]")))
-    self.Ks = eval(str(configget(self.config,"model","Ks","[0]")))
+    self.sumax = eval(str(configget(self.config, "model", "sumax", "[0]")))
+    self.sumin = eval(str(configget(self.config, "model", "sumin", "[0]")))
+    self.samax = eval(str(configget(self.config, "model", "samax", "[0]")))
+    self.susmax1 = eval(str(configget(self.config, "model", "susmax1", "[0]")))
+    self.susmax2 = eval(str(configget(self.config, "model", "susmax2", "[0]")))
+    self.susmax3 = eval(str(configget(self.config, "model", "susmax3", "[0]")))
+    self.srmax = eval(str(configget(self.config, "model", "sumax", "[0]")))
+    self.beta = eval(str(configget(self.config, "model", "beta", "[0]")))
+    self.famax = eval(str(configget(self.config, "model", "famax", "[0]")))
+    self.Ce = eval(str(configget(self.config, "model", "Ce", "[0]")))
+    self.Co = eval(str(configget(self.config, "model", "Co", "[0]")))
+    self.D = eval(str(configget(self.config, "model", "D", "[0]")))
+    self.Kf = eval(str(configget(self.config, "model", "Kf", "[0]")))
+    self.Tf = eval(str(configget(self.config, "model", "Tf", "[0]")))
+    self.imax = eval(str(configget(self.config, "model", "imax", "[0]")))
+    self.perc = eval(str(configget(self.config, "model", "perc", "[0]")))
+    self.cap = eval(str(configget(self.config, "model", "cap", "[0]")))
+    self.Kd = eval(str(configget(self.config, "model", "Kd", "[0]")))
+    self.Kr = eval(str(configget(self.config, "model", "Kr", "[0]")))
+    self.LP = eval(str(configget(self.config, "model", "LP", "[0]")))
+    self.Ks = eval(str(configget(self.config, "model", "Ks", "[0]")))
     #Jarvis stressfunctions
-    self.JC_Topt = eval(str(configget(self.config,"model","JC_Topt","[0]")))
-    self.JC_D05 = eval(str(configget(self.config,"model","JC_D05","[0]")))
-    self.JC_cd1 = eval(str(configget(self.config,"model","JC_cd1","[0]")))
-    self.JC_cd2 = eval(str(configget(self.config,"model","JC_cd2","[0]")))
-    self.JC_cr = eval(str(configget(self.config,"model","JC_cr","[0]")))
-    self.JC_cuz = eval(str(configget(self.config,"model","JC_cuz","[0]")))
-    self.SuFC = eval(str(configget(self.config,"model","SuFC","[0]")))
-    self.SuWP = eval(str(configget(self.config,"model","SuWP","[0]")))
-    self.JC_rstmin = eval(str(configget(self.config,"model","JC_rstmin","[0]")))
-    self.gamma = eval(str(configget(self.config,"model","gamma","[0]")))
-    self.Cp = eval(str(configget(self.config,"model","Cp","[0]")))
-    self.rhoA = eval(str(configget(self.config,"model","rhoA","[0]")))
-    self.rhoW = eval(str(configget(self.config,"model","rhoW","[0]")))
-    self.lamda = eval(str(configget(self.config,"model","lamda","[0]")))
+    self.JC_Topt = eval(str(configget(self.config, "model", "JC_Topt", "[0]")))
+    self.JC_D05 = eval(str(configget(self.config, "model", "JC_D05", "[0]")))
+    self.JC_cd1 = eval(str(configget(self.config, "model", "JC_cd1", "[0]")))
+    self.JC_cd2 = eval(str(configget(self.config, "model", "JC_cd2", "[0]")))
+    self.JC_cr = eval(str(configget(self.config, "model", "JC_cr", "[0]")))
+    self.JC_cuz = eval(str(configget(self.config, "model", "JC_cuz", "[0]")))
+    self.SuFC = eval(str(configget(self.config, "model", "SuFC", "[0]")))
+    self.SuWP = eval(str(configget(self.config, "model", "SuWP", "[0]")))
+    self.JC_rstmin = eval(str(configget(self.config, "model", "JC_rstmin", "[0]")))
+    self.gamma = eval(str(configget(self.config, "model", "gamma", "[0]")))
+    self.Cp = eval(str(configget(self.config, "model", "Cp", "[0]")))
+    self.rhoA = eval(str(configget(self.config, "model", "rhoA", "[0]")))
+    self.rhoW = eval(str(configget(self.config, "model", "rhoW", "[0]")))
+    self.lamda = eval(str(configget(self.config, "model", "lamda", "[0]")))
 
     # initialise list for routing
     self.trackQ = [0*scalar(self.TopoId)] * int(self.maxTransit)
@@ -312,7 +363,7 @@ class WflowModel(DynamicModel):
     self.OutputId = readmap(os.path.join(self.Dir, wflow_subcatch))  # location of subcatchment
     self.OutputIdRunoff = boolean(ifthenelse(self.gaugesR == 1,1*scalar(self.TopoId),0*scalar(self.TopoId)))       # location of subcatchment  
 
-    self.ZeroMap=0.0*scalar(subcatch)                    #map with only zero's
+    self.ZeroMap = 0.0*scalar(subcatch)                    #map with only zero's
   
   
     # For in memory override:
@@ -327,16 +378,16 @@ class WflowModel(DynamicModel):
     # Initializing of variables
 
     self.logger.info("Initializing of model variables..")
-    self.TopoLdd=lddmask(self.TopoLdd,boolean(self.TopoId))   
-    catchmentcells=maptotal(scalar(self.TopoId))
+    self.TopoLdd = lddmask(self.TopoLdd,boolean(self.TopoId))   
+    catchmentcells = maptotal(scalar(self.TopoId))
  
-    self.sumprecip=self.ZeroMap #: accumulated rainfall for water balance
-    self.sumevap=self.ZeroMap   #: accumulated evaporation for water balance
-    self.sumrunoff=self.ZeroMap                          #: accumulated runoff for water balance (weigthted for upstream area)
-    self.sumpotevap=self.ZeroMap                          #accumulated runoff for water balance
-    self.sumtemp=self.ZeroMap                          #accumulated runoff for water balance
-    self.Q=self.ZeroMap
-    self.sumwb=self.ZeroMap
+    self.sumprecip = self.ZeroMap  # accumulated rainfall for water balance
+    self.sumevap = self.ZeroMap  # accumulated evaporation for water balance
+    self.sumrunoff = self.ZeroMap  # accumulated runoff for water balance (weigthted for upstream area)
+    self.sumpotevap = self.ZeroMap  # accumulated runoff for water balance
+    self.sumtemp = self.ZeroMap                          #accumulated runoff for water balance
+    self.Q = self.ZeroMap
+    self.sumwb = self.ZeroMap
        
 
     # Define timeseries outputs There seems to be a bug and the .tss files are 
@@ -362,9 +413,9 @@ class WflowModel(DynamicModel):
         self.check=nominal(i*scalar(self.TopoId))
         self.OutputGaugeId=boolean(ifthenelse(self.gaugesMap == self.check,1*scalar(self.TopoId),0*scalar(self.TopoId)))
         for a in toprinttss:
-            tssName = self.Dir + "/" + self.runId + "/" +  self.config.get("outputtss",a) 
-            estr = "self." + self.config.get("outputtss",a) + "Tss=wf_TimeoutputTimeseries('" + tssName + "', self, self.OutputIdRunoff,noHeader=False)"
-            self.logger.info("Creating tss output: " + a + "(" + self.config.get('outputtss',a) + ")")
+            tssName = self.Dir + "/" + self.runId + "/" +  self.config.get("outputtss", a) 
+            estr = "self." + self.config.get("outputtss", a) + "Tss=wf_TimeoutputTimeseries('" + tssName + "', self, self.OutputIdRunoff,noHeader=False)"
+            self.logger.info("Creating tss output: " + a + "(" + self.config.get('outputtss', a) + ")")
             exec estr
     else:
         self.allGaugeId = []
@@ -380,9 +431,8 @@ class WflowModel(DynamicModel):
                     exec estr
 
     
-    self.SaveDir = self.Dir + "/" + self.runId + "/"
+    self.SaveDir = os.path.join(self.Dir, self.runId)
     self.logger.info("Starting Dynamic run...")
-
 
   def resume(self):
     """ 
