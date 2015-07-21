@@ -44,12 +44,13 @@ from copy import copy as copylist
 # TODO: see below
 """
 Inlezen tijdseries (grids)
-Nieuwe lezen parameters
+Nieuwe lezen parameters -> Done for tss input
 Lijstjes reservoirs en fluxen
 Reservoir nul een doorgeefreservoir maken
 Multiplication with cell surface aanpassen
 Verwijderen IRURFR_L statements?
 Documentatie updaten!
+States worden nu in outsum dir bewaard, maar moeten naar outstate
 """
 
 
@@ -104,7 +105,10 @@ class WflowModel(DynamicModel):
       modelparameters.append(self.ParamType(name="Altitude",stack="staticmaps/wflow_dem.map",type="staticmap",default=0.0,verbose=False,lookupmaps=[]))
 
       # Meteo and other forcing
-      modelparameters.append(self.ParamType(name="Temperature",stack="inmaps/TEMP",type="timeseries",default=10.0,verbose=False,lookupmaps=[]))
+      # Meteo and other forcing
+      modelparameters.append(self.ParamType(name="Temperature",stack='intss/T.tss',type="timeseries",default=10.0,verbose=False,lookupmaps=['staticmaps/wflow_subcatch.map']))
+      modelparameters.append(self.ParamType(name="Precipitation",stack='intss/P.tss',type="timeseries",default=0.0,verbose=False,lookupmaps=['staticmaps/wflow_subcatch.map']))
+      modelparameters.append(self.ParamType(name="PotEvaporation",stack='intss/PET.tss',type="timeseries",default=0.0,verbose=False,lookupmaps=['staticmaps/wflow_subcatch.map']))
 
       return modelparameters
 
