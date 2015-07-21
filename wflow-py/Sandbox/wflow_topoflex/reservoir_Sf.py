@@ -95,19 +95,19 @@ def routingQf_combined(self):
     - Qf is devided over the reservoir numbers for the timesteps matching with the average
     travel time for a calcultation cell
     """
-    if sum(pcr2numpy(self.Transit,NaN)) > 0:    
+    if nansum(pcr2numpy(self.Transit,NaN)) > 0:
         self.Qflag = self.trackQ[0]  # first bucket is transferred to outlet
         self.trackQ.append(0 * scalar(self.TopoId))  # add new bucket for present time step
         del self.trackQ[0]  # remove first bucket (transferred to outlet)
         temp = [self.trackQ[i] + ifthenelse(rounddown(self.Transit) == i*scalar(self.TopoId),
-                                            (self.Transit - i*scalar(self.TopoId)) * self.Qfcub,
+                                            (self.Transit - i*scalar(self.TopoId)) * self.Qftotal / 1000 * self.surfaceArea,
                                             ifthenelse(roundup(self.Transit) == i*scalar(self.TopoId),
-                                                       (i*scalar(self.TopoId) - self.Transit) * self.Qfcub, 0)) for i in range(len(self.trackQ))]
+                                                       (i*scalar(self.TopoId) - self.Transit) * self.Qftotal / 1000 * self.surfaceArea, 0)) for i in range(len(self.trackQ))]
         self.trackQ = temp    
     
     else:
-        self.Qflag = self.Qfcub
+        self.Qflag = self.Qftotal
     
-    self.wbSfrout = self.Qfcub - self.Qflag - sum(self.trackQ) + sum (self.trackQ_t)
+    self.wbSfrout = self.Qftotal - self.Qflag - sum(self.trackQ) + sum (self.trackQ_t)
     
     self.Qflag_ = self.Qflag

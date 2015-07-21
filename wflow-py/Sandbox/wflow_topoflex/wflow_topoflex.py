@@ -29,12 +29,12 @@ import reservoir_Ss
 import reservoir_Sus
 import JarvisCoefficients
 
-import pdb
 import numpy
 import os
 import os.path
 import shutil, glob
 import getopt
+import time
 
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
@@ -136,7 +136,7 @@ class WflowModel(DynamicModel):
       
       :var TSoil: Temperature of the soil [oC]
       """
-        states = ['Si', 'Su', 'Sus', 'Sf', 'Ss']
+        states = ['Si', 'Su', 'Sus', 'Sf', 'Ss', 'Qstate']
 
         return states
 
@@ -177,6 +177,7 @@ class WflowModel(DynamicModel):
         [report(self.Sf[i], self.SaveDir + "/outmaps/Sf" + self.NamesClasses[i] + ".map") for i in self.Classes]
         [report(self.Sr[i], self.SaveDir + "/outmaps/Sr" + self.NamesClasses[i] + ".map") for i in self.Classes]
         report(self.Ss, self.SaveDir + "/outmaps/Ss.map")
+        report(self.Qstate, self.SaveDir + "/outmaps/Qstate.map")
 
         [report(self.percent[i], self.SaveDir + "/outmaps/percent" + self.NamesClasses[i] + ".map") for i in
          self.Classes]
@@ -206,8 +207,6 @@ class WflowModel(DynamicModel):
         #: pcraster option to calculate with units or cells. Not really an issue
         #: in this model but always good to keep in mind.
         setglobaloption("unittrue")
-
-        self.teller = 0
 
         self.thestep = scalar(0)
         #: files to be used in case of timesries (scalar) input to the model
@@ -319,6 +318,8 @@ class WflowModel(DynamicModel):
                                       "model", "wflow_surfaceArea", "staticmaps/wflow_surfaceArea.map")
         wflow_transit = configget(self.config,
                                   "model", "wflow_transit", "staticmaps/wflow_transit.map")
+        wflow_velocity = configget(self.config,
+                                  "model", "wflow_velocity", "staticmaps/wflow_velocity.map")
         wflow_percent = [configget(self.config,
                                    "model", "wflow_percent_" + str(self.Classes[i]),
                                    "staticmaps/wflow_percent" + str(self.Classes[i]) + ".map") for i in self.Classes]
@@ -341,6 +342,7 @@ class WflowModel(DynamicModel):
         self.totalArea = areatotal(self.surfaceArea, nominal(self.TopoId))
         self.percentArea = self.surfaceArea / self.totalArea
         self.Transit = scalar(readmap(os.path.join(self.Dir, wflow_transit)))  #: Map with surface area per cell
+        self.velocity = scalar(readmap(os.path.join(self.Dir, wflow_velocity)))  #: Map with surface area per cell
         self.gaugesR = nominal(readmap(os.path.join(self.Dir, wflow_gauges)))
         self.percent = []
         for i in self.Classes:
@@ -448,6 +450,7 @@ class WflowModel(DynamicModel):
             self.Sr = [self.ZeroMap] * len(self.Classes)
             # self.Ss = [self.ZeroMap] * len(self.Classes)       # for separate gw reservoir per class
             self.Ss = self.ZeroMap  # for combined gw reservoir
+            self.Qstate = self.ZeroMap  # for combined gw reservoir
 
             # set initial storage values
             self.Sa = [x + y for (x, y) in zip(self.Su, [130 * scalar(self.TopoId)] * len(self.Classes))]
@@ -508,12 +511,12 @@ class WflowModel(DynamicModel):
         
         This is where all the time dependent functions are executed. Time dependent
         output should also be saved here.
+        :type self: object
         """
+
         # TODO: change rainfall .tss files into grids
         self.wf_updateparameters()  # read the temperature map for each step (see parameters())
-        self.teller = self.teller + 1
-
-        # self.logger.debug("Step: "+str(int(self.thestep + self._d_firstTimeStep))+"/"+str(int(self._d_nrTimeSteps)))
+        self.logger.debug("Step: "+str(int(self.thestep + self._d_firstTimeStep))+"/"+str(int(self._d_nrTimeSteps)))
         self.thestep = self.thestep + 1
 
         self.Si_t = copylist(self.Si)
@@ -602,18 +605,29 @@ class WflowModel(DynamicModel):
 
                 # TOTAL RUNOFF =============================================================================================
                 #    self.Qfcub = (sum([x*y for x,y in zip(self.Qf_,self.percent)]) + sum([x*y for x,y in zip(self.Qo_,self.percent)]) + sum([x*y for x,y in zip(self.Qd_,self.percent)]) + sum([x*y for x,y in zip(self.Qr_,self.percent)]))/ 1000 * self.surfaceArea
-        self.Qfcub = (sum([x * y for x, y in zip(self.Qf_, self.percent)])) / 1000 * self.surfaceArea
+        self.Qftotal = (sum([x * y for x, y in zip(self.Qf_, self.percent)]))
+        time_0 = time.time()
         reservoir_Sf.routingQf_combined(self)
-
+        time_1 = time.time()
+        self.logger.info('Routing with Tanja buckets took {:f} seconds'.format(time_1-time_0))
         if self.selectSs:
             eval_str = 'reservoir_Ss.{:s}(self)'.format(self.selectSs)
         else:
             eval_str = 'reservoir_Ss.groundWater_no_reservoir(self)'
         eval(eval_str)
-        # for separate gw reservoir per class
-        # self.Qtlag = self.Qflag_/ self.timestepsecs + sum([x*y for x,y in zip(self.Qs_,self.percent)])/ 1000 * self.surfaceArea/ self.timestepsecs
-        # for combinzed gw reservoir
 
+        # ROUTING
+        self.Qtot = self.Qftotal + self.Qs_  # total local discharge in mm/hour
+        self.Qtotal = self.Qtot / 1000 * self.surfaceArea / self.timestepsecs  # total local discharge in m3/s
+        self.Qstate_t = self.Qstate
+        time_0 = time.time()
+        self.Qrout = accutraveltimeflux(self.TopoLdd, self.Qstate + self.Qtotal, self.velocity)
+        self.Qstate = accutraveltimestate(self.TopoLdd, self.Qstate + self.Qtotal, self.velocity)
+        time_1 = time.time()
+        self.logger.info('Routing with accutraveltimeflux took {:f} seconds'.format(time_1-time_0))
+        # water balance of flux routing
+        self.dSdt = self.Qstate-self.Qstate_t
+        self.WB_rout = (accuflux(self.TopoLdd, self.Qtotal - self.dSdt)-self.Qrout)/accuflux(self.TopoLdd, self.Qtotal)
         self.Qtlag = self.Qflag_ / self.timestepsecs + self.Qs_ / 1000 * self.surfaceArea / self.timestepsecs
         self.QLagTot = areatotal(self.Qtlag, nominal(self.TopoId))  # catchment total runoff with looptijd
 
@@ -640,8 +654,8 @@ class WflowModel(DynamicModel):
         self.Ei = areatotal(sum(multiply(self.Ei_, self.percent)) / 1000 * self.surfaceArea, nominal(self.TopoId))
         self.Eu = areatotal(sum(multiply(self.Eu_, self.percent)) / 1000 * self.surfaceArea, nominal(self.TopoId))
         self.Er = areatotal(sum(multiply(self.Er_, self.percent)) / 1000 * self.surfaceArea, nominal(self.TopoId))
-        self.QtotnoRout = areatotal(self.Qfcub + self.Qs_ / 1000 * self.surfaceArea, nominal(self.TopoId))
-        self.Qtot = self.QLagTot * self.timestepsecs
+        #self.Qtot = self.QLagTot * self.timestepsecs
+        self.QtotnoRout = areatotal(self.Qtotal, nominal(self.TopoId))
         self.SiWB = areatotal(sum(multiply(self.Si, self.percent)) / 1000 * self.surfaceArea, nominal(self.TopoId))
         self.Si_WB = areatotal(sum(multiply(self.Si_t, self.percent)) / 1000 * self.surfaceArea, nominal(self.TopoId))
         self.SuWB = areatotal(sum(multiply(self.Su, self.percent)) / 1000 * self.surfaceArea, nominal(self.TopoId))
