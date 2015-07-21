@@ -226,7 +226,6 @@ capacity.
 
 The wflow\_sbm soil water accounting scheme
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 A detailed description of the SBM model has been given by [vertessy]_. Briefly:
 the soil is considered as a bucket with a certain depth
 (:math:`z_{t}`), divided into a saturated store (:math:`S`) and an
