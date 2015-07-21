@@ -6,9 +6,9 @@ import logging
 import wflow.bmi as bmi
 import numpy as np
 
-#TODO: Set log level also ini to be able to make quiet or non-quiet runs
-#TODO: set re-init in the ini file to be able to make cold start runs
-#TODO: Rework framework to get rid of max timesteps shit
+# TODO: Set log level also ini to be able to make quiet or non-quiet runs
+# TODO: set re-init in the ini file to be able to make cold start runs
+# TODO: Rework framework to get rid of max timesteps shit
 
 class wflowbmi_ligth(object):
     """
@@ -39,7 +39,6 @@ class wflowbmi_ligth(object):
         # .. todo::
         #       Get name of module from ini file name
 
-
         maxNrSteps = 10000
         if "wflow_sbm.ini" in configfile:
             import wflow_sbm as wf
@@ -60,7 +59,6 @@ class wflowbmi_ligth(object):
         self.dynModel._runInitial()
         self.dynModel._runResume()
 
-
         return retval
 
     def finalize(self):
@@ -70,8 +68,6 @@ class wflowbmi_ligth(object):
         """
         self.dynModel._runSuspend()
         self.dynModel._wf_shutdown()
-
-
 
     def update(self, dt):
         """
@@ -87,8 +83,6 @@ class wflowbmi_ligth(object):
             self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps -1)
             self.currenttimestep = self.currenttimestep + nrsteps
 
-
-
     def get_time_units(self):
         """
 
@@ -99,13 +93,11 @@ class wflowbmi_ligth(object):
 
         return self.dynModel.wf_supplyEpoch()
 
-
     def get_var_count(self):
         """
         Return number of variables
         """
         return self.dynModel.wf_supplyVariableCount()
-
 
     def get_var_name(self, i):
         """
@@ -115,7 +107,6 @@ class wflowbmi_ligth(object):
         names = self.dynModel.wf_supplyVariableNames()
         return names[i]
 
-
     def get_var_type(self, name):
         """
         Return type string, compatible with numpy.
@@ -123,7 +114,6 @@ class wflowbmi_ligth(object):
         npmap = self.dynModel.wf_supplyMapAsNumpy(name)
 
         return str(npmap.dtype)
-
 
     def get_var_rank(self, name):
         """
@@ -133,7 +123,6 @@ class wflowbmi_ligth(object):
 
         return len(npmap.shape)
 
-
     def get_var_shape(self, name):
         """
         Return shape of the array.
@@ -142,20 +131,17 @@ class wflowbmi_ligth(object):
 
         return npmap.shape
 
-
     def get_start_time(self):
         """
         returns start time
         """
         return self.dynModel.wf_supplyStartTime()
 
-
     def get_end_time(self):
         """
         returns end time of simulation
         """
         return self.dynModel.wf_supplyEndTime()
-
 
     def get_current_time(self):
         """
@@ -169,7 +155,6 @@ class wflowbmi_ligth(object):
         """
         return self.dynModel.wf_supplyMapAsNumpy(name)
 
-
     def set_var(self, name, var):
         """
         Set the variable name with the values of var
@@ -177,8 +162,6 @@ class wflowbmi_ligth(object):
         """
         #TODO: check the numpy type
         self.dynModel.wf_setValuesAsNumpy(name, var)
-
-
 
     def set_var_slice(self, name, start, count, var):
         """
@@ -200,7 +183,6 @@ class wflowbmi_ligth(object):
 
         self.set_var(name, name, tmp)
 
-
     def set_var_index(self, name, index, var):
         """
         Overwrite the values in variable "name" with data
@@ -215,22 +197,17 @@ class wflowbmi_ligth(object):
         tmp.flat[index] = var
         self.set_var(name, name, tmp)
 
-
-
-
     def inq_compound(self, name):
         """
         Return the number of fields of a compound type.
         """
         pass
 
-
     def inq_compound_field(self, name, index):
         """
         Lookup the type,rank and shape of a compound field
         """
         pass
-
 
 
 class wflowbmi_csdms(bmi.Bmi):
@@ -255,7 +232,6 @@ class wflowbmi_csdms(bmi.Bmi):
         self.name = "undefined"
         self.myModel = None
         self.dynModel = None
-
 
     def initialize(self, filename,loglevel=logging.DEBUG):
         """
@@ -299,7 +275,6 @@ class wflowbmi_csdms(bmi.Bmi):
             exec "import wflow." + modname + " as wf"
             self.name = modname
 
-
         self.myModel = wf.WflowModel(wflow_cloneMap, datadir, runid, inifile)
 
         self.dynModel = wf.wf_DynamicFramework(self.myModel, maxNrSteps, firstTimestep = 1)
@@ -314,7 +289,6 @@ class wflowbmi_csdms(bmi.Bmi):
 
         self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep)
         self.currenttimestep = self.currenttimestep + 1
-
 
     def update_until(self, time):
         """
@@ -390,19 +364,12 @@ class wflowbmi_csdms(bmi.Bmi):
         :return: List of String objects: identifiers of all output variables of the model:
         """
         namesroles = self.dynModel.wf_supplyVariableNamesAndRoles()
-
-        # input variable are all forcing variables and all state variables
-        #0 = input (to the model)
-        #1 = is output (from the model)
-        #2 = input/output (state information)
-        #3 = model parameter
         inames = []
 
         for varrol in namesroles:
             if varrol[1] == 1 or varrol[1] == 2:
                 inames.append(varrol[0])
         return inames
-
 
     def get_var_type(self, long_var_name):
         """
@@ -413,7 +380,6 @@ class wflowbmi_csdms(bmi.Bmi):
         npmap = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
 
         return str(npmap.dtype)
-
 
     def get_var_rank(self, long_var_name):
         """
@@ -451,7 +417,6 @@ class wflowbmi_csdms(bmi.Bmi):
 
         return npmap.size * npmap.itemsize
 
-
     def get_start_time(self):
         """
         Gets the start time of the model.
@@ -467,7 +432,6 @@ class wflowbmi_csdms(bmi.Bmi):
         :return: current time of simulation n the units and epoch returned by the function get_time_units
         """
         return self.dynModel.wf_supplyCurrentTime()
-
 
     def get_end_time(self):
         """
@@ -579,7 +543,6 @@ class wflowbmi_csdms(bmi.Bmi):
 
         return self.dynModel.wf_supplyGridDim()[0:2]
 
-
     def get_grid_x(self, long_var_name):
         """
         Give X coordinates of point in the model grid
@@ -646,7 +609,6 @@ class wflowbmi_csdms(bmi.Bmi):
         Not applicable, raises NotImplementedError
         """
         raise NotImplementedError
-
 
     def get_grid_offset(self, long_var_name):
         """
