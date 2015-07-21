@@ -285,13 +285,13 @@ class wflowbmi_csdms(bmi.Bmi):
         #
         maxNrSteps = 10000
 
-        if "wflow_sbm.ini" in filename:
+        if "wflow_sbm" in filename:
             import wflow.wflow_sbm as wf
             self.name = "wflow_sbm"
-        elif "wflow_hbv.ini" in filename:
+        elif "wflow_hbv" in filename:
             import wflow.wflow_sbm as wf
             self.name = "wflow_hbv"
-        elif "wflow_routing.ini" in filename:
+        elif "wflow_routing" in filename:
             import wflow.wflow_routing as wf
             self.name = "wflow_routing"
         else:
