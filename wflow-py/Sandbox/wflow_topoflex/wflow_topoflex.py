@@ -45,7 +45,6 @@ from copy import copy as copylist
 """
 Inlezen tijdseries (grids)
 Nieuwe lezen parameters
-Lijstjes reservoirs en fluxen
 Reservoir nul een doorgeefreservoir maken
 Multiplication with cell surface aanpassen
 Verwijderen IRURFR_L statements?

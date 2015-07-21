@@ -169,6 +169,13 @@ The wflow\_W3RA model
 
    wflow_W3RA
 
+The wflow\_Topoflex model
+=====================
+.. toctree::
+   :maxdepth: 2
+
+   wflow_Topoflex
+
 The wflow\_routing model
 ========================
 .. toctree::

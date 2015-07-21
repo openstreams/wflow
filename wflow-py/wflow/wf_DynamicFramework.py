@@ -216,7 +216,7 @@ class wf_OutputTimeSeriesArea():
  
       self.steps = self.steps + 1
       tmpvar = scalar(spatial(variable))
-      self.resmap = areaaverage(tmpvar,self.area)
+      self.resmap = areaaverage(tmpvar,nominal(self.area))
       self.remap_np = pcr2numpy(self.resmap,0)
       self.flatres = self.remap_np.flatten()[self.idx]
 
@@ -372,7 +372,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         :param areamap:
         :return:
         """
-        return cover(timeinputscalar(tssfile,areamap),default)
+        return cover(timeinputscalar(tssfile,nominal(areamap)),default)
 
 
 
@@ -770,7 +770,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
           exec "tmpvar = " +  self.varnamecsv[a]
 
           duration = self.currentdatetime - self.datetime_firststep
-          timestep = int(duration.total_seconds()/self.timestepsecs) + 1
+          timestep = int(duration.total_seconds()/self._userModel().timestepsecs) + 1
+
           self.oscv[self.samplenamecsv[a]].writestep(tmpvar,a,timestep=timestep)
 
    
