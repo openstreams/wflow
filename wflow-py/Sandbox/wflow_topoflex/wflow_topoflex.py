@@ -43,13 +43,11 @@ from copy import copy as copylist
 
 # TODO: see below
 """
-Inlezen tijdseries (grids)
-Nieuwe lezen parameters -> Done for tss input
-Lijstjes reservoirs en fluxen
-Reservoir nul een doorgeefreservoir maken
-Multiplication with cell surface aanpassen
 Verwijderen IRURFR_L statements?
 Documentatie updaten!
+Wegschrijven per class, afkortingen van classes gebruiken (zie outputtss_0) Jaap!
+Routing functies in apart file onderbrengen, aanroepen, configureerbaar maken welke gebruiken Hessel!
+logging toevoegen, ervoor zorgen dat het ook 1 per x aantal stappen weggeschreven kan worden
 States worden nu in outsum dir bewaard, maar moeten naar outstate
 """
 
