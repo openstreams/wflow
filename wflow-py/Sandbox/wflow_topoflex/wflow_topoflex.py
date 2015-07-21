@@ -44,11 +44,13 @@ from copy import copy as copylist
 # TODO: see below
 """
 Inlezen tijdseries (grids)
-Nieuwe lezen parameters
+Nieuwe lezen parameters -> Done for tss input
+Lijstjes reservoirs en fluxen
 Reservoir nul een doorgeefreservoir maken
 Multiplication with cell surface aanpassen
 Verwijderen IRURFR_L statements?
 Documentatie updaten!
+States worden nu in outsum dir bewaard, maar moeten naar outstate
 """
 
 
@@ -103,7 +105,10 @@ class WflowModel(DynamicModel):
       modelparameters.append(self.ParamType(name="Altitude",stack="staticmaps/wflow_dem.map",type="staticmap",default=0.0,verbose=False,lookupmaps=[]))
 
       # Meteo and other forcing
-      modelparameters.append(self.ParamType(name="Temperature",stack="inmaps/TEMP",type="timeseries",default=10.0,verbose=False,lookupmaps=[]))
+      # Meteo and other forcing
+      modelparameters.append(self.ParamType(name="Temperature",stack='intss/T.tss',type="timeseries",default=10.0,verbose=False,lookupmaps=['staticmaps/wflow_subcatch.map']))
+      modelparameters.append(self.ParamType(name="Precipitation",stack='intss/P.tss',type="timeseries",default=0.0,verbose=False,lookupmaps=['staticmaps/wflow_subcatch.map']))
+      modelparameters.append(self.ParamType(name="PotEvaporation",stack='intss/PET.tss',type="timeseries",default=0.0,verbose=False,lookupmaps=['staticmaps/wflow_subcatch.map']))
 
       return modelparameters
 
@@ -491,7 +496,7 @@ class WflowModel(DynamicModel):
         output should also be saved here.
         """
         # TODO: change rainfall .tss files into grids
-        # self.wf_updateparameters() # read the temperature map for each step (see parameters())
+        self.wf_updateparameters() # read the temperature map for each step (see parameters())
         self.teller=self.teller+1
         
         #self.logger.debug("Step: "+str(int(self.thestep + self._d_firstTimeStep))+"/"+str(int(self._d_nrTimeSteps)))
@@ -507,34 +512,34 @@ class WflowModel(DynamicModel):
         self.trackQ_t = copylist(self.trackQ)    #copylist(self.trackQ)
         self.convQu_t = [copylist(self.convQu[i]) for i in self.Classes]    #copylist(self.convQu)
         
-        if self.scalarInput:
-            if self.InputSeries == 1:
-                self.Precipitation = timeinputscalar(self.precipTss, self.gaugesMap)
-                self.PotEvaporation = timeinputscalar(self.evapTss, self.gaugesMap)
-                self.Temperature = timeinputscalar(self.tempTss, self.gaugesMap)
-            elif self.InputSeries == 2:        
-                self.Precipitation = timeinputscalar(self.precipTss2, self.gaugesMap)            
-                self.EpDay = timeinputscalar(self.evapTss2, self.gaugesMap)            
-                self.Tmean = timeinputscalar(self.tempDMTss, self.gaugesMap)
-                self.Rn = timeinputscalar(self.radnTss, self.gaugesMap)
-                self.rad_si = timeinputscalar(self.radsTss, self.gaugesMap)
-                self.sgamma = timeinputscalar(self.sgammaTss, self.gaugesMap)
-                self.vpd = timeinputscalar(self.vpdTss, self.gaugesMap)
-                self.wind2m = timeinputscalar(self.windTss, self.gaugesMap)
-                self.DS = timeinputscalar(self.daySTss, self.gaugesMap)
-                self.DE = timeinputscalar(self.dayETss, self.gaugesMap)
-    #            self.LAI = timeinputscalar(self.laiTss,self.gaugesMap)
-                self.rst_lai = [timeinputscalar(self.rst_laiTss[i], self.gaugesMap) for i in self.Classes]
-    
-        else:
-           self.Precipitation=cover(self.wf_readmap(self.P_mapstack, 0.0), 0.0)
-           self.PotEvaporation=cover(self.wf_readmap(self.PET_mapstack, 0.0), 0.0)
-           self.Inflow=pcrut.readmapSave(self.Inflow_mapstack, 0.0)
-           if self.ExternalQbase:
-               self.Seepage = cover(self.wf_readmap(self.Seepage_mapstack, 0.0), 0.0)
-           else:
-               self.Seepage=cover(0.0)
-           self.Temperature=self.wf_readmap(self.TEMP_mapstack, 0.0)
+    #     if self.scalarInput:
+    #         if self.InputSeries == 1:
+    #             self.Precipitation = timeinputscalar(self.precipTss, self.gaugesMap)
+    #             self.PotEvaporation = timeinputscalar(self.evapTss, self.gaugesMap)
+    #             self.Temperature = timeinputscalar(self.tempTss, self.gaugesMap)
+    #         elif self.InputSeries == 2:
+    #             self.Precipitation = timeinputscalar(self.precipTss2, self.gaugesMap)
+    #             self.EpDay = timeinputscalar(self.evapTss2, self.gaugesMap)
+    #             self.Tmean = timeinputscalar(self.tempDMTss, self.gaugesMap)
+    #             self.Rn = timeinputscalar(self.radnTss, self.gaugesMap)
+    #             self.rad_si = timeinputscalar(self.radsTss, self.gaugesMap)
+    #             self.sgamma = timeinputscalar(self.sgammaTss, self.gaugesMap)
+    #             self.vpd = timeinputscalar(self.vpdTss, self.gaugesMap)
+    #             self.wind2m = timeinputscalar(self.windTss, self.gaugesMap)
+    #             self.DS = timeinputscalar(self.daySTss, self.gaugesMap)
+    #             self.DE = timeinputscalar(self.dayETss, self.gaugesMap)
+    # #            self.LAI = timeinputscalar(self.laiTss,self.gaugesMap)
+    #             self.rst_lai = [timeinputscalar(self.rst_laiTss[i], self.gaugesMap) for i in self.Classes]
+    #
+    #     else:
+    #        self.Precipitation=cover(self.wf_readmap(self.P_mapstack, 0.0), 0.0)
+    #        self.PotEvaporation=cover(self.wf_readmap(self.PET_mapstack, 0.0), 0.0)
+    #        self.Inflow=pcrut.readmapSave(self.Inflow_mapstack, 0.0)
+    #        if self.ExternalQbase:
+    #            self.Seepage = cover(self.wf_readmap(self.Seepage_mapstack, 0.0), 0.0)
+    #        else:
+    #            self.Seepage=cover(0.0)
+    #        self.Temperature=self.wf_readmap(self.TEMP_mapstack, 0.0)
            
         if self.IRURFR_L:
             self.PotEvaporation = areatotal(self.PotEvaporation * self.percentArea, nominal(self.TopoId))
