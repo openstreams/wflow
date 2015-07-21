@@ -606,10 +606,7 @@ class WflowModel(DynamicModel):
                 # TOTAL RUNOFF =============================================================================================
                 #    self.Qfcub = (sum([x*y for x,y in zip(self.Qf_,self.percent)]) + sum([x*y for x,y in zip(self.Qo_,self.percent)]) + sum([x*y for x,y in zip(self.Qd_,self.percent)]) + sum([x*y for x,y in zip(self.Qr_,self.percent)]))/ 1000 * self.surfaceArea
         self.Qftotal = (sum([x * y for x, y in zip(self.Qf_, self.percent)]))
-        time_0 = time.time()
         reservoir_Sf.routingQf_combined(self)
-        time_1 = time.time()
-        self.logger.info('Routing with Tanja buckets took {:f} seconds'.format(time_1-time_0))
         if self.selectSs:
             eval_str = 'reservoir_Ss.{:s}(self)'.format(self.selectSs)
         else:
@@ -620,11 +617,8 @@ class WflowModel(DynamicModel):
         self.Qtot = self.Qftotal + self.Qs_  # total local discharge in mm/hour
         self.Qtotal = self.Qtot / 1000 * self.surfaceArea / self.timestepsecs  # total local discharge in m3/s
         self.Qstate_t = self.Qstate
-        time_0 = time.time()
         self.Qrout = accutraveltimeflux(self.TopoLdd, self.Qstate + self.Qtotal, self.velocity)
         self.Qstate = accutraveltimestate(self.TopoLdd, self.Qstate + self.Qtotal, self.velocity)
-        time_1 = time.time()
-        self.logger.info('Routing with accutraveltimeflux took {:f} seconds'.format(time_1-time_0))
         # water balance of flux routing
         self.dSdt = self.Qstate-self.Qstate_t
         self.WB_rout = (accuflux(self.TopoLdd, self.Qtotal - self.dSdt)-self.Qrout)/accuflux(self.TopoLdd, self.Qtotal)
