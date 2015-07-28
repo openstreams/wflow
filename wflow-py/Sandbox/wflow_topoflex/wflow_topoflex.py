@@ -447,8 +447,8 @@ class WflowModel(DynamicModel):
             self.Qstate = self.ZeroMap  # for combined gw reservoir
 
             # set initial storage values
-            self.Sa = [x + y for (x, y) in zip(self.Su, [0.5*self.sumax * scalar(self.TopoId)] * len(self.Classes))]
-            self.Su = [x + y for (x, y) in zip(self.Su, [0.5*self.sumax * scalar(self.TopoId)] * len(self.Classes))]
+            self.Sa = [x + y for (x, y) in zip(self.Su, [0.5 * self.sumax * scalar(self.TopoId)] * len(self.Classes))]
+            self.Su = [x + y for (x, y) in zip(self.Su, [0.5 * self.sumax * scalar(self.TopoId)] * len(self.Classes))]
             self.Ss = self.Ss + 30 * scalar(self.TopoId)  # for combined gw reservoir
 
         else:
