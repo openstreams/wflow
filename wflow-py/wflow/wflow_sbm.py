@@ -553,10 +553,8 @@ class WflowModel(DynamicModel):
                                         self.Soil, 1.0)
             self.CanopyGapFraction = self.readtblDefault(self.Dir + "/" + self.intbl + "/CanopyGapFraction.tbl",
                                         self.LandUse, subcatch, self.Soil, 0.1)
-
-        self.EoverR = self.readtblDefault(self.Dir + "/" + self.intbl + "/EoverR.tbl", self.LandUse, subcatch,
+            self.EoverR = self.readtblDefault(self.Dir + "/" + self.intbl + "/EoverR.tbl", self.LandUse, subcatch,
                                           self.Soil, 0.1)
-
 
         self.RootingDepth = self.readtblDefault(self.Dir + "/" + self.intbl + "/RootingDepth.tbl", self.LandUse,
                                                 subcatch, self.Soil, 750.0)  #rooting depth
