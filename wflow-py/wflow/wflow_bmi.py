@@ -318,7 +318,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
     def update_until(self, time):
         """
-        Update the model until the given time. Can only go foreward in time.
+        Update the model until the given time. Can only go forward in time.
 
         :var  double time: time in the units and epoch returned by the function get_time_units.
         """
