@@ -799,7 +799,7 @@ class WflowModel(DynamicModel):
  			      
     # calculations for Lower zone
     self.LowerZoneStorage=self.LowerZoneStorage+self.Percolation			
-    self.BaseFlow=self.K4*self.LowerZoneStorage #: Baseflow in mm/timestep
+    self.BaseFlow=min(self.LowerZoneStorage,self.K4*self.LowerZoneStorage) #: Baseflow in mm/timestep
     self.LowerZoneStorage=self.LowerZoneStorage-self.BaseFlow
     # Direct runoff generation
     if self.ExternalQbase:
