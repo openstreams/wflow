@@ -463,7 +463,7 @@ def getStartTimefromRuninfo(xmlfile):
         if len(ttime) ==  12: # Hack for millisecons in testrunner runinfo.xml...
             ttime = ttime.split('.')[0]
         ed = datetime.strptime(edate.attrib['date'] + ttime,'%Y-%m-%d%H:%M:%S')
-        ed = pa
+        # ed = pa
     else:
         return None
         
