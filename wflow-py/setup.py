@@ -39,4 +39,3 @@ setup(name='wflow',
                'wflow/wflow_upscale.py','wflow/wflow_routing.py'],
       description='the wflow hydrological models (part of OpenStreams)',
       )
-

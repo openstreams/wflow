@@ -318,8 +318,8 @@ class WflowModel(DynamicModel):
                                       "model", "wflow_surfaceArea", "staticmaps/wflow_surfaceArea.map")
         wflow_transit = configget(self.config,
                                   "model", "wflow_transit", "staticmaps/wflow_transit.map")
-        wflow_velocity = configget(self.config,
-                                  "model", "wflow_velocity", "staticmaps/wflow_velocity.map")
+        #wflow_velocity = configget(self.config,
+                                  #"model", "wflow_velocity", "staticmaps/wflow_velocity.map")
         wflow_percent = [configget(self.config,
                                    "model", "wflow_percent_" + str(self.Classes[i]),
                                    "staticmaps/wflow_percent" + str(self.Classes[i]) + ".map") for i in self.Classes]
@@ -342,7 +342,7 @@ class WflowModel(DynamicModel):
         self.totalArea = areatotal(self.surfaceArea, nominal(self.TopoId))
         self.percentArea = self.surfaceArea / self.totalArea
         self.Transit = scalar(readmap(os.path.join(self.Dir, wflow_transit)))  #: Map with surface area per cell
-        self.velocity = scalar(readmap(os.path.join(self.Dir, wflow_velocity)))  #: Map with surface area per cell
+        #self.velocity = scalar(readmap(os.path.join(self.Dir, wflow_velocity)))  #: Map with surface area per cell
         self.gaugesR = nominal(readmap(os.path.join(self.Dir, wflow_gauges)))
         self.percent = []
         for i in self.Classes:
@@ -614,14 +614,14 @@ class WflowModel(DynamicModel):
         eval(eval_str)
 
         # ROUTING
-        self.Qtot = self.Qftotal + self.Qs_  # total local discharge in mm/hour
-        self.Qtotal = self.Qtot / 1000 * self.surfaceArea / self.timestepsecs  # total local discharge in m3/s
-        self.Qstate_t = self.Qstate
-        self.Qrout = accutraveltimeflux(self.TopoLdd, self.Qstate + self.Qtotal, self.velocity)
-        self.Qstate = accutraveltimestate(self.TopoLdd, self.Qstate + self.Qtotal, self.velocity)
-        # water balance of flux routing
-        self.dSdt = self.Qstate-self.Qstate_t
-        self.WB_rout = (accuflux(self.TopoLdd, self.Qtotal - self.dSdt)-self.Qrout)/accuflux(self.TopoLdd, self.Qtotal)
+        #self.Qtot = self.Qftotal + self.Qs_  # total local discharge in mm/hour
+        #self.Qtotal = self.Qtot / 1000 * self.surfaceArea / self.timestepsecs  # total local discharge in m3/s
+        #self.Qstate_t = self.Qstate
+        #self.Qrout = accutraveltimeflux(self.TopoLdd, self.Qstate + self.Qtotal, self.velocity)
+        #self.Qstate = accutraveltimestate(self.TopoLdd, self.Qstate + self.Qtotal, self.velocity)
+        ## water balance of flux routing
+        #self.dSdt = self.Qstate-self.Qstate_t
+        #self.WB_rout = (accuflux(self.TopoLdd, self.Qtotal - self.dSdt)-self.Qrout)/accuflux(self.TopoLdd, self.Qtotal)
         self.Qtlag = self.Qflag_ / self.timestepsecs + self.Qs_ / 1000 * self.surfaceArea / self.timestepsecs
         self.QLagTot = areatotal(self.Qtlag, nominal(self.TopoId))  # catchment total runoff with looptijd
 
@@ -648,8 +648,8 @@ class WflowModel(DynamicModel):
         self.Ei = areatotal(sum(multiply(self.Ei_, self.percent)) / 1000 * self.surfaceArea, nominal(self.TopoId))
         self.Eu = areatotal(sum(multiply(self.Eu_, self.percent)) / 1000 * self.surfaceArea, nominal(self.TopoId))
         self.Er = areatotal(sum(multiply(self.Er_, self.percent)) / 1000 * self.surfaceArea, nominal(self.TopoId))
-        #self.Qtot = self.QLagTot * self.timestepsecs
-        self.QtotnoRout = areatotal(self.Qtotal, nominal(self.TopoId))
+        self.Qtot = self.QLagTot * self.timestepsecs
+        #self.QtotnoRout = areatotal(self.Qtotal, nominal(self.TopoId))
         self.SiWB = areatotal(sum(multiply(self.Si, self.percent)) / 1000 * self.surfaceArea, nominal(self.TopoId))
         self.Si_WB = areatotal(sum(multiply(self.Si_t, self.percent)) / 1000 * self.surfaceArea, nominal(self.TopoId))
         self.SuWB = areatotal(sum(multiply(self.Su, self.percent)) / 1000 * self.surfaceArea, nominal(self.TopoId))
