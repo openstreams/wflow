@@ -233,23 +233,16 @@ class wflowbmi_csdms(bmi.Bmi):
         self.myModel = None
         self.dynModel = None
 
-    def initialize(self, filename,loglevel=logging.DEBUG):
+
+    def initialize_config(self, filename, loglevel=logging.DEBUG):
         """
-        Initialise the model. Should be call before any other method.
+        see initialize
 
-        :var filename: full path to the wflow ini file
-        :var loglevel: optional loglevel (default == DEBUG)
-
-        Assumptions for now:
-
-            - the configfile wih be a full path
-            - we define the case from the basedir of the configfile
-
-        .. todo::
-
-            Get name of module from ini file name
-
+        :param filename:
+        :param loglevel:
+        :return: nothing
         """
+
         self.currenttimestep = 1
         wflow_cloneMap = 'wflow_subcatch.map'
         datadir = os.path.dirname(filename)
@@ -279,8 +272,41 @@ class wflowbmi_csdms(bmi.Bmi):
 
         self.dynModel = wf.wf_DynamicFramework(self.myModel, maxNrSteps, firstTimestep = 1)
         self.dynModel.createRunId(NoOverWrite=0,level=loglevel,model=os.path.basename(filename))
+
+
+    def initialize_state(self):
+        """
+        see initialize
+
+        :param self:
+        :return: nothing
+        """
         self.dynModel._runInitial()
         self.dynModel._runResume()
+
+
+    def initialize(self, filename,loglevel=logging.DEBUG):
+        """
+        Initialise the model. Should be call before any other method.
+
+        :var filename: full path to the wflow ini file
+        :var loglevel: optional loglevel (default == DEBUG)
+
+        Assumptions for now:
+
+            - the configfile wih be a full path
+            - we define the case from the basedir of the configfile
+
+        .. todo::
+
+            Get name of module from ini file name
+
+        """
+
+        self.initialize_config(filename,loglevel=loglevel)
+        self.initialize_state()
+
+
 
     def update(self):
         """
@@ -292,7 +318,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
     def update_until(self, time):
         """
-        Update the model until the given time. Can only go foreward in time.
+        Update the model until the given time. Can only go forward in time.
 
         :var  double time: time in the units and epoch returned by the function get_time_units.
         """

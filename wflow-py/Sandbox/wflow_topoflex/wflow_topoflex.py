@@ -43,13 +43,11 @@ from copy import copy as copylist
 
 # TODO: see below
 """
-Inlezen tijdseries (grids)
-Nieuwe lezen parameters -> Done for tss input
-Lijstjes reservoirs en fluxen
-Reservoir nul een doorgeefreservoir maken
-Multiplication with cell surface aanpassen
 Verwijderen IRURFR_L statements?
 Documentatie updaten!
+Wegschrijven per class, afkortingen van classes gebruiken (zie outputtss_0) Jaap!
+Routing functies in apart file onderbrengen, aanroepen, configureerbaar maken welke gebruiken Hessel!
+logging toevoegen, ervoor zorgen dat het ook 1 per x aantal stappen weggeschreven kan worden
 States worden nu in outsum dir bewaard, maar moeten naar outstate
 """
 
@@ -352,9 +350,6 @@ class WflowModel(DynamicModel):
         self.sumax = eval(str(configget(self.config, "model", "sumax", "[0]")))
         self.sumin = eval(str(configget(self.config, "model", "sumin", "[0]")))
         self.samax = eval(str(configget(self.config, "model", "samax", "[0]")))
-        self.susmax1 = eval(str(configget(self.config, "model", "susmax1", "[0]")))
-        self.susmax2 = eval(str(configget(self.config, "model", "susmax2", "[0]")))
-        self.susmax3 = eval(str(configget(self.config, "model", "susmax3", "[0]")))
         self.srmax = eval(str(configget(self.config, "model", "sumax", "[0]")))
         self.beta = eval(str(configget(self.config, "model", "beta", "[0]")))
         self.famax = eval(str(configget(self.config, "model", "famax", "[0]")))
@@ -445,7 +440,6 @@ class WflowModel(DynamicModel):
             self.Si = [self.ZeroMap] * len(self.Classes)
             self.Su = [self.ZeroMap] * len(self.Classes)
             self.Sa = [self.ZeroMap] * len(self.Classes)
-            self.Sus = [self.ZeroMap] * len(self.Classes)
             self.Sf = [self.ZeroMap] * len(self.Classes)
             self.Sr = [self.ZeroMap] * len(self.Classes)
             # self.Ss = [self.ZeroMap] * len(self.Classes)       # for separate gw reservoir per class
@@ -453,9 +447,8 @@ class WflowModel(DynamicModel):
             self.Qstate = self.ZeroMap  # for combined gw reservoir
 
             # set initial storage values
-            self.Sa = [x + y for (x, y) in zip(self.Su, [130 * scalar(self.TopoId)] * len(self.Classes))]
-            self.Su = [x + y for (x, y) in zip(self.Su, [130 * scalar(self.TopoId)] * len(self.Classes))]
-            self.Sus = [x + y for (x, y) in zip(self.Sus, [30 * scalar(self.TopoId)] * len(self.Classes))]
+            self.Sa = [x + y for (x, y) in zip(self.Su, [0.5 * self.sumax * scalar(self.TopoId)] * len(self.Classes))]
+            self.Su = [x + y for (x, y) in zip(self.Su, [0.5 * self.sumax * scalar(self.TopoId)] * len(self.Classes))]
             self.Ss = self.Ss + 30 * scalar(self.TopoId)  # for combined gw reservoir
 
         else:
