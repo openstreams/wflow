@@ -881,8 +881,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
       self._traceOut("resume")
       self._decrementIndentLevel()
-               
- 
+
   def wf_QuickSuspend(self):
       """
       Save the state variable of the current timestep in memory

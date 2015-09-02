@@ -2,6 +2,7 @@ __author__ = 'schelle'
 
 import os
 import logging
+import datetime
 
 import wflow.bmi as bmi
 import numpy as np
@@ -233,9 +234,10 @@ class wflowbmi_csdms(bmi.Bmi):
         self.myModel = None
         self.dynModel = None
 
-
     def initialize_config(self, filename, loglevel=logging.DEBUG):
         """
+        *Extended functionality*, see https://github.com/eWaterCycle/bmi/blob/master/src/main/python/bmi.py
+
         see initialize
 
         :param filename:
@@ -245,7 +247,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
         self.currenttimestep = 1
         wflow_cloneMap = 'wflow_subcatch.map'
-        datadir = os.path.dirname(filename)
+        self.datadir = os.path.dirname(filename)
         inifile = os.path.basename(filename)
         runid = "run_default"
         # The current pcraster framework needs a max number of timesteps :-(
@@ -268,22 +270,96 @@ class wflowbmi_csdms(bmi.Bmi):
             exec "import wflow." + modname + " as wf"
             self.name = modname
 
-        self.myModel = wf.WflowModel(wflow_cloneMap, datadir, runid, inifile)
+        self.myModel = wf.WflowModel(wflow_cloneMap, self.datadir, runid, inifile)
 
         self.dynModel = wf.wf_DynamicFramework(self.myModel, maxNrSteps, firstTimestep = 1)
         self.dynModel.createRunId(NoOverWrite=0,level=loglevel,model=os.path.basename(filename))
 
-
-    def initialize_state(self):
+    def initialize_state(self, source_directory):
         """
+        *Extended functionality*, see https://github.com/eWaterCycle/bmi/blob/master/src/main/python/bmi.py
+
         see initialize
 
         :param self:
+        :param source directory: path to dir with state files
         :return: nothing
         """
         self.dynModel._runInitial()
         self.dynModel._runResume()
+        # second step to read from specific directory
+        if os.path.isabs(source_directory):
+            self.dynModel.wf_resume(source_directory)
+        else:
+            self.dynModel.wf_resume(os.path.join(self.datadir,source_directory))
 
+    def set_start_time(self, start_time):
+        """
+
+        :param start_time: time in units (seconds) since the epoch
+        :return:
+        """
+
+        dateobj = datetime.datetime.utcfromtimestamp(start_time)
+        datestrimestr = dateobj.strftime("%Y:%m:%d %H:%M:%S")
+
+        self.dynModel._userModel().config.set("run",'starttime',datestrimestr)
+
+    def set_end_time(self, end_time):
+        """
+        :param end_time: time in units (seconds) since the epoch
+        :return:
+        """
+        dateobj = datetime.datetime.utcfromtimestamp(end_time)
+        datestrimestr = dateobj.strftime("%Y:%m:%d %H:%M:%S")
+
+        self.dynModel._userModel().config.set("run",'endtime',datestrimestr)
+
+    def get_attribute_names(self):
+        """
+        Get the attributes of the model return in the form of section_name:attribute_name
+
+        :return: list of attributes
+        """
+        attr = []
+        for sect in self.dynModel._userModel().config.sections():
+            for opt in self.dynModel._userModel().config.options(sect):
+                attr.append(sect + ":" + opt)
+        return attr
+
+    def get_attribute_value(self, attribute_name):
+        """
+        :param attribute_name:
+        :return: attribute value
+        """
+        attrpath = attribute_name.split(":")
+
+        if len(attrpath) == 2:
+            return self.dynModel._userModel().config.get(attrpath[0],attrpath[1])
+        else:
+            raise Warning("attributes should follow the name:option  convention")
+
+    def set_attribute_value(self, attribute_name, attribute_value):
+        """
+        :param attribute_name: name using the section:option notation
+        :param attribute_value: string value of the option
+        :return:
+        """
+
+        attrpath = attribute_name.split(":")
+        if len(attrpath) == 2:
+            self.dynModel._userModel().config.set(attrpath[0],attrpath[1],attribute_value)
+        else:
+            raise Warning("attributes should follow the name:option  convention")
+
+    def save_state(self, destination_directory):
+        """
+        Ask the model to write its complete internal current state to one or more state files in the given directory.
+        Afterwards the given directory should only contain the state files and nothing else.
+        Input parameters:
+        File destination_directory: the directory in which the state files should be written.
+        """
+        raise NotImplementedError
 
     def initialize(self, filename,loglevel=logging.DEBUG):
         """
@@ -300,19 +376,15 @@ class wflowbmi_csdms(bmi.Bmi):
         .. todo::
 
             Get name of module from ini file name
-
         """
 
         self.initialize_config(filename,loglevel=loglevel)
-        self.initialize_state()
-
-
+        self.initialize_state('instate')
 
     def update(self):
         """
         Propagate the model to the next model timestep
         """
-
         self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep)
         self.currenttimestep = self.currenttimestep + 1
 
@@ -322,7 +394,6 @@ class wflowbmi_csdms(bmi.Bmi):
 
         :var  double time: time in the units and epoch returned by the function get_time_units.
         """
-
         curtime = self.get_current_time()
 
         if curtime > time:
