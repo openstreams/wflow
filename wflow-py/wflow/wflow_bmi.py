@@ -273,7 +273,7 @@ class wflowbmi_csdms(bmi.Bmi):
         self.myModel = wf.WflowModel(wflow_cloneMap, self.datadir, runid, inifile)
 
         self.dynModel = wf.wf_DynamicFramework(self.myModel, maxNrSteps, firstTimestep = 1)
-        self.dynModel.createRunId(NoOverWrite=0,level=loglevel,model=os.path.basename(filename))
+        self.dynModel.createRunId(doSetupFramework=False,NoOverWrite=0,level=loglevel,model=os.path.basename(filename))
 
     def initialize_state(self, source_directory):
         """
@@ -285,6 +285,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :param source directory: path to dir with state files
         :return: nothing
         """
+        self.dynModel.setupFramework()
         self.dynModel._runInitial()
         self.dynModel._runResume()
         # second step to read from specific directory

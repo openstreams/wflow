@@ -529,7 +529,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     return rest
 
 
-  def createRunId(self,intbl="intbl",logfname="wflow.log",NoOverWrite=True,model="model",modelVersion="no version",level=pcrut.logging.DEBUG):
+  def createRunId(self,intbl="intbl",logfname="wflow.log",NoOverWrite=True,model="model",modelVersion="no version",level=pcrut.logging.DEBUG,doSetupFramework=True):
     """
     Create runId dir and copy table files to it
     Also changes the working dir to the case/runid directory
@@ -568,6 +568,23 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     logging= self.logger
 
     self._userModel().config = self.iniFileSetUp(caseName,runId,configfile)
+
+    if doSetupFramework:
+        self.setupFramework()
+
+
+
+
+
+  def setupFramework(self):
+    """
+    Second step, after setting the log file and reading the ini file get data from config, setup
+     IO etc
+
+    :return:
+    """
+    caseName = self._userModel().caseName
+    runId = self._userModel().runId
 
     self.outputFormat = int(configget(self._userModel().config,'framework','outputformat','1'))
     self.APIDebug = int(configget(self._userModel().config,'framework','debug',str(self.APIDebug)))
@@ -692,7 +709,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     checktss = configsection(self._userModel().config,"outputtss")
     if len(checktss) > 0:
         self.logger.warn("Found a outputtss section. This is NOT used anymore in this version. Please use outputtss_0 .. n")
-        
+
     self.oscv = {}
     self.samplenamecsv = {}
     self.varnamecsv = {}
@@ -705,7 +722,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             toprint = configsection(self._userModel().config,thissection)
             secnr = secnr + 1
             samplemapname = caseName + "/" + configget(self._userModel().config,thissection,"samplemap","None")
-            if "None" not in samplemapname :    
+            if "None" not in samplemapname :
                 try:
                     self.samplemap = readmap(samplemapname)
                     idd = tsformat + ":" +samplemapname
@@ -713,16 +730,16 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     self.logger.info("Adding " + tsformat + " output at "+ samplemapname)
                 except:
                     self.logger.warn("Could not read sample id-map for timeseries: " + samplemapname)
-                
+
                 for a in toprint:
                   if  "samplemap" not in a:
-                      b = a.replace('self','self._userModel()')         
+                      b = a.replace('self','self._userModel()')
                       fn = os.path.join(caseName,runId,self._userModel().config.get(thissection,a))
                       self.samplenamecsv[fn] = idd
                       self.varnamecsv[fn] = b
-                                       
 
-  
+
+
   def wf_suspend(self, directory):
       """
       Suspend the state variables to disk as .map files
