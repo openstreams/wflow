@@ -7,5 +7,4 @@ pybtex-docutils==0.2.1
 scipy==0.15.1
 Sphinx==1.2.3
 sphinx-rtd-theme==0.1.6
-sphinxcontrib-bibtex==0.3.2a0
 wflow
