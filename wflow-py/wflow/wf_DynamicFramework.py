@@ -617,7 +617,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self._d_firstTimestep = 1
             self._userModel()._setFirstTimeStep(self._d_firstTimestep)
             self._d_lastTimestep = int(nrseconds/self.timestepsecs) + 1
-            s
         else:
             self.logger.warn("Not enough information in the [run] section. Need start and end time or a runinfo.xml file.... Reverting to default date/time")
     else:
