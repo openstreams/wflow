@@ -618,7 +618,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self._userModel()._setFirstTimeStep(self._d_firstTimestep)
             self._d_lastTimestep = int(nrseconds/self.timestepsecs) + 1
         else:
-            self.logger.warn("Not enough information in the [run] section. Need start and end time or a runinfo.xml file.... Reverting to default date/time")
+            self.logger.info("Not enough information in the [run] section. Need start and end time or a runinfo.xml file.... Reverting to default date/time")
     else:
         from dateutil import parser
         #self.datetime_firststep=datetime.datetime.strptime(st, "%Y-%m-%d %H:%M:%S")
@@ -637,8 +637,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self._userModel()._setFirstTimeStep(self._d_firstTimestep)
         self._d_lastTimestep = int(nrseconds/self.timestepsecs) + 1
 
-
-
     if self.ncfile != "None":
         mstacks = configsection(self._userModel().config,"inputmapstacks")
         varlst = []
@@ -652,7 +650,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         meta ={}
         meta['caseName'] = caseName
         meta['runId'] = runId
-        self.NcOutput = netcdfoutput(caseName + "/" + runId + "/" + self.ncoutfile,self.logger,self.datetime_firststep,self._d_lastTimestep - self._d_firstTimestep + 1,maxbuf=buffer,metadata=meta)
+        self.NcOutput = netcdfoutput(caseName + "/" + runId + "/" + self.ncoutfile,
+                                     self.logger,self.datetime_firststep,
+                                     self._d_lastTimestep - self._d_firstTimestep + 1,
+                                     maxbuf=buffer,metadata=meta)
 
 
     if self.ncoutfilestatic != 'None': # Ncoutput
