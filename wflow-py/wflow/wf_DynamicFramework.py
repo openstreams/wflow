@@ -390,6 +390,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       if hasattr(self,'NcOutput'):
         self.NcOutput.finish()
 
+      fp = open(os.path.join(self._userModel().caseName,self._userModel().runId,"configofrun.ini"),'wb')
+      self._userModel().config.write(fp)
+
  
   def loggingSetUp(self,caseName,runId,logfname,model,modelversion,level=pcrut.logging.INFO):
     """

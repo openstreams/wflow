@@ -298,7 +298,7 @@ class wflowbmi_csdms(bmi.Bmi):
         """
 
         :param start_time: time in units (seconds) since the epoch
-        :return:
+        :return: nothing
         """
 
         dateobj = datetime.datetime.utcfromtimestamp(start_time)
@@ -355,7 +355,8 @@ class wflowbmi_csdms(bmi.Bmi):
 
     def save_state(self, destination_directory):
         """
-        Ask the model to write its complete internal current state to one or more state files in the given directory.
+        Ask the model to write its complete internal current state to one or more state files in the
+        given directory.
         Afterwards the given directory should only contain the state files and nothing else.
         Input parameters:
         File destination_directory: the directory in which the state files should be written.
@@ -364,7 +365,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
     def initialize(self, filename,loglevel=logging.DEBUG):
         """
-        Initialise the model. Should be call before any other method.
+        Initialise the model. Should be called before any other method.
 
         :var filename: full path to the wflow ini file
         :var loglevel: optional loglevel (default == DEBUG)
@@ -398,8 +399,7 @@ class wflowbmi_csdms(bmi.Bmi):
         curtime = self.get_current_time()
 
         if curtime > time:
-            print("Time before current time.")
-            raise ValueError
+            raise ValueError("Time before current time.")
         timespan = time - curtime
 
         nrsteps = int(timespan/self.dynModel.timestepsecs)

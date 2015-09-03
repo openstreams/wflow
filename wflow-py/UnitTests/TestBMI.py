@@ -130,16 +130,16 @@ class MyTest(unittest.TestCase):
         bmiobj.set_start_time(0)
         print(bmiobj.get_attribute_value("run:starttime"))
 
+        print("-------------- save the state:")
+        bmiobj.save_state(".")
+        self.assertTrue(os.path.exists("TSoil.map"))
+        os.remove("TSoil.map")
+
+
 
 
         bmiobj.finalize()
-        #update
-        #update_until
-        #update_frac
-        #save_state
-        ## finalize
-        # get_value_at_indices
-        # set_value_at_indices
+
 
 
 
