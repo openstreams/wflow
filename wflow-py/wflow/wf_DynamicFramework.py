@@ -595,6 +595,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     self.ncfile = configget(self._userModel().config,'framework','netcdfinput',"None")
     self.ncoutfile = configget(self._userModel().config,'framework','netcdfoutput',"None")
     self.ncoutfilestatic = configget(self._userModel().config,'framework','netcdfstaticoutput',"None")
+    self.ncinfilestatic = configget(self._userModel().config,'framework','netcdfstaticinput',"None")
 
 
     # Set the re-init hint for the local model
@@ -653,7 +654,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         meta ={}
         meta['caseName'] = caseName
         meta['runId'] = runId
-        self.NcOutput = netcdfoutput(caseName + "/" + runId + "/" + self.ncoutfile,
+        self.NcOutput = netcdfoutput(os.path.join(caseName,runId,self.ncoutfile),
                                      self.logger,self.datetime_firststep,
                                      self._d_lastTimestep - self._d_firstTimestep + 1,
                                      maxbuf=buffer,metadata=meta)
@@ -664,7 +665,15 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         meta ={}
         meta['caseName'] = caseName
         meta['runId'] = runId
-        self.NcOutputStatic = netcdfoutput(caseName + "/" + runId + "/" + self.ncoutfilestatic,self.logger,self.datetime_laststep,1,maxbuf=buffer,metadata=meta)
+        self.NcOutputStatic = netcdfoutput(os.path.join(caseName,runId,self.ncoutfilestatic),self.logger,self.datetime_laststep,1,maxbuf=buffer,metadata=meta)
+
+
+    if self.ncinfilestatic != 'None': # Ncoutput
+        buffer = int(configget(self._userModel().config,'framework','netcdfwritebuffer',"2"))
+        meta ={}
+        meta['caseName'] = caseName
+        meta['runId'] = runId
+        self.NcInputStatic = netcdfinput(os.path.join(caseName,self.ncinfilestatic),self.logger,varlst)
 
     # Fill the summary (stat) list from the ini file
     self.statslst = []

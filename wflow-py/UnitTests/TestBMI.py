@@ -135,9 +135,6 @@ class MyTest(unittest.TestCase):
         self.assertTrue(os.path.exists("TSoil.map"))
         os.remove("TSoil.map")
 
-
-
-
         bmiobj.finalize()
 
 

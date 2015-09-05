@@ -713,13 +713,10 @@ def main(argv=None):
     myModel = WflowModel(wflow_cloneMap, caseName,runId,configfile)
     dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep,firstTimestep=_firstTimeStep,datetimestart=starttime)
     dynModelFw.createRunId(NoOverWrite=_NoOverWrite, level=loglevel, logfname=LogFileName)
-
     dynModelFw._runInitial()
     dynModelFw._runResume()
     dynModelFw._runDynamic(_firstTimeStep,_lastTimeStep)
     dynModelFw._runSuspend()
-    fp = open(caseName + "/" + runId + "/runinfo/configofrun.ini", 'wb')
-    myModel.config.write(fp)
     dynModelFw._wf_shutdown()
     
 
