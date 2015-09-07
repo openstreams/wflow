@@ -19,7 +19,7 @@ easily be added.
 
 Examples of the application of topoflex can be found in [gharari], [gao] and [euser].
 
-Figure 1 shows a possible model conceptualistion: one that used two HRUs (wetland (W) and hillslope (H))
+Figure 1 shows a possible model conceptualistion: one that used two HRUs (wetland (W) and hillslope (H), adapted from [euser])
 
 .. figure:: _images/topoflex.jpg
    :width: 600px
