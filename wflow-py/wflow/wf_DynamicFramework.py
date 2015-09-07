@@ -269,6 +269,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     self._addMethodToClass(self.wf_updateparameters)
     self._addAttributeToClass("ParamType",self.ParamType)
 
+    if firstTimestep == 0:
+        firstTimestep = 1
+
     #self._userModel()._setNrTimeSteps(lastTimeStep - firstTimestep + 1)
     self._userModel()._setNrTimeSteps(lastTimeStep + 1)
     self._d_firstTimestep = 1
@@ -655,13 +658,25 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                                      self._d_lastTimestep - self._d_firstTimestep + 1,
                                      maxbuf=buffer,metadata=meta)
 
-
     if self.ncoutfilestatic != 'None': # Ncoutput
         buffer = int(configget(self._userModel().config,'framework','netcdfwritebuffer',"2"))
         meta ={}
         meta['caseName'] = caseName
         meta['runId'] = runId
-        self.NcOutputStatic = netcdfoutput(os.path.join(caseName,runId,self.ncoutfilestatic),self.logger,self.datetime_laststep,1,maxbuf=buffer,metadata=meta)
+        self.NcOutputStatic = netcdfoutput(os.path.join(caseName,runId,self.ncoutfilestatic),
+                                           self.logger,self.datetime_laststep,
+                                            self._d_lastTimestep - self._d_firstTimestep + 1,
+                                           maxbuf=buffer,metadata=meta)
+
+    # if self.ncoutfilestate != 'None': # Ncoutput
+    #     buffer = int(configget(self._userModel().config,'framework','netcdfwritebuffer',"2"))
+    #     meta ={}
+    #     meta['caseName'] = caseName
+    #     meta['runId'] = runId
+    #     self.NcOutputState = netcdfoutput(os.path.join(caseName,runId,self.ncoutfilestate),
+    #                                        self.logger,self.datetime_laststep,
+    #                                         self._d_lastTimestep - self._d_firstTimestep + 1,
+    #                                        maxbuf=buffer,metadata=meta)
 
 
     if self.ncinfilestatic != 'None': # Ncoutput
@@ -771,11 +786,14 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                   a = 0
                   for z in savevar:
                       fname = os.path.join(directory,var + "_" + str(a)).replace("\\","/") + ".map"
-                      report(z,fname)
+                      #report(z,fname)
+                      self.reportStatic(z,fname,style=1,gzipit=False,longname=fname)
                       a = a + 1
               except:
-                  execstr = "report(self._userModel()." + var +",\"" + fname + "\")" 
-                  exec  execstr
+                  #execstr = "report(self._userModel()." + var +",\"" + fname + "\")"
+                  #exec  execstr
+                  thevar = eval("self._userModel()." + var)
+                  self.reportStatic(thevar,fname,style=1,gzipit=False,longname=fname)
           except:
               self.logger.warn("Problem saving state variable: " + var)
               self.logger.warn(execstr)

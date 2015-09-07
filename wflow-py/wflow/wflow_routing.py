@@ -434,7 +434,7 @@ class WflowModel(DynamicModel):
         else:
             self.Inflow = cover(self.wf_readmap(self.Inflow_mapstack, 0.0,verbose=False),0)
 
-        # The MAx here may lead to watbal error. Howvere, if inwaterMMM becomes < 0, the kinematic wave becomes very slow......
+        # The MAx here may lead to watbal error. Howevere, if inwaterMMM becomes < 0, the kinematic wave becomes very slow......
         self.InwaterMM = max(0.0,self.InwaterForcing)
         self.Inwater = self.InwaterMM * self.ToCubic  # m3/s
 

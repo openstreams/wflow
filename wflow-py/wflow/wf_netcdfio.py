@@ -98,7 +98,6 @@ class netcdfoutput():
         """
         Under construction
         """
-
         def date_range(start, end, tdelta="days"):
             if tdelta == "days":
                 r = (end+dt.timedelta(days=1)-start).days
@@ -132,9 +131,7 @@ class netcdfoutput():
 
         globmetadata.update(metadata)
 
-
         prepare_nc(self.ncfile,timeList,x,y,globmetadata,logger,Format=netcdfformat)
-
 
     def savetimestep(self,timestep,pcrdata,unit="mm",var='P',name="Precipitation"):
         """
@@ -232,7 +229,6 @@ class netcdfinput():
             except:
                 self.alldat.pop(var, None)
                 logging.warn("Variable " + var + " not found in netcdf file: " + netcdffile)
-
 
     def gettimestep(self,timestep,logging,var='P'):
         """
