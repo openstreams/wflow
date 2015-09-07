@@ -74,9 +74,6 @@ class MyTest(unittest.TestCase):
 
         self.assertAlmostEquals(a,b)
 
-
-        #print(time.localtime(bmiobj.get_current_time()))
-
         print("-------------- update: ")
         bmiobj.update()
 
@@ -95,7 +92,6 @@ class MyTest(unittest.TestCase):
         print("-------------- Grid shape: ")
         print(bmiobj.get_grid_shape('Altitude'))
 
-
         print("-------------- Grid spacing: ")
         print(bmiobj.get_grid_spacing('Altitude'))
 
@@ -104,8 +100,6 @@ class MyTest(unittest.TestCase):
 
         print("-------------- Var type: ")
         print(bmiobj.get_var_type('Altitude'))
-
-
 
         print("-------------- Var rank: ")
         print(bmiobj.get_var_rank('Altitude'))
@@ -119,14 +113,30 @@ class MyTest(unittest.TestCase):
         print("-------------- Getvalue: ")
         print(bmiobj.get_value('Altitude'))
 
+        print("-------------- get_attribute_names: ")
+        names = bmiobj.get_attribute_names()
+        print names
+
+        print("-------------- get_attribute_value: ")
+        print names[0]
+        print(bmiobj.get_attribute_value(names[0]))
+
+        print("-------------- set_attribute_value: ")
+        print names[0]
+        bmiobj.set_attribute_value(names[0],"SET By TEST")
+        print(bmiobj.get_attribute_value(names[0]))
+
+        print("-------------- set_start_time: ")
+        bmiobj.set_start_time(0)
+        print(bmiobj.get_attribute_value("run:starttime"))
+
+        print("-------------- save the state:")
+        bmiobj.save_state(".")
+        self.assertTrue(os.path.exists("TSoil.map"))
+        os.remove("TSoil.map")
+
         bmiobj.finalize()
-        #update
-        #update_until
-        #update_frac
-        #save_state
-        ## finalize
-        # get_value_at_indices
-        # set_value_at_indices
+
 
 
 

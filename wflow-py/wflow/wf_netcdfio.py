@@ -13,7 +13,11 @@ $Rev: 915 $
 import netCDF4
 # the two below are needed fpr bbfreeze
 
-#import netCDF4.utils
+try:
+    import netCDF4.utils
+except:
+    import netCDF4_utils
+
 import netcdftime
 
 from pcraster import *
@@ -35,7 +39,7 @@ globmetadata['references'] = 'http://wflow.googlecode.com'
 globmetadata['Conventions'] = 'CF-1.4'
 netcdfformat = "NETCDF4"
 
-def prepare_nc(trgFile, timeList, x, y, metadata, logger, units='Days since 1900-01-01 00:00:00', calendar='gregorian',Format="NETCDF4",complevel=9,zlib=True):
+def prepare_nc(trgFile, timeList, x, y, metadata, logger, units='Days since 1900-01-01 00:00:00', calendar='gregorian',Format="NETCDF4",complevel=9,zlib=True,least_significant_digit=None):
     """
     This function prepares a NetCDF file with given metadata, for a certain year, daily basis data
     The function assumes a gregorian calendar and a time unit 'Days since 1900-01-01 00:00:00'
@@ -55,19 +59,19 @@ def prepare_nc(trgFile, timeList, x, y, metadata, logger, units='Days since 1900
         nc_trg.createDimension('time', 0) #NrOfDays*8
     nc_trg.createDimension('lat', len(y))
     nc_trg.createDimension('lon', len(x))
-    DateHour = nc_trg.createVariable('time','f8',('time',))
+    DateHour = nc_trg.createVariable('time','f8',('time',),fill_value=-9999., zlib=zlib,complevel=complevel)
     DateHour.units = units
     DateHour.calendar = calendar
     DateHour.standard_name = 'time'
     DateHour.long_name = 'time'
     DateHour.axis = 'T'
     DateHour[:] = time
-    y_var = nc_trg.createVariable('lat','f4',('lat',))
+    y_var = nc_trg.createVariable('lat','f4',('lat',),fill_value=-9999., zlib=zlib,complevel=complevel)
     y_var.standard_name = 'latitude'
     y_var.long_name = 'latitude'
     y_var.units = 'degrees_north'
     y_var.axis = 'Y'
-    x_var = nc_trg.createVariable('lon','f4',('lon',))
+    x_var = nc_trg.createVariable('lon','f4',('lon',),fill_value=-9999., zlib=zlib,complevel=complevel)
     x_var.standard_name = 'longitude'
     x_var.long_name = 'longitude'
     x_var.units = 'degrees_east'
@@ -145,7 +149,7 @@ class netcdfoutput():
         """
         # Open target netCDF file
         var = os.path.basename(var)
-        self.nc_trg = netCDF4.Dataset(self.ncfile, 'a',format=netcdfformat,zlib=True,complevel=1)
+        self.nc_trg = netCDF4.Dataset(self.ncfile, 'a',format=netcdfformat,zlib=True,complevel=9)
         self.nc_trg.set_fill_off()
         # read time axis and convert to time objects
         #TODO: use this to append time

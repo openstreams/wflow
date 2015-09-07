@@ -390,6 +390,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       if hasattr(self,'NcOutput'):
         self.NcOutput.finish()
 
+      fp = open(os.path.join(self._userModel().caseName,self._userModel().runId,"configofrun.ini"),'wb')
+      self._userModel().config.write(fp)
+
  
   def loggingSetUp(self,caseName,runId,logfname,model,modelversion,level=pcrut.logging.INFO):
     """
@@ -529,7 +532,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     return rest
 
 
-  def createRunId(self,intbl="intbl",logfname="wflow.log",NoOverWrite=True,model="model",modelVersion="no version",level=pcrut.logging.DEBUG):
+  def createRunId(self,intbl="intbl",logfname="wflow.log",NoOverWrite=True,model="model",modelVersion="no version",level=pcrut.logging.DEBUG,doSetupFramework=True):
     """
     Create runId dir and copy table files to it
     Also changes the working dir to the case/runid directory
@@ -569,12 +572,30 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
     self._userModel().config = self.iniFileSetUp(caseName,runId,configfile)
 
+    if doSetupFramework:
+        self.setupFramework()
+
+
+
+
+
+  def setupFramework(self):
+    """
+    Second step, after setting the log file and reading the ini file get data from config, setup
+     IO etc
+
+    :return:
+    """
+    caseName = self._userModel().caseName
+    runId = self._userModel().runId
+
     self.outputFormat = int(configget(self._userModel().config,'framework','outputformat','1'))
     self.APIDebug = int(configget(self._userModel().config,'framework','debug',str(self.APIDebug)))
 
     self.ncfile = configget(self._userModel().config,'framework','netcdfinput',"None")
     self.ncoutfile = configget(self._userModel().config,'framework','netcdfoutput',"None")
     self.ncoutfilestatic = configget(self._userModel().config,'framework','netcdfstaticoutput',"None")
+    self.ncinfilestatic = configget(self._userModel().config,'framework','netcdfstaticinput',"None")
 
 
     # Set the re-init hint for the local model
@@ -600,9 +621,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self._d_firstTimestep = 1
             self._userModel()._setFirstTimeStep(self._d_firstTimestep)
             self._d_lastTimestep = int(nrseconds/self.timestepsecs) + 1
-            s
         else:
-            self.logger.warn("Not enough information in the [run] section. Need start and end time or a runinfo.xml file.... Reverting to default date/time")
+            self.logger.info("Not enough information in the [run] section. Need start and end time or a runinfo.xml file.... Reverting to default date/time")
     else:
         from dateutil import parser
         #self.datetime_firststep=datetime.datetime.strptime(st, "%Y-%m-%d %H:%M:%S")
@@ -621,8 +641,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self._userModel()._setFirstTimeStep(self._d_firstTimestep)
         self._d_lastTimestep = int(nrseconds/self.timestepsecs) + 1
 
-
-
     if self.ncfile != "None":
         mstacks = configsection(self._userModel().config,"inputmapstacks")
         varlst = []
@@ -636,7 +654,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         meta ={}
         meta['caseName'] = caseName
         meta['runId'] = runId
-        self.NcOutput = netcdfoutput(caseName + "/" + runId + "/" + self.ncoutfile,self.logger,self.datetime_firststep,self._d_lastTimestep - self._d_firstTimestep + 1,maxbuf=buffer,metadata=meta)
+        self.NcOutput = netcdfoutput(os.path.join(caseName,runId,self.ncoutfile),
+                                     self.logger,self.datetime_firststep,
+                                     self._d_lastTimestep - self._d_firstTimestep + 1,
+                                     maxbuf=buffer,metadata=meta)
 
 
     if self.ncoutfilestatic != 'None': # Ncoutput
@@ -644,7 +665,15 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         meta ={}
         meta['caseName'] = caseName
         meta['runId'] = runId
-        self.NcOutputStatic = netcdfoutput(caseName + "/" + runId + "/" + self.ncoutfilestatic,self.logger,self.datetime_laststep,1,maxbuf=buffer,metadata=meta)
+        self.NcOutputStatic = netcdfoutput(os.path.join(caseName,runId,self.ncoutfilestatic),self.logger,self.datetime_laststep,1,maxbuf=buffer,metadata=meta)
+
+
+    if self.ncinfilestatic != 'None': # Ncoutput
+        buffer = int(configget(self._userModel().config,'framework','netcdfwritebuffer',"2"))
+        meta ={}
+        meta['caseName'] = caseName
+        meta['runId'] = runId
+        self.NcInputStatic = netcdfinput(os.path.join(caseName,self.ncinfilestatic),self.logger,varlst)
 
     # Fill the summary (stat) list from the ini file
     self.statslst = []
@@ -692,7 +721,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     checktss = configsection(self._userModel().config,"outputtss")
     if len(checktss) > 0:
         self.logger.warn("Found a outputtss section. This is NOT used anymore in this version. Please use outputtss_0 .. n")
-        
+
     self.oscv = {}
     self.samplenamecsv = {}
     self.varnamecsv = {}
@@ -705,7 +734,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             toprint = configsection(self._userModel().config,thissection)
             secnr = secnr + 1
             samplemapname = caseName + "/" + configget(self._userModel().config,thissection,"samplemap","None")
-            if "None" not in samplemapname :    
+            if "None" not in samplemapname :
                 try:
                     self.samplemap = readmap(samplemapname)
                     idd = tsformat + ":" +samplemapname
@@ -713,16 +742,16 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     self.logger.info("Adding " + tsformat + " output at "+ samplemapname)
                 except:
                     self.logger.warn("Could not read sample id-map for timeseries: " + samplemapname)
-                
+
                 for a in toprint:
                   if  "samplemap" not in a:
-                      b = a.replace('self','self._userModel()')         
+                      b = a.replace('self','self._userModel()')
                       fn = os.path.join(caseName,runId,self._userModel().config.get(thissection,a))
                       self.samplenamecsv[fn] = idd
                       self.varnamecsv[fn] = b
-                                       
 
-  
+
+
   def wf_suspend(self, directory):
       """
       Suspend the state variables to disk as .map files
@@ -881,8 +910,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
       self._traceOut("resume")
       self._decrementIndentLevel()
-               
- 
+
   def wf_QuickSuspend(self):
       """
       Save the state variable of the current timestep in memory

@@ -1464,9 +1464,6 @@ def main(argv=None):
     dynModelFw._runResume()
     dynModelFw._runDynamic(_firstTimeStep, _lastTimeStep)
     dynModelFw._runSuspend()
-
-    fp = open(caseName + "/" + runId + "/runinfo/configofrun.ini", 'wb')
-    myModel.config.write(fp)
     dynModelFw._wf_shutdown()
 
 
