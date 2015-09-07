@@ -3,15 +3,12 @@
 """
 Definition of the wflow_W3RA model.
 ---------------------------------------
-
 The model is modified from the Australian Water Resources Assessment
 Landscape (AWRA-L) model version 0.5
-
 W3RA is documented in
 van Dijk et al. (2013), Water Resour. Res., 49, 2729-2746, doi:10.1002/wrcr.20251
 URL: http://onlinelibrary.wiley.com/doi/10.1002/wrcr.20251/abstract
 More comprehensive documentation of AWRA-L version 0.5 can be found in:
-
 Van Dijk, A.I.J.M. (2010) The Australian water resources assessment system
 (version 0.5), 3.0.5.Technical description of the landscape hydrology model
 (AWRA-L). WIRADA Technical Report, CSIRO Water for a Healthy Country
@@ -20,14 +17,10 @@ URL: http://www.clw.csiro.au/publications/waterforahealthycountry/2010/wfhc-aus-
 The section references below refer to the sections in the AWRA-L report.
 Changes compared to that code are indicated, e.g. by commenting out
 redundant code.
-
 Further question please contact albert.vandijk@anu.edu.au
 Port to Python/PCRaster: Deltares
-
-
 Usage:
 wflow_W3RA  -C case -R Runid -c inifile
-
     -C: set the name  of the case (directory) to run
     
     -R: set the name runId within the current case
@@ -150,7 +143,8 @@ class WflowModel(DynamicModel):
     # Sgref_shape=3.2860
     # fday=0.5000
     self.timestepsecs = int(configget(self.config,'model','timestepsecs','86400'))
-    
+    self.UseETPdata = int(configget(self.config,'model','UseETPdata','1'))  #  1: Use ETP data, 0: Compute ETP from meteorological variables
+    print 'useDATA' , self.UseETPdata
     self.basetimestep=86400
     self.SaveMapDir = self.Dir + "/" + self.runId + "/outmaps"
 
@@ -158,11 +152,15 @@ class WflowModel(DynamicModel):
 
     self.TMAX_mapstack=self.Dir + configget(self.config,"inputmapstacks","TMAX","/inmaps/TMAX")
     self.TMIN_mapstack=self.Dir + configget(self.config,"inputmapstacks","TMIN","/inmaps/TMIN")
+    self.TDAY_mapstack=self.Dir + configget(self.config,"inputmapstacks","TDAY","/inmaps/TDAY")         
+    self.EPOT_mapstack=self.Dir + configget(self.config,"inputmapstacks","EPOT","/inmaps/EPOT")        
     self.PRECIP_mapstack=self.Dir + configget(self.config,"inputmapstacks","PRECIP","/inmaps/PRECIP")
     self.RAD_mapstack=self.Dir + configget(self.config,"inputmapstacks","RAD","/inmaps/RAD")
-    self.WINDSPEED_mapstack=self.Dir + configget(self.config,"inputmapstacks","WIND","/inmaps/WIND")
-    self.AIRPRESS_mapstack=self.Dir + configget(self.config,"inputmapstacks","PRES","/inmaps/PRES")
-    self.ALBEDO_mapstack=self.Dir + configget(self.config,"inputmapstacks","ALBEDO","/inmaps/ALBEDO")
+    self.WINDSPEED_mapstack=self.Dir + configget(self.config,"inputmapstacks","WINDSPEED","/inmaps/ClimatologyMapFiles/WINDS/WNDSPEED")
+    self.AIRPRESS_mapstack=self.Dir + configget(self.config,"inputmapstacks","AIRPRESS","/inmaps/ClimatologyMapFiles/AIRPRESS/AIRPRESS")
+    self.ALBEDO_mapstack=self.Dir + configget(self.config,"inputmapstacks","ALBEDO","/inmaps/ClimatologyMapFiles/ALBEDO/ALBEDO")
+    #self.WINDSPEED_mapstack=self.Dir + configget(self.config,"inputmapstacks","WINDSPEED","/inmaps/WIND")
+    #self.AIRPRESS_mapstack=self.Dir + configget(self.config,"inputmapstacks","AIRPRESS","/inmaps/PRES")
 
     self.Altitude=readmap(self.Dir + "/staticmaps/wflow_dem")
 
@@ -239,6 +237,12 @@ class WflowModel(DynamicModel):
     self.Tgrow2 = readmap(os.path.join(self.Dir,  "staticmaps/Tgrow2.map"))
     self.Tsenc2 = readmap(os.path.join(self.Dir,  "staticmaps/Tsenc2.map"))
 
+    # Static, for the computation of Aerodynamic conductance (3.7)
+    self.fh1 = ln(813./self.hveg1-5.45)
+    self.fh2 = ln(813./self.hveg2-5.45)
+    self.ku2_1 = 0.305/(self.fh1*(self.fh1+2.3))
+    self.ku2_2 = 0.305/(self.fh2*(self.fh2+2.3))
+ 
 
     self.logger.info("Starting Dynamic run...")
 
@@ -246,7 +250,6 @@ class WflowModel(DynamicModel):
   def resume(self):
     """ 
     *Required*
-
     This function is required. Read initial state maps (they are output of a 
     previous call to suspend()). The implementation shown here is the most basic
     setup needed.
@@ -266,7 +269,6 @@ class WflowModel(DynamicModel):
   def default_summarymaps(self):
       """
       *Optional*
-
       Return a default list of variables to report as summary maps in the outsum dir.
       """
       return []
@@ -274,23 +276,28 @@ class WflowModel(DynamicModel):
   def dynamic(self):
         """
           *Required*
-
           This is where all the time dependent functions are executed. Time dependent
           output should also be saved here.
         """
-
+        print 'useETPdata' , self.UseETPdata
         #Put the W3RA here. Stuff from W3RA_timestep_model.m
         #read meteo from file
         self.logger.debug("Running for: " + str(self.currentdatetime))
-        self.TMAX=cover(self.wf_readmap(self.TMAX_mapstack, 10.0), scalar(10.0))# T in degC
-        self.TMIN=cover(self.wf_readmap(self.TMIN_mapstack, 10.0), scalar(10.0))# T in degC
-        self.PRECIP=cover(self.wf_readmap(self.PRECIP_mapstack, 0.0), scalar(0.0)) #mm
-        self.RAD=cover(self.wf_readmap(self.RAD_mapstack, 10.0), scalar(10.0))# W m-2 s-1
-        self.AIRPRESS=cover(self.wf_readmap(self.AIRPRESS_mapstack, 10.0), scalar(10.0))# Pa
-        self.WINDSPEED=cover(self.wf_readmap(self.WINDSPEED_mapstack, 10.0), scalar(10.0))# ms-1
-        #self.WINDSPEED=cover(self.wf_readmapClimatology(self.WINDSPEED_mapstack, default=1.0), scalar(1.0))
-        #self.AIRPRESS=cover(self.wf_readmapClimatology(self.AIRPRESS_mapstack, default=980.0), scalar(980.0))
+        self.PRECIP=cover(self.wf_readmap(self.PRECIP_mapstack, 0.0), scalar(0.0)) # mm
         self.ALBEDO=cover(self.wf_readmapClimatology(self.ALBEDO_mapstack, default=0.1), scalar(0.1))
+        
+        if self.UseETPdata == 1:
+            self.TDAY=cover(self.wf_readmap(self.TDAY_mapstack, 10.0), scalar(10.0)) # T in degC     
+            self.EPOT=cover(self.wf_readmap(self.EPOT_mapstack, 0.0), scalar(0.0)) # mm             
+            self.WINDSPEED=cover(self.wf_readmapClimatology(self.WINDSPEED_mapstack, default=1.0), scalar(1.0))
+            self.AIRPRESS=cover(self.wf_readmapClimatology(self.AIRPRESS_mapstack, default=980.0), scalar(980.0))
+            # print "Using climatology for wind, air pressure and albedo." 
+        elif self.UseETPdata == 0:
+            self.TMIN=cover(self.wf_readmap(self.TMIN_mapstack, 10.0), scalar(10.0)) # T in degC
+            self.TMAX=cover(self.wf_readmap(self.TMAX_mapstack, 10.0), scalar(10.0)) # T in degC
+            self.RAD=cover(self.wf_readmap(self.RAD_mapstack, 10.0), scalar(10.0))# W m-2 s-1
+            self.WINDSPEED=cover(self.wf_readmap(self.WINDSPEED_mapstack, 10.0), scalar(10.0))# ms-1
+            self.AIRPRESS=cover(self.wf_readmap(self.AIRPRESS_mapstack, 10.0), scalar(10.0))# Pa
 
         doy=self.currentdatetime.timetuple().tm_yday
 
@@ -303,19 +310,22 @@ class WflowModel(DynamicModel):
         # Assign forcing and estimate effective meteorological variables
 
         Pg = self.PRECIP # mm 
-        Rg = max(self.RAD,scalar(0.0001)) # already in W m-2 s-1; set minimum of 0.01 to avoid numerical problems
-        Ta = self.TMIN+scalar(0.75)*(self.TMAX-self.TMIN)# T in degC
-        T24 = self.TMIN+scalar(0.5)*(self.TMAX-self.TMIN)# T in degC
-        pex = min(scalar(17.27)*(self.TMIN)/(scalar(237.3)+self.TMIN),scalar(10)) # T in degC
-        pe = min(scalar(610.8)*(exp(pex)),scalar(10000.0))
-
+        
+        if self.UseETPdata == 1:
+            Ta = self.TDAY  # T in degC
+            T24 = self.TDAY  # T in degC
+        elif self.UseETPdata == 0:
+            Rg = max(self.RAD,scalar(0.0001)) # already in W m-2 s-1; set minimum of 0.01 to avoid numerical problems
+            Ta = self.TMIN+scalar(0.75)*(self.TMAX-self.TMIN)  # T in degC
+            T24 = self.TMIN+scalar(0.5)*(self.TMAX-self.TMIN)  # T in degC
+            pex = min(scalar(17.27)*(self.TMIN)/(scalar(237.3)+self.TMIN),scalar(10))  # T in degC             
+            pe = min(scalar(610.8)*(exp(pex)),scalar(10000.0))  # Mean actual vapour pressure, from dewpoint temperature
         # rescale factor because windspeed climatology is at 2m
         WindFactor = 1.0
         u2 = scalar(WindFactor)*self.WINDSPEED*(scalar(1)-(scalar(1)-self.fday)*scalar(0.25))/self.fday
         self.u2 = scalar(WindFactor)*self.WINDSPEED*(scalar(1)-(scalar(1)-self.fday)*scalar(0.25))/self.fday
         pair = self.AIRPRESS # already in Pa
         ns_alb = self.ALBEDO
-
 
         # diagnostic equations
 
@@ -333,6 +343,7 @@ class WflowModel(DynamicModel):
         ws2 = self.Ss2/self.SsFC2
         wd1 = self.Sd1/self.SdFC1     # (2.1)
         wd2 = self.Sd2/self.SdFC2     # (2.1)
+
 
         TotSnow1 = self.FreeWater1+self.DrySnow1
         TotSnow2 = self.FreeWater2+self.DrySnow2
@@ -353,54 +364,60 @@ class WflowModel(DynamicModel):
         # CALCULATION OF PET
         # Conversions and coefficients (3.1)
         pesx = min((scalar(17.27)*Ta/(scalar(237.3)+Ta)),scalar(10))
-        pes = min(scalar((scalar(610.8))*exp(pesx)),scalar(10000)) # saturated vapour pressure
-        fRH = pe/pes # relative air humidity
+        pes = min(scalar((scalar(610.8))*exp(pesx)),scalar(10000))  # saturated vapour pressure
+        # fRH = pe/pes  # relative air humidity                                  -------------- check 
         cRE = 0.03449+4.27e-5*Ta
-        Caero = self.fday*0.176*(1+Ta/209.1)*(pair-0.417*pe)*(1-fRH)
-        keps = 1.4e-3*((Ta/187)**2+Ta/107+1)*(6.36*pair+pe)/pes
-        Rgeff = Rg/self.fday
-
-        # shortwave radiation balance (3.2)
-        #alb_veg = 0.452*Vc
-        #alb_soil = alb_wet+(alb_dry-alb_wet)*exp(-w0/w0ref_alb)
-        # new equations for snow albedo
-        alb_snow1 = 0.65-0.2*wSnow1          # assumed; ideally some lit research needed
-        alb_snow2 = 0.65-0.2*wSnow2
-        fsnow1 = min(1.0,0.05*TotSnow1)     # assumed; ideally some lit research needed
-        fsnow2 = min(1.0,0.05*TotSnow2)
-        #alb = fveg*alb_veg+(fsoil-fsnow)*alb_soil +fsnow*alb_snow
-        #alb = albedo
-        alb1 = (1-fsnow1)*ns_alb +fsnow1*alb_snow1
-        alb2 = (1-fsnow2)*ns_alb +fsnow2*alb_snow2
-        RSn1 = (1-alb1)*Rgeff
-        RSn2 = (1-alb2)*Rgeff
-        # long wave radiation balance (3.3 to 3.5)
-        StefBolz = 5.67e-8
-        Tkelv = Ta+273.16
-        self.RLin = (0.65*(pe/Tkelv)**0.14)*StefBolz*Tkelv**4     # (3.3)
-        RLout = StefBolz*Tkelv**4.0      # (3.4)
-        self.RLn = self.RLin-RLout
-
-        self.fGR1 = self.Gfrac_max1*(1-exp(-fsoil1/self.fvegref_G1))
-        self.fGR2 = self.Gfrac_max2*(1-exp(-fsoil2/self.fvegref_G2))     # (3.5)
-        self.Rneff1 = (RSn1+self.RLn)*(1-self.fGR1)
-        self.Rneff2 = (RSn2+self.RLn)*(1-self.fGR2)
+        # Caero = self.fday*0.176*(1+Ta/209.1)*(pair-0.417*pe)*(1-fRH)         -------------- check 
+        # keps = 1.4e-3*((Ta/187)**2+Ta/107+1)*(6.36*pair+pe)/pes
         # Aerodynamic conductance (3.7)
-        # TODO: Check if this can go outside the dynamic loop.....
-        self.fh1 = ln(813./self.hveg1-5.45)
-        self.fh2 = ln(813./self.hveg2-5.45)
-        ku2_1 = 0.305/(self.fh1*(self.fh1+2.3))
-        ku2_2 = 0.305/(self.fh2*(self.fh2+2.3))
-        ga1 = ku2_1*u2
-        ga2 = ku2_2*u2
-        #  Potential evaporation
-        kalpha1 = 1+Caero*ga1/self.Rneff1
-        kalpha2 = 1+Caero*ga2/self.Rneff2
-        self.E01 = cRE*(1/(1+keps))*kalpha1*self.Rneff1*self.fday
-        self.E02 = cRE*(1/(1+keps))*kalpha2*self.Rneff2*self.fday
-        self.E01 = max(self.E01,0)
-        self.E02 = max(self.E02,0)
-
+        ga1 = self.ku2_1*u2
+        ga2 = self.ku2_2*u2
+        
+        if self.UseETPdata == 1:
+            self.E01 = max(self.EPOT,0)  							
+            self.E02 = max(self.EPOT,0)  
+            keps = 0.655E-3 * pair / pes   # See Appendix A3 (http://www.clw.csiro.au/publications/waterforahealthycountry/2010/wfhc-aus-water-resources-assessment-system.pdf) --------------------------------   check!
+        
+        elif self.UseETPdata == 0:
+            Rgeff = Rg/self.fday
+            # shortwave radiation balance (3.2)
+            #alb_veg = 0.452*Vc
+            #alb_soil = alb_wet+(alb_dry-alb_wet)*exp(-w0/w0ref_alb)
+            # new equations for snow albedo
+            alb_snow1 = 0.65-0.2*wSnow1          # assumed; ideally some lit research needed
+            alb_snow2 = 0.65-0.2*wSnow2
+            fsnow1 = min(1.0,0.05*TotSnow1)     # assumed; ideally some lit research needed
+            fsnow2 = min(1.0,0.05*TotSnow2)
+            #alb = fveg*alb_veg+(fsoil-fsnow)*alb_soil +fsnow*alb_snow
+            #alb = albedo
+            alb1 = (1-fsnow1)*ns_alb +fsnow1*alb_snow1
+            alb2 = (1-fsnow2)*ns_alb +fsnow2*alb_snow2
+            RSn1 = (1-alb1)*Rgeff
+            RSn2 = (1-alb2)*Rgeff
+            # long wave radiation balance (3.3 to 3.5)
+            StefBolz = 5.67e-8
+            Tkelv = Ta+273.16
+            self.RLin = (0.65*(pe/Tkelv)**0.14)*StefBolz*Tkelv**4     # (3.3)
+            RLout = StefBolz*Tkelv**4.0      # (3.4)
+            self.RLn = self.RLin-RLout
+    
+            self.fGR1 = self.Gfrac_max1*(1-exp(-fsoil1/self.fvegref_G1))
+            self.fGR2 = self.Gfrac_max2*(1-exp(-fsoil2/self.fvegref_G2))     # (3.5)
+            self.Rneff1 = (RSn1+self.RLn)*(1-self.fGR1)
+            self.Rneff2 = (RSn2+self.RLn)*(1-self.fGR2)
+            
+            fRH = pe/pes  # relative air humidity
+            Caero = self.fday*0.176*(1+Ta/209.1)*(pair-0.417*pe)*(1-fRH)        # -------------- check  
+            keps = 1.4e-3*((Ta/187)**2+Ta/107+1)*(6.36*pair+pe)/pes
+            
+            #  Potential evaporation
+            kalpha1 = 1+Caero*ga1/self.Rneff1
+            kalpha2 = 1+Caero*ga2/self.Rneff2
+            self.E01 = cRE*(1/(1+keps))*kalpha1*self.Rneff1*self.fday
+            self.E02 = cRE*(1/(1+keps))*kalpha2*self.Rneff2*self.fday
+            self.E01 = max(self.E01,0)
+            self.E02 = max(self.E02,0)
+ 
         # CALCULATION OF ET FLUXES AND ROOT WATER UPTAKE
         # Root water uptake constraint (4.4)
         Usmax1 = max(0, self.Us01*min(1,ws1/self.wslimU1))       ##0-waarden omdat ws1 bevat 0-waarden (zie regel 116)
@@ -426,7 +443,7 @@ class WflowModel(DynamicModel):
         # Actual transpiration (4.1)
         Et1 = min(Utot1, Etmax1)
         Et2 = min(Utot2, Etmax2)
-
+        
         # # Root water uptake distribution (2.3)
         U01 = max(min((U0max1/(U0max1 + Usmax1 + Udmax1))*Et1,self. S01-1e-2),0)
         Us1 = max(min((Usmax1/(U0max1 + Usmax1 + Udmax1))*Et1, self.Ss1-1e-2),0)
@@ -497,27 +514,27 @@ class WflowModel(DynamicModel):
         SnowFrac2 = 1 - RainFrac2
 
         # Snowfall/melt calculations
-        SnowFall1 = SnowFrac1*Precipitation1                      #snowfall depth
+        SnowFall1 = SnowFrac1*Precipitation1                  # snowfall depth
         SnowFall2 = SnowFrac2*Precipitation2
-        RainFall1 = RainFrac1*Precipitation1                      #rainfall depth
+        RainFall1 = RainFrac1*Precipitation1                  # rainfall depth
         RainFall2 = RainFrac2*Precipitation2
-        PotSnowMelt1 = Cfmax1*max(0,Temperature-TT1)                 #Potential snow melt, based on temperature
+        PotSnowMelt1 = Cfmax1*max(0,Temperature-TT1)          # Potential snow melt, based on temperature
         PotSnowMelt2 = Cfmax2*max(0,Temperature-TT2)
-        PotRefreezing1 = Cfmax1*CFR1*max(TT1-Temperature,0)             #Potential refreezing, based on temperature
+        PotRefreezing1 = Cfmax1*CFR1*max(TT1-Temperature,0)   # Potential refreezing, based on temperature
         PotRefreezing2 = Cfmax2*CFR2*max(TT2-Temperature,0)
-        Refreezing1 = min(PotRefreezing1,self.FreeWater1)                #actual refreezing
+        Refreezing1 = min(PotRefreezing1,self.FreeWater1)     # actual refreezing
         Refreezing2 = min(PotRefreezing2,self.FreeWater2)
-        SnowMelt1 = min(PotSnowMelt1,self.DrySnow1)                    #actual snow melt
+        SnowMelt1 = min(PotSnowMelt1,self.DrySnow1)           # actual snow melt
         SnowMelt2 = min(PotSnowMelt2,self.DrySnow2)
-        self.DrySnow1 = self.DrySnow1 + SnowFall1 + Refreezing1 -SnowMelt1   #dry snow content
+        self.DrySnow1 = self.DrySnow1 + SnowFall1 + Refreezing1 -SnowMelt1  # dry snow content
         self.DrySnow2 = self.DrySnow2 + SnowFall2 + Refreezing2 -SnowMelt2
-        self.FreeWater1 = self.FreeWater1 - Refreezing1                      #free water content in snow
+        self.FreeWater1 = self.FreeWater1 - Refreezing1                     # free water content in snow
         self.FreeWater2 = self.FreeWater2 - Refreezing2
         MaxFreeWater1 = self.DrySnow1*WHC1
         MaxFreeWater2 = self.DrySnow2*WHC2
         self.FreeWater1 = self.FreeWater1 + SnowMelt1 + RainFall1
         self.FreeWater2 = self.FreeWater2 + SnowMelt2 + RainFall2
-        InSoil1 = max(self.FreeWater1-MaxFreeWater1,0)               #abundant water in snow pack which goes into soil
+        InSoil1 = max(self.FreeWater1-MaxFreeWater1,0)       # abundant water in snow pack which goes into soil
         InSoil2 = max(self.FreeWater2-MaxFreeWater2,0)
         self.FreeWater1 = self.FreeWater1 - InSoil1
         self.FreeWater2 = self.FreeWater2 - InSoil2
@@ -644,7 +661,7 @@ class WflowModel(DynamicModel):
         ws2 = self.Ss2/self.SsFC2
         wd1 = self.Sd1/self.SdFC1     # (2.1)
         wd2 = self.Sd2/self.SdFC2
-
+    
 
 # The main function is used to run the program from the command line
 
@@ -658,11 +675,11 @@ def main(argv=None):
     The user can set the caseName, the runDir, the timestep and the configfile.
     """      
     global multpars
-    caseName = "default"
+    caseName = "../openstreams_w3ra" # "D:/trambaue/_Projects/GLOFFIS/201501/GLOFFIS_SA/Modules/openstreams_w3ra/"
     runId = "run_default"
     configfile="wflow_W3RA.ini"
-    _lastTimeStep = 10
-    _firstTimeStep = 1
+    _lastTimeStep = 15 
+    _firstTimeStep = 0  
     timestepsecs=86400
     fewsrun = False
     wflow_cloneMap = 'wflow_subcatch.map'
@@ -707,12 +724,13 @@ def main(argv=None):
             print "Failed to get timesteps from runinfo file: " + runinfoFile
             exit(2)
     else:
-        starttime = dt.datetime(1990,01,01)
+        starttime = dt.datetime(2015,9,01)
 
 
     myModel = WflowModel(wflow_cloneMap, caseName,runId,configfile)
     dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep,firstTimestep=_firstTimeStep,datetimestart=starttime)
     dynModelFw.createRunId(NoOverWrite=_NoOverWrite, level=loglevel, logfname=LogFileName)
+
     dynModelFw._runInitial()
     dynModelFw._runResume()
     dynModelFw._runDynamic(_firstTimeStep,_lastTimeStep)
