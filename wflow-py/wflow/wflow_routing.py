@@ -135,18 +135,17 @@ class WflowModel(DynamicModel):
 
         This function is specific for each model and **must** be present.
 
-       :var self.SurfaceRunoff: Surface runoff in the kin-wave resrvoir [m^3/s]
-       :var self.WaterLevel: Water level in the kin-wave resrvoir [m]
-       """
+        :var self.SurfaceRunoff: Surface runoff in the kin-wave resrvoir [m^3/s]
+        :var self.WaterLevel: Water level in the kin-wave resrvoir [m]
+        """
         states = ['SurfaceRunoff', 'WaterLevel']
 
         return states
 
-
     def supplyCurrentTime(self):
         """
-      gets the current time in seconds after the start of the run
-      """
+        gets the current time in seconds after the start of the run
+        """
         return self.currentTimeStep() * self.timestepsecs
 
 
@@ -162,7 +161,6 @@ class WflowModel(DynamicModel):
         if self.fewsrun:
             self.logger.info("Saving initial conditions for FEWS...")
             self.wf_suspend(self.Dir + "/outstate/")
-
 
     def initial(self):
         """
@@ -186,7 +184,6 @@ class WflowModel(DynamicModel):
 
         self.inflowTss = "/intss/Inflow.tss"
         self.logger.info("running for " + str(self.nrTimeSteps()) + " timesteps")
-
 
         # Set and get defaults from ConfigFile here ###################################
         self.reinit = int(configget(self.config, "model", "reinit", "0"))
@@ -224,8 +221,6 @@ class WflowModel(DynamicModel):
         wflow_landuse = configget(self.config, "model", "wflow_landuse", "staticmaps/wflow_landuse.map")
         wflow_soil = configget(self.config, "model", "wflow_soil", "staticmaps/wflow_soil.map")
 
-
-
         # 2: Input base maps ########################################################
         subcatch = ordinal(readmap(os.path.join(self.Dir,wflow_subcatch)))  # Determines the area of calculations (all cells > 0)
         subcatch = ifthen(subcatch > 0, subcatch)
@@ -257,7 +252,6 @@ class WflowModel(DynamicModel):
 
         self.Inflow_mapstack = self.Dir + configget(self.config, "inputmapstacks", "Inflow",
                                                     "/inmaps/IF")  # timeseries for rainfall "/inmaps/IF" # in/outflow locations (abstractions)
-
 
         self.Latitude = ycoordinate(boolean(self.Altitude))
         self.Longitude = xcoordinate(boolean(self.Altitude))
@@ -311,7 +305,6 @@ class WflowModel(DynamicModel):
             #self.DistToUpdPt = ldddist(self.TopoLdd,boolean(cover(self.OutputId,0.0)),1)
             #* self.reallength/celllength()
 
-
         # Initializing of variables
         self.logger.info("Initializing of model variables..")
         self.TopoLdd = lddmask(self.TopoLdd, boolean(self.TopoId))
@@ -344,8 +337,6 @@ class WflowModel(DynamicModel):
 
         self.SlopeDCL = self.Slope * self.reallength/self.DCL
 
-
-
         # water depth (m)
         # set width for kinematic wave to cell width for all cells
         self.Bw = detdrainwidth(self.TopoLdd, self.xl, self.yl)
@@ -360,7 +351,6 @@ class WflowModel(DynamicModel):
         # power for Alpha
         self.AlpPow = (2.0 / 3.0) * self.Beta
         # initial approximation for Alpha
-
 
         self.logger.info("Saving summary maps...")
 
@@ -390,7 +380,6 @@ class WflowModel(DynamicModel):
 
           return lst
 
-
     def resume(self):
 
         if self.reinit == 1:
@@ -401,8 +390,6 @@ class WflowModel(DynamicModel):
             self.logger.info("Setting initial conditions from state files")
             self.wf_resume(os.path.join(self.Dir,"instate"))
 
-
-
         P = self.Bw + (2.0 * self.WaterLevel)
         self.Alpha = self.AlpTerm * pow(P, self.AlpPow)
         self.OldSurfaceRunoff = self.SurfaceRunoff
@@ -411,9 +398,7 @@ class WflowModel(DynamicModel):
         # Determine initial kinematic wave volume
         self.KinWaveVolume = self.WaterLevel * self.Bw * self.DCL
         self.OldKinWaveVolume = self.KinWaveVolume
-
         self.SurfaceRunoffMM = self.SurfaceRunoff * self.QMMConv
-
 
     def dynamic(self):
         """
@@ -437,10 +422,8 @@ class WflowModel(DynamicModel):
         :var self.ToCubic: Mutiplier to convert mm to m^3/s for fluxes
         """
 
-        self.logger.debug(
-            "Step: " + str(int(self.thestep + self._d_firstTimeStep)) + "/" + str(int(self._d_nrTimeSteps)))
+        self.logger.debug("Step: " + str(int(self.currentStep)) + "/" + str(int(self._d_nrTimeSteps)))
         self.thestep = self.thestep + 1
-
         self.InwaterForcing = cover(self.wf_readmap(self.IW_mapstack, 1.0), scalar(0.0))
 
         if self.thestep > 28:
@@ -593,9 +576,6 @@ def main(argv=None):
     dynModelFw._runResume()
     dynModelFw._runDynamic(_firstTimeStep, _lastTimeStep)
     dynModelFw._runSuspend()
-
-    fp = open(caseName + "/" + runId + "/runinfo/configofrun.ini", 'wb')
-    myModel.config.write(fp)
     dynModelFw._wf_shutdown()
 
 

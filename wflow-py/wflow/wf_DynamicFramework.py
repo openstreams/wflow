@@ -269,18 +269,14 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     self._addMethodToClass(self.wf_updateparameters)
     self._addAttributeToClass("ParamType",self.ParamType)
 
-
-    self._userModel()._setNrTimeSteps(lastTimeStep - firstTimestep + 1)
-    if firstTimestep == 0:
-        self._d_firstTimestep = 1
-    else:
-        self._d_firstTimestep = firstTimestep
-    self._userModel()._setFirstTimeStep(self._d_firstTimestep)
+    #self._userModel()._setNrTimeSteps(lastTimeStep - firstTimestep + 1)
+    self._userModel()._setNrTimeSteps(lastTimeStep + 1)
+    self._d_firstTimestep = 1
+    self._userModel()._setFirstTimeStep(1)
     self._d_lastTimestep = lastTimeStep
     self.APIDebug = 0
     self._userModel().currentdatetime = self.currentdatetime
-
-
+    self._userModel()._setCurrentTimeStep(firstTimestep)
 
 
   def wf_updateparameters(self):

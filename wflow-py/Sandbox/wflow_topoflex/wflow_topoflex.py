@@ -509,7 +509,8 @@ class WflowModel(DynamicModel):
 
         # TODO: change rainfall .tss files into grids
         self.wf_updateparameters()  # read the temperature map for each step (see parameters())
-        self.logger.debug("Step: "+str(int(self.thestep + self._d_firstTimeStep))+"/"+str(int(self._d_nrTimeSteps)))
+        self.logger.debug("Step: " + str(int(self.currentStep)) + "/" + str(int(self._d_nrTimeSteps)))
+
         self.thestep = self.thestep + 1
 
         self.Si_t = copylist(self.Si)
