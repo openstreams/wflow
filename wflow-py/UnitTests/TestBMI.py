@@ -11,14 +11,6 @@ Simple test for wflow bmi framework
 
 class MyTest(unittest.TestCase):
 
-    def testbmirun(self):
-        bmiobj = bmi.wflowbmi_csdms()
-        bmiobj.initialize('wflow_sceleton/wflow_sceleton.ini',loglevel=logging.ERROR)
-
-        et = bmiobj.get_end_time()
-        bmiobj.update_until(et)
-        bmiobj.finalize()
-
     def testbmifuncs(self):
 
         bmiobj = bmi.wflowbmi_csdms()
@@ -137,6 +129,13 @@ class MyTest(unittest.TestCase):
 
         bmiobj.finalize()
 
+    def testbmirun(self):
+        bmiobj = bmi.wflowbmi_csdms()
+        bmiobj.initialize('wflow_sceleton/wflow_sceleton.ini',loglevel=logging.ERROR)
+
+        et = bmiobj.get_end_time()
+        bmiobj.update_until(et)
+        bmiobj.finalize()
 
 
 

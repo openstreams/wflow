@@ -3,6 +3,7 @@ __author__ = 'schelle'
 import os
 import logging
 import datetime
+import parser
 
 import wflow.bmi as bmi
 import numpy as np
@@ -305,16 +306,21 @@ class wflowbmi_csdms(bmi.Bmi):
         datestrimestr = dateobj.strftime("%Y:%m:%d %H:%M:%S")
 
         self.dynModel._userModel().config.set("run",'starttime',datestrimestr)
+        self.dynModel._userModel().datetime_firststep=dateobj
+        self.dynModel._userModel().currentdatetime = self.dynModel._userModel().datetime_firststep
 
     def set_end_time(self, end_time):
         """
         :param end_time: time in units (seconds) since the epoch
         :return:
         """
+
         dateobj = datetime.datetime.utcfromtimestamp(end_time)
         datestrimestr = dateobj.strftime("%Y:%m:%d %H:%M:%S")
-
         self.dynModel._userModel().config.set("run",'endtime',datestrimestr)
+        self.dynModel.datetime_laststep=dateobj
+
+
 
     def get_attribute_names(self):
         """
@@ -428,8 +434,10 @@ class wflowbmi_csdms(bmi.Bmi):
         Shutdown the library and clean up the model.
         Uses the default (model configured) state location to also save states.
         """
-        self.dynModel._runSuspend()
-        self.dynModel._wf_shutdown()
+        # First check if the seconf initilize_states has run
+        if hasattr(self.dynModel,"framework_setup"):
+            self.dynModel._runSuspend()
+            self.dynModel._wf_shutdown()
 
     def get_component_name(self):
         """

@@ -585,6 +585,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
     :return:
     """
+    self.framework_setup = True
     caseName = self._userModel().caseName
     runId = self._userModel().runId
 
@@ -844,9 +845,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       if hasattr(self._userModel(),'default_summarymaps'):
           for a in self._userModel().default_summarymaps():
               b = a.replace('self.','')
-              pcrmap = getattr(self._userModel(),b)
-              #report( pcrmap , os.path.join(self._userModel().Dir, self._userModel().runId, "outsum", b + ".map" ))
-              self.reportStatic( pcrmap , os.path.join(self._userModel().Dir, self._userModel().runId, "outsum", b + ".map" ), style=1)
+              if hasattr(self._userModel(),b):
+                pcrmap = getattr(self._userModel(),b)
+                #report( pcrmap , os.path.join(self._userModel().Dir, self._userModel().runId, "outsum", b + ".map" ))
+                self.reportStatic( pcrmap , os.path.join(self._userModel().Dir, self._userModel().runId, "outsum", b + ".map" ), style=1)
 
       # These are the ones in the _sum _average etc sections
       for a in range(0,len(self.statslst)):
@@ -1517,10 +1519,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       gets the end time of the model run
       :return: current time as seconds since epoch
       """
+      seconds_since_epoch = calendar.timegm(self.datetime_laststep.utctimetuple())
 
-      seconds_since_epoch = calendar.timegm(self.datetime_firststep.utctimetuple())
 
-      return seconds_since_epoch + (self._d_lastTimestep - self._d_firstTimestep) * self._userModel().timestepsecs
+      return seconds_since_epoch
 
   def wf_supplyStartTime(self):
       """
@@ -1539,9 +1541,14 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       Output:
          - current model time (since start of the run)
 
-          
       """
-      seconds_since_epoch = calendar.timegm(self.currentdatetime.utctimetuple())
+      if hasattr(self._userModel(),"currentdatetime"):
+          dtt = self._userModel().currentdatetime
+      else:
+          dtt = self.currentdatetime
+
+
+      seconds_since_epoch = calendar.timegm(dtt.utctimetuple())
 
       return seconds_since_epoch
 
@@ -1813,7 +1820,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             if gzipit:
                 Gzip(path,storePath=True)
         else:
-            self.NcOutput.savetimestep( self._userModel().currentTimeStep(),variable,var=name,name=longname)
+            self.NcOutput.savetimestep(self._userModel().currentTimeStep(),variable,var=name,name=longname)
 
     elif self.outputFormat == 2:
         numpy.savez(path,pcr2numpy(variable,-999))
