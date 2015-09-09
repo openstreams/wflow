@@ -36,7 +36,7 @@ class MyTest(unittest.TestCase):
         print(datetime.datetime.utcfromtimestamp(bmiobj.get_end_time()))
 
         print("-------------- get_var_units: ")
-        print(bmiobj.get_var_units("")
+        print(bmiobj.get_var_units("SS"))
         bmiobj.finalize()
 
 
