@@ -596,6 +596,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     self.ncoutfile = configget(self._userModel().config,'framework','netcdfoutput',"None")
     self.ncoutfilestatic = configget(self._userModel().config,'framework','netcdfstaticoutput',"None")
     self.ncinfilestatic = configget(self._userModel().config,'framework','netcdfstaticinput',"None")
+    self.EPSG = configget(self._userModel().config,'framework','EPSG',"EPSG:4326")
 
 
     # Set the re-init hint for the local model
@@ -657,7 +658,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self.NcOutput = netcdfoutput(os.path.join(caseName,runId,self.ncoutfile),
                                      self.logger,self.datetime_firststep,
                                      self._d_lastTimestep - self._d_firstTimestep + 1,
-                                     maxbuf=buffer,metadata=meta)
+                                     maxbuf=buffer,metadata=meta,EPSG=self.EPSG)
 
     if self.ncoutfilestatic != 'None': # Ncoutput
         buffer = int(configget(self._userModel().config,'framework','netcdfwritebuffer',"2"))
@@ -667,7 +668,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self.NcOutputStatic = netcdfoutput(os.path.join(caseName,runId,self.ncoutfilestatic),
                                            self.logger,self.datetime_laststep,
                                             self._d_lastTimestep - self._d_firstTimestep + 1,
-                                           maxbuf=buffer,metadata=meta)
+                                           maxbuf=buffer,metadata=meta,EPSG=self.EPSG)
 
     # if self.ncoutfilestate != 'None': # Ncoutput
     #     buffer = int(configget(self._userModel().config,'framework','netcdfwritebuffer',"2"))

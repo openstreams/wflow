@@ -39,7 +39,7 @@ globmetadata['references'] = 'http://wflow.googlecode.com'
 globmetadata['Conventions'] = 'CF-1.4'
 netcdfformat = "NETCDF4"
 
-def prepare_nc(trgFile, timeList, x, y, metadata, logger, units='Days since 1900-01-01 00:00:00', calendar='gregorian',Format="NETCDF4",complevel=9,zlib=True,least_significant_digit=None):
+def prepare_nc(trgFile, timeList, x, y, metadata, logger, EPSG="EPSG:4326", units='Days since 1900-01-01 00:00:00', calendar='gregorian',Format="NETCDF4",complevel=9,zlib=True,least_significant_digit=None):
     """
     This function prepares a NetCDF file with given metadata, for a certain year, daily basis data
     The function assumes a gregorian calendar and a time unit 'Days since 1900-01-01 00:00:00'
@@ -79,10 +79,10 @@ def prepare_nc(trgFile, timeList, x, y, metadata, logger, units='Days since 1900
     y_var[:] = y
     x_var[:] = x
     projection= nc_trg.createVariable('projection','c')
-    projection.long_name = 'wgs84'
-    projection.EPSG_code = 'EPSG:4326'
-    projection.proj4_params = '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
-    projection.grid_mapping_name = 'latitude_longitude'
+    #projection.long_name = 'wgs84'
+    projection.EPSG_code = EPSG
+    #projection.proj4_params = '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
+    #projection.grid_mapping_name = 'latitude_longitude'
 
     # now add all attributes from user-defined metadata
     for attr in metadata:
@@ -94,7 +94,7 @@ def prepare_nc(trgFile, timeList, x, y, metadata, logger, units='Days since 1900
 
 class netcdfoutput():
 
-    def __init__(self,netcdffile,logger,starttime,timesteps,timestepsecs=86400,metadata={},maxbuf=25,least_significant_digit=None):
+    def __init__(self,netcdffile,logger,starttime,timesteps,EPSG="EPSG:4326",timestepsecs=86400,metadata={},maxbuf=25,least_significant_digit=None):
         """
         Under construction
         """
@@ -131,7 +131,7 @@ class netcdfoutput():
 
         globmetadata.update(metadata)
 
-        prepare_nc(self.ncfile,timeList,x,y,globmetadata,logger,Format=netcdfformat)
+        prepare_nc(self.ncfile,timeList,x,y,globmetadata,logger,Format=netcdfformat,EPSG=EPSG)
 
     def savetimestep(self,timestep,pcrdata,unit="mm",var='P',name="Precipitation"):
         """

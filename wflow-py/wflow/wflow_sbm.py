@@ -419,7 +419,6 @@ class WflowModel(DynamicModel):
         # Set and get defaults from ConfigFile here ###################################
 
         self.Tslice = int(configget(self.config, "model", "Tslice", "1"))
-        self.interpolMethod = configget(self.config, "model", "InterpolationMethod", "inv")
         self.reinit = int(configget(self.config, "model", "reinit", "0"))
         self.fewsrun = int(configget(self.config, "model", "fewsrun", "0"))
         self.OverWriteInit = int(configget(self.config, "model", "OverWriteInit", "0"))
@@ -427,7 +426,6 @@ class WflowModel(DynamicModel):
         self.updateFile = configget(self.config, "model", "updateFile", "no_set")
         self.LateralMethod = int(configget(self.config, "model", "lateralmethod", "1"))
 
-        self.DynamicVegetation =int(configget(self.config, "model", "DynamicVegetation", "0"))
 
         if self.LateralMethod == 1:
             self.logger.info("Applying the original topog_sbm lateral transfer formulation")
@@ -468,7 +466,6 @@ class WflowModel(DynamicModel):
         wflow_soil = configget(self.config, "model", "wflow_soil", "staticmaps/wflow_soil.map")
         wflow_gauges = configget(self.config, "model", "wflow_gauges", "staticmaps/wflow_gauges.map")
         wflow_inflow = configget(self.config, "model", "wflow_inflow", "staticmaps/wflow_inflow.map")
-        wflow_mgauges = configget(self.config, "model", "wflow_mgauges", "staticmaps/wflow_mgauges.map")
         wflow_riverwidth = configget(self.config, "model", "wflow_riverwidth", "staticmaps/wflow_riverwidth.map")
 
 
@@ -497,8 +494,6 @@ class WflowModel(DynamicModel):
         # Experimental
         self.RunoffGenSigmaFunction = int(configget(self.config, 'model', 'RunoffGenSigmaFunction', '0'))
         self.SubCatchFlowOnly = int(configget(self.config, 'model', 'SubCatchFlowOnly', '0'))
-        self.RunoffGeneratingGWPerc = float(configget(self.config, 'defaultfortbl', 'RunoffGeneratingGWPerc', '0.1'))
-
         self.OutputId = readmap(os.path.join(self.Dir,wflow_subcatch))  # location of subcatchment
         # Temperature correction poer cell to add
 
@@ -507,28 +502,19 @@ class WflowModel(DynamicModel):
 
         self.ZeroMap = 0.0 * scalar(subcatch)  #map with only zero's
 
-
-
         # Set static initial values here #########################################
-        self.SoilAlbedo = 0.1  # Not used at the moment
         self.pi = 3.1416
         self.e = 2.7183
         self.SScale = 100.0
-
         self.Latitude = ycoordinate(boolean(self.Altitude))
         self.Longitude = xcoordinate(boolean(self.Altitude))
 
-
         # Read parameters NEW Method
-
         self.logger.info("Linking parameters to landuse, catchment and soil...")
-
         self.wf_updateparameters()
-
-
         self.RunoffGeneratingGWPerc = self.readtblDefault(self.Dir + "/" + self.intbl + "/RunoffGeneratingGWPerc.tbl",
                                                           self.LandUse, subcatch, self.Soil,
-                                                          self.RunoffGeneratingGWPerc)
+                                                          0.1)
 
         if hasattr(self,"LAI"):
             # Sl must also be defined
@@ -679,8 +665,6 @@ class WflowModel(DynamicModel):
 
         self.MaxReinfilt = ifthenelse(self.River, self.ZeroMap + 999.0, self.ZeroMap)
 
-
-
         # soil thickness based on topographical index (see Environmental modelling: finding simplicity in complexity)
         # 1: calculate wetness index
         # 2: Scale the capacity (now actually a max capacity) based on the index, also apply a minmum capacity
@@ -725,7 +709,6 @@ class WflowModel(DynamicModel):
             #self.DistToUpdPt = ldddist(self.TopoLdd,boolean(cover(self.OutputId,0.0)),1)
             #* self.reallength/celllength()
 
-
         # Initializing of variables
         self.logger.info("Initializing of model variables..")
         self.TopoLdd = lddmask(self.TopoLdd, boolean(self.TopoId))
@@ -739,7 +722,6 @@ class WflowModel(DynamicModel):
             usid = ifthenelse(ds != self.TopoId,self.TopoId,0)
             self.TopoLdd = lddrepair(ifthenelse(boolean(usid),ldd(5),self.TopoLdd))
 
-
         # Used to seperate output per LandUse/management classes
         OutZones = self.LandUse
 
@@ -747,7 +729,6 @@ class WflowModel(DynamicModel):
         #self.QMMConvUp = 1000.0 * self.timestepsecs / ( catchmenttotal(cover(1.0), self.TopoLdd) * self.reallength * self.reallength)  #m3/s --> mm over upstreams
         temp = catchmenttotal(cover(1.0), self.TopoLdd) * self.reallength * 0.001 * 0.001 *  self.reallength
         self.QMMConvUp = cover(self.timestepsecs * 0.001)/temp
-
         self.ToCubic = (self.reallength * self.reallength * 0.001) / self.timestepsecs  # m3/s
         self.KinWaveVolume = self.ZeroMap
         self.OldKinWaveVolume = self.ZeroMap
@@ -786,7 +767,6 @@ class WflowModel(DynamicModel):
         self.Aspect = ifthenelse(self.Aspect <= 0.0, scalar(0.001), self.Aspect)
         # On Flat areas the Aspect function fails, fill in with average...
         self.Aspect = ifthenelse(defined(self.Aspect), self.Aspect, areaaverage(self.Aspect, self.TopoId))
-
         # Set DCL to riverlength if that is longer that the basic length calculated from grid
         drainlength = detdrainlength(self.TopoLdd, self.xl, self.yl)
 
@@ -807,7 +787,6 @@ class WflowModel(DynamicModel):
         self.RiverFrac = min(1.0, ifthenelse(self.River, (self.RiverWidth * self.DCL) / (self.xl * self.yl), 0))
         self.WaterFrac = min(1.0,self.WaterFrac  + self.RiverFrac)
 
-
         # term for Alpha
         # Correct slope for extra length of the river in a gridcel
         riverslopecor = drainlength / self.DCL
@@ -817,7 +796,6 @@ class WflowModel(DynamicModel):
         # power for Alpha
         self.AlpPow = (2.0 / 3.0) * self.Beta
         # initial approximation for Alpha
-
         # calculate catchmentsize
         self.upsize = catchmenttotal(self.xl * self.yl, self.TopoLdd)
         self.csize = areamaximum(self.upsize, self.TopoId)
@@ -826,8 +804,6 @@ class WflowModel(DynamicModel):
 
         if self.updating:
             report(self.DistToUpdPt, self.Dir + "/" + self.runId + "/outsum/DistToUpdPt.map")
-
-
 
         #self.IF = self.ZeroMap
         self._initAPIVars()
