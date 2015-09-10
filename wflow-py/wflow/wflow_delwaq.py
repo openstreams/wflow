@@ -721,6 +721,8 @@ def main():
     logger.info("Writing length.dat. Nr of points: " + str(size(length_block)))
     dw_WriteSegmentOrExchangeData(0,dwdir + '/includes_flow/length.dat',length_block,1,WriteAscii)
     
+    # mask to filter out inactive segments
+    zero_map = 0.0*scalar(ptid)
 
     
     ts = 1
@@ -760,6 +762,7 @@ def main():
             for source in sourcesMap:
                 logger.info("Step: " + str(ts) + " source: " + str(source))
                 thesource = readTS(caseId + "/" + runId + "/outmaps/" + source ,ts)
+                thesource = zero_map + thesource
                 flow_block_IN = dw_pcrToDataBlock(thesource)
                 flowblock = hstack((flowblock,flow_block_IN))
                 area_block = hstack((area_block,surface_block))
