@@ -636,7 +636,11 @@ def main():
     ldd = readmap(caseId + configget(config,"model","wflow_ldd","/staticmaps/wflow_ldd.map"))
     gauges = readmap(caseId + configget(config,"model","wflow_gauges","/staticmaps/wflow_gauges.map"))
 
-    cellsize = float(pcr2numpy(readmap(caseId + "/" + runId + "/outsum/rl.map"),NaN)[0,0])
+    # Some models yield a reallength.map, others a rl.map.
+    rl_map_file = caseId + "/" + runId + "/outsum/rl.map"
+    if not os.path.exists(rl_map_file):
+        rl_map_file = caseId + "/" + runId + "/outsum/reallength.map"
+    cellsize = float(pcr2numpy(readmap(rl_map_file),NaN)[0,0])
     logger.info("Cellsize model: " + str(cellsize))
     
     # Limit areas map to modelmap (subcatchments)
