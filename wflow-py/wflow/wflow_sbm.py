@@ -285,13 +285,11 @@ class WflowModel(DynamicModel):
 
         return states
 
-
     def supplyCurrentTime(self):
         """
       gets the current time in seconds after the start of the run
       """
         return self.currentTimeStep() * self.timestepsecs
-
 
     def suspend(self):
 
@@ -886,7 +884,6 @@ class WflowModel(DynamicModel):
         # the rescaling of the FirstZoneThickness
         self.GWScale = (self.DemMax - self.DrainageBase) / self.FirstZoneThickness / self.RunoffGeneratingGWPerc
 
-
     def dynamic(self):
         """
         Stuf that is done for each timestep of the model
@@ -1007,14 +1004,11 @@ class WflowModel(DynamicModel):
             self.PotTransSoil = cover(max(0.0, LeftOver), 0.0)  # now in mm
             self.Interception=NetInterception
 
-
-
         # Start with the soil calculations
         # --------------------------------
         # Code to be able to force zi from the outside
         #
         self.FirstZoneDepth = (self.thetaS - self.thetaR) * (self.FirstZoneThickness - self.zi)
-
 
         self.AvailableForInfiltration = ThroughFall + StemFlow
         UStoreCapacity = self.FirstZoneCapacity - self.FirstZoneDepth - self.UStoreDepth
@@ -1023,7 +1017,6 @@ class WflowModel(DynamicModel):
         self.RunoffOpenWater = min(1.0,self.RiverFrac + self.WaterFrac) * self.AvailableForInfiltration
         #self.RunoffOpenWater = self.ZeroMap
         self.AvailableForInfiltration = self.AvailableForInfiltration - self.RunoffOpenWater
-
 
         if self.RunoffGenSigmaFunction:
             self.AbsoluteGW = self.DemMax - (self.zi * self.GWScale)
@@ -1071,11 +1064,9 @@ class WflowModel(DynamicModel):
 
         self.ActInfilt = InfiltPath + InfiltSoil
 
-
         self.InfiltExcess = ifthenelse(UStoreCapacity > 0.0, self.AvailableForInfiltration, 0.0)
         self.ExcessWater = self.AvailableForInfiltration # Saturation overland flow
         self.CumInfiltExcess = self.CumInfiltExcess + self.InfiltExcess
-
 
         # Limit rootingdepth (if set externally)
         self.RootingDepth = min(self.FirstZoneThickness * 0.99, self.RootingDepth)
@@ -1125,13 +1116,11 @@ class WflowModel(DynamicModel):
         self.Transfer = min(self.UStoreDepth, ifthenelse(self.SaturationDeficit <= 0.00001, 0.0,
                                                          Ksat * self.UStoreDepth / (self.SaturationDeficit + 1)))
 
-
         MaxCapFlux = max(0.0, min(Ksat, self.ActEvapUStore, UStoreCapacity, self.FirstZoneDepth))
         # No capilary flux is roots are in water, max flux if very near to water, lower flux if distance is large
         CapFluxScale = ifthenelse(self.zi > self.RootingDepth,
                                   self.CapScale / (self.CapScale + self.zi - self.RootingDepth) * self.timestepsecs/self.basetimestep, 0.0)
         self.CapFlux = MaxCapFlux * CapFluxScale
-
 
         # Determine Ksat at base
         self.DeepTransfer = min(self.FirstZoneDepth,self.DeepKsat)
@@ -1169,7 +1158,6 @@ class WflowModel(DynamicModel):
             self.waterLdd = lddcreate(self.WaterDem, 1E35, 1E35, 1E35, 1E35)
             #waterLdd = lddcreate(waterDem,1,1,1,1)
 
-
         if self.waterdem:
             if self.LateralMethod == 1:
                 Lateral = self.FirstZoneKsatVer * self.waterSlope * exp(-self.SaturationDeficit / self.M)
@@ -1202,16 +1190,13 @@ class WflowModel(DynamicModel):
         #self.ExfiltWater=ifthenelse (self.FirstZoneDepth - self.FirstZoneCapacity > 0 , self.FirstZoneDepth - self.FirstZoneCapacity , 0.0)
         self.FirstZoneDepth = self.FirstZoneDepth - self.ExfiltWater
 
-
         # Re-determine UStoreCapacity
         UStoreCapacity = self.FirstZoneCapacity - self.FirstZoneDepth - self.UStoreDepth
 
         self.zi = max(0.0, self.FirstZoneThickness - self.FirstZoneDepth / (
             self.thetaS - self.thetaR))  # Determine actual water depth
 
-
         Ksat = self.FirstZoneKsatVer * exp(-self.f * self.zi)
-
 
         SurfaceWater = self.SurfaceRunoff * self.QMMConv  # SurfaceWater (mm) from SurfaceRunoff (m3/s)
         self.CumSurfaceWater = self.CumSurfaceWater + SurfaceWater
@@ -1227,7 +1212,6 @@ class WflowModel(DynamicModel):
             self.UStoreDepth = self.UStoreDepth + self.reinfiltwater
         else:
             self.reinfiltwater = self.ZeroMap
-
 
         self.RootZonSoilMoisture = self.UStoreDepth * max(1.0, self.RootingDepth/self.zi)
         # The MAx here may lead to watbal error. Howvere, if inwaterMMM becomes < 0, the kinematic wave becomes very slow......
@@ -1291,8 +1275,6 @@ class WflowModel(DynamicModel):
             self.updateRunOff()
             Runoff = self.SurfaceRunoff
 
-
-
         # Determine Soil moisture profile
         # 1: average volumetric soil in total unsat store
         self.SMVol = (cover(self.UStoreDepth/self.zi,0.0) + self.thetaR) * (self. thetaS - self.thetaR)
@@ -1301,7 +1283,6 @@ class WflowModel(DynamicModel):
         ##########################################################################
         # water balance ###########################################
         ##########################################################################
-
 
         self.QCatchmentMM = self.SurfaceRunoff * self.QMMConvUp
         #self.RunoffCoeff = self.QCatchmentMM/catchmenttotal(self.PrecipitationPlusMelt, self.TopoLdd)/catchmenttotal(cover(1.0), self.TopoLdd)
