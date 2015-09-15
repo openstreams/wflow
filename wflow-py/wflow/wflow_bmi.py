@@ -165,6 +165,7 @@ class wflowbmi_ligth(object):
         #TODO: check the numpy type
         self.dynModel.wf_setValuesAsNumpy(name, var)
 
+
     def set_var_slice(self, name, start, count, var):
         """
         Overwrite the values in variable name with data
@@ -212,6 +213,17 @@ class wflowbmi_ligth(object):
         pass
 
 
+
+class LookupNames():
+    """
+
+    """
+    def __init__(self, filename):
+        """
+        :param filename: filename with the translation table, format: long_var_name:model_var_name
+        :return: nothing
+        """
+
 class wflowbmi_csdms(bmi.Bmi):
     """
     csdms BMI implementation for pcraster/python models
@@ -224,6 +236,8 @@ class wflowbmi_csdms(bmi.Bmi):
 
         implement translation of long_var_names
     """
+
+
     def __init__(self):
         """
         Initialises the object
@@ -429,6 +443,20 @@ class wflowbmi_csdms(bmi.Bmi):
 
         self.dynModel.wf_suspend(destination_directory)
 
+    def load_state(self, source_directory):
+        """
+        Ask the model to load its complete internal current state from one or more
+        state files in the given directory.
+
+        :var  source_directory: the directory from which the state files should be
+        read.
+        """
+
+        if os.path.isabs(source_directory):
+            self.dynModel.wf_resume(source_directory)
+        else:
+            self.dynModel.wf_resume(os.path.join(self.datadir,source_directory))
+
     def finalize(self):
         """
         Shutdown the library and clean up the model.
@@ -452,10 +480,10 @@ class wflowbmi_csdms(bmi.Bmi):
         namesroles = self.dynModel.wf_supplyVariableNamesAndRoles()
 
         # input variable are all forcing variables and all state variables
-        #0 = input (to the model)
-        #1 = is output (from the model)
-        #2 = input/output (state information)
-        #3 = model parameter
+        # 0 = input (to the model)
+        # 1 = is output (from the model)
+        # 2 = input/output (state information)
+        # 3 = model parameter
         inames = []
 
         for varrol in namesroles:
@@ -705,10 +733,14 @@ class wflowbmi_csdms(bmi.Bmi):
         Set the values(s) in a map using a numpy array as source
 
         :var long_var_name: identifier of a variable in the model.
-        :var src: all values to set for the given variable.
+        :var src: all values to set for the given variable. If only one value
+                  is present a uniform map will be set in the wflow model.
         """
-        #TODO: check the numpy type
-        self.dynModel.wf_setValuesAsNumpy(long_var_name, src)
+
+        if len(src) == 1:
+            self.dynModel.wf_setValues(long_var_name,float(src))
+        else:
+            self.dynModel.wf_setValuesAsNumpy(long_var_name, src)
 
     def get_grid_connectivity(self, long_var_name):
         """

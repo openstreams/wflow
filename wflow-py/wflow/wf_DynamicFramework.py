@@ -988,7 +988,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
   def wf_setValuesAsNumpy(self,mapname,values):
       """
       set a map with values from a numpy array. Current settings for
-      dimensions are assumed.
+      dimensions are assumed. if the name of the maps contains the string "LDD" or "ldd"
+      the maps is assumed to be an LDD maps and an lddrepair call is made,
       
       Input: 
           - mapname - string with name of map
@@ -1001,7 +1002,12 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
       arpcr = numpy2pcr(Scalar,values,-999)
       
       if hasattr(self._userModel(), mapname):
-          exec "self._userModel()." + mapname + " = arpcr"
+
+          if "LDD" in mapname.upper():
+            exec "self._userModel()." + mapname + " = lddrepair(ldd(arpcr))"
+          else:
+            exec "self._userModel()." + mapname + " = arpcr"
+
           return 1
       else:
           self.logger.debug(mapname + " is not defined in the usermodel: setting anyway")
