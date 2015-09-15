@@ -74,6 +74,8 @@ class WflowModel(DynamicModel):
       """
       modelparameters = []
 
+      modelparameters.append(self.ParamType(name="locMap",stack='inLoc.map',type="staticmap",default=0.0,verbose=True,lookupmaps=[]))
+
       return modelparameters
 
   def stateVariables(self):
@@ -133,6 +135,8 @@ class WflowModel(DynamicModel):
 
     self.timestepsecs = int(configget(self.config,'model','timestepsecs','86400'))
     self.basetimestep=86400
+    self.inTSS = configget(self.config,'model','intss','intss.tss')
+    self.interpolmethod = configget(self.config,'model','interpolmethod','pol')
     # Reads all parameter from disk
     self.wf_updateparameters()
 
@@ -172,6 +176,10 @@ class WflowModel(DynamicModel):
       self.logger.debug("Processing step: " + str(self.currentTimeStep()))
       self.wf_updateparameters() # read the temperature map for each step (see parameters())
 
+      self.MapStack = timeinputscalar(os.path.join(self.caseName, self.inTSS),self.locMap)
+      self.MapStack = pcrut.interpolategauges(self.MapStack,self.interpolmethod)
+
+
 
 # The main function is used to run the program from the command line
 
@@ -191,7 +199,7 @@ def main(argv=None):
     _lastTimeStep = 10
     _firstTimeStep = 1
     timestepsecs=86400
-    wflow_cloneMap = 'wflow_subcatch.map'
+    wflow_cloneMap = 'clone.map'
     
     # This allows us to use the model both on the command line and to call 
     # the model usinge main function from another python script.
