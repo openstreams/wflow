@@ -178,6 +178,7 @@ class WflowModel(DynamicModel):
 
       self.MapStack = timeinputscalar(os.path.join(self.caseName, self.inTSS),self.locMap)
       self.MapStack = pcrut.interpolategauges(self.MapStack,self.interpolmethod)
+      #self.MapStack = ifthen(self.locMap >= 1,self.MapStack)
 
 
 
