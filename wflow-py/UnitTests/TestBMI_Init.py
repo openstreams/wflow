@@ -28,6 +28,7 @@ class MyTest(unittest.TestCase):
         bmiobj.set_start_time(5 * 86400)
         print("-------------- Set start time to 10: ")
         bmiobj.set_end_time(10 * 86400)
+
         print("-------------- Updated start time: ")
         print(datetime.datetime.utcfromtimestamp(bmiobj.get_start_time()))
         print("-------------- Updated end time: ")
@@ -36,6 +37,7 @@ class MyTest(unittest.TestCase):
 
         print("Init model...")
         bmiobj.initialize_model()
+        print(bmiobj.dynModel._userModel().config.get("run",'starttime'))
         print("-------------- Default start time: ")
         print(datetime.datetime.utcfromtimestamp(bmiobj.get_start_time()))
         print("-------------- Default end time: ")
