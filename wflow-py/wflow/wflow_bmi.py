@@ -223,6 +223,8 @@ class LookupNames():
         :param filename: filename with the translation table, format: long_var_name:model_var_name
         :return: nothing
         """
+        raise NotImplementedError
+
 
 class wflowbmi_csdms(bmi.Bmi):
     """
@@ -290,24 +292,19 @@ class wflowbmi_csdms(bmi.Bmi):
         self.dynModel = wf.wf_DynamicFramework(self.myModel, maxNrSteps, firstTimestep = 1)
         self.dynModel.createRunId(doSetupFramework=False,NoOverWrite=0,level=loglevel,model=os.path.basename(filename))
 
-    def initialize_state(self, source_directory):
+    def initialize_model(self):
         """
         *Extended functionality*, see https://github.com/eWaterCycle/bmi/blob/master/src/main/python/bmi.py
 
         see initialize
 
         :param self:
-        :param source directory: path to dir with state files
         :return: nothing
         """
         self.dynModel.setupFramework()
         self.dynModel._runInitial()
         self.dynModel._runResume()
-        # second step to read from specific directory
-        if os.path.isabs(source_directory):
-            self.dynModel.wf_resume(source_directory)
-        else:
-            self.dynModel.wf_resume(os.path.join(self.datadir,source_directory))
+        self.dynModel.wf_resume(os.path.join(self.datadir,'instate'))
 
     def set_start_time(self, start_time):
         """
@@ -401,7 +398,7 @@ class wflowbmi_csdms(bmi.Bmi):
         """
 
         self.initialize_config(filename,loglevel=loglevel)
-        self.initialize_state('instate')
+        self.initialize_model()
 
     def update(self):
         """
