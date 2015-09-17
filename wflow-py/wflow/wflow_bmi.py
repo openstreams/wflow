@@ -318,6 +318,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
         self.dynModel._userModel().config.set("run",'starttime',datestrimestr)
         self.dynModel._userModel().datetime_firststep=dateobj
+        self.dynModel.datetime_firststep=dateobj
         self.dynModel._userModel().currentdatetime = self.dynModel._userModel().datetime_firststep
 
     def set_end_time(self, end_time):
@@ -329,6 +330,7 @@ class wflowbmi_csdms(bmi.Bmi):
         dateobj = datetime.datetime.utcfromtimestamp(end_time)
         datestrimestr = dateobj.strftime("%Y:%m:%d %H:%M:%S")
         self.dynModel._userModel().config.set("run",'endtime',datestrimestr)
+        self.dynModel._userModel().datetime_laststep=dateobj
         self.dynModel.datetime_laststep=dateobj
 
 

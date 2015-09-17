@@ -24,6 +24,15 @@ class MyTest(unittest.TestCase):
         print(datetime.datetime.utcfromtimestamp(bmiobj.get_start_time()))
         print("-------------- Default end time: ")
         print(datetime.datetime.utcfromtimestamp(bmiobj.get_end_time()))
+        print("-------------- Set start time to 5: ")
+        bmiobj.set_start_time(5 * 86400)
+        print("-------------- Set start time to 10: ")
+        bmiobj.set_end_time(10 * 86400)
+        print("-------------- Updated start time: ")
+        print(datetime.datetime.utcfromtimestamp(bmiobj.get_start_time()))
+        print("-------------- Updated end time: ")
+        print(datetime.datetime.utcfromtimestamp(bmiobj.get_end_time()))
+
 
         print("Init model...")
         bmiobj.initialize_model()
