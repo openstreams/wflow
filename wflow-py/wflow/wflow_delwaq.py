@@ -92,6 +92,10 @@ import os
 import os.path
 import shutil, glob
 import getopt
+import time
+import struct
+import shutil
+import __builtin__
 
 
 logger = ""
@@ -199,17 +203,25 @@ def dw_WriteBoundlist(fname,pointer,areas,of,inflowtypes):
     exfile.close()    
  
 
-def dw_WritePointer(fname,pointer):
+def dw_WritePointer(fname,pointer,binary=False):
     """ 
     WRites the pointer file
     B4\_pointer.inc
     """
-    exfile = open(fname,'w')
-    print >>exfile,";Written by dw_WritePointer"
-    print >>exfile,";nr of pointers is: ", str(pointer.shape[0])
-    savetxt(exfile,pointer,fmt='%10.0f')
-    exfile.close()   
-            
+    if not binary:
+        # Write ASCII file
+        exfile = open(fname,'w')
+        print >>exfile,";Written by dw_WritePointer"
+        print >>exfile,";nr of pointers is: ", str(pointer.shape[0])
+        savetxt(exfile,pointer,fmt='%10.0f')
+        exfile.close()   
+    else:
+        # Write binary file
+        f = open(fname, 'wb')
+        for i in range(pointer.shape[0]):
+            f.write(struct.pack('4i',*pointer[i,:]))
+        f.close()
+
 
 def dw_WriteSegmentOrExchangeData(ttime,fname,datablock,boundids,WriteAscii=True):
     """
@@ -444,6 +456,12 @@ def dw_CreateDwRun(thedir):
         os.remove(thedir + "/includes_flow/length.dat.asc")
     if os.path.exists(thedir + "/includes_flow/surface.dat.asc"):
         os.remove(thedir + "/includes_flow/surface.dat.asc")          
+    # prepare hydfile directory
+    comdir = os.sep.join([thedir,'com'])
+    if os.path.isdir(comdir):
+        shutil.rmtree(comdir)
+    os.mkdir(comdir)
+
 
 
 def dw_Write_Times(dwdir,T0,timeSteps,timeStepSec):
@@ -543,6 +561,254 @@ def dw_Write_B2_outlocs(fname,gauges,segs):
     exfile.close()
 
 
+def dw_GetGridDimensions(ptid_map):
+    """
+    Returns number of cells in 1st and 2nd grid directions.
+
+    input:
+    - ptid_map : PCRaster map with unique id's
+    """
+    # find number of cells in m and n directions
+    zero_map = scalar(ptid_map) * 0.0
+    allx = dw_pcrToDataBlock(xcoordinate(boolean(cover(zero_map + 1,1))))
+    i = 0
+    diff = round(__builtin__.abs(allx[i] - allx[i+1]), 5)
+    diff_next = diff
+    while diff_next == diff:
+        i += 1
+        diff_next = __builtin__.abs(allx[i] - allx[i+1])
+        diff_next = round(diff_next, 5)
+    m = i+1
+    n = allx.shape[0] / m
+    m, n = n, m
+    return m,n
+
+
+def dw_WriteGridFiles(fname,ptid_map, pointer):
+    """
+    Writes Delwaq indices (*.lga) and coordinates (*.cco) files.
+
+    input:
+    - fname    : output file name (without file extension)
+    - ptid_map : PCRaster map with unique id's
+    """
+    # horizontal dimensions
+    m,n = dw_GetGridDimensions(ptid_map)
+    # number of layers
+    nolay = 1
+
+    # prepare cco data
+    zero_map = scalar(ptid_map) * 0.0
+    setglobaloption('coorul')
+    xxul = dw_pcrToDataBlock(xcoordinate(boolean(cover(zero_map + 1,1))))
+    yyul = dw_pcrToDataBlock(ycoordinate(boolean(cover(zero_map + 1,1))))
+    setglobaloption('coorlr')
+    xxlr = dw_pcrToDataBlock(xcoordinate(boolean(cover(zero_map + 1,1))))
+    yylr = dw_pcrToDataBlock(ycoordinate(boolean(cover(zero_map + 1,1))))
+    setglobaloption('coorcentre')
+    # reshape to 2d array
+    xx = xxul.reshape((m,n))
+    yy = yyul.reshape((m,n))
+    # add extra row and columns for last corner coordinates
+    xx = insert(xx,m,0,axis=0)
+    xx = insert(xx,n,0,axis=1)
+    yy = insert(yy,m,0,axis=0)
+    yy = insert(yy,n,0,axis=1)
+    # reshape lower right coordinates
+    xxlr = xxlr.reshape((m,n))
+    yylr = yylr.reshape((m,n))
+    # use lower right coordinates were possible
+    xx[1:,-1] = xxlr[:,-1]
+    xx[-1,1:] = xxlr[-1,:]
+    yy[1:,-1] = yylr[:,-1]
+    yy[-1,1:] = yylr[-1,:]
+    # fill top right and bottom left coordinates
+    xx[0,-1]  = xx[1,-1]
+    xx[-1,0]  = xx[-2,0]
+    yy[0,-1]  = yy[0,-2]
+    yy[-1,0]  = yy[-1,1]
+    # add extra row and columns for dummy coordinates
+    xx = insert(xx,m+1,0,axis=0)
+    xx = insert(xx,n+1,0,axis=1)
+    yy = insert(yy,m+1,0,axis=0)
+    yy = insert(yy,n+1,0,axis=1)
+
+    # prepare lga data
+    lga = dw_pcrToDataBlock(scalar(cover(ptid_map,0)))
+    # reshape lga to 2D array
+    lga = lga.reshape((m,n))
+    # add frame of zeros around lga matrix
+    lga = insert(lga,m,0,axis=0)
+    lga = insert(lga,n,0,axis=1)
+    lga = insert(lga,0,0,axis=0)
+    lga = insert(lga,0,0,axis=1)
+    # find boundary nodes
+    outflows = pointer[ pointer[:,1] < 0, 0:2]
+    # allocate negative segment number to outflow boundary cells
+    for segnr, boundnr in outflows:
+        w = where(lga == segnr)
+        i,j = w[0][0], w[1][0]
+        # choose first zero neighbour and make it
+        if lga[i,j-1] == 0:
+            lga[i,j-1] = boundnr
+        elif lga[i,j+1] == 0:
+            lga[i,j+1] = boundnr
+        elif lga[i-1,j] == 0:
+            lga[i-1,j] = boundnr
+        elif lga[i+1,j] == 0:
+            lga[i+1,j] = boundnr
+
+    # update grid dimensions
+    m = m+2
+    n = n+2
+    # reshape to 1D arrays
+    xx  = xx.reshape( (m*n) )
+    yy  = yy.reshape( (m*n) )
+    lga = lga.reshape( (m*n) )
+
+    # write cco file
+    print("cco.shape: {}",format(xx.shape))
+    f = open(fname + '.cco','wb')
+    f.write(array([m, n, ], dtype=numpy.int).tostring())
+    f.write(array([xx[0], yy[0]], dtype=numpy.float32).tostring())
+    f.write(array([0, 0, nolay, 0, 0, 0, 0, 0, 0, 0, 0, 0], dtype=numpy.int).tostring())
+    f.write(hstack((xx, yy)).tostring())
+    f.close()
+
+    # write lga file
+    nosegh = dw_pcrToDataBlock(ptid_map).shape[0]
+    print("lga.shape: {}",format(lga.shape))
+    print("m,n : {},{}".format(m,n))
+    noq = pointer.shape[0]
+    ints = array([n, m, nosegh, nolay, noq, 0, 0])
+    ints = hstack((ints, lga))
+    ints = array(ints, dtype=numpy.int)
+    f = open(fname + '.lga','wb')
+    f.write(ints.tostring())
+    f.close()
+
+
+def dw_WriteSurfaceFile(fname,m,n,noseg,block):
+    """
+    Generates a Delwaq surface (*.srf) file.
+    """
+    f = open(fname, 'wb')
+    f.write(struct.pack('i',m))
+    f.write(struct.pack('i',n))
+    f.write(struct.pack('i',noseg))
+    f.write(struct.pack('i',noseg))
+    f.write(struct.pack('i',noseg))
+    f.write(struct.pack('i',0))
+    f.write(struct.pack('%if'%len(block), *block))
+    f.close()
+
+
+def dw_WriteAttributesFile(fname, noseg):
+    """
+    Generates a Delwaq atributes (*.atr) file.
+
+    input:
+    - fname : file name to write to
+    - noseg : number of delwaq segments
+    """
+    buff  = ""
+    buff += "         ; DELWAQ_COMPLETE_ATTRIBUTES\n"
+    buff += "    2    ; two blocks with input\n"
+    buff += "    1    ; number of attributes, they are :\n"
+    buff += "    1    ;  '1' is active '0' is no\n"
+    buff += "    1    ; data follows in this fil\n"
+    buff += "    1    ; all data is given without defaults\n"
+    buff += ";    layer:            1\n"
+    buff += "%i*1\n"%noseg
+    buff += "    1    ; number of attributes, they are :\n"
+    buff += "    2    ;  '1' has surface '3' has bottom\n"
+    buff += "         ;  '0' has both    '2' has none\n"
+    buff += "    1    ; data follows in this file\n"
+    buff += "    1    ; all data is given without defaults\n"
+    buff += ";    layer:            1\n"
+    buff += "%i*0\n"%noseg
+    buff += "    0    ; no time dependent attributes\n"
+    f = open(fname, 'w')
+    f.write(buff)
+    f.close()
+
+
+def dw_WriteHydFile(fname, d):
+    """
+    Generates a Delwaq *.hyd file.
+
+    d is dict holding all the required data:
+        - d['runid']  : current run id
+        - d['tref']   : reference time of simulation as datetime
+        - d['tstart'] : start time of simulation as datetime
+        - d['tstop']  : stop time of simulation as datetime
+        - d['tstep']  : timestep of simulation as timedelta
+        - d['m']      : number of grid cells in 1st direction
+        - d['n']      : number of grid cells in 2nd direction
+    """
+    def datetime2str(dt):
+        return "{:04}{:02}{:02}{:02}{:02}{:02}".format(dt.year,dt.month,dt.day,dt.hour,dt.minute,dt.second)
+    def timedelta2str(td):
+        return "{:04}{:02}{:02}{}".format(0,0,td.days,time.strftime('%H%M%S',time.gmtime(td.seconds)))
+    buff  = ""
+    buff += "task      full-coupling\n"
+    buff += "geometry  curvilinear-grid\n"
+    buff += "horizontal-aggregation       automatic\n"
+    buff += "minimum-vert-diffusion-used  no\n"
+    buff += "vertical-diffusion           calculated\n"
+    buff += "description\n"
+    buff += "'%-60s'\n"%'Generated by Wflow'
+    buff += "'%s'\n"%(' ' * 60)
+    buff += "'%s'\n"%(' ' * 60)
+    buff += "end-description\n"
+    buff += "reference-time           '%s'\n"%(datetime2str(d['tref']))
+    buff += "hydrodynamic-start-time  '%s'\n"%(datetime2str(d['tstart']))
+    buff += "hydrodynamic-stop-time   '%s'\n"%(datetime2str(d['tstop']))
+    buff += "hydrodynamic-timestep    '%s'\n"%(timedelta2str(d['tstep']))
+    buff += "conversion-ref-time      '%s'\n"%(datetime2str(d['tref']))
+    buff += "conversion-start-time    '%s'\n"%(datetime2str(d['tstart']))
+    buff += "conversion-stop-time     '%s'\n"%(datetime2str(d['tstop']))
+    buff += "conversion-timestep      '%s'\n"%(timedelta2str(d['tstep']))
+    buff += "grid-cells-first-direction %7i\n"%d['m']
+    buff += "grid-cells-second-direction %6i\n"%d['n']
+    buff += "number-hydrodynamic-layers       1\n"
+    buff += "number-water-quality-layers      1\n"
+    buff += "hydrodynamic-file        none\n"
+    buff += "aggregation-file         none\n"
+    buff += "grid-indices-file        '%s.lga'\n"%d['runid']
+    buff += "grid-coordinates-file    '%s.cco'\n"%d['runid']
+    buff += "volumes-file             '%s.vol'\n"%d['runid']
+    buff += "areas-file               '%s.are'\n"%d['runid']
+    buff += "flows-file               '%s.flo'\n"%d['runid']
+    buff += "pointers-file            '%s.poi'\n"%d['runid']
+    buff += "lengths-file             '%s.len'\n"%d['runid']
+    buff += "salinity-file            none\n"
+    buff += "temperature-file         none\n"
+    buff += "vert-diffusion-file      none\n"
+    buff += "surfaces-file            '%s.srf'\n"%d['runid']
+    buff += "depths-file              none\n"
+    buff += "total-grid-file          none\n"
+    buff += "discharges-file          none\n"
+    buff += "chezy-coefficients-file  none\n"
+    buff += "shear-stresses-file      none\n"
+    buff += "walking-discharges-file  none\n"
+    buff += "attributes-file          '%s.atr'\n"%d['runid']
+    buff += "constant-dispersion\n"
+    buff += "   first-direction    0.0000E+00\n"
+    buff += "   second-direction   0.0000E+00\n"
+    buff += "   third-direction    0.0000E+00\n"
+    buff += "end-constant-dispersion\n"
+    buff += "hydrodynamic-layers\n"
+    buff += "          1.000\n"
+    buff += "end-hydrodynamic-layers\n"
+    buff += "water-quality-layers\n"
+    buff += "        1.000\n"
+    buff += "end-water-quality-layers\n"
+    buff += "discharges\n"
+    buff += "end-discharges\n"
+    f = open(fname, 'w')
+    f.write(buff)
+    f.close()
    
 
 def usage(*args):
@@ -636,7 +902,11 @@ def main():
     ldd = readmap(caseId + configget(config,"model","wflow_ldd","/staticmaps/wflow_ldd.map"))
     gauges = readmap(caseId + configget(config,"model","wflow_gauges","/staticmaps/wflow_gauges.map"))
 
-    cellsize = float(pcr2numpy(readmap(caseId + "/" + runId + "/outsum/rl.map"),NaN)[0,0])
+    # Some models yield a reallength.map, others a rl.map.
+    rl_map_file = caseId + "/" + runId + "/outsum/rl.map"
+    if not os.path.exists(rl_map_file):
+        rl_map_file = caseId + "/" + runId + "/outsum/reallength.map"
+    cellsize = float(pcr2numpy(readmap(rl_map_file),NaN)[0,0])
     logger.info("Cellsize model: " + str(cellsize))
     
     # Limit areas map to modelmap (subcatchments)
@@ -717,6 +987,16 @@ def main():
     logger.info("Writing length.dat. Nr of points: " + str(size(length_block)))
     dw_WriteSegmentOrExchangeData(0,dwdir + '/includes_flow/length.dat',length_block,1,WriteAscii)
     
+    # write static data for hyd-file set
+    comroot = os.sep.join([dwdir,'com',runId])
+    mmax, nmax = dw_GetGridDimensions(ptid)
+    dw_WritePointer(comroot+'.poi',pointer,binary=True)
+    dw_WriteSurfaceFile(comroot+'.srf',mmax,nmax,NOSQ,surface_block)
+    dw_WriteSegmentOrExchangeData(0,comroot+'.len',length_block,1,WriteAscii)
+    dw_WriteGridFiles(comroot, ptid, pointer)
+
+    # mask to filter out inactive segments
+    zero_map = 0.0*scalar(ptid)
 
     
     ts = 1
@@ -756,6 +1036,7 @@ def main():
             for source in sourcesMap:
                 logger.info("Step: " + str(ts) + " source: " + str(source))
                 thesource = readTS(caseId + "/" + runId + "/outmaps/" + source ,ts)
+                thesource = zero_map + thesource
                 flow_block_IN = dw_pcrToDataBlock(thesource)
                 flowblock = hstack((flowblock,flow_block_IN))
                 area_block = hstack((area_block,surface_block))
@@ -764,6 +1045,11 @@ def main():
             dw_WriteSegmentOrExchangeData(i,dwdir + '/includes_flow/flow.dat',flowblock,1,WriteAscii)
             logger.info("Writing area.dat. Nr of points: " + str(size(area_block)))
             dw_WriteSegmentOrExchangeData(i,dwdir + '/includes_flow/area.dat',area_block,1,WriteAscii)            
+            
+            # write dynamic data for hyd-file set
+            dw_WriteSegmentOrExchangeData(i,comroot+'.vol',volume_block,1,WriteAscii)
+            dw_WriteSegmentOrExchangeData(i,comroot+'.flo',flowblock,1,WriteAscii)
+            dw_WriteSegmentOrExchangeData(i,comroot+'.are',area_block,1,WriteAscii)
             
             ts = ts + 1
         
@@ -788,7 +1074,29 @@ def main():
         volume_block = dw_pcrToDataBlock(volume_map)
         logger.info("Writing volumes.dat. Nr of points: " + str(size(volume_block)))
         dw_WriteSegmentOrExchangeData(i,dwdir + '/includes_flow/volume.dat',volume_block,1,WriteAscii)
-            
+
+        # for hyd-file set
+        dw_WriteSegmentOrExchangeData(i,comroot+'.are',area_block,1,WriteAscii)
+        dw_WriteSegmentOrExchangeData(i,comroot+'.flo',flowblock,1,WriteAscii)
+        dw_WriteSegmentOrExchangeData(i,comroot+'.vol',volume_block,1,WriteAscii)
+        
+        # Generate attribute file
+        atr_file = comroot+'.atr'
+        logger.info("Writing attribute file to '%s'"%atr_file)
+        dw_WriteAttributesFile(atr_file, NOSQ)
+
+        # Generate hyd-file 
+        hyd_file = comroot+'.hyd'
+        logger.info("Writing hyd-file to '%s'"%hyd_file)
+        hydinfo = {}
+        hydinfo['runid'] = runId
+        hydinfo['tref'] = T0
+        hydinfo['tstart'] = T0
+        hydinfo['tstop'] = T0 + timedelta(seconds=(timeSteps-1) * timestepsecs )
+        hydinfo['tstep'] = timedelta(seconds=timestepsecs)
+        hydinfo['m'], hydinfo['n'] = mmax, nmax
+        dw_WriteHydFile(hyd_file, hydinfo)
+
     
     
 if __name__ == "__main__":
