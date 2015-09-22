@@ -304,7 +304,7 @@ class wflowbmi_csdms(bmi.Bmi):
         self.dynModel.setupFramework()
         self.dynModel._runInitial()
         self.dynModel._runResume()
-        self.dynModel.wf_resume(os.path.join(self.datadir,'instate'))
+
 
     def set_start_time(self, start_time):
         """
@@ -401,6 +401,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
         self.initialize_config(filename,loglevel=loglevel)
         self.initialize_model()
+        self.dynModel.wf_resume(os.path.join(self.datadir,'instate'))
 
     def update(self):
         """
