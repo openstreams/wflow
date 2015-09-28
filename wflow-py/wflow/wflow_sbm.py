@@ -87,9 +87,6 @@ usage
     -l: loglevel (most be one of DEBUG, WARNING, ERROR)
 
 
-$Author: schelle $
-$Id: wflow_sbm.py 900 2014-01-09 17:41:06Z schelle $
-$Rev: 900 $
 """
 
 #TODO: add Et reduction in unsat zone based on deficit

@@ -20,9 +20,6 @@
 #TODO: formal test runs against SMHI model
 #TODO: split off routing
 
-# $Rev:: 904           $:  Revision of last commit
-# $Author:: schelle    $:  Author of last commit
-# $Date:: 2014-01-13 1#$:  Date of last commit
 """
 Run the wflow_hbv hydrological model..
 
@@ -81,9 +78,7 @@ wflow_hbv::
 
 -X overwrites the initial values at the end of each timestep
 
-$Author: schelle $
-$Id: wflow_hbv.py 904 2014-01-13 14:39:24Z schelle $
-$Rev: 904 $
+
 """
 
 import numpy

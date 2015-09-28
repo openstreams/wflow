@@ -10,9 +10,7 @@ mapstack  -c inifile -C casename --clone clonemap
     
     -c name of the config file (in the case directory)
     
-$Author: schelle $
-$Id: wflow_sceleton.py 898 2014-01-09 14:47:06Z schelle $
-$Rev: 898 $
+
 """
 
 import numpy
