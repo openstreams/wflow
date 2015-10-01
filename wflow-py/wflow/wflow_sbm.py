@@ -87,6 +87,7 @@ usage
     -l: loglevel (most be one of DEBUG, WARNING, ERROR)
 
 
+
 """
 
 #TODO: add Et reduction in unsat zone based on deficit
@@ -403,10 +404,7 @@ class WflowModel(DynamicModel):
         self.SSSF = False
         setglobaloption("unittrue")
 
-        self.precipTss = "/intss/P.tss"
-        self.evapTss = "/intss/PET.tss"
-        self.tempTss = "/intss/T.tss"
-        self.inflowTss = "/intss/Inflow.tss"
+
 
         self.logger.info("running for " + str(self.nrTimeSteps()) + " timesteps")
 

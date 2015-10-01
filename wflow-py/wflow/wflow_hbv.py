@@ -98,7 +98,7 @@ from wflow_adapt import *
 
 
 wflow = "wflow_hbv: "
-wflowVersion = "$Revision: 904 $  $Date: 2014-01-13 15:39:24 +0100 (Mon, 13 Jan 2014) $" 
+wflowVersion = "_"
 """revision of the model"""
 
 
