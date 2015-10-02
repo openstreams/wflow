@@ -241,8 +241,7 @@ class WflowModel(DynamicModel):
       
       #self.Q = self.wf_readmap(self.Q_mapstack,0.0)  
       self.WL = scalar(self.wf_readmap(self.WL_mapstack,0.0))
-      
-     
+
       self.WLatRiver= ifthenelse(scalar(self.River) > 0,self.WL + self.Altitude,scalar(0.0))
       # WL surface if level > bankfull. For the eventual surface substract bankfull as measure for river depth      
       self.water_surf = cover(ifthen(self.WLatRiver > (self.BankFull + self.Altitude),self.WLatRiver - self.BankFull),0.0)

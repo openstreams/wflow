@@ -511,9 +511,16 @@ class WflowModel(DynamicModel):
 
         *Dynamic variables*
 
-        :var self.SurfaceRunoff: Surface runoff in the kinematic wave [m^3/s]
-        :var self.WaterLevel: Water level in the kinematic wave [m] (above the bottom)
-
+        :var self.SurfaceRunoff: Total Surface runoff in the kinematic wave [m^3/s]
+        :var self.Qbankfull: Discharge at bankfull level [m^3/s]
+        :var self.Qchannel: Discharge in the channel (maxed at bankfull) [m^3/s]
+        :var self.floodcells: All cells with an active floodplain [-]
+        :var self.Qfloodplain: Discharge over the floodplain [m^3/s]
+        :var self.WaterLevelCH: Water level in the channel [m] Cannot go above bankfull above the bottom
+        :var self.WaterLevelFP: Water level on the floodplain [m] above the floodplain level (bottom + bankfull)
+        :var self.WaterLevel: Total aater level in the kinematic wave [m] (above the bottom)
+        :var self.Pfp: Actual wetted perimiter of the floodplain [m]
+        :var self.Pch: Actual wetted perimiter of the channel [m]
 
         *Static variables*
 
