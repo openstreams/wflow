@@ -161,6 +161,27 @@ class WflowModel(DynamicModel):
     report(ifthen(self.MaxDepth >0.0,self.MaxDepth),os.path.join(self.SaveDir , "outsum","MaxDepth.map"))
     report(ifthen(scalar(self.MaxExt) > 0.0,self.MaxExt),os.path.join(self.SaveDir, "outsum","MaxExt.map"))
 
+  def parameters(self):
+    """
+    Define all model parameters here that the framework should handle for the model
+    See wf_updateparameters and the parameters section of the ini file
+    If you use this make sure to all wf_updateparameters at the start of the dynamic section
+    and at the start/end of the initial section
+    """
+    modelparameters = []
+
+    #Static model parameters e.g.
+    #modelparameters.append(self.ParamType(name="RunoffGeneratingGWPerc",stack="intbl/RunoffGeneratingGWPerc.tbl",type="static",default=0.1))
+    # 3: Input time series ###################################################
+    self.WL_mapstack = self.Dir + configget(self.config, "inputmapstacks", "WaterLevel",
+                                           "/inmaps/H")  # timeseries for level
+
+
+    modelparameters.append(self.ParamType(name="WL",stack=self.WL_mapstack,type="timeseries",default=0.0,verbose=True,lookupmaps=[]))
+
+
+    return modelparameters
+
       
   def initial(self):
       
@@ -186,13 +207,10 @@ class WflowModel(DynamicModel):
     self.reinit = int(configget(self.config,"model","reinit","0"))
     self.fewsrun = int(configget(self.config,"model","fewsrun","0"))
     
-    #Qname=configget(self.config,"inputmapstacks","Q","run")
-    Lname=configget(self.config,"inputmapstacks","H","lev")
-    
+    self.wf_updateparameters()
+
     self.basetimestep=86400
     self.SaveMapDir = self.Dir + "/" + self.runId + "/outmaps"
-    self.WL_mapstack=self.Dir + "/" + self.runId + "/outmaps/"  + Lname
-    #self.Q_mapstack=self.Dir + "/" + self.runId + "/outmaps/" + Qname
     self.Altitude=readmap(self.Dir + "/staticmaps/wflow_dem")
     self.River=readmap(self.Dir + "/staticmaps/wflow_river")
     self.Ldd=readmap(self.Dir + "/staticmaps/wflow_ldd")
@@ -238,9 +256,8 @@ class WflowModel(DynamicModel):
       
       """            
       self.FloodDepth = scalar(self.FloodDepth) * 0.0
-      
-      #self.Q = self.wf_readmap(self.Q_mapstack,0.0)  
-      self.WL = scalar(self.wf_readmap(self.WL_mapstack,0.0))
+
+      self.wf_updateparameters()
 
       self.WLatRiver= ifthenelse(scalar(self.River) > 0,self.WL + self.Altitude,scalar(0.0))
       # WL surface if level > bankfull. For the eventual surface substract bankfull as measure for river depth      

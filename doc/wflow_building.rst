@@ -9,7 +9,7 @@ following list summarizes the data requirements:
 
 -  Static data
 
-   -  Digital Evelevation Model (DEM)
+   -  Digital Elevation Model (DEM)
 
    -  A Land Cover map
 

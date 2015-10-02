@@ -5,13 +5,19 @@ The wflow_floodmap model
 Introduction
 ------------
 The wflow\_floodmap module can generate flood maps from output
-of a wflow\_sbm|hbv|wave model. Is needs to be run inside an existing
-case and runid of either of these models.
+of a wflow\_sbm|hbv| or wflow\_routing model.
 
-.. warning::
+Method
+------
+PM
 
-    The documentation is incomplete
-	
+Configuration
+-------------
+PM
+
+
+
+
 	
 	
 
