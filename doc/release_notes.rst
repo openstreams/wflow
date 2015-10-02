@@ -5,6 +5,10 @@ Trunk
 -----
 Under heavy development
 
+
+
+2015.02
+-------
 + support for scalar input to wflow\_sbm/hbv has been removed.
 + added wf_updateparameters to framework. This allows the user to set parameters to update
   in the ini file but also list them in the parameters function in the model itself. This
@@ -17,6 +21,7 @@ Under heavy development
 + Added support in wflow_SBM to get vegetation parameters for Gash from LAI
 + Moved non-mature scripts to SandBox dir
 + Added unit tests for wflow_sbm, hbv and bmi
+
 + Started with wflow_sbm2 -> New version with new (more logical) variable names. This version will
   also have a better unsaturated zone (for G4INDO project). New Names:
 
