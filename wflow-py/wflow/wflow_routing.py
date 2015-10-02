@@ -168,10 +168,10 @@ class WflowModel(DynamicModel):
         self.WaterLevel = self.WaterLevelCH + self.WaterLevelFP
 
         # Dtermien Qtot as a check
-        self.Qtot = pow(self.WaterLevelCH/self.AlphaCh * self.Bw,1.0/self.Beta) + pow(self.WaterLevelFP/self.AlphaFP * self.Pfp,1.0/self.Beta)
+        self.Qtot = pow(self.WaterLevelCH/self.AlphaCh * self.Bw,1.0/self.Beta) + pow(self.WaterLevelFP/self.AlphaFP * (self.Pfp + self.Bw),1.0/self.Beta)
         # wetted perimeter (m)
         self.Pch = self.wetPerimiterCH(self.WaterLevelCH,self.Bw)
-        self.Pfp = ifthenelse(self.River,self.wetPerimiterFP(self.WaterLevelFP,self.floodPlainWidth + self.Bw,sharpness=self.floodPlainDist),0.0)
+        self.Pfp = ifthenelse(self.River,self.wetPerimiterFP(self.WaterLevelFP,self.floodPlainWidth,sharpness=self.floodPlainDist),0.0)
         # Alpha
 
         self.WetPComb = self.Pch + self.Pfp
@@ -184,7 +184,8 @@ class WflowModel(DynamicModel):
         self.AlphaCh = self.AlpTerm * pow(self.Pch, self.AlpPow)
         self.Alpha = ifthenelse(self.River,self.AlpTermComb * pow(self.Pch + self.Pfp, self.AlpPow),self.AlphaCh)
         self.OldKinWaveVolume = self.KinWaveVolume
-        self.KinWaveVolume = (self.WaterLevelCH * self.Bw * self.DCL) + (self.WaterLevelFP * self.Pfp * self.DCL)
+        self.KinWaveVolume = (self.WaterLevelCH * self.Bw * self.DCL) + (self.WaterLevelFP * (self.Pfp + self.Bw) * self.DCL)
+
 
     def stateVariables(self):
         """
@@ -306,7 +307,7 @@ class WflowModel(DynamicModel):
         self.OutputLoc = readmap(os.path.join(self.Dir,wflow_gauges))  # location of output gauge(s)
         self.InflowLoc = pcrut.readmapSave(os.path.join(self.Dir,wflow_inflow), 0.0)  # location abstractions/inflows.
         self.RiverWidth = pcrut.readmapSave(os.path.join(self.Dir,wflow_riverwidth), 0.0)
-        self.bankFull = pcrut.readmapSave(os.path.join(self.Dir,wflow_bankfulldepth), 16.0)
+        self.bankFull = pcrut.readmapSave(os.path.join(self.Dir,wflow_bankfulldepth), 999999.0)
         self.floodPlainWidth = pcrut.readmapSave(os.path.join(self.Dir,wflow_floodplainwidth), 8000.0)
         self.floodPlainDist = pcrut.readmapSave(os.path.join(self.Dir,wflow_floodplaindist), 0.5)
 
@@ -482,7 +483,7 @@ class WflowModel(DynamicModel):
             self.wf_resume(os.path.join(self.Dir,"instate"))
 
         self.Pch = self.wetPerimiterCH(self.WaterLevelCH,self.Bw)
-        self.Pfp =  ifthenelse(self.River,self.wetPerimiterFP(self.WaterLevelFP,self.floodPlainWidth + self.Bw,sharpness=self.floodPlainDist),0.0)
+        self.Pfp =  ifthenelse(self.River,self.wetPerimiterFP(self.WaterLevelFP,self.floodPlainWidth,sharpness=self.floodPlainDist),0.0)
         self.WetPComb = self.Pch + self.Pfp
         self.Ncombined = (self.Pch/self.WetPComb*self.N**1.5 + self.Pfp/self.WetPComb*self.NFloodPlain**1.5)**(2./3.)
 
@@ -497,7 +498,7 @@ class WflowModel(DynamicModel):
 
         self.SurfaceRunoffMM = self.SurfaceRunoff * self.QMMConv
         # Determine initial kinematic wave volume
-        self.KinWaveVolume = (self.WaterLevelCH * self.Bw * self.DCL) + (self.WaterLevelFP * self.Pfp * self.DCL)
+        self.KinWaveVolume = (self.WaterLevelCH * self.Bw * self.DCL) + (self.WaterLevelFP * (self.Pfp + self.Bw) * self.DCL)
         self.OldKinWaveVolume = self.KinWaveVolume
         self.SurfaceRunoffMM = self.SurfaceRunoff * self.QMMConv
 
@@ -544,7 +545,7 @@ class WflowModel(DynamicModel):
         self.SurfaceRunoffMM = self.SurfaceRunoff * self.QMMConv  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
         self.updateRunOff()
         self.InflowKinWaveCell = upstream(self.TopoLdd, self.SurfaceRunoff)
-        self.MassBalKinWave = (self.KinWaveVolume - self.OldKinWaveVolume) / self.timestepsecs + self.InflowKinWaveCell + self.Inwater - self.SurfaceRunoff
+        self.MassBalKinWave = (-self.KinWaveVolume + self.OldKinWaveVolume) / self.timestepsecs + self.InflowKinWaveCell + self.Inwater - self.SurfaceRunoff
 
         Runoff = self.SurfaceRunoff
 

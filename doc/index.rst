@@ -22,6 +22,9 @@ Welcome to wflow's |version| documentation!
     + matplotlib
     + gdal
 
+    Alternatively you can use one of the releases (executable) to run the models withour installing python and the
+    required packages:   https://github.com/openstreams/wflow/releases
+
 
 Introduction
 ============
