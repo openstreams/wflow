@@ -9,10 +9,7 @@ Under heavy development
 
 2015.02
 -------
-+ support for scalar input to wflow\_sbm/hbv has been removed.
-+ added wf_updateparameters to framework. This allows the user to set parameters to update
-  in the ini file but also list them in the parameters function in the model itself. This
-  functionality should replace all manual reading of forcing data and static parameters
+
 + Added .mult postfix for tbl files to apply multiplication (untested)
 + Added bmi support
 + wflow_sbm s-curve sharpness of height distribution now based on upper and lower
@@ -32,6 +29,12 @@ Under heavy development
   + FirstZoneFlux -> SatWaterFlux
   + FirstZoneDepth -> SatWaterDepth
 
+2015.01
+-------
++ support for scalar input to wflow\_sbm/hbv has been removed.
++ added wf_updateparameters to framework. This allows the user to set parameters to update
+  in the ini file but also list them in the parameters function in the model itself. This
+  functionality should replace all manual reading of forcing data and static parameters
 
 
 Version 1.0 RC7
