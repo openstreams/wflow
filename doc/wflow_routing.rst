@@ -19,8 +19,8 @@ First the maximum bankfull flow for each cell is determined using:
 
 .. math:: Q_b = (\frac{H_{b}}{\alpha{_{ch}}} * Bw)^{1/\beta}
 
-Next the channel flow is determined by taking the mimumm value of the total flow and the maximum banfull flow and the floodplain flow
-is determined by subtracting the bankfull flow from the total flow.
+Next the channel flow is determined by taking the mimumm value of the total flow and the maximum banfull flow and the
+floodplain flow is determined by subtracting the bankfull flow from the total flow.
 
 In normal conditions (below bankfull), the waterlevel in the river is determined as follows:
 
@@ -69,79 +69,75 @@ pow((self.NFloodPlain / (sqrt(self.SlopeDCL))), self.Beta)
 In which slope is the flope of the river bed and floodplain and :math:`n_{ch}` and :math:`n_{fp}` represent
 the manning's n for the channel and floodplain respectively.
 
-A compound :math:`\alpha` is estimated by first calculating a compound n value :math:`n_{total}`:
+A compound :math:`\alpha_{total}` is estimated by first calculating a compound n value :math:`n_{total}`:
 
 .. math::
 
     n_{total} = (P_{ch}/P_{total} n_{ch}^{3/2} + P_{fp}/P_{total} n_{fp}^{3/2})^{2/3}
 
+    \alpha_{total}  = (n_{total}/\sqrt{slope})^\beta (P_{fp} + P_{ch})^{(2.0 / 3.0)\beta}
+
+
+The :math:`\alpha_{total}` is used in the pcraster kinematic function to get the dischareg for the next
+timestep.
 
 
 
+The code is implemented in the updateRunoff attribute of the model class as follows:
+
+
+::
+
+        self.Qbankfull = pow(self.bankFull/self.AlphaCh * self.Bw,1.0/self.Beta)
+        self.Qchannel = min(self.SurfaceRunoff,self.Qbankfull)
+        self.floodcells  = boolean(ifthenelse(self.WaterLevelCH > self.bankFull, boolean(1), boolean(0)))
+        self.Qfloodplain = max(0.0,self.SurfaceRunoff - self.Qbankfull)
+
+        self.WaterLevelCH = self.AlphaCh * pow(self.Qchannel, self.Beta) / (self.Bw)
+        self.WaterLevelFP = ifthenelse(self.River,self.AlphaFP * pow(self.Qfloodplain, self.Beta) / (self.Bw + self.Pfp),0.0)
+        self.WaterLevel = self.WaterLevelCH + self.WaterLevelFP
+
+        # Determine Qtot as a check
+        self.Qtot = pow(self.WaterLevelCH/self.AlphaCh * self.Bw,1.0/self.Beta) + pow(self.WaterLevelFP/self.AlphaFP * (self.Pfp + self.Bw),1.0/self.Beta)
+        # wetted perimeter (m)
+        self.Pch = self.wetPerimiterCH(self.WaterLevelCH,self.Bw)
+        self.Pfp = ifthenelse(self.River,self.wetPerimiterFP(self.WaterLevelFP,self.floodPlainWidth,sharpness=self.floodPlainDist),0.0)
+
+        # Alpha
+        self.WetPComb = self.Pch + self.Pfp
+        self.Ncombined = (self.Pch/self.WetPComb*self.N**1.5 + self.Pfp/self.WetPComb*self.NFloodPlain**1.5)**(2./3.)
+        self.AlpTermFP = pow((self.NFloodPlain / (sqrt(self.SlopeDCL))), self.Beta)
+        self.AlpTermComb = pow((self.Ncombined / (sqrt(self.SlopeDCL))), self.Beta)
+        self.AlphaFP = self.AlpTermFP * pow(self.Pfp, self.AlpPow)
+        self.AlphaCh = self.AlpTerm * pow(self.Pch, self.AlpPow)
+        self.Alpha = ifthenelse(self.River,self.AlpTermComb * pow(self.Pch + self.Pfp, self.AlpPow),self.AlphaCh)
+        self.OldKinWaveVolume = self.KinWaveVolume
+        self.KinWaveVolume = (self.WaterLevelCH * self.Bw * self.DCL) + (self.WaterLevelFP * (self.Pfp + self.Bw) * self.DCL)
 
 
 
-
-
-"""
-Updates the kinematic wave reservoir. Should be run after updates to Q
-
-WL = A * pow(Q,B)/Bw
-WL/A * Bw = pow(Q,B)
-Q = pow(WL/A * Bw,1/B)
-"""
-# TODO: This is not correct, need to subtract Channel runoff
-self.Qbankfull = pow(self.bankFull/self.AlphaCh * self.Bw,1.0/self.Beta)
-self.Qchannel = min(self.SurfaceRunoff,self.Qbankfull)
-self.floodcells  = boolean(ifthenelse(self.WaterLevelCH > self.bankFull, boolean(1), boolean(0)))
-self.Qfloodplain = max(0.0,self.SurfaceRunoff - self.Qbankfull)
-
-self.WaterLevelCH = self.AlphaCh * pow(self.Qchannel, self.Beta) / (self.Bw)
-self.WaterLevelFP = self.AlphaFP * pow(self.Qfloodplain, self.Beta) / (self.Bw + self.Pfp)
-
-#self.WaterLevelFP = max(0.0,self.WaterLevelCH - self.bankFull)
-#self.Alpha * pow(self.SurfaceRunoff-self.Qchannel, self.Beta) / (self.Bw + self.Pch) + self.bankFull)
-self.Qtot = pow(self.WaterLevelCH/self.AlphaCh * self.Bw,1.0/self.Beta) + pow(self.WaterLevelFP/self.AlphaFP * self.Pfp,1.0/self.Beta)
-
-# wetted perimeter (m)
-self.Pch = self.wetPerimiterCH(self.WaterLevelCH,self.Bw)
-self.Pfp = self.wetPerimiterFP(self.WaterLevelFP,self.floodPlainWidth)
-# Alpha
-self.AlphaFP = self.AlpTerm * pow(self.Pfp, self.AlpPow)
-self.AlphaCh = self.AlpTerm * pow(self.Pch, self.AlpPow)
-self.Alpha = self.AlpTerm * pow(self.Pch + self.Pfp, self.AlpPow)
-self.OldKinWaveVolume = self.KinWaveVolume
-self.KinWaveVolume = self.WaterLevelCH * self.Bw * self.DCL
-
-
-Dependencies
-------------
-T
 
 
 Configuration
 -------------
+The default name for the file is wflow\_routing.ini.
 
+Forcing data
+~~~~~~~~~~~~
 
-It needs a number of settings in the ini file. The default name for the file
-is wflow\_routing.ini. it is also possible to insert this section in the
-wflow\_sbm or wflow\_hbv ini file and point to that file.
+The model needs one set of forcing data: IW (water entering the model for each cell in mm). The name
+of the mapstack is can be defined in the ini file. By default it is inmaps/IW
 
 See below for an example: 
 
-::
-
-    [inputmapstacks]
-    # Name of the mapstack with specific discharge (mm/timestep output from the hydrological model)
-    IW= inmaps/IW
-    # of if you next this within say the wflow\_hv model:
-    # IW = outmaps/IW
+.. include:: _download/wflow_routing.ini
+   :literal:
 
 
 
 
-
-A description of the implementation of the kinematic wave is given on the pcraster website
+A description of the implementation of the kinematic wave is given on the pcraster website at
+http://pcraster.geo.uu.nl/pcraster/4.0.2/doc/manual/op_kinematic.html
  
 In addition to the settings in the ini file you need to give the model additional maps
 or lookuptables in the staticmaps or intbl directories:
@@ -150,7 +146,7 @@ Lookup tables
 ~~~~~~~~~~~~~
 
 :N.tbl:
-    Manning's N fro all no-river cells. Defaults to 0.072
+    Manning's N for all no-river cells. Defaults to 0.072
 
 :N_River.tbl:
     Manning's N for the river cells. Defaults to 0.036
@@ -179,7 +175,7 @@ staticmaps
     Optional map that defines the actual legth of the river in each cell.
 
 :wflow_riverlength_fact.map:
-    Optional map that defines a multiplication factor fro the river length in each cell.
+    Optional map that defines a multiplication factor for the river length in each cell.
 
 :wflow_gauges.map:
     Map of river gauges that can be used in outputting timeseries

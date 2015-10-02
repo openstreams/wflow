@@ -151,7 +151,7 @@ class WflowModel(DynamicModel):
 
     def updateRunOff(self):
         """
-        Updates the kinematic wave reservoir. Should be run after updates to Q
+        Updates the kinematic wave reservoir water level. Should be run after updates to Q
 
         WL = A * pow(Q,B)/Bw
         WL/A * Bw = pow(Q,B)
@@ -167,19 +167,17 @@ class WflowModel(DynamicModel):
         self.WaterLevelFP = ifthenelse(self.River,self.AlphaFP * pow(self.Qfloodplain, self.Beta) / (self.Bw + self.Pfp),0.0)
         self.WaterLevel = self.WaterLevelCH + self.WaterLevelFP
 
-        # Dtermien Qtot as a check
+        # Determine Qtot as a check
         self.Qtot = pow(self.WaterLevelCH/self.AlphaCh * self.Bw,1.0/self.Beta) + pow(self.WaterLevelFP/self.AlphaFP * (self.Pfp + self.Bw),1.0/self.Beta)
         # wetted perimeter (m)
         self.Pch = self.wetPerimiterCH(self.WaterLevelCH,self.Bw)
         self.Pfp = ifthenelse(self.River,self.wetPerimiterFP(self.WaterLevelFP,self.floodPlainWidth,sharpness=self.floodPlainDist),0.0)
-        # Alpha
 
+        # Alpha
         self.WetPComb = self.Pch + self.Pfp
         self.Ncombined = (self.Pch/self.WetPComb*self.N**1.5 + self.Pfp/self.WetPComb*self.NFloodPlain**1.5)**(2./3.)
-
         self.AlpTermFP = pow((self.NFloodPlain / (sqrt(self.SlopeDCL))), self.Beta)
         self.AlpTermComb = pow((self.Ncombined / (sqrt(self.SlopeDCL))), self.Beta)
-
         self.AlphaFP = self.AlpTermFP * pow(self.Pfp, self.AlpPow)
         self.AlphaCh = self.AlpTerm * pow(self.Pch, self.AlpPow)
         self.Alpha = ifthenelse(self.River,self.AlpTermComb * pow(self.Pch + self.Pfp, self.AlpPow),self.AlphaCh)
@@ -535,7 +533,7 @@ class WflowModel(DynamicModel):
         self.thestep = self.thestep + 1
         self.wf_updateparameters()
 
-        # The MAx here may lead to watbal error. Howevere, if inwaterMMM becomes < 0, the kinematic wave becomes very slow......
+        # The MAx here may lead to watbal error. However, if inwaterMMM becomes < 0, the kinematic wave becomes very slow......
         self.InwaterMM = max(0.0,self.InwaterForcing)
         self.Inwater = self.InwaterMM * self.ToCubic  # m3/s
 
