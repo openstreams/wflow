@@ -164,7 +164,7 @@ def readtss(nname):
 def interpolategauges(inputmap,method):
     """"
     Interpolate time series gauge data onto a grid using different methods
-    inputmap: map with points data for a single timeste
+    inputmap: map with points data for a single timestep
     method: string indicating the method
         inv
         pol

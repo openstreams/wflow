@@ -309,7 +309,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     fname = os.path.join(self._userModel().Dir, par.stack)
                     fileName, fileExtension = os.path.splitext(fname)
                     if fileExtension == '.map':
-                        theparmap = readmap(fname)
+                        theparmap = self.wf_readmap(fname,0.0,fail=par.verbose)
                     else:
                         self._userModel().logger.error(fname + " Does not have a .map extension")
 
@@ -367,7 +367,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         :param tssfile:
         :param areamap:
-        :return:
+        :return: tss converted to a map
         """
         return cover(timeinputscalar(tssfile, nominal(areamap)), default)
 
