@@ -1820,7 +1820,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         else:
             self.logger.error("This Kind of climatology not implemented yet: " + str(kind))
 
-    def wf_readmap(self, name, default, verbose=True):
+
+
+    def wf_readmap(self, name, default, verbose=True,fail=False):
         """
           Adjusted version of readmapNew. the style variable is used to indicated
           how the data is read::
@@ -1853,7 +1855,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         if hasattr(self._userModel(), "_inInitial"):
             if self._userModel()._inInitial():
-                newName = name + nameSuffix
+                if os.path.splitext(name)[1] == ".map":
+                    newName = name
+                else:
+                    newName = name + nameSuffix
 
         if self._inResume():
             timestep = self._userModel().firstTimeStep()
@@ -1877,7 +1882,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 return mapje
             else:
                 if verbose:
-                    self.logger.debug("Forcing data (" + path + ") for timestep not present, returning " + str(default))
+                    self.logger.debug("Input data (" + os.path.abspath(path) + ") for timestep not present, returning " + str(default))
+                if fail:
+                    self.logger.error("Required map: " + os.path.abspath(path) + " not found, exiting..")
+                    sys.exit(1)
                 return scalar(default)
         elif style == 2:  # Assuming they are set in memory by the API
             # first get basename (last bit of path)
