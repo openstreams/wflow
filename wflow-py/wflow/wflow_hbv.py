@@ -369,38 +369,38 @@ class WflowModel(DynamicModel):
     wflow_riverwidth = configget(self.config,"model","wflow_riverwidth","staticmaps/wflow_riverwidth.map")
 
     # 2: Input base maps ########################################################  
-    subcatch=ordinal(readmap(os.path.join(self.Dir, wflow_subcatch))) # Determines the area of calculations (all cells > 0)
+    subcatch=ordinal(self.wf_readmap(os.path.join(self.Dir, wflow_subcatch),0.0,fail=True)) # Determines the area of calculations (all cells > 0)
     subcatch = ifthen(subcatch > 0, subcatch)
     if self.sCatch > 0:
         subcatch = ifthen(subcatch == sCatch,subcatch)
     
-    self.Altitude=readmap(os.path.join(self.Dir,wflow_dem)) * scalar(defined(subcatch)) #: The digital elevation map (DEM)
-    self.TopoLdd=readmap(os.path.join(self.Dir, wflow_ldd))        #: The local drinage definition map (ldd)
-    self.TopoId=readmap(os.path.join(self.Dir, wflow_subcatch))        #: Map define the area over which the calculations are done (mask)
-    self.River=cover(boolean(readmap(os.path.join(self.Dir, wflow_river))),0) #: river network map. Fro those cell that belong to a river a specific width is used in the kinematic wave caulations
-    self.RiverLength=pcrut.readmapSave(os.path.join(self.Dir, wflow_riverlength),0.0)
+    self.Altitude=self.wf_readmap(os.path.join(self.Dir,wflow_dem),0.0,fail=True) * scalar(defined(subcatch)) #: The digital elevation map (DEM)
+    self.TopoLdd=self.wf_readmap(os.path.join(self.Dir, wflow_ldd),0.0,fail=True)        #: The local drinage definition map (ldd)
+    self.TopoId=self.wf_readmap(os.path.join(self.Dir, wflow_subcatch),0.0,fail=True)        #: Map define the area over which the calculations are done (mask)
+    self.River=cover(boolean(self.wf_readmap(os.path.join(self.Dir, wflow_river),0.0,fail=True)),0) #: river network map. Fro those cell that belong to a river a specific width is used in the kinematic wave caulations
+    self.RiverLength=self.wf_readmap(os.path.join(self.Dir, wflow_riverlength),0.0)
     # Factor to multiply riverlength with (defaults to 1.0)    
-    self.RiverLengthFac=pcrut.readmapSave(os.path.join(self.Dir, wflow_riverlength_fact),1.0)
+    self.RiverLengthFac=self.wf_readmap(os.path.join(self.Dir, wflow_riverlength_fact),1.0)
 
     # read landuse and soilmap and make sure there are no missing points related to the
     # subcatchment map. Currently sets the lu and soil type  type to 1
-    self.LandUse=readmap(os.path.join(self.Dir , wflow_landuse))#: Map with lan-use/cover classes
+    self.LandUse=self.wf_readmap(os.path.join(self.Dir , wflow_landuse),0.0,fail=True)#: Map with lan-use/cover classes
     self.LandUse=cover(self.LandUse,nominal(ordinal(subcatch) > 0))
-    self.Soil=readmap(os.path.join(self.Dir , wflow_soil))#: Map with soil classes
+    self.Soil=self.wf_readmap(os.path.join(self.Dir , wflow_soil),0.0,fail=True)#: Map with soil classes
     self.Soil=cover(self.Soil,nominal(ordinal(subcatch) > 0))
-    self.OutputLoc=readmap(os.path.join(self.Dir , wflow_gauges))  #: Map with locations of output gauge(s)
-    self.InflowLoc=nominal(pcrut.readmapSave(os.path.join(self.Dir , wflow_inflow),0.0))  #: Map with location of abstractions/inflows.
-    self.SeepageLoc=pcrut.readmapSave(os.path.join(self.Dir , wflow_inflow),0.0)  #: Seapage from external model (if configured)
-    RiverWidth=pcrut.readmapSave(os.path.join(self.Dir, wflow_riverwidth),0.0)
+    self.OutputLoc=self.wf_readmap(os.path.join(self.Dir , wflow_gauges),0.0,fail=True)  #: Map with locations of output gauge(s)
+    self.InflowLoc=nominal(self.wf_readmap(os.path.join(self.Dir , wflow_inflow),0.0))  #: Map with location of abstractions/inflows.
+    self.SeepageLoc=self.wf_readmap(os.path.join(self.Dir , wflow_inflow),0.0)  #: Seapage from external model (if configured)
+    RiverWidth=self.wf_readmap(os.path.join(self.Dir, wflow_riverwidth),0.0)
     
     
      # Temperature correction per cell to add
-    self.TempCor=pcrut.readmapSave(os.path.join(self.Dir , configget(self.config,"model","TemperatureCorrectionMap","staticmapswflow_tempcor.map")),0.0)
+    self.TempCor=self.wf_readmap(os.path.join(self.Dir , configget(self.config,"model","TemperatureCorrectionMap","staticmapswflow_tempcor.map")),0.0)
  
                       
     if self.scalarInput:
-        self.gaugesMap=readmap(os.path.join(self.Dir , wflow_mgauges)) #: Map with locations of rainfall/evap/temp gauge(s). Only needed if the input to the model is not in maps
-    self.OutputId=readmap(os.path.join(self.Dir , wflow_subcatch))       # location of subcatchment
+        self.gaugesMap=self.wf_readmap(os.path.join(self.Dir , wflow_mgauges),0.0,fail=True) #: Map with locations of rainfall/evap/temp gauge(s). Only needed if the input to the model is not in maps
+    self.OutputId=self.wf_readmap(os.path.join(self.Dir , wflow_subcatch),0.0,fail=True)       # location of subcatchment
   
     self.ZeroMap=0.0*scalar(defined(self.Altitude))                    #map with only zero's
   

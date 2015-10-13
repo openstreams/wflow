@@ -463,34 +463,34 @@ class WflowModel(DynamicModel):
 
 
         # 2: Input base maps ########################################################
-        subcatch = ordinal(readmap(os.path.join(self.Dir,wflow_subcatch)))  # Determines the area of calculations (all cells > 0)
+        subcatch = ordinal(self.wf_readmap(os.path.join(self.Dir,wflow_subcatch),0.0,fail=True))  # Determines the area of calculations (all cells > 0)
         subcatch = ifthen(subcatch > 0, subcatch)
 
-        self.Altitude = readmap(os.path.join(self.Dir,wflow_dem))  # * scalar(defined(subcatch)) # DEM
-        self.TopoLdd = readmap(os.path.join(self.Dir,wflow_ldd))  # Local
-        self.TopoId = readmap(os.path.join(self.Dir,wflow_subcatch))  # area map
-        self.River = cover(boolean(readmap(os.path.join(self.Dir,wflow_river))), 0)
+        self.Altitude = self.wf_readmap(os.path.join(self.Dir,wflow_dem),0.0,fail=True)  # * scalar(defined(subcatch)) # DEM
+        self.TopoLdd = self.wf_readmap(os.path.join(self.Dir,wflow_ldd),0.0,fail=True)  # Local
+        self.TopoId = self.wf_readmap(os.path.join(self.Dir,wflow_subcatch),0.0,fail=True)  # area map
+        self.River = cover(boolean(self.wf_readmap(os.path.join(self.Dir,wflow_river),0.0,fail=True)), 0)
 
-        self.RiverLength = cover(pcrut.readmapSave(os.path.join(self.Dir,wflow_riverlength), 0.0), 0.0)
+        self.RiverLength = cover(self.wf_readmap(os.path.join(self.Dir,wflow_riverlength), 0.0), 0.0)
         # Factor to multiply riverlength with (defaults to 1.0)
-        self.RiverLengthFac = pcrut.readmapSave(os.path.join(self.Dir,wflow_riverlength_fact), 1.0)
+        self.RiverLengthFac = self.wf_readmap(os.path.join(self.Dir,wflow_riverlength_fact), 1.0)
 
         # read landuse and soilmap and make sure there are no missing points related to the
         # subcatchment map. Currently sets the lu and soil type  type to 1
-        self.LandUse = readmap(os.path.join(self.Dir,wflow_landuse))
+        self.LandUse = self.wf_readmap(os.path.join(self.Dir,wflow_landuse),0.0,fail=True)
         self.LandUse = cover(self.LandUse, nominal(ordinal(subcatch) > 0))
-        self.Soil = readmap(os.path.join(self.Dir,wflow_soil))
+        self.Soil = self.wf_readmap(os.path.join(self.Dir,wflow_soil),0.0,fail=True)
         self.Soil = cover(self.Soil, nominal(ordinal(subcatch) > 0))
-        self.OutputLoc = readmap(os.path.join(self.Dir,wflow_gauges))  # location of output gauge(s)
-        self.InflowLoc = pcrut.readmapSave(os.path.join(self.Dir,wflow_inflow), 0.0)  # location abstractions/inflows.
-        self.RiverWidth = pcrut.readmapSave(os.path.join(self.Dir,wflow_riverwidth), 0.0)
+        self.OutputLoc = self.wf_readmap(os.path.join(self.Dir,wflow_gauges),0.0,fail=True)  # location of output gauge(s)
+        self.InflowLoc = self.wf_readmap(os.path.join(self.Dir,wflow_inflow), 0.0)  # location abstractions/inflows.
+        self.RiverWidth = self.wf_readmap(os.path.join(self.Dir,wflow_riverwidth), 0.0)
         # Experimental
         self.RunoffGenSigmaFunction = int(configget(self.config, 'model', 'RunoffGenSigmaFunction', '0'))
         self.SubCatchFlowOnly = int(configget(self.config, 'model', 'SubCatchFlowOnly', '0'))
-        self.OutputId = readmap(os.path.join(self.Dir,wflow_subcatch))  # location of subcatchment
+        self.OutputId = self.wf_readmap(os.path.join(self.Dir,wflow_subcatch),0.0,fail=True)  # location of subcatchment
         # Temperature correction poer cell to add
 
-        self.TempCor = pcrut.readmapSave(
+        self.TempCor = self.wf_readmap(
             self.Dir + configget(self.config, "model", "TemperatureCorrectionMap", "staticmaps/wflow_tempcor.map"), 0.0)
 
         self.ZeroMap = 0.0 * scalar(subcatch)  #map with only zero's
