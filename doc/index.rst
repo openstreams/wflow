@@ -34,10 +34,11 @@ wflow is part of the Deltares'
 OpenStreams project (http://www.openstreams.nl). Wflow consists of a
 set of python programs that can be run on the command line and perform
 hydrological simulations. The models are based on the PCRaster python
-framework. In wflow this framework is extended (the ``wf_DynamicFramework``
+framework (www.pcraster.eu). In wflow this framework is extended (the ``wf_DynamicFramework``
 class) so that models build using the framework can be controlled using
-the API. Links to OpenMI (www.openmi.org), BMI and OpenDA (www.openda.org)
-are being tested.
+the API. Links to BMI and OpenDA (www.openda.org)
+have been established. All code is available at github (https://github.com/openstreams/wflow/)
+and distributed under the GPL version 3.0.
 
 The  wflow distributed hydrological model platform currently includes
 the following models:
@@ -48,9 +49,10 @@ the following models:
 
 -  the wflow\_gr4 model (a distributed version of the gr4h/d models).
 
--  the wflow\_W3RA model.
+-  the wflow\_W3RA model (a global hydrological model)
 
--  the wflow\_routing model (a kinematic wave model that can run on the output of tone of the hydrological models).
+-  the wflow\_routing model (a kinematic wave model that can run on the output of one of the hydrological models
+   optionally including a floodplain for more realistic simulations in areas that flood).
 
 -  the wflow\_wave model (a dynamic wave model that can run on the output of the wflow\_routing model).
 
@@ -109,7 +111,7 @@ As such, the structure of the model is
 transparent, can be changed by other modellers easily, and the system
 allows for rapid development. In order to run
 the model both PCRaster 4.* and Python 2.7 are needed. At the moment
-only 64 bit versions are supported.
+only 64 bit versions are actively supported.
 
 
 

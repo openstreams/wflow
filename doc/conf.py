@@ -16,7 +16,7 @@ import sys, os
 #import sphinx_rtd_theme
 
 html_theme = "sphinxdoc"
-
+#html_theme = "agogo"
 html_theme_path = ["."]
 
 from mock import Mock as MagicMock

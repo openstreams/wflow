@@ -502,7 +502,7 @@ class WflowModel(DynamicModel):
 
     def dynamic(self):
         """
-        Stuf that is done for each timestep
+        Stuff that is done for each timestep
 
         Below a list of variables that can be save to disk as maps or as
         timeseries (see ini file for syntax):

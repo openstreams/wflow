@@ -4,7 +4,7 @@ The wflow_routing Model
 
 Introduction
 ------------
-The wflow routing module uses the pcraster kinematic wave to route water over a DEM. By adding a bankflull level
+The wflow routing module uses the pcraster kinematic wave to route water over a DEM. By adding a bankfull level
 and a floodplainwidth to the configuration the model can also include estimated flow over a floodplain.
 
 Method
@@ -121,6 +121,22 @@ The code is implemented in the updateRunoff attribute of the model class as foll
 Configuration
 -------------
 The default name for the file is wflow\_routing.ini.
+
+Subcatchment flow
+~~~~~~~~~~~~~~~~~
+Normally the the kinematic wave is continuous throughout the model. By using the
+the SubCatchFlowOnly entry in the model section of the ini file all flow is at the
+subcatchment only and no flow is transferred from one subcatchment to another. This can be handy
+when connecting the result of the model to a water allocation model such as Ribasim.
+
+Example:
+
+::
+
+    [model]
+    SubCatchFlowOnly = 1
+
+
 
 Forcing data
 ~~~~~~~~~~~~
