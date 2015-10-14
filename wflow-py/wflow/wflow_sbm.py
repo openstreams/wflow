@@ -944,7 +944,7 @@ class WflowModel(DynamicModel):
             # Sl must also be defined
             self.Cmax = self.Sl * self.LAI + self.Swood
             self.CanopyGapFraction = exp(-self.Kext * self.LAI)
-            self.Ewet = (1 - exp(-self.Kext * self.LAI)) * self.PotEvap
+            self.Ewet = (1 - exp(-self.Kext * self.LAI)) * self.PotenEvap
             self.EoverR = cover(self.Ewet/self.Precipitation,0.0)
 
         #Apply forcing data corrections
