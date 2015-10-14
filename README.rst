@@ -18,7 +18,7 @@ Reference documentation at:
 Obtaining wflow
 ===============
 
-Goto https://github.com/jaapschellekens/wflow. There you can download the source or a release. Also make sure
+Goto https://github.com/openstreams/wflow. There you can download the source or a release. Also make sure
 you get the required third party models first (see below). The documentation can be found at
 http://wflow.readthedocs.org
 
