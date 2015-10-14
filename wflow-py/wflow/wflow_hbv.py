@@ -16,8 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#TODO: remove dots in dynamic phase (default pcraster progress (how?)
-#TODO: formal test runs against SMHI model
 #TODO: split off routing
 
 """
