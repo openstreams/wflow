@@ -130,10 +130,9 @@ class WflowModel(DynamicModel):
   
   
   """
-  The user defined model class. All maps are defined here for documentation 
-  purposes
-    
-  
+  The user defined model class.
+
+
   """
   
   
@@ -147,9 +146,7 @@ class WflowModel(DynamicModel):
       self.configfile = configfile
       self.SaveDir = os.path.join(self.Dir,self.runId)
 
-        
-  
-      
+
   def updateRunOff(self):
       """
       Updates the kinematic wave reservoir
@@ -395,7 +392,7 @@ class WflowModel(DynamicModel):
     
     
      # Temperature correction per cell to add
-    self.TempCor=self.wf_readmap(os.path.join(self.Dir , configget(self.config,"model","TemperatureCorrectionMap","staticmapswflow_tempcor.map")),0.0)
+    self.TempCor=self.wf_readmap(os.path.join(self.Dir , configget(self.config,"model","TemperatureCorrectionMap","staticmap/swflow_tempcor.map")),0.0)
  
                       
     if self.scalarInput:
@@ -908,7 +905,7 @@ def main(argv=None):
     ## Main model starts here
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, 'c:QXS:F:hC:Ii:T:NR:u:s:P:p:Xx:U:fl:')
+        opts, args = getopt.getopt(argv, 'c:QXS:F:hC:Ii:T:R:u:s:P:p:Xx:U:fl:L:')
     except getopt.error, msg:
         pcrut.usage(msg)
     
@@ -962,7 +959,6 @@ def main(argv=None):
         if o == '-x': configset(myModel.config,'model','sCatch',a,overwrite=True)
         if o == '-c': configset(myModel.config,'model','configfile', a,overwrite=True)
         if o == '-M': configset(myModel.config,'model','MassWasting',"0",overwrite=True)
-        if o == '-N': configset(myModel.config,'model','nolateral','1',overwrite=True) 
         if o == '-Q': configset(myModel.config,'model','ExternalQbase','1',overwrite=True)
         if o == '-U': 
             configset(myModel.config,'model','updateFile',a,overwrite=True)
