@@ -235,6 +235,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         self.ParamType = namedtuple("ParamType", "name stack type default verbose lookupmaps")
         self.modelparameters = []  # list of model parameters
+        self.modelparameters_changes_once = {}
+        self.modelparameters_changes_timestep = {}
         self.exchnageitems = wf_exchnageVariables()
         self.setQuiet(True)
         self.reinit = 0
@@ -256,6 +258,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self._addMethodToClass(self.wf_suspend)
         self._addMethodToClass(self.wf_resume)
         self._addMethodToClass(self.wf_readmap)
+        self._addMethodToClass(self.wf_multparameters)
         self._addMethodToClass(self.wf_readmapClimatology)
         self._addMethodToClass(self.readtblDefault)
         self._addMethodToClass(self.wf_supplyVariableNamesAndRoles)
@@ -273,6 +276,31 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self.APIDebug = 0
         self._userModel().currentdatetime = self.currentdatetime
         self._userModel()._setCurrentTimeStep(firstTimestep)
+
+
+    def wf_multparameters(self):
+        """
+
+        :return:
+        """
+        if self._userModel()._inDynamic():
+            for cmdd in self.modelparameters_changes_timestep:
+                execstr = cmdd + " = " + self.modelparameters_changes_timestep[cmdd]
+                try:
+                    exec execstr
+                except:
+                    self.logger.error("Variable change string (apply_timestep) could not be execute: " + execstr)
+
+        if self._userModel()._inInitial():
+
+            for cmdd in self.modelparameters_changes_once:
+                execstr = cmdd + " = " + self.modelparameters_changes_once[cmdd]
+                try:
+                    exec execstr
+                except:
+                    self.logger.error("Variable change string (apply_once) could not be execute: " + execstr)
+
+
 
     def wf_updateparameters(self):
         """
@@ -314,6 +342,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         self._userModel().logger.error(fname + " Does not have a .map extension")
 
                     setattr(self._userModel(), par.name, theparmap)
+
+
 
             if self._userModel()._inDynamic() or self._userModel()._inInitial():
                 if par.type == 'timeseries':
@@ -361,6 +391,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                                                         os.path.join(self._userModel().caseName, par.lookupmaps[0]),
                                                         par.default)
                     setattr(self._userModel(), par.name, theparmap)
+
 
     def wf_timeinputscalar(self, tssfile, areamap, default):
         """
@@ -588,6 +619,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self.EPSG = configget(self._userModel().config, 'framework', 'EPSG', "EPSG:4326")
 
 
+
         # Set the re-init hint for the local model
         self.reinit = int(configget(self._userModel().config, 'run', 'reinit', str(self.reinit)))
         self._userModel().reinit = self.reinit
@@ -727,6 +759,15 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             else:
                 logging.error("Parameter line in ini not valid: " + aline)
 
+        varchanges = configsection(self._userModel().config, "variable_change_once")
+        for chvar in varchanges:
+            a = chvar.replace('self', 'self._userModel()')
+            self.modelparameters_changes_once[a] = self._userModel().config.get("variable_change_once", chvar).replace('self', 'self._userModel()')
+
+        varchanges = configsection(self._userModel().config, "variable_change_timestep")
+        for chvar in varchanges:
+            a = chvar.replace('self', 'self._userModel()')
+            self.modelparameters_changes_timestep[a] = self._userModel().config.get("variable_change_timestep", chvar).replace('self', 'self._userModel()')
 
         # Now gather all the csv/tss/txt etc timeseries output objects
         # Print .ini defined outputmaps per timestep

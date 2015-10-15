@@ -52,6 +52,13 @@ usage
     
     -h: print usage information
 
+    -P: set parameter change string (e.g: -P 'self.FC = self.FC * 1.6') for non-dynamic variables
+        to increase self.FC by 60%
+
+    -p: set parameter change string (e.g: -P 'self.Precipitation = self.Precipitation * 1.11') for
+        dynamic variables
+
+
     -l: loglevel (most be one of DEBUG, WARNING, ERROR)
 
 
@@ -74,10 +81,6 @@ wflow = "wflow_routing: "
 wflowVersion = "$Revision: 900 $  $Date: 2014-01-09 18:41:06 +0100 (Thu, 09 Jan 2014) $"
 
 updateCols = []
-
-multpars = {}
-multdynapars = {}
-
 
 def usage(*args):
     sys.stdout = sys.stderr
@@ -140,14 +143,6 @@ class WflowModel(DynamicModel):
         return  channelperimiter
 
 
-    def _initAPIVars(self):
-        """
-        Sets vars in the API that are forcing variables to the model
-        """
-        apivars = self.wf_supplyVariableNamesAndRoles()
-
-        for var in apivars:
-            exec "self."+ var[0] + " = self.ZeroMap"
 
     def updateRunOff(self):
         """
@@ -332,6 +327,8 @@ class WflowModel(DynamicModel):
         self.Slope = max(0.00001, self.Slope * celllength() / self.reallength)
         Terrain_angle = scalar(atan(self.Slope))
 
+
+        self.wf_multparameters()
         self.N = ifthenelse(self.River, self.NRiver, self.N)
 
         # Determine river width from DEM, upstream area and yearly average discharge
@@ -420,7 +417,6 @@ class WflowModel(DynamicModel):
             report(self.DistToUpdPt, self.Dir + "/" + self.runId + "/outsum/DistToUpdPt.map")
 
         #self.IF = self.ZeroMap
-        self._initAPIVars()
         self.logger.info("End of initial section")
 
     def default_summarymaps(self):
@@ -533,6 +529,7 @@ class WflowModel(DynamicModel):
         self.thestep = self.thestep + 1
         self.wf_updateparameters()
 
+        self.wf_multparameters()
         # The MAx here may lead to watbal error. However, if inwaterMMM becomes < 0, the kinematic wave becomes very slow......
         self.InwaterMM = max(0.0,self.InwaterForcing)
         self.Inwater = self.InwaterMM * self.ToCubic  # m3/s
@@ -655,7 +652,7 @@ def main(argv=None):
 
     myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile)
     dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep, firstTimestep=_firstTimeStep,datetimestart=starttime)
-    dynModelFw.createRunId(NoOverWrite=_NoOverWrite, level=loglevel, logfname=LogFileName)
+    dynModelFw.createRunId(NoOverWrite=_NoOverWrite, level=loglevel, logfname=LogFileName,doSetupFramework=False)
 
     for o, a in opts:
         if o == '-X': configset(myModel.config, 'model', 'OverWriteInit', '1', overwrite=True)
@@ -670,7 +667,16 @@ def main(argv=None):
         if o == '-u':
             exec "zz =" + a
             updateCols = zz
+        if o == '-P':
+            left = a.split('=')[0]
+            right = a.split('=')[1]
+            configset(myModel.config,'variable_change_once',left,right,overwrite=True)
+        if o == '-p':
+            left = a.split('=')[0]
+            right = a.split('=')[1]
+            configset(myModel.config,'variable_change_timestep',left,right,overwrite=True)
 
+    dynModelFw.setupFramework()
     dynModelFw._runInitial()
     dynModelFw._runResume()
     dynModelFw._runDynamic(_firstTimeStep, _lastTimeStep)

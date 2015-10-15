@@ -65,12 +65,12 @@ wflow_hbv::
     -u [1 , 4 ,13]
     The above example uses column 1, 4 and 13
     
--P: set parameter multiply dictionary (e.g: -P {'self.FirstZoneDepth' : 1.2}
-    to increase self.FirstZoneDepth by 20%, multiply with 1.2)
+-P: set parameter change string (e.g: -P 'self.FC = self.FC * 1.6') for non-dynamic variables
+    to increase self.FC by 60%
     
--p: set input parameter (dynamic, e.g. precip) multiply dictionary 
-    (e.g: -p {'self.Precipitation' : 1.2} to increase Precipitation 
-    by 20%, multiply with 1.2)    
+-p: set parameter change string (e.g: -P 'self.Precipitation = self.Precipitation * 1.11') for
+    dynamic variables
+
     
 -l: loglevel (most be one of DEBUG, WARNING, ERROR)
 
@@ -102,12 +102,7 @@ wflowVersion = "_"
 
 #: columns used in updating
 updateCols = [] #: columns used in updating
-""" Column sused in updating """
-
-
-multpars = {} #: Dictionary with parameters and multipliers (static) (used in calibration)
-multdynapars = {} #: Dictionary with parameters and multipliers (dynamic) (used in calibration)
-
+""" Column used in updating """
 
 
 def usage(*args):
@@ -475,14 +470,8 @@ class WflowModel(DynamicModel):
 
    
     # Multiply parameters with a factor (for calibration etc) -P option in command line
-    for k, v in multpars.iteritems():
-        if self.sCatch > 0:
-            estr = k + "= ifthenelse(self.TopoId == self.sCatch," +  k + "*" + str(v)+ "," + k + ")"
-        else:
-            estr = k + "=" + k + "*" + str(v)
-        self.logger.info("Parameter multiplication: " +  estr)
-        exec estr
-    
+
+    self.wf_multparameters()
     self.N=ifthenelse(self.River, self.NRiver, self.N)
     
 
@@ -693,12 +682,10 @@ class WflowModel(DynamicModel):
     self.Temperature=cover(self.wf_readmap(self.TEMP_mapstack,10.0),10.0)
     self.Temperature = self.Temperature + self.TempCor
 
-    # Multiply input parameters with a factor (for calibration etc) -p option in command line
-    for k, v in multdynapars.iteritems():
-        estr = k + "=" + k + "*" + str(v)
-        self.logger.debug("Dynamic Parameter multiplication: " +  estr)
-        exec estr    
-    
+    # Multiply input parameters with a factor (for calibration etc) -p option in command line (no also in ini)
+
+    self.wf_multparameters()
+
     RainFrac=ifthenelse(1.0*self.TTI == 0.0,ifthenelse(self.Temperature <= self.TT,scalar(0.0),scalar(1.0)),min((self.Temperature-(self.TT-self.TTI/2.0))/self.TTI,scalar(1.0)))  
     RainFrac=max(RainFrac,scalar(0.0))               #fraction of precipitation which falls as rain 
     SnowFrac=1.0-RainFrac                    #fraction of self.Precipitation which falls as snow
@@ -711,7 +698,6 @@ class WflowModel(DynamicModel):
     RainFall=RainFrac*self.Precipitation  #: rainfall depth
     PotSnowMelt=ifthenelse(self.Temperature > self.TT,self.Cfmax*(self.Temperature-self.TT),scalar(0.0)) #Potential snow melt, based on temperature
     PotRefreezing=ifthenelse(self.Temperature < self.TT, self.Cfmax*self.CFR*(self.TT-self.Temperature),0.0)    #Potential refreezing, based on temperature
-    
 
     Refreezing=ifthenelse(self.Temperature < self.TT,min(PotRefreezing,self.FreeWater),0.0)   	#actual refreezing    
     self.SnowMelt=min(PotSnowMelt,self.DrySnow)          #actual snow melt
@@ -911,11 +897,7 @@ def main(argv=None):
         if o == '-F': 
             runinfoFile = a
             fewsrun = True
-        if o == '-P': 
-            exec ("multpars =" + a,globals(), globals())
-        if o == '-p': 
-            exec "multdynapars =" + a
-            exec ("multdynapars =" + a,globals(), globals())
+
         if o == '-C': caseName = a
         if o == '-R': runId = a
         if o == '-L': LogFileName = a 
@@ -947,25 +929,33 @@ def main(argv=None):
  
     myModel = WflowModel(wflow_cloneMap, caseName,runId,configfile)
     dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep,firstTimestep=_firstTimeStep,datetimestart=starttime)
-    dynModelFw.createRunId(NoOverWrite=NoOverWrite,logfname=LogFileName,level=loglevel)    
-    
+    dynModelFw.createRunId(NoOverWrite=NoOverWrite,logfname=LogFileName,level=loglevel,doSetupFramework=False)
+
     for o, a in opts:
-        if o == '-X': configset(myModel.config,'model','OverWriteInit','1',overwrite=True) 
-        if o == '-I': configset(myModel.config,'model','reinit','1',overwrite=True) 
+        if o == '-P':
+            left = a.split('=')[0]
+            right = a.split('=')[1]
+            configset(myModel.config,'variable_change_once',left,right,overwrite=True)
+        if o == '-p':
+            left = a.split('=')[0]
+            right = a.split('=')[1]
+            configset(myModel.config,'variable_change_timestep',left,right,overwrite=True)
+        if o == '-X': configset(myModel.config,'model','OverWriteInit','1',overwrite=True)
+        if o == '-I': configset(myModel.config,'model','reinit','1',overwrite=True)
         if o == '-i': configset(myModel.config,'model','intbl',a,overwrite=True)
         if o == '-s': configset(myModel.config,'model','timestepsecs',a,overwrite=True)
         if o == '-x': configset(myModel.config,'model','sCatch',a,overwrite=True)
         if o == '-c': configset(myModel.config,'model','configfile', a,overwrite=True)
         if o == '-M': configset(myModel.config,'model','MassWasting',"0",overwrite=True)
         if o == '-Q': configset(myModel.config,'model','ExternalQbase','1',overwrite=True)
-        if o == '-U': 
+        if o == '-U':
             configset(myModel.config,'model','updateFile',a,overwrite=True)
             configset(myModel.config,'model','updating',"1",overwrite=True)
-        if o == '-u': 
+        if o == '-u':
             exec "zz =" +  a
             updateCols = zz
 
-
+    dynModelFw.setupFramework()
     dynModelFw._runInitial()
     dynModelFw._runResume()
     dynModelFw._runDynamic(_firstTimeStep,_lastTimeStep)

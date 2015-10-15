@@ -77,13 +77,12 @@ usage
         -u [1 , 4 ,13]
         The above example uses column 1, 4 and 13
         
-    -P: set parameter multiply dictionary (e.g: -P {'self.FirstZoneDepth' : 1.2}
-        to increase self.FirstZoneDepth by 20%, multiply with 1.2)
-        
-    -p: set input parameter (dynamic, e.g. precip) multiply dictionary 
-        (e.g: -p {'self.Precipitation' : 1.2} to increase Precipitation 
-        by 20%, multiply with 1.2)    
-        
+    -P: set parameter change string (e.g: -P 'self.FC = self.FC * 1.6') for non-dynamic variables
+        to increase self.FC by 60%
+
+    -p: set parameter change string (e.g: -P 'self.Precipitation = self.Precipitation * 1.11') for
+        dynamic variables
+
     -l: loglevel (most be one of DEBUG, WARNING, ERROR)
 
 
@@ -110,9 +109,7 @@ wflow = "wflow_sbm: "
 wflowVersion = "$Revision: 900 $  $Date: 2014-01-09 18:41:06 +0100 (Thu, 09 Jan 2014) $"
 
 updateCols = []
-# Dictionary with parameters and multipliers (used in calibration)
-multpars = {}
-multdynapars = {}
+
 
 
 def usage(*args):
@@ -235,14 +232,6 @@ class WflowModel(DynamicModel):
         self.configfile = configfile
         self.SaveDir = os.path.join(self.Dir,self.runId)
 
-    def _initAPIVars(self):
-        """
-        Sets vars in the API that are forcing variables to the model
-        """
-        apivars = self.wf_supplyVariableNamesAndRoles()
-
-        for var in apivars:
-            exec "self."+ var[0] + " = self.ZeroMap"
 
     def updateRunOff(self):
         """
@@ -505,6 +494,7 @@ class WflowModel(DynamicModel):
         # Read parameters NEW Method
         self.logger.info("Linking parameters to landuse, catchment and soil...")
         self.wf_updateparameters()
+
         self.RunoffGeneratingGWPerc = self.readtblDefault(self.Dir + "/" + self.intbl + "/RunoffGeneratingGWPerc.tbl",
                                                           self.LandUse, subcatch, self.Soil,
                                                           0.1)
@@ -629,14 +619,7 @@ class WflowModel(DynamicModel):
         Terrain_angle = scalar(atan(self.Slope))
 
 
-        # Multiply parameters with a factor (for calibration etc) -P option in command line
-        for k, v in multpars.iteritems():
-            if self.sCatch > 0:
-                estr = k + "= ifthenelse(self.TopoId == self.sCatch," + k + "*" + str(v) + "," + k + ")"
-            else:
-                estr = k + "=" + k + "*" + str(v)
-            self.logger.info("Parameter multiplication: " + estr)
-            exec estr
+        self.wf_multparameters()
 
         self.N = ifthenelse(self.River, self.NRiver, self.N)
 
@@ -799,8 +782,8 @@ class WflowModel(DynamicModel):
             report(self.DistToUpdPt, self.Dir + "/" + self.runId + "/outsum/DistToUpdPt.map")
 
         #self.IF = self.ZeroMap
-        self._initAPIVars()
         self.logger.info("End of initial section")
+
 
     def default_summarymaps(self):
           """
@@ -879,6 +862,7 @@ class WflowModel(DynamicModel):
         # the rescaling of the FirstZoneThickness
         self.GWScale = (self.DemMax - self.DrainageBase) / self.FirstZoneThickness / self.RunoffGeneratingGWPerc
 
+
     def dynamic(self):
         """
         Stuf that is done for each timestep of the model
@@ -939,7 +923,10 @@ class WflowModel(DynamicModel):
         self.thestep = self.thestep + 1
 
         # Read forcing data and dynamic parameters
+
         self.wf_updateparameters()
+
+
         if hasattr(self,"LAI"):
             # Sl must also be defined
             self.Cmax = self.Sl * self.LAI + self.Swood
@@ -947,16 +934,14 @@ class WflowModel(DynamicModel):
             self.Ewet = (1 - exp(-self.Kext * self.LAI)) * self.PotenEvap
             self.EoverR = cover(self.Ewet/max(0.0001,self.Precipitation),0.0)
 
+
         #Apply forcing data corrections
         self.PotenEvap = self.PotenEvap * self.et_RefToPot
         if self.modelSnow:
             self.Temperature = self.Temperature + self.TempCor
 
-        # Multiply input parameters with a factor (for calibration etc) -p option in command line
-        for k, v in multdynapars.iteritems():
-            estr = k + "=" + k + "*" + str(v)
-            self.logger.debug("Dynamic Parameter multiplication: " + estr)
-            exec estr
+        self.wf_multparameters()
+
 
         self.OrgStorage = self.UStoreDepth + self.FirstZoneDepth + self.LowerZoneStorage
         self.OldCanopyStorage = self.CanopyStorage
@@ -1353,11 +1338,6 @@ def main(argv=None):
         if o == '-F':
             runinfoFile = a
             fewsrun = True
-        if o == '-P':
-            exec ("multpars =" + a, globals(), globals())
-        if o == '-p':
-            exec "multdynapars =" + a
-            exec ("multdynapars =" + a, globals(), globals())
         if o == '-C': caseName = a
         if o == '-R': runId = a
         if o == '-c': configfile = a
@@ -1388,9 +1368,17 @@ def main(argv=None):
 
     myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile)
     dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep, firstTimestep=_firstTimeStep,datetimestart=starttime)
-    dynModelFw.createRunId(NoOverWrite=_NoOverWrite, level=loglevel, logfname=LogFileName,model="wflow_sbm")
+    dynModelFw.createRunId(NoOverWrite=_NoOverWrite, level=loglevel, logfname=LogFileName,model="wflow_sbm",doSetupFramework=False)
 
     for o, a in opts:
+        if o == '-P':
+            left = a.split('=')[0]
+            right = a.split('=')[1]
+            configset(myModel.config,'variable_change_once',left,right,overwrite=True)
+        if o == '-p':
+            left = a.split('=')[0]
+            right = a.split('=')[1]
+            configset(myModel.config,'variable_change_timestep',left,right,overwrite=True)
         if o == '-X': configset(myModel.config, 'model', 'OverWriteInit', '1', overwrite=True)
         if o == '-I': configset(myModel.config, 'model', 'reinit', '1', overwrite=True)
         if o == '-i': configset(myModel.config, 'model', 'intbl', a, overwrite=True)
@@ -1410,6 +1398,7 @@ def main(argv=None):
         if o == '-R': runId = a
         if o == '-W': configset(myModel.config, 'model', 'waterdem', '1', overwrite=True)
 
+    dynModelFw.setupFramework()
     dynModelFw._runInitial()
     dynModelFw._runResume()
     dynModelFw._runDynamic(_firstTimeStep, _lastTimeStep)
