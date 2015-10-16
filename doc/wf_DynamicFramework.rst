@@ -178,7 +178,7 @@ operations on parameters and variable that are executed at the start of each tim
 of the model respectively. What you specify here should be valid python code and include variable that exists
 in the model you are using. This only works if the actual model you are using includes the wf_multparameters() function.
 At the moment wflow\_hbv, wflow\_sbm, wflow\_w3ra and wflow\_routing include this.
-See below for a configuration example.
+See below for a configuration example. Some models may also support this via the -P and -p command-line options.
 
 ::
 
