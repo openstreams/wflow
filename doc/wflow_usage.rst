@@ -146,11 +146,9 @@ The command line options for wflow are summarized below, use  wflow
         The above example uses column 1, 4 and 13
         Note that this also sets the order in which the updating takes place! In
         general specify downstream gauges first.
-    -P: set parameter multiply dictionary (e.g: -P 'self.FirstZoneDepth' : 1.2
-        to increase self.FirstZoneDepth by 20\%, multiply with 1.2)
-    -p: set input parameter (dynamic, e.g. precip) multiply dictionary 
-        (e.g: -p 'Precipitation' : 1.2 to increase Precipitation 
-        by 20%, multiply with 1.2)    
+    -P: set parameter change string (e.g: -P 'self.FC = self.FC * 1.6') for non-dynamic variables
+    -p: set parameter change string (e.g: -P 'self.Precipitation = self.Precipitation * 1.11') for
+        dynamic variables
     -v: set verbosity level
 
 wflow\_sbm\|hbv.ini file

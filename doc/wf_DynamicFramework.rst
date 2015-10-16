@@ -88,8 +88,9 @@ convention:
           5 = -
 
 
-Use role 0 for input maps to the model (those that are normally read from disk), role 1
-for outputs, role 2 for state variables and role3 for model parameters.
+Use role 0 for input maps to the model (forcing data that are normally read from disk) only, role 1
+for outputs, role 2 for state variables and role 3 for model parameters. The units may be choose freely and
+be strings also.
 
 example:
 ::
@@ -100,7 +101,7 @@ example:
     UpperZoneStorage=2,4
     LowerZoneStorage=2,4
     InterceptionStorage=2,4
-    SurfaceRunoff=2,1
+    SurfaceRunoff=2,m^3/sec
     WaterLevel=2,2
     DrySnow=2,4
     Percolation=1,0
@@ -121,6 +122,8 @@ Settings in the modelparameters section
 Most of the time this section is not needed as this will mostly be configured
 in the python code by the model developer. However, in some case this section can be used
 alter the model for example force the model to read RootingDepth from an external data source.
+Not all models support this. You can check if the model you uses support this by looking for the
+wf_updateparameters() function in de model code.
 
 The format of entries in this section is as follows:
 
@@ -165,6 +168,28 @@ Example::
     Kext=inmaps/clim/LCtoSpecificLeafStorage.tbl,tbl,0.5,1,inmaps/clim/LC.map
     Swood=inmaps/clim/LCtoBranchTrunkStorage.tbl,tbl,0.5,1,inmaps/clim/LC.map
     LAI=inmaps/clim/LAI,monthlyclim,1.0,1
+
+
+
+Settings in the variable_change_timestep/once section
+-----------------------------------------------------
+In the two sections "variable_change_timestep" and "variable_change_once" you can set
+operations on parameters and variable that are executed at the start of each timestep or once in the initialisation
+of the model respectively. What you specify here should be valid python code and include variable that exists
+in the model you are using. This only works if the actual model you are using includes the wf_multparameters() function.
+At the moment wflow\_hbv, wflow\_sbm, wflow\_w3ra and wflow\_routing include this.
+See below for a configuration example.
+
+::
+
+    [variable_change_timestep]
+    self.Precipitation = self.Precipitation * 1.2
+    # Mutiplies the precipitation input times 1.2 every timestep
+
+    [variable_change_once]
+    self.PathFrac = self.PathFrac * 1.1
+    # Increases the paved area fraction of the model by 10 %
+
 
 
 Settings in the summary_* sections

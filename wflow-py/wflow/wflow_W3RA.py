@@ -236,6 +236,8 @@ class WflowModel(DynamicModel):
     self.Tgrow2 = self.wf_readmap(os.path.join(self.Dir,  "staticmaps/Tgrow2.map"),0.0,fail=True)
     self.Tsenc2 = self.wf_readmap(os.path.join(self.Dir,  "staticmaps/Tsenc2.map"),0.0,fail=True)
 
+
+    self.wf_multparameters()
     # Static, for the computation of Aerodynamic conductance (3.7)
     self.fh1 = ln(813./self.hveg1-5.45)
     self.fh2 = ln(813./self.hveg2-5.45)
@@ -298,6 +300,8 @@ class WflowModel(DynamicModel):
             self.WINDSPEED=cover(self.wf_readmap(self.WINDSPEED_mapstack, 10.0), scalar(10.0))# ms-1
             self.AIRPRESS=cover(self.wf_readmap(self.AIRPRESS_mapstack, 10.0), scalar(10.0))# Pa
 
+
+        self.wf_multparameters()
         doy=self.currentdatetime.timetuple().tm_yday
 
         #conversion daylength

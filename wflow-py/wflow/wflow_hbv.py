@@ -57,7 +57,7 @@ wflow_hbv::
 -h: print usage information
 
 -U: The argument to this option should be a .tss file with measured discharge in
-    [m^3/s] which the progam will use to update the internal state to match 
+    [m^3/s] which the program will use to update the internal state to match
     the measured flow. The number of columns in this file should match the 
     number of gauges in the wflow\_gauges.map file.
     
@@ -66,12 +66,10 @@ wflow_hbv::
     The above example uses column 1, 4 and 13
     
 -P: set parameter change string (e.g: -P 'self.FC = self.FC * 1.6') for non-dynamic variables
-    to increase self.FC by 60%
     
 -p: set parameter change string (e.g: -P 'self.Precipitation = self.Precipitation * 1.11') for
     dynamic variables
 
-    
 -l: loglevel (most be one of DEBUG, WARNING, ERROR)
 
 -X overwrites the initial values at the end of each timestep
@@ -95,9 +93,7 @@ from wflow_adapt import *
 
 
 
-wflow = "wflow_hbv: "
-wflowVersion = "_"
-"""revision of the model"""
+wflow = "wflow_hbv"
 
 
 #: columns used in updating
@@ -110,25 +106,20 @@ def usage(*args):
     Print usage information
     
     -  *args: command line arguments given
-    
     """
     sys.stdout = sys.stderr
     for msg in args: print msg
     print __doc__
     sys.exit(0)
 
-
-
 class WflowModel(DynamicModel):
-  
-  
+
   """
   The user defined model class.
 
-
   """
   
-  
+
   def __init__(self, cloneMap,Dir,RunDir,configfile):
       DynamicModel.__init__(self)
       self.caseName = os.path.abspath(Dir)

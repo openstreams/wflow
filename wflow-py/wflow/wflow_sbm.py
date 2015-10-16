@@ -78,7 +78,6 @@ usage
         The above example uses column 1, 4 and 13
         
     -P: set parameter change string (e.g: -P 'self.FC = self.FC * 1.6') for non-dynamic variables
-        to increase self.FC by 60%
 
     -p: set parameter change string (e.g: -P 'self.Precipitation = self.Precipitation * 1.11') for
         dynamic variables
@@ -106,7 +105,6 @@ import ConfigParser
 
 
 wflow = "wflow_sbm: "
-wflowVersion = "$Revision: 900 $  $Date: 2014-01-09 18:41:06 +0100 (Thu, 09 Jan 2014) $"
 
 updateCols = []
 
