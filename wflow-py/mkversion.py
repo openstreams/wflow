@@ -1,8 +1,8 @@
 import os
 
-thisversion = "$Id: mkversion.py 550 2012-11-27 19:17:46Z schelle $"
+thisversion = "2015.02.deltashell"
 #vers=os.popen('svnversion -n').read().replace(":","-")
-vers='a1'
+vers='deltashell'
 # SET THESE
 ###################################
 manualversion = "2015.02." + vers

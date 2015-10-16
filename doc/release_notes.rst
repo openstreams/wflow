@@ -8,7 +8,7 @@ Under heavy development
 
 2015.02
 -------
-
++ Redone multiplication of parameter framework. Now possible via ini and BMI
 + Added .mult postfix for tbl files to apply multiplication (untested)
 + Added bmi support
 + wflow_sbm s-curve sharpness of height distribution now based on upper and lower
