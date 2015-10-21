@@ -77,10 +77,12 @@ usage
         -u [1 , 4 ,13]
         The above example uses column 1, 4 and 13
         
-    -P: set parameter change string (e.g: -P 'self.FC = self.FC * 1.6') for non-dynamic variables
+    -P: set parameter multiply dictionary (e.g: -P {'self.SatWaterDepth' : 1.2}
+        to increase self.SatWaterDepth by 20%, multiply with 1.2)
 
-    -p: set parameter change string (e.g: -P 'self.Precipitation = self.Precipitation * 1.11') for
-        dynamic variables
+    -p: set input parameter (dynamic, e.g. precip) multiply dictionary
+        (e.g: -p {'self.Precipitation' : 1.2} to increase Precipitation
+        by 20%, multiply with 1.2)
 
     -l: loglevel (most be one of DEBUG, WARNING, ERROR)
 
