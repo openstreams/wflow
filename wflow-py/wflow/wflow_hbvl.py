@@ -373,20 +373,11 @@ class WflowModel(DynamicModel):
 
     # Initializing of variables
     self.logger.info("Initializing of model variables..")
-    self.TopoLdd=lddmask(self.TopoLdd,boolean(self.TopoId))   
-    catchmentcells=maptotal(scalar(self.TopoId))
-
-    # Used to seperate output per LandUse/management classes
-    #OutZones = self.LandUse
-    #report(self.reallength,"rl.map")
-    #report(catchmentcells,"kk.map")
     self.QMMConv = self.timestepsecs/(self.reallength * self.reallength * 0.001) #m3/s --> mm
     self.ToCubic = (self.reallength * self.reallength * 0.001) / self.timestepsecs # m3/s
 
-    self.FieldCapacity=self.FC                               #: total water holding capacity of the soil
-    self.Treshold=self.LP*self.FieldCapacity                      # Threshold soilwaterstorage above which AE=PE
-    #CatSurface=maptotal(scalar(ifthen(scalar(self.TopoId)>scalar(0.0),scalar(1.0))))                   # catchment surface (in  km2) 
-
+    self.FieldCapacity=self.FC                    #: total water holding capacity of the soil
+    self.Treshold=self.LP*self.FieldCapacity      # Threshold soilwaterstorage above which AE=PE
 
     self.logger.info("End of initial section.")
 
