@@ -325,6 +325,8 @@ class WflowModel(DynamicModel):
   
     self.logger.info("Linking parameters to landuse, catchment and soil...")
 
+    # TODO: Set default properly
+    # TODO: make unit test, running model
     #HBV Soil params
     # + BETA.tif
     # + CFMAX.tif
@@ -355,7 +357,6 @@ class WflowModel(DynamicModel):
     self.CFMAX= self.readtblDefault(self.Dir + "/" + self.intbl + "/CFMAX.tbl",self.LandUse,subcatch,self.Soil, 2.0)        # maximum capillary rise from runoff response routine to soil moisture routine
     self.WHC= self.readtblDefault(self.Dir + "/" + self.intbl + "/WHC.tbl",self.LandUse,subcatch,self.Soil, 2.0)        # maximum capillary rise from runoff response routine to soil moisture routine
     self.TTI=self.readtblDefault(self.Dir + "/" + self.intbl + "/TTI.tbl" ,self.LandUse,subcatch,self.Soil,1.0)
-    # TT = -1.41934 # defines interval in which precipitation falls as rainfall and snowfall
     self.TT=self.readtblDefault(self.Dir + "/" + self.intbl + "/TT.tbl" ,self.LandUse,subcatch,self.Soil,-1.41934)
     #Cfmax = 3.75653 # meltconstant in temperature-index
     self.RFCF=self.readtblDefault(self.Dir + "/" + self.intbl + "/RFCF.tbl",self.LandUse,subcatch,self.Soil,1.0)      # correction factor for rainfall

@@ -727,12 +727,32 @@ def main(argv=None):
             print "Failed to get timesteps from runinfo file: " + runinfoFile
             exit(2)
     else:
-        starttime = dt.datetime(2015,9,01)
+        starttime = dt.datetime(1990,01,01)
 
+    if _lastTimeStep < _firstTimeStep:
+        print "The starttimestep (" + str(_firstTimeStep) + ") is smaller than the last timestep (" + str(
+            _lastTimeStep) + ")"
+        usage()
 
     myModel = WflowModel(wflow_cloneMap, caseName,runId,configfile)
     dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep,firstTimestep=_firstTimeStep,datetimestart=starttime)
-    dynModelFw.createRunId(NoOverWrite=_NoOverWrite, level=loglevel, logfname=LogFileName)
+    dynModelFw.createRunId(NoOverWrite=_NoOverWrite, level=loglevel, logfname=LogFileName,model="wflow_W3RA",doSetupFramework=False)
+
+    for o, a in opts:
+        if o == '-P':
+            left = a.split('=')[0]
+            right = a.split('=')[1]
+            configset(myModel.config,'variable_change_once',left,right,overwrite=True)
+        if o == '-p':
+            left = a.split('=')[0]
+            right = a.split('=')[1]
+            configset(myModel.config,'variable_change_timestep',left,right,overwrite=True)
+        if o == '-X': configset(myModel.config, 'model', 'OverWriteInit', '1', overwrite=True)
+        if o == '-I': configset(myModel.config, 'model', 'reinit', '1', overwrite=True)
+        if o == '-i': configset(myModel.config, 'model', 'intbl', a, overwrite=True)
+        if o == '-s': configset(myModel.config, 'model', 'timestepsecs', a, overwrite=True)
+
+    dynModelFw.setupFramework()
 
     dynModelFw._runInitial()
     dynModelFw._runResume()
