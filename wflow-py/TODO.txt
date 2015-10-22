@@ -8,7 +8,9 @@ TODO:
 - Add add_reservoir function to framework
 - fix open water treatment (together with reservoirs)
 - split kinematic wave from SBM and HBV
-- Add configurable datutm to netcdf export (now only wgs84)
+- Done: Add configurable datum to netcdf export (now only wgs84)
+- Add bare soil evaporation
+- make unittest for W3RA
 
 
 
