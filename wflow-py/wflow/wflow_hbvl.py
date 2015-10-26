@@ -275,8 +275,7 @@ class WflowModel(DynamicModel):
     self.P_style = int(configget(self.config,"model","P_style","1"))
     self.PET_style = int(configget(self.config,"model","PET_style","1"))
     self.TEMP_style = int(configget(self.config,"model","TEMP_style","1"))
-    
-    
+
     sizeinmetres = int(configget(self.config,"layout","sizeinmetres","0"))
 
     # static maps to use (normally default)
@@ -287,11 +286,9 @@ class WflowModel(DynamicModel):
     wflow_gauges  = configget(self.config,"model","wflow_gauges","staticmaps/wflow_gauges.map")
 
     # 2: Input base maps ########################################################  
-    subcatch=ordinal(self.wf_readmap(os.path.join(self.Dir, wflow_subcatch),0.0,fail=True)) # Determines the area of calculations (all cells > 0)
+    subcatch = ordinal(self.wf_readmap(os.path.join(self.Dir,wflow_subcatch),0.0,fail=True))  # Determines the area of calculations (all cells > 0)
     subcatch = ifthen(subcatch > 0, subcatch)
-    if self.sCatch > 0:
-        subcatch = ifthen(subcatch == sCatch,subcatch)
-    
+
     self.Altitude=self.wf_readmap(os.path.join(self.Dir,wflow_dem),0.0,fail=True) * scalar(defined(subcatch)) #: The digital elevation map (DEM)
     self.TopoId=self.wf_readmap(os.path.join(self.Dir, wflow_subcatch),0.0,fail=True)        #: Map define the area over which the calculations are done (mask)
 
@@ -343,7 +340,9 @@ class WflowModel(DynamicModel):
     # + SFCF.tif
     # + TT.tif
     # + UZL.tif 
-    self.FC=self.readtblDefault(self.Dir + "/" + self.intbl + "/FC.tbl",self.LandUse,subcatch,self.Soil,260.0)
+
+    self.FC = self.readtblDefault(self.Dir + "/" + self.intbl + "/FC.tbl",self.LandUse,subcatch,self.Soil,260.0)
+
     self.BETA= self.readtblDefault(self.Dir + "/" + self.intbl + "/BETA.tbl",self.LandUse,subcatch,self.Soil,1.8)  # exponent in soil runoff generation equation
     self.K0= self.readtblDefault(self.Dir + "/" + self.intbl + "/K0.tbl",self.LandUse,subcatch,self.Soil, 0.02307) # Recession constant baseflow   #K4=0.07; BASEFLOW:LINEARRESERVOIR
     self.K1= self.readtblDefault(self.Dir + "/" + self.intbl + "/K2.tbl",self.LandUse,subcatch,self.Soil, 0.02307) # Recession constant baseflow   #K4=0.07; BASEFLOW:LINEARRESERVOIR
@@ -525,7 +524,7 @@ def main(argv=None):
     global updateCols
     caseName = "default_hbv"
     runId = "run_default"
-    configfile="wflow_hbv.ini"
+    configfile="wflow_hbvl.ini"
     LogFileName="wflow.log"    
     _lastTimeStep = 0
     _firstTimeStep = 1

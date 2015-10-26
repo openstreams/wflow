@@ -143,7 +143,7 @@ class WflowModel(DynamicModel):
     # fday=0.5000
     self.timestepsecs = int(configget(self.config,'model','timestepsecs','86400'))
     self.UseETPdata = int(configget(self.config,'model','UseETPdata','1'))  #  1: Use ETP data, 0: Compute ETP from meteorological variables
-    print 'useDATA' , self.UseETPdata
+    self.logger.debug('useDATA: ' + str(self.UseETPdata))
     self.basetimestep=86400
     self.SaveMapDir = self.Dir + "/" + self.runId + "/outmaps"
 

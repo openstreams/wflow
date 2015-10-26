@@ -457,8 +457,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             Add checking for missing values
         """
 
-        mapname = os.path.dirname(pathtotbl) + "/../staticmaps/" + os.path.splitext(os.path.basename(pathtotbl))[
-            0] + ".map"
+        mapname = os.path.join(os.path.dirname(pathtotbl),"../staticmaps", os.path.splitext(os.path.basename(pathtotbl))[
+            0] + ".map")
         if os.path.exists(mapname):
             self.logger.info("reading map parameter file: " + mapname)
             rest = cover(readmap(mapname), default)
