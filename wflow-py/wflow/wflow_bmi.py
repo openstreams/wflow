@@ -674,8 +674,10 @@ class wflowbmi_csdms(bmi.Bmi):
 
         :return: X, Y: ,the lower left corner of the grid.
         """
-
-        return self.dynModel.wf_supplyGridDim()[0:2]
+        dims = self.dynModel.wf_supplyGridDim()
+        x = dims[0]
+        y = dims[7]
+        return [x, y]
 
     def get_grid_x(self, long_var_name):
         """

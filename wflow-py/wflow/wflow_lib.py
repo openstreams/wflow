@@ -198,14 +198,18 @@ def getgridparams():
         - ysize - size of a cell in y direction
         - cols - number of columns
         - rows - number of rows
+        - xlr
+        - ylr
     """
     
     # x and Y are the same for now
     xy = pcr2numpy(celllength(),numpy.nan)[0,0]
     xu = pcr2numpy(xcoordinate(1),numpy.nan)[0,0]
     yu = pcr2numpy(ycoordinate(1),numpy.nan)[0,0]
+    ylr = pcr2numpy(ycoordinate(1),numpy.nan)[getrows()-1,getcols()-1]
+    xlr = pcr2numpy(xcoordinate(1),numpy.nan)[getrows()-1,getcols()-1]
     
-    return [xu, yu, xy, xy, getrows(), getcols()]
+    return [xu, yu, xy, xy, getrows(), getcols(),xlr,ylr]
         
 
 def snaptomap(points,mmap):
