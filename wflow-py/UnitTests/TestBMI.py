@@ -23,6 +23,7 @@ class MyTest(unittest.TestCase):
         print("-------------- Grid X: ")
         print(bmiobj.get_grid_x('Altitude'))
 
+
         print("-------------- Grid Y: ")
         print(bmiobj.get_grid_y('Altitude'))
 
