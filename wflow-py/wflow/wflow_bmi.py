@@ -14,7 +14,7 @@ import numpy as np
 
 class wflowbmi_ligth(object):
     """
-    Deltares specific ligth version of the BMI. Uaed for internal model linkage
+    Deltares specific light version of the BMI. Used for internal model linkage
     """
 
     def __init__(self):
@@ -155,7 +155,7 @@ class wflowbmi_ligth(object):
         """
         Return an nd array from model library
         """
-        return self.dynModel.wf_supplyMapAsNumpy(name)
+        return np.flipud(self.dynModel.wf_supplyMapAsNumpy(name))
 
     def set_var(self, name, var):
         """
@@ -163,7 +163,7 @@ class wflowbmi_ligth(object):
         Assume var is a numpy array
         """
         #TODO: check the numpy type
-        self.dynModel.wf_setValuesAsNumpy(name, var)
+        self.dynModel.wf_setValuesAsNumpy(name, np.flipud(var))
 
 
     def set_var_slice(self, name, start, count, var):
@@ -175,7 +175,7 @@ class wflowbmi_ligth(object):
         For some implementations it can be equivalent and more efficient to do:
         `get_var(name)[start[0]:start[0]+count[0], ..., start[n]:start[n]+count[n]] = var`
         """
-        tmp = self.get_var(name).copy()
+        tmp = np.flipud(self.get_var(name).copy())
         try:
             # if we have start and count as a number we can do this
             tmp[start:(start+count)] = var
@@ -184,7 +184,7 @@ class wflowbmi_ligth(object):
             slices = [np.s_[i:(i+n)] for i,n in zip(start, count)]
             tmp[slices]
 
-        self.set_var(name, name, tmp)
+        self.set_var(name, name, np.flipud(tmp))
 
     def set_var_index(self, name, index, var):
         """
@@ -196,9 +196,9 @@ class wflowbmi_ligth(object):
         and more efficient to do:
         `get_var(name).flat[index] = var`
         """
-        tmp = self.get_var(name).copy()
+        tmp = np.flipud(self.get_var(name).copy())
         tmp.flat[index] = var
-        self.set_var(name, name, tmp)
+        self.set_var(name, name, np.flipud(tmp))
 
     def inq_compound(self, name):
         """
@@ -600,7 +600,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :var long_var_name: name of the variable
         :return: a np array of long_var_name
         """
-        return self.dynModel.wf_supplyMapAsNumpy(long_var_name)
+        return np.flipud(self.dynModel.wf_supplyMapAsNumpy(long_var_name))
 
     def get_value_at_indices(self, long_var_name, inds):
         """
@@ -611,7 +611,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
         :return: numpy array of values in the data type returned by the function get_var_type.
         """
-        npmap = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
+        npmap = np.flipud(self.dynModel.wf_supplyMapAsNumpy(long_var_name))
 
         return npmap[inds]
 
@@ -626,9 +626,9 @@ class wflowbmi_csdms(bmi.Bmi):
         :var src: Numpy array of values. one value to set for each of the indicated elements:
         """
 
-        npmap = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
+        npmap = np.flipud(self.dynModel.wf_supplyMapAsNumpy(long_var_name))
         npmap[inds] = src
-        self.dynModel.wf_setValuesAsNumpy(long_var_name,npmap)
+        self.dynModel.wf_setValuesAsNumpy(long_var_name,np.flipud(npmap))
 
     def get_grid_type(self, long_var_name):
         """
@@ -651,7 +651,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :return: List of integers: the sizes of the dimensions of the given variable, e.g. [500, 400] for a 2D grid with 500x400 grid cells.
         """
         dim =  self.dynModel.wf_supplyGridDim()
-        #[ Xul, Yul, xsize, ysize, rows, cols]
+        #[ Xll, Yll, xsize, ysize, rows, cols]
 
         return [dim[4], dim[5]]
 
@@ -698,7 +698,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :return: Numpy array of doubles: y coordinate of grid cell center for each grid cell, in the same order as the values returned by function get_value.
 
         """
-        return self.dynModel.wf_supplyMapYAsNumpy()
+        return np.flipud(self.dynModel.wf_supplyMapYAsNumpy())
 
     def get_grid_z(self, long_var_name):
         """
@@ -708,7 +708,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
         :return: Numpy array of doubles: z coordinate of grid cell center for each grid cell, in the same order as the values returned by function get_value.
         """
-        return self.dynModel.wf_supplyMapZAsNumpy()
+        return np.flipud(self.dynModel.wf_supplyMapZAsNumpy())
 
     def get_var_units(self, long_var_name):
         """
@@ -742,11 +742,12 @@ class wflowbmi_csdms(bmi.Bmi):
         if len(src) == 1:
             self.dynModel.wf_setValues(long_var_name,float(src))
         else:
-            self.dynModel.wf_setValuesAsNumpy(long_var_name, src)
+            self.dynModel.wf_setValuesAsNumpy(long_var_name, np.flipud(src))
 
     def get_grid_connectivity(self, long_var_name):
         """
         Not applicable, raises NotImplementedError
+        Should return the ldd if present!!
         """
         raise NotImplementedError
 
