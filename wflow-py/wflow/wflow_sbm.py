@@ -113,7 +113,6 @@ updateCols = []
 
 
 def usage(*args):
-    #: Ha die Jaap
     sys.stdout = sys.stderr
     """Way"""
     for msg in args: print msg

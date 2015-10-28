@@ -133,7 +133,7 @@ class MyTest(unittest.TestCase):
     def testbmirun(self):
         bmiobj = bmi.wflowbmi_csdms()
         bmiobj.initialize('wflow_sceleton/wflow_sceleton.ini',loglevel=logging.ERROR)
-
+        print(bmiobj.get_var_type("IF"))
         et = bmiobj.get_end_time()
         bmiobj.update_until(et)
         bmiobj.finalize()

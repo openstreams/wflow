@@ -605,6 +605,19 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         :return:
         """
+
+        def _initAPIVars(self):
+            """
+            Sets vars in the API that are forcing variables to the model
+            """
+            apivars = self.wf_supplyVariableNamesAndRoles()
+
+            for var in apivars:
+                exec "self._userModel()."+ var[0] + " = cover(scalar(0.0))"
+
+
+        _initAPIVars(self)
+
         self.framework_setup = True
         caseName = self._userModel().caseName
         runId = self._userModel().runId
@@ -1326,7 +1339,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             if self.APIDebug:
                 self.logger.debug("wf_supplyMapAsNumpy returning: " + mapname)
         else:
-            self.logger.warn(mapname + " is not defined in the usermodel, returning empty list")
+            self.logger.warn(mapname + " is not defined in the usermodel, returning empty array")
             return []
 
         return retval
