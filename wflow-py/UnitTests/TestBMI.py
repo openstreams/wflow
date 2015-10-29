@@ -20,6 +20,12 @@ class MyTest(unittest.TestCase):
         gorigin = bmiobj.get_grid_origin('Altitude')
         print(gorigin)
 
+        print("-------------- Grid shape: ")
+        print(bmiobj.get_grid_shape('Altitude'))
+
+        print("-------------- Grid spacing: ")
+        print(bmiobj.get_grid_spacing('Altitude'))
+
         print("-------------- Grid X: ")
         print(bmiobj.get_grid_x('Altitude'))
 
@@ -82,11 +88,7 @@ class MyTest(unittest.TestCase):
         print(bmiobj.get_end_time())
         print(time.localtime(bmiobj.get_end_time()))
 
-        print("-------------- Grid shape: ")
-        print(bmiobj.get_grid_shape('Altitude'))
 
-        print("-------------- Grid spacing: ")
-        print(bmiobj.get_grid_spacing('Altitude'))
 
         print("-------------- Grid type: ")
         print(bmiobj.get_grid_type('Altitude'))
