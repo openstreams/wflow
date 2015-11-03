@@ -10,7 +10,7 @@ TODO:
 - split kinematic wave from SBM and HBV
 - Done: Add configurable datum to netcdf export (now only wgs84)
 - Add bare soil evaporation
-- make unittest for W3RA
+- Done: make unittest for W3RA
 
 
 

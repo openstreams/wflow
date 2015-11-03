@@ -600,7 +600,14 @@ class wflowbmi_csdms(bmi.Bmi):
         :var long_var_name: name of the variable
         :return: a np array of long_var_name
         """
-        return np.flipud(self.dynModel.wf_supplyMapAsNumpy(long_var_name))
+
+        ret = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
+
+        try:
+            fret = np.flipud(ret)
+            return fret
+        except:
+            return ret
 
     def get_value_at_indices(self, long_var_name, inds):
         """
