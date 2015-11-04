@@ -278,7 +278,7 @@ class wflowbmi_csdms(bmi.Bmi):
             import wflow.wflow_sbm as wf
             self.name = "wflow_sbm"
         elif "wflow_hbv" in filename:
-            import wflow.wflow_sbm as wf
+            import wflow.wflow_hbv as wf
             self.name = "wflow_hbv"
         elif "wflow_routing" in filename:
             import wflow.wflow_routing as wf
