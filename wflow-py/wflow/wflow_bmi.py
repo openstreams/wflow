@@ -46,7 +46,7 @@ class wflowbmi_ligth(object):
             import wflow_sbm as wf
             self.name = "wflow_sbm"
         elif "wflow_hbv.ini" in configfile:
-            import wflow_sbm as wf
+            import wflow_hbv as wf
             self.name = "wflow_hbv"
         elif "wflow_routing.ini" in configfile:
             import wflow_routing as wf
@@ -240,6 +240,7 @@ class wflowbmi_csdms(bmi.Bmi):
     """
 
 
+
     def __init__(self):
         """
         Initialises the object
@@ -277,7 +278,7 @@ class wflowbmi_csdms(bmi.Bmi):
             import wflow.wflow_sbm as wf
             self.name = "wflow_sbm"
         elif "wflow_hbv" in filename:
-            import wflow.wflow_sbm as wf
+            import wflow.wflow_hbv as wf
             self.name = "wflow_hbv"
         elif "wflow_routing" in filename:
             import wflow.wflow_routing as wf
@@ -600,7 +601,14 @@ class wflowbmi_csdms(bmi.Bmi):
         :var long_var_name: name of the variable
         :return: a np array of long_var_name
         """
-        return np.flipud(self.dynModel.wf_supplyMapAsNumpy(long_var_name))
+
+        ret = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
+
+        try:
+            fret = np.flipud(ret)
+            return fret
+        except:
+            return ret
 
     def get_value_at_indices(self, long_var_name, inds):
         """

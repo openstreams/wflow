@@ -209,6 +209,9 @@ def SnowPackHBV(Snow, SnowWater, Precipitation, Temperature, TTI, TT, Cfmax, WHC
     return Snow, SnowWater, SnowMelt, RainFall
 
 
+
+
+
 class WflowModel(DynamicModel):
     """
     .. versionchanged:: 0.91
@@ -479,6 +482,8 @@ class WflowModel(DynamicModel):
         self.OutputId = self.wf_readmap(os.path.join(self.Dir,wflow_subcatch),0.0,fail=True)  # location of subcatchment
         # Temperature correction poer cell to add
 
+
+
         self.TempCor = self.wf_readmap(
             self.Dir + configget(self.config, "model", "TemperatureCorrectionMap", "staticmaps/wflow_tempcor.map"), 0.0)
 
@@ -651,6 +656,16 @@ class WflowModel(DynamicModel):
                                       self.SoilMinThickness)
 
         self.SoilWaterCapacity = self.SoilThickness * (self.thetaS - self.thetaR)
+
+
+        self.USatLayers = 3
+        self.UStoreLayerThickness= []
+        self.UStoreLayerDepth= []
+        for n in arange(0,self.USatLayers + 1):
+            self.UStoreLayerThickness.append(self.SoilMinThickness * 1.0/self.USatLayers)
+            self.UStoreLayerDepth.append(cover(0.0))
+
+
 
         # limit roots to top 99% of first zone
         self.RootingDepth = min(self.SoilThickness * 0.99, self.RootingDepth)
@@ -829,6 +844,8 @@ class WflowModel(DynamicModel):
             self.SnowWater = self.ZeroMap
             self.TSoil = self.ZeroMap + 10.0
             self.CanopyStorage = self.ZeroMap
+
+
             if self.NoLowerZone:
                 self.LowerZoneStorage = 0.0
             else:
@@ -861,6 +878,13 @@ class WflowModel(DynamicModel):
         # simulations will now be different as it used to be before
         # the rescaling of the FirstZoneThickness
         self.GWScale = (self.DemMax - self.DrainageBase) / self.SoilThickness / self.RunoffGeneratingGWPerc
+
+
+    def UnSatTransFer(self):
+        """
+        Moves water through the unsaturated sone
+        :return:
+        """
 
 
     def dynamic(self):
@@ -1032,6 +1056,25 @@ class WflowModel(DynamicModel):
 
         self.SoilInfiltExceeded = self.SoilInfiltExceeded + scalar(self.InfiltCapSoil * soilInfRedu < SoilInf)
         InfiltSoil = min(MaxInfiltSoil, UStoreCapacity)
+
+        SumThickness = self.ZeroMap
+        # Go from bottom to top
+        for n in arange(0,len(self.UStoreLayerThickness) + 1)[::-1]:
+            SumThickness = self.UStoreLayerThickness[n] + SumThickness
+            self.ZiLayer = ifthen(self.zi <= SumThickness,self.ZeroMap + n)
+
+        for n in arange(0,len(self.UStoreLayerThickness) + 1):
+            if n == 0:
+                DownWard = InfiltSoil
+            L = ifthenelse(self.ZiLayer < n, self.UStoreLayerDepth[n],)
+            XXXXXXXXXXXXX
+            XXXXXXXXXXXXX
+            self.UStoreLayerDepth[n] = self.UStoreLayerDepth[n] + DownWard
+            KsLayer = self.KsatVer * exp(-self.zi/self.f) * (self.UStoreLayerDepth[n] /((L)*(self.thetaS-self.thetaR)))**self.c
+            DownWard = min(self.UStoreLayerDepth[n],KsLayer)
+            self.UStoreLayerDepth[n] = self.UStoreLayerDepth[n] - DownWard
+
+
         self.UStoreDepth = self.UStoreDepth + InfiltSoil
         UStoreCapacity = UStoreCapacity - InfiltSoil
         self.AvailableForInfiltration = self.AvailableForInfiltration - InfiltSoil

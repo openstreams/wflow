@@ -107,6 +107,9 @@ class MyTest(unittest.TestCase):
         print("-------------- Getvalue: ")
         print(bmiobj.get_value('Altitude'))
 
+        print("-------------- Getvalue: ")
+        print(bmiobj.get_value('timestepsecs'))
+
         print("-------------- get_attribute_names: ")
         names = bmiobj.get_attribute_names()
         print names
