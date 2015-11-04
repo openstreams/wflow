@@ -969,7 +969,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     execstr = "self._userModel()." + var + "= readmap(\"" + mpath + "\")"
                     exec execstr
                 except:
-                    self.logger.warn(
+                    self.logger.error(
                         "problem while reading state variable from disk: " + mpath + " Suggest to use the -I uption to restart")
                     exit(1)
 
