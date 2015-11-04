@@ -46,7 +46,7 @@ class wflowbmi_ligth(object):
             import wflow_sbm as wf
             self.name = "wflow_sbm"
         elif "wflow_hbv.ini" in configfile:
-            import wflow_sbm as wf
+            import wflow_hbv as wf
             self.name = "wflow_hbv"
         elif "wflow_routing.ini" in configfile:
             import wflow_routing as wf
