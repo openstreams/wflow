@@ -661,8 +661,8 @@ class WflowModel(DynamicModel):
         self.USatLayers = 3
         self.UStoreLayerThickness= []
         self.UStoreLayerDepth= []
-        for n in arange(0,self.USatLayers + 1):
-            self.UStoreLayerThickness.append(self.SoilMinThickness * 1.0/self.USatLayers)
+        for n in arange(0,self.USatLayers ):
+            self.UStoreLayerThickness.append(self.SoilThickness * 1.0/self.USatLayers)
             self.UStoreLayerDepth.append(cover(0.0))
 
 
@@ -1057,20 +1057,22 @@ class WflowModel(DynamicModel):
         self.SoilInfiltExceeded = self.SoilInfiltExceeded + scalar(self.InfiltCapSoil * soilInfRedu < SoilInf)
         InfiltSoil = min(MaxInfiltSoil, UStoreCapacity)
 
-        SumThickness = self.ZeroMap
+        self.SumThickness = self.ZeroMap
+        self.c=self.ZeroMap + 4.0
+        self.ZiLayer = self.ZeroMap + len(self.UStoreLayerThickness)
         # Go from bottom to top
-        for n in arange(0,len(self.UStoreLayerThickness) + 1)[::-1]:
-            SumThickness = self.UStoreLayerThickness[n] + SumThickness
-            self.ZiLayer = ifthen(self.zi <= SumThickness,self.ZeroMap + n)
+        # Find layer with  freatic level and calculate the L
+        for n in arange(0,len(self.UStoreLayerThickness))[::-1]:
+            self.SumThickness = self.UStoreLayerThickness[n] + self.SumThickness
+            self.ZiLayer = ifthenelse((self.SoilThickness - self.zi) >=  self.SumThickness,self.ZeroMap + n,self.ZiLayer)
+            self.L = ifthenelse(self.ZiLayer < n, self.UStoreLayerDepth[n],self.zi - self.SumThickness)
 
-        for n in arange(0,len(self.UStoreLayerThickness) + 1):
+        for n in arange(0,len(self.UStoreLayerThickness)):
             if n == 0:
                 DownWard = InfiltSoil
-            L = ifthenelse(self.ZiLayer < n, self.UStoreLayerDepth[n],)
-            XXXXXXXXXXXXX
-            XXXXXXXXXXXXX
+
             self.UStoreLayerDepth[n] = self.UStoreLayerDepth[n] + DownWard
-            KsLayer = self.KsatVer * exp(-self.zi/self.f) * (self.UStoreLayerDepth[n] /((L)*(self.thetaS-self.thetaR)))**self.c
+            KsLayer = self.KsatVer * exp(-self.zi/self.f) * (self.UStoreLayerDepth[n] /((self.L)*(self.thetaS-self.thetaR)))**self.c
             DownWard = min(self.UStoreLayerDepth[n],KsLayer)
             self.UStoreLayerDepth[n] = self.UStoreLayerDepth[n] - DownWard
 

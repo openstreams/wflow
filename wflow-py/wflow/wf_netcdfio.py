@@ -49,11 +49,12 @@ def prepare_nc(trgFile, timeList, x, y, metadata, logger, EPSG="EPSG:4326", unit
     logger.info('Setting up netcdf output: ' + trgFile)
     startDayNr = netCDF4.date2num(timeList[0].replace(tzinfo=None), units=units, calendar=calendar)
     endDayNr   = netCDF4.date2num(timeList[-1].replace(tzinfo=None), units=units, calendar=calendar)
-    time       = arange(startDayNr,endDayNr+1)
+
+    timeAR = linspace(startDayNr,endDayNr,num=len(timeList))
     nc_trg     = netCDF4.Dataset(trgFile,'w',format=Format,zlib=zlib,complevel=complevel)
 
     logger.info('Setting up dimensions and attributes. Steps: ' + str(len(timeList)) + ' lat: ' + str(len(y))+ " lon: " + str(len(x)))
-    if len(time) ==1:
+    if len(timeAR) ==1:
         nc_trg.createDimension('time', 1)
     else:
         nc_trg.createDimension('time', 0) #NrOfDays*8
@@ -65,7 +66,7 @@ def prepare_nc(trgFile, timeList, x, y, metadata, logger, EPSG="EPSG:4326", unit
     DateHour.standard_name = 'time'
     DateHour.long_name = 'time'
     DateHour.axis = 'T'
-    DateHour[:] = time
+    DateHour[:] = timeAR
     y_var = nc_trg.createVariable('lat','f4',('lat',),fill_value=-9999., zlib=zlib,complevel=complevel)
     y_var.standard_name = 'latitude'
     y_var.long_name = 'latitude'
@@ -121,6 +122,7 @@ class netcdfoutput():
         y = _pcrut.pcr2numpy(_pcrut.ycoordinate(_pcrut.boolean(_pcrut.cover(1.0))),NaN)[:,0]
 
         end=starttime + dt.timedelta(seconds=timestepsecs * self.timesteps-1)
+
         if timestepsecs == 86400:
             timeList = date_range(starttime, end, tdelta="days")
         else:

@@ -643,6 +643,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         if st == "None":
             rinfo_str = configget(self._userModel().config, 'run', 'runinfo', "None")
             rinfo = os.path.join(self._userModel().Dir, rinfo_str)
+            self.timestepsecs = int(configget(self._userModel().config, 'run', 'timestepsecs', "86400"))
             if rinfo_str != "None":
                 self.datetime_firststep = getStartTimefromRuninfo(rinfo)
                 self.currentdatetime = self.datetime_firststep
@@ -693,7 +694,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self.NcOutput = netcdfoutput(os.path.join(caseName, runId, self.ncoutfile),
                                          self.logger, self.datetime_firststep,
                                          self._d_lastTimestep - self._d_firstTimestep + 1,
-                                         maxbuf=buffer, metadata=meta, EPSG=self.EPSG)
+                                         maxbuf=buffer, metadata=meta, EPSG=self.EPSG, timestepsecs=self.timestepsecs)
 
         if self.ncoutfilestatic != 'None':  # Ncoutput
             buffer = int(configget(self._userModel().config, 'framework', 'netcdfwritebuffer', "2"))
