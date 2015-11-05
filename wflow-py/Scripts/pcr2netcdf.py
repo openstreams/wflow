@@ -21,14 +21,16 @@
 """
 syntax:
     pcr2netcdf -S date -E date -N mapstackname -I mapstack_folder
-               -O netcdf_name [-b buffersize] [-c inifile][-s start][-d digit]
+               -O netcdf_name [-b buffersize] [-c inifile][-s start][-d digit][-Y][-P EPSG]
 
     -S startdate in "%d-%m-%Y %H:%M:%S" e.g. 31-12-1990 00:00:00
     -E endDate in "%d-%m-%Y %H:%M:%S"
     -s startstep (in the mapstack, default = 1)
+    -Y Do not make seperate files per year
+    -P set the EPSG string. default: "EPSG:4326"
     -N Mapstack-name (prefix)
        You can sepcify multiple input mapstack  to merge them into one netcdf
-       e.g. -M P -M TEMP -M PET
+       e.g. -N P -N TEMP -N PET
     -I input mapstack folder
     -O output netcdf file
     -b maxbuf - maximum number of timesteps to buffer before writing (default = 600)
@@ -64,7 +66,7 @@ import logging.handlers
 import ConfigParser
 import wflow.pcrut as _pcrut
 import osgeo.gdal as gdal
-
+import wflow.wf_netcdfio as ncdf
 def usage(*args):
     sys.stdout = sys.stderr
     for msg in args: print msg
@@ -268,55 +270,6 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
     #nc_trg.sync()
     nc_trg.close()
 
-    
-    
-def prepare_nc(trgFile, timeList, x, y, metadata, logger, units='Days since 1900-01-01 00:00:00', calendar='gregorian',Format="NETCDF4",zlib=False):
-    """
-    This function prepares a NetCDF file with given metadata, for a certain year, daily basis data
-    The function assumes a gregorian calendar and a time unit 'Days since 1900-01-01 00:00:00'
-    """
-    import datetime as dt
-    
-    logger.info('Setting up "' + trgFile + '"')
-    startDayNr = nc4.date2num(timeList[0], units=units, calendar=calendar)
-    endDayNr   = nc4.date2num(timeList[-1], units=units, calendar=calendar)
-    time       = arange(startDayNr,endDayNr+1)
-    nc_trg     = nc4.Dataset(trgFile,'w',format=Format,zlib=zlib)
-
-    logger.info('Setting up dimensions and attributes. lat: ' + str(len(y))+ " lon: " + str(len(x)))
-    nc_trg.createDimension('time', 0) #NrOfDays*8
-    nc_trg.createDimension('lat', len(y))
-    nc_trg.createDimension('lon', len(x))
-    DateHour = nc_trg.createVariable('time','f8',('time',))
-    DateHour.units = units
-    DateHour.calendar = calendar
-    DateHour.standard_name = 'time'
-    DateHour.long_name = 'time'
-    DateHour.axis = 'T'
-    DateHour[:] = time
-    y_var = nc_trg.createVariable('lat','f4',('lat',))
-    y_var.standard_name = 'latitude'
-    y_var.long_name = 'latitude'
-    y_var.units = 'degrees_north'
-    y_var.axis = 'Y'
-    x_var = nc_trg.createVariable('lon','f4',('lon',))
-    x_var.standard_name = 'longitude'
-    x_var.long_name = 'longitude'
-    x_var.units = 'degrees_east'
-    x_var.axis = 'X'
-    y_var[:] = y
-    x_var[:] = x
-    projection= nc_trg.createVariable('projection','c')
-    projection.long_name = 'wgs84'
-    projection.EPSG_code = 'EPSG:4326'
-    projection.proj4_params = '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
-    projection.grid_mapping_name = 'latitude_longitude'
-
-    # now add all attributes from user-defined metadata
-    for attr in metadata:
-        nc_trg.setncattr(attr, metadata[attr])
-    nc_trg.sync()
-    nc_trg.close()
 
 
 def setlogger(logfilename,loggername, thelevel=logging.INFO):
@@ -390,7 +343,7 @@ def main(argv=None):
      
     ncoutfile = "inmaps.nc"
     mapstackfolder="inmaps"
-    inifile = None
+    inifile = "not set"
     mapstackname=[]
     var=[]
     varname=[]
@@ -402,9 +355,11 @@ def main(argv=None):
     
     clonemap=None
     Format="NETCDF4"
+    EPSG="EPSG:4326"
     zlib=True
     least_significant_digit=None
     startstep = 1
+    perYear = True
     if argv is None:
         argv = sys.argv[1:]
         if len(argv) == 0:
@@ -414,7 +369,7 @@ def main(argv=None):
     ## Main model starts here
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, 'c:S:E:N:I:O:b:t:F:zs:d:')
+        opts, args = getopt.getopt(argv, 'c:S:E:N:I:O:b:t:F:zs:d:Yp:')
     except getopt.error, msg:
         usage(msg)
 
@@ -426,7 +381,9 @@ def main(argv=None):
         if o == '-c': inifile = a
         if o == '-I': mapstackfolder = a
         if o == '-b': mbuf = int(a)
+        if o == '-Y': perYear = False
         if o == '-z': zlib=True
+        if o == '-P': EPSG = a
         if o == '-F': Format=a
         if o == '-d': least_significant_digit = int(a)
         if o == '-t': 
@@ -454,32 +411,56 @@ def main(argv=None):
     start=dt.datetime.strptime(startstr,"%d-%m-%Y %H:%M:%S")
     end=dt.datetime.strptime(endstr,"%d-%m-%Y %H:%M:%S")
     if timestepsecs == 86400:
-        timeList = date_range_peryear(start, end, tdelta="days")
-    else:   
-        timeList = date_range_peryear(start, end, tdelta="hours")
+        if perYear:
+            timeList = date_range_peryear(start, end, tdelta="days")
+        else:
+            timeList = date_range(start, end, tdelta="days")
+    else:
+        if perYear:
+            timeList = date_range_peryear(start, end, tdelta="hours")
+        else:
+            timeList = date_range(start, end, tdelta="hours")
 
-    if inifile is not None:
+    if os.path.exists(inifile):
         inimetadata = getnetcdfmetafromini(inifile)
         metadata.update(inimetadata)
 
 
     # break up into separate years
 
+    varmeta = {}
 
     startmapstack = startstep
-    for yr_timelist in timeList:
-        ncoutfile_yr = os.path.splitext(ncoutfile)[0] + "_" + str(yr_timelist[0].year) + os.path.splitext(ncoutfile)[1]
-        prepare_nc(ncoutfile_yr, yr_timelist, x, y, metadata, logger,Format=Format,zlib=zlib)
 
-        idx = 0
-        for mname in mapstackname:
+    if perYear:
+        for yr_timelist in timeList:
+            ncoutfile_yr = os.path.splitext(ncoutfile)[0] + "_" + str(yr_timelist[0].year) + os.path.splitext(ncoutfile)[1]
+            ncdf.prepare_nc(ncoutfile_yr, yr_timelist, x, y, metadata, logger,Format=Format,zlib=zlib,EPSG=EPSG)
+
+            idx = 0
+            for mname in mapstackname:
+                logger.info("Converting mapstack: " + mname + " to " + ncoutfile)
+                # get variable attributes from ini file here
+                if os.path.exists(inifile):
+                    varmeta = getvarmetadatafromini(inifile,var[idx])
+
+                write_netcdf_timeseries(mapstackfolder, mname, ncoutfile_yr, var[idx], unit, varname[idx], yr_timelist, varmeta, logger,maxbuf=mbuf,Format=Format,zlib=zlib,least_significant_digit=least_significant_digit,startidx=startmapstack)
+                idx = idx + 1
+
+            startmapstack = startmapstack + len(yr_timelist)
+    else:
+         #ncoutfile_yr = os.path.splitext(ncoutfile)[0] + "_" + str(yr_timelist[0].year) + os.path.splitext(ncoutfile)[1]
+         ncdf.prepare_nc(ncoutfile, timeList, x, y, metadata, logger,Format=Format,zlib=zlib,EPSG=EPSG)
+         idx = 0
+         for mname in mapstackname:
             logger.info("Converting mapstack: " + mname + " to " + ncoutfile)
             # get variable attributes from ini file here
-            varmeta = getvarmetadatafromini(inifile,var[idx])
+            if os.path.exists(inifile):
+                varmeta = getvarmetadatafromini(inifile,var[idx])
 
-            write_netcdf_timeseries(mapstackfolder, mname, ncoutfile_yr, var[idx], unit, varname[idx], yr_timelist, varmeta, logger,maxbuf=mbuf,Format=Format,zlib=zlib,least_significant_digit=least_significant_digit,startidx=startmapstack)
-            startmapstack = startmapstack + len(yr_timelist)
+            write_netcdf_timeseries(mapstackfolder, mname, ncoutfile, var[idx], unit, varname[idx], timeList, varmeta, logger,maxbuf=mbuf,Format=Format,zlib=zlib,least_significant_digit=least_significant_digit,startidx=startmapstack)
             idx = idx + 1
+
 
 
 if __name__ == "__main__":
