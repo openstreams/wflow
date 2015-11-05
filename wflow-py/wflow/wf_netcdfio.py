@@ -125,8 +125,11 @@ class netcdfoutput():
 
         if timestepsecs == 86400:
             timeList = date_range(starttime, end, tdelta="days")
-        else:
+        elif timestepsecs == 3600:
             timeList = date_range(starttime, end, tdelta="hours")
+        else:
+            logger.error("Current timestep: " + str(timestepsecs) + " not supported in netcdf writing.")
+            timeList = date_range(starttime, end, tdelta="days")
 
         self.timestepbuffer = zeros((self.maxbuf,len(y),len(x)))
         self.bufflst={}
