@@ -320,7 +320,7 @@ def dw_mkDelwaqPointers(ldd,amap,difboun,layers):
     # make into flatted numpy arrays
     np_ptid = pcr2numpy(ptid,NaN).flatten()
     np_flowto = pcr2numpy(flowto,NaN).flatten()
-    np_catchid = pcr2numpy(scalar(amap),NaN).flatten()
+    np_catchid = pcr2numpy(scalar(amap),-999).flatten()
     np_upbound = pcr2numpy(upbound,NaN).flatten()
 
     # remove all non-active cells
