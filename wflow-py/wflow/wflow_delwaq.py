@@ -893,14 +893,12 @@ def main():
     # Get subcatchment data
     logger.info("Reading basemaps")
     
-    setclone(caseId + configget(config,"model","wflow_subcatch","//staticmaps/wflow_subcatch.map"))
-    print caseId + "/staticmaps/wflow_subcatch.map"
+    wflow_subcatch = caseId + "/" + configget(config,"model","wflow_subcatch","/staticmaps/wflow_subcatch.map")
+    setclone(wflow_subcatch)
     amap = scalar(readmap(caseId +  "/" + areamap))
-    #amap = scalar(readmap(caseId + "/staticmaps/wflow_subcatch.map"))
-    modelmap = readmap(caseId + configget(config,"model","wflow_subcatch","/staticmaps/wflow_subcatch.map"))
-        # get ldd
-    ldd = readmap(caseId + configget(config,"model","wflow_ldd","/staticmaps/wflow_ldd.map"))
-    gauges = readmap(caseId + configget(config,"model","wflow_gauges","/staticmaps/wflow_gauges.map"))
+    modelmap = readmap(wflow_subcatch)
+    ldd = readmap(caseId + "/" + configget(config,"model","wflow_ldd","/staticmaps/wflow_ldd.map"))
+    gauges = readmap(caseId + "/" + configget(config,"model","wflow_gauges","/staticmaps/wflow_gauges.map"))
 
     # Some models yield a reallength.map, others a rl.map.
     rl_map_file = caseId + "/" + runId + "/outsum/rl.map"
