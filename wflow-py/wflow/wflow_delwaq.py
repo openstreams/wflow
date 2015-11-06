@@ -688,6 +688,311 @@ def dw_WriteGridFiles(fname,ptid_map, pointer):
     f.close()
 
 
+def dw_WriteWaqGeom(fname, ptid_map, ldd_map):
+    """
+    Writes Delwaq netCDF geometry file )*_waqgeom.nc).
+
+    input:
+    - fname    : output file name (without file extension)
+    - ptid_map : PCRaster map with unique id's
+    """
+    # Get coordinates
+
+    zero_map = scalar(ptid_map) * 0.0
+    setglobaloption('coorul') # upper-left cell corners
+    xxul = pcr2numpy(xcoordinate(boolean(cover(zero_map + 1,1))),-1)
+    yyul = pcr2numpy(ycoordinate(boolean(cover(zero_map + 1,1))),-1)
+    setglobaloption('coorlr') # lower-right cell corners
+    xxlr = pcr2numpy(xcoordinate(boolean(cover(zero_map + 1,1))),-1)
+    yylr = pcr2numpy(ycoordinate(boolean(cover(zero_map + 1,1))),-1)
+
+    # Convert pcr maps to numpy arrays
+
+    np_ptid = pcr2numpy(ptid_map,-1)
+    np_ldd = pcr2numpy(ldd_map,-1)
+    np_ldd[np_ldd == 255] = 0
+
+    # Number of segments in horizontal dimension
+
+    nosegh = int(numpy.max(np_ptid))
+
+    # Waqgeom dimensions
+
+    n_net_node = 0
+    n_net_link = 0
+    n_net_link_pts = 2
+    n_net_elem = nosegh
+    n_net_elem_max_node = 4 # all elements are rectangles
+    n_flow_link = nosegh - 1 # one per element, except for outlet
+    n_flow_link_pts = 2
+
+    # Prepare waqgeom data structures
+
+    nodes_x = []
+    nodes_y = []
+    nodes_z = []
+    net_links = []
+    elem_nodes = numpy.zeros( (n_net_elem,n_net_elem_max_node), dtype=numpy.int)
+    flow_links = numpy.zeros( (n_flow_link,n_flow_link_pts), dtype=numpy.int)
+
+    # Keep track of nodes and links as dataset grows 
+
+    i_node = 0  # index of last node
+    i_flink = 0 # index of last flow link
+
+    # PCR cell id's start at 1, we need it zero based
+
+    np_ptid = np_ptid - 1
+
+    # Wflow map dimensions
+
+    m, n = np_ptid.shape
+
+    # Helper function
+
+    def add_node(i, j, corner):
+        # Get coordinates
+        if corner == UL:
+            x = xxul[i,j]
+            y = yyul[i,j]
+        elif corner == LR:
+            x = xxlr[i,j]
+            y = yylr[i,j]
+        elif corner == UR:
+            x = xxlr[i,j]
+            y = yyul[i,j]
+        elif corner == LL:
+            x = xxul[i,j]
+            y = yylr[i,j]
+        else:
+            assert(0)
+        # Add node coordinates
+        nodes_x.append(x)
+        nodes_y.append(y)
+        nodes_z.append(0)
+
+    # Cell corners
+
+    UL, UR, LL, LR = 0, 1, 2, 3
+
+    # Process all cells from upper-left to lower-right
+
+    for i in range(m):
+        for j in range(n):
+            # Current element index
+            i_elem = np_ptid[i,j]
+            if i_elem < 0:
+                # skip inactive segment
+                continue
+            
+            # Get index of neighbouring elements that could have been processed before
+
+            if i == 0:
+                i_elem_up_left  = -1
+                i_elem_up       = -1
+                i_elem_up_right = -1
+            elif j == 0:
+                i_elem_up_left  = -1
+                i_elem_up       = np_ptid[i-1,j  ]
+                i_elem_up_right = np_ptid[i-1,j+1]
+            else:
+                i_elem_up_left  = np_ptid[i-1,j-1]
+                i_elem_up       = np_ptid[i-1,j  ]
+                i_elem_up_right = np_ptid[i-1,j+1]
+            
+            if j == 0:
+                i_elem_left = -1
+            else:
+                i_elem_left = np_ptid[i  ,j-1]
+            
+            # Update nodes
+
+            # UR node
+            if (i_elem_left < 0 and i_elem_up_left < 0 and i_elem_up < 0):
+                add_node(i,j,UL)
+                elem_nodes[i_elem,UL] = i_node
+                i_node += 1
+            elif i_elem_left >= 0:
+                elem_nodes[i_elem,UL] = elem_nodes[i_elem_left, UR]
+            elif i_elem_up_left >= 0:
+                elem_nodes[i_elem,UL] = elem_nodes[i_elem_up_left, LR]
+            elif i_elem_up >= 0:
+                elem_nodes[i_elem,UL] = elem_nodes[i_elem_up, LL]
+
+            # UL node
+            if (i_elem_up < 0 and i_elem_up_right < 0):
+                add_node(i,j,UR)
+                elem_nodes[i_elem,UR] = i_node
+                i_node += 1
+                # add UL-UR link
+                net_links.append((elem_nodes[i_elem,UL], elem_nodes[i_elem,UR]))
+            elif i_elem_up >= 0:
+                elem_nodes[i_elem,UR] = elem_nodes[i_elem_up, LR]
+            elif i_elem_up_right >= 0:
+                elem_nodes[i_elem,UR] = elem_nodes[i_elem_up_right, LL]
+
+            # LL node
+            if (i_elem_left < 0):
+                add_node(i,j,LL)
+                elem_nodes[i_elem,LL] = i_node
+                i_node += 1
+                # add UL-LL link
+                net_links.append((elem_nodes[i_elem,UL], elem_nodes[i_elem,LL]))
+            else:
+                elem_nodes[i_elem,LL] = elem_nodes[i_elem_left, LR]
+
+            # LR node
+            add_node(i,j,LR)
+            elem_nodes[i_elem,LL] = i_node
+            i_node += 1
+            # add LL-LR link
+            net_links.append((elem_nodes[i_elem,LL], elem_nodes[i_elem,LR]))
+            # add UR-LR link
+            net_links.append((elem_nodes[i_elem,UR], elem_nodes[i_elem,LR]))
+
+            # Update flow links based on local drain direction
+            # TODO: diagonal flow links between cells that have only one node in common?
+            
+            direction = np_ldd[i,j]
+            i_other = - 1
+            if   direction == 1: i_other = np_ptid[i+1,j-1] # to lower left
+            elif direction == 2: i_other = np_ptid[i+1,j  ] # to lower
+            elif direction == 3: i_other = np_ptid[i+1,j+1] # to lower right
+            elif direction == 4: i_other = np_ptid[i  ,j-1] # to left
+            elif direction == 6: i_other = np_ptid[i  ,j-1] # to right
+            elif direction == 7: i_other = np_ptid[i-1,j-1] # to upper right
+            elif direction == 8: i_other = np_ptid[i-1,j  ] # to upper
+            elif direction == 9: i_other = np_ptid[i-1,j+1] # to upper left
+            if i_other >= 0:
+                flow_links[i_flink,:] = i_elem, np_ptid[i+1,j-1]
+                i_flink += 1
+
+    # Convert data to numpy arrays
+
+    nodes_x = numpy.array(nodes_x)
+    nodes_y = numpy.array(nodes_y)
+    nodes_z = numpy.array(nodes_z)
+    net_links = numpy.array(net_links)
+    
+    # Update dimensions
+
+    n_net_node = nodes_x.shape[0]
+    n_net_link = net_links.shape[0]
+
+    # Create netCDF file in classic format
+
+    f = netCDF4.Dataset(fname + "_waqgeom.nc", 'w', format='NETCDF3_CLASSIC')
+
+    # Create dimensions
+
+    f.createDimension("dim", 1)
+    f.createDimension("nNetNode", n_net_node)
+    f.createDimension("nNetLink", n_net_link)
+    f.createDimension("nNetLinkPts", n_net_link_pts)
+    f.createDimension("nNetElem", n_net_elem)
+    f.createDimension("nNetElemMaxNode", n_net_elem_max_node)
+    f.createDimension("nFlowLink", n_flow_link)
+    f.createDimension("nFlowLinkPts", n_flow_link_pts)
+
+    # Create variables
+
+    v_msh = f.createVariable("mesh","i4",("dim",))
+    v_pcs = f.createVariable("projected_coordinate_system","i4",())
+    v_nnx = f.createVariable("NetNode_x","f8",("nNetNode",))
+    v_nny = f.createVariable("NetNode_y","f8",("nNetNode",))
+    v_nnz = f.createVariable("NetNode_z","f8",("nNetNode",))
+    v_nlk = f.createVariable("NetLink","i4",("nNetLink", "nNetLinkPts",))
+    v_nen = f.createVariable("NetElemNode","i4",("nNetElem", "nNetElemMaxNode",), fill_value=0)
+    v_flk = f.createVariable("FlowLink","i4",("nFlowLink", "nFlowLinkPts",))
+    v_flt = f.createVariable("FlowLinkType","i4",("nFlowLink",))
+    v_flx = f.createVariable("FlowLink_xu","f8",("nFlowLink",))
+    v_fly = f.createVariable("FlowLink_yu","f8",("nFlowLink",))
+
+    # Variable attributes
+
+    v_msh.long_name = "Delft3D FM aggregated mesh"
+    v_msh.cf_role = "mesh_topology"
+    v_msh.topology_dimension = "2 d"
+    v_msh.node_coordinates = "NetNode_x NetNode_y"
+    v_msh.face_node_connectivity = "NetElemNode"
+    v_msh.edge_node_connectivity = "NetLink"
+    v_msh.edge_face_connectivity = "FlowLink"
+
+    # v_pcs.name = "Unknown projected"
+    v_pcs.epsg = 28992
+    v_pcs.grid_mapping_name = "Unknown projected"
+    v_pcs.longitude_of_prime_meridian = 0.
+    v_pcs.semi_major_axis = 6378137.
+    v_pcs.semi_minor_axis = 6356752.314245
+    v_pcs.inverse_flattening = 298.257223563
+    v_pcs.epsg_code = "EPGS:28992"
+    v_pcs.value = "value is equal to EPSG code"
+
+    v_nnx.units = "degrees_east"
+    v_nnx.standard_name = "longitude"
+    v_nnx.long_name = "longitude"
+
+    v_nny.units = "degrees_north"
+    v_nny.standard_name = "latitude"
+    v_nny.long_name = "latitude"
+
+    v_nnz.units = "m"
+    v_nnz.positive = "up"
+    v_nnz.standard_name = "sea_floor_depth"
+    v_nnz.long_name = "Bottom level at net nodes (flow element\'s corners)"
+    v_nnz.coordinates = "NetNode_x NetNode_y"
+
+    v_nlk.long_name = "link between two netnodes"
+    v_nlk.start_index = 1
+
+    v_nen.long_name = "Net element defined by nodes"
+    v_nen.start_index = 1
+    # v_nen._FillValue = 0
+
+    v_flk.long_name = "link/interface between two flow elements"
+    v_flk.start_index = 1
+
+    v_flt.long_name = "type of flowlink"
+    v_flt.valid_range = 1, 2
+    v_flt.flag_values = 1, 2
+    v_flt.flag_meanings = "link_between_1D_flow_elements link_between_2D_flow_elements"
+
+    v_flx.units = "degrees_east"
+    v_flx.standard_name = "longitude"
+    v_flx.long_name = "x-Coordinate of velocity point on flow link."
+
+    v_fly.units = "degrees_north"
+    v_fly.standard_name = "latitude"
+    v_fly.long_name = "y-Coordinate of velocity point on flow link."
+
+    # Global attributes
+
+    f.institution = "Deltares"
+    f.references = "http://www.deltares.nl"
+    time_string = time.strftime("%b %d %Y, %H:%M:%S")
+    f.source = "Wflow, Deltares, %s."%time_string
+    offset_s = -time.altzone
+    offset_m = int((offset_s % 3600) / 60)
+    offset_h = int((offset_s/60 - offset_m) / 60)
+    time_string = time.strftime("%Y-%m-%dT%H:%M:%S") + "+%02i%02i"%(offset_h, offset_m)
+    f.history = "Created on %s, wflow_delwaq.py"%time_string
+    f.Conventions = "CF-1.6 UGRID-0.9"
+
+    # Data
+
+    v_nnx[:] = nodes_x
+    v_nny[:] = nodes_y
+    v_nnz[:] = nodes_z
+    v_nlk[:,:] = net_links + 1 # uses 1-based indexes
+    v_nen[:,:] = elem_nodes + 1 # uses 1-based indexes
+    v_flk[:,:] = flow_links + 1 # uses 1-based indexes
+    v_flt[:] = 2
+    v_flx[:] = 0
+    v_fly[:] = 0
+
+    f.close()
+
+
 def dw_WriteSurfaceFile(fname,m,n,noseg,block):
     """
     Generates a Delwaq surface (*.srf) file.
@@ -847,7 +1152,7 @@ def main():
         if o == '-F': 
             runinfoFile = a
             fewsrun = True
-        if o == '-C':caseId = a
+        if o == '-C': caseId = a
         if o == '-R': runId = a
         if o == '-D': dwdir = a
         if o == '-d': Write_Dynamic = True
@@ -992,6 +1297,7 @@ def main():
     dw_WriteSurfaceFile(comroot+'.srf',mmax,nmax,NOSQ,surface_block)
     dw_WriteSegmentOrExchangeData(0,comroot+'.len',length_block,1,WriteAscii)
     dw_WriteGridFiles(comroot, ptid, pointer)
+    dw_WriteWaqGeom(comroot, ptid, ldd)
 
     # mask to filter out inactive segments
     zero_map = 0.0*scalar(ptid)
