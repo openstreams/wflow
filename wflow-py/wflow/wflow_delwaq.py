@@ -339,14 +339,13 @@ def dw_mkDelwaqPointers(ldd,amap,difboun,layers):
     #    negative: outflow boundary
     #    zero    : internal flow
     #    positive: inflow boundary
-    pointer_labels = zeros( (len(np_flowto),1) ) 
-    pointer_labels = zeros( (len(np_flowto),1) )
+    pointer_labels = zeros( (len(np_flowto)), dtype=numpy.int ) 
     extraboun = []
     # Add the inflow boundaries here.
     cells = pointer[:,0]
     cells = cells.reshape(len(cells),1)
     bounid = cells.copy()
-    zzerocol = zeros((len(np_flowto),1))
+    zzerocol = zeros((len(np_flowto),1), dtype=numpy.int)
     
     # outflow to pointer
     # point -> - point
@@ -370,7 +369,7 @@ def dw_mkDelwaqPointers(ldd,amap,difboun,layers):
             extraboun = hstack((bounid,cells,zzerocol,zzerocol))        
         else:
             extraboun = vstack((extraboun,hstack((bounid,cells,zzerocol,zzerocol))))
-        hstack((pointer_labels, zzerocol + bouns))
+        pointer_labels = hstack((pointer_labels, zzerocol[:,0] + bouns))
         bouns = bouns +1
         start = start + len(cells)
     
@@ -685,7 +684,7 @@ def dw_WriteGridFiles(fname,ptid_map, pointer):
 
 def dw_WriteWaqGeom(fname, ptid_map, ldd_map):
     """
-    Writes Delwaq netCDF geometry file )*_waqgeom.nc).
+    Writes Delwaq netCDF geometry file (*_waqgeom.nc).
 
     input:
     - fname    : output file name (without file extension)
@@ -988,6 +987,101 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map):
     f.close()
 
 
+def dw_WriteBndFile(fname, ptid_map, pointer, pointer_labels, source_ids):
+    """
+    Writes Delwaq *.bnd file.
+
+    input:
+    - fname          : output file name (without file extension)
+    - ptid_map       : PCRaster map with unique id's
+    - pointer        : delwaq pointers
+    - pointer_labels : numpy array with pointer types
+    - source_ids     : list of source names
+    """
+    buff = ""
+    np_ptid = pcr2numpy(ptid_map, -1)
+
+    # Upper-left and lower-right Coordinates
+
+    zero_map = scalar(ptid_map) * 0.0
+    setglobaloption('coorul') # upper-left cell corners
+    xxul = pcr2numpy(xcoordinate(boolean(cover(zero_map + 1,1))),-1)
+    yyul = pcr2numpy(ycoordinate(boolean(cover(zero_map + 1,1))),-1)
+    setglobaloption('coorlr') # lower-right cell corners
+    xxlr = pcr2numpy(xcoordinate(boolean(cover(zero_map + 1,1))),-1)
+    yylr = pcr2numpy(ycoordinate(boolean(cover(zero_map + 1,1))),-1)
+
+    # Map dimensions
+
+    m, n = np_ptid.shape
+
+    # Build grid cell index lookup
+
+    cell_indexes = {}
+    for i in range(m):
+        for j in range(n):
+            if np_ptid[i,j] > 0:
+                cell_indexes[np_ptid[i,j]] = (i,j)
+
+    # Number of boundaries
+    
+    buff += "%i\n"%( len(pointer_labels[pointer_labels != 0]) )
+
+    # Outflows
+
+    for i_count, i_pointer in enumerate( numpy.where(pointer_labels < 0)[0] ):
+        segnum = pointer[i_pointer,0]
+        bndnum = pointer[i_pointer,1]
+        buff += "Outflow_%i\n"%(i_count+1)
+        buff += "1\n"
+
+        # Find a cell edge with no active neighbour
+
+        i, j = cell_indexes[segnum]
+        if i == 0 or np_ptid[i-1,j] < 0:
+            # first row or upper neighbour inactive: use upper edge
+            point_a = xxul[i,j], yyul[i,j]
+            point_b = xxlr[i,j], yyul[i,j]
+        elif j == 0 or np_ptid[i,j-1] < 0:
+            # first column or left neighbour inactive: use left edge
+            point_a = xxul[i,j], yylr[i,j]
+            point_b = xxul[i,j], yyul[i,j]
+        elif i == m-1 or np_ptid[i+1,j] < 0:
+            # last row or lower neighbour inactive: use lower edge
+            point_a = xxul[i,j], yylr[i,j]
+            point_b = xxlr[i,j], yylr[i,j]
+        elif j == n-1 or np_ptid[i,j+1]:
+            # last column or right neighbour inactive: use right edge
+            point_a = xxlr[i,j], yyul[i,j]
+            point_b = xxlr[i,j], yylr[i,j]
+        else:
+            # no inactive neighbour: use upper left corner
+            point_a = xxul[i,j], yyul[i,j]
+            point_b = point_a
+
+        buff += "%i %e %e %e %e\n"%(bndnum, point_a[0], point_a[1], point_b[0], point_b[1])
+ 
+    # Inflows
+
+    for i_pointer in numpy.where(pointer_labels > 0)[0]:
+        source_id = source_ids[ pointer_labels[i_pointer] - 1 ]
+        segnum = pointer[i_pointer,1]
+        bndnum = pointer[i_pointer,0]
+        buff += "Inflow_%s_%i\n"%(source_id, segnum)
+        buff += "1\n"
+
+        # Compute center coordinates of cell
+        i, j = cell_indexes[segnum]
+        x = (xxul[i,j] + xxlr[i,j] ) * 0.5
+        y = (yyul[i,j] + yylr[i,j] ) * 0.5
+        buff += "%i %e %e %e %e\n"%(bndnum, x, y, x, y)
+
+    # Write files
+    f = open(fname + ".bnd", 'w')
+    f.write(buff)
+    f.close()
+
+
 def dw_WriteSurfaceFile(fname,m,n,noseg,block):
     """
     Generates a Delwaq surface (*.srf) file.
@@ -1284,8 +1378,15 @@ def main():
     dw_WritePointer(comroot+'.poi',pointer,binary=True)
     dw_WriteSurfaceFile(comroot+'.srf',mmax,nmax,NOSQ,surface_block)
     dw_WriteSegmentOrExchangeData(0,comroot+'.len',length_block,1,WriteAscii)
+    
+    logger.info("Writing waq grid files")
     dw_WriteGridFiles(comroot, ptid, pointer)
+    
+    logger.info("Writing waq geometry file")
     dw_WriteWaqGeom(comroot, ptid, ldd)
+    
+    logger.info("Writing boundary file")
+    dw_WriteBndFile(comroot, ptid, pointer, pointer_labels, sourcesMap)
 
     # mask to filter out inactive segments
     zero_map = 0.0*scalar(ptid)
