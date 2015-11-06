@@ -578,110 +578,6 @@ def dw_GetGridDimensions(ptid_map):
     return m,n
 
 
-def dw_WriteGridFiles(fname,ptid_map, pointer):
-    """
-    Writes Delwaq indices (*.lga) and coordinates (*.cco) files.
-
-    input:
-    - fname    : output file name (without file extension)
-    - ptid_map : PCRaster map with unique id's
-    """
-    # horizontal dimensions
-    m,n = dw_GetGridDimensions(ptid_map)
-    # number of layers
-    nolay = 1
-
-    # prepare cco data
-    zero_map = scalar(ptid_map) * 0.0
-    setglobaloption('coorul')
-    xxul = dw_pcrToDataBlock(xcoordinate(boolean(cover(zero_map + 1,1))))
-    yyul = dw_pcrToDataBlock(ycoordinate(boolean(cover(zero_map + 1,1))))
-    setglobaloption('coorlr')
-    xxlr = dw_pcrToDataBlock(xcoordinate(boolean(cover(zero_map + 1,1))))
-    yylr = dw_pcrToDataBlock(ycoordinate(boolean(cover(zero_map + 1,1))))
-    setglobaloption('coorcentre')
-    # reshape to 2d array
-    xx = xxul.reshape((m,n))
-    yy = yyul.reshape((m,n))
-    # add extra row and columns for last corner coordinates
-    xx = insert(xx,m,0,axis=0)
-    xx = insert(xx,n,0,axis=1)
-    yy = insert(yy,m,0,axis=0)
-    yy = insert(yy,n,0,axis=1)
-    # reshape lower right coordinates
-    xxlr = xxlr.reshape((m,n))
-    yylr = yylr.reshape((m,n))
-    # use lower right coordinates were possible
-    xx[1:,-1] = xxlr[:,-1]
-    xx[-1,1:] = xxlr[-1,:]
-    yy[1:,-1] = yylr[:,-1]
-    yy[-1,1:] = yylr[-1,:]
-    # fill top right and bottom left coordinates
-    xx[0,-1]  = xx[1,-1]
-    xx[-1,0]  = xx[-2,0]
-    yy[0,-1]  = yy[0,-2]
-    yy[-1,0]  = yy[-1,1]
-    # add extra row and columns for dummy coordinates
-    xx = insert(xx,m+1,0,axis=0)
-    xx = insert(xx,n+1,0,axis=1)
-    yy = insert(yy,m+1,0,axis=0)
-    yy = insert(yy,n+1,0,axis=1)
-
-    # prepare lga data
-    lga = dw_pcrToDataBlock(scalar(cover(ptid_map,0)))
-    # reshape lga to 2D array
-    lga = lga.reshape((m,n))
-    # add frame of zeros around lga matrix
-    lga = insert(lga,m,0,axis=0)
-    lga = insert(lga,n,0,axis=1)
-    lga = insert(lga,0,0,axis=0)
-    lga = insert(lga,0,0,axis=1)
-    # find boundary nodes
-    outflows = pointer[ pointer[:,1] < 0, 0:2]
-    # allocate negative segment number to outflow boundary cells
-    for segnr, boundnr in outflows:
-        w = where(lga == segnr)
-        i,j = w[0][0], w[1][0]
-        # choose first zero neighbour and make it
-        if lga[i,j-1] == 0:
-            lga[i,j-1] = boundnr
-        elif lga[i,j+1] == 0:
-            lga[i,j+1] = boundnr
-        elif lga[i-1,j] == 0:
-            lga[i-1,j] = boundnr
-        elif lga[i+1,j] == 0:
-            lga[i+1,j] = boundnr
-
-    # update grid dimensions
-    m = m+2
-    n = n+2
-    # reshape to 1D arrays
-    xx  = xx.reshape( (m*n) )
-    yy  = yy.reshape( (m*n) )
-    lga = lga.reshape( (m*n) )
-
-    # write cco file
-    # print("cco.shape: {}",format(xx.shape))
-    f = open(fname + '.cco','wb')
-    f.write(array([m, n, ], dtype=numpy.int).tostring())
-    f.write(array([xx[0], yy[0]], dtype=numpy.float32).tostring())
-    f.write(array([0, 0, nolay, 0, 0, 0, 0, 0, 0, 0, 0, 0], dtype=numpy.int).tostring())
-    f.write(hstack((xx, yy)).tostring())
-    f.close()
-
-    # write lga file
-    nosegh = dw_pcrToDataBlock(ptid_map).shape[0]
-    # print("lga.shape: {}",format(lga.shape))
-    # print("m,n : {},{}".format(m,n))
-    noq = pointer.shape[0]
-    ints = array([n, m, nosegh, nolay, noq, 0, 0])
-    ints = hstack((ints, lga))
-    ints = array(ints, dtype=numpy.int)
-    f = open(fname + '.lga','wb')
-    f.write(ints.tostring())
-    f.close()
-
-
 def dw_WriteWaqGeom(fname, ptid_map, ldd_map):
     """
     Writes Delwaq netCDF geometry file (*_waqgeom.nc).
@@ -1392,9 +1288,6 @@ def main():
     dw_WritePointer(comroot+'.poi',pointer,binary=True)
     dw_WriteSurfaceFile(comroot+'.srf',mmax,nmax,NOSQ,surface_block)
     dw_WriteSegmentOrExchangeData(0,comroot+'.len',length_block,1,WriteAscii)
-    
-    logger.info("Writing waq grid files")
-    dw_WriteGridFiles(comroot, ptid, pointer)
     
     logger.info("Writing waq geometry file")
     dw_WriteWaqGeom(comroot, ptid, ldd)
