@@ -652,7 +652,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 self.timestepsecs = int(configget(self._userModel().config, 'run', 'timestepsecs', "86400"))
                 duration = self.datetime_laststep - self.datetime_firststep
                 nrseconds = duration.total_seconds()
-                self._userModel()._setNrTimeSteps(int(nrseconds / self.timestepsecs) + 1)
+                self._userModel()._setNrTimeSteps(int(nrseconds / self.timestepsecs))
                 self._userModel().timestepsecs = self.timestepsecs
                 self._d_firstTimestep = 1
                 self._userModel()._setFirstTimeStep(self._d_firstTimestep)
@@ -676,7 +676,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self._userModel()._setNrTimeSteps(int(nrseconds / self.timestepsecs) + 1)
             self._d_firstTimestep = 1
             self._userModel()._setFirstTimeStep(self._d_firstTimestep)
-            self._d_lastTimestep = int(nrseconds / self.timestepsecs) + 1
+            self._d_lastTimestep = int(nrseconds / self.timestepsecs)
 
         if self.ncfile != "None":
             mstacks = configsection(self._userModel().config, "inputmapstacks")
@@ -693,7 +693,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             meta['runId'] = runId
             self.NcOutput = netcdfoutput(os.path.join(caseName, runId, self.ncoutfile),
                                          self.logger, self.datetime_firststep,
-                                         self._d_lastTimestep - self._d_firstTimestep + 1,
+                                         self._d_lastTimestep - self._d_firstTimestep,
                                          maxbuf=buffer, metadata=meta, EPSG=self.EPSG, timestepsecs=self.timestepsecs)
 
         if self.ncoutfilestatic != 'None':  # Ncoutput
@@ -703,7 +703,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             meta['runId'] = runId
             self.NcOutputStatic = netcdfoutput(os.path.join(caseName, runId, self.ncoutfilestatic),
                                                self.logger, self.datetime_laststep,
-                                               self._d_lastTimestep - self._d_firstTimestep + 1,
+                                               self._d_lastTimestep - self._d_firstTimestep,
                                                maxbuf=buffer, metadata=meta, EPSG=self.EPSG)
 
         # if self.ncoutfilestate != 'None': # Ncoutput
