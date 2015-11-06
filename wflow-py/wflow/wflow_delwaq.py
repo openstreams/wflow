@@ -84,8 +84,6 @@ $Rev: 813 $
 """
 import  wflow.wflow_adapt as wflow_adapt
 from  wflow.wf_DynamicFramework import *
-
-
  
 from datetime import *
 import os
@@ -96,7 +94,6 @@ import time
 import struct
 import shutil
 import __builtin__
-
 
 logger = ""
 volumeMapStack="vol"
@@ -167,7 +164,7 @@ def dw_WriteInitials(fname,inmaps):
     exfile.close()
     
     
-def dw_WriteBoundlist(fname,pointer,areas,of,inflowtypes):
+def dw_WriteBoundlist(fname,pointer,areas,inflowtypes):
     """ 
     Writes the boundary list file
     B5\_boundlist.inc
@@ -267,8 +264,6 @@ def dw_WriteSegmentOrExchangeData(ttime,fname,datablock,boundids,WriteAscii=True
         fpa.close()
 
 
-#TODO: Add exta column with boundary labels (of the inflows)
-
 def dw_mkDelwaqPointers(ldd,amap,difboun,layers):
     """
     An ldd is used to determine the from-to relations for delwaq using
@@ -340,14 +335,18 @@ def dw_mkDelwaqPointers(ldd,amap,difboun,layers):
     # mak epointer matrix and add to zero zolumns
     orgpointer = hstack((np_ptid,np_flowto,zeros((len(np_flowto),1)),zeros((len(np_flowto),1))))
     pointer = orgpointer.copy()
+    # Pointer labels:
+    #    negative: outflow boundary
+    #    zero    : internal flow
+    #    positive: inflow boundary
+    pointer_labels = zeros( (len(np_flowto),1) ) 
+    pointer_labels = zeros( (len(np_flowto),1) )
     extraboun = []
     # Add the inflow boundaries here.
     cells = pointer[:,0]
     cells = cells.reshape(len(cells),1)
     bounid = cells.copy()
     zzerocol = zeros((len(np_flowto),1))
-    inflowId = bounid.copy()
-    
     
     # outflow to pointer
     # point -> - point
@@ -359,20 +358,19 @@ def dw_mkDelwaqPointers(ldd,amap,difboun,layers):
     lowerids = lowerids.reshape(len(lowerids),1)
     of = hstack((lopt,lowerids,zerocol,zerocol))
     
-    #pointer = vstack((pointer,of))
-    
     # Now remove double pointer to itself and replace by lower boundary
     lowerck = pointer[:,0] == pointer[:,1]   
-    pointer[lowerck,:] = of 
+    pointer[lowerck,:] = of
+    pointer_labels[lowerck] = -1
     start = absolute(lowerids.min()) + 1
     bouns = 1
     for idd in range(1,difboun + 1):
-        inflowId[:] = idd
         bounid = arange(start,(len(cells)+start)).reshape((len(cells),1)) * -1.0
         if bouns == 1:
             extraboun = hstack((bounid,cells,zzerocol,zzerocol))        
         else:
             extraboun = vstack((extraboun,hstack((bounid,cells,zzerocol,zzerocol))))
+        hstack((pointer_labels, zzerocol + bouns))
         bouns = bouns +1
         start = start + len(cells)
     
@@ -392,12 +390,10 @@ def dw_mkDelwaqPointers(ldd,amap,difboun,layers):
     #extraboun= hstack((np_catchid,cells,zerocol,zerocol))
     #print np_catchid
     
-    
     if len(extraboun) > 0:
         pointer = vstack((pointer,extraboun)) 
       
-    return ptid, flowto, pointer, orgpointer[:,0], of[:,0:2], extraboun[:,0:1].flatten(), np_ptid.flatten(), np_catchid
-
+    return ptid, pointer, pointer_labels, np_ptid.flatten(), np_catchid
 
 
 def dw_pcrToDataBlock(pcrmap):
@@ -409,7 +405,6 @@ def dw_pcrToDataBlock(pcrmap):
     ttar = ttar[isfinite(ttar)]
     
     return ttar
-            
 
  
 def readTS(name, ts):
@@ -426,6 +421,7 @@ def readTS(name, ts):
     mapje = readmap(name)
     
     return mapje
+
 
 def dw_CreateDwRun(thedir):
     """"
@@ -461,7 +457,6 @@ def dw_CreateDwRun(thedir):
     if os.path.isdir(comdir):
         shutil.rmtree(comdir)
     os.mkdir(comdir)
-
 
 
 def dw_Write_Times(dwdir,T0,timeSteps,timeStepSec):
@@ -667,7 +662,7 @@ def dw_WriteGridFiles(fname,ptid_map, pointer):
     lga = lga.reshape( (m*n) )
 
     # write cco file
-    print("cco.shape: {}",format(xx.shape))
+    # print("cco.shape: {}",format(xx.shape))
     f = open(fname + '.cco','wb')
     f.write(array([m, n, ], dtype=numpy.int).tostring())
     f.write(array([xx[0], yy[0]], dtype=numpy.float32).tostring())
@@ -677,8 +672,8 @@ def dw_WriteGridFiles(fname,ptid_map, pointer):
 
     # write lga file
     nosegh = dw_pcrToDataBlock(ptid_map).shape[0]
-    print("lga.shape: {}",format(lga.shape))
-    print("m,n : {},{}".format(m,n))
+    # print("lga.shape: {}",format(lga.shape))
+    # print("m,n : {},{}".format(m,n))
     noq = pointer.shape[0]
     ints = array([n, m, nosegh, nolay, noq, 0, 0])
     ints = hstack((ints, lga))
@@ -1125,8 +1120,6 @@ def usage(*args):
 pointer = ""
 
 
-
-
 def main():
     caseId = "Ahr_DW/"
     caseId = "default_hbv"
@@ -1191,7 +1184,7 @@ def main():
     logger = pcrut.setlogger(dwdir + "/debug/wflow_delwaq.log","wflow_delwaq") 
     #caseid = "default_hbv"
     logger.info("T0 of run: " + str(T0))
-    boundids = len(sourcesMap)  # extra number of exchnages for all bounds
+    boundids = len(sourcesMap)  # extra number of exchanges for all bounds
 
     #Number of exchnages is elements minus number of outflows!!  
     
@@ -1237,26 +1230,21 @@ def main():
 
     if Write_Structure:    
         # get pointer an boundaries from ldd, subcatch and defined boundaries (P only now)
-        ptid, flowto, pointer, fromto, of , bounds, segments, areas = dw_mkDelwaqPointers(ldd,amap,boundids,1)
+        ptid, pointer, pointer_labels, segments, areas = dw_mkDelwaqPointers(ldd,amap,boundids,1)
 
         save(dwdir +"/debug/pointer.npy",pointer)
-        save(dwdir +"/debug/fromto.npy",fromto)
-        save(dwdir +"/debug/of.npy",of)
-        save(dwdir +"/debug/bounds.npy",bounds)
         save(dwdir +"/debug/segments.npy",segments)
         save(dwdir +"/debug/areas.npy",areas)
     
         # Write id maps to debug area
         report(ptid,dwdir + "/debug/ptid.map")
-        report(flowto,dwdir + "/debug/flowto.map")
         logger.info("Unique areas: " + str(unique(areas)))
         #logger.info("Number of area inflows: " + str(len(areas) * boundids))
         logger.info("Number of segments: " + str(len(segments.flatten())))
-        logger.info("Number of internal flows: " + str(len(fromto.flatten())))
-        logger.info("outflow  ids: " + str(of))
+        logger.info("Number of internal flows: " + str(len(pointer_labels[pointer_labels == 0])))
+        logger.info("outflow  ids: " + str(pointer[pointer[:,1]<0, 0:2]))
         logger.info("source maps: " + str(sourcesMap))    
-        
-        NOOF = of.shape[0]
+
         NOSQ = segments.shape[0]
         NOQ = pointer.shape[0]
         
@@ -1266,7 +1254,7 @@ def main():
         dw_WritePointer(dwdir + "/includes_deltashell/B4_pointer.inc",pointer)
         # Write the number of exchanges
         dw_WriteNrExChnages(dwdir + "/includes_deltashell/B4_nrofexch.inc",NOQ)
-        dw_WriteBoundlist(dwdir + "/includes_deltashell/B5_boundlist.inc",pointer,areas,of,sourcesMap)
+        dw_WriteBoundlist(dwdir + "/includes_deltashell/B5_boundlist.inc",pointer,areas,sourcesMap)
         dw_WriteBoundData(dwdir + "/includes_deltashell/B5_bounddata.inc",unique(areas))
     
         dw_WriteInitials(dwdir + "/includes_deltashell/B8_initials.inc",sourcesMap)
@@ -1400,7 +1388,6 @@ def main():
         hydinfo['tstep'] = timedelta(seconds=timestepsecs)
         hydinfo['m'], hydinfo['n'] = mmax, nmax
         dw_WriteHydFile(hyd_file, hydinfo)
-
     
     
 if __name__ == "__main__":
