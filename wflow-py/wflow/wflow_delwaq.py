@@ -1105,6 +1105,10 @@ def dw_WriteAttributesFile(fname, noseg):
     - fname : file name to write to
     - noseg : number of delwaq segments
     """
+    line_length = 100
+    n_lines = noseg // line_length
+    remaining_length = noseg % line_length
+
     buff  = ""
     buff += "         ; DELWAQ_COMPLETE_ATTRIBUTES\n"
     buff += "    2    ; two blocks with input\n"
@@ -1113,14 +1117,24 @@ def dw_WriteAttributesFile(fname, noseg):
     buff += "    1    ; data follows in this fil\n"
     buff += "    1    ; all data is given without defaults\n"
     buff += ";    layer:            1\n"
-    buff += "%i*1\n"%noseg
+    for iline in range(n_lines):
+        buff += " ".join(['1' for _ in range(line_length)])
+        buff += "\n"
+    buff += " ".join(['1' for _ in range(remaining_length)])
+    buff += "\n"
+
     buff += "    1    ; number of attributes, they are :\n"
     buff += "    2    ;  '1' has surface '3' has bottom\n"
     buff += "         ;  '0' has both    '2' has none\n"
     buff += "    1    ; data follows in this file\n"
     buff += "    1    ; all data is given without defaults\n"
     buff += ";    layer:            1\n"
-    buff += "%i*0\n"%noseg
+    for iline in range(n_lines):
+        buff += " ".join(['0' for _ in range(line_length)])
+        buff += "\n"
+    buff += " ".join(['0' for _ in range(remaining_length)])
+    buff += "\n"
+
     buff += "    0    ; no time dependent attributes\n"
     f = open(fname, 'w')
     f.write(buff)
