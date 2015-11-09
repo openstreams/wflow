@@ -701,7 +701,7 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map):
             # If left or upper neighbours are active, some nodes of current cell
             # have been added already.
 
-            # UR node
+            # UL node
             if (i_elem_left < 0 and i_elem_up_left < 0 and i_elem_up < 0):
                 add_node(i,j,UL)
                 elem_nodes[i_elem,UL] = i_node
@@ -713,7 +713,7 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map):
             elif i_elem_up >= 0:
                 elem_nodes[i_elem,UL] = elem_nodes[i_elem_up, LL]
 
-            # UL node
+            # UR node
             if (i_elem_up < 0 and i_elem_up_right < 0):
                 add_node(i,j,UR)
                 elem_nodes[i_elem,UR] = i_node
@@ -737,7 +737,7 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map):
 
             # LR node
             add_node(i,j,LR)
-            elem_nodes[i_elem,LL] = i_node
+            elem_nodes[i_elem,LR] = i_node
             i_node += 1
             # add LL-LR link
             net_links.append((elem_nodes[i_elem,LL], elem_nodes[i_elem,LR]))
