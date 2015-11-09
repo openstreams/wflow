@@ -753,12 +753,12 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map):
             elif direction == 2: i_other = np_ptid[i+1,j  ] # to lower
             elif direction == 3: i_other = np_ptid[i+1,j+1] # to lower right
             elif direction == 4: i_other = np_ptid[i  ,j-1] # to left
-            elif direction == 6: i_other = np_ptid[i  ,j-1] # to right
+            elif direction == 6: i_other = np_ptid[i  ,j+1] # to right
             elif direction == 7: i_other = np_ptid[i-1,j-1] # to upper right
             elif direction == 8: i_other = np_ptid[i-1,j  ] # to upper
             elif direction == 9: i_other = np_ptid[i-1,j+1] # to upper left
             if i_other >= 0:
-                flow_links[i_flink,:] = i_elem, np_ptid[i+1,j-1]
+                flow_links[i_flink,:] = i_elem, i_other
                 i_flink += 1
 
     # Convert data to numpy arrays
