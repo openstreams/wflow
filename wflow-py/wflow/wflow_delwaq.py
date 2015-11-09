@@ -997,12 +997,6 @@ def dw_WriteSurfaceFile(fname,m,n,noseg,block):
     Generates a Delwaq surface (*.srf) file.
     """
     f = open(fname, 'wb')
-    f.write(struct.pack('i',m))
-    f.write(struct.pack('i',n))
-    f.write(struct.pack('i',noseg))
-    f.write(struct.pack('i',noseg))
-    f.write(struct.pack('i',noseg))
-    f.write(struct.pack('i',0))
     f.write(struct.pack('%if'%len(block), *block))
     f.close()
 
@@ -1106,7 +1100,7 @@ def dw_WriteHydFile(fname, d):
     buff += "salinity-file            none\n"
     buff += "temperature-file         none\n"
     buff += "vert-diffusion-file      none\n"
-    buff += "surfaces-file            '%s.srf'\n"%d['runid']
+    buff += "horizontal-surfaces-file '%s.srf'\n"%d['runid']
     buff += "depths-file              none\n"
     buff += "discharges-file          none\n"
     buff += "chezy-coefficients-file  none\n"
