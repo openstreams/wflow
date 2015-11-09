@@ -624,6 +624,8 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map):
     net_links = []
     elem_nodes = numpy.zeros( (n_net_elem,n_net_elem_max_node), dtype=numpy.int)
     flow_links = numpy.zeros( (n_flow_link,n_flow_link_pts), dtype=numpy.int)
+    flow_link_x = numpy.zeros( (n_flow_link), dtype=numpy.float)
+    flow_link_y = numpy.zeros( (n_flow_link), dtype=numpy.float)
 
     # Keep track of nodes and links as dataset grows 
 
@@ -672,7 +674,7 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map):
             # Current element index
             i_elem = np_ptid[i,j]
             if i_elem < 0:
-                # skip inactive segment
+                # Skip inactive segment
                 continue
             
             # Get index of neighbouring elements that could have been processed before
@@ -695,7 +697,9 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map):
             else:
                 i_elem_left = np_ptid[i  ,j-1]
             
-            # Update nodes
+            # Update nodes:
+            # If left or upper neighbours are active, some nodes of current cell
+            # have been added already.
 
             # UR node
             if (i_elem_left < 0 and i_elem_up_left < 0 and i_elem_up < 0):
@@ -763,6 +767,16 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map):
     nodes_y = numpy.array(nodes_y)
     nodes_z = numpy.array(nodes_z)
     net_links = numpy.array(net_links)
+
+    # Compute flow links center coordinates
+
+    for i_link in range(flow_links.shape[0]):
+        i_node_a = flow_links[i_link,0]
+        i_node_b = flow_links[i_link,1]
+        x = ( nodes_x[i_node_a] + nodes_x[i_node_b] ) * 0.5
+        y = ( nodes_y[i_node_a] + nodes_y[i_node_b] ) * 0.5
+        flow_link_x[i_link] = x
+        flow_link_y[i_link] = y
     
     # Update dimensions
 
@@ -809,13 +823,13 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map):
     v_msh.edge_face_connectivity = "FlowLink"
 
     # v_pcs.name = "Unknown projected"
-    v_pcs.epsg = 28992
+    v_pcs.epsg = 4326
     v_pcs.grid_mapping_name = "Unknown projected"
     v_pcs.longitude_of_prime_meridian = 0.
-    v_pcs.semi_major_axis = 6378137.
-    v_pcs.semi_minor_axis = 6356752.314245
+    # v_pcs.semi_major_axis = 6378137.
+    # v_pcs.semi_minor_axis = 6356752.314245
     v_pcs.inverse_flattening = 298.257223563
-    v_pcs.epsg_code = "EPGS:28992"
+    v_pcs.epsg_code = "EPSG:4326"
     v_pcs.value = "value is equal to EPSG code"
 
     v_nnx.units = "degrees_east"
@@ -877,8 +891,8 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map):
     v_nen[:,:] = elem_nodes + 1 # uses 1-based indexes
     v_flk[:,:] = flow_links + 1 # uses 1-based indexes
     v_flt[:] = 2
-    v_flx[:] = 0
-    v_fly[:] = 0
+    v_flx[:] = flow_link_x
+    v_fly[:] = flow_link_y
 
     f.close()
 
@@ -1056,8 +1070,8 @@ def dw_WriteHydFile(fname, d):
         return "{:04}{:02}{:02}{}".format(0,0,td.days,time.strftime('%H%M%S',time.gmtime(td.seconds)))
     buff  = ""
     buff += "task      full-coupling\n"
-    buff += "geometry  curvilinear-grid\n"
-    buff += "horizontal-aggregation       automatic\n"
+    buff += "geometry  unstructured\n"
+    buff += "horizontal-aggregation       no\n"
     buff += "minimum-vert-diffusion-used  no\n"
     buff += "vertical-diffusion           calculated\n"
     buff += "description\n"
@@ -1073,14 +1087,17 @@ def dw_WriteHydFile(fname, d):
     buff += "conversion-start-time    '%s'\n"%(datetime2str(d['tstart']))
     buff += "conversion-stop-time     '%s'\n"%(datetime2str(d['tstop']))
     buff += "conversion-timestep      '%s'\n"%(timedelta2str(d['tstep']))
-    buff += "grid-cells-first-direction %7i\n"%d['m']
-    buff += "grid-cells-second-direction %6i\n"%d['n']
-    buff += "number-hydrodynamic-layers       1\n"
+    buff += "grid-cells-first-direction              %7i\n"%d['noseg']
+    buff += "grid-cells-second-direction             %7i\n"%1
+    buff += "number-hydrodynamic-layers              %7i\n"%1
+    buff += "number-horizontal-exchanges             %7i\n"%d['noqh']
+    buff += "number-vertical-exchanges               %7i\n"%d['noqv']
+    buff += "number-water-quality-segments-per-layer %7i\n"%d['nosegh']
     buff += "number-water-quality-layers      1\n"
     buff += "hydrodynamic-file        none\n"
     buff += "aggregation-file         none\n"
-    buff += "grid-indices-file        '%s.lga'\n"%d['runid']
-    buff += "grid-coordinates-file    '%s.cco'\n"%d['runid']
+    buff += "boundaries-file          '%s.bnd'\n"%d['runid']
+    buff += "waqgeom-file             '%s_waqgeom.nc'\n"%d['runid']
     buff += "volumes-file             '%s.vol'\n"%d['runid']
     buff += "areas-file               '%s.are'\n"%d['runid']
     buff += "flows-file               '%s.flo'\n"%d['runid']
@@ -1091,7 +1108,6 @@ def dw_WriteHydFile(fname, d):
     buff += "vert-diffusion-file      none\n"
     buff += "surfaces-file            '%s.srf'\n"%d['runid']
     buff += "depths-file              none\n"
-    buff += "total-grid-file          none\n"
     buff += "discharges-file          none\n"
     buff += "chezy-coefficients-file  none\n"
     buff += "shear-stresses-file      none\n"
@@ -1386,7 +1402,7 @@ def main():
         dw_WriteAttributesFile(atr_file, NOSQ)
 
         # Generate hyd-file 
-        hyd_file = comroot+'.hyd'
+        hyd_file = comroot+'_unstructured.hyd'
         logger.info("Writing hyd-file to '%s'"%hyd_file)
         hydinfo = {}
         hydinfo['runid'] = runId
@@ -1394,7 +1410,10 @@ def main():
         hydinfo['tstart'] = T0
         hydinfo['tstop'] = T0 + timedelta(seconds=(timeSteps-1) * timestepsecs )
         hydinfo['tstep'] = timedelta(seconds=timestepsecs)
-        hydinfo['m'], hydinfo['n'] = mmax, nmax
+        hydinfo['noseg'] = NOSQ
+        hydinfo['nosegh'] = NOSQ
+        hydinfo['noqh'] = pointer.shape[0]
+        hydinfo['noqv'] = 0
         dw_WriteHydFile(hyd_file, hydinfo)
     
     
