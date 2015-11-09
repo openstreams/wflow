@@ -718,12 +718,13 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map):
                 add_node(i,j,UR)
                 elem_nodes[i_elem,UR] = i_node
                 i_node += 1
-                # add UL-UR link
-                net_links.append((elem_nodes[i_elem,UL], elem_nodes[i_elem,UR]))
             elif i_elem_up >= 0:
                 elem_nodes[i_elem,UR] = elem_nodes[i_elem_up, LR]
             elif i_elem_up_right >= 0:
                 elem_nodes[i_elem,UR] = elem_nodes[i_elem_up_right, LL]
+            if (i_elem_up < 0):
+                # add UL-UR link
+                net_links.append((elem_nodes[i_elem,UL], elem_nodes[i_elem,UR]))
 
             # LL node
             if (i_elem_left < 0):
