@@ -983,11 +983,12 @@ def dw_WriteBndFile(fname, ptid_map, pointer, pointer_labels, source_ids):
     f.close()
 
 
-def dw_WriteSurfaceFile(fname,m,n,noseg,block):
+def dw_WriteSurfaceFile(fname,block):
     """
     Generates a Delwaq surface (*.srf) file.
     """
     f = open(fname, 'wb')
+    f.write(struct.pack('i',0))
     f.write(struct.pack('%if'%len(block), *block))
     f.close()
 
@@ -1287,7 +1288,7 @@ def main():
     comroot = os.sep.join([dwdir,'com',runId])
     mmax, nmax = dw_GetGridDimensions(ptid)
     dw_WritePointer(comroot+'.poi',pointer,binary=True)
-    dw_WriteSurfaceFile(comroot+'.srf',mmax,nmax,NOSQ,surface_block)
+    dw_WriteSurfaceFile(comroot+'.srf',surface_block)
     dw_WriteSegmentOrExchangeData(0,comroot+'.len',length_block,1,WriteAscii)
     
     logger.info("Writing waq geometry file")
