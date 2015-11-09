@@ -183,7 +183,7 @@ def getvarmetadatafromini(inifile,var):
     return metadata
 
 
-def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trgName, timeList, metadata, logger,maxbuf=600,Format="NETCDF4",zlib=True,least_significant_digit=None,startidx=0):
+def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trgName, timeList, metadata, logger,maxbuf=600,Format="NETCDF4",zlib=True,least_significant_digit=None,startidx=0,EPSG="EPSG:4326"):
     """
     Write pcraster mapstack to netcdf file. Taken from GLOFRIS_Utils.py
     
@@ -217,7 +217,17 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
         nc_var = nc_trg.variables[trgVar]
     except:
         # prepare the variable
-        nc_var = nc_trg.createVariable(trgVar, 'f4', ('time', 'lat', 'lon',), fill_value=-9999., zlib=zlib,least_significant_digit=least_significant_digit,complevel=complevel)
+
+        if EPSG.lower() == "epsg:4326":
+            nc_var = nc_trg.createVariable(trgVar, 'f4', ('time', 'lat', 'lon',), fill_value=-9999.0, zlib=True,
+                                                        complevel=9, least_significant_digit=least_significant_digit)
+            nc_var.coordinates = "lat lon"
+        else:
+            nc_var = nc_trg.createVariable(trgVar, 'f4', ('time', 'y', 'x',), fill_value=-9999.0, zlib=True,
+                                                        complevel=9, least_significant_digit=least_significant_digit)
+            nc_var.coordinates = "lat lon"
+            nc_var.grid_mapping = "crs"
+
         nc_var.units = trgUnits
         nc_var.standard_name = trgName
         print metadata
@@ -228,8 +238,16 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
     
     nc_Fill = nc_var._FillValue
     # Create a buffer of a number of timesteps to speed-up writing    
-    bufsize = minimum(len(timeList),maxbuf) 
-    timestepbuffer = zeros((bufsize,len(nc_trg.variables['lat']),len(nc_trg.variables['lon'])))
+    bufsize = minimum(len(timeList),maxbuf)
+
+    if len(shape(nc_trg.variables['lat'])) == 2:
+        latlen = shape(nc_trg.variables['lat'])[0]
+        lonlen = shape(nc_trg.variables['lat'])[1]
+    else:
+        latlen = len(nc_trg.variables['lat'])
+        lonlen = len(nc_trg.variables['lon'])
+
+    timestepbuffer = zeros((bufsize,latlen,lonlen))
 
     # now loop over all time steps, check the date and write valid dates to a list, write time series to PCRaster maps
     for nn, curTime in enumerate(timeList):
@@ -444,7 +462,7 @@ def main(argv=None):
                 if os.path.exists(inifile):
                     varmeta = getvarmetadatafromini(inifile,var[idx])
 
-                write_netcdf_timeseries(mapstackfolder, mname, ncoutfile_yr, var[idx], unit, varname[idx], yr_timelist, varmeta, logger,maxbuf=mbuf,Format=Format,zlib=zlib,least_significant_digit=least_significant_digit,startidx=startmapstack)
+                write_netcdf_timeseries(mapstackfolder, mname, ncoutfile_yr, var[idx], unit, varname[idx], yr_timelist, varmeta, logger,maxbuf=mbuf,Format=Format,zlib=zlib,least_significant_digit=least_significant_digit,startidx=startmapstack,EPSG=EPSG)
                 idx = idx + 1
 
             startmapstack = startmapstack + len(yr_timelist)
@@ -458,7 +476,7 @@ def main(argv=None):
             if os.path.exists(inifile):
                 varmeta = getvarmetadatafromini(inifile,var[idx])
 
-            write_netcdf_timeseries(mapstackfolder, mname, ncoutfile, var[idx], unit, varname[idx], timeList, varmeta, logger,maxbuf=mbuf,Format=Format,zlib=zlib,least_significant_digit=least_significant_digit,startidx=startmapstack)
+            write_netcdf_timeseries(mapstackfolder, mname, ncoutfile, var[idx], unit, varname[idx], timeList, varmeta, logger,maxbuf=mbuf,Format=Format,zlib=zlib,least_significant_digit=least_significant_digit,startidx=startmapstack,EPSG=EPSG)
             idx = idx + 1
 
 

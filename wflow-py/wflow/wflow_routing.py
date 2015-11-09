@@ -58,7 +58,8 @@ usage
         dynamic variables
 
 
-    -l: loglevel (most be one of DEBUG, WARNING, ERROR)
+    -l: loglevel (must be one of DEBUG, WARNING, ERROR)
+    -l: loglevel (must be one of DEBUG, WARNING, ERROR)
 
 
 """
