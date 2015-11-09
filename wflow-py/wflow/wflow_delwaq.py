@@ -768,16 +768,6 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map):
     nodes_y = numpy.array(nodes_y)
     nodes_z = numpy.array(nodes_z)
     net_links = numpy.array(net_links)
-
-    # Compute flow links center coordinates
-
-    for i_link in range(flow_links.shape[0]):
-        i_node_a = flow_links[i_link,0]
-        i_node_b = flow_links[i_link,1]
-        x = ( nodes_x[i_node_a] + nodes_x[i_node_b] ) * 0.5
-        y = ( nodes_y[i_node_a] + nodes_y[i_node_b] ) * 0.5
-        flow_link_x[i_link] = x
-        flow_link_y[i_link] = y
     
     # Update dimensions
 
@@ -892,8 +882,8 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map):
     v_nen[:,:] = elem_nodes + 1 # uses 1-based indexes
     v_flk[:,:] = flow_links + 1 # uses 1-based indexes
     v_flt[:] = 2
-    v_flx[:] = flow_link_x
-    v_fly[:] = flow_link_y
+    v_flx[:] = 0
+    v_fly[:] = 0
 
     f.close()
 
