@@ -38,7 +38,7 @@ globmetadata['source'] = 'wflow'
 globmetadata['history'] = time.ctime()
 globmetadata['references'] = 'https://github.com/openstreams/wflow'
 globmetadata['Conventions'] = 'CF-1.4'
-netcdfformat = "NETCDF4"
+
 
 
 def convertCoord(proj_src, proj_trg, x, y):
@@ -175,13 +175,17 @@ def prepare_nc(trgFile, timeList, x, y, metadata, logger, EPSG="EPSG:4326", unit
 
 
 class netcdfoutput():
-    def __init__(self, netcdffile, logger, starttime, timesteps, EPSG="EPSG:4326", timestepsecs=86400, metadata={},
+    def __init__(self, netcdffile, logger, starttime, timesteps, EPSG="EPSG:4326", timestepsecs=86400,
+                 metadata={}, zlib=True, Format="NETCDF4",
                  maxbuf=25, least_significant_digit=None):
         """
         Under construction
         """
 
         self.EPSG = EPSG
+        self.zlib = zlib
+        self.Format = Format
+        self.least_significant_digit = least_significant_digit
 
         def date_range(start, end, tdelta="days"):
             if tdelta == "days":
@@ -191,7 +195,7 @@ class netcdfoutput():
                 r = (end + dt.timedelta(days=1) - start).days * 24
                 return [start + dt.timedelta(hours=i) for i in range(r)]
 
-        self.least_significant_digit = least_significant_digit
+
         self.logger = logger
         # Do not allow a max buffer larger than the number of timesteps
         self.maxbuf = maxbuf if timesteps >= maxbuf else timesteps
@@ -220,7 +224,8 @@ class netcdfoutput():
 
         globmetadata.update(metadata)
 
-        prepare_nc(self.ncfile, timeList, x, y, globmetadata, logger, Format=netcdfformat, EPSG=EPSG)
+        prepare_nc(self.ncfile, timeList, x, y, globmetadata, logger, Format=self.Format, EPSG=EPSG,zlib=self.zlib,
+                   least_significant_digit=self.least_significant_digit)
 
     def savetimestep(self, timestep, pcrdata, unit="mm", var='P', name="Precipitation"):
         """
@@ -235,7 +240,7 @@ class netcdfoutput():
         """
         # Open target netCDF file
         var = os.path.basename(var)
-        self.nc_trg = netCDF4.Dataset(self.ncfile, 'a', format=netcdfformat, zlib=True, complevel=9)
+        self.nc_trg = netCDF4.Dataset(self.ncfile, 'a', format=self.Format, zlib=self.zlib, complevel=9)
         self.nc_trg.set_fill_off()
         # read time axis and convert to time objects
         # TODO: use this to append time
@@ -250,14 +255,15 @@ class netcdfoutput():
         try:
             nc_var = self.nc_trg.variables[var]
         except:
-            self.logger.debug("Creating variable " + var + " in netcdf file. Format: " + netcdfformat)
+            self.logger.debug("Creating variable " + var + " in netcdf file. Format: " + self.netcdfformat)
             if self.EPSG.lower() == "epsg:4326":
-                nc_var = self.nc_trg.createVariable(var, 'f4', ('time', 'lat', 'lon',), fill_value=-9999.0, zlib=True,
+                nc_var = self.nc_trg.createVariable(var, 'f4', ('time', 'lat', 'lon',), fill_value=-9999.0, zlib=self.zlib,
                                                     complevel=9, least_significant_digit=self.least_significant_digit)
                 nc_var.coordinates = "lat lon"
             else:
                 nc_var = self.nc_trg.createVariable(var, 'f4', ('time', 'y', 'x',), fill_value=-9999.0, zlib=True,
-                                                    complevel=9, least_significant_digit=self.least_significant_digit)
+                                                    complevel=9, least_significant_digit=self.least_significant_digit,
+                                                    zlib=self.zlib)
                 nc_var.coordinates = "lat lon"
                 nc_var.grid_mapping = "crs"
 

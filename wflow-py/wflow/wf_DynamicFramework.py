@@ -630,6 +630,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self.ncoutfilestatic = configget(self._userModel().config, 'framework', 'netcdfstaticoutput', "None")
         self.ncinfilestatic = configget(self._userModel().config, 'framework', 'netcdfstaticinput', "None")
         self.EPSG = configget(self._userModel().config, 'framework', 'EPSG', "EPSG:4326")
+        self.ncfileformat = configget(self._userModel().config, 'framework', 'netcdf_format', "NETCDF4")
+        self.ncfilecompression = configget(self._userModel().config, 'framework', 'netcdf_zlib', "True")
+        self.ncfiledigits = configget(self._userModel().config, 'framework', 'netcdf_least_significant_digit', "None")
 
 
 
@@ -694,7 +697,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self.NcOutput = netcdfoutput(os.path.join(caseName, runId, self.ncoutfile),
                                          self.logger, self.datetime_firststep,
                                          self._d_lastTimestep - self._d_firstTimestep,
-                                         maxbuf=buffer, metadata=meta, EPSG=self.EPSG, timestepsecs=self.timestepsecs)
+                                         maxbuf=buffer, metadata=meta, EPSG=self.EPSG,
+                                         timestepsecs=self.timestepsecs)
 
         if self.ncoutfilestatic != 'None':  # Ncoutput
             buffer = int(configget(self._userModel().config, 'framework', 'netcdfwritebuffer', "2"))
