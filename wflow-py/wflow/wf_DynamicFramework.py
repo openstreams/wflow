@@ -633,6 +633,15 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self.ncfileformat = configget(self._userModel().config, 'framework', 'netcdf_format', "NETCDF4")
         self.ncfilecompression = configget(self._userModel().config, 'framework', 'netcdf_zlib', "True")
         self.ncfiledigits = configget(self._userModel().config, 'framework', 'netcdf_least_significant_digit', "None")
+        if self.ncfiledigits == 'None':
+            self.ncfiledigits = None
+        else:
+            self.ncfiledigits = int(self.ncfiledigits)
+
+        if self.ncfilecompression == 'True':
+            self.ncfilecompression = True
+        else:
+            self.ncfilecompression = False
 
 
 
@@ -698,7 +707,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                                          self.logger, self.datetime_firststep,
                                          self._d_lastTimestep - self._d_firstTimestep,
                                          maxbuf=buffer, metadata=meta, EPSG=self.EPSG,
-                                         timestepsecs=self.timestepsecs)
+                                         timestepsecs=self.timestepsecs,Format=self.ncfileformat,
+                                         zlib=self.ncfilecompression,least_significant_digit=self.ncfiledigits)
 
         if self.ncoutfilestatic != 'None':  # Ncoutput
             buffer = int(configget(self._userModel().config, 'framework', 'netcdfwritebuffer', "2"))
