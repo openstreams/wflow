@@ -195,7 +195,6 @@ class netcdfoutput():
                 r = (end + dt.timedelta(days=1) - start).days * 24
                 return [start + dt.timedelta(hours=i) for i in range(r)]
 
-
         self.logger = logger
         # Do not allow a max buffer larger than the number of timesteps
         self.maxbuf = maxbuf if timesteps >= maxbuf else timesteps
