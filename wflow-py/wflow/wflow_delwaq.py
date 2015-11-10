@@ -665,7 +665,7 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map):
 
     # Cell corners
 
-    UL, UR, LL, LR = 0, 1, 2, 3
+    UL, UR, LR, LL = 0, 1, 2, 3
 
     # Process all cells from upper-left to lower-right
 
