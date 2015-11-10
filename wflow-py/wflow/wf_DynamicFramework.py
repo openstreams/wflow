@@ -425,7 +425,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         """
 
         # Set logging
-        logfile = caseName + "/" + runId + "/" + logfname
+        logfile = os.path.join(caseName,runId,logfname)
         logger = pcrut.setlogger(logfile, model, thelevel=level)
         logger.info(model + " " + modelversion + " Case: " + caseName + " Runid: " + runId)
 
@@ -816,7 +816,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 thissection = "output" + tsformat + "_" + str(secnr)
                 toprint = configsection(self._userModel().config, thissection)
                 secnr = secnr + 1
-                samplemapname = caseName + "/" + configget(self._userModel().config, thissection, "samplemap", "None")
+                samplemapname = os.path.join(caseName,configget(self._userModel().config, thissection, "samplemap", "None"))
                 if "None" not in samplemapname:
                     try:
                         self.samplemap = readmap(samplemapname)
@@ -945,8 +945,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             if hasattr(self._userModel(), a.replace('self.', '')):
                 thevar = getattr(self._userModel(), a.replace('self.', ''))
                 self._reportNew(thevar,
-                                self._userModel().Dir + "/" + self._userModel().runId + "/outmaps/" + self._userModel().config.get(
-                                    "outputmaps", a), longname=a)
+                                os.path.join(self._userModel().Dir, self._userModel().runId,"outmaps", self._userModel().config.get(
+                                    "outputmaps", a)), longname=a)
             else:
                 self.logger.warn("outputmap " + a + " not found in usermodel")
 
@@ -1036,10 +1036,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         config = ConfigParser.SafeConfigParser()
         config.optionxform = str
-        if os.path.exists(caseName + "/" + configfile):
-            config.read(caseName + "/" + configfile)
+        if os.path.exists(os.path.join(caseName,configfile)):
+            config.read(os.path.join(caseName,configfile))
         else:
-            self.logger.error("Cannot open ini file: " + caseName + "/" + configfile)
+            self.logger.error("Cannot open ini file: " + os.path.join(caseName,configfile))
             exit(1)
 
         return config
