@@ -714,28 +714,17 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                                          zlib=self.ncfilecompression,least_significant_digit=self.ncfiledigits)
 
         if self.ncoutfilestatic != 'None':  # Ncoutput
-            buffer = int(configget(self._userModel().config, 'framework', 'netcdfwritebuffer', "2"))
             meta = {}
             meta['caseName'] = caseName
             meta['runId'] = runId
-            self.NcOutputStatic = netcdfoutput(os.path.join(caseName, runId, self.ncoutfilestatic),
-                                               self.logger, self.datetime_laststep,
-                                               self._d_lastTimestep - self._d_firstTimestep,
-                                               maxbuf=buffer, metadata=meta, EPSG=self.EPSG)
+            self.NcOutputStatic = netcdfoutputstatic(os.path.join(caseName, runId, self.ncoutfilestatic),
+                                                     self.logger, self.datetime_laststep,1,timestepsecs=self.timestepsecs,
+                                                     maxbuf=1, metadata=meta, EPSG=self.EPSG,Format=self.ncfileformat,
+                                                     zlib=self.ncfilecompression,least_significant_digit=self.ncfiledigits)
 
-        # if self.ncoutfilestate != 'None': # Ncoutput
-        #     buffer = int(configget(self._userModel().config,'framework','netcdfwritebuffer',"2"))
-        #     meta ={}
-        #     meta['caseName'] = caseName
-        #     meta['runId'] = runId
-        #     self.NcOutputState = netcdfoutput(os.path.join(caseName,runId,self.ncoutfilestate),
-        #                                        self.logger,self.datetime_laststep,
-        #                                         self._d_lastTimestep - self._d_firstTimestep + 1,
-        #                                        maxbuf=buffer,metadata=meta)
 
 
         if self.ncinfilestatic != 'None':  # Ncoutput
-            buffer = int(configget(self._userModel().config, 'framework', 'netcdfwritebuffer', "2"))
             meta = {}
             meta['caseName'] = caseName
             meta['runId'] = runId
@@ -1770,7 +1759,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 if gzipit:
                     Gzip(path, storePath=True)
             else:
-                self.NcOutputStatic.savetimestep(self._userModel().currentTimeStep(), variable, var=name, name=longname)
+                self.NcOutputStatic.savetimestep(1, variable, var=name, name=longname)
 
         elif self.outputFormat == 2:
             numpy.savez(path, pcr2numpy(variable, -999))

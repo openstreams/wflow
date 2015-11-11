@@ -18,7 +18,25 @@ except:
     print("Could not import pcraster, make sure it is installed including the python extensions")
     print("see www.pcraster.eu")
 
-#setup(**config)
+try:
+    import netCDF4
+except:
+    print("Could not import netCDF4, make sure it is installed")
+
+try:
+    import osgeo
+except:
+    print("Could not import osgeo (gdal), make sure it is installed")
+
+try:
+    import pyproj
+except:
+    print("Could not import pyproj, make sure it is installed")
+
+try:
+    import matplotlib
+except:
+    print("Could not import matplotlib, make sure it is installed")
 
 # Source dist
 setup(name='wflow',

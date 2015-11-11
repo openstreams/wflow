@@ -9,6 +9,7 @@ import os
 Simple test for wflow bmi framework
 """
 
+
 class MyTest(unittest.TestCase):
 
     def testbmifuncs(self):
@@ -19,9 +20,11 @@ class MyTest(unittest.TestCase):
         print("-------------- Grid origin: ")
         gorigin = bmiobj.get_grid_origin('Altitude')
         print(gorigin)
+        self.assertAlmostEquals(sum([52.054268, 5.2271633]), sum(gorigin),places=4)
 
         print("-------------- Grid shape: ")
         print(bmiobj.get_grid_shape('Altitude'))
+        self.assertAlmostEquals(sum([169L, 187L]), sum(bmiobj.get_grid_shape('Altitude')),places=4)
 
         print("-------------- Grid spacing: ")
         print(bmiobj.get_grid_spacing('Altitude'))
@@ -61,8 +64,8 @@ class MyTest(unittest.TestCase):
 
         print("-------------- Current time: ")
         print(bmiobj.get_current_time())
-        a= bmiobj.get_current_time()
-        #print(time.localtime(bmiobj.get_current_time()))
+        a = bmiobj.get_current_time()
+        # print(time.localtime(bmiobj.get_current_time()))
 
         os.environ['TZ'] = 'Europe/London'
 
@@ -86,8 +89,6 @@ class MyTest(unittest.TestCase):
         print("-------------- End time: ")
         print(bmiobj.get_end_time())
         print(time.localtime(bmiobj.get_end_time()))
-
-
 
         print("-------------- Grid type: ")
         print(bmiobj.get_grid_type('Altitude'))
@@ -113,6 +114,15 @@ class MyTest(unittest.TestCase):
         print("-------------- get_attribute_names: ")
         names = bmiobj.get_attribute_names()
         print names
+        self.assertEquals(['API:IF', 'API:InwaterMM', 'framework:outputformat', 'framework:debug', 'framework:netcdfinput',
+                           'framework:netcdfoutput', 'framework:netcdfstaticoutput', 'framework:netcdfstaticinput',
+                           'framework:EPSG', 'framework:netcdf_format', 'framework:netcdf_zlib',
+                           'framework:netcdf_least_significant_digit', 'run:starttime', 'run:endtime',
+                           'run:timestepsecs', 'run:reinit', 'modelparameters:AltTemperature', 'layout:sizeinmetres',
+                           'outputmaps:self.TSoil', 'outputmaps:self.AltTemperature', 'outputcsv_0:samplemap',
+                           'outputcsv_0:self.TSoil', 'outputcsv_0:self.AltTemperature', 'outputcsv_1:samplemap',
+                           'outputtss_0:samplemap', 'model:timestepsecs']
+, names)
 
         print("-------------- get_attribute_value: ")
         print names[0]
@@ -122,6 +132,7 @@ class MyTest(unittest.TestCase):
         print names[0]
         bmiobj.set_attribute_value(names[0],"SET By TEST")
         print(bmiobj.get_attribute_value(names[0]))
+        self.assertEquals("SET By TEST",bmiobj.get_attribute_value(names[0]))
 
         print("-------------- set_start_time: ")
         bmiobj.set_start_time(0)
@@ -141,7 +152,6 @@ class MyTest(unittest.TestCase):
         et = bmiobj.get_end_time()
         bmiobj.update_until(et)
         bmiobj.finalize()
-
 
 
 if __name__ == '__main__':

@@ -4,7 +4,7 @@ import unittest
 import wflow.wflow_sbm as wf
 import os
 """
-Run sceleton for 10 steps and checks if the outcome is approx that of the reference run
+Run wflow_sbm for 10 steps and checks if the outcome is approx that of the reference run
 """
 
 class MyTest(unittest.TestCase):
@@ -47,7 +47,7 @@ class MyTest(unittest.TestCase):
         dynModelFw._runSuspend() # saves the state variables
         dynModelFw._wf_shutdown()
 
-        # nore read the csv results acn check of they match the first run
+        # now read the csv results acn check of they match the first run
         # Sum should be approx c 4.569673676
         my_data = wf.genfromtxt(os.path.join(caseName,runId,"wbsurf.csv"), delimiter=',')
 
