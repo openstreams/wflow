@@ -254,15 +254,14 @@ class netcdfoutput():
         try:
             nc_var = self.nc_trg.variables[var]
         except:
-            self.logger.debug("Creating variable " + var + " in netcdf file. Format: " + self.netcdfformat)
+            self.logger.debug("Creating variable " + var + " in netcdf file. Format: " + self.Format)
             if self.EPSG.lower() == "epsg:4326":
                 nc_var = self.nc_trg.createVariable(var, 'f4', ('time', 'lat', 'lon',), fill_value=-9999.0, zlib=self.zlib,
                                                     complevel=9, least_significant_digit=self.least_significant_digit)
                 nc_var.coordinates = "lat lon"
             else:
-                nc_var = self.nc_trg.createVariable(var, 'f4', ('time', 'y', 'x',), fill_value=-9999.0, zlib=True,
-                                                    complevel=9, least_significant_digit=self.least_significant_digit,
-                                                    zlib=self.zlib)
+                nc_var = self.nc_trg.createVariable(var, 'f4', ('time', 'y', 'x',), fill_value=-9999.0, zlib=self.zlib,
+                                                    complevel=9, least_significant_digit=self.least_significant_digit)
                 nc_var.coordinates = "lat lon"
                 nc_var.grid_mapping = "crs"
 
