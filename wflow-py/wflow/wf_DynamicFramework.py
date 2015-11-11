@@ -3,21 +3,10 @@ wf_DynamicFramework
 -------------------
 
 This is a replacement for the standard pcraster/python DynamicFramwork class.\
-It provides extra functionality to simplify linking the models build in the framwork
+It provides extra functionality to simplify linking the models build in the framework
 with other models. The provided functionality allows external programs to control
 and interrogate the model.
 
-Compared to the original pcraster class the usermodel needs to be extended with
-the stateVariables() method which lists the state variables. Other items to be
-exchanged most be listed in the API section of the .ini file
-
-In addition, the following methods must also be called at  startup:
-    
-    - createRunId()
-
-$Author: schelle $
-$Id: wf_DynamicFramework.py 915 2014-02-10 07:33:56Z schelle $
-$Rev: 915 $
 """
 
 # TODO: rmove most exec statements and replace by getattr
@@ -28,7 +17,6 @@ import datetime
 import ConfigParser
 
 from wflow.wf_netcdfio import *
-# from wf_Timeoutput import *
 import pcrut
 import glob
 import traceback
@@ -42,6 +30,8 @@ from wflow_lib import *
 import time
 import calendar
 
+from wflow import __version__
+from wflow import __release__
 
 def log_uncaught_exceptions(ex_cls, ex, tb):
     global logging
@@ -565,6 +555,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         caseName = self._userModel().caseName
         runId = self._userModel().runId
+        if modelVersion == "no version":
+            modelVersion = __release__
 
         configfile = self._userModel().configfile
         if not os.path.isdir(caseName + "/" + runId):
@@ -617,14 +609,11 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
 
         _initAPIVars(self)
-
         self.framework_setup = True
         caseName = self._userModel().caseName
         runId = self._userModel().runId
-
         self.outputFormat = int(configget(self._userModel().config, 'framework', 'outputformat', '1'))
         self.APIDebug = int(configget(self._userModel().config, 'framework', 'debug', str(self.APIDebug)))
-
         self.ncfile = configget(self._userModel().config, 'framework', 'netcdfinput', "None")
         self.ncoutfile = configget(self._userModel().config, 'framework', 'netcdfoutput', "None")
         self.ncoutfilestatic = configget(self._userModel().config, 'framework', 'netcdfstaticoutput', "None")
@@ -633,6 +622,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self.ncfileformat = configget(self._userModel().config, 'framework', 'netcdf_format', "NETCDF4")
         self.ncfilecompression = configget(self._userModel().config, 'framework', 'netcdf_zlib', "True")
         self.ncfiledigits = configget(self._userModel().config, 'framework', 'netcdf_least_significant_digit', "None")
+
         if self.ncfiledigits == 'None':
             self.ncfiledigits = None
         else:
@@ -642,7 +632,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self.ncfilecompression = True
         else:
             self.ncfilecompression = False
-
 
 
         # Set the re-init hint for the local model
@@ -692,7 +681,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self._d_lastTimestep = int(nrseconds / self.timestepsecs) + self._d_firstTimestep
 
 
-
         if self.ncfile != "None":
             mstacks = configsection(self._userModel().config, "inputmapstacks")
             varlst = []
@@ -706,6 +694,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             meta = {}
             meta['caseName'] = caseName
             meta['runId'] = runId
+            meta['wflow_version'] =__version__
+            meta['wflow_release'] =__release__
             self.NcOutput = netcdfoutput(os.path.join(caseName, runId, self.ncoutfile),
                                          self.logger, self.datetime_firststep,
                                          self._userModel().nrTimeSteps(),
@@ -717,17 +707,20 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             meta = {}
             meta['caseName'] = caseName
             meta['runId'] = runId
+            meta['wflow_version'] =__version__
+            meta['wflow_release'] =__release__
             self.NcOutputStatic = netcdfoutputstatic(os.path.join(caseName, runId, self.ncoutfilestatic),
                                                      self.logger, self.datetime_laststep,1,timestepsecs=self.timestepsecs,
                                                      maxbuf=1, metadata=meta, EPSG=self.EPSG,Format=self.ncfileformat,
                                                      zlib=self.ncfilecompression,least_significant_digit=self.ncfiledigits)
 
 
-
         if self.ncinfilestatic != 'None':  # Ncoutput
             meta = {}
             meta['caseName'] = caseName
             meta['runId'] = runId
+            meta['wflow_version'] =__version__
+            meta['wflow_release'] =__release__
             self.NcInputStatic = netcdfinput(os.path.join(caseName, self.ncinfilestatic), self.logger, varlst)
 
         # Fill the summary (stat) list from the ini file

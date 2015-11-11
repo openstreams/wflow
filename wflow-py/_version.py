@@ -1,2 +1,2 @@
-VERSION="deltashell 2015.02.deltashell"
-MVERSION="2015.02.deltashell"
+VERSION="2015.02.master.beta"
+MVERSION="2015.02.master"
