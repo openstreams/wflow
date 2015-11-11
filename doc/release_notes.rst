@@ -8,7 +8,7 @@ Under heavy development
 
 2015.02
 -------
-+ Updated netcdf support -> no need pyproj module
++ Updated netcdf support -> now needs the pyproj module
 + Updated wflow_routing with two-layer (floodplain)
 + Redone multiplication of parameter framework. Now possible via ini and BMI
 + Added .mult postfix for tbl files to apply multiplication (untested)
