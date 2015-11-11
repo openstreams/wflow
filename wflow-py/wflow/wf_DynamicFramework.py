@@ -269,7 +269,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             firstTimestep = 1
 
         # self._userModel()._setNrTimeSteps(lastTimeStep - firstTimestep + 1)
-        self._userModel()._setNrTimeSteps(lastTimeStep + 1)
+        self._userModel()._setNrTimeSteps(lastTimeStep)
         self._d_firstTimestep = 1
         self._userModel()._setFirstTimeStep(1)
         self._d_lastTimestep = lastTimeStep
@@ -665,12 +665,11 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 self.timestepsecs = int(configget(self._userModel().config, 'run', 'timestepsecs', "86400"))
                 duration = self.datetime_laststep - self.datetime_firststep
                 nrseconds = duration.total_seconds()
-                self._userModel()._setNrTimeSteps(int(nrseconds / self.timestepsecs))
+                self._userModel()._setNrTimeSteps(int(nrseconds / self.timestepsecs) + 1)
                 self._userModel().timestepsecs = self.timestepsecs
                 self._d_firstTimestep = 1
                 self._userModel()._setFirstTimeStep(self._d_firstTimestep)
-                st = int(nrseconds / self.timestepsecs) + 1
-
+                self._d_lastTimestep = int(nrseconds / self.timestepsecs) + self._d_firstTimestep
             else:
                 self.logger.info(
                     "Not enough information in the [run] section. Need start and end time or a runinfo.xml file.... Reverting to default date/time")
@@ -687,10 +686,12 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self._userModel().timestepsecs = self.timestepsecs
             duration = self.datetime_laststep - self.datetime_firststep
             nrseconds = duration.total_seconds()
-            self._userModel()._setNrTimeSteps(int(nrseconds / self.timestepsecs))
+            self._userModel()._setNrTimeSteps(int(nrseconds / self.timestepsecs) + 1)
             self._d_firstTimestep = 1
             self._userModel()._setFirstTimeStep(self._d_firstTimestep)
-            self._d_lastTimestep = int(nrseconds / self.timestepsecs)
+            self._d_lastTimestep = int(nrseconds / self.timestepsecs) + self._d_firstTimestep
+
+
 
         if self.ncfile != "None":
             mstacks = configsection(self._userModel().config, "inputmapstacks")
@@ -707,7 +708,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             meta['runId'] = runId
             self.NcOutput = netcdfoutput(os.path.join(caseName, runId, self.ncoutfile),
                                          self.logger, self.datetime_firststep,
-                                         self._d_lastTimestep - self._d_firstTimestep,
+                                         self._userModel().nrTimeSteps(),
                                          maxbuf=buffer, metadata=meta, EPSG=self.EPSG,
                                          timestepsecs=self.timestepsecs,Format=self.ncfileformat,
                                          zlib=self.ncfilecompression,least_significant_digit=self.ncfiledigits)

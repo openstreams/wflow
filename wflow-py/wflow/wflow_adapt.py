@@ -424,9 +424,9 @@ def getTimeStepsfromRuninfo(xmlfile,timestepsecs):
 
 
         if timestepsecs < 86400: # assume hours
-            return (diff.seconds + diff.days * 86400)/timestepsecs
+            return (diff.seconds + diff.days * 86400)/timestepsecs +1
         else:
-            return diff.days # Should actually be + 1 but fews starts at 0!
+            return diff.days  + 1# Should actually be + 1 but fews starts at 0!
     else:
         print xmlfile + " does not exists."
 

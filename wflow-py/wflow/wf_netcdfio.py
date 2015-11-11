@@ -59,7 +59,7 @@ def convertCoord(proj_src, proj_trg, x, y):
     return X,Y
 
 
-def prepare_nc(trgFile, timeList, x, y, metadata, logger, EPSG="EPSG:4326", units='Days since 1900-01-01 00:00:00',
+def prepare_nc(trgFile, timeList, x, y, metadata, logger, EPSG="EPSG:4326", units=None,
                calendar='gregorian', Format="NETCDF4", complevel=9, zlib=True, least_significant_digit=None):
     """
     This function prepares a NetCDF file with given metadata, for a certain year, daily basis data
@@ -68,6 +68,12 @@ def prepare_nc(trgFile, timeList, x, y, metadata, logger, EPSG="EPSG:4326", unit
     import datetime as dt
 
     logger.info('Setting up netcdf output: ' + trgFile)
+
+    if units == None: # Use start of the run
+        epoch = timeList[0]
+        units = 'seconds since %04d-%02d-%02d %02d:%02d:%02d.0 00:00' % (
+        epoch.year, epoch.month, epoch.day, epoch.hour, epoch.minute, epoch.second)
+
     startDayNr = netCDF4.date2num(timeList[0].replace(tzinfo=None), units=units, calendar=calendar)
     endDayNr = netCDF4.date2num(timeList[-1].replace(tzinfo=None), units=units, calendar=calendar)
 
@@ -187,12 +193,8 @@ class netcdfoutput():
         self.Format = Format
         self.least_significant_digit = least_significant_digit
 
-        def date_range(start, end, tdelta="days"):
-            if tdelta == "days":
-                r = (end + dt.timedelta(days=1) - start).days
-                return [start + dt.timedelta(days=i) for i in range(r)]
-            else:
-                r = (end + dt.timedelta(days=1) - start).days * 24
+        def date_range(start, end, timestepsecs):
+                r = int((end + dt.timedelta(seconds=timestepsecs) - start).total_seconds()/timestepsecs)
                 return [start + dt.timedelta(hours=i) for i in range(r)]
 
         self.logger = logger
@@ -208,16 +210,11 @@ class netcdfoutput():
         x = _pcrut.pcr2numpy(_pcrut.xcoordinate(_pcrut.boolean(_pcrut.cover(1.0))), NaN)[0, :]
         y = _pcrut.pcr2numpy(_pcrut.ycoordinate(_pcrut.boolean(_pcrut.cover(1.0))), NaN)[:, 0]
 
-        end = starttime + dt.timedelta(seconds=timestepsecs * self.timesteps - 1)
+        # Shift one timestep as we output at the end
+        #starttime = starttime + dt.timedelta(seconds=timestepsecs)
+        end = starttime + dt.timedelta(seconds=timestepsecs * (self.timesteps -1))
 
-        if timestepsecs == 86400:
-            timeList = date_range(starttime, end, tdelta="days")
-        elif timestepsecs == 3600:
-            timeList = date_range(starttime, end, tdelta="hours")
-        else:
-            logger.error("Current timestep: " + str(timestepsecs) + " not supported in netcdf writing.")
-            timeList = date_range(starttime, end, tdelta="days")
-
+        timeList = date_range(starttime, end, timestepsecs)
         self.timestepbuffer = zeros((self.maxbuf, len(y), len(x)))
         self.bufflst = {}
 
