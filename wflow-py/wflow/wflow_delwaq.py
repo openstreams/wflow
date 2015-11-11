@@ -84,8 +84,6 @@ $Rev: 813 $
 """
 import  wflow.wflow_adapt as wflow_adapt
 from  wflow.wf_DynamicFramework import *
-
-
  
 from datetime import *
 import os
@@ -96,7 +94,6 @@ import time
 import struct
 import shutil
 import __builtin__
-
 
 logger = ""
 volumeMapStack="vol"
@@ -167,7 +164,7 @@ def dw_WriteInitials(fname,inmaps):
     exfile.close()
     
     
-def dw_WriteBoundlist(fname,pointer,areas,of,inflowtypes):
+def dw_WriteBoundlist(fname,pointer,areas,inflowtypes):
     """ 
     Writes the boundary list file
     B5\_boundlist.inc
@@ -267,8 +264,6 @@ def dw_WriteSegmentOrExchangeData(ttime,fname,datablock,boundids,WriteAscii=True
         fpa.close()
 
 
-#TODO: Add exta column with boundary labels (of the inflows)
-
 def dw_mkDelwaqPointers(ldd,amap,difboun,layers):
     """
     An ldd is used to determine the from-to relations for delwaq using
@@ -320,7 +315,7 @@ def dw_mkDelwaqPointers(ldd,amap,difboun,layers):
     # make into flatted numpy arrays
     np_ptid = pcr2numpy(ptid,NaN).flatten()
     np_flowto = pcr2numpy(flowto,NaN).flatten()
-    np_catchid = pcr2numpy(scalar(amap),NaN).flatten()
+    np_catchid = pcr2numpy(scalar(amap),-999).flatten()
     np_upbound = pcr2numpy(upbound,NaN).flatten()
 
     # remove all non-active cells
@@ -330,7 +325,7 @@ def dw_mkDelwaqPointers(ldd,amap,difboun,layers):
     np_ptid = np_ptid[isfinite(np_ptid)]
     np_flowto= np_flowto.reshape(len(np_flowto),1)
     np_ptid= np_ptid.reshape(len(np_ptid),1)
-    np_catchid= np_catchid.reshape(len(np_catchid),1) * -1
+    np_catchid= np_catchid.reshape(len(np_catchid),1)
     # Now make catchid a list
     np_catchid = np_catchid.flatten()
     np_catchid = array(int_(np_catchid),dtype='|S').tolist()
@@ -340,14 +335,17 @@ def dw_mkDelwaqPointers(ldd,amap,difboun,layers):
     # mak epointer matrix and add to zero zolumns
     orgpointer = hstack((np_ptid,np_flowto,zeros((len(np_flowto),1)),zeros((len(np_flowto),1))))
     pointer = orgpointer.copy()
+    # Pointer labels:
+    #    negative: outflow boundary
+    #    zero    : internal flow
+    #    positive: inflow boundary
+    pointer_labels = zeros( (len(np_flowto)), dtype=numpy.int ) 
     extraboun = []
     # Add the inflow boundaries here.
     cells = pointer[:,0]
     cells = cells.reshape(len(cells),1)
     bounid = cells.copy()
-    zzerocol = zeros((len(np_flowto),1))
-    inflowId = bounid.copy()
-    
+    zzerocol = zeros((len(np_flowto),1), dtype=numpy.int)
     
     # outflow to pointer
     # point -> - point
@@ -359,20 +357,19 @@ def dw_mkDelwaqPointers(ldd,amap,difboun,layers):
     lowerids = lowerids.reshape(len(lowerids),1)
     of = hstack((lopt,lowerids,zerocol,zerocol))
     
-    #pointer = vstack((pointer,of))
-    
     # Now remove double pointer to itself and replace by lower boundary
     lowerck = pointer[:,0] == pointer[:,1]   
-    pointer[lowerck,:] = of 
+    pointer[lowerck,:] = of
+    pointer_labels[lowerck] = -1
     start = absolute(lowerids.min()) + 1
     bouns = 1
     for idd in range(1,difboun + 1):
-        inflowId[:] = idd
         bounid = arange(start,(len(cells)+start)).reshape((len(cells),1)) * -1.0
         if bouns == 1:
             extraboun = hstack((bounid,cells,zzerocol,zzerocol))        
         else:
             extraboun = vstack((extraboun,hstack((bounid,cells,zzerocol,zzerocol))))
+        pointer_labels = hstack((pointer_labels, zzerocol[:,0] + bouns))
         bouns = bouns +1
         start = start + len(cells)
     
@@ -392,12 +389,10 @@ def dw_mkDelwaqPointers(ldd,amap,difboun,layers):
     #extraboun= hstack((np_catchid,cells,zerocol,zerocol))
     #print np_catchid
     
-    
     if len(extraboun) > 0:
         pointer = vstack((pointer,extraboun)) 
       
-    return ptid, flowto, pointer, orgpointer[:,0], of[:,0:2], extraboun[:,0:1].flatten(), np_ptid.flatten(), np_catchid
-
+    return ptid, pointer, pointer_labels, np_ptid.flatten(), np_catchid
 
 
 def dw_pcrToDataBlock(pcrmap):
@@ -409,7 +404,6 @@ def dw_pcrToDataBlock(pcrmap):
     ttar = ttar[isfinite(ttar)]
     
     return ttar
-            
 
  
 def readTS(name, ts):
@@ -426,6 +420,7 @@ def readTS(name, ts):
     mapje = readmap(name)
     
     return mapje
+
 
 def dw_CreateDwRun(thedir):
     """"
@@ -461,7 +456,6 @@ def dw_CreateDwRun(thedir):
     if os.path.isdir(comdir):
         shutil.rmtree(comdir)
     os.mkdir(comdir)
-
 
 
 def dw_Write_Times(dwdir,T0,timeSteps,timeStepSec):
@@ -584,120 +578,434 @@ def dw_GetGridDimensions(ptid_map):
     return m,n
 
 
-def dw_WriteGridFiles(fname,ptid_map, pointer):
+def dw_WriteWaqGeom(fname, ptid_map, ldd_map):
     """
-    Writes Delwaq indices (*.lga) and coordinates (*.cco) files.
+    Writes Delwaq netCDF geometry file (*_waqgeom.nc).
 
     input:
     - fname    : output file name (without file extension)
     - ptid_map : PCRaster map with unique id's
     """
-    # horizontal dimensions
-    m,n = dw_GetGridDimensions(ptid_map)
-    # number of layers
-    nolay = 1
+    # Get coordinates
 
-    # prepare cco data
     zero_map = scalar(ptid_map) * 0.0
-    setglobaloption('coorul')
-    xxul = dw_pcrToDataBlock(xcoordinate(boolean(cover(zero_map + 1,1))))
-    yyul = dw_pcrToDataBlock(ycoordinate(boolean(cover(zero_map + 1,1))))
-    setglobaloption('coorlr')
-    xxlr = dw_pcrToDataBlock(xcoordinate(boolean(cover(zero_map + 1,1))))
-    yylr = dw_pcrToDataBlock(ycoordinate(boolean(cover(zero_map + 1,1))))
-    setglobaloption('coorcentre')
-    # reshape to 2d array
-    xx = xxul.reshape((m,n))
-    yy = yyul.reshape((m,n))
-    # add extra row and columns for last corner coordinates
-    xx = insert(xx,m,0,axis=0)
-    xx = insert(xx,n,0,axis=1)
-    yy = insert(yy,m,0,axis=0)
-    yy = insert(yy,n,0,axis=1)
-    # reshape lower right coordinates
-    xxlr = xxlr.reshape((m,n))
-    yylr = yylr.reshape((m,n))
-    # use lower right coordinates were possible
-    xx[1:,-1] = xxlr[:,-1]
-    xx[-1,1:] = xxlr[-1,:]
-    yy[1:,-1] = yylr[:,-1]
-    yy[-1,1:] = yylr[-1,:]
-    # fill top right and bottom left coordinates
-    xx[0,-1]  = xx[1,-1]
-    xx[-1,0]  = xx[-2,0]
-    yy[0,-1]  = yy[0,-2]
-    yy[-1,0]  = yy[-1,1]
-    # add extra row and columns for dummy coordinates
-    xx = insert(xx,m+1,0,axis=0)
-    xx = insert(xx,n+1,0,axis=1)
-    yy = insert(yy,m+1,0,axis=0)
-    yy = insert(yy,n+1,0,axis=1)
+    setglobaloption('coorul') # upper-left cell corners
+    xxul = pcr2numpy(xcoordinate(boolean(cover(zero_map + 1,1))),-1)
+    yyul = pcr2numpy(ycoordinate(boolean(cover(zero_map + 1,1))),-1)
+    setglobaloption('coorlr') # lower-right cell corners
+    xxlr = pcr2numpy(xcoordinate(boolean(cover(zero_map + 1,1))),-1)
+    yylr = pcr2numpy(ycoordinate(boolean(cover(zero_map + 1,1))),-1)
 
-    # prepare lga data
-    lga = dw_pcrToDataBlock(scalar(cover(ptid_map,0)))
-    # reshape lga to 2D array
-    lga = lga.reshape((m,n))
-    # add frame of zeros around lga matrix
-    lga = insert(lga,m,0,axis=0)
-    lga = insert(lga,n,0,axis=1)
-    lga = insert(lga,0,0,axis=0)
-    lga = insert(lga,0,0,axis=1)
-    # find boundary nodes
-    outflows = pointer[ pointer[:,1] < 0, 0:2]
-    # allocate negative segment number to outflow boundary cells
-    for segnr, boundnr in outflows:
-        w = where(lga == segnr)
-        i,j = w[0][0], w[1][0]
-        # choose first zero neighbour and make it
-        if lga[i,j-1] == 0:
-            lga[i,j-1] = boundnr
-        elif lga[i,j+1] == 0:
-            lga[i,j+1] = boundnr
-        elif lga[i-1,j] == 0:
-            lga[i-1,j] = boundnr
-        elif lga[i+1,j] == 0:
-            lga[i+1,j] = boundnr
+    # Convert pcr maps to numpy arrays
 
-    # update grid dimensions
-    m = m+2
-    n = n+2
-    # reshape to 1D arrays
-    xx  = xx.reshape( (m*n) )
-    yy  = yy.reshape( (m*n) )
-    lga = lga.reshape( (m*n) )
+    np_ptid = pcr2numpy(ptid_map,-1)
+    np_ldd = pcr2numpy(ldd_map,-1)
+    np_ldd[np_ldd == 255] = 0
 
-    # write cco file
-    print("cco.shape: {}",format(xx.shape))
-    f = open(fname + '.cco','wb')
-    f.write(array([m, n, ], dtype=numpy.int).tostring())
-    f.write(array([xx[0], yy[0]], dtype=numpy.float32).tostring())
-    f.write(array([0, 0, nolay, 0, 0, 0, 0, 0, 0, 0, 0, 0], dtype=numpy.int).tostring())
-    f.write(hstack((xx, yy)).tostring())
+    # Number of segments in horizontal dimension
+
+    nosegh = int(numpy.max(np_ptid))
+
+    # Waqgeom dimensions
+
+    n_net_node = 0
+    n_net_link = 0
+    n_net_link_pts = 2
+    n_net_elem = nosegh
+    n_net_elem_max_node = 4 # all elements are rectangles
+    n_flow_link = nosegh - 1 # one per element, except for outlet
+    n_flow_link_pts = 2
+
+    # Prepare waqgeom data structures
+
+    nodes_x = []
+    nodes_y = []
+    nodes_z = []
+    net_links = []
+    elem_nodes = numpy.zeros( (n_net_elem,n_net_elem_max_node), dtype=numpy.int)
+    flow_links = numpy.zeros( (n_flow_link,n_flow_link_pts), dtype=numpy.int)
+    flow_link_x = numpy.zeros( (n_flow_link), dtype=numpy.float)
+    flow_link_y = numpy.zeros( (n_flow_link), dtype=numpy.float)
+
+    # Keep track of nodes and links as dataset grows 
+
+    i_node = 0  # index of last node
+    i_flink = 0 # index of last flow link
+
+    # PCR cell id's start at 1, we need it zero based
+
+    np_ptid = np_ptid - 1
+
+    # Wflow map dimensions
+
+    m, n = np_ptid.shape
+
+    # Helper function
+
+    def add_node(i, j, corner):
+        # Get coordinates
+        if corner == UL:
+            x = xxul[i,j]
+            y = yyul[i,j]
+        elif corner == LR:
+            x = xxlr[i,j]
+            y = yylr[i,j]
+        elif corner == UR:
+            x = xxlr[i,j]
+            y = yyul[i,j]
+        elif corner == LL:
+            x = xxul[i,j]
+            y = yylr[i,j]
+        else:
+            assert(0)
+        # Add node coordinates
+        nodes_x.append(x)
+        nodes_y.append(y)
+        nodes_z.append(0)
+
+    # Cell corners
+
+    UL, UR, LR, LL = 0, 1, 2, 3
+
+    # Process all cells from upper-left to lower-right
+
+    for i in range(m):
+        for j in range(n):
+            # Current element index
+            i_elem = np_ptid[i,j]
+            if i_elem < 0:
+                # Skip inactive segment
+                continue
+            
+            # Get index of neighbouring elements that could have been processed before
+
+            if i == 0:
+                i_elem_up_left  = -1
+                i_elem_up       = -1
+                i_elem_up_right = -1
+            elif j == 0:
+                i_elem_up_left  = -1
+                i_elem_up       = np_ptid[i-1,j  ]
+                i_elem_up_right = np_ptid[i-1,j+1]
+            else:
+                i_elem_up_left  = np_ptid[i-1,j-1]
+                i_elem_up       = np_ptid[i-1,j  ]
+                i_elem_up_right = np_ptid[i-1,j+1]
+            
+            if j == 0:
+                i_elem_left = -1
+            else:
+                i_elem_left = np_ptid[i  ,j-1]
+            
+            # Update nodes:
+            # If left or upper neighbours are active, some nodes of current cell
+            # have been added already.
+
+            # UL node
+            if (i_elem_left < 0 and i_elem_up_left < 0 and i_elem_up < 0):
+                add_node(i,j,UL)
+                elem_nodes[i_elem,UL] = i_node
+                i_node += 1
+            elif i_elem_left >= 0:
+                elem_nodes[i_elem,UL] = elem_nodes[i_elem_left, UR]
+            elif i_elem_up_left >= 0:
+                elem_nodes[i_elem,UL] = elem_nodes[i_elem_up_left, LR]
+            elif i_elem_up >= 0:
+                elem_nodes[i_elem,UL] = elem_nodes[i_elem_up, LL]
+
+            # UR node
+            if (i_elem_up < 0 and i_elem_up_right < 0):
+                add_node(i,j,UR)
+                elem_nodes[i_elem,UR] = i_node
+                i_node += 1
+            elif i_elem_up >= 0:
+                elem_nodes[i_elem,UR] = elem_nodes[i_elem_up, LR]
+            elif i_elem_up_right >= 0:
+                elem_nodes[i_elem,UR] = elem_nodes[i_elem_up_right, LL]
+            if (i_elem_up < 0):
+                # add UL-UR link
+                net_links.append((elem_nodes[i_elem,UL], elem_nodes[i_elem,UR]))
+
+            # LL node
+            if (i_elem_left < 0):
+                add_node(i,j,LL)
+                elem_nodes[i_elem,LL] = i_node
+                i_node += 1
+                # add UL-LL link
+                net_links.append((elem_nodes[i_elem,UL], elem_nodes[i_elem,LL]))
+            else:
+                elem_nodes[i_elem,LL] = elem_nodes[i_elem_left, LR]
+
+            # LR node
+            add_node(i,j,LR)
+            elem_nodes[i_elem,LR] = i_node
+            i_node += 1
+            # add LL-LR link
+            net_links.append((elem_nodes[i_elem,LL], elem_nodes[i_elem,LR]))
+            # add UR-LR link
+            net_links.append((elem_nodes[i_elem,UR], elem_nodes[i_elem,LR]))
+
+            # Update flow links based on local drain direction
+            # TODO: diagonal flow links between cells that have only one node in common?
+            
+            direction = np_ldd[i,j]
+            i_other = - 1
+            if   direction == 1: i_other = np_ptid[i+1,j-1] # to lower left
+            elif direction == 2: i_other = np_ptid[i+1,j  ] # to lower
+            elif direction == 3: i_other = np_ptid[i+1,j+1] # to lower right
+            elif direction == 4: i_other = np_ptid[i  ,j-1] # to left
+            elif direction == 6: i_other = np_ptid[i  ,j+1] # to right
+            elif direction == 7: i_other = np_ptid[i-1,j-1] # to upper right
+            elif direction == 8: i_other = np_ptid[i-1,j  ] # to upper
+            elif direction == 9: i_other = np_ptid[i-1,j+1] # to upper left
+            if i_other >= 0:
+                flow_links[i_flink,:] = i_elem, i_other
+                i_flink += 1
+
+    # Convert data to numpy arrays
+
+    nodes_x = numpy.array(nodes_x)
+    nodes_y = numpy.array(nodes_y)
+    nodes_z = numpy.array(nodes_z)
+    net_links = numpy.array(net_links)
+    
+    # Update dimensions
+
+    n_net_node = nodes_x.shape[0]
+    n_net_link = net_links.shape[0]
+
+    # Create netCDF file in classic format
+
+    f = netCDF4.Dataset(fname + "_waqgeom.nc", 'w', format='NETCDF3_CLASSIC')
+
+    # Create dimensions
+
+    f.createDimension("dim", 1)
+    f.createDimension("nNetNode", n_net_node)
+    f.createDimension("nNetLink", n_net_link)
+    f.createDimension("nNetLinkPts", n_net_link_pts)
+    f.createDimension("nNetElem", n_net_elem)
+    f.createDimension("nNetElemMaxNode", n_net_elem_max_node)
+    f.createDimension("nFlowLink", n_flow_link)
+    f.createDimension("nFlowLinkPts", n_flow_link_pts)
+
+    # Create variables
+
+    v_msh = f.createVariable("mesh","i4",("dim",))
+    v_pcs = f.createVariable("projected_coordinate_system","i4",())
+    v_nnx = f.createVariable("NetNode_x","f8",("nNetNode",))
+    v_nny = f.createVariable("NetNode_y","f8",("nNetNode",))
+    v_nnz = f.createVariable("NetNode_z","f8",("nNetNode",))
+    v_nlk = f.createVariable("NetLink","i4",("nNetLink", "nNetLinkPts",))
+    v_nen = f.createVariable("NetElemNode","i4",("nNetElem", "nNetElemMaxNode",), fill_value=0)
+    v_flk = f.createVariable("FlowLink","i4",("nFlowLink", "nFlowLinkPts",))
+    v_flt = f.createVariable("FlowLinkType","i4",("nFlowLink",))
+    v_flx = f.createVariable("FlowLink_xu","f8",("nFlowLink",))
+    v_fly = f.createVariable("FlowLink_yu","f8",("nFlowLink",))
+
+    # Variable attributes
+
+    v_msh.long_name = "Delft3D FM aggregated mesh"
+    v_msh.cf_role = "mesh_topology"
+    v_msh.topology_dimension = "2 d"
+    v_msh.node_coordinates = "NetNode_x NetNode_y"
+    v_msh.face_node_connectivity = "NetElemNode"
+    v_msh.edge_node_connectivity = "NetLink"
+    v_msh.edge_face_connectivity = "FlowLink"
+
+    # v_pcs.name = "Unknown projected"
+    v_pcs.epsg = 4326
+    v_pcs.grid_mapping_name = "Unknown projected"
+    v_pcs.longitude_of_prime_meridian = 0.
+    # v_pcs.semi_major_axis = 6378137.
+    # v_pcs.semi_minor_axis = 6356752.314245
+    v_pcs.inverse_flattening = 298.257223563
+    v_pcs.epsg_code = "EPSG:4326"
+    v_pcs.value = "value is equal to EPSG code"
+
+    v_nnx.units = "degrees_east"
+    v_nnx.standard_name = "longitude"
+    v_nnx.long_name = "longitude"
+
+    v_nny.units = "degrees_north"
+    v_nny.standard_name = "latitude"
+    v_nny.long_name = "latitude"
+
+    v_nnz.units = "m"
+    v_nnz.positive = "up"
+    v_nnz.standard_name = "sea_floor_depth"
+    v_nnz.long_name = "Bottom level at net nodes (flow element\'s corners)"
+    v_nnz.coordinates = "NetNode_x NetNode_y"
+
+    v_nlk.long_name = "link between two netnodes"
+    v_nlk.start_index = 1
+
+    v_nen.long_name = "Net element defined by nodes"
+    v_nen.start_index = 1
+    # v_nen._FillValue = 0
+
+    v_flk.long_name = "link/interface between two flow elements"
+    v_flk.start_index = 1
+
+    v_flt.long_name = "type of flowlink"
+    v_flt.valid_range = 1, 2
+    v_flt.flag_values = 1, 2
+    v_flt.flag_meanings = "link_between_1D_flow_elements link_between_2D_flow_elements"
+
+    v_flx.units = "degrees_east"
+    v_flx.standard_name = "longitude"
+    v_flx.long_name = "x-Coordinate of velocity point on flow link."
+
+    v_fly.units = "degrees_north"
+    v_fly.standard_name = "latitude"
+    v_fly.long_name = "y-Coordinate of velocity point on flow link."
+
+    # Global attributes
+
+    f.institution = "Deltares"
+    f.references = "http://www.deltares.nl"
+    time_string = time.strftime("%b %d %Y, %H:%M:%S")
+    f.source = "Wflow, Deltares, %s."%time_string
+    offset_s = -time.altzone
+    offset_m = int((offset_s % 3600) / 60)
+    offset_h = int((offset_s/60 - offset_m) / 60)
+    time_string = time.strftime("%Y-%m-%dT%H:%M:%S") + "+%02i%02i"%(offset_h, offset_m)
+    f.history = "Created on %s, wflow_delwaq.py"%time_string
+    f.Conventions = "CF-1.6 UGRID-0.9"
+
+    # Data
+
+    v_nnx[:] = nodes_x
+    v_nny[:] = nodes_y
+    v_nnz[:] = nodes_z
+    v_nlk[:,:] = net_links + 1 # uses 1-based indexes
+    v_nen[:,:] = elem_nodes + 1 # uses 1-based indexes
+    v_flk[:,:] = flow_links + 1 # uses 1-based indexes
+    v_flt[:] = 2
+    v_flx[:] = 0
+    v_fly[:] = 0
+
     f.close()
 
-    # write lga file
-    nosegh = dw_pcrToDataBlock(ptid_map).shape[0]
-    print("lga.shape: {}",format(lga.shape))
-    print("m,n : {},{}".format(m,n))
-    noq = pointer.shape[0]
-    ints = array([n, m, nosegh, nolay, noq, 0, 0])
-    ints = hstack((ints, lga))
-    ints = array(ints, dtype=numpy.int)
-    f = open(fname + '.lga','wb')
-    f.write(ints.tostring())
+
+def dw_WriteBndFile(fname, ptid_map, pointer, pointer_labels, areas, source_ids):
+    """
+    Writes Delwaq *.bnd file.
+
+    input:
+    - fname          : output file name (without file extension)
+    - ptid_map       : PCRaster map with unique id's
+    - pointer        : delwaq pointers
+    - pointer_labels : numpy array with pointer types
+    - areas          : area id per inflow
+    - source_ids     : list of source names
+
+    A unique boundary is generated per source for all segments in a given area.
+    A unique boundary is generated for each outflow.
+    """
+    buff = ""
+    np_ptid = pcr2numpy(ptid_map, -1)
+    area_ids = unique(areas)
+
+    # Upper-left and lower-right Coordinates
+
+    zero_map = scalar(ptid_map) * 0.0
+    setglobaloption('coorul') # upper-left cell corners
+    xxul = pcr2numpy(xcoordinate(boolean(cover(zero_map + 1,1))),-1)
+    yyul = pcr2numpy(ycoordinate(boolean(cover(zero_map + 1,1))),-1)
+    setglobaloption('coorlr') # lower-right cell corners
+    xxlr = pcr2numpy(xcoordinate(boolean(cover(zero_map + 1,1))),-1)
+    yylr = pcr2numpy(ycoordinate(boolean(cover(zero_map + 1,1))),-1)
+
+    # Map dimensions
+
+    m, n = np_ptid.shape
+
+    # Build grid cell index lookup
+
+    cell_indexes = {}
+    for i in range(m):
+        for j in range(n):
+            if np_ptid[i,j] > 0:
+                cell_indexes[np_ptid[i,j]] = (i,j)
+
+    # Counter for number of boundaries
+    
+    n_boundaries = 0
+
+    # Outflows
+
+    for i_count, i_pointer in enumerate( numpy.where(pointer_labels < 0)[0] ):
+        segnum = pointer[i_pointer,0]
+        bndnum = pointer[i_pointer,1]
+        buff += "Outflow_%i\n"%(i_count+1)
+        buff += "1\n"
+        n_boundaries += 1
+
+        # Find a cell edge with no active neighbour
+
+        i, j = cell_indexes[segnum]
+        if i == 0 or np_ptid[i-1,j] < 0:
+            # first row or upper neighbour inactive: use upper edge
+            point_a = xxul[i,j], yyul[i,j]
+            point_b = xxlr[i,j], yyul[i,j]
+        elif j == 0 or np_ptid[i,j-1] < 0:
+            # first column or left neighbour inactive: use left edge
+            point_a = xxul[i,j], yylr[i,j]
+            point_b = xxul[i,j], yyul[i,j]
+        elif i == m-1 or np_ptid[i+1,j] < 0:
+            # last row or lower neighbour inactive: use lower edge
+            point_a = xxul[i,j], yylr[i,j]
+            point_b = xxlr[i,j], yylr[i,j]
+        elif j == n-1 or np_ptid[i,j+1]:
+            # last column or right neighbour inactive: use right edge
+            point_a = xxlr[i,j], yyul[i,j]
+            point_b = xxlr[i,j], yylr[i,j]
+        else:
+            # no inactive neighbour: use upper left corner
+            point_a = xxul[i,j], yyul[i,j]
+            point_b = point_a
+
+        buff += "%i %e %e %e %e\n"%(bndnum, point_a[0], point_a[1], point_b[0], point_b[1])
+ 
+    # Sort inflows per area and source
+
+    d = {area_id :{source_id:[] for source_id in source_ids} for area_id in area_ids}
+    for i_inflow, i_pointer in enumerate( numpy.where(pointer_labels > 0)[0] ):
+        source_id = source_ids[ pointer_labels[i_pointer] - 1 ]
+        area_id = areas[i_inflow]
+        d[area_id][source_id].append(i_pointer)
+
+    # Generate inflow boundaries for each area-source pair
+
+    for area_id in area_ids:
+        for source_id in source_ids:
+            if not d[area_id][source_id]:
+                continue
+            buff += "Inflow_%s_%s\n"%(area_id, source_id)
+            buff += "%i\n"%(len(d[area_id][source_id]))
+            n_boundaries += 1
+            for i_pointer in d[area_id][source_id]:
+                segnum = pointer[i_pointer,1]
+                bndnum = pointer[i_pointer,0]
+                # Compute center coordinates of cell
+                i, j = cell_indexes[segnum]
+                x = (xxul[i,j] + xxlr[i,j] ) * 0.5
+                y = (yyul[i,j] + yylr[i,j] ) * 0.5
+                buff += "%i %e %e %e %e\n"%(bndnum, x, y, x, y)
+    
+    # Write file
+    f = open(fname + ".bnd", 'w')
+    f.write("%i\n"%n_boundaries)
+    f.write(buff)
     f.close()
 
 
-def dw_WriteSurfaceFile(fname,m,n,noseg,block):
+def dw_WriteSurfaceFile(fname,block):
     """
     Generates a Delwaq surface (*.srf) file.
     """
     f = open(fname, 'wb')
-    f.write(struct.pack('i',m))
-    f.write(struct.pack('i',n))
-    f.write(struct.pack('i',noseg))
-    f.write(struct.pack('i',noseg))
-    f.write(struct.pack('i',noseg))
     f.write(struct.pack('i',0))
     f.write(struct.pack('%if'%len(block), *block))
     f.close()
@@ -711,6 +1019,10 @@ def dw_WriteAttributesFile(fname, noseg):
     - fname : file name to write to
     - noseg : number of delwaq segments
     """
+    line_length = 100
+    n_lines = noseg // line_length
+    remaining_length = noseg % line_length
+
     buff  = ""
     buff += "         ; DELWAQ_COMPLETE_ATTRIBUTES\n"
     buff += "    2    ; two blocks with input\n"
@@ -719,14 +1031,24 @@ def dw_WriteAttributesFile(fname, noseg):
     buff += "    1    ; data follows in this fil\n"
     buff += "    1    ; all data is given without defaults\n"
     buff += ";    layer:            1\n"
-    buff += "%i*1\n"%noseg
+    for iline in range(n_lines):
+        buff += " ".join(['1' for _ in range(line_length)])
+        buff += "\n"
+    buff += " ".join(['1' for _ in range(remaining_length)])
+    buff += "\n"
+
     buff += "    1    ; number of attributes, they are :\n"
     buff += "    2    ;  '1' has surface '3' has bottom\n"
     buff += "         ;  '0' has both    '2' has none\n"
     buff += "    1    ; data follows in this file\n"
     buff += "    1    ; all data is given without defaults\n"
     buff += ";    layer:            1\n"
-    buff += "%i*0\n"%noseg
+    for iline in range(n_lines):
+        buff += " ".join(['0' for _ in range(line_length)])
+        buff += "\n"
+    buff += " ".join(['0' for _ in range(remaining_length)])
+    buff += "\n"
+
     buff += "    0    ; no time dependent attributes\n"
     f = open(fname, 'w')
     f.write(buff)
@@ -752,8 +1074,8 @@ def dw_WriteHydFile(fname, d):
         return "{:04}{:02}{:02}{}".format(0,0,td.days,time.strftime('%H%M%S',time.gmtime(td.seconds)))
     buff  = ""
     buff += "task      full-coupling\n"
-    buff += "geometry  curvilinear-grid\n"
-    buff += "horizontal-aggregation       automatic\n"
+    buff += "geometry  unstructured\n"
+    buff += "horizontal-aggregation       no\n"
     buff += "minimum-vert-diffusion-used  no\n"
     buff += "vertical-diffusion           calculated\n"
     buff += "description\n"
@@ -769,14 +1091,17 @@ def dw_WriteHydFile(fname, d):
     buff += "conversion-start-time    '%s'\n"%(datetime2str(d['tstart']))
     buff += "conversion-stop-time     '%s'\n"%(datetime2str(d['tstop']))
     buff += "conversion-timestep      '%s'\n"%(timedelta2str(d['tstep']))
-    buff += "grid-cells-first-direction %7i\n"%d['m']
-    buff += "grid-cells-second-direction %6i\n"%d['n']
-    buff += "number-hydrodynamic-layers       1\n"
+    buff += "grid-cells-first-direction              %7i\n"%d['noseg']
+    buff += "grid-cells-second-direction             %7i\n"%1
+    buff += "number-hydrodynamic-layers              %7i\n"%1
+    buff += "number-horizontal-exchanges             %7i\n"%d['noqh']
+    buff += "number-vertical-exchanges               %7i\n"%d['noqv']
+    buff += "number-water-quality-segments-per-layer %7i\n"%d['nosegh']
     buff += "number-water-quality-layers      1\n"
     buff += "hydrodynamic-file        none\n"
     buff += "aggregation-file         none\n"
-    buff += "grid-indices-file        '%s.lga'\n"%d['runid']
-    buff += "grid-coordinates-file    '%s.cco'\n"%d['runid']
+    buff += "boundaries-file          '%s.bnd'\n"%d['runid']
+    buff += "waqgeom-file             '%s_waqgeom.nc'\n"%d['runid']
     buff += "volumes-file             '%s.vol'\n"%d['runid']
     buff += "areas-file               '%s.are'\n"%d['runid']
     buff += "flows-file               '%s.flo'\n"%d['runid']
@@ -785,9 +1110,8 @@ def dw_WriteHydFile(fname, d):
     buff += "salinity-file            none\n"
     buff += "temperature-file         none\n"
     buff += "vert-diffusion-file      none\n"
-    buff += "surfaces-file            '%s.srf'\n"%d['runid']
+    buff += "horizontal-surfaces-file '%s.srf'\n"%d['runid']
     buff += "depths-file              none\n"
-    buff += "total-grid-file          none\n"
     buff += "discharges-file          none\n"
     buff += "chezy-coefficients-file  none\n"
     buff += "shear-stresses-file      none\n"
@@ -820,8 +1144,6 @@ def usage(*args):
 pointer = ""
 
 
-
-
 def main():
     caseId = "Ahr_DW/"
     caseId = "default_hbv"
@@ -847,7 +1169,7 @@ def main():
         if o == '-F': 
             runinfoFile = a
             fewsrun = True
-        if o == '-C':caseId = a
+        if o == '-C': caseId = a
         if o == '-R': runId = a
         if o == '-D': dwdir = a
         if o == '-d': Write_Dynamic = True
@@ -886,21 +1208,19 @@ def main():
     logger = pcrut.setlogger(dwdir + "/debug/wflow_delwaq.log","wflow_delwaq") 
     #caseid = "default_hbv"
     logger.info("T0 of run: " + str(T0))
-    boundids = len(sourcesMap)  # extra number of exchnages for all bounds
+    boundids = len(sourcesMap)  # extra number of exchanges for all bounds
 
     #Number of exchnages is elements minus number of outflows!!  
     
     # Get subcatchment data
     logger.info("Reading basemaps")
     
-    setclone(caseId + configget(config,"model","wflow_subcatch","//staticmaps/wflow_subcatch.map"))
-    print caseId + "/staticmaps/wflow_subcatch.map"
+    wflow_subcatch = caseId + "/" + configget(config,"model","wflow_subcatch","/staticmaps/wflow_subcatch.map")
+    setclone(wflow_subcatch)
     amap = scalar(readmap(caseId +  "/" + areamap))
-    #amap = scalar(readmap(caseId + "/staticmaps/wflow_subcatch.map"))
-    modelmap = readmap(caseId + configget(config,"model","wflow_subcatch","/staticmaps/wflow_subcatch.map"))
-        # get ldd
-    ldd = readmap(caseId + configget(config,"model","wflow_ldd","/staticmaps/wflow_ldd.map"))
-    gauges = readmap(caseId + configget(config,"model","wflow_gauges","/staticmaps/wflow_gauges.map"))
+    modelmap = readmap(wflow_subcatch)
+    ldd = readmap(caseId + "/" + configget(config,"model","wflow_ldd","/staticmaps/wflow_ldd.map"))
+    gauges = readmap(caseId + "/" + configget(config,"model","wflow_gauges","/staticmaps/wflow_gauges.map"))
 
     # Some models yield a reallength.map, others a rl.map.
     rl_map_file = caseId + "/" + runId + "/outsum/rl.map"
@@ -934,26 +1254,21 @@ def main():
 
     if Write_Structure:    
         # get pointer an boundaries from ldd, subcatch and defined boundaries (P only now)
-        ptid, flowto, pointer, fromto, of , bounds, segments, areas = dw_mkDelwaqPointers(ldd,amap,boundids,1)
+        ptid, pointer, pointer_labels, segments, areas = dw_mkDelwaqPointers(ldd,amap,boundids,1)
 
         save(dwdir +"/debug/pointer.npy",pointer)
-        save(dwdir +"/debug/fromto.npy",fromto)
-        save(dwdir +"/debug/of.npy",of)
-        save(dwdir +"/debug/bounds.npy",bounds)
         save(dwdir +"/debug/segments.npy",segments)
         save(dwdir +"/debug/areas.npy",areas)
     
         # Write id maps to debug area
         report(ptid,dwdir + "/debug/ptid.map")
-        report(flowto,dwdir + "/debug/flowto.map")
         logger.info("Unique areas: " + str(unique(areas)))
         #logger.info("Number of area inflows: " + str(len(areas) * boundids))
         logger.info("Number of segments: " + str(len(segments.flatten())))
-        logger.info("Number of internal flows: " + str(len(fromto.flatten())))
-        logger.info("outflow  ids: " + str(of))
+        logger.info("Number of internal flows: " + str(len(pointer_labels[pointer_labels == 0])))
+        logger.info("outflow  ids: " + str(pointer[pointer[:,1]<0, 0:2]))
         logger.info("source maps: " + str(sourcesMap))    
-        
-        NOOF = of.shape[0]
+
         NOSQ = segments.shape[0]
         NOQ = pointer.shape[0]
         
@@ -963,7 +1278,7 @@ def main():
         dw_WritePointer(dwdir + "/includes_deltashell/B4_pointer.inc",pointer)
         # Write the number of exchanges
         dw_WriteNrExChnages(dwdir + "/includes_deltashell/B4_nrofexch.inc",NOQ)
-        dw_WriteBoundlist(dwdir + "/includes_deltashell/B5_boundlist.inc",pointer,areas,of,sourcesMap)
+        dw_WriteBoundlist(dwdir + "/includes_deltashell/B5_boundlist.inc",pointer,areas,sourcesMap)
         dw_WriteBoundData(dwdir + "/includes_deltashell/B5_bounddata.inc",unique(areas))
     
         dw_WriteInitials(dwdir + "/includes_deltashell/B8_initials.inc",sourcesMap)
@@ -991,9 +1306,14 @@ def main():
     comroot = os.sep.join([dwdir,'com',runId])
     mmax, nmax = dw_GetGridDimensions(ptid)
     dw_WritePointer(comroot+'.poi',pointer,binary=True)
-    dw_WriteSurfaceFile(comroot+'.srf',mmax,nmax,NOSQ,surface_block)
+    dw_WriteSurfaceFile(comroot+'.srf',surface_block)
     dw_WriteSegmentOrExchangeData(0,comroot+'.len',length_block,1,WriteAscii)
-    dw_WriteGridFiles(comroot, ptid, pointer)
+    
+    logger.info("Writing waq geometry file")
+    dw_WriteWaqGeom(comroot, ptid, ldd)
+    
+    logger.info("Writing boundary file")
+    dw_WriteBndFile(comroot, ptid, pointer, pointer_labels, areas, sourcesMap)
 
     # mask to filter out inactive segments
     zero_map = 0.0*scalar(ptid)
@@ -1086,7 +1406,7 @@ def main():
         dw_WriteAttributesFile(atr_file, NOSQ)
 
         # Generate hyd-file 
-        hyd_file = comroot+'.hyd'
+        hyd_file = comroot+'_unstructured.hyd'
         logger.info("Writing hyd-file to '%s'"%hyd_file)
         hydinfo = {}
         hydinfo['runid'] = runId
@@ -1094,9 +1414,11 @@ def main():
         hydinfo['tstart'] = T0
         hydinfo['tstop'] = T0 + timedelta(seconds=(timeSteps-1) * timestepsecs )
         hydinfo['tstep'] = timedelta(seconds=timestepsecs)
-        hydinfo['m'], hydinfo['n'] = mmax, nmax
+        hydinfo['noseg'] = NOSQ
+        hydinfo['nosegh'] = NOSQ
+        hydinfo['noqh'] = pointer.shape[0]
+        hydinfo['noqv'] = 0
         dw_WriteHydFile(hyd_file, hydinfo)
-
     
     
 if __name__ == "__main__":
