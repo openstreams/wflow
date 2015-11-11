@@ -687,7 +687,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self._userModel().timestepsecs = self.timestepsecs
             duration = self.datetime_laststep - self.datetime_firststep
             nrseconds = duration.total_seconds()
-            self._userModel()._setNrTimeSteps(int(nrseconds / self.timestepsecs) + 1)
+            self._userModel()._setNrTimeSteps(int(nrseconds / self.timestepsecs))
             self._d_firstTimestep = 1
             self._userModel()._setFirstTimeStep(self._d_firstTimestep)
             self._d_lastTimestep = int(nrseconds / self.timestepsecs)
