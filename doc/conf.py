@@ -27,7 +27,8 @@ class Mock(MagicMock):
     @classmethod
     def __getattr__(cls, name):
             return Mock()
- 
+
+# Mock modules so that we can build on readthedocs.org
 MOCK_MODULES = ['_pcraster','_pcraster_modflow','PCRaster.NumPy',
                 'osgeo.gdal','osgeo.gdalconst','osgeo','netCDF4',
                 'netCDF4_utils','netcdftime','PCRaster','PCRaster.Framework','pyproj']
