@@ -325,7 +325,7 @@ def dw_mkDelwaqPointers(ldd,amap,difboun,layers):
     np_ptid = np_ptid[isfinite(np_ptid)]
     np_flowto= np_flowto.reshape(len(np_flowto),1)
     np_ptid= np_ptid.reshape(len(np_ptid),1)
-    np_catchid= np_catchid.reshape(len(np_catchid),1) * -1
+    np_catchid= np_catchid.reshape(len(np_catchid),1)
     # Now make catchid a list
     np_catchid = np_catchid.flatten()
     np_catchid = array(int_(np_catchid),dtype='|S').tolist()
@@ -888,7 +888,7 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map):
     f.close()
 
 
-def dw_WriteBndFile(fname, ptid_map, pointer, pointer_labels, source_ids):
+def dw_WriteBndFile(fname, ptid_map, pointer, pointer_labels, areas, source_ids):
     """
     Writes Delwaq *.bnd file.
 
@@ -897,10 +897,15 @@ def dw_WriteBndFile(fname, ptid_map, pointer, pointer_labels, source_ids):
     - ptid_map       : PCRaster map with unique id's
     - pointer        : delwaq pointers
     - pointer_labels : numpy array with pointer types
+    - areas          : area id per inflow
     - source_ids     : list of source names
+
+    A unique boundary is generated per source for all segments in a given area.
+    A unique boundary is generated for each outflow.
     """
     buff = ""
     np_ptid = pcr2numpy(ptid_map, -1)
+    area_ids = unique(areas)
 
     # Upper-left and lower-right Coordinates
 
@@ -924,9 +929,9 @@ def dw_WriteBndFile(fname, ptid_map, pointer, pointer_labels, source_ids):
             if np_ptid[i,j] > 0:
                 cell_indexes[np_ptid[i,j]] = (i,j)
 
-    # Number of boundaries
+    # Counter for number of boundaries
     
-    buff += "%i\n"%( len(pointer_labels[pointer_labels != 0]) )
+    n_boundaries = 0
 
     # Outflows
 
@@ -935,6 +940,7 @@ def dw_WriteBndFile(fname, ptid_map, pointer, pointer_labels, source_ids):
         bndnum = pointer[i_pointer,1]
         buff += "Outflow_%i\n"%(i_count+1)
         buff += "1\n"
+        n_boundaries += 1
 
         # Find a cell edge with no active neighbour
 
@@ -962,23 +968,35 @@ def dw_WriteBndFile(fname, ptid_map, pointer, pointer_labels, source_ids):
 
         buff += "%i %e %e %e %e\n"%(bndnum, point_a[0], point_a[1], point_b[0], point_b[1])
  
-    # Inflows
+    # Sort inflows per area and source
 
-    for i_pointer in numpy.where(pointer_labels > 0)[0]:
+    d = {area_id :{source_id:[] for source_id in source_ids} for area_id in area_ids}
+    for i_inflow, i_pointer in enumerate( numpy.where(pointer_labels > 0)[0] ):
         source_id = source_ids[ pointer_labels[i_pointer] - 1 ]
-        segnum = pointer[i_pointer,1]
-        bndnum = pointer[i_pointer,0]
-        buff += "Inflow_%s_%i\n"%(source_id, segnum)
-        buff += "1\n"
+        area_id = areas[i_inflow]
+        d[area_id][source_id].append(i_pointer)
 
-        # Compute center coordinates of cell
-        i, j = cell_indexes[segnum]
-        x = (xxul[i,j] + xxlr[i,j] ) * 0.5
-        y = (yyul[i,j] + yylr[i,j] ) * 0.5
-        buff += "%i %e %e %e %e\n"%(bndnum, x, y, x, y)
+    # Generate inflow boundaries for each area-source pair
 
-    # Write files
+    for area_id in area_ids:
+        for source_id in source_ids:
+            if not d[area_id][source_id]:
+                continue
+            buff += "Inflow_%s_%s\n"%(area_id, source_id)
+            buff += "%i\n"%(len(d[area_id][source_id]))
+            n_boundaries += 1
+            for i_pointer in d[area_id][source_id]:
+                segnum = pointer[i_pointer,1]
+                bndnum = pointer[i_pointer,0]
+                # Compute center coordinates of cell
+                i, j = cell_indexes[segnum]
+                x = (xxul[i,j] + xxlr[i,j] ) * 0.5
+                y = (yyul[i,j] + yylr[i,j] ) * 0.5
+                buff += "%i %e %e %e %e\n"%(bndnum, x, y, x, y)
+    
+    # Write file
     f = open(fname + ".bnd", 'w')
+    f.write("%i\n"%n_boundaries)
     f.write(buff)
     f.close()
 
@@ -1295,7 +1313,7 @@ def main():
     dw_WriteWaqGeom(comroot, ptid, ldd)
     
     logger.info("Writing boundary file")
-    dw_WriteBndFile(comroot, ptid, pointer, pointer_labels, sourcesMap)
+    dw_WriteBndFile(comroot, ptid, pointer, pointer_labels, areas, sourcesMap)
 
     # mask to filter out inactive segments
     zero_map = 0.0*scalar(ptid)
