@@ -58,7 +58,6 @@ fraction is multiplied with the maximum floodplain width :math:`W_{fp}`.
 The :math:`\alpha` for the channel and floodplain are calculated as follows:
 
 
-pow((self.NFloodPlain / (sqrt(self.SlopeDCL))), self.Beta)
 
 .. math::
 
@@ -66,7 +65,7 @@ pow((self.NFloodPlain / (sqrt(self.SlopeDCL))), self.Beta)
 
     \alpha_{fp} = (n_{fp}/\sqrt{slope})^\beta  P_{fp}^{(2.0 / 3.0)\beta}
 
-In which slope is the flope of the river bed and floodplain and :math:`n_{ch}` and :math:`n_{fp}` represent
+In which slope is the slope of the river bed and floodplain and :math:`n_{ch}` and :math:`n_{fp}` represent
 the manning's n for the channel and floodplain respectively.
 
 A compound :math:`\alpha_{total}` is estimated by first calculating a compound n value :math:`n_{total}`:
@@ -78,7 +77,7 @@ A compound :math:`\alpha_{total}` is estimated by first calculating a compound n
     \alpha_{total}  = (n_{total}/\sqrt{slope})^\beta (P_{fp} + P_{ch})^{(2.0 / 3.0)\beta}
 
 
-The :math:`\alpha_{total}` is used in the pcraster kinematic function to get the dischareg for the next
+The :math:`\alpha_{total}` is used in the pcraster kinematic function to get the discharge for the next
 timestep.
 
 
