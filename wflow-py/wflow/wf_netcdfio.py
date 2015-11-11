@@ -279,6 +279,7 @@ class netcdfoutput():
             self.bufflst[var][bufpos, :, :] = data
 
         # Write out timestep buffer.....
+
         if buffreset == 0 or idx == self.maxbuf - 1 or self.timesteps <= timestep:
             spos = idx - bufpos
             self.logger.debug(

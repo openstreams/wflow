@@ -652,6 +652,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         # a runinfo file
         st = configget(self._userModel().config, 'run', 'starttime', "None")
 
+
         if st == "None":
             rinfo_str = configget(self._userModel().config, 'run', 'runinfo', "None")
             rinfo = os.path.join(self._userModel().Dir, rinfo_str)
@@ -668,7 +669,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 self._userModel().timestepsecs = self.timestepsecs
                 self._d_firstTimestep = 1
                 self._userModel()._setFirstTimeStep(self._d_firstTimestep)
-                self._d_lastTimestep = int(nrseconds / self.timestepsecs) + 1
+                st = int(nrseconds / self.timestepsecs) + 1
+
             else:
                 self.logger.info(
                     "Not enough information in the [run] section. Need start and end time or a runinfo.xml file.... Reverting to default date/time")
@@ -1942,20 +1944,34 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             path = os.path.join(directoryPrefix, newName)
             assert path is not ""
 
-            if self.ncfile != "None":
-                retval = self.NcInput.gettimestep(self._userModel().currentTimeStep(), self.logger, var=varname)
-                return retval
+            if self._userModel()._inDynamic():
+                if self.ncfile != "None":
+                    retval = self.NcInput.gettimestep(self._userModel().currentTimeStep(), self.logger, var=varname)
+                    return retval
 
-            if os.path.isfile(path):
-                mapje = readmap(path)
-                return mapje
-            else:
-                if verbose:
-                    self.logger.debug("Input data (" + os.path.abspath(path) + ") for timestep not present, returning " + str(default))
-                if fail:
-                    self.logger.error("Required map: " + os.path.abspath(path) + " not found, exiting..")
-                    sys.exit(1)
-                return scalar(default)
+                if os.path.isfile(path):
+                    mapje = readmap(path)
+                    return mapje
+                else:
+                    if verbose:
+                        self.logger.debug("Input data (" + os.path.abspath(path) + ") for timestep not present, returning " + str(default))
+                    if fail:
+                        self.logger.error("Required map: " + os.path.abspath(path) + " not found, exiting..")
+                        sys.exit(1)
+                    return scalar(default)
+            if self._userModel()._inInitial():
+                if os.path.isfile(path):
+                    mapje = readmap(path)
+                    return mapje
+                else:
+                    if verbose:
+                        self.logger.debug("Static input data (" + os.path.abspath(path) + ")  not present, returning " + str(default))
+                    if fail:
+                        self.logger.error("Required map: " + os.path.abspath(path) + " not found, exiting..")
+                        sys.exit(1)
+                    return scalar(default)
+
+
         elif style == 2:  # Assuming they are set in memory by the API
             # first get basename (last bit of path)
             name = os.path.basename(name)
