@@ -691,12 +691,16 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self.logger.debug("Found following input variables to get from netcdf file: " + str(varlst))
             self.NcInput = netcdfinput(os.path.join(caseName, self.ncfile), self.logger, varlst)
 
-        # Setup all the netCDF files that may be used for input/output
+
         if self.ncfilestates != "None":
             smaps = self._userModel().stateVariables()
             maps = [s + ".map" for s in smaps]
             self.logger.debug("Found following input states to get from netcdf file: " + str(maps))
             self.NcInputStates = netcdfinputstates(os.path.join(caseName, self.ncfilestates), self.logger, maps)
+
+
+        if self.ncfilestatic != "None":
+            self.NcInputStatic = netcdfinputstatic(os.path.join(caseName, self.ncfilestatic), self.logger)
 
         if self.ncoutfile != 'None':  # Ncoutput
             buffer = int(configget(self._userModel().config, 'framework', 'netcdfwritebuffer', "50"))
@@ -735,13 +739,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                                                      zlib=self.ncfilecompression,least_significant_digit=self.ncfiledigits)
 
 
-        if self.ncfilestatic != 'None':  # Ncoutput
-            meta = {}
-            meta['caseName'] = caseName
-            meta['runId'] = runId
-            meta['wflow_version'] =__version__
-            meta['wflow_release'] =__release__
-            self.NcInputStatic = netcdfinput(os.path.join(caseName, self.ncfilestatic), self.logger, varlst)
+
 
         # Fill the summary (stat) list from the ini file
         self.statslst = []
@@ -2008,13 +2006,18 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         self.logger.error("Required map: " + os.path.abspath(path) + " not found, exiting..")
                         sys.exit(1)
                     return scalar(default)
+
             if self._userModel()._inInitial():
-                if ncfilesource == self.ncfilestatic:
+                if self.ncfilestatic is not 'None':
                     retval, succ = self.NcInputStatic.gettimestep(1, self.logger, var=varname)
                     if succ:
                         return retval
                     else:
-                        return scalar(default)
+                        if fail:
+                            self.logger.error("Required map: " + os.path.abspath(path) + " not found in " + self.ncfilestatic + "  exiting..")
+                            sys.exit(1)
+                        else:
+                            return scalar(default)
 
                 if os.path.isfile(path):
                     mapje = readmap(path)

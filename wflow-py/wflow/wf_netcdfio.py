@@ -267,7 +267,7 @@ class netcdfoutput():
             self.nc_trg.sync()
 
         miss = float(nc_var._FillValue)
-        data = pcr2numpy(pcrdata, miss)
+        data = pcr2numpy(scalar(pcrdata), miss)
 
         if self.bufflst.has_key(var):
             self.bufflst[var][bufpos, :, :] = data
@@ -382,7 +382,7 @@ class netcdfoutputstatic():
             self.nc_trg.sync()
 
         miss = float(nc_var._FillValue)
-        data = pcr2numpy(pcrdata, miss)
+        data = pcr2numpy(scalar(pcrdata), miss)
 
         if self.bufflst.has_key(var):
             self.bufflst[var][bufpos, :, :] = data
@@ -496,7 +496,6 @@ class netcdfinputstates():
         self.fstep = 0
         self.lstep = self.fstep + self.maxsteps
 
-
         for var in vars:
             try:
                 self.alldat[var] = self.dataset.variables[var][self.fstep:self.maxsteps]
@@ -521,6 +520,45 @@ class netcdfinputstates():
                 self.fstep = ncindex
                 self.lstep = ncindex + self.maxsteps
             np_step = self.alldat[var][ncindex - self.fstep, :, :]
+            miss = float(self.dataset.variables[var]._FillValue)
+            return numpy2pcr(Scalar, np_step, miss), True
+        else:
+            logging.debug("Var (" + var + ") not found returning 0")
+            return cover(scalar(0.0)), False
+
+
+class netcdfinputstatic():
+    def __init__(self, netcdffile, logging):
+        """
+        First try to setup a class read netcdf files
+        (converted with pcr2netcdf.py)
+
+        netcdffile: file to read the forcing data from
+        logging: python logging object
+        vars: list of variables to get from file
+        """
+
+        if os.path.exists(netcdffile):
+            self.dataset = netCDF4.Dataset(netcdffile, mode='r')
+        else:
+            logging.error(os.path.abspath(netcdffile) + " not found!")
+            exit(ValueError)
+
+        logging.info("Reading static input from netCDF file: " + netcdffile + ": " + str(self.dataset).replace('\n', ' '))
+
+
+
+    def gettimestep(self, timestep, logging, var='P'):
+        """
+        Gets a map for a single timestep. reads data in blocks assuming sequential access
+
+        timestep: framework timestep (1-based)
+        logging: python logging object
+        var: variable to get from the file
+        """
+
+        if self.dataset.variables.has_key(var):
+            np_step = self.dataset.variables[var][timestep-1,:,:]
             miss = float(self.dataset.variables[var]._FillValue)
             return numpy2pcr(Scalar, np_step, miss), True
         else:
