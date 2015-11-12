@@ -822,7 +822,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 samplemapname = os.path.join(caseName,configget(self._userModel().config, thissection, "samplemap", "None"))
                 if "None" not in samplemapname:
                     try:
-                        self.samplemap = readmap(samplemapname)
+                        self.samplemap = self.wf_readmap(samplemapname,0.0,fail=True)
                         idd = tsformat + ":" + samplemapname
                         self.oscv[idd] = wf_OutputTimeSeriesArea(self.samplemap, oformat=tsformat)
                         self.logger.info("Adding " + tsformat + " output at " + samplemapname)
