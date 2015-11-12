@@ -1203,7 +1203,7 @@ class WflowModel(DynamicModel):
         self.InfiltExcessCubic = self.InfiltExcess * self.ToCubic
         self.ReinfiltCubic = -1.0 * self.reinfiltwater * self.ToCubic
         self.Inwater = self.Inwater + self.Inflow  # Add abstractions/inflows in m^3/sec
-
+        #self.Inwater = self.Inwater + self.Inflow  # Add abstractions/inflows in m^3/sec
         ##########################################################################
         # Runoff calculation via Kinematic wave ##################################
         ##########################################################################

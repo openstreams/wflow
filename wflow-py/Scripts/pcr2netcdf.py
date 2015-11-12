@@ -26,7 +26,7 @@ syntax:
     -S startdate in "%d-%m-%Y %H:%M:%S" e.g. 31-12-1990 00:00:00
     -E endDate in "%d-%m-%Y %H:%M:%S"
     -s startstep (in the mapstack, default = 1)
-    -Y Do not make seperate files per year
+    -Y Make seperate files per year
     -P set the EPSG string. default: "EPSG:4326"
     -N Mapstack-name (prefix)
        You can sepcify multiple input mapstack  to merge them into one netcdf
@@ -320,16 +320,16 @@ def setlogger(logfilename,loggername, thelevel=logging.INFO):
         print "ERROR: Failed to initialize logger with logfile: " + logfilename
         sys.exit(2)
 
-def date_range(start, end, tdelta="days"):
-
-
-
-    if tdelta == "days":
-        r = (end+dt.timedelta(days=1)-start).days
-        return [start+dt.timedelta(days=i) for i in range(r)]
-    else:
-        r = (end+dt.timedelta(days=1)-start).days * 24
-        return [start+dt.timedelta(hours=i) for i in range(r)]
+# def date_range(start, end, tdelta="days"):
+#
+#
+#
+#     if tdelta == "days":
+#         r = (end+dt.timedelta(days=1)-start).days
+#         return [start+dt.timedelta(days=i) for i in range(r)]
+#     else:
+#         r = (end+dt.timedelta(days=1)-start).days * 24
+#         return [start+dt.timedelta(hours=i) for i in range(r)]
 
 def date_range_peryear(start, end, tdelta="days"):
 
@@ -345,6 +345,11 @@ def date_range_peryear(start, end, tdelta="days"):
             ret.append([dt.datetime(yrs,1,1)+dt.timedelta(hours=i) for i in range(r)])
 
     return ret
+
+def date_range(start, end, timestepsecs):
+        r = int((end + dt.timedelta(seconds=timestepsecs) - start).total_seconds()/timestepsecs)
+        return [start + dt.timedelta(seconds=(timestepsecs * i)) for i in range(r)]
+
 
 def main(argv=None):
     """
@@ -377,7 +382,7 @@ def main(argv=None):
     zlib=True
     least_significant_digit=None
     startstep = 1
-    perYear = True
+    perYear = False
     if argv is None:
         argv = sys.argv[1:]
         if len(argv) == 0:
@@ -393,13 +398,14 @@ def main(argv=None):
 
     for o, a in opts:
         if o == '-S': startstr = a
-        if o == '-s': startstep = int(a)
+        if o == '-s':
+            startstep = int(a)
         if o == '-E': endstr = a
         if o == '-O': ncoutfile = a
         if o == '-c': inifile = a
         if o == '-I': mapstackfolder = a
         if o == '-b': mbuf = int(a)
-        if o == '-Y': perYear = False
+        if o == '-Y': perYear = True
         if o == '-z': zlib=True
         if o == '-P': EPSG = a
         if o == '-F': Format=a
@@ -432,12 +438,12 @@ def main(argv=None):
         if perYear:
             timeList = date_range_peryear(start, end, tdelta="days")
         else:
-            timeList = date_range(start, end, tdelta="days")
+            timeList = date_range(start, end, timestepsecs)
     else:
         if perYear:
             timeList = date_range_peryear(start, end, tdelta="hours")
         else:
-            timeList = date_range(start, end, tdelta="hours")
+            timeList = date_range(start, end,timestepsecs)
 
     if os.path.exists(inifile):
         inimetadata = getnetcdfmetafromini(inifile)
