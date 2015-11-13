@@ -1025,10 +1025,11 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         for var in allvars:
             exec "self._userModel()." + var + " = self._userModel()." + var + "_laststep"
 
-        ts = self.currentTimeStep()
-        self._userModel()._setCurrentTimeStep(ts - 1)
+        ts = self._userModel().currentTimeStep()
+        self._userModel()._setCurrentTimeStep(ts)
         self.currentdatetime = self.currentdatetime - dt.timedelta(seconds=self._userModel().timestepsecs)
         self._userModel().currentdatetime = self.currentdatetime
+        self.logger.debug("Going one timestep back, redoing: " + str(ts) + " " + str(self.currentdatetime))
 
     def iniFileSetUp(self, caseName, runId, configfile):
         """

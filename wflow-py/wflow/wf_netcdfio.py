@@ -332,11 +332,13 @@ class netcdfoutputstatic():
         timeList = date_range(starttime, end, timestepsecs)
         self.timestepbuffer = zeros((self.maxbuf, len(y), len(x)))
         self.bufflst = {}
+        self.buffdirty = False
 
         globmetadata.update(metadata)
 
         prepare_nc(self.ncfile, timeList, x, y, globmetadata, logger, Format=self.Format, EPSG=EPSG,zlib=self.zlib,
                    least_significant_digit=self.least_significant_digit)
+
 
     def savetimestep(self, timestep, pcrdata, unit="mm", var='P', name="Precipitation"):
         """
@@ -386,9 +388,11 @@ class netcdfoutputstatic():
 
         if self.bufflst.has_key(var):
             self.bufflst[var][bufpos, :, :] = data
+            self.buffdirty = True
         else:
             self.bufflst[var] = self.timestepbuffer.copy()
             self.bufflst[var][bufpos, :, :] = data
+            self.buffdirty = True
 
         # Write out timestep buffer.....
 
@@ -398,6 +402,7 @@ class netcdfoutputstatic():
                 "Writing buffer for " + var + " to file at: " + str(spos) + " " + str(int(bufpos) + 1) + " timesteps")
             nc_var[spos:idx + 1, :, :] = self.bufflst[var][0:bufpos + 1, :, :]
             self.nc_trg.sync()
+            self.buffdirty = False
 
     def finish(self):
         """
@@ -408,6 +413,8 @@ class netcdfoutputstatic():
         if hasattr(self, "nc_trg"):
             self.nc_trg.sync()
             self.nc_trg.close()
+            if self.buffdirty:
+                self.logger.error('Finishing with dirty netcdf write buffer...!')
 
 
 class netcdfinput():

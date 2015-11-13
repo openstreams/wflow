@@ -431,7 +431,6 @@ class wflowbmi_csdms(bmi.Bmi):
             if nrstepsback > 1:
                 raise ValueError("Time more than one timestep before current time.")
             self.dynModel.wf_QuickResume()
-            self.currenttimestep = self.currenttimestep - 1
         else:
             timespan = time - curtime
             nrsteps = int(timespan/self.dynModel.timestepsecs)

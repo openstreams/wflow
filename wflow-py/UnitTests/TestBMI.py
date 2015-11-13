@@ -165,11 +165,13 @@ class MyTest(unittest.TestCase):
 
         bmiobj.initialize_model()
 
-        print(bmiobj.get_var_type("IF"))
         et = bmiobj.get_end_time()
         bmiobj.update_until(et)
-        bmiobj.update_until(et - 3600)
-
+        ct = bmiobj.get_current_time()
+        togoto = ct - 3600
+        bmiobj.update_until(togoto)
+        nt = bmiobj.get_current_time()
+        bmiobj.update_until(et)
         bmiobj.finalize()
 
 

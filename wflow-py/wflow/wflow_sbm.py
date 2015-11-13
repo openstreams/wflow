@@ -415,7 +415,7 @@ class WflowModel(DynamicModel):
 
         self.sCatch = int(configget(self.config, "model", "sCatch", "0"))
         self.intbl = configget(self.config, "model", "intbl", "intbl")
-        self.timestepsecs = int(configget(self.config, "model", "timestepsecs", "86400"))
+
         self.modelSnow = int(configget(self.config, "model", "ModelSnow", "1"))
         sizeinmetres = int(configget(self.config, "layout", "sizeinmetres", "0"))
         alf = float(configget(self.config, "model", "Alpha", "60"))
