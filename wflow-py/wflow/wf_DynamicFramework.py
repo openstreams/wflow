@@ -254,6 +254,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self._addMethodToClass(self.wf_supplyVariableNamesAndRoles)
         self._addMethodToClass(self.wf_updateparameters)
         self._addAttributeToClass("ParamType", self.ParamType)
+        self._addAttributeToClass("timestepsecs", self.timestepsecs)
 
         if firstTimestep == 0:
             firstTimestep = 1
@@ -1135,7 +1136,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             exec "self._userModel()." + mapname + " = arpcr"
             return 0
 
-            # TODO: add getrowcol
 
     def wf_setValueRowCol(self, mapname, value, row, col):
         """
@@ -2001,7 +2001,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             assert path is not ""
 
             if self._userModel()._inDynamic():
-                if self.ncfile != "None":
+                if 'None' not in self.ncfile:
                     retval, succ = self.NcInput.gettimestep(self._userModel().currentTimeStep(), self.logger, var=varname)
                     if succ:
                         return retval
@@ -2020,7 +2020,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     return scalar(default)
 
             elif self._userModel()._inInitial():
-                if self.ncfilestatic is not 'None':
+                if 'None' not in self.ncfilestatic:
                     retval, succ = self.NcInputStatic.gettimestep(1, self.logger, var=varname)
                     if succ:
                         return retval
@@ -2061,7 +2061,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         sys.exit(1)
                     return scalar(default)
             else: # Assuming we are in pre-or post loop within the framwork
-                if self.ncfilestatic is not 'None':
+                if "None" not in self.ncfilestatic:
                     retval, succ = self.NcInputStatic.gettimestep(1, self.logger, var=varname)
                     if succ:
                         return retval
