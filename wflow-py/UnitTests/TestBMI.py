@@ -168,6 +168,8 @@ class MyTest(unittest.TestCase):
         print(bmiobj.get_var_type("IF"))
         et = bmiobj.get_end_time()
         bmiobj.update_until(et)
+        bmiobj.update_until(et - 3600)
+
         bmiobj.finalize()
 
 

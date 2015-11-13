@@ -416,20 +416,28 @@ class wflowbmi_csdms(bmi.Bmi):
 
     def update_until(self, time):
         """
-        Update the model until the given time. Can only go forward in time.
+        Update the model until and including the given time.
+
+        - one or more timesteps foreward
+        - max one timestep backward
 
         :var  double time: time in the units and epoch returned by the function get_time_units.
         """
         curtime = self.get_current_time()
 
         if curtime > time:
-            raise ValueError("Time before current time.")
-        timespan = time - curtime
+            timespan = curtime - time
+            nrstepsback = int(timespan/self.dynModel.timestepsecs)
+            if nrstepsback > 1:
+                raise ValueError("Time more than one timestep before current time.")
+            self.dynModel.wf_QuickResume()
+            self.currenttimestep = self.currenttimestep - 1
+        else:
+            timespan = time - curtime
+            nrsteps = int(timespan/self.dynModel.timestepsecs)
 
-        nrsteps = int(timespan/self.dynModel.timestepsecs)
-
-        self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps)
-        self.currenttimestep = self.currenttimestep + nrsteps
+            self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps)
+            self.currenttimestep = self.currenttimestep + nrsteps
 
     def update_frac(self, time_frac):
         """

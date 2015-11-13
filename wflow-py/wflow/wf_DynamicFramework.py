@@ -1019,12 +1019,16 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         it uses the wf_supplyVariableNamesAndRoles() function to find them.
         The variables are inserted into the model object
 
-
         """
         allvars = self._userModel().stateVariables()
 
         for var in allvars:
             exec "self._userModel()." + var + " = self._userModel()." + var + "_laststep"
+
+        ts = self.currentTimeStep()
+        self._userModel()._setCurrentTimeStep(ts - 1)
+        self.currentdatetime = self.currentdatetime - dt.timedelta(seconds=self._userModel().timestepsecs)
+        self._userModel().currentdatetime = self.currentdatetime
 
     def iniFileSetUp(self, caseName, runId, configfile):
         """
