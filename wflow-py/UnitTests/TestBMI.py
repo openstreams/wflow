@@ -2,6 +2,8 @@ __author__ = 'schelle'
 
 import unittest
 import logging
+import sys
+sys.path = ['../'] + sys.path
 import wflow.wflow_bmi as bmi
 import time
 import os
@@ -114,15 +116,15 @@ class MyTest(unittest.TestCase):
         print("-------------- get_attribute_names: ")
         names = bmiobj.get_attribute_names()
         print names
-        self.assertEquals(['API:IF', 'API:InwaterMM', 'framework:outputformat', 'framework:debug', 'framework:netcdfinput',
-                           'framework:netcdfoutput', 'framework:netcdfstaticoutput', 'framework:netcdfstaticinput',
-                           'framework:EPSG', 'framework:netcdf_format', 'framework:netcdf_zlib',
-                           'framework:netcdf_least_significant_digit', 'run:starttime', 'run:endtime',
-                           'run:timestepsecs', 'run:reinit', 'modelparameters:AltTemperature', 'layout:sizeinmetres',
-                           'outputmaps:self.TSoil', 'outputmaps:self.AltTemperature', 'outputcsv_0:samplemap',
-                           'outputcsv_0:self.TSoil', 'outputcsv_0:self.AltTemperature', 'outputcsv_1:samplemap',
-                           'outputtss_0:samplemap', 'model:timestepsecs']
-, names)
+        self.assertEquals(['API:IF', 'API:InwaterMM', 'framework:outputformat', 'framework:debug',
+                           'framework:netcdfinput', 'framework:netcdfstatesinput', 'framework:netcdfoutput',
+                           'framework:netcdfstaticoutput', 'framework:netcdfstatesoutput',
+                           'framework:netcdfstaticinput', 'framework:EPSG', 'framework:netcdf_format',
+                           'framework:netcdf_zlib', 'framework:netcdf_least_significant_digit', 'run:starttime',
+                           'run:endtime', 'run:timestepsecs', 'run:reinit', 'modelparameters:AltTemperature',
+                           'layout:sizeinmetres', 'outputmaps:self.TSoil', 'outputmaps:self.AltTemperature',
+                           'outputcsv_0:samplemap', 'outputcsv_0:self.TSoil', 'outputcsv_0:self.AltTemperature',
+                           'outputcsv_1:samplemap', 'outputtss_0:samplemap', 'model:timestepsecs'], names)
 
         print("-------------- get_attribute_value: ")
         print names[0]
@@ -148,6 +150,21 @@ class MyTest(unittest.TestCase):
     def testbmirun(self):
         bmiobj = bmi.wflowbmi_csdms()
         bmiobj.initialize('wflow_sceleton/wflow_sceleton.ini',loglevel=logging.ERROR)
+        print(bmiobj.get_var_type("IF"))
+        et = bmiobj.get_end_time()
+        bmiobj.update_until(et)
+        bmiobj.finalize()
+
+
+    def testbmirunnetcdf(self):
+        bmiobj = bmi.wflowbmi_csdms()
+        bmiobj.initialize_config('wflow_sbm/wflow_sbm_nc.ini',loglevel=logging.DEBUG)
+        bmiobj.set_attribute_value('run:timestepsecs','3600')
+        bmiobj.set_attribute_value('run:starttime','2010-06-18 00:00:00')
+        bmiobj.set_attribute_value('run:endtime','2010-06-26 00:00:00')
+
+        bmiobj.initialize_model()
+
         print(bmiobj.get_var_type("IF"))
         et = bmiobj.get_end_time()
         bmiobj.update_until(et)

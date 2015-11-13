@@ -77,12 +77,12 @@ class wflowbmi_ligth(object):
         Propagate the model one timestep?
         """
         #curstep = self.dynModel.wf_
-        if dt == -1:
+        if dt != -1:
             self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep)
             self.currenttimestep = self.currenttimestep + 1
         else:
             nrsteps = int(dt/self.dynModel.timestepsecs)
-            self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps -1)
+            self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps)
             self.currenttimestep = self.currenttimestep + nrsteps
 
     def get_time_units(self):
@@ -115,7 +115,10 @@ class wflowbmi_ligth(object):
         """
         npmap = self.dynModel.wf_supplyMapAsNumpy(name)
 
-        return str(npmap.dtype)
+        if hasattr(npmap,'dtype'):
+            return str(npmap.dtype)
+        else:
+            return None
 
     def get_var_rank(self, name):
         """
@@ -424,7 +427,8 @@ class wflowbmi_csdms(bmi.Bmi):
         timespan = time - curtime
 
         nrsteps = int(timespan/self.dynModel.timestepsecs)
-        self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps -1)
+
+        self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps)
         self.currenttimestep = self.currenttimestep + nrsteps
 
     def update_frac(self, time_frac):
@@ -514,7 +518,10 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         npmap = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
 
-        return str(npmap.dtype)
+        if hasattr(npmap,'dtype'):
+            return str(npmap.dtype)
+        else:
+            return None
 
     def get_var_rank(self, long_var_name):
         """

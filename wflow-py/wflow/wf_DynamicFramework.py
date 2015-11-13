@@ -1959,6 +1959,13 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         style = self.exchnageitems.getvarStyle(varname)
 
+        # set this for initil (before the model is actually running)
+        if os.path.splitext(name)[1] == ".map":
+            newName = name
+        else:
+            newName = name + nameSuffix
+
+
         if hasattr(self._userModel(), "_inStochastic"):
             if self._userModel()._inStochastic():
                 if self._userModel()._inPremc() or self._userModel()._inPostmc():
@@ -2007,7 +2014,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         sys.exit(1)
                     return scalar(default)
 
-            if self._userModel()._inInitial():
+            elif self._userModel()._inInitial():
                 if self.ncfilestatic is not 'None':
                     retval, succ = self.NcInputStatic.gettimestep(1, self.logger, var=varname)
                     if succ:
@@ -2030,7 +2037,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         sys.exit(1)
                     return scalar(default)
 
-            if self._inResume():
+            elif self._inResume():
                 if ncfilesource == self.ncfilestates and ncfilesource not in 'None':
                     retval, succ = self.NcInputStates.gettimestep(1, self.logger, var=varname)
                     if succ:
@@ -2048,6 +2055,29 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         self.logger.error("Required map: " + os.path.abspath(path) + " not found, exiting..")
                         sys.exit(1)
                     return scalar(default)
+            else: # Assuming we are in pre-or post loop within the framwork
+                if self.ncfilestatic is not 'None':
+                    retval, succ = self.NcInputStatic.gettimestep(1, self.logger, var=varname)
+                    if succ:
+                        return retval
+                    else:
+                        if fail:
+                            self.logger.error("Required map: " + os.path.abspath(path) + " not found in " + self.ncfilestatic + "  exiting..")
+                            sys.exit(1)
+                        else:
+                            return scalar(default)
+
+                if os.path.isfile(path):
+                    mapje = readmap(path)
+                    return mapje
+                else:
+                    if verbose:
+                        self.logger.debug("Static input data (" + os.path.abspath(path) + ")  not present, returning " + str(default))
+                    if fail:
+                        self.logger.error("Required map: " + os.path.abspath(path) + " not found, exiting..")
+                        sys.exit(1)
+                    return scalar(default)
+
 
 
         elif style == 2:  # Assuming they are set in memory by the API
