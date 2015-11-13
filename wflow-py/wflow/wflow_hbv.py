@@ -316,7 +316,6 @@ class WflowModel(DynamicModel):
 
     self.sCatch = int(configget(self.config,"model","sCatch","0"))
     self.intbl = configget(self.config,"model","intbl","intbl")
-    self.timestepsecs = int(configget(self.config,"model","timestepsecs","86400"))
     self.P_style = int(configget(self.config,"model","P_style","1"))
     self.PET_style = int(configget(self.config,"model","PET_style","1"))
     self.TEMP_style = int(configget(self.config,"model","TEMP_style","1"))
