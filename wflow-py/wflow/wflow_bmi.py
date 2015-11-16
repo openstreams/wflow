@@ -293,7 +293,7 @@ class wflowbmi_csdms(bmi.Bmi):
         # set to 10000 for now
         #
         maxNrSteps = 10000
-        self.bmilogger.debug("initialize_config: Initialising wflow bmi with ini: " + filename)
+        self.bmilogger.info("initialize_config: Initialising wflow bmi with ini: " + filename)
 
         if "wflow_sbm" in filename:
             import wflow.wflow_sbm as wf
@@ -323,7 +323,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :param self:
         :return: nothing
         """
-        self.bmilogger.debug("initialize_model: Initialising wflow bmi with ini, loading initial state")
+        self.bmilogger.info("initialize_model: Initialising wflow bmi with ini, loading initial state")
         self.dynModel.setupFramework()
         self.dynModel._runInitial()
         self.dynModel._runResume()
@@ -419,7 +419,7 @@ class wflowbmi_csdms(bmi.Bmi):
             Get name of module from ini file name
         """
 
-        self.bmilogger.debug("initialize: Initialising wflow bmi with ini: " + filename)
+        self.bmilogger.info("initialize: Initialising wflow bmi with ini: " + filename)
         self.initialize_config(filename,loglevel=loglevel)
         self.initialize_model()
         self.dynModel.wf_resume(os.path.join(self.datadir,'instate'))
@@ -497,7 +497,7 @@ class wflowbmi_csdms(bmi.Bmi):
         Uses the default (model configured) state location to also save states.
         """
         # First check if the seconf initilize_states has run
-        self.bmilogger.debug("finalize.")
+        self.bmilogger.info("finalize.")
         if hasattr(self.dynModel,"framework_setup"):
             self.dynModel._runSuspend()
             self.dynModel._wf_shutdown()
