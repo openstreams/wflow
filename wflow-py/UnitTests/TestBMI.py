@@ -157,7 +157,7 @@ class MyTest(unittest.TestCase):
 
 
     def testbmirunnetcdf(self):
-        bmiobj = bmi.wflowbmi_csdms(bmiloglevel=logging.DEBUG)
+        bmiobj = bmi.wflowbmi_csdms()
         bmiobj.initialize_config('wflow_sbm/wflow_sbm_nc.ini',loglevel=logging.DEBUG)
         bmiobj.set_attribute_value('run:timestepsecs','3600')
         bmiobj.set_attribute_value('run:starttime','2010-06-18 00:00:00')

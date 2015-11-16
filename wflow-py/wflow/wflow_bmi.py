@@ -243,7 +243,7 @@ class wflowbmi_csdms(bmi.Bmi):
         implement translation of long_var_names
     """
 
-    def __init__(self, bmiloglevel=logging.ERROR):
+    def __init__(self):
         """
         Initialises the object
 
@@ -253,8 +253,24 @@ class wflowbmi_csdms(bmi.Bmi):
         self.name = "undefined"
         self.myModel = None
         self.dynModel = None
-        self.logginmode = logging.DEBUG
-        self.bmilogger = setlogger('wflow_bmi.log','wflow_bmi_logging',thelevel=bmiloglevel)
+
+        self.loggingmode = logging.ERROR
+        logstr = os.getenv('wflow_bmi_loglevel', 'ERROR')
+
+        if logstr in 'ERROR':
+            self.loggingmode = logging.ERROR
+            print logstr
+        if logstr in 'WARNING':
+            self.loggingmode = logging.WARNING
+            print logstr
+        if logstr in 'INFO':
+            self.loggingmode = logging.INFO
+            print logstr
+        if logstr in 'DEBUG':
+            self.loggingmode = logging.DEBUG
+            print logstr
+
+        self.bmilogger = setlogger('wflow_bmi.log','wflow_bmi_logging',thelevel=self.loggingmode)
 
     def initialize_config(self, filename, loglevel=logging.DEBUG):
         """

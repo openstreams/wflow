@@ -13,7 +13,7 @@ Simple test for wflow bmi framework
 class MyTest(unittest.TestCase):
 
     def testbmiinitfuncs(self):
-        bmiobj = bmi.wflowbmi_csdms(bmiloglevel=logging.DEBUG)
+        bmiobj = bmi.wflowbmi_csdms()
 
         bmiobj.initialize_config('wflow_sceleton/wflow_sceleton.ini',loglevel=logging.ERROR)
         print("-------------- Time units: ")
