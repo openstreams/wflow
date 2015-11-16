@@ -7,6 +7,7 @@ import parser
 
 import wflow.bmi as bmi
 import numpy as np
+from wflow.pcrut import setlogger
 
 # TODO: Set log level also ini to be able to make quiet or non-quiet runs
 # TODO: set re-init in the ini file to be able to make cold start runs
@@ -242,9 +243,7 @@ class wflowbmi_csdms(bmi.Bmi):
         implement translation of long_var_names
     """
 
-
-
-    def __init__(self):
+    def __init__(self, bmiloglevel=logging.ERROR):
         """
         Initialises the object
 
@@ -254,6 +253,8 @@ class wflowbmi_csdms(bmi.Bmi):
         self.name = "undefined"
         self.myModel = None
         self.dynModel = None
+        self.logginmode = logging.DEBUG
+        self.bmilogger = setlogger('wflow_bmi.log','wflow_bmi_logging',thelevel=bmiloglevel)
 
     def initialize_config(self, filename, loglevel=logging.DEBUG):
         """
@@ -276,6 +277,7 @@ class wflowbmi_csdms(bmi.Bmi):
         # set to 10000 for now
         #
         maxNrSteps = 10000
+        self.bmilogger.debug("initialize_config: Initialising wflow bmi with ini: " + filename)
 
         if "wflow_sbm" in filename:
             import wflow.wflow_sbm as wf
@@ -305,6 +307,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :param self:
         :return: nothing
         """
+        self.bmilogger.debug("initialize_model: Initialising wflow bmi with ini, loading initial state")
         self.dynModel.setupFramework()
         self.dynModel._runInitial()
         self.dynModel._runResume()
@@ -324,6 +327,7 @@ class wflowbmi_csdms(bmi.Bmi):
         self.dynModel._userModel().datetime_firststep=dateobj
         self.dynModel.datetime_firststep=dateobj
         self.dynModel._userModel().currentdatetime = self.dynModel._userModel().datetime_firststep
+        self.bmilogger.debug("set_start_time: " + str(start_time) + " " + str(datestrimestr))
 
     def set_end_time(self, end_time):
         """
@@ -336,6 +340,7 @@ class wflowbmi_csdms(bmi.Bmi):
         self.dynModel._userModel().config.set("run",'endtime',datestrimestr)
         self.dynModel._userModel().datetime_laststep=dateobj
         self.dynModel.datetime_laststep=dateobj
+        self.bmilogger.debug("set_end_time: " + str(end_time) + " " + str(datestrimestr))
 
 
 
@@ -345,6 +350,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
         :return: list of attributes
         """
+        self.bmilogger.debug("get_attribute_names")
         attr = []
         for sect in self.dynModel._userModel().config.sections():
             for opt in self.dynModel._userModel().config.options(sect):
@@ -356,6 +362,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :param attribute_name:
         :return: attribute value
         """
+        self.bmilogger.debug("get_attribute_value: " + attribute_name)
         attrpath = attribute_name.split(":")
 
         if len(attrpath) == 2:
@@ -369,22 +376,15 @@ class wflowbmi_csdms(bmi.Bmi):
         :param attribute_value: string value of the option
         :return:
         """
-
+        self.bmilogger.debug("set_attribute_value: " + attribute_value)
         attrpath = attribute_name.split(":")
         if len(attrpath) == 2:
             self.dynModel._userModel().config.set(attrpath[0],attrpath[1],attribute_value)
         else:
+            self.bmilogger.warn("Attributes should follow the name:option  convention")
             raise Warning("attributes should follow the name:option  convention")
 
-    def save_state(self, destination_directory):
-        """
-        Ask the model to write its complete internal current state to one or more state files in the
-        given directory.
-        Afterwards the given directory should only contain the state files and nothing else.
-        Input parameters:
-        File destination_directory: the directory in which the state files should be written.
-        """
-        raise NotImplementedError
+
 
     def initialize(self, filename,loglevel=logging.DEBUG):
         """
@@ -403,6 +403,7 @@ class wflowbmi_csdms(bmi.Bmi):
             Get name of module from ini file name
         """
 
+        self.bmilogger.debug("initialize: Initialising wflow bmi with ini: " + filename)
         self.initialize_config(filename,loglevel=loglevel)
         self.initialize_model()
         self.dynModel.wf_resume(os.path.join(self.datadir,'instate'))
@@ -411,6 +412,7 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         Propagate the model to the next model timestep
         """
+        self.bmilogger.debug('update: update one timestep: ' + str(self.currenttimestep) + ' to ' + str(self.currenttimestep + 1))
         self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep)
         self.currenttimestep = self.currenttimestep + 1
 
@@ -428,13 +430,14 @@ class wflowbmi_csdms(bmi.Bmi):
         if curtime > time:
             timespan = curtime - time
             nrstepsback = int(timespan/self.dynModel.timestepsecs)
+            self.bmilogger.debug('update_until: update timesteps back ' + str(nrstepsback) + ' to ' + str(curtime))
             if nrstepsback > 1:
                 raise ValueError("Time more than one timestep before current time.")
             self.dynModel.wf_QuickResume()
         else:
             timespan = time - curtime
             nrsteps = int(timespan/self.dynModel.timestepsecs)
-
+            self.bmilogger.debug('update_until: update timesteps foreward ' + str(nrsteps) + ' to ' + str(curtime))
             self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps)
             self.currenttimestep = self.currenttimestep + nrsteps
 
@@ -452,7 +455,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
         :var destination_directory: the directory in which the state files should be written.
         """
-
+        self.bmilogger.debug("save_state: " + destination_directory)
         self.dynModel.wf_suspend(destination_directory)
 
     def load_state(self, source_directory):
@@ -465,9 +468,12 @@ class wflowbmi_csdms(bmi.Bmi):
         """
 
         if os.path.isabs(source_directory):
-            self.dynModel.wf_resume(source_directory)
+            new_source_directory = source_directory
         else:
-            self.dynModel.wf_resume(os.path.join(self.datadir,source_directory))
+            new_source_directory = os.path.join(self.datadir,source_directory)
+
+        self.bmilogger.debug("load_state: " + new_source_directory)
+        self.dynModel.wf_resume(new_source_directory)
 
     def finalize(self):
         """
@@ -475,14 +481,17 @@ class wflowbmi_csdms(bmi.Bmi):
         Uses the default (model configured) state location to also save states.
         """
         # First check if the seconf initilize_states has run
+        self.bmilogger.debug("finalize.")
         if hasattr(self.dynModel,"framework_setup"):
             self.dynModel._runSuspend()
             self.dynModel._wf_shutdown()
+
 
     def get_component_name(self):
         """
         :return:  identifier of the model based on the name of the ini file
         """
+        self.bmilogger.debug("get_component_name: " + str(self.name))
         return self.name
 
     def get_input_var_names(self):
@@ -501,6 +510,8 @@ class wflowbmi_csdms(bmi.Bmi):
         for varrol in namesroles:
             if varrol[1] == 0 or varrol[1] == 2:
                 inames.append(varrol[0])
+
+        self.bmilogger.debug("get_input_var_names: " + str(inames))
         return inames
 
     def get_output_var_names(self):
@@ -515,6 +526,8 @@ class wflowbmi_csdms(bmi.Bmi):
         for varrol in namesroles:
             if varrol[1] == 1 or varrol[1] == 2:
                 inames.append(varrol[0])
+
+        self.bmilogger.debug("get_output_var_names: " + str(inames))
         return inames
 
     def get_var_type(self, long_var_name):
@@ -526,8 +539,10 @@ class wflowbmi_csdms(bmi.Bmi):
         npmap = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
 
         if hasattr(npmap,'dtype'):
+            self.bmilogger.debug("get_var_type: " + str(npmap.dtype))
             return str(npmap.dtype)
         else:
+            self.bmilogger.debug("get_var_type: " + str(None))
             return None
 
     def get_var_rank(self, long_var_name):
@@ -540,6 +555,7 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         npmap = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
 
+        self.bmilogger.debug("get_var_rank: " + str(len(npmap.shape)))
         return len(npmap.shape)
 
     def get_var_size(self, long_var_name):
@@ -552,7 +568,12 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         npmap = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
 
-        return npmap.size
+        if hasattr(npmap,'size'):
+            self.bmilogger.debug("get_var_size: " + str(npmap.size))
+            return npmap.size
+        else:
+            self.bmilogger.debug("get_var_size: " + str(1))
+            return 1
 
     def get_var_nbytes(self, long_var_name):
         """
@@ -564,6 +585,7 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         npmap = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
 
+        self.bmilogger.debug("get_var_nbytes: " + str(npmap.size * npmap.itemsize))
         return npmap.size * npmap.itemsize
 
     def get_start_time(self):
@@ -572,7 +594,9 @@ class wflowbmi_csdms(bmi.Bmi):
 
         :return: start time in the units and epoch returned by the function get_time_units
         """
-        return self.dynModel.wf_supplyStartTime()
+        st = self.dynModel.wf_supplyStartTime()
+        self.bmilogger.debug("get_start_time: " + str(st))
+        return st
 
     def get_current_time(self):
         """
@@ -588,7 +612,9 @@ class wflowbmi_csdms(bmi.Bmi):
 
         :return: end time of simulation n the units and epoch returned by the function get_time_units
         """
-        return self.dynModel.wf_supplyEndTime()
+        et = self.dynModel.wf_supplyEndTime()
+        self.bmilogger.debug("get_end_time: " + str(et))
+        return et
 
     def get_time_step(self):
         """
@@ -596,7 +622,9 @@ class wflowbmi_csdms(bmi.Bmi):
 
         :return: duration of one time step of the model in the units returned by the function get_time_units
         """
-        return self.dynModel.timestepsecs
+        ts = self.dynModel.timestepsecs
+        self.bmilogger.debug("get_time_step: " + str(ts))
+        return ts
 
     def get_time_units(self):
         """
@@ -605,8 +633,10 @@ class wflowbmi_csdms(bmi.Bmi):
         :return: Return a string formatted using the UDUNITS standard from Unidata.
         (http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/build/cf-conventions.html#time-coordinate)
         """
+        tu = self.dynModel.wf_supplyEpoch()
+        self.bmilogger.debug("get_time_units: " + str(tu))
 
-        return self.dynModel.wf_supplyEpoch()
+        return tu
 
     def get_value(self, long_var_name):
         """
@@ -617,7 +647,7 @@ class wflowbmi_csdms(bmi.Bmi):
         """
 
         ret = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
-
+        self.bmilogger.debug("get_value: " + long_var_name)
         try:
             fret = np.flipud(ret)
             return fret
@@ -633,6 +663,8 @@ class wflowbmi_csdms(bmi.Bmi):
 
         :return: numpy array of values in the data type returned by the function get_var_type.
         """
+        self.bmilogger.debug("get_value_at_indices: " + long_var_name + ' at ' + str(inds))
+
         npmap = np.flipud(self.dynModel.wf_supplyMapAsNumpy(long_var_name))
 
         return npmap[inds]
@@ -648,6 +680,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :var src: Numpy array of values. one value to set for each of the indicated elements:
         """
 
+        self.bmilogger.debug("set_value_at_indices: " + long_var_name + ' at ' + str(inds))
         npmap = np.flipud(self.dynModel.wf_supplyMapAsNumpy(long_var_name))
         npmap[inds] = src
         self.dynModel.wf_setValuesAsNumpy(long_var_name,np.flipud(npmap))
@@ -662,6 +695,8 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         ret=BmiGridType()
 
+        self.bmilogger.debug("get_grid_type: " + long_var_name + ' result: ' + str(ret.UNIFORM))
+
         return ret.UNIFORM
 
     def get_grid_shape(self, long_var_name):
@@ -674,6 +709,8 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         dim =  self.dynModel.wf_supplyGridDim()
         #[ Xll, Yll, xsize, ysize, rows, cols]
+
+        self.bmilogger.debug("get_grid_shape: " + long_var_name + ' result: ' + str([dim[4], dim[5]]))
 
         return [dim[4], dim[5]]
 
@@ -688,6 +725,7 @@ class wflowbmi_csdms(bmi.Bmi):
         dims = self.dynModel.wf_supplyGridDim()[2:4]
         x = dims[0]
         y = dims[1]
+        self.bmilogger.debug("get_grid_spacing: " + long_var_name + ' result: ' + str([y, x]))
         return [y, x]
 
     def get_grid_origin(self, long_var_name):
@@ -701,6 +739,7 @@ class wflowbmi_csdms(bmi.Bmi):
         dims = self.dynModel.wf_supplyGridDim()
         x = dims[0]
         y = dims[1]
+        self.bmilogger.debug("get_grid_origin: " + long_var_name + ' result: ' + str([y, x]))
         return [y, x]
 
     def get_grid_x(self, long_var_name):
@@ -709,8 +748,10 @@ class wflowbmi_csdms(bmi.Bmi):
 
         :var String long_var_name: identifier of a variable in the model.
 
-        :return: Numpy array of doubles: x coordinate of grid cell center for each grid cell, in the same order as the values returned by function get_value.
+        :return: Numpy array of doubles: x coordinate of grid cell center for each grid cell, in the same order as the
+        values returned by function get_value.
         """
+        self.bmilogger.debug("get_grid_x: " + long_var_name)
         return self.dynModel.wf_supplyMapXAsNumpy()
 
     def get_grid_y(self, long_var_name):
@@ -719,9 +760,11 @@ class wflowbmi_csdms(bmi.Bmi):
 
         :var String long_var_name: identifier of a variable in the model.
 
-        :return: Numpy array of doubles: y coordinate of grid cell center for each grid cell, in the same order as the values returned by function get_value.
+        :return: Numpy array of doubles: y coordinate of grid cell center for each grid cell, in the same order as the
+        values returned by function get_value.
 
         """
+        self.bmilogger.debug("get_grid_y: " + long_var_name)
         return np.flipud(self.dynModel.wf_supplyMapYAsNumpy())
 
     def get_grid_z(self, long_var_name):
@@ -732,6 +775,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
         :return: Numpy array of doubles: z coordinate of grid cell center for each grid cell, in the same order as the values returned by function get_value.
         """
+        self.bmilogger.debug("get_grid_z: " + long_var_name)
         return np.flipud(self.dynModel.wf_supplyMapZAsNumpy())
 
     def get_var_units(self, long_var_name):
@@ -752,6 +796,7 @@ class wflowbmi_csdms(bmi.Bmi):
             if long_var_name == it[0]:
                 unit = it[2]
 
+        self.bmilogger.debug("get_var_units: " + long_var_name + ' result: ' + unit)
         return unit
 
     def set_value(self, long_var_name, src):
@@ -764,8 +809,10 @@ class wflowbmi_csdms(bmi.Bmi):
         """
 
         if len(src) == 1:
+            self.bmilogger.debug("set_value: (uniform value) " + long_var_name + '(' +str(src) + ')')
             self.dynModel.wf_setValues(long_var_name,float(src))
         else:
+            self.bmilogger.debug("set_value: (grid) " + long_var_name)
             self.dynModel.wf_setValuesAsNumpy(long_var_name, np.flipud(src))
 
     def get_grid_connectivity(self, long_var_name):
