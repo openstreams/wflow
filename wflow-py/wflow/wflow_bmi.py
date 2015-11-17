@@ -92,6 +92,7 @@ class wflowbmi_ligth(object):
         Return type string, compatible with numpy.
         Propagate the model one timestep?
         """
+        # TODO: fix dt = -1 problem, what do we want here?
         #curstep = self.dynModel.wf_
         if dt != -1:
             self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep)
@@ -457,6 +458,11 @@ class wflowbmi_csdms(bmi.Bmi):
         :var  double time: time in the units and epoch returned by the function get_time_units.
         """
         curtime = self.get_current_time()
+
+        if abs(time - curtime)% self.dynModel.timestepsecs != 0:
+            self.bmilogger.error('update_until: timespan not dividable by timestep: ' + str(abs(time - curtime)) +
+                                 ' and ' + str(self.dynModel.timestepsecs))
+            raise ValueError("Update in time not a multiple of timestep")
 
         if curtime > time:
             timespan = curtime - time
