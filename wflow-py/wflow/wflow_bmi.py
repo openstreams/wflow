@@ -23,6 +23,19 @@ class wflowbmi_ligth(object):
 
         :return:
         """
+        self.loggingmode = logging.ERROR
+        logstr = os.getenv('wflow_bmi_loglevel', 'ERROR')
+
+        if logstr in 'ERROR':
+            self.loggingmode = logging.ERROR
+        if logstr in 'WARNING':
+            self.loggingmode = logging.WARNING
+        if logstr in 'INFO':
+            self.loggingmode = logging.INFO
+        if logstr in 'DEBUG':
+            self.loggingmode = logging.DEBUG
+
+        self.bmilogger = setlogger('wflow_bmi.log','wflow_bmi_logging',thelevel=self.loggingmode)
 
     def initialize(self, configfile=None,loglevel=logging.DEBUG):
         """
@@ -55,6 +68,7 @@ class wflowbmi_ligth(object):
         else:
             raise ValueError
 
+        self.bmilogger.info("initialize: Initialising wflow bmi with ini: " + configfile)
         myModel = wf.WflowModel(wflow_cloneMap, datadir, runid, inifile)
 
         self.dynModel = wf.wf_DynamicFramework(myModel, maxNrSteps, firstTimestep = 1)
@@ -71,6 +85,7 @@ class wflowbmi_ligth(object):
         """
         self.dynModel._runSuspend()
         self.dynModel._wf_shutdown()
+        self.bmilogger.debug("finalize: shutting doen bmi")
 
     def update(self, dt):
         """
