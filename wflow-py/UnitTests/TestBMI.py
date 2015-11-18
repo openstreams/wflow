@@ -160,7 +160,7 @@ class MyTest(unittest.TestCase):
         bmiobj = bmi.wflowbmi_ligth()
         bmiobj.initialize('wflow_sceleton/wflow_sceleton.ini',loglevel=logging.ERROR)
         et = bmiobj.get_end_time()
-        bmiobj.update_until(et)
+        bmiobj.update(-1)
         bmiobj.finalize()
 
     def testbmirunnetcdf(self):

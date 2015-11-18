@@ -66,7 +66,9 @@ class wflowbmi_ligth(object):
             import wflow_routing as wf
             self.name = "wflow_routing"
         else:
-            raise ValueError
+            modname = os.path.splitext(os.path.basename(configfile))[0]
+            exec "import wflow." + modname + " as wf"
+            self.name = modname
 
         self.bmilogger.info("initialize: Initialising wflow bmi with ini: " + configfile)
         myModel = wf.WflowModel(wflow_cloneMap, datadir, runid, inifile)
@@ -313,8 +315,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
             return inames
 
-        self.outputonlyvars = get_output_only_var_names()
-        self.inputoutputvars = self.get_output_var_names()
+
         self.currenttimestep = 1
         wflow_cloneMap = 'wflow_subcatch.map'
         self.datadir = os.path.dirname(filename)
@@ -345,6 +346,9 @@ class wflowbmi_csdms(bmi.Bmi):
 
         self.dynModel = wf.wf_DynamicFramework(self.myModel, maxNrSteps, firstTimestep = 1)
         self.dynModel.createRunId(doSetupFramework=False,NoOverWrite=0,level=loglevel,model=os.path.basename(filename))
+
+        self.outputonlyvars = get_output_only_var_names(self)
+        self.inputoutputvars = self.get_output_var_names()
 
     def initialize_model(self):
         """
