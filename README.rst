@@ -46,7 +46,7 @@ in order to run wflow requires the following packages:
 + numpy
 + matplotlib
 + pcraster
-+ osgeo
++ osgeo (GDAL=1.11)
 + pyproj
 
 The setup.py script will try to install these dependencies but it is best to make

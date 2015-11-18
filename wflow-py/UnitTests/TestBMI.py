@@ -156,6 +156,13 @@ class MyTest(unittest.TestCase):
         bmiobj.finalize()
 
 
+    def testbmirun_l(self):
+        bmiobj = bmi.wflowbmi_ligth()
+        bmiobj.initialize('wflow_sceleton/wflow_sceleton.ini',loglevel=logging.ERROR)
+        et = bmiobj.get_end_time()
+        bmiobj.update_until(et)
+        bmiobj.finalize()
+
     def testbmirunnetcdf(self):
         bmiobj = bmi.wflowbmi_csdms()
         bmiobj.initialize_config('wflow_sbm/wflow_sbm_nc.ini',loglevel=logging.DEBUG)

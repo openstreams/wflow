@@ -85,18 +85,18 @@ class wflowbmi_ligth(object):
         """
         self.dynModel._runSuspend()
         self.dynModel._wf_shutdown()
-        self.bmilogger.debug("finalize: shutting doen bmi")
+        self.bmilogger.debug("finalize: shutting done bmi")
 
     def update(self, dt):
         """
         Return type string, compatible with numpy.
-        Propagate the model one timestep?
+        Propagate the model dt timesteps or ( if dt == -1) to the end of the model run
         """
         # TODO: fix dt = -1 problem, what do we want here?
         #curstep = self.dynModel.wf_
         if dt != -1:
-            self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep)
-            self.currenttimestep = self.currenttimestep + 1
+            self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + dt)
+            self.currenttimestep = self.currenttimestep + dt
         else:
             nrsteps = int(dt/self.dynModel.timestepsecs)
             self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps)
