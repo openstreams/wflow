@@ -298,7 +298,23 @@ class wflowbmi_csdms(bmi.Bmi):
         :param loglevel:
         :return: nothing
         """
+        def get_output_only_var_names(self):
+            """
+            Returns the list of model output only variables. This is not BMI but needed to check
 
+            :return: List of String objects: identifiers of all output variables of the model:
+            """
+            namesroles = self.dynModel.wf_supplyVariableNamesAndRoles()
+            inames = []
+
+            for varrol in namesroles:
+                if varrol[1] == 1:
+                    inames.append(varrol[0])
+
+            return inames
+
+        self.outputonlyvars = get_output_only_var_names()
+        self.inputoutputvars = self.get_output_var_names()
         self.currenttimestep = 1
         wflow_cloneMap = 'wflow_subcatch.map'
         self.datadir = os.path.dirname(filename)
@@ -533,6 +549,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
     def get_input_var_names(self):
         """
+
         :return: List of String objects: identifiers of all input variables of the model:
         """
         namesroles = self.dynModel.wf_supplyVariableNamesAndRoles()
@@ -587,7 +604,6 @@ class wflowbmi_csdms(bmi.Bmi):
         Gets the number of dimensions for a variable
 
         :var  String long_var_name: identifier of a variable in the model:
-
         :return: array rank or 0 for scalar (number of dimensions):
         """
         npmap = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
@@ -600,7 +616,6 @@ class wflowbmi_csdms(bmi.Bmi):
         Gets the number of elements in a variable (rows * cols)
 
         :var  String long_var_name: identifier of a variable in the model:
-
         :return: total number of values contained in the given variable (number of elements in map)
         """
         npmap = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
@@ -617,7 +632,6 @@ class wflowbmi_csdms(bmi.Bmi):
         Gets the number of bytes occupied in memory for a given variable.
 
         :var  String long_var_name: identifier of a variable in the model:
-
         :return: total number of bytes contained in the given variable (number of elements * bytes per element)
         """
         npmap = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
@@ -682,10 +696,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :var long_var_name: name of the variable
         :return: a np array of long_var_name
         """
-
-        output = self.get_output_var_names()
-
-        if long_var_name in output:
+        if long_var_name in self.inputoutputvars:
             ret = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
             self.bmilogger.debug("get_value: " + long_var_name)
             try:
@@ -694,7 +705,7 @@ class wflowbmi_csdms(bmi.Bmi):
             except:
                 return ret
         else:
-            self.bmilogger.error(long_var_name + ' not in list of output values ' + str(output))
+            self.bmilogger.error("get_value: " + long_var_name + ' not in list of output values ' + str(self.inputoutputvars))
             return None
 
     def get_value_at_indices(self, long_var_name, inds):
@@ -706,11 +717,15 @@ class wflowbmi_csdms(bmi.Bmi):
 
         :return: numpy array of values in the data type returned by the function get_var_type.
         """
-        self.bmilogger.debug("get_value_at_indices: " + long_var_name + ' at ' + str(inds))
 
-        npmap = np.flipud(self.dynModel.wf_supplyMapAsNumpy(long_var_name))
+        if long_var_name in self.inputoutputvars:
+            self.bmilogger.debug("get_value_at_indices: " + long_var_name + ' at ' + str(inds))
+            npmap = np.flipud(self.dynModel.wf_supplyMapAsNumpy(long_var_name))
+            return npmap[inds]
+        else:
+            self.bmilogger.error("get_value_at_indices: " + long_var_name + ' not in list of output values ' + str(self.inputoutputvars))
+            return None
 
-        return npmap[inds]
 
     def set_value_at_indices(self, long_var_name, inds, src):
         """
@@ -723,10 +738,14 @@ class wflowbmi_csdms(bmi.Bmi):
         :var src: Numpy array of values. one value to set for each of the indicated elements:
         """
 
-        self.bmilogger.debug("set_value_at_indices: " + long_var_name + ' at ' + str(inds))
-        npmap = np.flipud(self.dynModel.wf_supplyMapAsNumpy(long_var_name))
-        npmap[inds] = src
-        self.dynModel.wf_setValuesAsNumpy(long_var_name,np.flipud(npmap))
+        if long_var_name in self.outputonlyvars:
+            self.bmilogger.error("set_value_at_indices: " + long_var_name + " is listed as an output only variable, cannot set. " + str(self.outputonlyvars))
+            raise ValueError("set_value_at_indices: " + long_var_name + " is listed as an output only variable, cannot set. " + str(self.outputonlyvars))
+        else:
+            self.bmilogger.debug("set_value_at_indices: " + long_var_name + ' at ' + str(inds))
+            npmap = np.flipud(self.dynModel.wf_supplyMapAsNumpy(long_var_name))
+            npmap[inds] = src
+            self.dynModel.wf_setValuesAsNumpy(long_var_name,np.flipud(npmap))
 
     def get_grid_type(self, long_var_name):
         """
@@ -851,12 +870,16 @@ class wflowbmi_csdms(bmi.Bmi):
                   is present a uniform map will be set in the wflow model.
         """
 
-        if len(src) == 1:
-            self.bmilogger.debug("set_value: (uniform value) " + long_var_name + '(' +str(src) + ')')
-            self.dynModel.wf_setValues(long_var_name,float(src))
+        if long_var_name in self.outputonlyvars:
+            self.bmilogger.error("set_value: " + long_var_name + " is listed as an output only variable, cannot set. " + str(self.outputonlyvars))
+            raise ValueError("set_value: " + long_var_name + " is listed as an output only variable, cannot set. " + str(self.outputonlyvars))
         else:
-            self.bmilogger.debug("set_value: (grid) " + long_var_name)
-            self.dynModel.wf_setValuesAsNumpy(long_var_name, np.flipud(src))
+            if len(src) == 1:
+                self.bmilogger.debug("set_value: (uniform value) " + long_var_name + '(' +str(src) + ')')
+                self.dynModel.wf_setValues(long_var_name,float(src))
+            else:
+                self.bmilogger.debug("set_value: (grid) " + long_var_name)
+                self.dynModel.wf_setValuesAsNumpy(long_var_name, np.flipud(src))
 
     def get_grid_connectivity(self, long_var_name):
         """
