@@ -683,13 +683,19 @@ class wflowbmi_csdms(bmi.Bmi):
         :return: a np array of long_var_name
         """
 
-        ret = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
-        self.bmilogger.debug("get_value: " + long_var_name)
-        try:
-            fret = np.flipud(ret)
-            return fret
-        except:
-            return ret
+        output = self.get_output_var_names()
+
+        if long_var_name in output:
+            ret = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
+            self.bmilogger.debug("get_value: " + long_var_name)
+            try:
+                fret = np.flipud(ret)
+                return fret
+            except:
+                return ret
+        else:
+            self.bmilogger.error(long_var_name + ' not in list of output values ' + str(output))
+            return None
 
     def get_value_at_indices(self, long_var_name, inds):
         """
