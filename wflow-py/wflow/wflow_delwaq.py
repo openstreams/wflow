@@ -1381,7 +1381,7 @@ def main():
         Write last volume block with current kinwavevol
         """  
         ts = ts -1    
-        i = i + 1
+        i = i + timestepsecs
         logger.info("Writing last step..")
         
         
