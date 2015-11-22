@@ -87,7 +87,7 @@ class wflowbmi_ligth(object):
         """
         self.dynModel._runSuspend()
         self.dynModel._wf_shutdown()
-        self.bmilogger.debug("finalize: shutting done bmi")
+        self.bmilogger.debug("finalize: shutting down bmi")
 
     def update(self, dt):
         """
@@ -97,10 +97,12 @@ class wflowbmi_ligth(object):
         # TODO: fix dt = -1 problem, what do we want here?
         #curstep = self.dynModel.wf_
         if dt != -1:
+            self.bmilogger.debug("update: update until end of run")
             self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + dt)
             self.currenttimestep = self.currenttimestep + dt
         else:
             nrsteps = int(dt/self.dynModel.timestepsecs)
+            self.bmilogger.debug("update: update " + str(nrsteps) + " timesteps.")
             self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps)
             self.currenttimestep = self.currenttimestep + nrsteps
 
@@ -111,67 +113,103 @@ class wflowbmi_ligth(object):
         (http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/build/cf-conventions.html#time-coordinate)
 
         """
-
-        return self.dynModel.wf_supplyEpoch()
+        units = self.dynModel.wf_supplyEpoch()
+        self.bmilogger.debug("get_time_units: return: " + str(units))
+        return units
 
     def get_var_count(self):
         """
         Return number of variables
+
         """
-        return self.dynModel.wf_supplyVariableCount()
+        count = self.dynModel.wf_supplyVariableCount()
+        self.bmilogger.debug("get_var_count: return: " + str(count))
+        return count
 
     def get_var_name(self, i):
         """
         Return variable name
+
+        :param i: variable number
+        :return name: name of variable number i
         """
 
         names = self.dynModel.wf_supplyVariableNames()
+        self.bmilogger.debug("get_var_name: (" + str(i) + ") return: " + str(names[i]))
         return names[i]
 
-    def get_var_type(self, name):
+
+    def get_var_type(self, long_var_name):
         """
-        Return type string, compatible with numpy.
+        Gets the variable type as a numpy type string
+
+        :param long_var_name: name of the variable
+        :return: variable type string, compatible with numpy:
         """
-        npmap = self.dynModel.wf_supplyMapAsNumpy(name)
+        npmap = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
 
         if hasattr(npmap,'dtype'):
+            self.bmilogger.debug("get_var_type (" + long_var_name + "): " + str(npmap.dtype))
             return str(npmap.dtype)
         else:
+            self.bmilogger.debug("get_var_type (" + long_var_name + "): " + str(None))
             return None
 
-    def get_var_rank(self, name):
+    def get_var_rank(self, long_var_name):
         """
-        Return array rank or 0 for scalar.
-        """
-        npmap = self.dynModel.wf_supplyMapAsNumpy(name)
+        Gets the number of dimensions for a variable
 
+        :var  String long_var_name: identifier of a variable in the model:
+        :return: array rank or 0 for scalar (number of dimensions):
+        """
+        npmap = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
+
+        self.bmilogger.debug("get_var_rank: (" + long_var_name + ") " + str(len(npmap.shape)))
         return len(npmap.shape)
 
-    def get_var_shape(self, name):
+
+    def get_var_shape(self, long_var_name):
         """
         Return shape of the array.
+
+        :param long_var_name: the long variable name
+        :return shape of the variable
         """
         npmap = self.dynModel.wf_supplyMapAsNumpy(name)
-
+        self.bmilogger.debug("get_var_shape: (" + long_var_name + ") " + str(npmap.shape))
         return npmap.shape
 
     def get_start_time(self):
         """
-        returns start time
+        Gets the start time of the model.
+
+        :return: start time in the units and epoch returned by the function get_time_units
         """
-        return self.dynModel.wf_supplyStartTime()
+        st = self.dynModel.wf_supplyStartTime()
+        self.bmilogger.debug("get_start_time: " + str(st))
+        return st
 
     def get_end_time(self):
         """
-        returns end time of simulation
+        Get the end time of the model run in units since the epoch
+
+        :return: end time of simulation n the units and epoch returned by the function get_time_units
         """
-        return self.dynModel.wf_supplyEndTime()
+        et = self.dynModel.wf_supplyEndTime()
+        self.bmilogger.debug("get_end_time: " + str(et))
+        return et
 
     def get_current_time(self):
         """
-        returns current time of simulation
+        Get the current time since the epoch of the model
+
+        :return: current time of simulation n the units and epoch returned by the function get_time_units
         """
-        return self.dynModel.wf_supplyCurrentTime()
+
+        st = self.dynModel.wf_supplyCurrentTime()
+        self.bmilogger.debug("get_current_time: " + str(st))
+        return st
+
 
     def get_var(self, name):
         """
@@ -612,7 +650,7 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         npmap = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
 
-        self.bmilogger.debug("get_var_rank: " + str(len(npmap.shape)))
+        self.bmilogger.debug("get_var_rank: (" + long_var_name + ") " + str(len(npmap.shape)))
         return len(npmap.shape)
 
     def get_var_size(self, long_var_name):
@@ -659,7 +697,10 @@ class wflowbmi_csdms(bmi.Bmi):
 
         :return: current time of simulation n the units and epoch returned by the function get_time_units
         """
-        return self.dynModel.wf_supplyCurrentTime()
+
+        st = self.dynModel.wf_supplyCurrentTime()
+        self.bmilogger.debug("get_current_time: " + str(st))
+        return st
 
     def get_end_time(self):
         """
