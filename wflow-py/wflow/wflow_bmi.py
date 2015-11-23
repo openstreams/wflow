@@ -9,10 +9,6 @@ import wflow.bmi as bmi
 import numpy as np
 from wflow.pcrut import setlogger
 
-# TODO: Set log level also ini to be able to make quiet or non-quiet runs
-# TODO: set re-init in the ini file to be able to make cold start runs
-# TODO: Rework framework to get rid of max timesteps shit
-
 class wflowbmi_ligth(object):
     """
     Deltares specific light version of the BMI. Used for internal model linkage
@@ -43,6 +39,7 @@ class wflowbmi_ligth(object):
         - the configfile wih be a full path
         - we define the case from the basedir of the configfile
         """
+
         retval = 0
         self.currenttimestep = 1
         wflow_cloneMap = 'wflow_subcatch.map'
@@ -75,6 +72,23 @@ class wflowbmi_ligth(object):
 
         self.dynModel = wf.wf_DynamicFramework(myModel, maxNrSteps, firstTimestep = 1)
         self.dynModel.createRunId(NoOverWrite=0,level=loglevel,model=os.path.basename(configfile))
+
+
+        namesroles = self.dynModel.wf_supplyVariableNamesAndRoles()
+        inames = []
+
+        for varrol in namesroles:
+            if varrol[1] == 1:
+                inames.append(varrol[0])
+        self.outputonlyvars = inames
+
+        inames = []
+        for varrol in namesroles:
+            if varrol[1] == 0 or varrol[1] == 2:
+                inames.append(varrol[0])
+
+        self.inputoutputvars = inames
+
         self.dynModel._runInitial()
         self.dynModel._runResume()
 
@@ -175,7 +189,7 @@ class wflowbmi_ligth(object):
         :param long_var_name: the long variable name
         :return shape of the variable
         """
-        npmap = self.dynModel.wf_supplyMapAsNumpy(name)
+        npmap = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
         self.bmilogger.debug("get_var_shape: (" + long_var_name + ") " + str(npmap.shape))
         return npmap.shape
 
@@ -215,15 +229,29 @@ class wflowbmi_ligth(object):
         """
         Return an nd array from model library
         """
+
+        self.bmilogger.debug("get_var: " + str(name))
         return np.flipud(self.dynModel.wf_supplyMapAsNumpy(name))
 
-    def set_var(self, name, var):
+    def set_var(self, long_var_name, src):
         """
-        Set the variable name with the values of var
-        Assume var is a numpy array
+        Set the values(s) in a map using a numpy array as source
+
+        :var long_var_name: identifier of a variable in the model.
+        :var src: all values to set for the given variable. If only one value
+                  is present a uniform map will be set in the wflow model.
         """
-        #TODO: check the numpy type
-        self.dynModel.wf_setValuesAsNumpy(name, np.flipud(var))
+
+        if long_var_name in self.outputonlyvars:
+            self.bmilogger.error("set_var: " + long_var_name + " is listed as an output only variable, cannot set. " + str(self.outputonlyvars))
+            raise ValueError("set_var: " + long_var_name + " is listed as an output only variable, cannot set. " + str(self.outputonlyvars))
+        else:
+            if len(src) == 1:
+                self.bmilogger.debug("set_var: (uniform value) " + long_var_name + '(' + str(src) + ')')
+                self.dynModel.wf_setValues(long_var_name,float(src))
+            else:
+                self.bmilogger.debug("set_var: (grid) " + long_var_name)
+                self.dynModel.wf_setValuesAsNumpy(long_var_name, np.flipud(src))
 
 
     def set_var_slice(self, name, start, count, var):
@@ -338,21 +366,6 @@ class wflowbmi_csdms(bmi.Bmi):
         :param loglevel:
         :return: nothing
         """
-        def get_output_only_var_names(self):
-            """
-            Returns the list of model output only variables. This is not BMI but needed to check
-
-            :return: List of String objects: identifiers of all output variables of the model:
-            """
-            namesroles = self.dynModel.wf_supplyVariableNamesAndRoles()
-            inames = []
-
-            for varrol in namesroles:
-                if varrol[1] == 1:
-                    inames.append(varrol[0])
-
-            return inames
-
 
         self.currenttimestep = 1
         wflow_cloneMap = 'wflow_subcatch.map'
@@ -385,8 +398,21 @@ class wflowbmi_csdms(bmi.Bmi):
         self.dynModel = wf.wf_DynamicFramework(self.myModel, maxNrSteps, firstTimestep = 1)
         self.dynModel.createRunId(doSetupFramework=False,NoOverWrite=0,level=loglevel,model=os.path.basename(filename))
 
-        self.outputonlyvars = get_output_only_var_names(self)
-        self.inputoutputvars = self.get_output_var_names()
+        namesroles = self.dynModel.wf_supplyVariableNamesAndRoles()
+        inames = []
+
+        for varrol in namesroles:
+            if varrol[1] == 1:
+                inames.append(varrol[0])
+        self.outputonlyvars = inames
+
+        inames = []
+        for varrol in namesroles:
+            if varrol[1] == 0 or varrol[1] == 2:
+                inames.append(varrol[0])
+
+        self.inputoutputvars = inames
+
 
     def initialize_model(self):
         """
