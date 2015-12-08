@@ -687,6 +687,10 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map):
                 i_elem_up_left  = -1
                 i_elem_up       = np_ptid[i-1,j  ]
                 i_elem_up_right = np_ptid[i-1,j+1]
+            elif j == n-1:
+                i_elem_up_left  = np_ptid[i-1,j-1]
+                i_elem_up       = np_ptid[i-1,j  ]
+                i_elem_up_right = -1
             else:
                 i_elem_up_left  = np_ptid[i-1,j-1]
                 i_elem_up       = np_ptid[i-1,j  ]
@@ -1377,7 +1381,7 @@ def main():
         Write last volume block with current kinwavevol
         """  
         ts = ts -1    
-        i = i + 1
+        i = i + timestepsecs
         logger.info("Writing last step..")
         
         
