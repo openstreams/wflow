@@ -113,7 +113,7 @@ class WflowModel(DynamicModel):
         :param storage: storage in m^3
         :param deadvolume: dead storage in m^3
         :param inflow: inflow in m^3/sec
-        :param K: reservoir constant 1/sec
+        :param K: reservoir constant -
         :return storage, outflow: storage in m^3, outflow in m^3/sec
         """
         inflow = ifthen(boolean(self.ReserVoirLocs),inflow)
