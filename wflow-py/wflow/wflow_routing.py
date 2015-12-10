@@ -108,6 +108,23 @@ class WflowModel(DynamicModel):
         self.SaveDir = os.path.join(self.Dir,self.runId)
 
 
+    def reallysimpelreservoir(self,storage,inflow,K, deadvolume):
+        """
+        :param storage: storage in m^3
+        :param deadvolume: dead storage in m^3
+        :param inflow: inflow in m^3/sec
+        :param K: reservoir constant 1/sec
+        :return storage, outflow: storage in m^3, outflow in m^3/sec
+        """
+        inflow = ifthen(boolean(self.ReserVoirLocs),inflow)
+        oldstorage = storage
+        storage = storage + (inflow * self.timestepsecs)
+        outflow = (((storage + oldstorage) * 0.5) - deadvolume) * K * self.timestepsecs/self.basetimestep
+        outflow = ifthen(boolean(self.ReserVoirLocs),outflow)
+        storage = storage - outflow
+        return storage, outflow/self.timestepsecs
+
+
     def wetPerimiterFP(self,Waterlevel, floodplainwidth,threshold=0.0,sharpness=0.5):
         """
 
@@ -189,7 +206,7 @@ class WflowModel(DynamicModel):
         :var self.SurfaceRunoff: Surface runoff in the kin-wave resrvoir [m^3/s]
         :var self.WaterLevel: Water level in the kin-wave resrvoir [m]
         """
-        states = ['SurfaceRunoff', 'WaterLevelCH','WaterLevelFP']
+        states = ['SurfaceRunoff', 'WaterLevelCH','WaterLevelFP','ReservoirVolume']
 
         return states
 
@@ -312,6 +329,17 @@ class WflowModel(DynamicModel):
 
         self.logger.info("Linking parameters to landuse, catchment and soil...")
         self.wf_updateparameters()
+
+        # Check if we have reservoirs
+        tt = pcr2numpy(self.ReserVoirLocs,0.0)
+        self.nrres = tt.max()
+        if self.nrres > 0:
+            self.logger.info("A total of " +str(self.nrres) + " reservoirs found.")
+            self.ReserVoirDownstreamLocs = downstream(self.TopoLdd,self.ReserVoirLocs)
+            self.TopoLddOrg = self.TopoLdd
+            self.TopoLdd = lddrepair(cover(ifthen(boolean(self.ReserVoirLocs),ldd(5)), self.TopoLdd))
+
+
         self.Beta = scalar(0.6)  # For sheetflow
 
         self.N = self.readtblDefault(self.Dir + "/" + self.intbl + "/N.tbl", self.LandUse, subcatch, self.Soil,
@@ -459,7 +487,9 @@ class WflowModel(DynamicModel):
         # Meteo and other forcing
         modelparameters.append(self.ParamType(name="InwaterForcing",stack=self.IW_mapstack ,type="timeseries",default=0.0,verbose=True,lookupmaps=[]))
         modelparameters.append(self.ParamType(name="Inflow",stack=self.Inflow_mapstack,type="timeseries",default=0.0,verbose=False,lookupmaps=[]))
-
+        modelparameters.append(self.ParamType(name="ReserVoirLocs",stack='staticmaps/wflow_reservoirlocs.map',type="staticmap",default=0.0,verbose=False,lookupmaps=[]))
+        modelparameters.append(self.ParamType(name="ReservoirK",stack='intbl/ReservoirK.tbl',type="statictbl",default=0.087,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
+        modelparameters.append(self.ParamType(name="DeadVolume",stack='intbl/DeadVolume.tbl',type="statictbl",default=0.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
 
         return modelparameters
 
@@ -533,7 +563,15 @@ class WflowModel(DynamicModel):
         self.InwaterMM = max(0.0,self.InwaterForcing)
         self.Inwater = self.InwaterMM * self.ToCubic  # m3/s
 
+        #only run the reservoir module if needed
+        if self.nrres > 0:
+            self.ReservoirVolume, self.Outflow = self.reallysimpelreservoir(self.ReservoirVolume,self.SurfaceRunoff,self.ReservoirK,self.DeadVolume)
+            self.OutflowDwn = upstream(self.TopoLddOrg,cover(self.Outflow,scalar(0.0)))
+            self.Inflow = cover(self.OutflowDwn,self.Inflow)
+
+
         self.Inwater = self.Inwater + self.Inflow  # Add abstractions/inflows in m^3/sec
+
 
         ##########################################################################
         # Runoff calculation via Kinematic wave ##################################
