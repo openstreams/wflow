@@ -86,8 +86,6 @@ usage
         
     -l: loglevel (most be one of DEBUG, WARNING, ERROR)
 
-
-
 """
 
 #TODO: add Et reduction in unsat zone based on deficit
@@ -113,7 +111,6 @@ updateCols = []
 
 
 def usage(*args):
-    #: Ha die Jaap
     sys.stdout = sys.stderr
     """Way"""
     for msg in args: print msg
@@ -121,7 +118,7 @@ def usage(*args):
     sys.exit(0)
 
 
-def actEvap_SBM(RootingDepth, WTable, UStoreDepth, FirstZoneDepth, PotTrans, smoothpar):
+def actEvap_SBM(RootingDepth, WTable, UStoreDepth, FirstZoneDepth, PotTrans, smoothpar,zi_layer,UStoreLayerThickness,ZeroMap):
     """
     Actual evaporation function:
     Actual evaporation function:
@@ -140,7 +137,6 @@ def actEvap_SBM(RootingDepth, WTable, UStoreDepth, FirstZoneDepth, PotTrans, smo
         - ActEvap,  FirstZoneDepth,  UStoreDepth ActEvapUStore
     """
 
-
     # Step 1 from saturated zone, use rootingDepth as a limiting factor
     #rootsinWater = WTable < RootingDepth
     #ActEvapSat = ifthenelse(rootsinWater,min(PotTrans,FirstZoneDepth),0.0)
@@ -148,23 +144,40 @@ def actEvap_SBM(RootingDepth, WTable, UStoreDepth, FirstZoneDepth, PotTrans, smo
     # use sCurve to determine if the roots are wet.At the moment this ise set 
     # to be a 0-1 curve
     wetroots = sCurve(WTable, a=RootingDepth, c=smoothpar)
-    #wetroots = ifthenelse(WTable <= RootingDepth, scalar(1.0), scalar(0.0))
     ActEvapSat = min(PotTrans * wetroots, FirstZoneDepth)
 
     FirstZoneDepth = FirstZoneDepth - ActEvapSat
     RestPotEvap = PotTrans - ActEvapSat
+    
+    #now try unsat zone
+    sumLayer = ZeroMap
+    sumActEvapUStore = ZeroMap
+    
+    for n in arange(0,len(UStoreLayerThickness)):
+        sumLayer_ = sumLayer
+        sumLayer = UStoreLayerThickness[n] + sumLayer
+        
+        #AvailCap is fraction of unsat zone containing roots
+        AvailCap = ifthenelse(len(UStoreLayerThickness) == 1, min(1.0,max(RootingDepth/(WTable+1), 0.0)),
+                              ifthenelse(ZeroMap+n<zi_layer,min(1.0,max(0.0,(RootingDepth-sumLayer_) /UStoreLayerThickness[n])),
+                              min(1.0,max(0.0,(RootingDepth-sumLayer_) /(WTable+1 - sumLayer_)))))
+                          
+        MaxExtr = AvailCap * UStoreDepth[n]
 
-    # now try unsat store  
-    AvailCap = min(1.0, max(0.0, (WTable - RootingDepth) / (RootingDepth + 1.0)))
+        ActEvapUStore = ifthenelse(len(UStoreLayerThickness) == 1,min(MaxExtr, RestPotEvap, UStoreDepth[n]),
+                                   ifthenelse(ZeroMap+n>zi_layer, ZeroMap,min(MaxExtr, RestPotEvap, UStoreDepth[n])))
+        
+        UStoreDepth[n] = ifthenelse(len(UStoreLayerThickness) == 1,  UStoreDepth[n] - ActEvapUStore,
+                        ifthenelse(ZeroMap+n>zi_layer, ZeroMap, UStoreDepth[n] - ActEvapUStore))
+        
+        RestPotEvap = RestPotEvap - ActEvapUStore
+        sumActEvapUStore = ActEvapUStore + sumActEvapUStore
+         
+        
 
-    #AvailCap = max(0.0,ifthenelse(WTable < RootingDepth,  WTable/RootingDepth,  RootingDepth/WTable)) 
-    MaxExtr = AvailCap * UStoreDepth
-    ActEvapUStore = min(MaxExtr, RestPotEvap, UStoreDepth)
-    UStoreDepth = UStoreDepth - ActEvapUStore
+    ActEvap = ActEvapSat + sumActEvapUStore
 
-    ActEvap = ActEvapSat + ActEvapUStore
-
-    return ActEvap, FirstZoneDepth, UStoreDepth, ActEvapUStore
+    return ActEvap,FirstZoneDepth, UStoreDepth, sumActEvapUStore, RestPotEvap
 
 
 def SnowPackHBV(Snow, SnowWater, Precipitation, Temperature, TTI, TT, Cfmax, WHC):
@@ -227,6 +240,7 @@ class WflowModel(DynamicModel):
     def __init__(self, cloneMap, Dir, RunDir, configfile):
         DynamicModel.__init__(self)
 
+        self.UStoreLayerDepth= []
         self.caseName = os.path.abspath(Dir)
         self.clonemappath = os.path.join(os.path.abspath(Dir),"staticmaps",cloneMap)
         setclone(self.clonemappath)
@@ -410,12 +424,17 @@ class WflowModel(DynamicModel):
         self.updating = int(configget(self.config, "model", "updating", "0"))
         self.updateFile = configget(self.config, "model", "updateFile", "no_set")
         self.LateralMethod = int(configget(self.config, "model", "lateralmethod", "1"))
-
+        self.TransferMethod = int(configget(self.config, "model", "transfermethod", "1"))
 
         if self.LateralMethod == 1:
             self.logger.info("Applying the original topog_sbm lateral transfer formulation")
         elif self.LateralMethod == 2:
             self.logger.warn("Using alternate wflow lateral transfer formulation")
+            
+        if self.TransferMethod == 1:
+            self.logger.info("Applying the original topog_sbm vertical transfer formulation")
+        elif self.TransferMethod == 2:
+            self.logger.warn("Using alternate wflow vertical transfer formulation")
 
         self.sCatch = int(configget(self.config, "model", "sCatch", "0"))
         self.intbl = configget(self.config, "model", "intbl", "intbl")
@@ -658,14 +677,15 @@ class WflowModel(DynamicModel):
         self.SoilWaterCapacity = self.SoilThickness * (self.thetaS - self.thetaR)
 
 
-        self.USatLayers = 3
+        self.USatLayers = 1
         self.UStoreLayerThickness= []
         self.UStoreLayerDepth= []
-        for n in arange(0,self.USatLayers ):
+        self.T = []
+        for n in arange(0,self.USatLayers):
             self.UStoreLayerThickness.append(self.SoilThickness * 1.0/self.USatLayers)
             self.UStoreLayerDepth.append(cover(0.0))
-
-
+            self.T.append(cover(0.0))
+            
 
         # limit roots to top 99% of first zone
         self.RootingDepth = min(self.SoilThickness * 0.99, self.RootingDepth)
@@ -975,7 +995,6 @@ class WflowModel(DynamicModel):
             # return Snow,SnowWater,SnowMelt,RainFall
             self.Snow, self.SnowWater, self.SnowMelt, self.PrecipitationPlusMelt = SnowPackHBV(self.Snow, self.SnowWater,
                                                                                        self.Precipitation,
-                                                                                       self.Temperature, self.TTI,
                                                                                        self.TT, self.Cfmax, self.WHC)
             MaxSnowPack = 10000.0
             if self.MassWasting:
@@ -1015,8 +1034,9 @@ class WflowModel(DynamicModel):
 
 
         self.AvailableForInfiltration = ThroughFall + StemFlow
-        UStoreCapacity = self.SoilWaterCapacity - self.SatWaterDepth - self.UStoreDepth
-
+        UStoreCapacity = self.SoilWaterCapacity - self.SatWaterDepth - sum(self.UStoreLayerDepth)
+         
+        report(sum(self.UStoreLayerThickness),self.SaveDir + "/outsum/Ustore_sum.map")
         # Runoff onto water bodies and river network
         self.RunoffOpenWater = min(1.0,self.RiverFrac + self.WaterFrac) * self.AvailableForInfiltration
         #self.RunoffOpenWater = self.ZeroMap
@@ -1047,48 +1067,86 @@ class WflowModel(DynamicModel):
         SoilInf = self.AvailableForInfiltration * (1 - self.PathFrac)
         PathInf = self.AvailableForInfiltration * self.PathFrac
         if self.modelSnow:
-            # soilInfRedu = ifthenelse(self.TSoil < 0.0 , self.cf_soil, 1.0)
             bb = 1.0 / (1.0 - self.cf_soil)
             soilInfRedu = sCurve(self.TSoil, a=self.ZeroMap, b=bb, c=8.0) + self.cf_soil
         else:
             soilInfRedu = 1.0
         MaxInfiltSoil = min(self.InfiltCapSoil * soilInfRedu, SoilInf)
-
         self.SoilInfiltExceeded = self.SoilInfiltExceeded + scalar(self.InfiltCapSoil * soilInfRedu < SoilInf)
-        InfiltSoil = min(MaxInfiltSoil, UStoreCapacity)
+        
+        MaxInfiltPath = min(self.InfiltCapPath * soilInfRedu, PathInf)
+        self.PathInfiltExceeded = self.PathInfiltExceeded + scalar(self.InfiltCapPath * soilInfRedu < PathInf)
+
+        InfiltSoilPath = min(MaxInfiltPath+MaxInfiltSoil,UStoreCapacity)
+        
 
         self.SumThickness = self.ZeroMap
         self.c=self.ZeroMap + 4.0
-        self.ZiLayer = self.ZeroMap + len(self.UStoreLayerThickness)
-        # Go from bottom to top
-        # Find layer with  freatic level and calculate the L
-        for n in arange(0,len(self.UStoreLayerThickness))[::-1]:
-            self.SumThickness = self.UStoreLayerThickness[n] + self.SumThickness
-            self.ZiLayer = ifthenelse((self.SoilThickness - self.zi) >=  self.SumThickness,self.ZeroMap + n,self.ZiLayer)
-            self.L = ifthenelse(self.ZiLayer < n, self.UStoreLayerDepth[n],self.zi - self.SumThickness)
+        self.ZiLayer = self.ZeroMap
 
+        SatFlow = self.ZeroMap 
+        
+        # Go from top to bottom layer       
         for n in arange(0,len(self.UStoreLayerThickness)):
+            # Find layer with  zi level
+            self.ZiLayer = ifthenelse(self.zi > self.SumThickness, self.ZeroMap + n, self.ZiLayer)
+            self.SumThickness = self.UStoreLayerThickness[n] + self.SumThickness
+
+        self.SumThickness = self.ZeroMap
+        l_Thickness = []
+        self.SaturationDeficit = self.SoilWaterCapacity - self.SatWaterDepth
+        for n in arange(0,len(self.UStoreLayerThickness)):
+            self.SumThickness = self.UStoreLayerThickness[n] + self.SumThickness
+            l_Thickness.append(self.SumThickness)
+            # Height of unsat zone in layer n
+            self.L = ifthenelse(self.ZiLayer ==  n,  ifthenelse(self.ZeroMap + n > 0, self.zi - l_Thickness[n-1], self.zi), self.UStoreLayerThickness[n] )
+            # Depth for calculation of vertical fluxes (bottom layer or zi)            
+            self.z = ifthenelse(self.ZiLayer ==  n,  self.zi , self.SumThickness)
+            
+            # First layer is treated differently than layers below first layer
             if n == 0:
-                DownWard = InfiltSoil
+                DownWard = InfiltSoilPath
+                UStoreLayerDepth = self.UStoreLayerDepth[n]
+                
+                if len(self.UStoreLayerThickness)==1:
+                    self.UStoreLayerDepth[n] = self.UStoreLayerDepth[n] + DownWard
+                    
+                    
+                     
+                else:
+                    # First fill layer to maxium available storage
+                    self.UStoreLayerDepth[n] = self.UStoreLayerDepth[n] + min(DownWard,self.L*(self.thetaS-self.thetaR)-UStoreLayerDepth)
+                
+                    st =   self.KsatVer * exp(-self.f*self.z) * (self.UStoreLayerDepth[n]/(self.L*(self.thetaS-self.thetaR)))**self.c
+                    
+                    # In case DownWard flux exceeds available storage, vertical flux (st) is allowed to transport excess of water
+                    self.T[n] = ifthenelse(self.SaturationDeficit <= 0.00001, 0.0,ifthenelse(DownWard >= (self.L*(self.thetaS-self.thetaR)-UStoreLayerDepth)
+                    ,min((DownWard-(self.UStoreLayerDepth[n]-UStoreLayerDepth)),st),min(self.UStoreLayerDepth[n],st)))
+                    
+                    # Ustore depth is allowed > maximum storage in layer when DownWard flux exceeds available storage
+                    self.UStoreLayerDepth[n] = ifthenelse(DownWard >= (self.L*(self.thetaS-self.thetaR)-UStoreLayerDepth)
+                   ,self.UStoreLayerDepth[n] + (DownWard-(self.UStoreLayerDepth[n]-UStoreLayerDepth)) - self.T[n],self.UStoreLayerDepth[n] - self.T[n])    
+                
+                    # Final excess of water (SatFlow)
+                    SatFlow = max(self.ZeroMap,self.UStoreLayerDepth[n]-(self.UStoreLayerThickness[n]*(self.thetaS-self.thetaR)))
+                    
+                    self.UStoreLayerDepth[n] = ifthenelse(SatFlow > 0.0, self.UStoreLayerDepth[n] - SatFlow, self.UStoreLayerDepth[n])                
 
-            self.UStoreLayerDepth[n] = self.UStoreLayerDepth[n] + DownWard
-            KsLayer = self.KsatVer * exp(-self.zi/self.f) * (self.UStoreLayerDepth[n] /((self.L)*(self.thetaS-self.thetaR)))**self.c
-            DownWard = min(self.UStoreLayerDepth[n],KsLayer)
-            self.UStoreLayerDepth[n] = self.UStoreLayerDepth[n] - DownWard
+            else:
+                self.UStoreLayerDepth[n] = self.UStoreLayerDepth[n] + self.T[n-1]
+                st =  self.KsatVer * exp(-self.f*self.z) * (self.UStoreLayerDepth[n] /(self.L*(self.thetaS-self.thetaR)))**self.c
+                # Transfer in layer with zi is not yet substracted from layer (set to zero)
+                self.T[n] = ifthenelse(self.ZiLayer<n,self.ZeroMap,min(self.UStoreLayerDepth[n],st))
+                self.UStoreLayerDepth[n] = ifthenelse(self.ZiLayer<=n,self.ZeroMap,self.UStoreLayerDepth[n] - self.T[n])
+            
 
 
-        self.UStoreDepth = self.UStoreDepth + InfiltSoil
-        UStoreCapacity = UStoreCapacity - InfiltSoil
-        self.AvailableForInfiltration = self.AvailableForInfiltration - InfiltSoil
+       
+        UStoreCapacity = UStoreCapacity - InfiltSoilPath + SatFlow
 
-        MaxInfiltPath = min(self.InfiltCapPath * soilInfRedu, PathInf)
-        self.PathInfiltExceeded = self.PathInfiltExceeded + scalar(self.InfiltCapPath * soilInfRedu < PathInf)
-        InfiltPath = min(MaxInfiltPath, UStoreCapacity)
-        self.UStoreDepth = self.UStoreDepth + InfiltPath
-        UStoreCapacity = UStoreCapacity - InfiltPath
-        self.AvailableForInfiltration = self.AvailableForInfiltration - InfiltPath
+        self.AvailableForInfiltration = self.AvailableForInfiltration - InfiltSoilPath + SatFlow
 
-        self.ActInfilt = InfiltPath + InfiltSoil
+        self.ActInfilt = InfiltSoilPath - SatFlow
 
         self.InfiltExcess = ifthenelse(UStoreCapacity > 0.0, self.AvailableForInfiltration, 0.0)
         self.ExcessWater = self.AvailableForInfiltration # Saturation overland flow
@@ -1103,17 +1161,25 @@ class WflowModel(DynamicModel):
         self.PotTrans = self.CanopyGapFraction * self.PotTransSoil
         self.SaturationDeficit = self.SoilWaterCapacity - self.SatWaterDepth
         # Linear reduction of soil moisture evaporation based on deficit
-        self.soilevap = self.potsoilevap * min(1.0, self.SaturationDeficit/self.SoilWaterCapacity)
+        self.soilevap = ifthenelse(len(self.UStoreLayerThickness)==1, self.potsoilevap * min(1.0, self.SaturationDeficit/self.SoilWaterCapacity),
+                                   self.potsoilevap * min(1.0, self.UStoreLayerDepth[0]/(self.UStoreLayerThickness[0]*(self.thetaS-self.thetaR))))
 
-        self.Transpiration, self.SatWaterDepth, self.UStoreDepth, self.ActEvapUStore = actEvap_SBM(self.RootingDepth,
-                                                                                              self.zi, self.UStoreDepth,
+        self.Transpiration, self.SatWaterDepth, self.UStoreLayerDepth, self.ActEvapUStore,self.RestPotEvap =  actEvap_SBM(self.RootingDepth,
+                                                                                              self.zi, self.UStoreLayerDepth,
                                                                                               self.SatWaterDepth,
                                                                                               self.PotTrans,
-                                                                                              self.rootdistpar)
-        self.soilevap = min(self.soilevap, self.UStoreDepth)
-        self.UStoreDepth = self.UStoreDepth - self.soilevap
+                                                                                              self.rootdistpar,
+                                                                                              self.ZiLayer,
+                                                                                              self.UStoreLayerThickness,
+                                                                                              self.ZeroMap)
+                                                                                              
+
+        #assume soil evaporation is from first soil layer                                                                                    
+        self.soilevap = min(self.soilevap, self.UStoreLayerDepth[0])
+        self.UStoreLayerDepth[0] = self.UStoreLayerDepth[0] - self.soilevap
         self.ActEvap = self.Transpiration + self.soilevap
-        # Determine Open Water EVAP. Later subtract this from water that
+        
+        # Determine Open Water EVAP. Later subtself.UStoreLayerDepthract this from water that
         # enters the Kinematic wave
         self.EvapRest = self.PotTransSoil - self.ActEvap
         self.ActEvapOpenWater =  min(self.WaterLevel * 1000.0 * self.WaterFrac ,self.WaterFrac * self.EvapRest)
@@ -1125,30 +1191,50 @@ class WflowModel(DynamicModel):
         # Determine saturation deficit. NB, as noted by Vertessy and Elsenbeer 1997
         # this deficit does NOT take into account the water in the unsaturated zone
 
-        # Optional Macrco-Pore transfer
+        # Optional Macrco-Pore transfer (not yet implemented for # layers > 1)
         self.MporeTransfer = self.ActInfilt * self.MporeFrac
         self.SatWaterDepth = self.SatWaterDepth + self.MporeTransfer
-        self.UStoreDepth = self.UStoreDepth - self.MporeTransfer
+        self.UStoreLayerDepth[0] = self.UStoreLayerDepth[n] - self.MporeTransfer
 
         self.SaturationDeficit = self.SoilWaterCapacity - self.SatWaterDepth
 
         self.zi = max(0.0, self.SoilThickness - self.SatWaterDepth / (
             self.thetaS - self.thetaR))  # Determine actual water depth
-        Ksat = self.KsatVer * exp(-self.f * self.zi)
+        Ksat = self.KsatVer * exp(-self.f*self.zi)
 
         self.DeepKsat = self.KsatVer * exp(-self.f * self.SoilThickness)
 
-        # now the actual transfer to the saturated store..
-        self.Transfer = min(self.UStoreDepth, ifthenelse(self.SaturationDeficit <= 0.00001, 0.0,
-                                                         Ksat * self.UStoreDepth / (self.SaturationDeficit + 1)))
-
-
+        # now the actual transfer to the saturated store from layers with zi      
+        self.Transfer = self.ZeroMap
+        for n in arange(0,len(self.UStoreLayerThickness)):
+            if self.TransferMethod == 1:
+                self.Transfer = self.Transfer + ifthenelse(self.ZiLayer==n,min(self.UStoreLayerDepth[n],
+                   ifthenelse(self.SaturationDeficit <= 0.00001, 0.0,self.KsatVer * exp(-self.f*self.zi) * self.UStoreLayerDepth[n] / (self.SaturationDeficit + 1))),0.0)
+            
+            if self.TransferMethod == 2:
+                self.L = ifthen(self.ZiLayer ==  n,  ifthenelse(self.ZeroMap + n > 0, self.zi - l_Thickness[n-1], self.zi))
+                st =  ifthen(self.ZiLayer==n, self.KsatVer * exp(-self.f*self.zi) * (self.UStoreLayerDepth[n] /(self.L+1.0*(self.thetaS-self.thetaR)))**self.c)
+                self.Transfer = self.Transfer + ifthenelse(self.ZiLayer==n, min(self.UStoreLayerDepth[n],
+                    ifthenelse(self.SaturationDeficit <= 0.00001, 0.0, st)),0.0)
+                                                                                
+                
+     
         MaxCapFlux = max(0.0, min(Ksat, self.ActEvapUStore, UStoreCapacity, self.SatWaterDepth))
+        
+        
         # No capilary flux is roots are in water, max flux if very near to water, lower flux if distance is large
         CapFluxScale = ifthenelse(self.zi > self.RootingDepth,
                                   self.CapScale / (self.CapScale + self.zi - self.RootingDepth) * self.timestepsecs/self.basetimestep, 0.0)
         self.CapFlux = MaxCapFlux * CapFluxScale
-
+        ToAdd = self.CapFlux
+        
+        #Now add capflux to the layers one by one (from bottom to top)
+        #This loop is used when nr layers > 1
+        for n in arange(len(self.UStoreLayerThickness)-1, -1, -1):
+            thisLayer = ifthenelse(self.ZiLayer <= n,min(ToAdd,(self.UStoreLayerThickness[n]*(self.thetaS-self.thetaR)-self.UStoreLayerDepth[n])), 0.0)
+            self.UStoreLayerDepth[n] = ifthenelse(self.ZiLayer <= n,  self.UStoreLayerDepth[n] + thisLayer,self.UStoreLayerDepth[n] )
+            ToAdd = ToAdd - thisLayer
+            
 
         # Determine Ksat at base
         self.DeepTransfer = min(self.SatWaterDepth,self.DeepKsat)
@@ -1156,14 +1242,20 @@ class WflowModel(DynamicModel):
         # Now add leakage. to deeper groundwater
         self.ActLeakage = cover(max(0.0,min(self.MaxLeakage,self.DeepTransfer)),0)
         self.Percolation = cover(max(0.0,min(self.MaxPercolation,self.DeepTransfer)),0)
-
         self.LowerZoneStorage=self.LowerZoneStorage+self.Percolation
         self.BaseFlow=self.K4*self.LowerZoneStorage #: Baseflow in mm/timestep
         self.LowerZoneStorage=self.LowerZoneStorage-self.BaseFlow
 
         #self.ActLeakage = ifthenelse(self.Seepage > 0.0, -1.0 * self.Seepage, self.ActLeakage)
-        self.SatWaterDepth = self.SatWaterDepth + self.Transfer - self.CapFlux - self.ActLeakage - self.Percolation
-        self.UStoreDepth = self.UStoreDepth - self.Transfer + self.CapFlux
+        self.SatWaterDepth = self.SatWaterDepth + self.Transfer - ToAdd - self.ActLeakage - self.Percolation
+        
+        for n in arange(0,len(self.UStoreLayerThickness)):
+            if len(self.UStoreLayerThickness)==1:
+                self.UStoreLayerDepth[n] = ifthenelse(self.ZiLayer==n,self.UStoreLayerDepth[n] - self.Transfer + self.CapFlux, self.UStoreLayerDepth[n])
+            else:
+                self.UStoreLayerDepth[n] = ifthenelse(self.ZiLayer==n,self.UStoreLayerDepth[n] - self.Transfer, self.UStoreLayerDepth[n])
+
+        
 
         # Determine % saturated taking into account subcell fraction
         self.Sat = max(self.SubCellFrac, scalar(self.SatWaterDepth >= (self.SoilWaterCapacity * 0.999)))
@@ -1174,7 +1266,6 @@ class WflowModel(DynamicModel):
 
         self.zi = max(0.0, self.SoilThickness - self.SatWaterDepth / (
             self.thetaS - self.thetaR))  # Determine actual water depth
-
         # Re-Determine saturation deficit. NB, as noted by Vertessy and Elsenbeer 1997
         # this deficit does NOT take into account the water in the unsaturated zone
         self.SaturationDeficit = self.SoilWaterCapacity - self.SatWaterDepth
@@ -1191,7 +1282,8 @@ class WflowModel(DynamicModel):
             if self.LateralMethod == 1:
                 Lateral = self.KsatVer * self.waterSlope * exp(-self.SaturationDeficit / self.M)
             elif self.LateralMethod == 2:
-                Lateral = Ksat * self.waterSlope
+                #Lateral = Ksat * self.waterSlope
+                Lateral = self.KsatVer * (exp(-self.f*self.zi)-exp(-self.f*self.SoilThickness))*(1/self.f)/(self.SoilThickness-self.zi)*self.waterSlope
 
             MaxHor = max(0.0, min(Lateral, self.SatWaterDepth))
             self.SatWaterFlux = accucapacityflux(self.waterLdd, self.SatWaterDepth, MaxHor)
@@ -1199,14 +1291,17 @@ class WflowModel(DynamicModel):
         else:
             #
             #MaxHor = max(0,min(self.KsatVer * self.Slope * exp(-SaturationDeficit/self.M),self.SatWaterDepth*(self.thetaS-self.thetaR))) * timestepsecs/basetimestep
-            #MaxHor = max(0.0, min(self.KsatVer * self.Slope * exp(-self.SaturationDeficit / self.M),
+            #MaxHor = max(0.0, min(self.KsatVer * self.Slope * exp(-selield' object does not support item assignmentf.SaturationDeficit / self.M),
             #                      self.SatWaterDepth))
             if self.LateralMethod == 1:
                 Lateral = self.KsatVer * self.waterSlope * exp(-self.SaturationDeficit / self.M)
             elif self.LateralMethod == 2:
-                Lateral = Ksat * self.waterSlope
+                #Lateral = Ksat * self.waterSlope
+                Lateral = self.KsatVer * (exp(-self.f*self.zi)-exp(-self.f*self.SoilThickness))*(1/self.f)/(self.SoilThickness-self.zi+1.0)*self.waterSlope
+
 
             MaxHor = max(0.0, min(Lateral, self.SatWaterDepth))
+
             #MaxHor = self.ZeroMap
             self.SatWaterFlux = accucapacityflux(self.TopoLdd, self.SatWaterDepth, MaxHor)
             self.SatWaterDepth = accucapacitystate(self.TopoLdd, self.SatWaterDepth, MaxHor)
@@ -1219,15 +1314,14 @@ class WflowModel(DynamicModel):
         #self.ExfiltWater=ifthenelse (self.SatWaterDepth - self.SoilWaterCapacity > 0 , self.SatWaterDepth - self.SoilWaterCapacity , 0.0)
         self.SatWaterDepth = self.SatWaterDepth - self.ExfiltWater
 
-
-        # Re-determine UStoreCapacity
-        UStoreCapacity = self.SoilWaterCapacity - self.SatWaterDepth - self.UStoreDepth
+        # Re-determine UStoreCapacityield' object does not support item assignment
+        UStoreCapacity = self.SoilWaterCapacity - self.SatWaterDepth - sum(self.UStoreLayerDepth)
 
         self.zi = max(0.0, self.SoilThickness - self.SatWaterDepth / (
             self.thetaS - self.thetaR))  # Determine actual water depth
 
 
-        Ksat = self.KsatVer * exp(-self.f * self.zi)
+        Ksat = self.KsatVer * exp(-self.f*self.zi)
 
 
         SurfaceWater = self.SurfaceRunoff * self.QMMConv  # SurfaceWater (mm) from SurfaceRunoff (m3/s)
@@ -1318,11 +1412,11 @@ class WflowModel(DynamicModel):
 
         self.QCatchmentMM = self.SurfaceRunoff * self.QMMConvUp
         #self.RunoffCoeff = self.QCatchmentMM/catchmenttotal(self.PrecipitationPlusMelt, self.TopoLdd)/catchmenttotal(cover(1.0), self.TopoLdd)
-        #self.AA = catchmenttotal(self.PrecipitationPlusMelt, self.TopoLdd)
+        #self.AA = catchmenttotal(self.Preciself.UStoreLayerDepth[n]pitationPlusMelt, self.TopoLdd)
         #self.BB = catchmenttotal(cover(1.0), self.TopoLdd)
         # Single cell based water budget. snow not included yet.
         CellStorage = self.CanopyStorage
-        CellStorage = self.UStoreDepth + self.SatWaterDepth  + self.LowerZoneStorage
+        CellStorage = sum(self.UStoreLayerDepth) + self.SatWaterDepth  + self.LowerZoneStorage
 
         self.DeltaStorage = CellStorage - self.OrgStorage
         OutFlow = self.SatWaterFlux
@@ -1453,7 +1547,7 @@ def main(argv=None):
     dynModelFw.setupFramework()
     dynModelFw._runInitial()
     dynModelFw._runResume()
-    dynModelFw._runDynamic(0, 0)
+    dynModelFw._runDynamic(_firstTimeStep, _lastTimeStep)
     dynModelFw._runSuspend()
     dynModelFw._wf_shutdown()
 
