@@ -532,7 +532,7 @@ class WflowModel(DynamicModel):
         modelparameters.append(self.ParamType(name="ResMaxRelease",stack='intbl/ResMaxRelease.tbl',type="statictbl",default=1.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
         modelparameters.append(self.ParamType(name="ResDemand",stack='intbl/ResMaxRelease.tbl',type="statictbl",default=1.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
         modelparameters.append(self.ParamType(name="ResDemand",stack='intbl/ResMaxRelease.tbl',type="statictbl",default=1.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
-        #XXXXXXXXXXXXXXXXXx Add monthly climatology tbl files (append month to filename??)
+        # XXXXXXXXXXXXXXXXXx Add monthly climatology tbl files (append month to filename??)
 
         return modelparameters
 
