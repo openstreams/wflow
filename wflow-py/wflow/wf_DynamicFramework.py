@@ -484,7 +484,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         """
         First check if a prepared  maps of the same name is present
         in the staticmaps directory. next try to
-        read a tbl file to match a a number of maps. Returns
+        read a tbl file to match  a number of maps. Returns
         the default value if the tbl file is not found.
 
         Finally check of a tbl file exists with a .mult postfix (e.g. Cmax.tbl.mult) and apply the

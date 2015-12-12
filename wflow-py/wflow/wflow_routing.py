@@ -125,6 +125,44 @@ class WflowModel(DynamicModel):
         return storage, outflow/self.timestepsecs
 
 
+    def simpelreservoir(self,storage,inflow,maxstorage,target_perc_full,maximum_Q,demand,minimum_full_perc):
+        """
+
+        :param storage: initial storage m^3
+        :param inflow: inflow m^3/s
+        :param maxstorage: maximum storage (above which water is spilled) m^3
+        :param target_perc_full: target fraction full (of max storage) -
+        :param maximum_Q: maximum Q to release m^3/s if below spillway
+        :param demand: water demand (all combined) m^3/s
+        :param minimum_full_perc: target minimum full fraction (of max storage) -
+        :return: storage, outflow (m^3, m^3/s)
+        """
+
+        inflow = ifthen(boolean(self.ReserVoirLocs),inflow)
+        oldstorage = storage
+        storage = storage + (inflow * self.timestepsecs)
+        percfull = ((storage + oldstorage) * 0.5)/maxstorage
+        # first determine environmental flow using a simple sigmoid curve to scale for target level
+        fac = sCurve(percfull,a=minimum_full_perc,c=30.0)
+
+        demandRelease =fac * demand * self.timestepsecs
+
+        storage = storage - demandRelease
+
+        # Re-determine percfull
+        percfull = ((storage + oldstorage) * 0.5)/maxstorage
+
+        wantrel  =  max(0.0,storage - (maxstorage * target_perc_full) )
+        # Assume extra maximum Q if spilling
+        overflowQ = (percfull - 1.0) * (storage - maxstorage)
+        torelease = min(wantrel, overflowQ + maximum_Q * self.timestepsecs)
+        storage = storage - torelease
+        outflow = (torelease + demandRelease)/self.timestepsecs
+        percfull = storage/maxstorage
+
+        return storage, outflow, percfull, demandRelease/self.timestepsecs
+
+
     def wetPerimiterFP(self,Waterlevel, floodplainwidth,threshold=0.0,sharpness=0.5):
         """
 
@@ -488,8 +526,13 @@ class WflowModel(DynamicModel):
         modelparameters.append(self.ParamType(name="InwaterForcing",stack=self.IW_mapstack ,type="timeseries",default=0.0,verbose=True,lookupmaps=[]))
         modelparameters.append(self.ParamType(name="Inflow",stack=self.Inflow_mapstack,type="timeseries",default=0.0,verbose=False,lookupmaps=[]))
         modelparameters.append(self.ParamType(name="ReserVoirLocs",stack='staticmaps/wflow_reservoirlocs.map',type="staticmap",default=0.0,verbose=False,lookupmaps=[]))
-        modelparameters.append(self.ParamType(name="ReservoirK",stack='intbl/ReservoirK.tbl',type="statictbl",default=0.087,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
-        modelparameters.append(self.ParamType(name="DeadVolume",stack='intbl/DeadVolume.tbl',type="statictbl",default=0.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
+        modelparameters.append(self.ParamType(name="ResTargetFullFrac",stack='intbl/ResTargetFullFrac.tbl',type="statictbl",default=0.8,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
+        modelparameters.append(self.ParamType(name="ResTargetMinFrac",stack='intbl/ResTargetMinFrac.tbl',type="statictbl",default=0.4,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
+        modelparameters.append(self.ParamType(name="ResMaxVolume",stack='intbl/ResMaxVolume.tbl',type="statictbl",default=0.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
+        modelparameters.append(self.ParamType(name="ResMaxRelease",stack='intbl/ResMaxRelease.tbl',type="statictbl",default=1.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
+        modelparameters.append(self.ParamType(name="ResDemand",stack='intbl/ResMaxRelease.tbl',type="statictbl",default=1.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
+        modelparameters.append(self.ParamType(name="ResDemand",stack='intbl/ResMaxRelease.tbl',type="statictbl",default=1.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
+        #XXXXXXXXXXXXXXXXXx Add monthly climatology tbl files (append month to filename??)
 
         return modelparameters
 
