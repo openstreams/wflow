@@ -531,8 +531,7 @@ class WflowModel(DynamicModel):
         modelparameters.append(self.ParamType(name="ResMaxVolume",stack='intbl/ResMaxVolume.tbl',type="statictbl",default=0.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
         modelparameters.append(self.ParamType(name="ResMaxRelease",stack='intbl/ResMaxRelease.tbl',type="statictbl",default=1.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
         modelparameters.append(self.ParamType(name="ResDemand",stack='intbl/ResMaxRelease.tbl',type="statictbl",default=1.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
-        modelparameters.append(self.ParamType(name="ResDemand",stack='intbl/ResMaxRelease.tbl',type="statictbl",default=1.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
-        # XXXXXXXXXXXXXXXXXx Add monthly climatology tbl files (append month to filename??)
+
 
         return modelparameters
 
@@ -544,6 +543,7 @@ class WflowModel(DynamicModel):
             self.WaterLevelFP   = self.ZeroMap
             self.SurfaceRunoff = self.ZeroMap
             self.WaterLevel = self.WaterLevelCH + self.WaterLevelFP
+            self.ReservoirVolume = self.ZeroMap
         else:
             self.logger.info("Setting initial conditions from state files")
             self.wf_resume(os.path.join(self.Dir,"instate"))
@@ -608,7 +608,10 @@ class WflowModel(DynamicModel):
 
         #only run the reservoir module if needed
         if self.nrres > 0:
-            self.ReservoirVolume, self.Outflow = self.reallysimpelreservoir(self.ReservoirVolume,self.SurfaceRunoff,self.ReservoirK,self.DeadVolume)
+            self.ReservoirVolume, self.Outflow,self.ResPecrFull,self.DemandRelease = self.simpelreservoir(self.ReservoirVolume,self.SurfaceRunoff,
+                                                                      self.ResMaxVolume,self.ResTargetFullFrac,
+                                                                      self.ResMaxRelease, self.ResDemand,
+                                                                      self.ResTargetMinFrac)
             self.OutflowDwn = upstream(self.TopoLddOrg,cover(self.Outflow,scalar(0.0)))
             self.Inflow = cover(self.OutflowDwn,self.Inflow)
 
