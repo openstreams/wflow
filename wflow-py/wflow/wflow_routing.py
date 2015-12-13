@@ -526,11 +526,11 @@ class WflowModel(DynamicModel):
         modelparameters.append(self.ParamType(name="InwaterForcing",stack=self.IW_mapstack ,type="timeseries",default=0.0,verbose=True,lookupmaps=[]))
         modelparameters.append(self.ParamType(name="Inflow",stack=self.Inflow_mapstack,type="timeseries",default=0.0,verbose=False,lookupmaps=[]))
         modelparameters.append(self.ParamType(name="ReserVoirLocs",stack='staticmaps/wflow_reservoirlocs.map',type="staticmap",default=0.0,verbose=False,lookupmaps=[]))
-        modelparameters.append(self.ParamType(name="ResTargetFullFrac",stack='intbl/ResTargetFullFrac.tbl',type="statictbl",default=0.8,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
-        modelparameters.append(self.ParamType(name="ResTargetMinFrac",stack='intbl/ResTargetMinFrac.tbl',type="statictbl",default=0.4,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
-        modelparameters.append(self.ParamType(name="ResMaxVolume",stack='intbl/ResMaxVolume.tbl',type="statictbl",default=0.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
-        modelparameters.append(self.ParamType(name="ResMaxRelease",stack='intbl/ResMaxRelease.tbl',type="statictbl",default=1.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
-        modelparameters.append(self.ParamType(name="ResDemand",stack='intbl/ResMaxRelease.tbl',type="statictbl",default=1.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
+        modelparameters.append(self.ParamType(name="ResTargetFullFrac",stack='intbl/ResTargetFullFrac.tbl',type="tbl",default=0.8,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
+        modelparameters.append(self.ParamType(name="ResTargetMinFrac",stack='intbl/ResTargetMinFrac.tbl',type="tbl",default=0.4,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
+        modelparameters.append(self.ParamType(name="ResMaxVolume",stack='intbl/ResMaxVolume.tbl',type="tbl",default=0.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
+        modelparameters.append(self.ParamType(name="ResMaxRelease",stack='intbl/ResMaxRelease.tbl',type="tbl",default=1.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
+        modelparameters.append(self.ParamType(name="ResDemand",stack='intbl/ResDemand.tbl',type="tbl",default=1.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
 
 
         return modelparameters
@@ -543,7 +543,7 @@ class WflowModel(DynamicModel):
             self.WaterLevelFP   = self.ZeroMap
             self.SurfaceRunoff = self.ZeroMap
             self.WaterLevel = self.WaterLevelCH + self.WaterLevelFP
-            self.ReservoirVolume = self.ZeroMap
+            self.ReservoirVolume = self.ResMaxVolume * self.ResTargetFullFrac
         else:
             self.logger.info("Setting initial conditions from state files")
             self.wf_resume(os.path.join(self.Dir,"instate"))
