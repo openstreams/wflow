@@ -307,9 +307,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         for par in self.modelparameters:
             if self._userModel()._inInitial():
-                if par.type == 'tbl':
+                if par.type == 'tbl' or par.type =='tblsparse':
                     if not hasattr(self._userModel(), par.name):
-                        self._userModel().logger.info("Adding " + par.name + " to model.")
+                        self._userModel().logger.info("Initial: Adding " + par.name + " to model.")
                     tblname = os.path.join(self._userModel().Dir, par.stack)
                     theparmap = self.readtblFlexDefault(tblname, par.default, *par.lookupmaps)
                     setattr(self._userModel(), par.name, theparmap)
@@ -323,6 +323,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                                                     self._userModel().Soil,
                                                     par.default)
                     setattr(self._userModel(), par.name, theparmap)
+
                 if par.type == 'staticmap':
                     if not hasattr(self._userModel(), par.name):
                         self._userModel().logger.info("Adding " + par.name + " to model.")
@@ -355,12 +356,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     theparmap = cover(theparmap, par.default)
                     setattr(self._userModel(), par.name, theparmap)
 
-                if par.type == 'tbl':
-                    if not hasattr(self._userModel(), par.name):
-                        self._userModel().logger.info("Adding " + par.name + " to model.")
-                    tblname = os.path.join(self._userModel().Dir, par.stack)
-                    theparmap = self.readtblFlexDefault(tblname, par.default, *par.lookupmaps)
-                    setattr(self._userModel(), par.name, theparmap)
 
                 if par.type == 'hourlyclim':
                     if not hasattr(self._userModel(), par.name):
@@ -383,6 +378,25 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                                                         os.path.join(self._userModel().caseName, par.lookupmaps[0]),
                                                         par.default)
                     setattr(self._userModel(), par.name, theparmap)
+
+                if par.type == 'tbl':
+                    if not hasattr(self._userModel(), par.name):
+                        self._userModel().logger.info("Adding " + par.name + " to model.")
+                    tblname = os.path.join(self._userModel().Dir, par.stack + "_" + str(self._userModel().currentStep))
+                    theparmap = self.readtblFlexDefault(tblname, par.default, *par.lookupmaps)
+                    setattr(self._userModel(), par.name, theparmap)
+
+                if par.type == 'tblsparse':
+                    if not hasattr(self._userModel(), par.name):
+                        self._userModel().logger.info("Adding " + par.name + " to model.")
+
+                    tblname = os.path.join(self._userModel().Dir, par.stack + "_" + str(self._userModel().currentStep))
+                    if os.path.exists(tblname):
+                        theparmap = self.readtblFlexDefault(tblname, par.default, *par.lookupmaps)
+                        setattr(self._userModel(), par.name, theparmap)
+                    else:
+                        self._userModel().logger.debug(tblname + " not available for this step, using previous value.")
+
 
 
     def wf_timeinputscalar(self, tssfile, areamap, default):
@@ -514,11 +528,11 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 newargs = []
                 args = list(args)
                 for mapje in args:
-                    if len(os.path.splitext(mapje)[1]) > 1:
+                    if len(os.path.splitext(mapje)[1]) > 1: # We have an extension...
                         newargs.append(os.path.join(self._userModel().caseName, mapje))
                         # we specify a full map
                     else:
-                        # Assume we have monthly climatology
+                        # Assume we have monthly climatology as no extension is present
                         theparmap = self.wf_readmapClimatology(os.path.join(self._userModel().caseName, mapje), kind=1,
                                                                default=default, verbose=True)
                         theparmap = cover(theparmap, default)
