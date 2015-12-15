@@ -108,6 +108,61 @@ class WflowModel(DynamicModel):
         self.SaveDir = os.path.join(self.Dir,self.runId)
 
 
+    def reallysimpelreservoir(self,storage,inflow,K, deadvolume):
+        """
+        :param storage: storage in m^3
+        :param deadvolume: dead storage in m^3
+        :param inflow: inflow in m^3/sec
+        :param K: reservoir constant -
+        :return storage, outflow: storage in m^3, outflow in m^3/sec
+        """
+        inflow = ifthen(boolean(self.ReserVoirLocs),inflow)
+        oldstorage = storage
+        storage = storage + (inflow * self.timestepsecs)
+        outflow = (((storage + oldstorage) * 0.5) - deadvolume) * K * self.timestepsecs/self.basetimestep
+        outflow = ifthen(boolean(self.ReserVoirLocs),outflow)
+        storage = storage - outflow
+        return storage, outflow/self.timestepsecs
+
+
+    def simpelreservoir(self,storage,inflow,maxstorage,target_perc_full,maximum_Q,demand,minimum_full_perc):
+        """
+
+        :param storage: initial storage m^3
+        :param inflow: inflow m^3/s
+        :param maxstorage: maximum storage (above which water is spilled) m^3
+        :param target_perc_full: target fraction full (of max storage) -
+        :param maximum_Q: maximum Q to release m^3/s if below spillway
+        :param demand: water demand (all combined) m^3/s
+        :param minimum_full_perc: target minimum full fraction (of max storage) -
+        :return: storage, outflow (m^3, m^3/s)
+        """
+
+        inflow = ifthen(boolean(self.ReserVoirLocs),inflow)
+        oldstorage = storage
+        storage = storage + (inflow * self.timestepsecs)
+        percfull = ((storage + oldstorage) * 0.5)/maxstorage
+        # first determine environmental flow using a simple sigmoid curve to scale for target level
+        fac = sCurve(percfull,a=minimum_full_perc,c=30.0)
+
+        demandRelease =fac * demand * self.timestepsecs
+
+        storage = storage - demandRelease
+
+        # Re-determine percfull
+        percfull = ((storage + oldstorage) * 0.5)/maxstorage
+
+        wantrel  =  max(0.0,storage - (maxstorage * target_perc_full) )
+        # Assume extra maximum Q if spilling
+        overflowQ = (percfull - 1.0) * (storage - maxstorage)
+        torelease = min(wantrel, overflowQ + maximum_Q * self.timestepsecs)
+        storage = storage - torelease
+        outflow = (torelease + demandRelease)/self.timestepsecs
+        percfull = storage/maxstorage
+
+        return storage, outflow, percfull, demandRelease/self.timestepsecs
+
+
     def wetPerimiterFP(self,Waterlevel, floodplainwidth,threshold=0.0,sharpness=0.5):
         """
 
@@ -189,7 +244,7 @@ class WflowModel(DynamicModel):
         :var self.SurfaceRunoff: Surface runoff in the kin-wave resrvoir [m^3/s]
         :var self.WaterLevel: Water level in the kin-wave resrvoir [m]
         """
-        states = ['SurfaceRunoff', 'WaterLevelCH','WaterLevelFP']
+        states = ['SurfaceRunoff', 'WaterLevelCH','WaterLevelFP','ReservoirVolume']
 
         return states
 
@@ -312,6 +367,17 @@ class WflowModel(DynamicModel):
 
         self.logger.info("Linking parameters to landuse, catchment and soil...")
         self.wf_updateparameters()
+
+        # Check if we have reservoirs
+        tt = pcr2numpy(self.ReserVoirLocs,0.0)
+        self.nrres = tt.max()
+        if self.nrres > 0:
+            self.logger.info("A total of " +str(self.nrres) + " reservoirs found.")
+            self.ReserVoirDownstreamLocs = downstream(self.TopoLdd,self.ReserVoirLocs)
+            self.TopoLddOrg = self.TopoLdd
+            self.TopoLdd = lddrepair(cover(ifthen(boolean(self.ReserVoirLocs),ldd(5)), self.TopoLdd))
+
+
         self.Beta = scalar(0.6)  # For sheetflow
 
         self.N = self.readtblDefault(self.Dir + "/" + self.intbl + "/N.tbl", self.LandUse, subcatch, self.Soil,
@@ -459,6 +525,12 @@ class WflowModel(DynamicModel):
         # Meteo and other forcing
         modelparameters.append(self.ParamType(name="InwaterForcing",stack=self.IW_mapstack ,type="timeseries",default=0.0,verbose=True,lookupmaps=[]))
         modelparameters.append(self.ParamType(name="Inflow",stack=self.Inflow_mapstack,type="timeseries",default=0.0,verbose=False,lookupmaps=[]))
+        modelparameters.append(self.ParamType(name="ReserVoirLocs",stack='staticmaps/wflow_reservoirlocs.map',type="staticmap",default=0.0,verbose=False,lookupmaps=[]))
+        modelparameters.append(self.ParamType(name="ResTargetFullFrac",stack='intbl/ResTargetFullFrac.tbl',type="tbl",default=0.8,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
+        modelparameters.append(self.ParamType(name="ResTargetMinFrac",stack='intbl/ResTargetMinFrac.tbl',type="tbl",default=0.4,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
+        modelparameters.append(self.ParamType(name="ResMaxVolume",stack='intbl/ResMaxVolume.tbl',type="tbl",default=0.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
+        modelparameters.append(self.ParamType(name="ResMaxRelease",stack='intbl/ResMaxRelease.tbl',type="tbl",default=1.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
+        modelparameters.append(self.ParamType(name="ResDemand",stack='intbl/ResDemand.tbl',type="tbl",default=1.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
 
 
         return modelparameters
@@ -471,6 +543,7 @@ class WflowModel(DynamicModel):
             self.WaterLevelFP   = self.ZeroMap
             self.SurfaceRunoff = self.ZeroMap
             self.WaterLevel = self.WaterLevelCH + self.WaterLevelFP
+            self.ReservoirVolume = self.ResMaxVolume * self.ResTargetFullFrac
         else:
             self.logger.info("Setting initial conditions from state files")
             self.wf_resume(os.path.join(self.Dir,"instate"))
@@ -533,7 +606,18 @@ class WflowModel(DynamicModel):
         self.InwaterMM = max(0.0,self.InwaterForcing)
         self.Inwater = self.InwaterMM * self.ToCubic  # m3/s
 
+        #only run the reservoir module if needed
+        if self.nrres > 0:
+            self.ReservoirVolume, self.Outflow,self.ResPecrFull,self.DemandRelease = self.simpelreservoir(self.ReservoirVolume,self.SurfaceRunoff,
+                                                                      self.ResMaxVolume,self.ResTargetFullFrac,
+                                                                      self.ResMaxRelease, self.ResDemand,
+                                                                      self.ResTargetMinFrac)
+            self.OutflowDwn = upstream(self.TopoLddOrg,cover(self.Outflow,scalar(0.0)))
+            self.Inflow = cover(self.OutflowDwn,self.Inflow)
+
+
         self.Inwater = self.Inwater + self.Inflow  # Add abstractions/inflows in m^3/sec
+
 
         ##########################################################################
         # Runoff calculation via Kinematic wave ##################################

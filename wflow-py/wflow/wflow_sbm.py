@@ -154,9 +154,9 @@ def actEvap_SBM(RootingDepth, WTable, UStoreDepth, FirstZoneDepth, PotTrans, smo
     RestPotEvap = PotTrans - ActEvapSat
 
     # now try unsat store  
-    AvailCap = min(1.0, max(0.0, (WTable - RootingDepth) / (RootingDepth + 1.0)))
+    #AvailCap = min(1.0, max(0.0, (WTable - RootingDepth) / (RootingDepth + 1.0)))
 
-    #AvailCap = max(0.0,ifthenelse(WTable < RootingDepth,  WTable/RootingDepth,  RootingDepth/WTable)) 
+    AvailCap = max(0.0,ifthenelse(WTable < RootingDepth,  cover(1.0),  RootingDepth/(WTable + 1.0)))
     MaxExtr = AvailCap * UStoreDepth
     ActEvapUStore = min(MaxExtr, RestPotEvap, UStoreDepth)
     UStoreDepth = UStoreDepth - ActEvapUStore

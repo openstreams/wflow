@@ -32,6 +32,7 @@ class wflowbmi_ligth(object):
             self.loggingmode = logging.DEBUG
 
         self.bmilogger = setlogger('wflow_bmi.log','wflow_bmi_logging',thelevel=self.loggingmode)
+        self.bmilogger.info("__init__: wflow_bmi object initialised.")
 
     def initialize(self, configfile=None,loglevel=logging.DEBUG):
         """
@@ -125,7 +126,6 @@ class wflowbmi_ligth(object):
 
         :return: time units as a CF convention string
         (http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/build/cf-conventions.html#time-coordinate)
-
         """
         units = self.dynModel.wf_supplyEpoch()
         self.bmilogger.debug("get_time_units: return: " + str(units))
@@ -355,6 +355,7 @@ class wflowbmi_csdms(bmi.Bmi):
             print logstr
 
         self.bmilogger = setlogger('wflow_bmi.log','wflow_bmi_logging',thelevel=self.loggingmode)
+        self.bmilogger.info("__init__: wflow_bmi object initialised.")
 
     def initialize_config(self, filename, loglevel=logging.DEBUG):
         """

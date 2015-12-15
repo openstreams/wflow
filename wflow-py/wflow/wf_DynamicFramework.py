@@ -267,6 +267,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self.APIDebug = 0
         self._userModel().currentdatetime = self.currentdatetime
         self._userModel()._setCurrentTimeStep(firstTimestep)
+        self.TheClone = scalar(xcoordinate((spatial(boolean(1.0))))) * 0.0
 
 
     def wf_multparameters(self):
@@ -328,7 +329,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     fname = os.path.join(self._userModel().Dir, par.stack)
                     fileName, fileExtension = os.path.splitext(fname)
                     if fileExtension == '.map':
-                        theparmap = self.wf_readmap(fname,0.0,fail=par.verbose)
+                        theparmap = self.wf_readmap(fname,par.default,fail=par.verbose)
                     else:
                         self._userModel().logger.error(fname + " Does not have a .map extension")
 
@@ -459,7 +460,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 self.logger.info("Creating map from table: " + pathtotbl)
             else:
                 self.logger.warn("tbl file not found (" + pathtotbl + ") returning default value: " + str(default))
-                rest = spatial(scalar(default))
+                rest = spatial(cover(scalar(default)))
 
             cmask = self._userModel().TopoId
 
@@ -484,7 +485,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         """
         First check if a prepared  maps of the same name is present
         in the staticmaps directory. next try to
-        read a tbl file to match a a number of maps. Returns
+        read a tbl file to match  a number of maps. Returns
         the default value if the tbl file is not found.
 
         Finally check of a tbl file exists with a .mult postfix (e.g. Cmax.tbl.mult) and apply the
@@ -2006,7 +2007,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     if succ:
                         return retval
                     else:
-                        return scalar(default)
+                        return cover(scalar(default))
 
                 if os.path.isfile(path):
                     mapje = readmap(path)
@@ -2017,7 +2018,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     if fail:
                         self.logger.error("Required map: " + os.path.abspath(path) + " not found, exiting..")
                         sys.exit(1)
-                    return scalar(default)
+                    return cover(scalar(default))
 
             elif self._userModel()._inInitial():
                 if 'None' not in self.ncfilestatic:
@@ -2029,7 +2030,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                             self.logger.error("Required map: " + os.path.abspath(path) + " not found in " + self.ncfilestatic + "  exiting..")
                             sys.exit(1)
                         else:
-                            return scalar(default)
+                            return self.TheClone + default
 
                 if os.path.isfile(path):
                     mapje = readmap(path)
@@ -2040,7 +2041,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     if fail:
                         self.logger.error("Required map: " + os.path.abspath(path) + " not found, exiting..")
                         sys.exit(1)
-                    return scalar(default)
+                    return self.TheClone + default
 
             elif self._inResume():
                 if ncfilesource == self.ncfilestates and ncfilesource not in 'None':
@@ -2048,7 +2049,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     if succ:
                         return retval
                     else:
-                        return scalar(default)
+                        return self.TheClone + default
 
                 if os.path.isfile(path):
                     mapje = readmap(path)
@@ -2059,7 +2060,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     if fail:
                         self.logger.error("Required map: " + os.path.abspath(path) + " not found, exiting..")
                         sys.exit(1)
-                    return scalar(default)
+                    return cover(scalar(default))
             else: # Assuming we are in pre-or post loop within the framwork
                 if "None" not in self.ncfilestatic:
                     retval, succ = self.NcInputStatic.gettimestep(1, self.logger, var=varname)
@@ -2070,7 +2071,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                             self.logger.error("Required map: " + os.path.abspath(path) + " not found in " + self.ncfilestatic + "  exiting..")
                             sys.exit(1)
                         else:
-                            return scalar(default)
+                            return self.TheClone + default
 
                 if os.path.isfile(path):
                     mapje = readmap(path)
@@ -2081,7 +2082,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     if fail:
                         self.logger.error("Required map: " + os.path.abspath(path) + " not found, exiting..")
                         sys.exit(1)
-                    return scalar(default)
+                    return self.TheClone + default
 
 
 
@@ -2099,7 +2100,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 return retval
         else:
             self.logger.warn("Unknown style (" + str(style) + ") for variable: " + name + ", returning default")
-            return cover(scalar(default))
+            return self.TheClone + default
 
     ## \brief testing the requirements for the dynamic framework
     #
