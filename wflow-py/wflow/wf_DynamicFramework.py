@@ -606,6 +606,18 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         if doSetupFramework:
             self.setupFramework()
 
+    def _initAPIVars(self):
+        """
+        Sets vars in the API that are forcing variables to the model
+        """
+        apivars = self.wf_supplyVariableNamesAndRoles()
+
+        for var in apivars:
+            if not hasattr(self._userModel(),var[0]):
+                print var[0]
+                setattr(self._userModel(),var[0],self.TheClone)
+                #exec "self._userModel()."+ var[0] + " = self.TheClone"
+
     def setupFramework(self):
         """
         Second step, after setting the log file and reading the ini file get data from config, setup
@@ -614,17 +626,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         :return:
         """
 
-        def _initAPIVars(self):
-            """
-            Sets vars in the API that are forcing variables to the model
-            """
-            apivars = self.wf_supplyVariableNamesAndRoles()
-
-            for var in apivars:
-                exec "self._userModel()."+ var[0] + " = cover(scalar(0.0))"
 
 
-        _initAPIVars(self)
+        self._initAPIVars()
         self.framework_setup = True
         caseName = self._userModel().caseName
         runId = self._userModel().runId

@@ -85,7 +85,7 @@ class wflowbmi_ligth(object):
 
         inames = []
         for varrol in namesroles:
-            if varrol[1] == 0 or varrol[1] == 2:
+            if varrol[1] == 0 or varrol[1] == 2 or varrol[1] == 3:
                 inames.append(varrol[0])
 
         self.inputoutputvars = inames
@@ -409,7 +409,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
         inames = []
         for varrol in namesroles:
-            if varrol[1] == 0 or varrol[1] == 2:
+            if varrol[1] == 0 or varrol[1] == 2 or varrol[1] == 3:
                 inames.append(varrol[0])
 
         self.inputoutputvars = inames
