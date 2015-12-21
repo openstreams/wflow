@@ -365,16 +365,12 @@ class wflowbmi_csdms(bmi.Bmi):
 
         if logstr in 'ERROR':
             self.loggingmode = logging.ERROR
-            print logstr
         if logstr in 'WARNING':
             self.loggingmode = logging.WARNING
-            print logstr
         if logstr in 'INFO':
             self.loggingmode = logging.INFO
-            print logstr
         if logstr in 'DEBUG':
             self.loggingmode = logging.DEBUG
-            print logstr
 
         self.bmilogger = setlogger('wflow_bmi.log','wflow_bmi_logging',thelevel=self.loggingmode)
         self.bmilogger.info("__init__: wflow_bmi object initialised.")
