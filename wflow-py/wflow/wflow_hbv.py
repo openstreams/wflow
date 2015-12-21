@@ -65,9 +65,9 @@ wflow_hbv::
     -u [1 , 4 ,13]
     The above example uses column 1, 4 and 13
     
--P: set parameter change string (e.g: -P 'self.FC = self.FC * 1.6') for non-dynamic variables
+-P: set parameter change string (e.g: -P "self.FC = self.FC * 1.6") for non-dynamic variables
     
--p: set parameter change string (e.g: -P 'self.Precipitation = self.Precipitation * 1.11') for
+-p: set parameter change string (e.g: -P "self.Precipitation = self.Precipitation * 1.11") for
     dynamic variables
 
 -l: loglevel (most be one of DEBUG, WARNING, ERROR)
