@@ -31,6 +31,9 @@ class wflowbmi_ligth(object):
         if logstr in 'DEBUG':
             self.loggingmode = logging.DEBUG
 
+        """ If set to True all set and get grids are writtesn to disk for debugging """
+        self.wrtodisk = False
+
         self.bmilogger = setlogger('wflow_bmi.log','wflow_bmi_logging',thelevel=self.loggingmode)
         self.bmilogger.info("__init__: wflow_bmi object initialised.")
 
@@ -85,7 +88,7 @@ class wflowbmi_ligth(object):
 
         inames = []
         for varrol in namesroles:
-            if varrol[1] == 0 or varrol[1] == 2:
+            if varrol[1] == 0 or varrol[1] == 2 or varrol[1] == 3:
                 inames.append(varrol[0])
 
         self.inputoutputvars = inames
@@ -225,13 +228,21 @@ class wflowbmi_ligth(object):
         return st
 
 
-    def get_var(self, name):
+    def get_var(self, long_var_name):
         """
         Return an nd array from model library
         """
 
-        self.bmilogger.debug("get_var: " + str(name))
-        return np.flipud(self.dynModel.wf_supplyMapAsNumpy(name))
+        self.bmilogger.debug("get_var: " + str(long_var_name))
+        src = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
+
+        if self.wrtodisk:
+            fname = str(self.currenttimestep) + "_get_" + long_var_name + ".map"
+            arpcr = self.dynModel.numpy2pcr(self.dynModel.Scalar, src, -999)
+            self.bmilogger.debug("Writing to disk: " + fname)
+            self.dynModel.report(arpcr,fname)
+
+        return np.flipud(src)
 
     def set_var(self, long_var_name, src):
         """
@@ -241,6 +252,12 @@ class wflowbmi_ligth(object):
         :var src: all values to set for the given variable. If only one value
                   is present a uniform map will be set in the wflow model.
         """
+
+        if self.wrtodisk:
+            fname = str(self.currenttimestep) + "_set_" + long_var_name + ".map"
+            arpcr = self.dynModel.numpy2pcr(self.dynModel.Scalar, np.flipud(src), -999)
+            self.bmilogger.debug("Writing to disk: " + fname)
+            self.dynModel.report(arpcr,fname)
 
         if long_var_name in self.outputonlyvars:
             self.bmilogger.error("set_var: " + long_var_name + " is listed as an output only variable, cannot set. " + str(self.outputonlyvars))
@@ -336,23 +353,24 @@ class wflowbmi_csdms(bmi.Bmi):
         self.currenttimestep = 0
         self.name = "undefined"
         self.myModel = None
+
         self.dynModel = None
 
         self.loggingmode = logging.ERROR
         logstr = os.getenv('wflow_bmi_loglevel', 'ERROR')
+        self.wrtodisk = False
+
+        if os.getenv("wflow_bmi_writedisk",'False') in 'True':
+            self.wrtodisk = True
 
         if logstr in 'ERROR':
             self.loggingmode = logging.ERROR
-            print logstr
         if logstr in 'WARNING':
             self.loggingmode = logging.WARNING
-            print logstr
         if logstr in 'INFO':
             self.loggingmode = logging.INFO
-            print logstr
         if logstr in 'DEBUG':
             self.loggingmode = logging.DEBUG
-            print logstr
 
         self.bmilogger = setlogger('wflow_bmi.log','wflow_bmi_logging',thelevel=self.loggingmode)
         self.bmilogger.info("__init__: wflow_bmi object initialised.")
@@ -409,7 +427,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
         inames = []
         for varrol in namesroles:
-            if varrol[1] == 0 or varrol[1] == 2:
+            if varrol[1] == 0 or varrol[1] == 2 or varrol[1] == 3:
                 inames.append(varrol[0])
 
         self.inputoutputvars = inames
@@ -771,6 +789,12 @@ class wflowbmi_csdms(bmi.Bmi):
         if long_var_name in self.inputoutputvars:
             ret = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
             self.bmilogger.debug("get_value: " + long_var_name)
+            if self.wrtodisk:
+                fname = str(self.currenttimestep) + "_get_" + long_var_name + ".map"
+                arpcr = self.dynModel.numpy2pcr(self.dynModel.Scalar, src, -999)
+                self.bmilogger.debug("Writing to disk: " + fname)
+                self.dynModel.report(arpcr,fname)
+
             try:
                 fret = np.flipud(ret)
                 return fret
@@ -941,6 +965,12 @@ class wflowbmi_csdms(bmi.Bmi):
         :var src: all values to set for the given variable. If only one value
                   is present a uniform map will be set in the wflow model.
         """
+
+        if self.wrtodisk:
+            fname = str(self.currenttimestep) + "_set_" + long_var_name + ".map"
+            arpcr = self.dynModel.numpy2pcr(self.dynModel.Scalar, src, -999)
+            self.bmilogger.debug("Writing to disk: " + fname)
+            self.dynModel.report(arpcr,fname)
 
         if long_var_name in self.outputonlyvars:
             self.bmilogger.error("set_value: " + long_var_name + " is listed as an output only variable, cannot set. " + str(self.outputonlyvars))

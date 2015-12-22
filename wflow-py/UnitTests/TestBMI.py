@@ -163,7 +163,7 @@ class MyTest(unittest.TestCase):
         bmiobj.update(-1)
         bmiobj.finalize()
 
-    def testbmirunnetcdf(self):
+"""    def testbmirunnetcdf(self):
         bmiobj = bmi.wflowbmi_csdms()
         bmiobj.initialize_config('wflow_sbm/wflow_sbm_nc.ini',loglevel=logging.DEBUG)
         bmiobj.set_attribute_value('run:timestepsecs','3600')
@@ -180,7 +180,7 @@ class MyTest(unittest.TestCase):
         nt = bmiobj.get_current_time()
         bmiobj.update_until(et)
         bmiobj.finalize()
-
+"""
 
 if __name__ == '__main__':
     unittest.main()

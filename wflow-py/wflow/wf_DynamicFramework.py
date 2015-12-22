@@ -307,9 +307,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         for par in self.modelparameters:
             if self._userModel()._inInitial():
-                if par.type == 'tbl':
+                if par.type == 'tbl' or par.type =='tblsparse':
                     if not hasattr(self._userModel(), par.name):
-                        self._userModel().logger.info("Adding " + par.name + " to model.")
+                        self._userModel().logger.info("Initial: Adding " + par.name + " to model.")
                     tblname = os.path.join(self._userModel().Dir, par.stack)
                     theparmap = self.readtblFlexDefault(tblname, par.default, *par.lookupmaps)
                     setattr(self._userModel(), par.name, theparmap)
@@ -323,6 +323,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                                                     self._userModel().Soil,
                                                     par.default)
                     setattr(self._userModel(), par.name, theparmap)
+
                 if par.type == 'staticmap':
                     if not hasattr(self._userModel(), par.name):
                         self._userModel().logger.info("Adding " + par.name + " to model.")
@@ -355,12 +356,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     theparmap = cover(theparmap, par.default)
                     setattr(self._userModel(), par.name, theparmap)
 
-                if par.type == 'tbl':
-                    if not hasattr(self._userModel(), par.name):
-                        self._userModel().logger.info("Adding " + par.name + " to model.")
-                    tblname = os.path.join(self._userModel().Dir, par.stack)
-                    theparmap = self.readtblFlexDefault(tblname, par.default, *par.lookupmaps)
-                    setattr(self._userModel(), par.name, theparmap)
 
                 if par.type == 'hourlyclim':
                     if not hasattr(self._userModel(), par.name):
@@ -383,6 +378,25 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                                                         os.path.join(self._userModel().caseName, par.lookupmaps[0]),
                                                         par.default)
                     setattr(self._userModel(), par.name, theparmap)
+
+                if par.type == 'tbl':
+                    if not hasattr(self._userModel(), par.name):
+                        self._userModel().logger.info("Adding " + par.name + " to model.")
+                    tblname = os.path.join(self._userModel().Dir, par.stack + "_" + str(self._userModel().currentStep))
+                    theparmap = self.readtblFlexDefault(tblname, par.default, *par.lookupmaps)
+                    setattr(self._userModel(), par.name, theparmap)
+
+                if par.type == 'tblsparse':
+                    if not hasattr(self._userModel(), par.name):
+                        self._userModel().logger.info("Adding " + par.name + " to model.")
+
+                    tblname = os.path.join(self._userModel().Dir, par.stack + "_" + str(self._userModel().currentStep))
+                    if os.path.exists(tblname):
+                        theparmap = self.readtblFlexDefault(tblname, par.default, *par.lookupmaps)
+                        setattr(self._userModel(), par.name, theparmap)
+                    else:
+                        self._userModel().logger.debug(tblname + " not available for this step, using previous value.")
+
 
 
     def wf_timeinputscalar(self, tssfile, areamap, default):
@@ -514,11 +528,11 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 newargs = []
                 args = list(args)
                 for mapje in args:
-                    if len(os.path.splitext(mapje)[1]) > 1:
+                    if len(os.path.splitext(mapje)[1]) > 1: # We have an extension...
                         newargs.append(os.path.join(self._userModel().caseName, mapje))
                         # we specify a full map
                     else:
-                        # Assume we have monthly climatology
+                        # Assume we have monthly climatology as no extension is present
                         theparmap = self.wf_readmapClimatology(os.path.join(self._userModel().caseName, mapje), kind=1,
                                                                default=default, verbose=True)
                         theparmap = cover(theparmap, default)
@@ -592,6 +606,18 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         if doSetupFramework:
             self.setupFramework()
 
+    def _initAPIVars(self):
+        """
+        Sets vars in the API that are forcing variables to the model
+        """
+        apivars = self.wf_supplyVariableNamesAndRoles()
+
+        for var in apivars:
+            if not hasattr(self._userModel(),var[0]):
+                #print var[0]
+                setattr(self._userModel(),var[0],self.TheClone)
+                #exec "self._userModel()."+ var[0] + " = self.TheClone"
+
     def setupFramework(self):
         """
         Second step, after setting the log file and reading the ini file get data from config, setup
@@ -600,17 +626,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         :return:
         """
 
-        def _initAPIVars(self):
-            """
-            Sets vars in the API that are forcing variables to the model
-            """
-            apivars = self.wf_supplyVariableNamesAndRoles()
-
-            for var in apivars:
-                exec "self._userModel()."+ var[0] + " = cover(scalar(0.0))"
 
 
-        _initAPIVars(self)
+        self._initAPIVars()
         self.framework_setup = True
         caseName = self._userModel().caseName
         runId = self._userModel().runId
@@ -1070,19 +1088,19 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         :returns: 1 if the map was present, 0 if a new map was created
         """
 
-        arpcr = numpy2pcr(Scalar, values, -999)
+        arpcr = numpy2pcr(Scalar, values.copy(), -999)
 
         if hasattr(self._userModel(), mapname):
 
             if "LDD" in mapname.upper():
                 exec "self._userModel()." + mapname + " = lddrepair(ldd(arpcr))"
             else:
-                exec "self._userModel()." + mapname + " = arpcr"
+                setattr(self._userModel(),mapname,arpcr)
 
             return 1
         else:
             self.logger.debug(mapname + " is not defined in the usermodel: setting anyway")
-            exec "self._userModel()." + mapname + " = arpcr"
+            setattr(self._userModel(),mapname,arpcr)
             return 0
 
     def wf_setValuesAsPcrMap(self, mapname, pcrmap):
@@ -1155,7 +1173,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         if hasattr(self._userModel(), mapname):
             exec "ar = pcr2numpy(self._userModel()." + mapname + ",-999)"
             ar[row, col] = value
-            arpcr = numpy2pcr(Scalar, ar, -999)
+            arpcr = numpy2pcr(Scalar, ar.copy(), -999)
             exec "self._userModel()." + mapname + " = arpcr"
             return 1
         else:
@@ -1182,7 +1200,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             row, col = getRowColPoint(pcrmap, xcor, ycor)
             ar[row, col] = value
             save("tt.np", ar)
-            pcrmap = numpy2pcr(Scalar, ar, -999)
+            pcrmap = numpy2pcr(Scalar, ar.copy(), -999)
             report(pcrmap, "zz.map")
             exec "self._userModel()." + mapname + " = pcrmap"
             return 1
@@ -1210,7 +1228,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             ar = pcr2numpy(pcrmap, -999)
             row, col = getRowColPoint(pcrmap, xcor, ycor)
             ar[row, col] = value
-            arpcr = numpy2pcr(Scalar, ar, -999)
+            arpcr = numpy2pcr(Scalar, ar.copy(), -999)
             exec "self._userModel()." + mapname + " = lddrepair(ldd(arpcr))"
             return 1
         else:

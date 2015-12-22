@@ -65,9 +65,9 @@ wflow_hbv::
     -u [1 , 4 ,13]
     The above example uses column 1, 4 and 13
     
--P: set parameter change string (e.g: -P 'self.FC = self.FC * 1.6') for non-dynamic variables
+-P: set parameter change string (e.g: -P "self.FC = self.FC * 1.6") for non-dynamic variables
     
--p: set parameter change string (e.g: -P 'self.Precipitation = self.Precipitation * 1.11') for
+-p: set parameter change string (e.g: -P "self.Precipitation = self.Precipitation * 1.11") for
     dynamic variables
 
 -l: loglevel (most be one of DEBUG, WARNING, ERROR)
@@ -197,12 +197,22 @@ class WflowModel(DynamicModel):
 
     # Meteo and other forcing
 
-    modelparameters.append(self.ParamType(name="Precipitation",stack="inmaps/P",type="timeseries",default=0.0,verbose=False,lookupmaps=[]))
-    modelparameters.append(self.ParamType(name="PotEvaporation",stack="inmaps/PET",type="timeseries",default=0.0,verbose=False,lookupmaps=[]))
-    modelparameters.append(self.ParamType(name="Temperature",stack="inmaps/TEMP",type="timeseries",default=10.0,verbose=False,lookupmaps=[]))
-    modelparameters.append(self.ParamType(name="Inflow",stack="inmaps/IF",type="timeseries",default=0.0,verbose=False,lookupmaps=[]))
-    modelparameters.append(self.ParamType(name="Seepage",stack="inmaps/SE",type="timeseries",default=0.0,verbose=False,lookupmaps=[]))
-
+    self.P_mapstack = self.Dir + configget(self.config, "inputmapstacks", "Precipitation",
+                                           "/inmaps/P")  # timeseries for rainfall
+    self.PET_mapstack = self.Dir + configget(self.config, "inputmapstacks", "EvapoTranspiration",
+                                             "/inmaps/PET")  # timeseries for rainfall"/inmaps/PET"          # potential evapotranspiration
+    self.TEMP_mapstack = self.Dir + configget(self.config, "inputmapstacks", "Temperature",
+                                              "/inmaps/TEMP")  # timeseries for rainfall "/inmaps/TEMP"          # global radiation
+    self.Inflow_mapstack = self.Dir + configget(self.config, "inputmapstacks", "Inflow",
+                                                "/inmaps/IF")  # timeseries for rainfall "/inmaps/IF" # in/outflow locations (abstractions)
+    self.Seepage_mapstack = self.Dir + configget(self.config, "inputmapstacks", "Seepage",
+                                                "/inmaps/SE")  # timeseries for rainfall "/inmaps/SE" # in/outflow locations (abstractions
+    # Meteo and other forcing
+    modelparameters.append(self.ParamType(name="Precipitation",stack=self.P_mapstack,type="timeseries",default=0.0,verbose=True,lookupmaps=[]))
+    modelparameters.append(self.ParamType(name="PotEvaporation",stack=self.PET_mapstack,type="timeseries",default=0.0,verbose=True,lookupmaps=[]))
+    modelparameters.append(self.ParamType(name="Temperature",stack=self.TEMP_mapstack,type="timeseries",default=10.0,verbose=True,lookupmaps=[]))
+    modelparameters.append(self.ParamType(name="Inflow",stack=self.Inflow_mapstack,type="timeseries",default=0.0,verbose=False,lookupmaps=[]))
+    modelparameters.append(self.ParamType(name="Seepage",stack=self.Seepage_mapstack,type="timeseries",default=0.0,verbose=False,lookupmaps=[]))
 
 
     return modelparameters
@@ -659,6 +669,7 @@ class WflowModel(DynamicModel):
     self.thestep = self.thestep + 1
 
     self.wf_updateparameters() # read forcing an dynamic parameters
+    self.Precipitation = max(0.0,self.Precipitation)
 
     #self.Precipitation=cover(self.wf_readmap(self.P_mapstack,0.0),0.0) * self.Pcorr
     #self.PotEvaporation=cover(self.wf_readmap(self.PET_mapstack,0.0),0.0)
