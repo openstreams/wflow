@@ -869,7 +869,7 @@ class WflowModel(DynamicModel):
             if self.NoLowerZone:
                 self.LowerZoneStorage = 0.0
             else:
-                self.LowerZoneStorage = 1.0/(3.0 * self.K4) #: Storage in Lower Zone (state variable [mm])
+                self.LowerZoneStorage = 1.0/(3.0 * self.K4) #: Storage in Lower Zone (state variable [mm]))
 
         else:
             self.logger.info("Setting initial conditions from state files")
