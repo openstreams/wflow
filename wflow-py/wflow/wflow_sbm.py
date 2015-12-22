@@ -922,7 +922,7 @@ class WflowModel(DynamicModel):
         # Read forcing data and dynamic parameters
 
         self.wf_updateparameters()
-        self.Precipitation = max(0,0,self.Precipitation)
+        self.Precipitation = max(0.0,self.Precipitation)
 
 
         if hasattr(self,"LAI"):
