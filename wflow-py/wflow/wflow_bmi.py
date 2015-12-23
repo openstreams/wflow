@@ -12,6 +12,7 @@ from wflow.pcrut import setlogger
 class wflowbmi_light(object):
     """
     Deltares specific light version of the BMI. Used for internal model linkage
+    Deltares specific light version of the BMI. Used for internal model linkage
     """
 
     def __init__(self):
@@ -578,7 +579,7 @@ class wflowbmi_csdms(bmi.Bmi):
             timespan = time - curtime
             nrsteps = int(timespan/self.dynModel.timestepsecs)
             self.bmilogger.debug('update_until: update timesteps foreward ' + str(nrsteps) + ' to ' + str(curtime))
-            self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps)
+            self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps -1)
             self.currenttimestep = self.currenttimestep + nrsteps
 
     def update_frac(self, time_frac):
