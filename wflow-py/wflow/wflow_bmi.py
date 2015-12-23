@@ -9,7 +9,7 @@ import wflow.bmi as bmi
 import numpy as np
 from wflow.pcrut import setlogger
 
-class wflowbmi_ligth(object):
+class wflowbmi_light(object):
     """
     Deltares specific light version of the BMI. Used for internal model linkage
     """

@@ -157,7 +157,7 @@ class MyTest(unittest.TestCase):
 
 
     def testbmirun_l(self):
-        bmiobj = bmi.wflowbmi_ligth()
+        bmiobj = bmi.wflowbmi_light()
         bmiobj.initialize('wflow_sceleton/wflow_sceleton.ini',loglevel=logging.ERROR)
         et = bmiobj.get_end_time()
         bmiobj.update(-1)
