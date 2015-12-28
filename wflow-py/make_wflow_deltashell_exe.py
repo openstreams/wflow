@@ -6,10 +6,10 @@ import glob,os,shutil
 import matplotlib
 
 def dependencies_for_freeezing():
-	import netCDF4_utils 
-	import requests
+    import netCDF4_utils
+    import requests
 
-	
+
 data_files=matplotlib.get_py2exe_datafiles()
 includes = ["zmq.backend.cython","requests","zmq.eventloop.zmqstream","pandas","matplotlib",'wflow.wflow_bmi']
 #include_files = glob.glob("c:\Anaconda\Lib\site-packages\zmq\backend\cython\*.pyd")
@@ -52,12 +52,12 @@ data_files.append((".", glob.glob(ddir + "/*.dll")))
 shutil.copy("c:\Anaconda\Lib\site-packages\zmq\libzmq.pyd","Wflow"+MVERSION+'-'+nrbits +"/")
 
 print "Copying extra data files..."
-for dir in data_files:
-	timake = os.path.join("Wflow"+MVERSION+'-'+nrbits,dir[0])
-	print timake
-	if not os.path.exists(timake):
-		os.makedirs(timake)
-	for tocp in dir[1]:
-		shutil.copy(tocp,timake)
-			
-	
+for dirr in data_files:
+    timake = os.path.join("Wflow"+MVERSION+'-'+nrbits,dirr[0])
+    print timake
+    if not os.path.exists(timake):
+        os.makedirs(timake)
+    for tocp in dirr[1]:
+        shutil.copy(tocp,timake)
+
+
