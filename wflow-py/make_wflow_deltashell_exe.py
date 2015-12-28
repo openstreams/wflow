@@ -22,8 +22,8 @@ nrbits = str(ctypes.sizeof(ctypes.c_voidp) * 8)
 # conda install cython
 # conda install pyzmq
 # easy_install requests
-
-f = Freezer("Wflow"+MVERSION+'-'+nrbits,includes=includes)
+thename = "Wflow"+MVERSION+'-'+nrbits + "-wflow_kernel_deltashell"
+f = Freezer(thename ,includes=includes)
 f.addScript("wflow/__init__.py")
 f.addScript("wflow/wflow_sbm.py")
 f.addScript("wflow/wflow_hbv.py")
@@ -49,11 +49,11 @@ ddir = "c:/pcraster4-64/lib/"
 data_files.append((".", glob.glob(ddir + "/*.dll")))
 
 
-shutil.copy("c:\Anaconda\Lib\site-packages\zmq\libzmq.pyd","Wflow"+MVERSION+'-'+nrbits +"/")
+shutil.copy("c:\Anaconda\Lib\site-packages\zmq\libzmq.pyd",thename  +"/")
 
 print "Copying extra data files..."
 for dirr in data_files:
-    timake = os.path.join("Wflow"+MVERSION+'-'+nrbits,dirr[0])
+    timake = os.path.join(thename ,dirr[0])
     print timake
     if not os.path.exists(timake):
         os.makedirs(timake)

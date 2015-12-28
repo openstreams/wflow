@@ -233,6 +233,16 @@ class wflowbmi_light(object):
         self.bmilogger.debug("get_current_time: " + str(st))
         return st
 
+    def get_time_step(self):
+        """
+        Get the model time steps in units since the epoch
+
+        :return: duration of one time step of the model in the units returned by the function get_time_units
+        """
+        ts = self.dynModel.timestepsecs
+        self.bmilogger.debug("get_time_step: " + str(ts))
+        return ts
+
 
     def get_var(self, long_var_name):
         """
