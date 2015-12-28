@@ -111,17 +111,15 @@ class wflowbmi_light(object):
     def update(self, dt):
         """
         Return type string, compatible with numpy.
-        Propagate the model dt timesteps or ( if dt == -1) to the end of the model run
+        Propagate the model dt seconds or ( if dt == -1) one timestep
         """
         # TODO: fix dt = -1 problem, what do we want here?
         #curstep = self.dynModel.wf_
         if dt == -1:
             self.bmilogger.debug("update: dt = " + str(dt))
-            self.bmilogger.debug("update: update until end of run")
-            lasttimestep = (self.get_end_time() - self.get_start_time())/self.dynModel.timestepsecs
-            steptodo = lasttimestep - self.currenttimestep
-            self.dynModel._runDynamic(self.currenttimestep, lasttimestep)
-            self.currenttimestep = self.currenttimestep + steptodo
+            self.bmilogger.debug("update: update default, 1 timestep")
+            self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep)
+            self.currenttimestep = self.currenttimestep + 1
         else:
             nrsteps = int(dt/self.dynModel.timestepsecs)
             self.bmilogger.debug("update: dt = " + str(dt))
