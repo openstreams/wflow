@@ -115,15 +115,22 @@ class wflowbmi_light(object):
         """
         # TODO: fix dt = -1 problem, what do we want here?
         #curstep = self.dynModel.wf_
-        if dt != -1:
+        if dt == -1:
+            self.bmilogger.debug("update: dt = " + str(dt))
             self.bmilogger.debug("update: update until end of run")
-            self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + dt)
-            self.currenttimestep = self.currenttimestep + dt
+            lasttimestep = (self.get_end_time() - self.get_start_time())/self.dynModel.timestepsecs
+            steptodo = lasttimestep - self.currenttimestep
+            self.dynModel._runDynamic(self.currenttimestep, lasttimestep)
+            self.currenttimestep = self.currenttimestep + steptodo
         else:
             nrsteps = int(dt/self.dynModel.timestepsecs)
+            self.bmilogger.debug("update: dt = " + str(dt))
             self.bmilogger.debug("update: update " + str(nrsteps) + " timesteps.")
-            self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps)
-            self.currenttimestep = self.currenttimestep + nrsteps
+            if nrsteps > 1:
+                self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps -1)
+                self.currenttimestep = self.currenttimestep + nrsteps
+            else:
+                self.bmilogger.debug("Update: nothing done, number of steps < 1")
 
     def get_time_units(self):
         """

@@ -163,8 +163,9 @@ class MyTest(unittest.TestCase):
 
 
     def testbmirun_l(self):
+        print 'Run with update(-1)'
         bmiobj = bmi.wflowbmi_light()
-        bmiobj.initialize('wflow_sceleton/wflow_sceleton.ini',loglevel=logging.ERROR)
+        bmiobj.initialize('wflow_sceleton/wflow_sceleton.ini',loglevel=logging.DEBUG)
         et = bmiobj.get_end_time()
         bmiobj.update(-1)
         bmiobj.finalize()
