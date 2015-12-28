@@ -12,7 +12,7 @@ from wflow.pcrut import setlogger
 class wflowbmi_light(object):
     """
     Deltares specific light version of the BMI. Used for internal model linkage
-    Deltares specific light version of the BMI. Used for internal model linkage
+
     """
 
     def __init__(self):
@@ -571,14 +571,14 @@ class wflowbmi_csdms(bmi.Bmi):
         if curtime > time:
             timespan = curtime - time
             nrstepsback = int(timespan/self.dynModel.timestepsecs)
-            self.bmilogger.debug('update_until: update timesteps back ' + str(nrstepsback) + ' to ' + str(curtime))
+            self.bmilogger.debug('update_until: update timesteps back ' + str(nrstepsback) + ' to ' + str(curtime + timespan))
             if nrstepsback > 1:
                 raise ValueError("Time more than one timestep before current time.")
             self.dynModel.wf_QuickResume()
         else:
             timespan = time - curtime
             nrsteps = int(timespan/self.dynModel.timestepsecs)
-            self.bmilogger.debug('update_until: update timesteps foreward ' + str(nrsteps) + ' to ' + str(curtime))
+            self.bmilogger.debug('update_until: update ' + str(nrsteps) + 'timesteps forward from ' + str(curtime) + ' to ' + str(curtime + timespan))
             self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps -1)
             self.currenttimestep = self.currenttimestep + nrsteps
 

@@ -154,9 +154,11 @@ class MyTest(unittest.TestCase):
         et = bmiobj.get_end_time()
         st = bmiobj.get_start_time()
         ts = 86400
+        # Do one timestep and check
         print bmiobj.get_current_time()
         bmiobj.update_until(st + ts)
         print bmiobj.get_current_time()
+        self.assertEquals(st + ts,bmiobj.get_current_time())
         bmiobj.finalize()
 
 

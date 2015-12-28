@@ -21,6 +21,9 @@ Optional arguments:
 
 """
 
+import mmi
+import bmi
+
 import sys
 import docopt
 from mmi.runner import runner
