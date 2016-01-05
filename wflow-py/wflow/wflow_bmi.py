@@ -9,9 +9,10 @@ import wflow.bmi as bmi
 import numpy as np
 from wflow.pcrut import setlogger
 
-class wflowbmi_ligth(object):
+class wflowbmi_light(object):
     """
     Deltares specific light version of the BMI. Used for internal model linkage
+
     """
 
     def __init__(self):
@@ -110,19 +111,24 @@ class wflowbmi_ligth(object):
     def update(self, dt):
         """
         Return type string, compatible with numpy.
-        Propagate the model dt timesteps or ( if dt == -1) to the end of the model run
+        Propagate the model dt seconds or ( if dt == -1) one timestep
         """
         # TODO: fix dt = -1 problem, what do we want here?
         #curstep = self.dynModel.wf_
-        if dt != -1:
-            self.bmilogger.debug("update: update until end of run")
-            self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + dt)
-            self.currenttimestep = self.currenttimestep + dt
+        if dt == -1:
+            self.bmilogger.debug("update: dt = " + str(dt))
+            self.bmilogger.debug("update: update default, 1 timestep")
+            self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep)
+            self.currenttimestep = self.currenttimestep + 1
         else:
             nrsteps = int(dt/self.dynModel.timestepsecs)
+            self.bmilogger.debug("update: dt = " + str(dt))
             self.bmilogger.debug("update: update " + str(nrsteps) + " timesteps.")
-            self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps)
-            self.currenttimestep = self.currenttimestep + nrsteps
+            if nrsteps > 1:
+                self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps -1)
+                self.currenttimestep = self.currenttimestep + nrsteps
+            else:
+                self.bmilogger.debug("Update: nothing done, number of steps < 1")
 
     def get_time_units(self):
         """
@@ -226,6 +232,16 @@ class wflowbmi_ligth(object):
         st = self.dynModel.wf_supplyCurrentTime()
         self.bmilogger.debug("get_current_time: " + str(st))
         return st
+
+    def get_time_step(self):
+        """
+        Get the model time steps in units since the epoch
+
+        :return: duration of one time step of the model in the units returned by the function get_time_units
+        """
+        ts = self.dynModel.timestepsecs
+        self.bmilogger.debug("get_time_step: " + str(ts))
+        return ts
 
 
     def get_var(self, long_var_name):
@@ -570,15 +586,15 @@ class wflowbmi_csdms(bmi.Bmi):
         if curtime > time:
             timespan = curtime - time
             nrstepsback = int(timespan/self.dynModel.timestepsecs)
-            self.bmilogger.debug('update_until: update timesteps back ' + str(nrstepsback) + ' to ' + str(curtime))
+            self.bmilogger.debug('update_until: update timesteps back ' + str(nrstepsback) + ' to ' + str(curtime + timespan))
             if nrstepsback > 1:
                 raise ValueError("Time more than one timestep before current time.")
             self.dynModel.wf_QuickResume()
         else:
             timespan = time - curtime
             nrsteps = int(timespan/self.dynModel.timestepsecs)
-            self.bmilogger.debug('update_until: update timesteps foreward ' + str(nrsteps) + ' to ' + str(curtime))
-            self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps)
+            self.bmilogger.debug('update_until: update ' + str(nrsteps) + 'timesteps forward from ' + str(curtime) + ' to ' + str(curtime + timespan))
+            self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps -1)
             self.currenttimestep = self.currenttimestep + nrsteps
 
     def update_frac(self, time_frac):

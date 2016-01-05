@@ -149,16 +149,23 @@ class MyTest(unittest.TestCase):
 
     def testbmirun(self):
         bmiobj = bmi.wflowbmi_csdms()
-        bmiobj.initialize('wflow_sceleton/wflow_sceleton.ini',loglevel=logging.ERROR)
+        bmiobj.initialize('wflow_sceleton/wflow_sceleton.ini',loglevel=logging.DEBUG)
         print(bmiobj.get_var_type("IF"))
         et = bmiobj.get_end_time()
-        bmiobj.update_until(et)
+        st = bmiobj.get_start_time()
+        ts = 86400
+        # Do one timestep and check
+        print bmiobj.get_current_time()
+        bmiobj.update_until(st + ts)
+        print bmiobj.get_current_time()
+        self.assertEquals(st + ts,bmiobj.get_current_time())
         bmiobj.finalize()
 
 
     def testbmirun_l(self):
-        bmiobj = bmi.wflowbmi_ligth()
-        bmiobj.initialize('wflow_sceleton/wflow_sceleton.ini',loglevel=logging.ERROR)
+        print 'Run with update(-1)'
+        bmiobj = bmi.wflowbmi_light()
+        bmiobj.initialize('wflow_sceleton/wflow_sceleton.ini',loglevel=logging.DEBUG)
         et = bmiobj.get_end_time()
         bmiobj.update(-1)
         bmiobj.finalize()

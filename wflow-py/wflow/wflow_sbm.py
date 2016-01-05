@@ -1308,7 +1308,7 @@ def main(argv=None):
     global multpars
     runId = "run_default"
     configfile = "wflow_sbm.ini"
-    _lastTimeStep = 0
+    _lastTimeStep = 1
     _firstTimeStep = 0
     LogFileName = "wflow.log"
     fewsrun = False
