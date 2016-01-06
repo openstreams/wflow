@@ -451,15 +451,20 @@ class netcdfinput():
                 self.alldat.pop(var, None)
                 logging.warn("Variable " + var + " not found in netcdf file: " + netcdffile)
 
-    def gettimestep(self, timestep, logging, var='P'):
+    def gettimestep(self, timestep, logging, var='P', shifttime=False):
         """
         Gets a map for a single timestep. reads data in blocks assuming sequential access
 
-        timestep: framework timestep (1-based)
-        logging: python logging object
-        var: variable to get from the file
+        :var timestep: framework timestep (1-based)
+        :var logging: python logging object
+        :var var: variable to get from the file
+        :var shifttime: is True start at 1 in the NC file (instead of 0)
         """
-        ncindex = timestep - 1
+        if shifttime:
+            ncindex = timestep
+        else:
+            ncindex = timestep - 1
+
         if self.alldat.has_key(var):
             if ncindex == self.lstep:  # Read new block of data in mem
                 logging.debug("reading new netcdf data block starting at: " + str(ncindex))

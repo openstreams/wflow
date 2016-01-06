@@ -121,7 +121,7 @@ class wflowbmi_light(object):
             self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep)
             self.currenttimestep = self.currenttimestep + 1
         else:
-            nrsteps = int(dt/self.dynModel.timestepsecs)
+            nrsteps = int(dt/self.dynModel.DT.timeStepSecs)
             self.bmilogger.debug("update: dt = " + str(dt))
             self.bmilogger.debug("update: update " + str(nrsteps) + " timesteps.")
             if nrsteps > 1:
@@ -239,7 +239,7 @@ class wflowbmi_light(object):
 
         :return: duration of one time step of the model in the units returned by the function get_time_units
         """
-        ts = self.dynModel.timestepsecs
+        ts = self.dynModel.DT.timeStepSecs
         self.bmilogger.debug("get_time_step: " + str(ts))
         return ts
 
@@ -447,6 +447,8 @@ class wflowbmi_csdms(bmi.Bmi):
                 inames.append(varrol[0])
 
         self.inputoutputvars = inames
+        # If this is True the date/time of the first timestep is the same as the state and we need to skip  that
+
 
 
     def initialize_model(self):
@@ -471,14 +473,19 @@ class wflowbmi_csdms(bmi.Bmi):
         :return: nothing
         """
 
+        # shift the start-time if needed
+
         dateobj = datetime.datetime.utcfromtimestamp(start_time)
         datestrimestr = dateobj.strftime("%Y-%m-%d %H:%M:%S")
 
-        self.dynModel._userModel().config.set("run",'starttime',datestrimestr)
-        self.dynModel._userModel().datetime_firststep=dateobj
-        self.dynModel.datetime_firststep=dateobj
-        self.dynModel._userModel().currentdatetime = self.dynModel._userModel().datetime_firststep
-        self.bmilogger.debug("set_start_time: " + str(start_time) + " " + str(datestrimestr))
+        self.dynModel.DT.update(datetimestart=dateobj)
+
+        if self.dynModel.skipfirsttimestep:
+            self.bmilogger.debug("shift start time  1 step...: " + str(start_time) + ":" + str(start_time + self.dynModel.DT.timeStepSecs))
+            self.dynModel.DT.skiptime()
+
+        self.dynModel._userModel().config.set("run",'starttime',self.dynModel.DT.runStartTime.strftime("%Y-%m-%d %H:%M:%S"))
+        self.bmilogger.debug("set_start_time: " + str(start_time + self.dynModel.DT.timeStepSecs) + " " + str(self.dynModel.DT.runStartTime.strftime("%Y-%m-%d %H:%M:%S")))
 
     def set_end_time(self, end_time):
         """
@@ -489,8 +496,8 @@ class wflowbmi_csdms(bmi.Bmi):
         dateobj = datetime.datetime.utcfromtimestamp(end_time)
         datestrimestr = dateobj.strftime("%Y-%m-%d %H:%M:%S")
         self.dynModel._userModel().config.set("run",'endtime',datestrimestr)
-        self.dynModel._userModel().datetime_laststep=dateobj
-        self.dynModel.datetime_laststep=dateobj
+
+        self.dynModel.DT.update(datetimeend=dateobj)
         self.bmilogger.debug("set_end_time: " + str(end_time) + " " + str(datestrimestr))
 
 
@@ -578,21 +585,21 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         curtime = self.get_current_time()
 
-        if abs(time - curtime)% self.dynModel.timestepsecs != 0:
+        if abs(time - curtime)% self.dynModel.DT.timeStepSecs != 0:
             self.bmilogger.error('update_until: timespan not dividable by timestep: ' + str(abs(time - curtime)) +
-                                 ' and ' + str(self.dynModel.timestepsecs))
+                                 ' and ' + str(self.dynModel.DT.timeStepSecs))
             raise ValueError("Update in time not a multiple of timestep")
 
         if curtime > time:
             timespan = curtime - time
-            nrstepsback = int(timespan/self.dynModel.timestepsecs)
+            nrstepsback = int(timespan/self.dynModel.DT.timeStepSecs)
             self.bmilogger.debug('update_until: update timesteps back ' + str(nrstepsback) + ' to ' + str(curtime + timespan))
             if nrstepsback > 1:
                 raise ValueError("Time more than one timestep before current time.")
             self.dynModel.wf_QuickResume()
         else:
             timespan = time - curtime
-            nrsteps = int(timespan/self.dynModel.timestepsecs)
+            nrsteps = int(timespan/self.dynModel.DT.timeStepSecs)
             self.bmilogger.debug('update_until: update ' + str(nrsteps) + 'timesteps forward from ' + str(curtime) + ' to ' + str(curtime + timespan))
             self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps -1)
             self.currenttimestep = self.currenttimestep + nrsteps
@@ -779,7 +786,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
         :return: duration of one time step of the model in the units returned by the function get_time_units
         """
-        ts = self.dynModel.timestepsecs
+        ts = self.dynModel.DT.timeStepSecs
         self.bmilogger.debug("get_time_step: " + str(ts))
         return ts
 
@@ -807,7 +814,7 @@ class wflowbmi_csdms(bmi.Bmi):
             self.bmilogger.debug("get_value: " + long_var_name)
             if self.wrtodisk:
                 fname = str(self.currenttimestep) + "_get_" + long_var_name + ".map"
-                arpcr = self.dynModel.numpy2pcr(self.dynModel.Scalar, src, -999)
+                arpcr = self.dynModel.numpy2pcr(self.dynModel.Scalar, ret, -999)
                 self.bmilogger.debug("Writing to disk: " + fname)
                 self.dynModel.report(arpcr,fname)
 

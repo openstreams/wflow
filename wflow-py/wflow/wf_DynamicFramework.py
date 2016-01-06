@@ -20,7 +20,7 @@ from wflow.wf_netcdfio import *
 import pcrut
 import glob
 import traceback
-from wflow_adapt import getStartTimefromRuninfo, getEndTimefromRuninfo
+import  wflow_adapt
 from collections import namedtuple
 
 logging = None
@@ -40,6 +40,82 @@ def log_uncaught_exceptions(ex_cls, ex, tb):
 
 
 sys.excepthook = log_uncaught_exceptions
+
+
+
+class runDateTimeInfo():
+    """
+
+    """
+    def __init__(self, datetimestart=dt.datetime(1990, 01, 01),datetimeend=dt.datetime(1990, 01, 05),timestepsecs=86400):
+        self.runStartTime = datetimestart
+        self.runEndTime = datetimeend
+        self.timeStepSecs = timestepsecs
+        self.currentTimeStep = 1
+        self.currentDateTime = self.runStartTime
+        self.startadjusted = 0
+        self.runStateTime = self.runStartTime - datetime.timedelta(seconds=self.timeStepSecs)
+        self.runTimeSteps = (calendar.timegm(self.runEndTime.utctimetuple()) - calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs
+        self.currentMonth = self.currentDateTime.month
+        self.currentYday = self.currentDateTime.timetuple().tm_yday
+        self.currentHour = self.currentDateTime.hour
+
+
+    def skiptime(self):
+        """
+        Call once to adjust the start-time (hack to support both openDA and Delft-FEWS)
+
+        :return:
+        """
+        if not self.startadjusted:
+            ns = self.runStartTime + datetime.timedelta(seconds=self.timeStepSecs)
+            self.update(datetimestart=ns)
+
+        self.startadjusted = self.startadjusted + 1
+
+
+    def update(self, timestepsecs=None, datetimestart=None, datetimeend=None, currentTimeStep=None, currentDatetime=None):
+        """
+        Updates the content of the object. Use only one input parameter per call.
+
+        :param timestepsecs:
+        :param datetimestart:
+        :param datetimeend:
+        :param currentTimeStep:
+        :param currentDatetime:
+        :return:
+        """
+        if timestepsecs:
+            self.timeStepSecs = timestepsecs
+            self.runTimeSteps = (calendar.timegm(self.runEndTime.utctimetuple()) - calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs
+
+        if datetimestart:
+            self.runStartTime = datetimestart
+            self.currentTimeStep = 1
+            self.currentDateTime = self.runStartTime
+            self.runStateTime = self.runStartTime - datetime.timedelta(seconds=self.timeStepSecs)
+            self.runTimeSteps = (calendar.timegm(self.runEndTime.utctimetuple()) - calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs
+            self.currentMonth = self.currentDateTime.month
+            self.currentYday = self.currentDateTime.timetuple().tm_yday
+            self.currentHour = self.currentDateTime.hour
+
+        if datetimeend:
+            self.runEndTime = datetimeend
+            self.runTimeSteps = (calendar.timegm(self.runEndTime.utctimetuple()) - calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs
+
+        if currentTimeStep:
+            self.currentTimeStep = currentTimeStep
+            self.currentDateTime = self.runStartTime + datetime.timedelta(seconds=self.timeStepSecs * (self.currentTimeStep - 1) )
+            self.currentMonth = self.currentDateTime.month
+            self.currentYday = self.currentDateTime.timetuple().tm_yday
+            self.currentHour = self.currentDateTime.hour
+
+        if currentDatetime:
+            self.currentDateTime = currentDatetime
+            self.currentMonth = self.currentDateTime.month
+            self.currentYday = self.currentDateTime.timetuple().tm_yday
+            self.currentHour = self.currentDateTime.hour
+            self.currentTimeStep = (calendar.timegm(self.currentDateTime.utctimetuple()) - calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs
 
 
 class wf_exchnageVariables():
@@ -77,8 +153,6 @@ class wf_exchnageVariables():
         returns 2 if this is a input variable to be set from api otherwise 1
         ( in the ini 0 is for in memory variables)
         A bit confusing!!!
-        
-        
         """
         for xx in self.vars:
             if xx.__contains__(name):
@@ -232,11 +306,11 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self.reinit = 0
         self._d_model = userModel
         self._testRequirements()
-        self.timestepsecs = timestepsecs
-        self.datetime_firststep = datetimestart
-        self.currentdatetime = self.datetime_firststep
-        self.datetime_laststep = datetimestart + datetime.timedelta(
-            seconds=(lastTimeStep - firstTimestep) * self.timestepsecs)
+
+        dte = datetimestart + datetime.timedelta(seconds=(lastTimeStep - firstTimestep -1) * timestepsecs)
+        self.DT = runDateTimeInfo(timestepsecs=timestepsecs, datetimestart=datetimestart,
+                                  datetimeend=dte)
+
 
         if firstTimestep > lastTimeStep:
             msg = "Cannot run dynamic framework: Start timestep smaller than end timestep"
@@ -254,7 +328,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self._addMethodToClass(self.wf_supplyVariableNamesAndRoles)
         self._addMethodToClass(self.wf_updateparameters)
         self._addAttributeToClass("ParamType", self.ParamType)
-        self._addAttributeToClass("timestepsecs", self.timestepsecs)
+        self._addAttributeToClass("timestepsecs", self.DT.timeStepSecs)
+        self.skipfirsttimestep = 0
 
         if firstTimestep == 0:
             firstTimestep = 1
@@ -265,7 +340,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self._userModel()._setFirstTimeStep(1)
         self._d_lastTimestep = lastTimeStep
         self.APIDebug = 0
-        self._userModel().currentdatetime = self.currentdatetime
+        self._userModel().currentdatetime = self.DT.currentDateTime
         self._userModel()._setCurrentTimeStep(firstTimestep)
         self.TheClone = scalar(xcoordinate((spatial(boolean(1.0))))) * 0.0
 
@@ -603,6 +678,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         self._userModel().config = self.iniFileSetUp(caseName, runId, configfile)
 
+        self.skipfirsttimestep =  int(configget(self._userModel().config, 'run', 'skipfirst', "0"))
+        self.DT.update(timestepsecs=int(configget(self._userModel().config, 'run', 'timestepsecs', "86400")))
+
         if doSetupFramework:
             self.setupFramework()
 
@@ -617,6 +695,60 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 #print var[0]
                 setattr(self._userModel(),var[0],self.TheClone)
                 #exec "self._userModel()."+ var[0] + " = self.TheClone"
+
+
+
+    def setuptimeInfo(self):
+        """
+
+        :return:
+        """
+        st = configget(self._userModel().config, 'run', 'starttime', "None")
+
+        self.skipfirsttimestep =  int(configget(self._userModel().config, 'run', 'skipfirst', "0"))
+
+        if st == "None": # try from the runinfo file
+            rinfo_str = configget(self._userModel().config, 'run', 'runinfo', "None")
+            rinfo = os.path.join(self._userModel().Dir, rinfo_str)
+            self.DT.update(timestepsecs= int(configget(self._userModel().config, 'run', 'timestepsecs', "86400")))
+            if rinfo_str != "None":
+                self.DT.update(datetimestart=wflow_adapt.getStartTimefromRuninfo(rinfo))
+                # add one step to start time if it is the same s the state time
+                if self.skipfirsttimestep:
+                    self.logger.debug("Skipping first timestep...")
+                    self.DT.skiptime()
+
+                self._userModel().currentdatetime = self.DT.currentDateTime
+                self.DT.update(datetimeend=wflow_adapt.getEndTimefromRuninfo(rinfo))
+                self.DT.update(timestepsecs=int(configget(self._userModel().config, 'run', 'timestepsecs', "86400")))
+                self._userModel()._setNrTimeSteps(self.DT.runTimeSteps)
+                self._userModel().timestepsecs = self.DT.timeStepSecs
+                self._d_firstTimestep = 1
+                self._userModel()._setFirstTimeStep(self._d_firstTimestep)
+                self._d_lastTimestep = self.DT.runTimeSteps
+            else:
+                self.logger.info(
+                    "Not enough information in the [run] section. Need start and end time or a runinfo.xml file.... Reverting to default date/time")
+        else:
+            from dateutil import parser
+
+            self.DT.update(datetimestart=parser.parse(st))
+            if self.skipfirsttimestep:
+                self.logger.debug("Skipping first timestep...")
+                self.DT.skiptime()
+
+
+            self._userModel().currentdatetime = self.DT.currentDateTime
+            ed = configget(self._userModel().config, 'run', 'endtime', "None")
+            self.DT.update(datetimeend=parser.parse(ed))
+            self.DT.update(timestepsecs=int(configget(self._userModel().config, 'run', 'timestepsecs', "86400")))
+            self._userModel().timestepsecs = self.DT.timeStepSecs
+
+            self._userModel()._setNrTimeSteps(self.DT.runTimeSteps)
+            self._d_firstTimestep = 1
+            self._userModel()._setFirstTimeStep(self._d_firstTimestep)
+            self._d_lastTimestep = self.DT.runTimeSteps
+
 
     def setupFramework(self):
         """
@@ -661,46 +793,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self._userModel().reinit = self.reinit
         # Now finally set the start end time. First check if set in ini otherwise check if the ini defines
         # a runinfo file
-        st = configget(self._userModel().config, 'run', 'starttime', "None")
 
+        self.setuptimeInfo()
 
-        if st == "None":
-            rinfo_str = configget(self._userModel().config, 'run', 'runinfo', "None")
-            rinfo = os.path.join(self._userModel().Dir, rinfo_str)
-            self.timestepsecs = int(configget(self._userModel().config, 'run', 'timestepsecs', "86400"))
-            if rinfo_str != "None":
-                self.datetime_firststep = getStartTimefromRuninfo(rinfo)
-                self.currentdatetime = self.datetime_firststep
-                self._userModel().currentdatetime = self.currentdatetime
-                self.datetime_laststep = getEndTimefromRuninfo(rinfo)
-                self.timestepsecs = int(configget(self._userModel().config, 'run', 'timestepsecs', "86400"))
-                duration = self.datetime_laststep - self.datetime_firststep
-                nrseconds = duration.total_seconds()
-                self._userModel()._setNrTimeSteps(int(nrseconds / self.timestepsecs) + 1)
-                self._userModel().timestepsecs = self.timestepsecs
-                self._d_firstTimestep = 1
-                self._userModel()._setFirstTimeStep(self._d_firstTimestep)
-                self._d_lastTimestep = int(nrseconds / self.timestepsecs) + self._d_firstTimestep
-            else:
-                self.logger.info(
-                    "Not enough information in the [run] section. Need start and end time or a runinfo.xml file.... Reverting to default date/time")
-        else:
-            from dateutil import parser
-            # self.datetime_firststep=datetime.datetime.strptime(st, "%Y-%m-%d %H:%M:%S")
-            self.datetime_firststep = parser.parse(st)
-            self.currentdatetime = self.datetime_firststep
-            self._userModel().currentdatetime = self.currentdatetime
-            ed = configget(self._userModel().config, 'run', 'endtime', "None")
-            # self.datetime_laststep = datetime.datetime.strptime(ed, "%Y-%m-%d %H:%M:%S")
-            self.datetime_laststep = parser.parse(ed)
-            self.timestepsecs = int(configget(self._userModel().config, 'run', 'timestepsecs', "86400"))
-            self._userModel().timestepsecs = self.timestepsecs
-            duration = self.datetime_laststep - self.datetime_firststep
-            nrseconds = duration.total_seconds()
-            self._userModel()._setNrTimeSteps(int(nrseconds / self.timestepsecs) + 1)
-            self._d_firstTimestep = 1
-            self._userModel()._setFirstTimeStep(self._d_firstTimestep)
-            self._d_lastTimestep = int(nrseconds / self.timestepsecs) + self._d_firstTimestep
 
         # Setup all the netCDF files that may be used for input/output
         if self.ncfile != "None":
@@ -730,10 +825,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             meta['wflow_version'] =__version__
             meta['wflow_release'] =__release__
             self.NcOutput = netcdfoutput(os.path.join(caseName, runId, self.ncoutfile),
-                                         self.logger, self.datetime_firststep,
-                                         self._userModel().nrTimeSteps(),
+                                         self.logger, self.DT.runStartTime,
+                                         self.DT.runTimeSteps,
                                          maxbuf=buffer, metadata=meta, EPSG=self.EPSG,
-                                         timestepsecs=self.timestepsecs,Format=self.ncfileformat,
+                                         timestepsecs=self.DT.timeStepSecs,Format=self.ncfileformat,
                                          zlib=self.ncfilecompression,least_significant_digit=self.ncfiledigits)
 
         if self.ncoutfilestatic != 'None':  # Ncoutput
@@ -743,7 +838,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             meta['wflow_version'] =__version__
             meta['wflow_release'] =__release__
             self.NcOutputStatic = netcdfoutputstatic(os.path.join(caseName, runId, self.ncoutfilestatic),
-                                                     self.logger, self.datetime_laststep,1,timestepsecs=self.timestepsecs,
+                                                     self.logger, self.DT.runEndTime,1,timestepsecs=self.DT.timeStepSecs,
                                                      maxbuf=1, metadata=meta, EPSG=self.EPSG,Format=self.ncfileformat,
                                                      zlib=self.ncfilecompression,least_significant_digit=self.ncfiledigits)
 
@@ -754,7 +849,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             meta['wflow_version'] =__version__
             meta['wflow_release'] =__release__
             self.NcOutputState = netcdfoutputstatic(os.path.join(caseName, runId, self.ncoutfilestate),
-                                                     self.logger, self.datetime_laststep,1,timestepsecs=self.timestepsecs,
+                                                     self.logger, self.DT.runEndTime,1,timestepsecs=self.DT.timeStepSecs,
                                                      maxbuf=1, metadata=meta, EPSG=self.EPSG,Format=self.ncfileformat,
                                                      zlib=self.ncfilecompression,least_significant_digit=self.ncfiledigits)
 
@@ -906,10 +1001,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             except:
                 self.logger.warn("Cannot find: " + self.varnamecsv[a] + " variable not in model.")
 
-            duration = self.currentdatetime - self.datetime_firststep
-            timestep = int(duration.total_seconds() / self._userModel().timestepsecs) + 1
-
-            self.oscv[self.samplenamecsv[a]].writestep(tmpvar, a, timestep=timestep)
+            self.oscv[self.samplenamecsv[a]].writestep(tmpvar, a, timestep=self.DT.currentTimeStep)
 
     def wf_savesummarymaps(self):
         """
@@ -1047,9 +1139,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         ts = self._userModel().currentTimeStep()
         self._userModel()._setCurrentTimeStep(ts)
-        self.currentdatetime = self.currentdatetime - dt.timedelta(seconds=self._userModel().timestepsecs)
-        self._userModel().currentdatetime = self.currentdatetime
-        self.logger.debug("Going one timestep back, redoing: " + str(ts) + " " + str(self.currentdatetime))
+
+        self.DT.update(currentTimeStep=ts)
+        self._userModel().currentdatetime = self.DT.currentDateTime
+        self.logger.debug("Going one timestep back, redoing: " + str(ts) + " " + str(self.DT.currentDateTime))
 
     def iniFileSetUp(self, caseName, runId, configfile):
         """
@@ -1589,7 +1682,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         gets the end time of the model run
         :return: current time as seconds since epoch
         """
-        seconds_since_epoch = calendar.timegm(self.datetime_laststep.utctimetuple())
+        seconds_since_epoch = calendar.timegm(self.DT.runEndTime.utctimetuple())
 
         return seconds_since_epoch
 
@@ -1598,7 +1691,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         gets the start time of the model run
         :return: current time as seconds since epoch
         """
-        seconds_since_epoch = calendar.timegm(self.datetime_firststep.utctimetuple())
+        seconds_since_epoch = calendar.timegm(self.DT.runStartTime.utctimetuple())
 
         return seconds_since_epoch
 
@@ -1611,11 +1704,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
            - current model time (since start of the run)
 
         """
-        if hasattr(self._userModel(), "currentdatetime"):
-            dtt = self._userModel().currentdatetime
-        else:
-            dtt = self.currentdatetime
-
+        dtt = self.DT.currentDateTime
         seconds_since_epoch = calendar.timegm(dtt.utctimetuple())
 
         return seconds_since_epoch
@@ -1738,8 +1827,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     data = getattr(self._userModel(), self.statslst[a].varname)
                     self.statslst[a].add_one(data)
 
-            self.currentdatetime = self.currentdatetime + dt.timedelta(seconds=self._userModel().timestepsecs)
-            self._userModel().currentdatetime = self.currentdatetime
+            #self.currentdatetime = self.currentdatetime + dt.timedelta(seconds=self._userModel().timestepsecs)
+
+            self.DT.update(currentTimeStep=self.DT.currentTimeStep + 1)
+            self._userModel().currentdatetime = self.DT.currentDateTime
 
             self._timeStepFinished()
             self._decrementIndentLevel()
@@ -1928,7 +2019,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         """
         directoryPrefix = ""
         if kind == 1:
-            month = self.currentdatetime.month
+            month = self.DT.currentDateTime.month
             newName = generateNameT(name, month)
             path = os.path.join(directoryPrefix, newName)
             if os.path.isfile(path):
@@ -1941,7 +2032,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
                 return scalar(default)
         elif kind == 2:
-            yday = self.currentdatetime.timetuple().tm_yday
+            yday = self.DT.currentDateTime.timetuple().tm_yday
             newName = generateNameT(name, yday)
             path = os.path.join(directoryPrefix, newName)
             if os.path.isfile(path):
@@ -2021,7 +2112,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
             if self._userModel()._inDynamic():
                 if 'None' not in self.ncfile:
-                    retval, succ = self.NcInput.gettimestep(self._userModel().currentTimeStep(), self.logger, var=varname)
+                    retval, succ = self.NcInput.gettimestep(self._userModel().currentTimeStep(), self.logger, var=varname,shifttime=self.DT.startadjusted)
                     if succ:
                         return retval
                     else:

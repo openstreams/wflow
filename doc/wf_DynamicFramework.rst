@@ -227,6 +227,48 @@ Example::
     self.Precipitation=avgprecip.map
 
 
+
+The use of data and time
+------------------------
+
+The original pcraster framework has no notion of date and time, only timesteps that are use to propagate a
+model forward. However, to be able to support the BMI and netcdf files dat and time functionality
+has been inserted into the framework.
+
+
+If the date/time of the state files is T0 that the first timestep in the netcdf (or the first pcraster map, 001) is assumed
+to hold the forcing information to propagate one the model to the next timestep. The date/time of the information should be
+ T0 + 1 timestep. The
+
+For example, if the forcing data has the following four timestamps the model will run four timesteps. The first timesteps
+will be ro propages the state from T-1 to T0. As such the state going into the model should be valid for the T-1
+.. digraph:: time_steps
+    T0 -> T2 -> T2 -> T3;
+
+However, the way for example Delft-FEWS works is that T0 is usually the same date/time as the date/time of the input state.
+In that case you can force the framework to skip the first timestep in the forcing data using the skipfirst=1 in the [run]
+section of the ini file. By default this is set to 0 (False).
+
+
+Example: pcraster mapstack and state input from Delft-FEWS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In this case the model input is suplied by Delft-FEWS and the adapter.
+
++ The date/time of the state information is 01-01-2016 00:00:00
++ The forcing data is given from 01-01-2016 00:00:00 to 04-01-2016 00:00:00
++ The runinfo.xml indicates a start time of the run of 01-01-2016 00:00:00 and an end time of 04-01-2016 00:00:00
++ The model is configured for daily timesteps
+
+By default the wflow framework assume that the model should run for 4 timesteps and that the state information
+ pertains to the day before 01-01-2016 00:00:00. By setting the setting the  skipfirst=1 in the [run] section the model
+ will run for 3 timesteps producing output for 02-01-2016 00:00:00, 03-01-2016 00:00:00 and 04-01-2016 00:00:00 including
+ a state for 04-01-2016 00:00:00.
+
+
+
+
+
 wf_DynamicFramework Module
 ==========================
 
