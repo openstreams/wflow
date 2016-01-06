@@ -85,7 +85,7 @@ class runDateTimeInfo():
 
         if timestepsecs:
             self.timeStepSecs = timestepsecs
-            self.runTimeSteps = (calendar.timegm(self.runEndTime.utctimetuple()) - calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSec
+            self.runTimeSteps = (calendar.timegm(self.runEndTime.utctimetuple()) - calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs
             if mode =='steps':
                 self.runStateTime = self.runStartTime - datetime.timedelta(seconds=self.timeStepSecs)
             else:
