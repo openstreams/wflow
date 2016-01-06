@@ -1,0 +1,23 @@
+<PAMDataset>
+  <Metadata>
+    <MDI key="PCRASTER_VALUESCALE">VS_ORDINAL</MDI>
+  </Metadata>
+  <PAMRasterBand band="1">
+    <Histograms>
+      <HistItem>
+        <HistMin>5.625</HistMin>
+        <HistMax>9.375</HistMax>
+        <BucketCount>4</BucketCount>
+        <IncludeOutOfRange>0</IncludeOutOfRange>
+        <Approximate>0</Approximate>
+        <HistCounts>1590|792|307|153</HistCounts>
+      </HistItem>
+    </Histograms>
+    <Metadata>
+      <MDI key="STATISTICS_MAXIMUM">9</MDI>
+      <MDI key="STATISTICS_MEAN">6.6562280084448</MDI>
+      <MDI key="STATISTICS_MINIMUM">6</MDI>
+      <MDI key="STATISTICS_STDDEV">0.87444257186426</MDI>
+    </Metadata>
+  </PAMRasterBand>
+</PAMDataset>
