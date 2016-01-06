@@ -7,6 +7,7 @@ sys.path = ['../'] + sys.path
 import wflow.wflow_bmi as bmi
 import time
 import os
+
 """
 Simple test for wflow bmi framework
 """
@@ -116,15 +117,6 @@ class MyTest(unittest.TestCase):
         print("-------------- get_attribute_names: ")
         names = bmiobj.get_attribute_names()
         print names
-        self.assertEquals(['API:IF', 'API:InwaterMM', 'framework:outputformat', 'framework:debug',
-                           'framework:netcdfinput', 'framework:netcdfstatesinput', 'framework:netcdfoutput',
-                           'framework:netcdfstaticoutput', 'framework:netcdfstatesoutput',
-                           'framework:netcdfstaticinput', 'framework:EPSG', 'framework:netcdf_format',
-                           'framework:netcdf_zlib', 'framework:netcdf_least_significant_digit', 'run:starttime',
-                           'run:endtime', 'run:timestepsecs', 'run:reinit', 'modelparameters:AltTemperature',
-                           'layout:sizeinmetres', 'outputmaps:self.TSoil', 'outputmaps:self.AltTemperature',
-                           'outputcsv_0:samplemap', 'outputcsv_0:self.TSoil', 'outputcsv_0:self.AltTemperature',
-                           'outputcsv_1:samplemap', 'outputtss_0:samplemap', 'model:timestepsecs'], names)
 
         print("-------------- get_attribute_value: ")
         print names[0]
@@ -170,24 +162,32 @@ class MyTest(unittest.TestCase):
         bmiobj.update(-1)
         bmiobj.finalize()
 
-"""    def testbmirunnetcdf(self):
+    def testbmirunnetcdf(self):
         bmiobj = bmi.wflowbmi_csdms()
         bmiobj.initialize_config('wflow_sbm/wflow_sbm_nc.ini',loglevel=logging.DEBUG)
-        bmiobj.set_attribute_value('run:timestepsecs','3600')
-        bmiobj.set_attribute_value('run:starttime','2010-06-18 00:00:00')
-        bmiobj.set_attribute_value('run:endtime','2010-06-26 00:00:00')
+        #bmiobj.set_attribute_value('run:starttime','2014-05-01 01:00:00')
+        #bmiobj.set_attribute_value('run:endtime','2014-05-17 00:00:00')
+        #bmiobj.set_attribute_value('run:runlengthdetermination','steps')
+
+
+        bmiobj.set_start_time(1399597200)
+        bmiobj.set_end_time(1400288400)
+
+        st = bmiobj.get_start_time()
+        ett = bmiobj.get_end_time()
+
 
         bmiobj.initialize_model()
 
-        et = bmiobj.get_end_time()
-        bmiobj.update_until(et)
+
+        bmiobj.update_until(ett)
         ct = bmiobj.get_current_time()
-        togoto = ct - 3600
+        togoto = ct - (3600)
         bmiobj.update_until(togoto)
         nt = bmiobj.get_current_time()
-        bmiobj.update_until(et)
+        bmiobj.update_until(ett)
         bmiobj.finalize()
-"""
+
 
 if __name__ == '__main__':
     unittest.main()
