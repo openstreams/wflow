@@ -1226,14 +1226,16 @@ class WflowModel(DynamicModel):
         CapFluxScale = ifthenelse(self.zi > self.RootingDepth,
                                   self.CapScale / (self.CapScale + self.zi - self.RootingDepth) * self.timestepsecs/self.basetimestep, 0.0)
         self.CapFlux = MaxCapFlux * CapFluxScale
-        ToAdd = self.CapFlux
         
-        #Now add capflux to the layers one by one (from bottom to top)
-        #This loop is used when nr layers > 1
-        for n in arange(len(self.UStoreLayerThickness)-1, -1, -1):
-            thisLayer = ifthenelse(self.ZiLayer <= n,min(ToAdd,(self.UStoreLayerThickness[n]*(self.thetaS-self.thetaR)-self.UStoreLayerDepth[n])), 0.0)
-            self.UStoreLayerDepth[n] = ifthenelse(self.ZiLayer <= n,  self.UStoreLayerDepth[n] + thisLayer,self.UStoreLayerDepth[n] )
-            ToAdd = ToAdd - thisLayer
+        if len(self.UStoreLayerThickness)>1:      
+            ToAdd = self.CapFlux
+        
+            #Now add capflux to the layers one by one (from bottom to top)
+            #This loop is used when nr layers > 1
+            for n in arange(len(self.UStoreLayerThickness)-1, -1, -1):
+                thisLayer = ifthenelse(self.ZiLayer <= n,min(ToAdd,(self.UStoreLayerThickness[n]*(self.thetaS-self.thetaR)-self.UStoreLayerDepth[n])), 0.0)
+                self.UStoreLayerDepth[n] = ifthenelse(self.ZiLayer <= n,  self.UStoreLayerDepth[n] + thisLayer,self.UStoreLayerDepth[n] )
+                ToAdd = ToAdd - thisLayer
             
 
         # Determine Ksat at base
@@ -1247,7 +1249,7 @@ class WflowModel(DynamicModel):
         self.LowerZoneStorage=self.LowerZoneStorage-self.BaseFlow
 
         #self.ActLeakage = ifthenelse(self.Seepage > 0.0, -1.0 * self.Seepage, self.ActLeakage)
-        self.SatWaterDepth = self.SatWaterDepth + self.Transfer - ToAdd - self.ActLeakage - self.Percolation
+        self.SatWaterDepth = self.SatWaterDepth + self.Transfer - self.CapFlux - self.ActLeakage - self.Percolation
         
         for n in arange(0,len(self.UStoreLayerThickness)):
             if len(self.UStoreLayerThickness)==1:
