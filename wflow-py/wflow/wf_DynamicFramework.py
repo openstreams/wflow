@@ -62,7 +62,8 @@ class runDateTimeInfo():
         else:
             self.runStateTime = self.runStartTime
 
-        self.outPutStartTime = self.runStartTime + datetime.timedelta(seconds=self.timeStepSecs)
+        self.currentDateTime = self.runStateTime
+        self.outPutStartTime = self.runStateTime + datetime.timedelta(seconds=self.timeStepSecs)
         self.runTimeSteps = (calendar.timegm(self.runEndTime.utctimetuple()) - calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs
         self.currentMonth = self.currentDateTime.month
         self.currentYday = self.currentDateTime.timetuple().tm_yday
@@ -90,7 +91,7 @@ class runDateTimeInfo():
                 self.runStateTime = self.runStartTime - datetime.timedelta(seconds=self.timeStepSecs)
             else:
                 self.runStateTime = self.runStartTime
-            self.outPutStartTime = self.runStartTime + datetime.timedelta(seconds=self.timeStepSecs)
+            self.outPutStartTime = self.runStateTime + datetime.timedelta(seconds=self.timeStepSecs)
 
         if datetimestart:
             self.runStartTime = datetimestart
@@ -100,7 +101,9 @@ class runDateTimeInfo():
                 self.runStateTime = self.runStartTime - datetime.timedelta(seconds=self.timeStepSecs)
             else:
                 self.runStateTime = self.runStartTime
-            self.outPutStartTime = self.runStartTime + datetime.timedelta(seconds=self.timeStepSecs)
+                self.currentDateTime = self.runStateTime
+
+            self.outPutStartTime = self.runStateTime + datetime.timedelta(seconds=self.timeStepSecs)
             self.runTimeSteps = (calendar.timegm(self.runEndTime.utctimetuple()) - calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs
             self.currentMonth = self.currentDateTime.month
             self.currentYday = self.currentDateTime.timetuple().tm_yday
@@ -114,7 +117,9 @@ class runDateTimeInfo():
                 self.runStateTime = self.runStartTime - datetime.timedelta(seconds=self.timeStepSecs)
             else:
                 self.runStateTime = self.runStartTime
-            self.outPutStartTime = self.runStartTime + datetime.timedelta(seconds=self.timeStepSecs)
+                self.currentDateTime = self.runStateTime
+
+            self.outPutStartTime = self.runStateTime + datetime.timedelta(seconds=self.timeStepSecs)
             self.runEndTime = self.runStateTime + datetime.timedelta(seconds=self.timeStepSecs * runTimeSteps)
             self.currentMonth = self.currentDateTime.month
             self.currentYday = self.currentDateTime.timetuple().tm_yday
@@ -126,7 +131,7 @@ class runDateTimeInfo():
 
         if currentTimeStep:
             self.currentTimeStep = currentTimeStep
-            self.currentDateTime = self.runStartTime + datetime.timedelta(seconds=self.timeStepSecs * (self.currentTimeStep))
+            self.currentDateTime = self.runStateTime + datetime.timedelta(seconds=self.timeStepSecs * (self.currentTimeStep -1))
             self.currentMonth = self.currentDateTime.month
             self.currentYday = self.currentDateTime.timetuple().tm_yday
             self.currentHour = self.currentDateTime.hour
@@ -136,7 +141,7 @@ class runDateTimeInfo():
             self.currentMonth = self.currentDateTime.month
             self.currentYday = self.currentDateTime.timetuple().tm_yday
             self.currentHour = self.currentDateTime.hour
-            self.currentTimeStep = (calendar.timegm(self.currentDateTime.utctimetuple()) - calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs
+            self.currentTimeStep = (calendar.timegm(self.currentDateTime.utctimetuple()) - calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs +1
 
 
 

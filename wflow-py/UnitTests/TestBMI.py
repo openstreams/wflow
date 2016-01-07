@@ -15,6 +15,7 @@ Simple test for wflow bmi framework
 
 class MyTest(unittest.TestCase):
 
+    """
     def testbmifuncs(self):
 
         bmiobj = bmi.wflowbmi_csdms()
@@ -161,7 +162,7 @@ class MyTest(unittest.TestCase):
         et = bmiobj.get_end_time()
         bmiobj.update(-1)
         bmiobj.finalize()
-
+    """
     def testbmirunnetcdf(self):
         bmiobj = bmi.wflowbmi_csdms()
         bmiobj.initialize_config('wflow_sbm/wflow_sbm_nc.ini',loglevel=logging.DEBUG)
@@ -171,21 +172,25 @@ class MyTest(unittest.TestCase):
 
 
         bmiobj.set_start_time(1399597200)
-        bmiobj.set_end_time(1400288400)
+        bmiobj.set_end_time(1399597200 + (4 * 3600))
 
         st = bmiobj.get_start_time()
         ett = bmiobj.get_end_time()
-
+        ts = bmiobj.get_time_step()
 
         bmiobj.initialize_model()
+        curtime = st
+        cnt = 0
+        lastcurtime = bmiobj.get_current_time()
+        while curtime < ett:
+            cnt = cnt + 1
+            bmiobj.update_until(curtime + ts)
+            print (curtime + ts)/ts
+            curtime = bmiobj.get_current_time()
+            print bmiobj.get_current_time() - lastcurtime
+            lastcurtime = bmiobj.get_current_time()
 
 
-        bmiobj.update_until(ett)
-        ct = bmiobj.get_current_time()
-        togoto = ct - (3600)
-        bmiobj.update_until(togoto)
-        nt = bmiobj.get_current_time()
-        bmiobj.update_until(ett)
         bmiobj.finalize()
 
 

@@ -487,7 +487,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
 
         #self.dynModel._userModel().config.set("run",'starttime',self.dynModel.DT.runStartTime.strftime("%Y-%m-%d %H:%M:%S"))
-        self.bmilogger.debug("set_start_time: " + str(start_time + self.dynModel.DT.timeStepSecs) + " " + str(self.dynModel.DT.runStartTime.strftime("%Y-%m-%d %H:%M:%S")))
+        self.bmilogger.debug("set_start_time: " + str(start_time) + " " + str(self.dynModel.DT.runStartTime.strftime("%Y-%m-%d %H:%M:%S")))
 
     def set_end_time(self, end_time):
         """
@@ -501,7 +501,7 @@ class wflowbmi_csdms(bmi.Bmi):
         self.dynModel._update_time_from_DT()
 
 
-        self.bmilogger.debug("set_end_time: " + str(end_time + self.dynModel.DT.timeStepSecs) + " " + str(self.dynModel.DT.runEndTime.strftime("%Y-%m-%d %H:%M:%S")))
+        self.bmilogger.debug("set_end_time: " + str(end_time) + " " + str(self.dynModel.DT.runEndTime.strftime("%Y-%m-%d %H:%M:%S")))
 
 
 
@@ -771,8 +771,8 @@ class wflowbmi_csdms(bmi.Bmi):
         :return: current time of simulation n the units and epoch returned by the function get_time_units
         """
 
-        st = self.dynModel.wf_supplyCurrentTime() - self.dynModel.DT.timeStepSecs
-        self.bmilogger.debug("get_current_time: " + str(st))
+        st = self.dynModel.wf_supplyCurrentTime()
+        self.bmilogger.debug("get_current_time: " + str(st) + " " + str(self.dynModel.DT.currentDateTime.strftime("%Y-%m-%d %H:%M:%S")))
         return st
 
     def get_end_time(self):
