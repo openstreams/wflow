@@ -72,7 +72,7 @@ class runDateTimeInfo():
                currentDatetime=None,runTimeSteps=None,mode='steps'):
         """
         Updates the content of the object. Use only one input parameter per call. or runTimeSteps and datatimestart at the same time
-        use the mode option to switch betwen steps and intervals ('steps' or 'intervals')
+        use the mode option to switch between steps and intervals ('steps' or 'intervals')
 
         :param timestepsecs:
         :param datetimestart:
@@ -83,7 +83,7 @@ class runDateTimeInfo():
         """
         self.currentmode = mode
 
-        if timestepsecs:
+        if timestepsecs and not runTimeSteps:
             self.timeStepSecs = timestepsecs
             self.runTimeSteps = (calendar.timegm(self.runEndTime.utctimetuple()) - calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs
             if mode =='steps':
@@ -91,6 +91,9 @@ class runDateTimeInfo():
             else:
                 self.runStateTime = self.runStartTime
             self.outPutStartTime = self.runStateTime + datetime.timedelta(seconds=self.timeStepSecs)
+        elif timestepsecs and runTimeSteps:
+            self.timeStepSecs = timestepsecs
+            self.runTimeSteps = runTimeSteps
 
         if datetimestart:
             self.runStartTime = datetimestart
@@ -725,7 +728,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         self._userModel().config = self.iniFileSetUp(caseName, runId, configfile)
         self.runlengthdetermination = configget(self._userModel().config, 'run', 'runlengthdetermination', "steps")
-        self.DT.update(timestepsecs=int(configget(self._userModel().config, 'run', 'timestepsecs', "86400")),mode=self.runlengthdetermination)
+        self.DT.update(timestepsecs=int(configget(self._userModel().config, 'run', 'timestepsecs', "86400")),
+                       mode=self.runlengthdetermination,runTimeSteps=self.DT.runTimeSteps)
         self._update_time_from_DT()
 
         if doSetupFramework:
@@ -757,7 +761,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         if st == "None": # try from the runinfo file
             rinfo_str = configget(self._userModel().config, 'run', 'runinfo', "None")
             rinfo = os.path.join(self._userModel().Dir, rinfo_str)
-            self.DT.update(timestepsecs= int(configget(self._userModel().config, 'run', 'timestepsecs', "86400")), mode=self.runlengthdetermination)
+            self.DT.update(timestepsecs= int(configget(self._userModel().config, 'run', 'timestepsecs', "86400")),
+                           mode=self.runlengthdetermination, runTimeSteps=self.DT.runTimeSteps)
             self._update_time_from_DT()
             if rinfo_str != "None":
                 self.DT.update(datetimestart=wflow_adapt.getStartTimefromRuninfo(rinfo), mode=self.runlengthdetermination)
