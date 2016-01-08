@@ -15,7 +15,7 @@ Simple test for wflow bmi framework
 
 class MyTest(unittest.TestCase):
 
-    """
+
     def testbmifuncs(self):
 
         bmiobj = bmi.wflowbmi_csdms()
@@ -162,7 +162,7 @@ class MyTest(unittest.TestCase):
         et = bmiobj.get_end_time()
         bmiobj.update(-1)
         bmiobj.finalize()
-    """
+
     def testbmirunnetcdf(self):
         bmiobj = bmi.wflowbmi_csdms()
         bmiobj.initialize_config('wflow_sbm/wflow_sbm_nc.ini',loglevel=logging.DEBUG)
