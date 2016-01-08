@@ -914,11 +914,6 @@ class WflowModel(DynamicModel):
         :var self.DLC: length of the river within a cell [m]
         :var self.ToCubic: Mutiplier to convert mm to m^3/s for fluxes
         """
-
-        self.logger.debug(
-            "Step: " + str(int(self.currentStep)) + "/" + str(int(self._d_nrTimeSteps)))
-        self.thestep = self.thestep + 1
-
         # Read forcing data and dynamic parameters
 
         self.wf_updateparameters()

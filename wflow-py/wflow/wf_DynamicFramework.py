@@ -52,7 +52,6 @@ class runDateTimeInfo():
         self.runEndTime = datetimeend
         self.timeStepSecs = timestepsecs
         self.currentTimeStep = 1
-        self.currentDateTime = self.runStartTime
         self.startadjusted = 0
         self.startendadjusted = 0
         self.currentmode = mode
@@ -96,13 +95,13 @@ class runDateTimeInfo():
         if datetimestart:
             self.runStartTime = datetimestart
             self.currentTimeStep = 1
-            self.currentDateTime = self.runStartTime
+
             if self.currentmode =='steps':
                 self.runStateTime = self.runStartTime - datetime.timedelta(seconds=self.timeStepSecs)
             else:
                 self.runStateTime = self.runStartTime
-                self.currentDateTime = self.runStateTime
 
+            self.currentDateTime = self.runStateTime
             self.outPutStartTime = self.runStateTime + datetime.timedelta(seconds=self.timeStepSecs)
             self.runTimeSteps = (calendar.timegm(self.runEndTime.utctimetuple()) - calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs
             self.currentMonth = self.currentDateTime.month
@@ -132,6 +131,7 @@ class runDateTimeInfo():
         if currentTimeStep:
             self.currentTimeStep = currentTimeStep
             self.currentDateTime = self.runStateTime + datetime.timedelta(seconds=self.timeStepSecs * (self.currentTimeStep -1))
+
             self.currentMonth = self.currentDateTime.month
             self.currentYday = self.currentDateTime.timetuple().tm_yday
             self.currentHour = self.currentDateTime.hour
@@ -270,7 +270,7 @@ class wf_OutputTimeSeriesArea():
         self.writer = []
         self.ofile = []
 
-    def writestep(self, variable, fname, timestep=None):
+    def writestep(self, variable, fname, timestep=None,dtobj=None):
         """
         write a single timestep
 
@@ -304,9 +304,10 @@ class wf_OutputTimeSeriesArea():
         self.flatres = self.remap_np.flatten()[self.idx]
 
         thiswriter = self.fnamelist.index(fname)
-        if timestep >= 0:
+        if dtobj:
+            self.writer[thiswriter].writerow([str(dtobj)] + self.flatres.tolist())
+        elif timestep:
             self.writer[thiswriter].writerow([timestep] + self.flatres.tolist())
-            # self.flatres = numpy.insert(self.flatres,0,timestep)
         else:
             self.writer[thiswriter].writerow([self.steps] + self.flatres.tolist())
             # self.flatres = numpy.insert(self.flatres,0,self.steps)
@@ -1040,7 +1041,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             except:
                 self.logger.warn("Cannot find: " + self.varnamecsv[a] + " variable not in model.")
 
+            #self.oscv[self.samplenamecsv[a]].writestep(tmpvar, a, timestep=self.DT.currentTimeStep,dtobj=self.DT.currentDateTime)
             self.oscv[self.samplenamecsv[a]].writestep(tmpvar, a, timestep=self.DT.currentTimeStep)
+
 
     def wf_savesummarymaps(self):
         """
@@ -1846,7 +1849,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self._userModel()._setNrTimeSteps(laststep)
 
         while step <= self._userModel().nrTimeSteps():
-
+            self.logger.debug("timestep: " + str(self.DT.currentTimeStep) + "/" + str(self.DT.runTimeSteps) +  " (" + str(self.DT.currentDateTime) + ")")
             self._incrementIndentLevel()
             self._atStartOfTimeStep(step)
             # TODO: Check why the timestep setting doesn not work.....
@@ -1868,8 +1871,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
             #self.currentdatetime = self.currentdatetime + dt.timedelta(seconds=self._userModel().timestepsecs)
 
-            self.DT.update(currentTimeStep=self.DT.currentTimeStep + 1)
+
+            self.DT.update(currentTimeStep=self.DT.currentTimeStep + 1, mode=self.runlengthdetermination)
             self._userModel().currentdatetime = self.DT.currentDateTime
+
 
             self._timeStepFinished()
             self._decrementIndentLevel()

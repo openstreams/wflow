@@ -482,7 +482,7 @@ class wflowbmi_csdms(bmi.Bmi):
         dateobj = datetime.datetime.utcfromtimestamp(start_time)
         datestrimestr = dateobj.strftime("%Y-%m-%d %H:%M:%S")
 
-        self.dynModel.DT.update(datetimestart=dateobj, mode='intervals')
+        self.dynModel.DT.update(datetimestart=dateobj, mode=self.dynModel.runlengthdetermination)
         self.dynModel._update_time_from_DT()
 
 
@@ -497,7 +497,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
         dateobj = datetime.datetime.utcfromtimestamp(end_time)
         datestrimestr = dateobj.strftime("%Y-%m-%d %H:%M:%S")
-        self.dynModel.DT.update(datetimeend=dateobj)
+        self.dynModel.DT.update(datetimeend=dateobj,mode=self.dynModel.runlengthdetermination)
         self.dynModel._update_time_from_DT()
 
 

@@ -148,11 +148,11 @@ class MyTest(unittest.TestCase):
         st = bmiobj.get_start_time()
         ts = 86400
         # Do one timestep and check
-        print bmiobj.get_current_time()
-        bmiobj.update_until(st + ts)
-        print bmiobj.get_current_time()
-        self.assertEquals(st + ts,bmiobj.get_current_time())
+        bmiobj.get_current_time()
+        bmiobj.update_until(et)
         bmiobj.finalize()
+        self.assertEquals(et,bmiobj.get_current_time())
+
 
 
     def testbmirun_l(self):
