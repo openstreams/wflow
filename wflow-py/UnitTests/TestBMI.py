@@ -183,6 +183,8 @@ class MyTest(unittest.TestCase):
         cnt = 0
         lastcurtime = bmiobj.get_current_time()
         while curtime < ett:
+            avar = bmiobj.get_value('PET')
+            bmiobj.set_value('PET',avar + 10.0)
             cnt = cnt + 1
             bmiobj.update_until(curtime + ts)
             print (curtime + ts)/ts
