@@ -228,9 +228,31 @@ Example::
 
 
 
-The use of date and time
-------------------------
+[run] section: The use of date and time
+---------------------------------------
 
+Available options in the [run] section
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The run section can contain information about the model timesteps, the data/time range,
+how to initialize the model and how interpret the forcing data.
+
+::
+
+    [run]
+    # either a runinfo file or a start and end-time are required
+    #runinfo=runinfo.xml
+    starttime=2016-01-01 00:00:00
+    endtime=2016-01-04 00:00:00
+    # Base timestep of the model in seconds, default = 86400
+    timestepsecs = 86400
+    #start model with cold state
+    reinit=1
+    # Default behaviour: steps
+    runlengthdetermination=steps
+
+Data and time and timesteps
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The original pcraster framework has no notion of date and time, only timesteps that are used to propagate a
 model forward. However, to be able to support the BMI and netcdf files dat and time functionality
 has been inserted into the framework.
@@ -242,12 +264,30 @@ For example, if the forcing data has the following four timestamps the model wil
 will be to propagate the state from T0 to T1 (in that case the date/time of the state files is assumed to be T0).
 As such the state going into the model should be valid for the T0, see graph below:
 
+
 .. graphviz::
 
-    digraph ttimesteps {
-        "- " -> "T1" -> "T2" -> "T3" -> "T4";
-        "-" ->"1 Jan 2016" -> "2 Jan 2016" -> "3 Jan 2016" -> "4 jan 2016";
+    digraph G {
+        node [shape=box]
+
+        subgraph cluster_1 {
+	    	node [style=filled];
+		    " "  -> T1 -> T2 -> T3 -> T4;
+		    label = "Model steps";
+		    color=blue
+	    }
+
+        subgraph cluster_2 {
+	    	node [style=filled];
+		    "  " ->"1 Jan 2016" -> "2 Jan 2016" -> "3 Jan 2016" -> "4 jan 2016";
+		    label = "Forcing data";
+		    color=blue
+	    }
+
+
         "Model state: T0 31 Dec 2015";
+
+
     }
 
 Here the first column shows the model steps and the second column the timestamp of the input/output data for that timestep
@@ -280,10 +320,27 @@ The 'runlengthdetermination' variable in the run section can also be set to 'int
 
 .. graphviz::
 
-    digraph ttimesteps {
-        "- " -> "T1" -> "T2" -> "T3";
-        "01 Jan 2016" ->"2 Jan 2016" -> "3 Jan 2016" -> "4 jan 2016";
-        "Model state: T0 1 Jan 2016";
+    digraph G {
+        node [shape=box]
+
+        subgraph cluster_1 {
+	    	node [style=filled];
+		    " "  -> T1 -> T2 -> T3;
+		    label = "Model steps";
+		    color=blue
+	    }
+
+        subgraph cluster_2 {
+	    	node [style=filled];
+		    "1 Jan 2016" -> "2 Jan 2016" -> "3 Jan 2016" -> "4 jan 2016";
+		    label = "Forcing data";
+		    color=blue
+	    }
+
+
+        "Model state: T0 01 Jan 2016";
+
+
     }
 
 
