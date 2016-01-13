@@ -26,7 +26,6 @@ import reservoir_Si
 import reservoir_Su
 import reservoir_Sf
 import reservoir_Ss
-import reservoir_Sus
 import JarvisCoefficients
 
 import numpy
@@ -134,7 +133,7 @@ class WflowModel(DynamicModel):
       
       :var TSoil: Temperature of the soil [oC]
       """
-        states = ['Si', 'Su', 'Sus', 'Sf', 'Ss', 'Qstate']
+        states = ['Si', 'Su', 'Sf', 'Ss', 'Qstate']
 
         return states
 
@@ -171,7 +170,6 @@ class WflowModel(DynamicModel):
         #: function.
         [report(self.Si[i], self.SaveDir + "/outmaps/Si" + self.NamesClasses[i] + ".map") for i in self.Classes]
         [report(self.Su[i], self.SaveDir + "/outmaps/Su" + self.NamesClasses[i] + ".map") for i in self.Classes]
-        [report(self.Sus[i], self.SaveDir + "/outmaps/Sus" + self.NamesClasses[i] + ".map") for i in self.Classes]
         [report(self.Sf[i], self.SaveDir + "/outmaps/Sf" + self.NamesClasses[i] + ".map") for i in self.Classes]
         [report(self.Sr[i], self.SaveDir + "/outmaps/Sr" + self.NamesClasses[i] + ".map") for i in self.Classes]
         report(self.Ss, self.SaveDir + "/outmaps/Ss.map")
@@ -285,11 +283,6 @@ class WflowModel(DynamicModel):
             ' ', '').replace('[', '').replace(
             ']', '').replace(
             'None', '').split(',')
-        self.selectSus = configget(self.config, "model",
-                                   "selectSus", "0, 0, 0").replace(
-            ' ', '').replace('[', '').replace(
-            ']', '').replace(
-            'None', '').split(',')
         self.selectSf = configget(self.config, "model",
                                   "selectSf", "0, 0, 0").replace(
             ' ', '').replace('[', '').replace(
@@ -301,6 +294,9 @@ class WflowModel(DynamicModel):
             ' ', '').replace('[', '').replace(
             ']', '').replace(
             'None', '').split(',')
+            
+        self.selectRout = configget(self.config, "model", "selectRout", " ")
+
         # static maps to use (normally default)
         wflow_subcatch = configget(self.config,
                                    "model", "wflow_subcatch", "staticmaps/wflow_subcatch.map")
@@ -316,8 +312,8 @@ class WflowModel(DynamicModel):
                                       "model", "wflow_surfaceArea", "staticmaps/wflow_surfaceArea.map")
         wflow_transit = configget(self.config,
                                   "model", "wflow_transit", "staticmaps/wflow_transit.map")
-        #wflow_velocity = configget(self.config,
-                                  #"model", "wflow_velocity", "staticmaps/wflow_velocity.map")
+        wflow_velocity = configget(self.config,
+                                  "model", "wflow_velocity", "staticmaps/wflow_velocity.map")
         wflow_percent = [configget(self.config,
                                    "model", "wflow_percent_" + str(self.Classes[i]),
                                    "staticmaps/wflow_percent" + str(self.Classes[i]) + ".map") for i in self.Classes]
@@ -340,7 +336,7 @@ class WflowModel(DynamicModel):
         self.totalArea = areatotal(self.surfaceArea, nominal(self.TopoId))
         self.percentArea = self.surfaceArea / self.totalArea
         self.Transit = scalar(readmap(os.path.join(self.Dir, wflow_transit)))  #: Map with surface area per cell
-        #self.velocity = scalar(readmap(os.path.join(self.Dir, wflow_velocity)))  #: Map with surface area per cell
+        self.velocity = scalar(readmap(os.path.join(self.Dir, wflow_velocity)))  #: Map with surface area per cell
         self.gaugesR = nominal(readmap(os.path.join(self.Dir, wflow_gauges)))
         self.percent = []
         for i in self.Classes:
@@ -445,10 +441,11 @@ class WflowModel(DynamicModel):
             # self.Ss = [self.ZeroMap] * len(self.Classes)       # for separate gw reservoir per class
             self.Ss = self.ZeroMap  # for combined gw reservoir
             self.Qstate = self.ZeroMap  # for combined gw reservoir
+            self.Qstate_t = self.ZeroMap
 
             # set initial storage values
-            self.Sa = [x + y for (x, y) in zip(self.Su, [0.5 * self.sumax * scalar(self.TopoId)] * len(self.Classes))]
-            self.Su = [x + y for (x, y) in zip(self.Su, [0.5 * self.sumax * scalar(self.TopoId)] * len(self.Classes))]
+            self.Sa = [0.05 * self.samax[i] * scalar(self.TopoId) for i in self.Classes]
+     	    self.Su = [self.sumax[i] * scalar(self.TopoId) for i in self.Classes]
             self.Ss = self.Ss + 30 * scalar(self.TopoId)  # for combined gw reservoir
 
         else:
@@ -457,7 +454,6 @@ class WflowModel(DynamicModel):
         self.wbSi_ = [self.ZeroMap] * len(self.Classes)
         self.wbSu_ = [self.ZeroMap] * len(self.Classes)
         self.wbSa_ = [self.ZeroMap] * len(self.Classes)
-        self.wbSus_ = [self.ZeroMap] * len(self.Classes)
         self.wbSr_ = [self.ZeroMap] * len(self.Classes)
         self.wbSf_ = [self.ZeroMap] * len(self.Classes)
         self.wbSfrout = self.ZeroMap
@@ -509,14 +505,12 @@ class WflowModel(DynamicModel):
 
         # TODO: change rainfall .tss files into grids
         self.wf_updateparameters()  # read the temperature map for each step (see parameters())
-        self.logger.debug("Step: " + str(int(self.currentStep)) + "/" + str(int(self._d_nrTimeSteps)))
-
+        self.logger.debug("Step: "+str(int(self.thestep + self._d_firstTimeStep))+"/"+str(int(self._d_nrTimeSteps)))
         self.thestep = self.thestep + 1
 
         self.Si_t = copylist(self.Si)
         self.Su_t = copylist(self.Su)
         self.Sa_t = copylist(self.Sa)
-        self.Sus_t = copylist(self.Sus)
         self.Sf_t = copylist(self.Sf)
         self.Sr_t = copylist(self.Sr)
         self.Ss_t = self.Ss
@@ -577,12 +571,8 @@ class WflowModel(DynamicModel):
                 eval_str = 'reservoir_Si.unsatZone_no_reservoir(self, k)'
             eval(eval_str)
 
-            # COMBINED SATURATED AND UNSATURATED ZONE ========================================================================
-            if self.selectSus[k]:
-                eval_str = 'reservoir_Sus.{:s}(self, k)'.format(self.selectSus[k])
-                eval(eval_str)
 
-                # FAST RUNOFF RESERVOIR ===================================================================================
+            # FAST RUNOFF RESERVOIR ===================================================================================
             if self.selectSf[k]:
                 eval_str = 'reservoir_Sf.{:s}(self, k)'.format(self.selectSf[k])
             else:
@@ -600,7 +590,6 @@ class WflowModel(DynamicModel):
                 # TOTAL RUNOFF =============================================================================================
                 #    self.Qfcub = (sum([x*y for x,y in zip(self.Qf_,self.percent)]) + sum([x*y for x,y in zip(self.Qo_,self.percent)]) + sum([x*y for x,y in zip(self.Qd_,self.percent)]) + sum([x*y for x,y in zip(self.Qr_,self.percent)]))/ 1000 * self.surfaceArea
         self.Qftotal = (sum([x * y for x, y in zip(self.Qf_, self.percent)]))
-        reservoir_Sf.routingQf_combined(self)
         if self.selectSs:
             eval_str = 'reservoir_Ss.{:s}(self)'.format(self.selectSs)
         else:
@@ -608,16 +597,13 @@ class WflowModel(DynamicModel):
         eval(eval_str)
 
         # ROUTING
-        #self.Qtot = self.Qftotal + self.Qs_  # total local discharge in mm/hour
-        #self.Qtotal = self.Qtot / 1000 * self.surfaceArea / self.timestepsecs  # total local discharge in m3/s
-        #self.Qstate_t = self.Qstate
-        #self.Qrout = accutraveltimeflux(self.TopoLdd, self.Qstate + self.Qtotal, self.velocity)
-        #self.Qstate = accutraveltimestate(self.TopoLdd, self.Qstate + self.Qtotal, self.velocity)
-        ## water balance of flux routing
-        #self.dSdt = self.Qstate-self.Qstate_t
-        #self.WB_rout = (accuflux(self.TopoLdd, self.Qtotal - self.dSdt)-self.Qrout)/accuflux(self.TopoLdd, self.Qtotal)
-        self.Qtlag = self.Qflag_ / self.timestepsecs + self.Qs_ / 1000 * self.surfaceArea / self.timestepsecs
-        self.QLagTot = areatotal(self.Qtlag, nominal(self.TopoId))  # catchment total runoff with looptijd
+        if self.selectRout:
+            eval_str = 'reservoir_Sf.{:s}(self)'.format(self.selectRout)
+        else:
+            eval_str = 'reservoir_Sf.noRouting(self)'
+        eval(eval_str)        
+        
+        
 
 
         # WATER BALANCE (per reservoir, per cell) ========================================================================================
@@ -630,7 +616,6 @@ class WflowModel(DynamicModel):
             multiply(self.Eu_, self.percent)) - sum(multiply(self.Er_, self.percent)) - self.QtlagWB - sum(
             multiply(self.Si, self.percent)) + sum(multiply(self.Si_t, self.percent)) - sum(
             multiply(self.Su, self.percent)) + sum(multiply(self.Su_t, self.percent)) - sum(
-            multiply(self.Sus, self.percent)) + sum(multiply(self.Sus_t, self.percent)) - sum(
             multiply(self.Sf, self.percent)) + sum(multiply(self.Sf_t, self.percent)) - sum(
             multiply(self.Sr, self.percent)) + sum(multiply(self.Sr_t, self.percent)) - sum(
             multiply(self.Ss, self.percent)) + sum(
@@ -650,8 +635,6 @@ class WflowModel(DynamicModel):
         self.Su_WB = areatotal(sum(multiply(self.Su_t, self.percent)) / 1000 * self.surfaceArea, nominal(self.TopoId))
         self.SaWB = areatotal(sum(multiply(self.Sa, self.percent)) / 1000 * self.surfaceArea, nominal(self.TopoId))
         self.Sa_WB = areatotal(sum(multiply(self.Sa_t, self.percent)) / 1000 * self.surfaceArea, nominal(self.TopoId))
-        self.SusWB = areatotal(sum(multiply(self.Sus, self.percent)) / 1000 * self.surfaceArea, nominal(self.TopoId))
-        self.Sus_WB = areatotal(sum(multiply(self.Sus_t, self.percent)) / 1000 * self.surfaceArea, nominal(self.TopoId))
         self.SfWB = areatotal(sum(multiply(self.Sf, self.percent)) / 1000 * self.surfaceArea, nominal(self.TopoId))
         self.Sf_WB = areatotal(sum(multiply(self.Sf_t, self.percent)) / 1000 * self.surfaceArea, nominal(self.TopoId))
         self.SrWB = areatotal(sum(multiply(self.Sr, self.percent)) / 1000 * self.surfaceArea, nominal(self.TopoId))
@@ -664,12 +647,14 @@ class WflowModel(DynamicModel):
         self.convQu_WB = areatotal(
             sum(multiply([sum(self.convQu_t[i]) for i in self.Classes], self.percent)) / 1000 * self.surfaceArea,
             nominal(self.TopoId))
-        self.trackQWB = areatotal(sum(self.trackQ), nominal(self.TopoId))
+        self.trackQWB = areatotal(sum(self.trackQ) , nominal(self.TopoId))
         self.trackQ_WB = areatotal(sum(self.trackQ_t), nominal(self.TopoId))
-
+        self.QstateWB = areatotal(sum(self.Qstate) * 3600, nominal(self.TopoId))
+        self.Qstate_WB = areatotal(sum(self.Qstate_t) * 3600, nominal(self.TopoId))
+        
         # WBtot in m3/s
         self.WBtot = (
-                     self.P - self.Ei - self.Eu - self.Er - self.Qtot - self.SiWB + self.Si_WB - self.SuWB + self.Su_WB - self.SaWB + self.Sa_WB - self.SusWB + self.Sus_WB - self.SfWB + self.Sf_WB - self.SrWB + self.Sr_WB - self.SsWB + self.Ss_WB - self.convQuWB + self.convQu_WB - self.trackQWB + self.trackQ_WB) / self.timestepsecs
+                     self.P - self.Ei - self.Eu - self.Er - self.Qtot - self.SiWB + self.Si_WB - self.SuWB + self.Su_WB - self.SaWB + self.Sa_WB - self.SfWB + self.Sf_WB - self.SrWB + self.Sr_WB - self.SsWB + self.Ss_WB - self.convQuWB + self.convQu_WB - self.trackQWB + self.trackQ_WB - self.QstateWB + self.Qstate_WB) / self.timestepsecs
 
 
         # SUMMED FLUXES ======================================================================================
