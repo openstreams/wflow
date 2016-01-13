@@ -95,6 +95,7 @@ def routingQf_combined(self):
     - Qf is devided over the reservoir numbers for the timesteps matching with the average
     travel time for a calcultation cell
     """
+        
     if nansum(pcr2numpy(self.Transit,NaN)) > 0:
         self.Qflag = self.trackQ[0]  # first bucket is transferred to outlet
         self.trackQ.append(0 * scalar(self.TopoId))  # add new bucket for present time step
@@ -111,3 +112,26 @@ def routingQf_combined(self):
     self.wbSfrout = self.Qftotal - self.Qflag - sum(self.trackQ) + sum (self.trackQ_t)
     
     self.Qflag_ = self.Qflag
+    
+    self.Qtlag = self.Qflag_ / self.timestepsecs + self.Qs_ / 1000 * self.surfaceArea / self.timestepsecs
+    self.QLagTot = areatotal(self.Qtlag, nominal(self.TopoId))  # catchment total runoff with looptijd
+   
+def routingQf_Qs_grid(self):
+    """
+    - Routing of both Qf and Qs
+    - based on a velocity map
+    """
+    self.Qtot = self.Qftotal + self.Qs_  # total local discharge in mm/hour
+    self.Qtotal = self.Qtot / 1000 * self.surfaceArea / self.timestepsecs  # total local discharge in m3/s
+    self.Qstate_t = self.Qstate
+    self.Qrout = accutraveltimeflux(self.TopoLdd, self.Qstate + self.Qtotal, self.velocity)
+    self.Qstate = accutraveltimestate(self.TopoLdd, self.Qstate + self.Qtotal, self.velocity)
+    
+    self.Qtlag = self.Qrout
+    self.QLagTot = self.Qrout
+    
+    # water balance of flux routing
+    self.dSdt = self.Qstate-self.Qstate_t
+    self.WB_rout = (accuflux(self.TopoLdd, self.Qtotal - self.dSdt)-self.Qrout)/accuflux(self.TopoLdd, self.Qtotal)
+    
+    

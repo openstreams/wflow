@@ -928,6 +928,7 @@ def main(argv=None):
     myModel = WflowModel(wflow_cloneMap, caseName,runId,configfile)
     dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep,firstTimestep=_firstTimeStep,datetimestart=starttime)
     dynModelFw.createRunId(NoOverWrite=NoOverWrite,logfname=LogFileName,level=loglevel,doSetupFramework=False)
+    print str(dynModelFw.DT)
 
     for o, a in opts:
         if o == '-P':

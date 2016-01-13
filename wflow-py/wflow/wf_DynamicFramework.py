@@ -68,10 +68,15 @@ class runDateTimeInfo():
         self.currentYday = self.currentDateTime.timetuple().tm_yday
         self.currentHour = self.currentDateTime.hour
 
+    def __str__(self):
+        a = self.__dict__
+
+        return str(a)
+
     def update(self, timestepsecs=None, datetimestart=None, datetimeend=None, currentTimeStep=None,
                currentDatetime=None,runTimeSteps=None,mode='steps'):
         """
-        Updates the content of the object. Use only one input parameter per call. or runTimeSteps and datatimestart at the same time
+        Updates the content of the framework date/time object. Use only one input parameter per call. or runTimeSteps and datatimestart at the same time
         use the mode option to switch between steps and intervals ('steps' or 'intervals')
 
         :param timestepsecs:
@@ -338,10 +343,12 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self._d_model = userModel
         self._testRequirements()
 
-        dte = datetimestart + datetime.timedelta(seconds=(lastTimeStep - firstTimestep -1) * timestepsecs)
+        dte = datetimestart + datetime.timedelta(seconds=(lastTimeStep - firstTimestep) * timestepsecs)
 
         self.DT = runDateTimeInfo(timestepsecs=timestepsecs, datetimestart=datetimestart,
                                   datetimeend=dte, mode='steps')
+        self.setviaAPI = {}
+        # Flag for each variable. If 1 it is set by the API before this timestep. Reset is done at the end of each timestep
 
 
         if firstTimestep > lastTimeStep:
@@ -521,6 +528,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         setattr(self._userModel(), par.name, theparmap)
                     else:
                         self._userModel().logger.debug(tblname + " not available for this step, using previous value.")
+
+        self.setviaAPI = {}
 
 
 
@@ -1230,6 +1239,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         arpcr = numpy2pcr(Scalar, values.copy(), -999)
 
+        self.setviaAPI[mapname] = 1
+
         if hasattr(self._userModel(), mapname):
 
             if "LDD" in mapname.upper():
@@ -1256,6 +1267,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         """
 
         arpcr = pcrmap
+        self.setviaAPI[mapname] = 1
 
         if hasattr(self._userModel(), mapname):
             exec "self._userModel()." + mapname + " = arpcr"
@@ -1279,6 +1291,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         :returns: 1 if the map was present, 0 if a new map was created
         """
+        self.setviaAPI[mapname] = 1
         if isinstance(values, list):
             ar = array(values)
             ar.reshape(getrows(), getcols())
@@ -1309,7 +1322,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         :returns: 1 if the map was present, 0 if nothing was done
         """
-
+        self.setviaAPI[mapname] = 1
         if hasattr(self._userModel(), mapname):
             exec "ar = pcr2numpy(self._userModel()." + mapname + ",-999)"
             ar[row, col] = value
@@ -1333,7 +1346,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         :returns: 1 if the map was present, 0 if nothing was done
         """
-
+        self.setviaAPI[mapname] = 1
         if hasattr(self._userModel(), mapname):
             pcrmap = getattr(self._userModel(), mapname)
             ar = pcr2numpy(scalar(pcrmap), -999)
@@ -1362,7 +1375,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         :returns: 1 if the map was present, 0 if nothing was done
         """
-
+        self.setviaAPI[mapname] = 1
         if hasattr(self._userModel(), mapname):
             exec "pcrmap = self._userModel()." + mapname
             ar = pcr2numpy(pcrmap, -999)
@@ -1390,7 +1403,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         """
 
         arpcr = cover(value)
-
+        self.setviaAPI[mapname] = 1
         if hasattr(self._userModel(), mapname):
             exec "self._userModel()." + mapname + " = arpcr * " + "self._userModel()." + mapname
             return 1
@@ -1415,7 +1428,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         """
 
         arpcr = cover(value)
-
+        self.setviaAPI[mapname] = 1
         if hasattr(self._userModel(), mapname):
             # exec "self._userModel()." + mapname + " = arpcr * " + "self._userModel()." + mapname
             exec "self._userModel()." + mapname + " = ifthenelse(self._userModel()." + areamapname + " == " + str(
@@ -1440,7 +1453,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         :returns: 1 if the map was present, 0 if nothing was done
         """
-
+        self.setviaAPI[mapname] = 1
         if isinstance(values, list):
             ar = array(values)
 
@@ -1854,10 +1867,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self._userModel()._setNrTimeSteps(laststep)
 
         while step <= self._userModel().nrTimeSteps():
-            self.logger.debug("timestep: " + str(self.DT.currentTimeStep) + "/" + str(self.DT.runTimeSteps) +  " (" + str(self.DT.currentDateTime) + ")")
+
             self._incrementIndentLevel()
             self._atStartOfTimeStep(step)
-            # TODO: Check why the timestep setting doesn not work.....
+            # TODO: Check why the timestep setting doesn't not work.....
             self._userModel()._setCurrentTimeStep(step)
 
             if hasattr(self._userModel(), 'dynamic'):
@@ -1879,11 +1892,13 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
             self.DT.update(currentTimeStep=self.DT.currentTimeStep + 1, mode=self.runlengthdetermination)
             self._userModel().currentdatetime = self.DT.currentDateTime
+            self.logger.debug("timestep: " + str(self.DT.currentTimeStep) + "/" + str(self.DT.runTimeSteps) +  " (" + str(self.DT.currentDateTime) + ")")
 
 
             self._timeStepFinished()
             self._decrementIndentLevel()
             step += 1
+            self.setviaAPI = {}
 
         self._userModel()._setInDynamic(False)
 
@@ -2066,6 +2081,13 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         :param kind: type of the climatology
         :return: a map
         """
+
+        # Assume the variable is via the API (replaces the
+        if os.path.basename(name) in self.setviaAPI:
+            self.setviaAPI.pop(os.path.basename(name))
+            self.logger.debug(os.path.basename(name) + " set via API, not reading from file, using memory copy")
+            return getattr(self._userModel(),os.path.basename(name))
+
         directoryPrefix = ""
         if kind == 1:
             month = self.DT.currentDateTime.month
@@ -2123,12 +2145,17 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         style = self.exchnageitems.getvarStyle(varname)
 
-        # set this for initil (before the model is actually running)
+        # set this for initial (before the model is actually running)
         if os.path.splitext(name)[1] == ".map":
             newName = name
         else:
             newName = name + nameSuffix
 
+        # Assume the variable is via the API (replaces the
+        if os.path.basename(name) in self.setviaAPI:
+            self.setviaAPI.pop(os.path.basename(name))
+            self.logger.debug(os.path.basename(name) + " set via API, not reading from file, using memory copy")
+            return getattr(self._userModel(),os.path.basename(name))
 
         if hasattr(self._userModel(), "_inStochastic"):
             if self._userModel()._inStochastic():
@@ -2245,6 +2272,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
 
         elif style == 2:  # Assuming they are set in memory by the API
+            #
             # first get basename (last bit of path)
             name = os.path.basename(name)
             if hasattr(self._userModel(), name):
