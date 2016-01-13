@@ -228,43 +228,88 @@ Example::
 
 
 
-The use of data and time
+The use of date and time
 ------------------------
 
-The original pcraster framework has no notion of date and time, only timesteps that are use to propagate a
+The original pcraster framework has no notion of date and time, only timesteps that are used to propagate a
 model forward. However, to be able to support the BMI and netcdf files dat and time functionality
 has been inserted into the framework.
 
-
-If the date/time of the state files is T0 that the first timestep in the netcdf (or the first pcraster map, 001) is assumed
-to hold the forcing information to propagate one the model to the next timestep. The date/time of the information should be
- T0 + 1 timestep. The
+As most of the forcing in hydrological modelling is an accumulation the dat/time of an input time series is
+assumed to represent the total (or average) of that variable one timestep length back in time from the timestamp.
 
 For example, if the forcing data has the following four timestamps the model will run four timesteps. The first timesteps
-will be ro propages the state from T-1 to T0. As such the state going into the model should be valid for the T-1
-.. digraph:: time_steps
-    T0 -> T2 -> T2 -> T3;
+will be to propagate the state from T0 to T1 (in that case the date/time of the state files is assumed to be T0).
+As such the state going into the model should be valid for the T0, see graph below:
 
-However, the way for example Delft-FEWS works is that T0 is usually the same date/time as the date/time of the input state.
-In that case you can force the framework to skip the first timestep in the forcing data using the skipfirst=1 in the [run]
-section of the ini file. By default this is set to 0 (False).
+.. graphviz::
+
+    digraph ttimesteps {
+        "- " -> "T1" -> "T2" -> "T3" -> "T4";
+        "-" ->"1 Jan 2016" -> "2 Jan 2016" -> "3 Jan 2016" -> "4 jan 2016";
+        "Model state: T0 31 Dec 2015";
+    }
+
+Here the first column shows the model steps and the second column the timestamp of the input/output data for that timestep
+(a - means there is nothing for that step). The first empty-row is regarded as the timestamp of the initial conditions. The
+first forcing data is used to propagate the model from T0 (the state, 31 Dec 2015) to T1 (1 Jan 2016) whcih will also
+be the first output the model writes..
+
+The above corresponds to the following date/time in rhe [run] section:
+
+::
+
+    [run]
+    # either a runinfo file or a start and end-time are required
+    #runinfo=runinfo.xml
+    starttime=2016-01-01 00:00:00
+    endtime=2016-01-04 00:00:00
+    # required, base timestep of the model
+    timestepsecs = 86400
+    #start model with cold state
+    reinit=1
+    # Default behaviour: steps
+    runlengthdetermination=steps
 
 
-Example: pcraster mapstack and state input from Delft-FEWS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In this case the model input is suplied by Delft-FEWS and the adapter.
+The above shows the default behaviour of the framework. For each data point in the input forcing a model steps is performed.
+The 'runlengthdetermination' variable in the run section can also be set to 'intervals'. In that case the the number
+ of steps is determined from the number of intervals in the forcing data. Hence, the following run will be performed:
 
-+ The date/time of the state information is 01-01-2016 00:00:00
-+ The forcing data is given from 01-01-2016 00:00:00 to 04-01-2016 00:00:00
-+ The runinfo.xml indicates a start time of the run of 01-01-2016 00:00:00 and an end time of 04-01-2016 00:00:00
-+ The model is configured for daily timesteps
 
-By default the wflow framework assume that the model should run for 4 timesteps and that the state information
- pertains to the day before 01-01-2016 00:00:00. By setting the setting the  skipfirst=1 in the [run] section the model
- will run for 3 timesteps producing output for 02-01-2016 00:00:00, 03-01-2016 00:00:00 and 04-01-2016 00:00:00 including
- a state for 04-01-2016 00:00:00.
+.. graphviz::
 
+    digraph ttimesteps {
+        "- " -> "T1" -> "T2" -> "T3";
+        "01 Jan 2016" ->"2 Jan 2016" -> "3 Jan 2016" -> "4 jan 2016";
+        "Model state: T0 1 Jan 2016";
+    }
+
+
+::
+
+    [run]
+    # either a runinfo file or a start and end-time are required
+    #runinfo=runinfo.xml
+    starttime=2016-01-01 00:00:00
+    endtime=2016-01-04 00:00:00
+    # required, base timestep of the model
+    timestepsecs = 86400
+    #start model with cold state
+    reinit=1
+    # Default behaviour: steps
+    runlengthdetermination=intervals
+
+
+
+In this case the forcing data has the same input as in the previous case (4 timestamps) but in this case the first
+timestamp is regarded as the time of the initial conditions. As such, one timestep less (now three in total) is performed and the
+forcing data from 01 Jan 2016 is NOT used as it is regarded as the initial state. The first output point
+will be  02 Jan 2016 generated from the forcing marked as 2 Jan 2016.
+
+
+The same applies when the start and end time of the model run are supplied via the bmi interface.
 
 
 
