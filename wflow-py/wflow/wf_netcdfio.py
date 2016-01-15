@@ -10,6 +10,7 @@ $Rev: 915 $
 """
 
 import osgeo
+import osgeo.ogr
 import netCDF4
 import pyproj
 import os

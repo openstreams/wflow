@@ -958,6 +958,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                                        lookupmaps=vals[4:]))
             else:
                 logging.error("Parameter line in ini not valid: " + aline)
+                raise ValueError
 
         varchanges = configsection(self._userModel().config, "variable_change_once")
         for chvar in varchanges:
