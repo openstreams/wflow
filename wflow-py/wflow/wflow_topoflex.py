@@ -37,7 +37,7 @@ import time
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
 # import scipy
-from copy import copy as copylist
+import  copy
 
 # TODO: see below
 """
@@ -382,6 +382,8 @@ class WflowModel(DynamicModel):
         # initialise list for lag function
         self.convQu = [[0 * scalar(self.TopoId)] * self.Tf[i] for i in self.Classes]
 
+
+        self.wf_updateparameters()
         if self.scalarInput:
             self.gaugesMap = nominal(readmap(os.path.join(self.Dir,
                                                           wflow_mgauges)))  #: Map with locations of rainfall/evap/temp gauge(s). Only needed if the input to the model is not in maps
@@ -507,14 +509,14 @@ class WflowModel(DynamicModel):
         self.logger.debug("Step: "+str(int(self.thestep + self._d_firstTimeStep))+"/"+str(int(self._d_nrTimeSteps)))
         self.thestep = self.thestep + 1
 
-        self.Si_t = copylist(self.Si)
-        self.Su_t = copylist(self.Su)
-        self.Sa_t = copylist(self.Sa)
-        self.Sf_t = copylist(self.Sf)
-        self.Sr_t = copylist(self.Sr)
+        self.Si_t = copy.deepcopy(self.Si)
+        self.Su_t = copy.deepcopy(self.Su)
+        self.Sa_t = copy.deepcopy(self.Sa)
+        self.Sf_t = copy.deepcopy(self.Sf)
+        self.Sr_t = copy.deepcopy(self.Sr)
         self.Ss_t = self.Ss
-        self.trackQ_t = copylist(self.trackQ)  # copylist(self.trackQ)
-        self.convQu_t = [copylist(self.convQu[i]) for i in self.Classes]  # copylist(self.convQu)
+        self.trackQ_t = copy.deepcopy(self.trackQ)  # copylist(self.trackQ)
+        self.convQu_t = [copy.deepcopy(self.convQu[i]) for i in self.Classes]  # copylist(self.convQu)
 
         #     if self.scalarInput:
         #         if self.InputSeries == 1:
