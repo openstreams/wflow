@@ -234,7 +234,7 @@ Example::
 Available options in the [run] section
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The run section can contain information about the model timesteps, the data/time range,
+The run section can contain information about the model timesteps, the date/time range,
 how to initialize the model and how interpret the forcing data.
 
 ::

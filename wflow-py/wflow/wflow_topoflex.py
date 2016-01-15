@@ -1,14 +1,14 @@
 #!/usr/bin/python
 
 """
-Definition of the wflow_sceleton model.
+Definition of the wflow_topoflex model.
 ---------------------------------------
 
 This simple model calculates soil temperature using
 air temperature as a forcing.
 
 Usage:
-wflow_sceleton  -C case -R Runid -c inifile
+wflow_topoflex  -C case -R Runid -c inifile
 
     -C: set the name  of the case (directory) to run
     
@@ -16,11 +16,10 @@ wflow_sceleton  -C case -R Runid -c inifile
     
     -c name of the config file (in the case directory)
     
-$Author: schelle $
-$Id: wflow_sceleton.py 898 2014-01-09 14:47:06Z schelle $
-$Rev: 898 $
+
 """
 
+## TODO: add wflow prefix of put in seperate folder
 import reservoir_Si
 # import reservoir_Sa
 import reservoir_Su
