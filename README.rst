@@ -66,3 +66,7 @@ Credits
 + The stats.py script was made by Keith Cherkauer (https://engineering.purdue.edu/~cherkaue/software.htm)
 
 + pcraster is developed and maintained by Utrecht University (http://www.pcraster.eu)
+
++ netCDF4 is developed by unidata (http://unidata.github.io/netcdf4-python/)
+
+
