@@ -7,6 +7,8 @@ from wflow.pcrut import setlogger
 
 
 
+
+
 class runnerbmi(bmi.Bmi):
     """
     csdms BMI implementation for pcraster/python models
@@ -32,6 +34,13 @@ class runnerbmi(bmi.Bmi):
         self.bmilogger = setlogger('bmi_runner.log','wflow_bmi_logging',thelevel=self.loggingmode)
         self.bmilogger.info("__init__: wflow_bmi object initialised.")
 
+    def __getsatData__(self):
+        """
+        uses set_value and get_value to exxchnage data between the models
+
+        Returns:
+
+        """
     def initialize_config(self, filename):
         """
         *Extended functionality*, see https://github.com/eWaterCycle/bmi/blob/master/src/main/python/bmi.py
@@ -56,7 +65,7 @@ class runnerbmi(bmi.Bmi):
         # now get the to config files from the config file of overall bmi
         #self.bmimodels[hydroconfigfilename].initialize_config(hydroconfigfilename)
         #self.bmimodels[routingconfigfilename].initialize_config(routingconfigfilename)
-
+        Updatete zodat de key de get_component_name is!!!!
         for key, value in self.bmimodels.iteritems():
             value.initialize_config(key)
 
@@ -154,6 +163,7 @@ class runnerbmi(bmi.Bmi):
         """
         for key, value in self.bmimodels.iteritems():
             self.bmimodels[key].update()
+            self.__getsatData__()
 
         self.currenttimestep = self.currenttimestep + 1
 
@@ -189,10 +199,10 @@ class runnerbmi(bmi.Bmi):
             self.bmilogger.debug('update_until: step ' + str(self.currenttimestep) + ' to ' + str(self.currenttimestep + nrsteps -1))
 
             #self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps -1)
-            for key, value in self.bmimodels.iteritems():
-                self.bmimodels[key].update_until(time)
+            for a in range(0,nrsteps):
+                self.update()
 
-            self.currenttimestep = self.currenttimestep + nrsteps
+            #self.currenttimestep = self.currenttimestep + nrsteps
 
     def update_frac(self, time_frac):
         """
@@ -250,9 +260,12 @@ class runnerbmi(bmi.Bmi):
         """
         names = []
         for key, value in self.bmimodels.iteritems():
-            names.append(self.bmimodels[key].get_input_var_names())
+            tmp = self.bmimodels[key].get_input_var_names()
+            modname = self.bmimodels[key].get_component_name()
+            for aname in tmp:
+                names.append(modname +"/" + aname)
 
-        return inames
+        return names
 
     def get_output_var_names(self):
         """
@@ -260,15 +273,14 @@ class runnerbmi(bmi.Bmi):
 
         :return: List of String objects: identifiers of all output variables of the model:
         """
-        namesroles = self.dynModel.wf_supplyVariableNamesAndRoles()
-        inames = []
+        names = []
+        for key, value in self.bmimodels.iteritems():
+            tmp = self.bmimodels[key].get_output_var_names()
+            modname = self.bmimodels[key].get_component_name()
+            for aname in tmp:
+                names.append(modname +"/" + aname)
 
-        for varrol in namesroles:
-            if varrol[1] == 1 or varrol[1] == 2:
-                inames.append(varrol[0])
-
-        self.bmilogger.debug("get_output_var_names: " + str(inames))
-        return inames
+        return names
 
     def get_var_type(self, long_var_name):
         """
