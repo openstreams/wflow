@@ -89,6 +89,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :return: nothing
         """
 
+
         self.bmimodels = {}
         conf = {}
         self.currenttimestep = 1
