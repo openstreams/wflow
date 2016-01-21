@@ -1,15 +1,59 @@
 
 import wflow.bmi as bmi
+import wflow.wflow_bmi as wfbmi
 import wflow
 import logging
 import os
 from wflow.pcrut import setlogger
+from wflow.wflow_lib import configget
+import ConfigParser
 
 
-
-class runnerbmi(bmi.Bmi):
+def iniFileSetUp(configfile):
     """
-    csdms BMI implementation for pcraster/python models
+    Reads .ini file and returns a config object.
+
+    Input:
+        - caseName - dir with case
+
+    Output:
+        - python config object
+
+    """
+
+    config = ConfigParser.SafeConfigParser()
+    config.optionxform = str
+
+    config.read(configfile)
+
+    return config
+
+
+def configsection(config,section):
+    """
+    gets the list of lesy in a section
+
+    Input:
+        - config
+        - section
+
+    Output:
+        - list of keys in the section
+    """
+    try:
+        ret = config.options(section)
+    except:
+        ret = []
+
+    return ret
+
+class wflowbmi_csdms(bmi.Bmi):
+    """
+    csdms BMI implementation runner for combinesd pcraster/python models
+
+
+    + all variables are identified by: component_name/variable_name
+    + this version is specific for a routing component combined by land surface component.
 
     .. todo::
 
@@ -31,6 +75,8 @@ class runnerbmi(bmi.Bmi):
         self.bmi_hydro = None
         self.bmilogger = setlogger('bmi_runner.log','wflow_bmi_logging',thelevel=self.loggingmode)
         self.bmilogger.info("__init__: wflow_bmi object initialised.")
+        self.currenttimestep = 0
+        self.exchanges = []
 
     def initialize_config(self, filename):
         """
@@ -44,22 +90,33 @@ class runnerbmi(bmi.Bmi):
         """
 
         self.bmimodels = {}
+        conf = {}
+        self.currenttimestep = 1
+
+        self.config = iniFileSetUp(filename)
 
         self.datadir = os.path.dirname(filename)
         inifile = os.path.basename(filename)
-        hydroconfigfilename = os.path.join(self.datadir,'wflow_sbm.ini')
-        routingconfigfilename = os.path.join(self.datadir,'wflow_routing.ini')
 
-        self.bmimodels[hydroconfigfilename] = wflow.wflow_bmi.wflowbmi_csdms()
-        self.bmimodels[routingconfigfilename] = wflow.wflow_bmi.wflowbmi_csdms()
+        self.models = configsection(self.config,'models')
+        hydroconfigfilename = os.path.join(os.path.join(self.datadir,'wflow_sbm'),'wflow_sbm_comb.ini')
+        routingconfigfilename = os.path.join(os.path.join(self.datadir,'wflow_routing'),'wflow_routing_comb.ini')
+
+        self.exchanges= configsection(self.config,'exchanges')
+
+        for mod in self.models:
+            self.bmimodels[mod] = wfbmi.wflowbmi_csdms()
+            self.bmimodels[mod] = wfbmi.wflowbmi_csdms()
+
 
         # now get the to config files from the config file of overall bmi
         #self.bmimodels[hydroconfigfilename].initialize_config(hydroconfigfilename)
         #self.bmimodels[routingconfigfilename].initialize_config(routingconfigfilename)
 
+        # Initialize all models
         for key, value in self.bmimodels.iteritems():
-            value.initialize_config(key)
-
+            modconf = self.config.get('models',key)
+            self.bmimodels[key].initialize_config(modconf)
 
 
 
@@ -74,7 +131,7 @@ class runnerbmi(bmi.Bmi):
         """
 
         for key, value in self.bmimodels.iteritems():
-            value.initialize_model(key)
+            self.bmimodels[key].initialize_model()
 
 
     def set_start_time(self, start_time):
@@ -110,7 +167,6 @@ class runnerbmi(bmi.Bmi):
 
         return attr
 
-
     def get_attribute_value(self, attribute_name):
         """
         :param attribute_name:
@@ -125,8 +181,6 @@ class runnerbmi(bmi.Bmi):
         :return:
         """
         raise NotImplementedError
-
-
 
     def initialize(self, filename,loglevel=logging.DEBUG):
         """
@@ -143,8 +197,8 @@ class runnerbmi(bmi.Bmi):
 
         """
 
-        self.bmilogger.info("initialize: Initialising wflow bmi with ini: " + filename)
-        self.initialize_config(filename,loglevel=loglevel)
+        self.bmilogger.info("initialize: Initialising  bmi models with ini: " + filename)
+        self.initialize_config(filename)
         self.initialize_model()
 
 
@@ -154,6 +208,11 @@ class runnerbmi(bmi.Bmi):
         """
         for key, value in self.bmimodels.iteritems():
             self.bmimodels[key].update()
+            # do all exchanges
+            for item in self.exchanges:
+                tomodel = self.config.get('exchanges',item)
+                outofmodel = self.get_value(item)
+                self.set_value(tomodel,outofmodel)
 
         self.currenttimestep = self.currenttimestep + 1
 
@@ -189,10 +248,11 @@ class runnerbmi(bmi.Bmi):
             self.bmilogger.debug('update_until: step ' + str(self.currenttimestep) + ' to ' + str(self.currenttimestep + nrsteps -1))
 
             #self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps -1)
-            for key, value in self.bmimodels.iteritems():
-                self.bmimodels[key].update_until(time)
+            for st in range(0,nrsteps):
+                #for key, value in self.bmimodels.iteritems():
+                self.update()
 
-            self.currenttimestep = self.currenttimestep + nrsteps
+            #self.currenttimestep = self.currenttimestep + nrsteps
 
     def update_frac(self, time_frac):
         """
@@ -228,7 +288,6 @@ class runnerbmi(bmi.Bmi):
         Shutdown the library and clean up the model.
         Uses the default (model configured) state location to also save states.
         """
-        # First check if the seconf initilize_states has run
         for key, value in self.bmimodels.iteritems():
             self.bmimodels[key].finalize()
 
@@ -251,8 +310,10 @@ class runnerbmi(bmi.Bmi):
         names = []
         for key, value in self.bmimodels.iteritems():
             names.append(self.bmimodels[key].get_input_var_names())
+            names[-1] = [self.bmimodels[key].get_component_name() + "/" + s for s in names[-1]]
 
-        return inames
+        ret = [item for sublist in names for item in sublist]
+        return ret
 
     def get_output_var_names(self):
         """
@@ -260,15 +321,14 @@ class runnerbmi(bmi.Bmi):
 
         :return: List of String objects: identifiers of all output variables of the model:
         """
-        namesroles = self.dynModel.wf_supplyVariableNamesAndRoles()
-        inames = []
+        names = []
+        for key, value in self.bmimodels.iteritems():
+            names.append(self.bmimodels[key].get_output_var_names())
+            names[-1] = [self.bmimodels[key].get_component_name() + "/" + s for s in names[-1]]
 
-        for varrol in namesroles:
-            if varrol[1] == 1 or varrol[1] == 2:
-                inames.append(varrol[0])
+        ret = [item for sublist in names for item in sublist]
 
-        self.bmilogger.debug("get_output_var_names: " + str(inames))
-        return inames
+        return ret
 
     def get_var_type(self, long_var_name):
         """
@@ -276,14 +336,15 @@ class runnerbmi(bmi.Bmi):
 
         :return: variable type string, compatible with numpy:
         """
-        npmap = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
 
-        if hasattr(npmap,'dtype'):
-            self.bmilogger.debug("get_var_type: " + str(npmap.dtype))
-            return str(npmap.dtype)
-        else:
-            self.bmilogger.debug("get_var_type: " + str(None))
-            return None
+        # first part should be the component name
+        cname = long_var_name.split('/')
+        for key, value in self.bmimodels.iteritems():
+            nn = self.bmimodels[key].get_component_name()
+            if nn == cname[0]:
+                ret = self.bmimodels[key].get_var_type(cname[1])
+
+        return ret
 
     def get_var_rank(self, long_var_name):
         """
@@ -292,10 +353,15 @@ class runnerbmi(bmi.Bmi):
         :var  String long_var_name: identifier of a variable in the model:
         :return: array rank or 0 for scalar (number of dimensions):
         """
-        npmap = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
+        # first part should be the component name
+        cname = long_var_name.split('/')
+        for key, value in self.bmimodels.iteritems():
+            nn = self.bmimodels[key].get_component_name()
+            if nn == cname[0]:
+                ret = self.bmimodels[key].get_var_rank(cname[1])
 
-        self.bmilogger.debug("get_var_rank: (" + long_var_name + ") " + str(len(npmap.shape)))
-        return len(npmap.shape)
+        return ret
+
 
     def get_var_size(self, long_var_name):
         """
@@ -304,14 +370,14 @@ class runnerbmi(bmi.Bmi):
         :var  String long_var_name: identifier of a variable in the model:
         :return: total number of values contained in the given variable (number of elements in map)
         """
-        npmap = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
+        # first part should be the component name
+        cname = long_var_name.split('/')
+        for key, value in self.bmimodels.iteritems():
+            nn = self.bmimodels[key].get_component_name()
+            if nn == cname[0]:
+                ret = self.bmimodels[key].get_var_size(cname[1])
 
-        if hasattr(npmap,'size'):
-            self.bmilogger.debug("get_var_size: " + str(npmap.size))
-            return npmap.size
-        else:
-            self.bmilogger.debug("get_var_size: " + str(1))
-            return 1
+        return ret
 
     def get_var_nbytes(self, long_var_name):
         """
@@ -320,20 +386,26 @@ class runnerbmi(bmi.Bmi):
         :var  String long_var_name: identifier of a variable in the model:
         :return: total number of bytes contained in the given variable (number of elements * bytes per element)
         """
-        npmap = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
+        # first part should be the component name
+        cname = long_var_name.split('/')
+        for key, value in self.bmimodels.iteritems():
+            nn = self.bmimodels[key].get_component_name()
+            if nn == cname[0]:
+                ret = self.bmimodels[key].get_var_nbytes(cname[1])
 
-        self.bmilogger.debug("get_var_nbytes: " + str(npmap.size * npmap.itemsize))
-        return npmap.size * npmap.itemsize
+        return ret
 
     def get_start_time(self):
         """
         Gets the start time of the model.
 
-        :return: start time in the units and epoch returned by the function get_time_units
+        :return: start time of last model in the list. Tiem sare assumed to be identical
         """
-        st = self.dynModel.wf_supplyStartTime()
-        self.bmilogger.debug("get_start_time: " + str(st))
-        return st
+        st = []
+        for key, value in self.bmimodels.iteritems():
+            st.append(self.bmimodels[key].get_start_time())
+
+        return st[-1]
 
     def get_current_time(self):
         """
@@ -342,9 +414,11 @@ class runnerbmi(bmi.Bmi):
         :return: current time of simulation n the units and epoch returned by the function get_time_units
         """
 
-        st = self.dynModel.wf_supplyCurrentTime()
-        self.bmilogger.debug("get_current_time: " + str(st) + " " + str(self.dynModel.DT.currentDateTime.strftime("%Y-%m-%d %H:%M:%S")))
-        return st
+        st = []
+        for key, value in self.bmimodels.iteritems():
+            st.append(self.bmimodels[key].get_current_time())
+
+        return st[-1]
 
     def get_end_time(self):
         """
@@ -352,19 +426,23 @@ class runnerbmi(bmi.Bmi):
 
         :return: end time of simulation n the units and epoch returned by the function get_time_units
         """
-        et = self.dynModel.wf_supplyEndTime()
-        self.bmilogger.debug("get_end_time: " + str(et))
-        return et
+        st = []
+        for key, value in self.bmimodels.iteritems():
+            st.append(self.bmimodels[key].get_end_time())
+
+        return st[-1]
 
     def get_time_step(self):
         """
         Get the model time steps in units since the epoch
 
-        :return: duration of one time step of the model in the units returned by the function get_time_units
+        :return: duration of one time step of the model with the largest! timestep.
         """
-        ts = self.dynModel.DT.timeStepSecs
-        self.bmilogger.debug("get_time_step: " + str(ts))
-        return ts
+        st = []
+        for key, value in self.bmimodels.iteritems():
+            st.append(self.bmimodels[key].get_time_step())
+
+        return max(st)
 
     def get_time_units(self):
         """
@@ -373,10 +451,13 @@ class runnerbmi(bmi.Bmi):
         :return: Return a string formatted using the UDUNITS standard from Unidata.
         (http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/build/cf-conventions.html#time-coordinate)
         """
-        tu = self.dynModel.wf_supplyEpoch()
-        self.bmilogger.debug("get_time_units: " + str(tu))
+        st = []
+        for key, value in self.bmimodels.iteritems():
+            st.append(self.bmimodels[key].get_time_units())
 
-        return tu
+        return st[-1]
+
+
 
     def get_value(self, long_var_name):
         """
@@ -385,23 +466,15 @@ class runnerbmi(bmi.Bmi):
         :var long_var_name: name of the variable
         :return: a np array of long_var_name
         """
-        if long_var_name in self.inputoutputvars:
-            ret = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
-            self.bmilogger.debug("get_value: " + long_var_name)
-            if self.wrtodisk:
-                fname = str(self.currenttimestep) + "_get_" + long_var_name + ".map"
-                arpcr = self.dynModel.numpy2pcr(self.dynModel.Scalar, ret, -999)
-                self.bmilogger.debug("Writing to disk: " + fname)
-                self.dynModel.report(arpcr,fname)
-
-            try:
-                fret = np.flipud(ret)
-                return fret
-            except:
+        # first part should be the component name
+        cname = long_var_name.split('/')
+        for key, value in self.bmimodels.iteritems():
+            nn = self.bmimodels[key].get_component_name()
+            if nn == cname[0]:
+                ret = self.bmimodels[key].get_value(cname[1])
                 return ret
-        else:
-            self.bmilogger.error("get_value: " + long_var_name + ' not in list of output values ' + str(self.inputoutputvars))
-            return None
+
+        return None
 
     def get_value_at_indices(self, long_var_name, inds):
         """
@@ -412,14 +485,14 @@ class runnerbmi(bmi.Bmi):
 
         :return: numpy array of values in the data type returned by the function get_var_type.
         """
+        cname = long_var_name.split('/')
+        for key, value in self.bmimodels.iteritems():
+            nn = self.bmimodels[key].get_component_name()
+            if nn == cname[0]:
+                ret = self.bmimodels[key].get_value_at_indices(cname[1],inds)
+                return ret
 
-        if long_var_name in self.inputoutputvars:
-            self.bmilogger.debug("get_value_at_indices: " + long_var_name + ' at ' + str(inds))
-            npmap = np.flipud(self.dynModel.wf_supplyMapAsNumpy(long_var_name))
-            return npmap[inds]
-        else:
-            self.bmilogger.error("get_value_at_indices: " + long_var_name + ' not in list of output values ' + str(self.inputoutputvars))
-            return None
+        return None
 
 
     def set_value_at_indices(self, long_var_name, inds, src):
@@ -432,15 +505,14 @@ class runnerbmi(bmi.Bmi):
                                         e.g. [[0, 0], [0, 1], [15, 19], [15, 20], [15, 21]] indicates 5 elements in a 2D grid.:
         :var src: Numpy array of values. one value to set for each of the indicated elements:
         """
+        cname = long_var_name.split('/')
+        for key, value in self.bmimodels.iteritems():
+            nn = self.bmimodels[key].get_component_name()
+            if nn == cname[0]:
+                ret = self.bmimodels[key].set_value_at_indices(cname[1],inds,src)
+                return ret
 
-        if long_var_name in self.outputonlyvars:
-            self.bmilogger.error("set_value_at_indices: " + long_var_name + " is listed as an output only variable, cannot set. " + str(self.outputonlyvars))
-            raise ValueError("set_value_at_indices: " + long_var_name + " is listed as an output only variable, cannot set. " + str(self.outputonlyvars))
-        else:
-            self.bmilogger.debug("set_value_at_indices: " + long_var_name + ' at ' + str(inds))
-            npmap = np.flipud(self.dynModel.wf_supplyMapAsNumpy(long_var_name))
-            npmap[inds] = src
-            self.dynModel.wf_setValuesAsNumpy(long_var_name,np.flipud(npmap))
+        return None
 
     def get_grid_type(self, long_var_name):
         """
@@ -450,11 +522,14 @@ class runnerbmi(bmi.Bmi):
 
         :return: BmiGridType type of the grid geometry of the given variable.
         """
-        ret=BmiGridType()
+        cname = long_var_name.split('/')
+        for key, value in self.bmimodels.iteritems():
+            nn = self.bmimodels[key].get_component_name()
+            if nn == cname[0]:
+                ret = self.bmimodels[key].get_grid_type(cname[1])
+                return ret
 
-        self.bmilogger.debug("get_grid_type: " + long_var_name + ' result: ' + str(ret.UNIFORM))
-
-        return ret.UNIFORM
+        return None
 
     def get_grid_shape(self, long_var_name):
         """
@@ -464,12 +539,15 @@ class runnerbmi(bmi.Bmi):
 
         :return: List of integers: the sizes of the dimensions of the given variable, e.g. [500, 400] for a 2D grid with 500x400 grid cells.
         """
-        dim =  self.dynModel.wf_supplyGridDim()
-        #[ Xll, Yll, xsize, ysize, rows, cols]
+        cname = long_var_name.split('/')
+        for key, value in self.bmimodels.iteritems():
+            nn = self.bmimodels[key].get_component_name()
+            if nn == cname[0]:
+                ret = self.bmimodels[key].get_grid_shape(cname[1])
+                return ret
 
-        self.bmilogger.debug("get_grid_shape: " + long_var_name + ' result: ' + str([dim[4], dim[5]]))
+        return None
 
-        return [dim[4], dim[5]]
 
     def get_grid_spacing(self, long_var_name):
         """
@@ -479,11 +557,14 @@ class runnerbmi(bmi.Bmi):
 
         :return: The size of a grid cell for each of the dimensions of the given variable, e.g. [width, height]: for a 2D grid cell.
         """
-        dims = self.dynModel.wf_supplyGridDim()[2:4]
-        x = dims[0]
-        y = dims[1]
-        self.bmilogger.debug("get_grid_spacing: " + long_var_name + ' result: ' + str([y, x]))
-        return [y, x]
+        cname = long_var_name.split('/')
+        for key, value in self.bmimodels.iteritems():
+            nn = self.bmimodels[key].get_component_name()
+            if nn == cname[0]:
+                ret = self.bmimodels[key].get_grid_spacing(cname[1])
+                return ret
+
+        return None
 
     def get_grid_origin(self, long_var_name):
         """
@@ -493,11 +574,15 @@ class runnerbmi(bmi.Bmi):
 
         :return: X, Y: ,the lower left corner of the grid.
         """
-        dims = self.dynModel.wf_supplyGridDim()
-        x = dims[0]
-        y = dims[1]
-        self.bmilogger.debug("get_grid_origin: " + long_var_name + ' result: ' + str([y, x]))
-        return [y, x]
+        cname = long_var_name.split('/')
+        for key, value in self.bmimodels.iteritems():
+            nn = self.bmimodels[key].get_component_name()
+            if nn == cname[0]:
+                ret = self.bmimodels[key].get_grid_origin(cname[1])
+                return ret
+
+        return None
+
 
     def get_grid_x(self, long_var_name):
         """
@@ -508,8 +593,14 @@ class runnerbmi(bmi.Bmi):
         :return: Numpy array of doubles: x coordinate of grid cell center for each grid cell, in the same order as the
         values returned by function get_value.
         """
-        self.bmilogger.debug("get_grid_x: " + long_var_name)
-        return self.dynModel.wf_supplyMapXAsNumpy()
+        cname = long_var_name.split('/')
+        for key, value in self.bmimodels.iteritems():
+            nn = self.bmimodels[key].get_component_name()
+            if nn == cname[0]:
+                ret = self.bmimodels[key].get_grid_x(cname[1])
+                return ret
+
+        return None
 
     def get_grid_y(self, long_var_name):
         """
@@ -521,8 +612,14 @@ class runnerbmi(bmi.Bmi):
         values returned by function get_value.
 
         """
-        self.bmilogger.debug("get_grid_y: " + long_var_name)
-        return np.flipud(self.dynModel.wf_supplyMapYAsNumpy())
+        cname = long_var_name.split('/')
+        for key, value in self.bmimodels.iteritems():
+            nn = self.bmimodels[key].get_component_name()
+            if nn == cname[0]:
+                ret = self.bmimodels[key].get_grid_y(cname[1])
+                return ret
+
+        return None
 
     def get_grid_z(self, long_var_name):
         """
@@ -532,8 +629,15 @@ class runnerbmi(bmi.Bmi):
 
         :return: Numpy array of doubles: z coordinate of grid cell center for each grid cell, in the same order as the values returned by function get_value.
         """
-        self.bmilogger.debug("get_grid_z: " + long_var_name)
-        return np.flipud(self.dynModel.wf_supplyMapZAsNumpy())
+        cname = long_var_name.split('/')
+        for key, value in self.bmimodels.iteritems():
+            nn = self.bmimodels[key].get_component_name()
+            if nn == cname[0]:
+                ret = self.bmimodels[key].get_grid_z(cname[1])
+                return ret
+
+        return None
+
 
     def get_var_units(self, long_var_name):
         """
@@ -545,16 +649,14 @@ class runnerbmi(bmi.Bmi):
         using the UDUNITS standard from Unidata. (only if set properly in the ini file)
         """
 
-        nru = self.dynModel.wf_supplyVariableNamesAndRoles()
+        cname = long_var_name.split('/')
+        for key, value in self.bmimodels.iteritems():
+            nn = self.bmimodels[key].get_component_name()
+            if nn == cname[0]:
+                ret = self.bmimodels[key].get_var_units(cname[1])
+                return ret
 
-        unit ='mm'
-
-        for it in nru:
-            if long_var_name == it[0]:
-                unit = it[2]
-
-        self.bmilogger.debug("get_var_units: " + long_var_name + ' result: ' + unit)
-        return unit
+        return None
 
     def set_value(self, long_var_name, src):
         """
@@ -564,23 +666,12 @@ class runnerbmi(bmi.Bmi):
         :var src: all values to set for the given variable. If only one value
                   is present a uniform map will be set in the wflow model.
         """
+        cname = long_var_name.split('/')
+        for key, value in self.bmimodels.iteritems():
+            nn = self.bmimodels[key].get_component_name()
+            if nn == cname[0]:
+                self.bmimodels[key].set_value(cname[1],src)
 
-        if self.wrtodisk:
-            fname = str(self.currenttimestep) + "_set_" + long_var_name + ".map"
-            arpcr = self.dynModel.numpy2pcr(self.dynModel.Scalar, src, -999)
-            self.bmilogger.debug("Writing to disk: " + fname)
-            self.dynModel.report(arpcr,fname)
-
-        if long_var_name in self.outputonlyvars:
-            self.bmilogger.error("set_value: " + long_var_name + " is listed as an output only variable, cannot set. " + str(self.outputonlyvars))
-            raise ValueError("set_value: " + long_var_name + " is listed as an output only variable, cannot set. " + str(self.outputonlyvars))
-        else:
-            if len(src) == 1:
-                self.bmilogger.debug("set_value: (uniform value) " + long_var_name + '(' +str(src) + ')')
-                self.dynModel.wf_setValues(long_var_name,float(src))
-            else:
-                self.bmilogger.debug("set_value: (grid) " + long_var_name)
-                self.dynModel.wf_setValuesAsNumpy(long_var_name, np.flipud(src))
 
     def get_grid_connectivity(self, long_var_name):
         """

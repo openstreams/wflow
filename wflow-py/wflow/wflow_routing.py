@@ -592,12 +592,11 @@ class WflowModel(DynamicModel):
 
         :var self.Altitude: The altitude of each cell [m]
         :var self.Bw: Width of the river [m]
-        :var self.River: booolean map indicating the presence of a river [-]
+        :var self.River: boolean map indicating the presence of a river [-]
         :var self.DLC: length of the river within a cell [m]
         :var self.ToCubic: Mutiplier to convert mm to m^3/s for fluxes
         """
 
-        self.logger.debug("Step: " + str(int(self.currentStep)) + "/" + str(int(self._d_nrTimeSteps)))
         self.thestep = self.thestep + 1
         self.wf_updateparameters()
 

@@ -1891,9 +1891,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             #self.currentdatetime = self.currentdatetime + dt.timedelta(seconds=self._userModel().timestepsecs)
 
 
-            self.DT.update(currentTimeStep=self.DT.currentTimeStep + 1, mode=self.runlengthdetermination)
+            self.DT.update(currentTimeStep=self.DT.currentTimeStep+1, mode=self.runlengthdetermination)
             self._userModel().currentdatetime = self.DT.currentDateTime
-            self.logger.debug("timestep: " + str(self.DT.currentTimeStep) + "/" + str(self.DT.runTimeSteps) +  " (" + str(self.DT.currentDateTime) + ")")
+            self.logger.debug("timestep: " + str(self.DT.currentTimeStep-1) + "/" + str(self.DT.runTimeSteps) +  " (" + str(self.DT.currentDateTime) + ")")
 
 
             self._timeStepFinished()

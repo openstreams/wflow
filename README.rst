@@ -26,7 +26,7 @@ http://wflow.readthedocs.org
 Binaries for windows
 ====================
 For windows binaries check the releases (https://github.com/openstreams/wflow/releases). These can be used 
-if you do not have a python installation. However, it is recommende to install wflow as a python package (see below).
+if you do not have a python installation. However, it is recommended to install wflow as a python package (see below).
 
 Install as a python package
 ===========================
