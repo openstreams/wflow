@@ -346,19 +346,19 @@ class WflowModel(DynamicModel):
 
         # read landuse and soilmap and make sure there are no missing points related to the
         # subcatchment map. Currently sets the lu and soil type  type to 1
-        self.LandUse = self.wf_readmap(os.path.join(self.Dir,wflow_landuse),0.0,fail=True)
-        self.LandUse = cover(self.LandUse, nominal(ordinal(subcatch) > 0))
-        self.Soil = self.wf_readmap(os.path.join(self.Dir,wflow_soil),0.0,fail=True)
-        self.Soil = cover(self.Soil, nominal(ordinal(subcatch) > 0))
+        self.LandUse = ordinal(self.wf_readmap(os.path.join(self.Dir,wflow_landuse),0.0,fail=True))
+        self.LandUse = cover(self.LandUse, ordinal(subcatch > 0))
+        self.Soil = ordinal(self.wf_readmap(os.path.join(self.Dir,wflow_soil),0.0,fail=True))
+        self.Soil = cover(self.Soil, ordinal(subcatch > 0))
 
-        self.OutputLoc = self.wf_readmap(os.path.join(self.Dir,wflow_gauges),0.0,fail=True)  # location of output gauge(s)
-        self.InflowLoc = self.wf_readmap(os.path.join(self.Dir,wflow_inflow), 0.0)  # location abstractions/inflows.
+        self.OutputLoc = ordinal(self.wf_readmap(os.path.join(self.Dir,wflow_gauges),0.0,fail=True))  # location of output gauge(s)
+        self.InflowLoc = ordinal(self.wf_readmap(os.path.join(self.Dir,wflow_inflow), 0.0))  # location abstractions/inflows.
         self.RiverWidth = self.wf_readmap(os.path.join(self.Dir,wflow_riverwidth), 0.0)
         self.bankFull = self.wf_readmap(os.path.join(self.Dir,wflow_bankfulldepth), 999999.0)
         self.floodPlainWidth = self.wf_readmap(os.path.join(self.Dir,wflow_floodplainwidth), 8000.0)
         self.floodPlainDist = self.wf_readmap(os.path.join(self.Dir,wflow_floodplaindist), 0.5)
 
-        self.OutputId = self.wf_readmap(os.path.join(self.Dir,wflow_subcatch),0.0,fail=True)  # location of subcatchment
+        self.OutputId = ordinal(self.wf_readmap(os.path.join(self.Dir,wflow_subcatch),0.0,fail=True))  # location of subcatchment
         self.ZeroMap = 0.0 * scalar(subcatch)  #map with only zero's
 
 

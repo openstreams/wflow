@@ -361,7 +361,7 @@ class wflowbmi_csdms(bmi.Bmi):
         implement translation of long_var_names
     """
 
-    def __init__(self):
+    def __init__(self,log=None):
         """
         Initialises the object
 
@@ -391,6 +391,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
         self.bmilogger = setlogger('wflow_bmi.log','wflow_bmi_logging',thelevel=self.loggingmode)
         self.bmilogger.info("__init__: wflow_bmi object initialised.")
+
 
     def initialize_config(self, filename, loglevel=logging.DEBUG):
         """

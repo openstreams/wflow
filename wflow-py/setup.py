@@ -54,6 +54,6 @@ setup(name='wflow',
                'wflow/wflow_fit.py','wflow/wflow_adapt.py','wflow/wflow_delwaq.py',
                'Scripts/wflow_prepare_step1.py','Scripts/wflow_prepare_step2.py',
                'wflow/wflow_sbm.py','wflow/wflow_hbv.py','wflow/wflow_W3RA.py',
-               'wflow/wflow_upscale.py','wflow/wflow_routing.py'],
+               'wflow/wflow_upscale.py','wflow/wflow_routing.py','Scripts/bmi2runner.py'],
       description='the wflow hydrological models (part of OpenStreams)',
       )

@@ -59,6 +59,7 @@ class wflowbmi_csdms(bmi.Bmi):
         self.bmimodels = {}
         self.currenttimestep = 0
         self.exchanges = []
+        self.comp_sep = "."
 
     def __getmodulenamefromvar__(self,long_var_name):
         """
@@ -66,7 +67,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :param long_var_name:
         :return: name of the module
         """
-        return long_var_name.split('/')[0]
+        return long_var_name.split(self.comp_sep)[0]
 
     def initialize_config(self, filename):
         """
@@ -81,8 +82,9 @@ class wflowbmi_csdms(bmi.Bmi):
 
         self.currenttimestep = 1
 
-        self.config = iniFileSetUp(filename)
-        self.datadir = os.path.dirname(filename)
+        fullpathname = os.path.abspath(filename)
+        self.config = iniFileSetUp(fullpathname)
+        self.datadir = os.path.dirname(fullpathname)
         inifile = os.path.basename(filename)
 
         self.models = configsection(self.config,'models')
@@ -93,7 +95,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
         # Initialize all bmi model objects
         for key, value in self.bmimodels.iteritems():
-            modconf = self.config.get('models',key)
+            modconf = os.path.join(self.datadir,self.config.get('models',key))
             self.bmimodels[key].initialize_config(modconf)
 
 
@@ -139,7 +141,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :return:
         """
         for key, value in self.bmimodels.iteritems():
-            self.bmimodels[key].set_send_time(end_time)
+            self.bmimodels[key].set_end_time(end_time)
 
 
 
@@ -152,7 +154,7 @@ class wflowbmi_csdms(bmi.Bmi):
         names = []
         for key, value in self.bmimodels.iteritems():
             names.append(self.bmimodels[key].get_attribute_names())
-            names[-1] = [self.bmimodels[key].get_component_name() + "/" + s for s in names[-1]]
+            names[-1] = [self.bmimodels[key].get_component_name() + self.comp_sep + s for s in names[-1]]
 
         ret = [item for sublist in names for item in sublist]
         return ret
@@ -162,7 +164,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :param attribute_name:
         :return: attribute value
         """
-        cname = attribute_name.split('/')
+        cname = attribute_name.split(self.comp_sep)
         return self.bmimodels[cname[0]].get_attribute_value(cname[1])
 
 
@@ -172,7 +174,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :param attribute_value: string value of the option
         :return:
         """
-        cname = attribute_name.split('/')
+        cname = attribute_name.split(self.comp_sep)
         self.bmimodels[cname[0]].set_attribute_value(cname[1],attribute_value)
 
 
@@ -302,7 +304,7 @@ class wflowbmi_csdms(bmi.Bmi):
         names = []
         for key, value in self.bmimodels.iteritems():
             names.append(self.bmimodels[key].get_input_var_names())
-            names[-1] = [self.bmimodels[key].get_component_name() + "/" + s for s in names[-1]]
+            names[-1] = [self.bmimodels[key].get_component_name() + self.comp_sep + s for s in names[-1]]
 
         ret = [item for sublist in names for item in sublist]
         return ret
@@ -316,7 +318,7 @@ class wflowbmi_csdms(bmi.Bmi):
         names = []
         for key, value in self.bmimodels.iteritems():
             names.append(self.bmimodels[key].get_output_var_names())
-            names[-1] = [self.bmimodels[key].get_component_name() + "/" + s for s in names[-1]]
+            names[-1] = [self.bmimodels[key].get_component_name() + self.comp_sep + s for s in names[-1]]
 
         ret = [item for sublist in names for item in sublist]
 
@@ -330,7 +332,7 @@ class wflowbmi_csdms(bmi.Bmi):
         """
 
         # first part should be the component name
-        cname = long_var_name.split('/')
+        cname = long_var_name.split(self.comp_sep)
         for key, value in self.bmimodels.iteritems():
             nn = self.bmimodels[key].get_component_name()
             if nn == cname[0]:
@@ -346,7 +348,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :return: array rank or 0 for scalar (number of dimensions):
         """
         # first part should be the component name
-        cname = long_var_name.split('/')
+        cname = long_var_name.split(self.comp_sep)
         for key, value in self.bmimodels.iteritems():
             nn = self.bmimodels[key].get_component_name()
             if nn == cname[0]:
@@ -363,7 +365,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :return: total number of values contained in the given variable (number of elements in map)
         """
         # first part should be the component name
-        cname = long_var_name.split('/')
+        cname = long_var_name.split(self.comp_sep)
         for key, value in self.bmimodels.iteritems():
             nn = self.bmimodels[key].get_component_name()
             if nn == cname[0]:
@@ -379,7 +381,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :return: total number of bytes contained in the given variable (number of elements * bytes per element)
         """
         # first part should be the component name
-        cname = long_var_name.split('/')
+        cname = long_var_name.split(self.comp_sep)
         for key, value in self.bmimodels.iteritems():
             nn = self.bmimodels[key].get_component_name()
             if nn == cname[0]:
@@ -459,7 +461,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :return: a np array of long_var_name
         """
         # first part should be the component name
-        cname = long_var_name.split('/')
+        cname = long_var_name.split(self.comp_sep)
         if self.bmimodels.has_key(cname[0]):
             return self.bmimodels[cname[0]].get_value(cname[1])
         else:
@@ -475,7 +477,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
         :return: numpy array of values in the data type returned by the function get_var_type.
         """
-        cname = long_var_name.split('/')
+        cname = long_var_name.split(self.comp_sep)
 
         if self.bmimodels.has_key(cname[0]):
             return self.bmimodels[cname[0]].get_value_at_indices(cname[1],inds)
@@ -493,7 +495,7 @@ class wflowbmi_csdms(bmi.Bmi):
                                         e.g. [[0, 0], [0, 1], [15, 19], [15, 20], [15, 21]] indicates 5 elements in a 2D grid.:
         :var src: Numpy array of values. one value to set for each of the indicated elements:
         """
-        cname = long_var_name.split('/')
+        cname = long_var_name.split(self.comp_sep)
         if self.bmimodels.has_key(cname[0]):
             self.bmimodels[cname[0]].set_value_at_indices(cname[1], inds,src)
 
@@ -506,7 +508,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
         :return: BmiGridType type of the grid geometry of the given variable.
         """
-        cname = long_var_name.split('/')
+        cname = long_var_name.split(self.comp_sep)
 
         if self.bmimodels.has_key(cname[0]):
             return self.bmimodels[cname[0]].get_grid_type(cname[1])
@@ -521,7 +523,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
         :return: List of integers: the sizes of the dimensions of the given variable, e.g. [500, 400] for a 2D grid with 500x400 grid cells.
         """
-        cname = long_var_name.split('/')
+        cname = long_var_name.split(self.comp_sep)
 
         if self.bmimodels.has_key(cname[0]):
             return self.bmimodels[cname[0]].get_grid_shape(cname[1])
@@ -537,7 +539,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
         :return: The size of a grid cell for each of the dimensions of the given variable, e.g. [width, height]: for a 2D grid cell.
         """
-        cname = long_var_name.split('/')
+        cname = long_var_name.split(self.comp_sep)
 
         if self.bmimodels.has_key(cname[0]):
             return self.bmimodels[cname[0]].get_grid_spacing(cname[1])
@@ -553,7 +555,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
         :return: X, Y: ,the lower left corner of the grid.
         """
-        cname = long_var_name.split('/')
+        cname = long_var_name.split(self.comp_sep)
 
         if self.bmimodels.has_key(cname[0]):
             return self.bmimodels[cname[0]].get_grid_origin(cname[1])
@@ -570,7 +572,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :return: Numpy array of doubles: x coordinate of grid cell center for each grid cell, in the same order as the
         values returned by function get_value.
         """
-        cname = long_var_name.split('/')
+        cname = long_var_name.split(self.comp_sep)
 
         if self.bmimodels.has_key(cname[0]):
             return self.bmimodels[cname[0]].get_grid_x(cname[1])
@@ -588,7 +590,7 @@ class wflowbmi_csdms(bmi.Bmi):
         values returned by function get_value.
 
         """
-        cname = long_var_name.split('/')
+        cname = long_var_name.split(self.comp_sep)
 
         if self.bmimodels.has_key(cname[0]):
             return self.bmimodels[cname[0]].get_grid_y(cname[1])
@@ -603,7 +605,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
         :return: Numpy array of doubles: z coordinate of grid cell center for each grid cell, in the same order as the values returned by function get_value.
         """
-        cname = long_var_name.split('/')
+        cname = long_var_name.split(self.comp_sep)
 
         if self.bmimodels.has_key(cname[0]):
             return self.bmimodels[cname[0]].get_grid_z(cname[1])
@@ -621,7 +623,7 @@ class wflowbmi_csdms(bmi.Bmi):
         using the UDUNITS standard from Unidata. (only if set properly in the ini file)
         """
 
-        cname = long_var_name.split('/')
+        cname = long_var_name.split(self.comp_sep)
 
         if self.bmimodels.has_key(cname[0]):
             return self.bmimodels[cname[0]].get_var_units(cname[1])
@@ -637,7 +639,7 @@ class wflowbmi_csdms(bmi.Bmi):
                   is present a uniform map will be set in the wflow model.
         """
         # first part should be the component name
-        cname = long_var_name.split('/')
+        cname = long_var_name.split(self.comp_sep)
         if self.bmimodels.has_key(cname[0]):
             self.bmimodels[cname[0]].set_value(cname[1],src)
 
