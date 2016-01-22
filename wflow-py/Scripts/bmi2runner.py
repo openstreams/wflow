@@ -6,12 +6,23 @@ Usage:
 
         bmi2runner -c configfile
 
+Example ini file:
+
+::
+
+    [models]
+    wflow_sbm=wflow_sbm/wflow_sbm_comb.ini
+    wflow_routing=wflow_routing/wflow_routing_comb.ini
+
+    [exchanges]
+    # From_model/var -> To_model/var
+    wflow_sbm/InwaterMM=wflow_routing/IW
+
 """
 
 import wflow.wflow_bmi_combined as wfbmi
 import getopt
 import sys
-import logging
 import wflow.wflow_bmi_combined as bmi
 import wflow.pcrut as pcrut
 import wflow.wflow_adapt as wfa
@@ -32,8 +43,7 @@ def main(argv=None):
     """
 
     configfile = "bmirunner.ini"
-    LogFileName = "bmirunner.log"
-    loglevel = logging.DEBUG
+
 
     if argv is None:
         argv = sys.argv[1:]
@@ -50,17 +60,18 @@ def main(argv=None):
 
     for o, a in opts:
         if o == '-c': configfile = a
-        if o == '-l': exec "loglevel = logging." + a
 
 
-    logje = pcrut.setlogger('bmi2runner','bmi2runner',thelevel=loglevel)
+    # Construct object and initilize the models
     bmiobj = bmi.wflowbmi_csdms()
     bmiobj.initialize(configfile)
+    # Get time for the loop
     start = bmiobj.get_start_time()
     end = bmiobj.get_end_time()
     ts = bmiobj.get_time_step()
     curtime = bmiobj.get_current_time()
 
+    # Loop over the time duration
     while curtime < end:
         bmiobj.update_until(curtime + ts)
         curtime = bmiobj.get_current_time()
