@@ -3,8 +3,8 @@ __author__ = 'schelle'
 import unittest
 import logging
 import sys
-sys.path = ['../Scripts'] + ['../'] + sys.path
-import bmi_runner_hydro_routing as bmi
+sys.path = ['../wflow'] + ['../'] + sys.path
+import wflow_bmi_combined as bmi
 import time
 import os
 

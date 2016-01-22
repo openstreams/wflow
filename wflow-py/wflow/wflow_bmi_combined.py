@@ -2,7 +2,6 @@
 import wflow.bmi as bmi
 import wflow.wflow_bmi as wfbmi
 import wflow
-import logging
 import os
 from wflow.pcrut import setlogger
 from wflow.wflow_lib import configget
@@ -70,13 +69,19 @@ class wflowbmi_csdms(bmi.Bmi):
 
         :return: nothing
         """
-        self.loggingmode=logging.DEBUG
+
         self.bmi_routing = None
         self.bmi_hydro = None
-        self.bmilogger = setlogger('bmi_runner.log','wflow_bmi_logging',thelevel=self.loggingmode)
-        self.bmilogger.info("__init__: wflow_bmi object initialised.")
         self.currenttimestep = 0
         self.exchanges = []
+
+    def __getmodulenamefromvar__(self,long_var_name):
+        """
+
+        :param long_var_name:
+        :return: name of the module
+        """
+        return long_var_name.split('/')[0]
 
     def initialize_config(self, filename):
         """
@@ -183,7 +188,7 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         raise NotImplementedError
 
-    def initialize(self, filename,loglevel=logging.DEBUG):
+    def initialize(self, filename):
         """
         Initialise the model. Should be called before any other method.
 
@@ -195,10 +200,8 @@ class wflowbmi_csdms(bmi.Bmi):
             - the configfile wih be a full path
             - we define the case from the basedir of the configfile
 
-
         """
 
-        self.bmilogger.info("initialize: Initialising  bmi models with ini: " + filename)
         self.initialize_config(filename)
         self.initialize_model()
 
@@ -208,12 +211,16 @@ class wflowbmi_csdms(bmi.Bmi):
         Propagate the model to the next model timestep
         """
         for key, value in self.bmimodels.iteritems():
+            # step one update first model
             self.bmimodels[key].update()
             # do all exchanges
+            curmodel = self.bmimodels[key].get_component_name()
             for item in self.exchanges:
-                tomodel = self.config.get('exchanges',item)
-                outofmodel = self.get_value(item)
-                self.set_value(tomodel,outofmodel)
+                supplymodel = self.__getmodulenamefromvar__(item)
+                if curmodel == supplymodel:
+                    outofmodel = self.get_value(item)
+                    tomodel = self.config.get('exchanges',item)
+                    self.set_value(tomodel,outofmodel)
 
         self.currenttimestep = self.currenttimestep + 1
 
@@ -229,14 +236,11 @@ class wflowbmi_csdms(bmi.Bmi):
         curtime = self.get_current_time()
 
         if abs(time - curtime)% self.get_time_step() != 0:
-            self.bmilogger.error('update_until: timespan not dividable by timestep: ' + str(abs(time - curtime)) +
-                                 ' and ' + str(self.get_time_step()))
             raise ValueError("Update in time not a multiple of timestep")
 
         if curtime > time:
             timespan = curtime - time
             nrstepsback = int(timespan/self.get_time_step())
-            self.bmilogger.debug('update_until: update timesteps back ' + str(nrstepsback) + ' to ' + str(curtime + timespan))
             if nrstepsback > 1:
                 raise ValueError("Time more than one timestep before current time.")
             for key, value in self.bmimodels.iteritems():
@@ -245,8 +249,6 @@ class wflowbmi_csdms(bmi.Bmi):
         else:
             timespan = time - curtime
             nrsteps = int(timespan/self.get_time_step())
-            self.bmilogger.debug('update_until: update ' + str(nrsteps) + ' timesteps forward from ' + str(curtime) + ' to ' + str(curtime + timespan))
-            self.bmilogger.debug('update_until: step ' + str(self.currenttimestep) + ' to ' + str(self.currenttimestep + nrsteps -1))
 
             #self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps -1)
             for st in range(0,nrsteps):

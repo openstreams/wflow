@@ -23,7 +23,7 @@ import traceback
 import  wflow_adapt
 from collections import namedtuple
 
-logging = None
+import logging
 
 from pcraster.framework import *
 from wflow_lib import *
@@ -41,6 +41,7 @@ def log_uncaught_exceptions(ex_cls, ex, tb):
 
 sys.excepthook = log_uncaught_exceptions
 
+logging.getLogger('foo').addHandler(logging.NullHandler())
 
 
 class runDateTimeInfo():
