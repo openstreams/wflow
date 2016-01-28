@@ -39,7 +39,7 @@ def interception_no_reservoir(self, k):
     self.Pe_[k] = max(self.Precipitation, 0)
     self.Ei_[k] = 0.
     self.Si_[k] = 0.
-    self.wbSi_[k] = self.Precipitation - self.Ei - self.Pe - self.Si[k] + self.Si_t[k]
+    self.wbSi_[k] = self.Precipitation - self.Ei_[k] - self.Pe_[k] - self.Si[k] + self.Si_t[k]
 
 def interception_overflow2(self, k):
     """
@@ -55,8 +55,8 @@ def interception_overflow2(self, k):
     
     self.wbSi_[k] = self.Precipitation - self.Ei - self.Pe - self.Si[k] + self.Si_t[k]        
     
-    self.Pe = self.Pe + self.Qw         #added on 3-11-2015 for snow module
-    self.Ei = self.Ei + self.Ew
+    self.Pe = self.Pe + self.Qw_[k]         #added on 3-11-2015 for snow module
+    self.Ei = self.Ei + self.Ew_[k]
     
     self.Ei_[k]=self.Ei
     self.Pe_[k]=self.Pe
@@ -87,8 +87,8 @@ def interception_overflow_Ep(self,k):
     
     self.wbSi_[k] = self.Precipitation - self.Ei - self.Pe - self.Si[k] + self.Si_t[k]        
     
-    self.Pe = self.Pe + self.Qw         #added on 3-11-2015 for snow module
-    self.Ei = self.Ei + self.Ew
+    self.Pe = self.Pe + self.Qw_[k]         #added on 3-11-2015 for snow module
+    self.Ei = self.Ei + self.Ew_[k]
     
     self.Ei_[k]=self.Ei
     self.Pe_[k]=self.Pe         

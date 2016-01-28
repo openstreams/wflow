@@ -107,15 +107,15 @@ class WflowModel(DynamicModel):
 
         # Meteo and other forcing
         # Meteo and other forcing
-#        modelparameters.append(
-#            self.ParamType(name="Temperature", stack='intss/T.tss', type="timeseries", default=10.0, verbose=False,
-#                           lookupmaps=['staticmaps/wflow_subcatch.map']))
-#        modelparameters.append(
-#            self.ParamType(name="Precipitation", stack='intss/P.tss', type="timeseries", default=0.0, verbose=False,
-#                           lookupmaps=['staticmaps/wflow_subcatch.map']))
-#        modelparameters.append(
-#            self.ParamType(name="PotEvaporation", stack='intss/PET.tss', type="timeseries", default=0.0, verbose=False,
-#                           lookupmaps=['staticmaps/wflow_subcatch.map']))
+        #modelparameters.append(
+        #    self.ParamType(name="Temperature", stack='intss/T.tss', type="timeseries", default=10.0, verbose=False,
+        #                   lookupmaps=['staticmaps/wflow_subcatch.map']))
+        #modelparameters.append(
+        #    self.ParamType(name="Precipitation", stack='intss/P.tss', type="timeseries", default=0.0, verbose=False,
+        #                   lookupmaps=['staticmaps/wflow_subcatch.map']))
+        #modelparameters.append(
+        #    self.ParamType(name="PotEvaporation", stack='intss/PET.tss', type="timeseries", default=0.0, verbose=False,
+        #                   lookupmaps=['staticmaps/wflow_subcatch.map']))
 
         return modelparameters
 
@@ -557,35 +557,6 @@ class WflowModel(DynamicModel):
         self.convQu_t = [copylist(self.convQu[i]) for i in self.Classes]  # copylist(self.convQu)
         self.convQa_t = [copylist(self.convQa[i]) for i in self.Classes]
         
-        #     if self.scalarInput:
-        #         if self.InputSeries == 1:
-        #             self.Precipitation = timeinputscalar(self.precipTss, self.gaugesMap)
-        #             self.PotEvaporation = timeinputscalar(self.evapTss, self.gaugesMap)
-        #             self.Temperature = timeinputscalar(self.tempTss, self.gaugesMap)
-        #         elif self.InputSeries == 2:
-        #             self.Precipitation = timeinputscalar(self.precipTss2, self.gaugesMap)
-        #             self.EpDay = timeinputscalar(self.evapTss2, self.gaugesMap)
-        #             self.Tmean = timeinputscalar(self.tempDMTss, self.gaugesMap)
-        #             self.Rn = timeinputscalar(self.radnTss, self.gaugesMap)
-        #             self.rad_si = timeinputscalar(self.radsTss, self.gaugesMap)
-        #             self.sgamma = timeinputscalar(self.sgammaTss, self.gaugesMap)
-        #             self.vpd = timeinputscalar(self.vpdTss, self.gaugesMap)
-        #             self.wind2m = timeinputscalar(self.windTss, self.gaugesMap)
-        #             self.DS = timeinputscalar(self.daySTss, self.gaugesMap)
-        #             self.DE = timeinputscalar(self.dayETss, self.gaugesMap)
-        # #            self.LAI = timeinputscalar(self.laiTss,self.gaugesMap)
-        #             self.rst_lai = [timeinputscalar(self.rst_laiTss[i], self.gaugesMap) for i in self.Classes]
-        #
-        #     else:
-        #        self.Precipitation=cover(self.wf_readmap(self.P_mapstack, 0.0), 0.0)
-        #        self.PotEvaporation=cover(self.wf_readmap(self.PET_mapstack, 0.0), 0.0)
-        #        self.Inflow=pcrut.readmapSave(self.Inflow_mapstack, 0.0)
-        #        if self.ExternalQbase:
-        #            self.Seepage = cover(self.wf_readmap(self.Seepage_mapstack, 0.0), 0.0)
-        #        else:
-        #            self.Seepage=cover(0.0)
-        #        self.Temperature=self.wf_readmap(self.TEMP_mapstack, 0.0)
-
         if self.IRURFR_L:
             self.PotEvaporation = areatotal(self.PotEvaporation * self.percentArea, nominal(self.TopoId))
             self.Precipitation = areatotal(self.Precipitation * self.percentArea, nominal(self.TopoId))
@@ -648,27 +619,23 @@ class WflowModel(DynamicModel):
                 eval_str = 'reservoir_Sr.{:s}(self, k)'.format(self.selectSr[k])
                 eval(eval_str)
 
-                # SLOW RUNOFF RESERVOIR ===========================================================================
-
-
-                # TOTAL RUNOFF =============================================================================================
-                #    self.Qfcub = (sum([x*y for x,y in zip(self.Qf_,self.percent)]) + sum([x*y for x,y in zip(self.Qo_,self.percent)]) + sum([x*y for x,y in zip(self.Qd_,self.percent)]) + sum([x*y for x,y in zip(self.Qr_,self.percent)]))/ 1000 * self.surfaceArea
-#        pdb.set_trace()        
+        
+        # TOTAL RUNOFF =============================================================================================
         self.Qftotal = sum([x * y for x, y in zip(self.Qf_, self.percent)]) + sum([x*y for x,y in zip(self.Qfa_,self.percent)])
-        if self.selectSs:
-            eval_str = 'reservoir_Ss.{:s}(self)'.format(self.selectSs)
-        else:
-            eval_str = 'reservoir_Ss.groundWater_no_reservoir(self)'
-        eval(eval_str)
 
+        # SLOW RUNOFF RESERVOIR ===========================================================================
+	if self.selectSs:
+	    eval_str = 'reservoir_Ss.{:s}(self)'.format(self.selectSs)
+	else:
+	    eval_str = 'reservoir_Ss.groundWater_no_reservoir(self)'
+        eval(eval_str)
+        
         # ROUTING
         if self.selectRout:
             eval_str = 'reservoir_Sf.{:s}(self)'.format(self.selectRout)
         else:
             eval_str = 'reservoir_Sf.noRouting(self)'
         eval(eval_str)        
-        
-        
 
 
         # WATER BALANCE (per reservoir, per cell) ========================================================================================
@@ -719,9 +686,11 @@ class WflowModel(DynamicModel):
         self.convQa_WB = areatotal(sum(multiply([sum(self.convQa_t[i]) for i in self.Classes],self.percent)) / 1000 * self.surfaceArea,nominal(self.TopoId))
         self.trackQWB = areatotal(sum(self.trackQ),nominal(self.TopoId))
         self.trackQ_WB = areatotal(sum(self.trackQ_t),nominal(self.TopoId)) 
+        self.QstateWB = areatotal(sum(self.Qstate) * 3600, nominal(self.TopoId))
+        self.Qstate_WB = areatotal(sum(self.Qstate_t) * 3600, nominal(self.TopoId))
         
         #WBtot in m3/s
-        self.WBtot = (self.P - self.Ei - self.Ea - self.Eu - self.Qtot - self.SiWB + self.Si_WB - self.SuWB + self.Su_WB - self.SaWB + self.Sa_WB - self.SwWB + self.Sw_WB - self.SfWB + self.Sf_WB - self.SfaWB + self.Sfa_WB - self.SrWB + self.Sr_WB - self.SsWB + self.Ss_WB - self.convQuWB +self.convQu_WB - self.convQaWB +self.convQa_WB - self.trackQWB + self.trackQ_WB) / self.timestepsecs     
+        self.WBtot = (self.P - self.Ei - self.Ea - self.Eu - self.Qtot - self.SiWB + self.Si_WB - self.SuWB + self.Su_WB - self.SaWB + self.Sa_WB - self.SwWB + self.Sw_WB - self.SfWB + self.Sf_WB - self.SfaWB + self.Sfa_WB - self.SrWB + self.Sr_WB - self.SsWB + self.Ss_WB - self.convQuWB +self.convQu_WB - self.convQaWB +self.convQa_WB - self.trackQWB + self.trackQ_WB - self.QstateWB + self.Qstate_WB) / self.timestepsecs     
 
         # SUMMED FLUXES ======================================================================================
         self.sumprecip = self.sumprecip + self.Precipitation  # accumulated rainfall for water balance (m/h)
