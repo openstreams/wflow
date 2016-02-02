@@ -50,8 +50,8 @@ def groundWaterCombined3(self):
     self.QsinTemp = sum([a*b for a,b in zip(self.QsinClass ,self.percent)])     #fluxes are summed per cell according to percentage of class
     self.Qsin = areatotal(self.QsinTemp * self.percentArea ,nominal(self.TopoId))  #areatotal is taken, according to area percentage of cell
  
-    self.Qs = self.Ss * self.Ks    
-    self.Ss = self.Ss * exp(-self.Ks) + self.Qsin
+    self.Qs = self.Ss * self.Ks[0]    
+    self.Ss = self.Ss * exp(-self.Ks[0]) + self.Qsin
     
     self.wbSs = self.Qsin - self.Qs - self.Ss + self.Ss_t    
     

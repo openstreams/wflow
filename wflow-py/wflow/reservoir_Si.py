@@ -39,7 +39,7 @@ def interception_no_reservoir(self, k):
     self.Pe_[k] = max(self.Precipitation, 0)
     self.Ei_[k] = 0.
     self.Si_[k] = 0.
-    self.wbSi_[k] = self.Precipitation - self.Ei - self.Pe - self.Si[k] + self.Si_t[k]
+    self.wbSi_[k] = self.Precipitation - self.Ei_[k] - self.Pe_[k] - self.Si[k] + self.Si_t[k]
 
 def interception_overflow2(self, k):
     """
@@ -50,14 +50,17 @@ def interception_overflow2(self, k):
     
     self.Pe = max(self.Precipitation - (self.imax[k] - self.Si_t[k]),0)
     self.Si[k] = self.Si_t[k] + (self.Precipitation - self.Pe)
-    self.Ei = min(self.PotEvaporation, self.Si[k])
+    self.Ei = ifthenelse(self.Sw[k] == 0, min(self.PotEvaporation, self.Si[k]), 0)           #ifstatement added on 3-11-2015 for snow module
     self.Si[k] = self.Si[k] - self.Ei    
+    
+    self.wbSi_[k] = self.Precipitation - self.Ei - self.Pe - self.Si[k] + self.Si_t[k]        
+    
+    self.Pe = self.Pe + self.Qw_[k]         #added on 3-11-2015 for snow module
+    self.Ei = self.Ei + self.Ew_[k]
     
     self.Ei_[k]=self.Ei
     self.Pe_[k]=self.Pe
-    self.PotEvaporation_ = self.PotEvaporation
-    
-    self.wbSi_[k] = self.Precipitation - self.Ei - self.Pe - self.Si[k] + self.Si_t[k]    
+    self.PotEvaporation_ = self.PotEvaporation    
     
     if self.URFR_L:
          self.Ei = areatotal(self.Ei * self.percentArea, nominal(self.TopoId))
@@ -75,17 +78,21 @@ def interception_overflow_Ep(self,k):
     """
 
     JarvisCoefficients.calcEp(self,k)
+    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0),0)
     
     self.Pe = max(self.Precipitation - (self.imax[k] - self.Si_t[k]),0)
     self.Si[k] = self.Si_t[k] + (self.Precipitation - self.Pe)
-    self.Ei = min(self.EpHour, self.Si[k])
+    self.Ei = ifthenelse(self.Sw[k] == 0, min(self.PotEvaporation, self.Si[k]), 0)           #ifstatement added on 3-11-2015 for snow module
     self.Si[k] = self.Si[k] - self.Ei    
     
+    self.wbSi_[k] = self.Precipitation - self.Ei - self.Pe - self.Si[k] + self.Si_t[k]        
+    
+    self.Pe = self.Pe + self.Qw_[k]         #added on 3-11-2015 for snow module
+    self.Ei = self.Ei + self.Ew_[k]
+    
     self.Ei_[k]=self.Ei
-    self.Pe_[k]=self.Pe
-    self.Ep_[k]=self.EpHour
-   
-    self.wbSi_[k] = self.Precipitation - self.Ei - self.Pe - self.Si[k] + self.Si_t[k]    
+    self.Pe_[k]=self.Pe         
+    self.Ep_[k]=self.EpHour    
     
     if self.URFR_L:
          self.Ei = areatotal(self.Ei * self.percentArea, nominal(self.TopoId))
