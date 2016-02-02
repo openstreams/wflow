@@ -109,13 +109,30 @@ class wflowbmi_light(object):
         self.dynModel._wf_shutdown()
         self.bmilogger.debug("finalize: shutting down bmi")
 
+
     def update(self, dt):
         """
         Return type string, compatible with numpy.
-        Propagate the model dt seconds or ( if dt == -1) one timestep
+        Propagate the model dt timesteps
+        """
+
+        nrsteps = int(dt)
+        self.bmilogger.debug("update: dt = " + str(dt))
+        self.bmilogger.debug("update: update " + str(nrsteps) + " timesteps.")
+        if nrsteps >= 1:
+            self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps -1)
+            self.currenttimestep = self.currenttimestep + nrsteps
+        else:
+            self.bmilogger.debug("Update: nothing done, number of steps < 1")
+
+    def update_as_it_should_be(self, dt):
+        """
+        Return type string, compatible with numpy.
+        Propagate the model dt timesteps
         """
         # TODO: fix dt = -1 problem, what do we want here?
         #curstep = self.dynModel.wf_
+
         if dt == -1:
             self.bmilogger.debug("update: dt = " + str(dt))
             self.bmilogger.debug("update: update default, 1 timestep")
@@ -125,7 +142,7 @@ class wflowbmi_light(object):
             nrsteps = int(dt/self.dynModel.DT.timeStepSecs)
             self.bmilogger.debug("update: dt = " + str(dt))
             self.bmilogger.debug("update: update " + str(nrsteps) + " timesteps.")
-            if nrsteps > 1:
+            if nrsteps >= 1:
                 self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps -1)
                 self.currenttimestep = self.currenttimestep + nrsteps
             else:
