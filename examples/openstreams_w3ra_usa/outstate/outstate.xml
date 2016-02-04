@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<State xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.wldelft.nl/fews/PI" xsi:schemaLocation="http://www.wldelft.nl/fews/PI http://fews.wldelft.nl/schemas/version1.0/pi-schemas/pi_state.xsd" version="1.2">
+    <stateId>default</stateId>
+    <timeZone>0.0</timeZone>
+<dateTime date="2015-12-21" time="00:00:00"/>
+    <stateLoc type="file">
+        <readLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\DrySnow1.map</readLocation>
+        <writeLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\DrySnow1.map</writeLocation>
+    </stateLoc>
+    <stateLoc type="file">
+        <readLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\DrySnow2.map</readLocation>
+        <writeLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\DrySnow2.map</writeLocation>
+    </stateLoc>
+    <stateLoc type="file">
+        <readLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\EVI1.map</readLocation>
+        <writeLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\EVI1.map</writeLocation>
+    </stateLoc>
+    <stateLoc type="file">
+        <readLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\EVI2.map</readLocation>
+        <writeLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\EVI2.map</writeLocation>
+    </stateLoc>
+    <stateLoc type="file">
+        <readLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\FreeWater1.map</readLocation>
+        <writeLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\FreeWater1.map</writeLocation>
+    </stateLoc>
+    <stateLoc type="file">
+        <readLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\FreeWater2.map</readLocation>
+        <writeLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\FreeWater2.map</writeLocation>
+    </stateLoc>
+    <stateLoc type="file">
+        <readLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\LAI1.map</readLocation>
+        <writeLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\LAI1.map</writeLocation>
+    </stateLoc>
+    <stateLoc type="file">
+        <readLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\LAI2.map</readLocation>
+        <writeLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\LAI2.map</writeLocation>
+    </stateLoc>
+    <stateLoc type="file">
+        <readLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\Mleaf1.map</readLocation>
+        <writeLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\Mleaf1.map</writeLocation>
+    </stateLoc>
+    <stateLoc type="file">
+        <readLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\Mleaf2.map</readLocation>
+        <writeLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\Mleaf2.map</writeLocation>
+    </stateLoc>
+    <stateLoc type="file">
+        <readLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\S01.map</readLocation>
+        <writeLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\S01.map</writeLocation>
+    </stateLoc>
+    <stateLoc type="file">
+        <readLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\S02.map</readLocation>
+        <writeLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\S02.map</writeLocation>
+    </stateLoc>
+    <stateLoc type="file">
+        <readLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\Sd1.map</readLocation>
+        <writeLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\Sd1.map</writeLocation>
+    </stateLoc>
+    <stateLoc type="file">
+        <readLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\Sd2.map</readLocation>
+        <writeLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\Sd2.map</writeLocation>
+    </stateLoc>
+    <stateLoc type="file">
+        <readLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\Sg.map</readLocation>
+        <writeLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\Sg.map</writeLocation>
+    </stateLoc>
+    <stateLoc type="file">
+        <readLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\Sr.map</readLocation>
+        <writeLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\Sr.map</writeLocation>
+    </stateLoc>
+    <stateLoc type="file">
+        <readLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\Ss1.map</readLocation>
+        <writeLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\Ss1.map</writeLocation>
+    </stateLoc>
+    <stateLoc type="file">
+        <readLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\Ss2.map</readLocation>
+        <writeLocation>D:\2015.02\GLOFFIS_SA\Modules\openstreams_w3ra_usa\outstate\Ss2.map</writeLocation>
+    </stateLoc>
+</State>

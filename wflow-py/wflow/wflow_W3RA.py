@@ -143,7 +143,7 @@ class WflowModel(DynamicModel):
     # fday=0.5000
     self.timestepsecs = int(configget(self.config,'model','timestepsecs','86400'))
     self.UseETPdata = int(configget(self.config,'model','UseETPdata','1'))  #  1: Use ETP data, 0: Compute ETP from meteorological variables
-    self.logger.debug('useDATA: ' + str(self.UseETPdata))
+    self.logger.debug('use DATA: ' + str(self.UseETPdata))
     self.basetimestep=86400
     self.SaveMapDir = self.Dir + "/" + self.runId + "/outmaps"
 
@@ -280,7 +280,7 @@ class WflowModel(DynamicModel):
           This is where all the time dependent functions are executed. Time dependent
           output should also be saved here.
         """
-        print 'useETPdata' , self.UseETPdata
+        #print 'useETPdata' , self.UseETPdata
         #Put the W3RA here. Stuff from W3RA_timestep_model.m
         #read meteo from file
         self.logger.debug("Running for: " + str(self.currentdatetime))
@@ -312,7 +312,7 @@ class WflowModel(DynamicModel):
 
         # Assign forcing and estimate effective meteorological variables
 
-        Pg = self.PRECIP # mm 
+        Pg = self.PRECIP # mm
         
         if self.UseETPdata == 1:
             Ta = self.TDAY  # T in degC
