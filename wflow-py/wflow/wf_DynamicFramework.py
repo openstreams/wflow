@@ -862,6 +862,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self.NcInput = netcdfinput(os.path.join(caseName, self.ncfile), self.logger, varlst)
 
 
+
         if self.ncfilestates != "None":
             smaps = self._userModel().stateVariables()
             maps = [s + ".map" for s in smaps]
@@ -2090,6 +2091,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self.logger.debug(os.path.basename(name) + " set via API, not reading from file, using memory copy")
             return getattr(self._userModel(),os.path.basename(name))
 
+        #TODO: Add support for netcdf files
         directoryPrefix = ""
         if kind == 1:
             month = self.DT.currentDateTime.month
