@@ -170,12 +170,12 @@ class WflowModel(DynamicModel):
         #: It is advised to use the wf_suspend() function
         #: here which will suspend the variables that are given by stateVariables
         #: function.
-        [report(self.Si[i], self.SaveDir + "/outmaps/Si" + self.NamesClasses[i] + ".map") for i in self.Classes]
-        [report(self.Su[i], self.SaveDir + "/outmaps/Su" + self.NamesClasses[i] + ".map") for i in self.Classes]
-        [report(self.Sf[i], self.SaveDir + "/outmaps/Sf" + self.NamesClasses[i] + ".map") for i in self.Classes]
-        [report(self.Sr[i], self.SaveDir + "/outmaps/Sr" + self.NamesClasses[i] + ".map") for i in self.Classes]
-        report(self.Ss, self.SaveDir + "/outmaps/Ss.map")
-        report(self.Qstate, self.SaveDir + "/outmaps/Qstate.map")
+        [report(self.Si[i], self.SaveDir + "/outstate/Si" + self.NamesClasses[i] + ".map") for i in self.Classes]
+        [report(self.Su[i], self.SaveDir + "/outstate/Su" + self.NamesClasses[i] + ".map") for i in self.Classes]
+        [report(self.Sf[i], self.SaveDir + "/outstate/Sf" + self.NamesClasses[i] + ".map") for i in self.Classes]
+        [report(self.Sr[i], self.SaveDir + "/outstate/Sr" + self.NamesClasses[i] + ".map") for i in self.Classes]
+        report(self.Ss, self.SaveDir + "/outstate/Ss.map")
+        report(self.Qstate, self.SaveDir + "/outstate/Qstate.map")
 
         [report(self.percent[i], self.SaveDir + "/outmaps/percent" + self.NamesClasses[i] + ".map") for i in
          self.Classes]
