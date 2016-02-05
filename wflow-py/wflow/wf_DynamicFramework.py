@@ -1873,7 +1873,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
             self._incrementIndentLevel()
             self._atStartOfTimeStep(step)
-            # TODO: Check why the timestep setting doesn't not work.....
+            # TODO: Check why the timestep setting doesn't  work.....
             self._userModel()._setCurrentTimeStep(step)
 
             if hasattr(self._userModel(), 'dynamic'):
@@ -2186,7 +2186,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 timestep = self._userModel().currentTimeStep()
                 newName = generateNameT(name, timestep)
 
-        if style == 1:  # Normal reading of mapstack from DISK
+        if style == 1:  # Normal reading of mapstack from DISK per via or via netcdf
             path = os.path.join(directoryPrefix, newName)
             assert path is not ""
 

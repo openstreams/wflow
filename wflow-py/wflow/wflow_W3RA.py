@@ -274,6 +274,36 @@ class WflowModel(DynamicModel):
       """
       return []
 
+  def parameters(self):
+        """
+        Define all model parameters here that the framework should handle for the model
+        See wf_updateparameters and the parameters section of the ini file
+        If you use this make sure to all wf_updateparameters at the start of the dynamic section
+        and at the start/end of the initial section
+        """
+        modelparameters = []
+
+        #Static model parameters e.g.
+        #modelparameters.append(self.ParamType(name="RunoffGeneratingGWPerc",stack="intbl/RunoffGeneratingGWPerc.tbl",type="static",default=0.1))
+        # 3: Input time series ###################################################
+        #self.P_mapstack = self.Dir + configget(self.config, "inputmapstacks", "Precipitation",
+        #                                       "/inmaps/P")  # timeseries for rainfall
+        #self.PET_mapstack = self.Dir + configget(self.config, "inputmapstacks", "EvapoTranspiration",
+        #                                         "/inmaps/PET")  # timeseries for rainfall"/inmaps/PET"          # potential evapotranspiration
+        #self.TEMP_mapstack = self.Dir + configget(self.config, "inputmapstacks", "Temperature",
+        #                                          "/inmaps/TEMP")  # timeseries for rainfall "/inmaps/TEMP"          # global radiation
+        #self.Inflow_mapstack = self.Dir + configget(self.config, "inputmapstacks", "Inflow",
+        #                                            "/inmaps/IF")  # timeseries for rainfall "/inmaps/IF" # in/outflow locations (abstractions)
+
+        # Meteo and other forcing
+        #modelparameters.append(self.ParamType(name="Precipitation",stack=self.P_mapstack,type="timeseries",default=0.0,verbose=True,lookupmaps=[]))
+        #modelparameters.append(self.ParamType(name="PotenEvap",stack=self.PET_mapstack,type="timeseries",default=0.0,verbose=True,lookupmaps=[]))
+        #modelparameters.append(self.ParamType(name="Temperature",stack=self.TEMP_mapstack,type="timeseries",default=10.0,verbose=True,lookupmaps=[]))
+        #modelparameters.append(self.ParamType(name="Inflow",stack=self.Inflow_mapstack,type="timeseries",default=0.0,verbose=False,lookupmaps=[]))
+
+
+
+
   def dynamic(self):
         """
           *Required*
