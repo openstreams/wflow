@@ -1186,11 +1186,6 @@ class WflowModel(DynamicModel):
                 self.UStoreLayerDepth[n] = ifthenelse(self.ZiLayer<n,self.ZeroMap,self.UStoreLayerDepth[n] - self.T[n])
 
 
-        #for UStore
-        self.U0 = self.UStoreLayerDepth[0]
-        self.U1 = self.UStoreLayerDepth[1]
-        self.T0 = self.T[0]
-
         UStoreCapacity = UStoreCapacity - InfiltSoilPath + SatFlow
 
         self.AvailableForInfiltration = self.AvailableForInfiltration - InfiltSoilPath + SatFlow
@@ -1205,12 +1200,6 @@ class WflowModel(DynamicModel):
         # Determine transpiration
         self.Transpiration = self.ActEvapUStore + self.ActEvapSat
         self.ActEvap = self.Transpiration + self.soilevap
-
-
-
-        self.U02 = self.UStoreLayerDepth[0]
-        self.U12 = self.UStoreLayerDepth[1]
-
 
         # Determine Open Water EVAP. Later subtself.UStoreLayerDepthract this from water that
         # enters the Kinematic wave
