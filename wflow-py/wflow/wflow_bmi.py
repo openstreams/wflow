@@ -6,6 +6,7 @@ import datetime
 import parser
 
 import wflow.bmi as bmi
+import wflow_lib
 import numpy as np
 from wflow.pcrut import setlogger
 
@@ -108,13 +109,30 @@ class wflowbmi_light(object):
         self.dynModel._wf_shutdown()
         self.bmilogger.debug("finalize: shutting down bmi")
 
+
     def update(self, dt):
         """
         Return type string, compatible with numpy.
-        Propagate the model dt seconds or ( if dt == -1) one timestep
+        Propagate the model dt timesteps
+        """
+
+        nrsteps = int(dt)
+        self.bmilogger.debug("update: dt = " + str(dt))
+        self.bmilogger.debug("update: update " + str(nrsteps) + " timesteps.")
+        if nrsteps >= 1:
+            self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps -1)
+            self.currenttimestep = self.currenttimestep + nrsteps
+        else:
+            self.bmilogger.debug("Update: nothing done, number of steps < 1")
+
+    def update_as_it_should_be(self, dt):
+        """
+        Return type string, compatible with numpy.
+        Propagate the model dt timesteps
         """
         # TODO: fix dt = -1 problem, what do we want here?
         #curstep = self.dynModel.wf_
+
         if dt == -1:
             self.bmilogger.debug("update: dt = " + str(dt))
             self.bmilogger.debug("update: update default, 1 timestep")
@@ -124,7 +142,7 @@ class wflowbmi_light(object):
             nrsteps = int(dt/self.dynModel.DT.timeStepSecs)
             self.bmilogger.debug("update: dt = " + str(dt))
             self.bmilogger.debug("update: update " + str(nrsteps) + " timesteps.")
-            if nrsteps > 1:
+            if nrsteps >= 1:
                 self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps -1)
                 self.currenttimestep = self.currenttimestep + nrsteps
             else:
@@ -229,7 +247,7 @@ class wflowbmi_light(object):
         :return: current time of simulation n the units and epoch returned by the function get_time_units
         """
 
-        st = self.dynModel.wf_supplyCurrentTime()
+        st = self.dynModel.wf_supplyCurrentTime() - self.dynModel.DT.timeStepSecs
         self.bmilogger.debug("get_current_time: " + str(st))
         return st
 
@@ -360,7 +378,7 @@ class wflowbmi_csdms(bmi.Bmi):
         implement translation of long_var_names
     """
 
-    def __init__(self):
+    def __init__(self,log=None):
         """
         Initialises the object
 
@@ -390,6 +408,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
         self.bmilogger = setlogger('wflow_bmi.log','wflow_bmi_logging',thelevel=self.loggingmode)
         self.bmilogger.info("__init__: wflow_bmi object initialised.")
+
 
     def initialize_config(self, filename, loglevel=logging.DEBUG):
         """
@@ -447,6 +466,7 @@ class wflowbmi_csdms(bmi.Bmi):
                 inames.append(varrol[0])
 
         self.inputoutputvars = inames
+
         # If this is True the date/time of the first timestep is the same as the state and we need to skip  that
 
 
@@ -462,7 +482,9 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         self.bmilogger.info("initialize_model: Initialising wflow bmi with ini, loading initial state")
         self.dynModel.setupFramework()
+        self.bmilogger.debug("_runInitial..")
         self.dynModel._runInitial()
+        self.bmilogger.debug("_runResume..")
         self.dynModel._runResume()
 
 
@@ -478,14 +500,12 @@ class wflowbmi_csdms(bmi.Bmi):
         dateobj = datetime.datetime.utcfromtimestamp(start_time)
         datestrimestr = dateobj.strftime("%Y-%m-%d %H:%M:%S")
 
-        self.dynModel.DT.update(datetimestart=dateobj)
+        self.dynModel.DT.update(datetimestart=dateobj, mode=self.dynModel.runlengthdetermination)
+        self.dynModel._update_time_from_DT()
 
-        if self.dynModel.skipfirsttimestep:
-            self.bmilogger.debug("shift start time  1 step...: " + str(start_time) + ":" + str(start_time + self.dynModel.DT.timeStepSecs))
-            self.dynModel.DT.skiptime()
 
-        self.dynModel._userModel().config.set("run",'starttime',self.dynModel.DT.runStartTime.strftime("%Y-%m-%d %H:%M:%S"))
-        self.bmilogger.debug("set_start_time: " + str(start_time + self.dynModel.DT.timeStepSecs) + " " + str(self.dynModel.DT.runStartTime.strftime("%Y-%m-%d %H:%M:%S")))
+        #self.dynModel._userModel().config.set("run",'starttime',self.dynModel.DT.runStartTime.strftime("%Y-%m-%d %H:%M:%S"))
+        self.bmilogger.debug("set_start_time: " + str(start_time) + " " + str(self.dynModel.DT.runStartTime.strftime("%Y-%m-%d %H:%M:%S")))
 
     def set_end_time(self, end_time):
         """
@@ -495,10 +515,12 @@ class wflowbmi_csdms(bmi.Bmi):
 
         dateobj = datetime.datetime.utcfromtimestamp(end_time)
         datestrimestr = dateobj.strftime("%Y-%m-%d %H:%M:%S")
-        self.dynModel._userModel().config.set("run",'endtime',datestrimestr)
+        self.dynModel.DT.update(datetimeend=dateobj,mode=self.dynModel.runlengthdetermination)
+        self.dynModel._update_time_from_DT()
 
-        self.dynModel.DT.update(datetimeend=dateobj)
-        self.bmilogger.debug("set_end_time: " + str(end_time) + " " + str(datestrimestr))
+
+        self.bmilogger.debug("set_end_time: " + str(end_time) + " " + str(self.dynModel.DT.runEndTime.strftime("%Y-%m-%d %H:%M:%S")))
+
 
 
 
@@ -600,7 +622,8 @@ class wflowbmi_csdms(bmi.Bmi):
         else:
             timespan = time - curtime
             nrsteps = int(timespan/self.dynModel.DT.timeStepSecs)
-            self.bmilogger.debug('update_until: update ' + str(nrsteps) + 'timesteps forward from ' + str(curtime) + ' to ' + str(curtime + timespan))
+            self.bmilogger.debug('update_until: update ' + str(nrsteps) + ' timesteps forward from ' + str(curtime) + ' to ' + str(curtime + timespan))
+            self.bmilogger.debug('update_until: step ' + str(self.currenttimestep) + ' to ' + str(self.currenttimestep + nrsteps -1))
             self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps -1)
             self.currenttimestep = self.currenttimestep + nrsteps
 
@@ -767,7 +790,7 @@ class wflowbmi_csdms(bmi.Bmi):
         """
 
         st = self.dynModel.wf_supplyCurrentTime()
-        self.bmilogger.debug("get_current_time: " + str(st))
+        self.bmilogger.debug("get_current_time: " + str(st) + " " + str(self.dynModel.DT.currentDateTime.strftime("%Y-%m-%d %H:%M:%S")))
         return st
 
     def get_end_time(self):

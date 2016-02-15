@@ -7,12 +7,14 @@ sys.path = ['../'] + sys.path
 import wflow.wflow_bmi as bmi
 import time
 import os
+
 """
 Simple test for wflow bmi framework
 """
 
 
 class MyTest(unittest.TestCase):
+
 
     def testbmifuncs(self):
 
@@ -116,15 +118,6 @@ class MyTest(unittest.TestCase):
         print("-------------- get_attribute_names: ")
         names = bmiobj.get_attribute_names()
         print names
-        self.assertEquals(['API:IF', 'API:InwaterMM', 'framework:outputformat', 'framework:debug',
-                           'framework:netcdfinput', 'framework:netcdfstatesinput', 'framework:netcdfoutput',
-                           'framework:netcdfstaticoutput', 'framework:netcdfstatesoutput',
-                           'framework:netcdfstaticinput', 'framework:EPSG', 'framework:netcdf_format',
-                           'framework:netcdf_zlib', 'framework:netcdf_least_significant_digit', 'run:starttime',
-                           'run:endtime', 'run:timestepsecs', 'run:reinit', 'modelparameters:AltTemperature',
-                           'layout:sizeinmetres', 'outputmaps:self.TSoil', 'outputmaps:self.AltTemperature',
-                           'outputcsv_0:samplemap', 'outputcsv_0:self.TSoil', 'outputcsv_0:self.AltTemperature',
-                           'outputcsv_1:samplemap', 'outputtss_0:samplemap', 'model:timestepsecs'], names)
 
         print("-------------- get_attribute_value: ")
         print names[0]
@@ -155,11 +148,11 @@ class MyTest(unittest.TestCase):
         st = bmiobj.get_start_time()
         ts = 86400
         # Do one timestep and check
-        print bmiobj.get_current_time()
-        bmiobj.update_until(st + ts)
-        print bmiobj.get_current_time()
-        self.assertEquals(st + ts,bmiobj.get_current_time())
+        bmiobj.get_current_time()
+        bmiobj.update_until(et)
         bmiobj.finalize()
+        self.assertEquals(et,bmiobj.get_current_time())
+
 
 
     def testbmirun_l(self):
@@ -170,24 +163,38 @@ class MyTest(unittest.TestCase):
         bmiobj.update(-1)
         bmiobj.finalize()
 
-"""    def testbmirunnetcdf(self):
+    def testbmirunnetcdf(self):
         bmiobj = bmi.wflowbmi_csdms()
         bmiobj.initialize_config('wflow_sbm/wflow_sbm_nc.ini',loglevel=logging.DEBUG)
-        bmiobj.set_attribute_value('run:timestepsecs','3600')
-        bmiobj.set_attribute_value('run:starttime','2010-06-18 00:00:00')
-        bmiobj.set_attribute_value('run:endtime','2010-06-26 00:00:00')
+        #bmiobj.set_attribute_value('run:starttime','2014-05-01 01:00:00')
+        #bmiobj.set_attribute_value('run:endtime','2014-05-17 00:00:00')
+        #bmiobj.set_attribute_value('run:runlengthdetermination','steps')
+
+
+        bmiobj.set_start_time(1399597200)
+        bmiobj.set_end_time(1399597200 + (4 * 3600))
+
+        st = bmiobj.get_start_time()
+        ett = bmiobj.get_end_time()
+        ts = bmiobj.get_time_step()
 
         bmiobj.initialize_model()
+        curtime = st
+        cnt = 0
+        lastcurtime = bmiobj.get_current_time()
+        while curtime < ett:
+            avar = bmiobj.get_value('PET')
+            bmiobj.set_value('PET',avar + 10.0)
+            cnt = cnt + 1
+            bmiobj.update_until(curtime + ts)
+            print (curtime + ts)/ts
+            curtime = bmiobj.get_current_time()
+            print bmiobj.get_current_time() - lastcurtime
+            lastcurtime = bmiobj.get_current_time()
 
-        et = bmiobj.get_end_time()
-        bmiobj.update_until(et)
-        ct = bmiobj.get_current_time()
-        togoto = ct - 3600
-        bmiobj.update_until(togoto)
-        nt = bmiobj.get_current_time()
-        bmiobj.update_until(et)
+
         bmiobj.finalize()
-"""
+
 
 if __name__ == '__main__':
     unittest.main()

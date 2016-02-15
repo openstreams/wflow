@@ -56,6 +56,8 @@ Command line options::
         conditions to an alternate location. The runinfo.xml file should be located
         in the inmaps directory of the case. 
     -c: Name of the wflow configuration file
+    -n: Name of the wflow netCDF output file, expected in caseDir/runId/. If not
+        present, mapstacks will be used.
 
   
 .. todo::
@@ -94,6 +96,8 @@ import time
 import struct
 import shutil
 import __builtin__
+
+import wf_netcdfio
 
 logger = ""
 volumeMapStack="vol"
@@ -406,10 +410,9 @@ def dw_pcrToDataBlock(pcrmap):
     return ttar
 
  
-def readTS(name, ts):
+def _readTS(name, ts):
     """
-    Read a pcraster map for a timestep without using the dynamic framework
-    
+    Read a pcraster map for a timestep without using the dynamic framework 
     """
     mname = os.path.basename(name)
     #  now generate timestep
@@ -1137,7 +1140,17 @@ def dw_WriteHydFile(fname, d):
     f = open(fname, 'w')
     f.write(buff)
     f.close()
-   
+
+def read_timestep(nc, var, timestep):
+    """
+    Returns a map of the given variable at the given timestep.
+    """
+    if nc is not None: 
+        pcrmap, succes = nc.gettimestep(timestep, logger, var=var)
+        assert(succes)
+        return pcrmap
+    else:
+        return _readTS(caseId + "/" + runId + "/outmaps/" + var, timestep)
 
 def usage(*args):
     sys.stdout = sys.stderr
@@ -1165,9 +1178,11 @@ def main():
     T0 = datetime.strptime("2000-01-01 00:00:00",'%Y-%m-%d %H:%M:%S')
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'adD:C:R:S:hT:F:s:O:A:jc:')
+        opts, args = getopt.getopt(sys.argv[1:], 'adD:C:R:S:hT:F:s:O:A:jc:n:')
     except getopt.error, msg:
         pcrut.usage(msg)
+
+    nc_outmap_file = None
     
     for o, a in opts:
         if o == '-F': 
@@ -1185,10 +1200,8 @@ def main():
         if o == '-A': areamap = a.strip()
         if o == '-c': configfile = a.strip()
         if o == '-O': T0 = datetime.strptime(a,'%Y-%m-%d %H:%M:%S')
-        
-    
+        if o == '-n': nc_outmap_file = a.strip()
 
-   
     global pointer
     dw_CreateDwRun(dwdir)
 
@@ -1225,6 +1238,9 @@ def main():
     modelmap = readmap(wflow_subcatch)
     ldd = readmap(caseId + "/" + configget(config,"model","wflow_ldd","/staticmaps/wflow_ldd.map"))
     gauges = readmap(caseId + "/" + configget(config,"model","wflow_gauges","/staticmaps/wflow_gauges.map"))
+    if nc_outmap_file is not None:
+        nc_outmap_file = caseId +  "/" + runId + "/" + nc_outmap_file
+
 
     # Some models yield a reallength.map, others a rl.map.
     rl_map_file = caseId + "/" + runId + "/outsum/rl.map"
@@ -1322,6 +1338,12 @@ def main():
     # mask to filter out inactive segments
     zero_map = 0.0*scalar(ptid)
 
+    # Open nc outputmaps file
+    if nc_outmap_file is not None:
+        nc = wf_netcdfio.netcdfinput(nc_outmap_file, logger, ['vol','kwv','run','lev','inw'])
+    else:
+        nc = None
+
     
     ts = 1
     
@@ -1329,28 +1351,23 @@ def main():
         dw_Write_Times(dwdir + "/includes_deltashell/",T0,timeSteps-1,timestepsecs)
         
         for i in range(firstTimeStep,timeSteps * timestepsecs,timestepsecs):
-            volume_map = readTS(caseId + "/" + runId + "/outmaps/" + volumeMapStack,ts)
+
+            volume_map = read_timestep(nc, 'vol', ts)
             volume_block = dw_pcrToDataBlock(volume_map)
             
             # volume for each timestep and number of segments
            
             logger.info("Writing volumes.dat. Nr of points: " + str(size(volume_block)))
             dw_WriteSegmentOrExchangeData(i,dwdir + '/includes_flow/volume.dat',volume_block,1,WriteAscii)
-
-            
-            # Now write arreas  
-            
-            
         
             # Now write the flows (exchnages)
             # First read the flows in the kinematic wave reservoir (internal exchnages)
-            flow = readTS(caseId + "/" + runId + "/outmaps/" + runoffMapStack,ts)
+            flow = read_timestep(nc, 'run', ts)
             flow_block_Q = dw_pcrToDataBlock(flow)
             # now the inw
             flowblock = flow_block_Q
             
-            
-            wlevel = readTS(caseId + "/" + runId + "/outmaps/" + waterlevelMapStack,ts)
+            wlevel = read_timestep(nc, 'lev', ts)
             areadyn = wlevel * internalflowwidth
             area_block_Q = dw_pcrToDataBlock(areadyn)
             area_block = area_block_Q
@@ -1359,7 +1376,7 @@ def main():
             # wave reservoir). Also write the areas
             for source in sourcesMap:
                 logger.info("Step: " + str(ts) + " source: " + str(source))
-                thesource = readTS(caseId + "/" + runId + "/outmaps/" + source ,ts)
+                thesource = read_timestep(nc, source, ts)
                 thesource = zero_map + thesource
                 flow_block_IN = dw_pcrToDataBlock(thesource)
                 flowblock = hstack((flowblock,flow_block_IN))
@@ -1394,7 +1411,8 @@ def main():
         logger.info("Writing flow.dat. Nr of points: " + str(size(flowblock)))
         dw_WriteSegmentOrExchangeData(i,dwdir + '/includes_flow/flow.dat',flowblock,1,WriteAscii)
  
-        volume_map = readTS(caseId + "/" + runId + "/outmaps/voln",ts)
+            
+        volume_map = read_timestep(nc, 'kwv', ts)
         volume_block = dw_pcrToDataBlock(volume_map)
         logger.info("Writing volumes.dat. Nr of points: " + str(size(volume_block)))
         dw_WriteSegmentOrExchangeData(i,dwdir + '/includes_flow/volume.dat',volume_block,1,WriteAscii)

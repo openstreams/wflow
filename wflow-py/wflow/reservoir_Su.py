@@ -78,7 +78,7 @@ def unsatZone_no_reservoir(self, k):
     self.Qu_[k] = max(self.Pe_[k], 0)
     self.Eu_[k] = 0.
     self.Perc_[k] = 0.
-    self.Su_[k] = 0.
+    self.Su[k] = 0.
     self.Cap_[k] = 0.
     self.wbSu_[k] = self.Pe - self.Eu - self.Qu - self.Perc + self.Cap - self.Su[k] + self.Su_t[k]
 
@@ -225,13 +225,11 @@ def unsatZone_LP_beta_Ep_cropG(self,k):
     
     JarvisCoefficients.calcEp(self,k)
     self.PotEvaporation = self.EpHour
-#    
-#    pdb.set_trace()
+
     self.cropG_scal = pcr2numpy(self.cropG,NaN)
     if any(self.cropG_scal == 1):
         self.sumax2 = self.sumax[k]
-    elif any(self.cropG_scal > 0):
-#        pdb.set_trace()        
+    elif any(self.cropG_scal > 0):      
         self.sumax2 = self.sumax[k] * (1 - numpy.max(self.cropG_scal[self.cropG_scal >= 0]) * (1-self.redsu[k]))
     else:
         self.sumax2 = self.sumax[k] * self.redsu[k]

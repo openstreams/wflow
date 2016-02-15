@@ -26,7 +26,7 @@ http://wflow.readthedocs.org
 Binaries for windows
 ====================
 For windows binaries check the releases (https://github.com/openstreams/wflow/releases). These can be used 
-if you do not have a python installation. However, it is recommende to install wflow as a python package (see below).
+if you do not have a python installation. However, it is recommended to install wflow as a python package (see below).
 
 Install as a python package
 ===========================
@@ -66,3 +66,7 @@ Credits
 + The stats.py script was made by Keith Cherkauer (https://engineering.purdue.edu/~cherkaue/software.htm)
 
 + pcraster is developed and maintained by Utrecht University (http://www.pcraster.eu)
+
++ netCDF4 is developed by unidata (http://unidata.github.io/netcdf4-python/)
+
+

@@ -665,9 +665,6 @@ class WflowModel(DynamicModel):
     :var self.ToCubic: Mutiplier to convert mm to m^3/s for fluxes
     """
 
-    self.logger.debug("Step: " + str(int(self.currentStep)) + "/" + str(int(self._d_nrTimeSteps)))
-    self.thestep = self.thestep + 1
-
     self.wf_updateparameters() # read forcing an dynamic parameters
     self.Precipitation = max(0.0,self.Precipitation)
 
@@ -931,6 +928,7 @@ def main(argv=None):
     myModel = WflowModel(wflow_cloneMap, caseName,runId,configfile)
     dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep,firstTimestep=_firstTimeStep,datetimestart=starttime)
     dynModelFw.createRunId(NoOverWrite=NoOverWrite,logfname=LogFileName,level=loglevel,doSetupFramework=False)
+    print str(dynModelFw.DT)
 
     for o, a in opts:
         if o == '-P':

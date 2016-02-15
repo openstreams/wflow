@@ -35,6 +35,25 @@ def calcEp(self,k):
 #    potential_evaporation(self,k)
     downscale_evaporation(self,k)
     
+def calcEpSnow(self,k):
+    """
+    REQUIRED INPUT:
+	daily input data
+    """
+#    resistenceAeroD(self)
+#    potential_evaporation(self,k)
+    self.EpDaySnow = self.EpDay
+    downscale_evaporation_snow(self,k)
+
+def calcEpSnowHour(self,k):
+    """
+    REQUIRED INPUT:
+	hourly input data
+    """
+#    resistenceAeroD(self)
+#    potential_evaporation(self,k)
+    self.EpHour = self.PotEvaporation / self.lamda * self.lamdaS
+    
 def calcEu_laiFixed(self,k):
     """
     REQUIRED INPUT:
@@ -208,14 +227,15 @@ def downscale_evaporation(self,k):
     """
     REQUIRED INPUT:
         daily evaporation (EpDay)
-        - hour of the day (x; derived from self.teller)
+        - hour of the day (x; derived from self.thestep)
         - start of the day (derived from global radiation)
         - end of the day (derived from global radiation)
     PARAMETERS:
     - 
     """
-
-    x = self.teller - floor(self.teller/24) * 24 * scalar(self.TopoId)
+    
+    teller = numpy.max(pcr2numpy(self.thestep,nan))
+    x = teller - floor(teller/24) * 24 * scalar(self.TopoId)
     DL = self.DE - self.DS + 1
     P = 2 * pi / (2 * DL)                              # period
     SH = DL - 12                                        #horizontal shift of new signal
@@ -223,9 +243,32 @@ def downscale_evaporation(self,k):
     aDN = sin((P * (self.DE + SH)) * 180 / pi) - sin((P * (self.DS + SH)) * 180 / pi)     # denominator of the amplitude
     ampl = aN / aDN                                     # amplitude of new signal
     
-    self.EpHour = ifthenelse(pcrand(x >= self.DS, x <= self.DE), -1 * ampl * cos((P * (x + SH)) * 180 / pi), 0)
+    self.EpHour = max(ifthenelse(pcrand(x >= self.DS, x <= self.DE), -1 * ampl * cos((P * (x + SH)) * 180 / pi), 0), 0)
     
+
+def downscale_evaporation_snow(self,k):
+    """
+    REQUIRED INPUT:
+        daily evaporation (EpDay)
+        - hour of the day (x; derived from self.teller)
+        - start of the day (derived from global radiation)
+        - end of the day (derived from global radiation)
+    PARAMETERS:
+    - 
+    """
     
+    teller = numpy.max(pcr2numpy(self.thestep,nan))
+    x = teller - floor(teller/24) * 24 * scalar(self.TopoId)
+    DL = self.DE - self.DS + 1
+    P = 2 * pi / (2 * DL)                              # period
+    SH = DL - 12                                         #horizontal shift of new signal  
+    aN = -1 * self.EpDaySnow * P                       # nominator of the amplitude
+    aDN = sin((P * (self.DE + SH)) * 180 / pi) - sin((P * (self.DS + SH)) * 180 / pi)     # denominator of the amplitude
+    ampl = aN / aDN                                     # amplitude of new signal
+    
+    self.EpHour = max(ifthenelse(pcrand(x >= self.DS, x <= self.DE), -1 * ampl * cos((P * (x + SH)) * 180 / pi), 0), 0)    
+    
+      
     
     
     

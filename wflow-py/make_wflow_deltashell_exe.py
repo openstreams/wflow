@@ -35,7 +35,7 @@ f.addScript("wflow/wflow_wave.py")
 f.addScript("wflow/wflow_gr4.py")
 f.addScript("wflow/wflow_floodmap.py")
 f.addScript("wflow/wflow_routing.py")
-#f.addScript("wflow/plottss.py")
+f.addScript("Scripts/bmi2runner.py")
 f.addScript("Scripts/wfds_core.py")
 f.addScript("Scripts/wflow_prepare_step1.py")
 #f.addScript("Scripts/area_in_out.py")
@@ -47,7 +47,8 @@ f()    # starts the freezing process
 
 ddir = "c:/pcraster4-64/lib/"
 data_files.append((".", glob.glob(ddir + "/*.dll")))
-
+gdaldata = os.getenv("GDAL_DATA")
+data_files.append(("./gdal-data", glob.glob(gdaldata + "/*.*")))
 
 shutil.copy("c:\Anaconda\Lib\site-packages\zmq\libzmq.pyd",thename  +"/")
 

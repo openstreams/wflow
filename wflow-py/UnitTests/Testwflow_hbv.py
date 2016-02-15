@@ -2,7 +2,7 @@ __author__ = 'schelle'
 
 import unittest
 import wflow.wflow_hbv as wf
-import os
+import os, datetime
 """
 
 Run wflow_hbv for 30 steps and checks if the outcome is approx that of the reference run
@@ -21,19 +21,21 @@ class MyTest(unittest.TestCase):
         configfile="wflow_hbv.ini"
         wflow_cloneMap = 'wflow_catchment.map'
         caseName="wflow_hbv"
+        starttime = starttime = datetime.datetime(1990,01,01)
 
         myModel = wf.WflowModel(wflow_cloneMap, caseName,runId,configfile)
          # initialise the framework
-        dynModelFw = wf.wf_DynamicFramework(myModel, stopTime,startTime)
+        dynModelFw = wf.wf_DynamicFramework(myModel, stopTime,firstTimestep=startTime,datetimestart=starttime)
+        print dynModelFw.DT
 
           # Load model config from files and check directory structure
-        dynModelFw.createRunId(NoOverWrite=False,level=wf.logging.ERROR)
+        dynModelFw.createRunId(NoOverWrite=False,level=wf.logging.DEBUG)
         # Run the initial part of the model (reads parameters and sets initial values)
         dynModelFw._runInitial() # Runs initial part
 
         dynModelFw._runResume() # gets the state variables
         sump = 0.0
-        for ts in range(startTime,stopTime):
+        for ts in range(startTime,stopTime + 1):
             if ts <10:
                 dynModelFw.wf_setValues('P', 0.0)
             elif ts <= 15:
@@ -54,7 +56,7 @@ class MyTest(unittest.TestCase):
         my_data = wf.genfromtxt(os.path.join(caseName,runId,"watbal.csv"), delimiter=',')
 
         print("Checking  water budget ....")
-        self.assertAlmostEquals( 0.00018204912482389091,my_data[:,2].sum())
+        self.assertAlmostEquals(0.00018747509412264662,my_data[:,2].sum())
 
         print("Checking precip sum ....")
         my_data = wf.genfromtxt(os.path.join(caseName,runId,"P.csv"), delimiter=',')

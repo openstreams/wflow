@@ -9,12 +9,14 @@ $Id: wf_DynamicFramework.py 915 2014-02-10 07:33:56Z schelle $
 $Rev: 915 $
 """
 
+import osgeo
+import osgeo.ogr
 import netCDF4
 import pyproj
 import os
 
 
-import osgeo.osr as osr
+
 
 # the two below are needed fpr bbfreeze
 
@@ -97,7 +99,7 @@ def prepare_nc(trgFile, timeList, x, y, metadata, logger, EPSG="EPSG:4326", unit
     DateHour[:] = timeAR
 
     # make a proj4 string
-    srs = osr.SpatialReference()
+    srs = osgeo.osr.SpatialReference()
     res = srs.ImportFromEPSG(int(EPSG[5:]))
     if res != 0:
         logger.error("EPGS not converted correctly: " + EPSG + ". Is the GDAL_DATA environment variable set correctly?")
