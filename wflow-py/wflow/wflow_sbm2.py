@@ -153,17 +153,17 @@ def actEvap_unsat_SBM(RootingDepth, WTable, UStoreDepth, PotTrans, zi_layer, USt
 
 
     #AvailCap is fraction of unsat zone containing roots
-    AvailCap = ifthenelse(len(UStoreLayers) == 1, min(1.0,max(RootingDepth/(WTable+1), 0.0)),
-                              ifthenelse(layerIndex<zi_layer,min(1.0,max(0.0,(RootingDepth-sumLayer) /UStoreLayerThickness)),
-                              min(1.0,max(0.0,(RootingDepth-sumLayer) /(WTable+1 - sumLayer)))))
+
+    AvailCap = ifthenelse(layerIndex<zi_layer,min(1.0,max(0.0,(RootingDepth-sumLayer) /UStoreLayerThickness)),
+                              min(1.0,max(0.0,(RootingDepth-sumLayer) /(WTable+1 - sumLayer))))
 
     MaxExtr = AvailCap * UStoreDepth
 
-    ActEvapUStore = ifthenelse(len(UStoreLayers) == 1,min(MaxExtr, RestPotEvap, UStoreDepth),
-                                   ifthenelse(layerIndex>zi_layer, ZeroMap,min(MaxExtr, RestPotEvap, UStoreDepth)))
 
-    UStoreDepth = ifthenelse(len(UStoreLayers) == 1,  UStoreDepth - ActEvapUStore,
-                        ifthenelse(layerIndex>zi_layer, ZeroMap, UStoreDepth - ActEvapUStore))
+    ActEvapUStore = ifthenelse(layerIndex>zi_layer, ZeroMap,min(MaxExtr, RestPotEvap, UStoreDepth))
+
+
+    UStoreDepth = ifthenelse(layerIndex>zi_layer, ZeroMap, UStoreDepth - ActEvapUStore)
 
     RestPotEvap = RestPotEvap - ActEvapUStore
     sumActEvapUStore = ActEvapUStore + sumActEvapUStore
