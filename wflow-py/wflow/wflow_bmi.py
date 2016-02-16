@@ -431,7 +431,7 @@ class wflowbmi_csdms(bmi.Bmi):
         # set to 10000 for now
         #
         maxNrSteps = 10000
-        self.bmilogger.info("initialize_config: Initialising wflow bmi with ini: " + filename)
+
 
         if "wflow_sbm" in filename:
             import wflow.wflow_sbm as wf
@@ -447,6 +447,7 @@ class wflowbmi_csdms(bmi.Bmi):
             exec "import wflow." + modname + " as wf"
             self.name = modname
 
+        self.bmilogger.info("initialize_config: Initialising wflow bmi with ini: " + filename + " Component name: " + self.name)
         self.myModel = wf.WflowModel(wflow_cloneMap, self.datadir, runid, inifile)
 
         self.dynModel = wf.wf_DynamicFramework(self.myModel, maxNrSteps, firstTimestep = 1)
@@ -1012,6 +1013,7 @@ class wflowbmi_csdms(bmi.Bmi):
                   is present a uniform map will be set in the wflow model.
         """
 
+        self.bmilogger.debug("set_value: " + long_var_name + ":" + str(src))
         if self.wrtodisk:
             fname = str(self.currenttimestep) + "_set_" + long_var_name + ".map"
             arpcr = self.dynModel.numpy2pcr(self.dynModel.Scalar, src, -999)

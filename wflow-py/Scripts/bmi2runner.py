@@ -64,7 +64,8 @@ def main(argv=None):
 
     # Construct object and initilize the models
     bmiobj = bmi.wflowbmi_csdms()
-    bmiobj.initialize(configfile)
+    bmiobj.initialize_config(configfile)
+    bmiobj.initialize_model()
     # Get time for the loop
     start = bmiobj.get_start_time()
     end = bmiobj.get_end_time()

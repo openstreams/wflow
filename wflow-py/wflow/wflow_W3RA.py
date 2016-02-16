@@ -315,13 +315,13 @@ class WflowModel(DynamicModel):
         #read meteo from file
         self.logger.debug("Running for: " + str(self.currentdatetime))
         self.PRECIP=cover(self.wf_readmap(self.PRECIP_mapstack, 0.0), scalar(0.0)) # mm
-        self.ALBEDO=cover(self.wf_readmapClimatology(self.ALBEDO_mapstack, default=0.1), scalar(0.1))
+
         
         if self.UseETPdata == 1:
             self.TDAY=cover(self.wf_readmap(self.TDAY_mapstack, 10.0), scalar(10.0)) # T in degC     
             self.EPOT=cover(self.wf_readmap(self.EPOT_mapstack, 0.0), scalar(0.0)) # mm             
-            self.WINDSPEED=cover(self.wf_readmapClimatology(self.WINDSPEED_mapstack, default=1.0), scalar(1.0))
-            self.AIRPRESS=cover(self.wf_readmapClimatology(self.AIRPRESS_mapstack, default=980.0), scalar(980.0))
+            #self.WINDSPEED=cover(self.wf_readmapClimatology(self.WINDSPEED_mapstack, default=1.0), scalar(1.0))
+            #self.AIRPRESS=cover(self.wf_readmapClimatology(self.AIRPRESS_mapstack, default=980.0), scalar(980.0))
             # print "Using climatology for wind, air pressure and albedo." 
         elif self.UseETPdata == 0:
             self.TMIN=cover(self.wf_readmap(self.TMIN_mapstack, 10.0), scalar(10.0)) # T in degC
@@ -329,6 +329,7 @@ class WflowModel(DynamicModel):
             self.RAD=cover(self.wf_readmap(self.RAD_mapstack, 10.0), scalar(10.0))# W m-2 s-1
             self.WINDSPEED=cover(self.wf_readmap(self.WINDSPEED_mapstack, 10.0), scalar(10.0))# ms-1
             self.AIRPRESS=cover(self.wf_readmap(self.AIRPRESS_mapstack, 10.0), scalar(10.0))# Pa
+            self.ALBEDO=cover(self.wf_readmapClimatology(self.ALBEDO_mapstack, default=0.1), scalar(0.1))
 
 
         self.wf_multparameters()

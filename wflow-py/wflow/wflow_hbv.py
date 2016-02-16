@@ -666,7 +666,7 @@ class WflowModel(DynamicModel):
     """
 
     self.wf_updateparameters() # read forcing an dynamic parameters
-    self.Precipitation = max(0.0,self.Precipitation)
+    self.Precipitation = max(0.0,self.Precipitation)  * self.Pcorr
 
     #self.Precipitation=cover(self.wf_readmap(self.P_mapstack,0.0),0.0) * self.Pcorr
     #self.PotEvaporation=cover(self.wf_readmap(self.PET_mapstack,0.0),0.0)
@@ -705,7 +705,10 @@ class WflowModel(DynamicModel):
     self.FreeWater=self.FreeWater+self.SnowMelt+RainFall
     InSoil = max(self.FreeWater-MaxFreeWater,0.0)   #abundant water in snow pack which goes into soil
     self.FreeWater=self.FreeWater-InSoil 
-
+    RainAndSnowmelt = RainFall + self.SnowMelt
+    # ADDED BY MARK/LAUREN: CALCULATE SNOW COVER AREA
+    self.SnowCover = ifthenelse(self.DrySnow >0, scalar(1), scalar(0))
+    self.NrCell= areatotal(self.SnowCover,self.TopoId)
     
     #first part of precipitation is intercepted
     Interception=min(InSoil,self.ICF-self.InterceptionStorage)#: Interception in mm/timestep
@@ -779,7 +782,10 @@ class WflowModel(DynamicModel):
         DirectRunoffStorage=self.QuickFlow+self.Seepage+self.RealQuickFlow
     else:
         DirectRunoffStorage=self.QuickFlow+self.BaseFlow+self.RealQuickFlow
-
+	self.ActEvap = ActEvap
+	self.InSoil = InSoil
+	self.RainAndSnowmelt = RainAndSnowmelt
+	self.NetInSoil = NetInSoil
     self.InwaterMM=max(0.0,DirectRunoffStorage)
     self.Inwater=self.InwaterMM * self.ToCubic
     self.QuickFlowCubic = (self.QuickFlow + self.RealQuickFlow) * self.ToCubic
@@ -928,7 +934,7 @@ def main(argv=None):
     myModel = WflowModel(wflow_cloneMap, caseName,runId,configfile)
     dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep,firstTimestep=_firstTimeStep,datetimestart=starttime)
     dynModelFw.createRunId(NoOverWrite=NoOverWrite,logfname=LogFileName,level=loglevel,doSetupFramework=False)
-    print str(dynModelFw.DT)
+    
 
     for o, a in opts:
         if o == '-P':

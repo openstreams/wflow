@@ -167,6 +167,11 @@ class WflowModel(DynamicModel):
     """
 
         self.logger.info("Saving initial conditions...")
+        
+        if self.fewsrun:
+            self.logger.info("Saving initial conditions for FEWS...")
+            self.wf_suspend(os.path.join(self.Dir, "outstate"))
+        
         #: It is advised to use the wf_suspend() function
         #: here which will suspend the variables that are given by stateVariables
         #: function.
@@ -241,7 +246,8 @@ class WflowModel(DynamicModel):
         self.logger.info(
             "running for " + str(self.nrTimeSteps()) + " timesteps")  # keeping track of number of timesteps
 
-
+        self.fewsrun = int(configget(self.config,"model","fewsrun","0"))
+        
         # Set and get defaults from ConfigFile here ###################################
         self.timestepsecs = int(configget(self.config,
                                           "model", "timestepsecs", "3600"))  # number of seconds in a timestep
@@ -725,6 +731,8 @@ def main(argv=None):
     configfile = "wflow_topoflex.ini"
     _lastTimeStep = 10
     _firstTimeStep = 1
+    fewsrun=False
+    runinfoFile="runinfo.xml"
     timestepsecs = 86400
     wflow_cloneMap = 'wflow_subcatch.map'
 
@@ -740,6 +748,9 @@ def main(argv=None):
     opts, args = getopt.getopt(argv, 'C:S:T:Ic:s:R:')
 
     for o, a in opts:
+        if o == '-F': 
+            runinfoFile = a
+            fewsrun = True
         if o == '-C': caseName = a
         if o == '-R': runId = a
         if o == '-c': configfile = a
@@ -748,6 +759,27 @@ def main(argv=None):
         if o == '-S': _firstTimeStep = int(a)
     if (len(opts) <= 1):
         usage()
+        
+    if fewsrun: 
+        ts = getTimeStepsfromRuninfo(runinfoFile,timestepsecs)
+        starttime = getStartTimefromRuninfo(runinfoFile)
+        if (ts):
+            _lastTimeStep =  ts# * 86400/timestepsecs
+            _firstTimeStep = 1 
+        else:
+            print "Failed to get timesteps from runinfo file: " + runinfoFile
+            exit(2)
+    else:
+        starttime = dt.datetime(1990,01,01)
+       
+    if _lastTimeStep < _firstTimeStep:
+        print "The starttimestep (" + str(_firstTimeStep) +") is smaller than the last timestep (" + str(_lastTimeStep) + ")"
+        usage()
+ 
+    myModel = WflowModel(wflow_cloneMap, caseName,runId,configfile)
+    dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep,firstTimestep=_firstTimeStep,datetimestart=starttime)
+    dynModelFw.createRunId(NoOverWrite=NoOverWrite,logfname=LogFileName,level=loglevel,doSetupFramework=False)
+    print str(dynModelFw.DT)
 
     myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile)
     dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep, firstTimestep=_firstTimeStep)
