@@ -670,30 +670,45 @@ def classify(inmap,lower=[0,10,20,30],upper=[10,20,30,40],classes=[2,2,3,4]):
     return ifthen(result >=0,result)
 
 
-def hand(dem,ldd,threshold=50.0,stream=None):
+def derive_HAND(dem, ldd, accuThreshold, rivers=None, basin=None):
     """
-    Determines heigth above nearest drain.
-
+    Function derives Height-Above-Nearest-Drain.
+    See http://www.sciencedirect.com/science/article/pii/S003442570800120X
     Input:
-        ldd
-        dem
-        Optional:
-        threshold - to determine streams (number of upstreams cell needed to be a stream)
-        stream - if the threshols is not a stream map (boolean) should be supplied
-
-    Returns: Hand and the stream map
-
+        dem -- pcraster object float32, elevation data
+        ldd -- pcraster object direction, local drain directions
+        accuThreshold -- upstream amount of cells as threshold for river
+            delineation
+        rivers=None -- you can provide a rivers layer here. Pixels that are 
+                        identified as river should have a value > 0, other
+                        pixels a value of zero.
+        basin=None -- set a boolean pcraster map where areas with True are estimated using the nearest drain in ldd distance
+                        and areas with False by means of the nearest friction distance. Friction distance estimated using the 
+                        upstream area as weight (i.e. drains with a bigger upstream area have a lower friction)
+                        the spreadzone operator is used in this case.
+    Output:
+        hand -- pcraster bject float32, height, normalised to nearest stream
+        dist -- distance to nearest stream measured in cell lengths
+            according to D8 directions
     """
-
-    #setglobaloption("unittrue")
-    if threshold:
-        stream = boolean(ifthenelse(accuflux(ldd,1) > threshold, boolean(1), boolean(0)))
-
-    demdiff = dem - downstream(ldd,dem)
-    hand = ldddist(ldd,stream,max(demdiff,0))/celllength()
-
-    return hand, stream
-
+    if rivers is None:
+        stream = ifthenelse(accuflux(ldd, 1) >= accuThreshold,
+                                boolean(1), boolean(0))
+    else:
+        stream = boolean(cover(rivers, 0))
+    
+    height_river = ifthenelse(stream, ordinal(dem*100), 0)
+    if basin is None:
+        up_elevation = scalar(subcatchment(ldd, height_river))
+    else:
+        drainage_surf = ifthen(rivers, accuflux(ldd, 1))
+        weight = 1./scalar(spreadzone(cover(ordinal(drainage_surf), 0), 0, 0))
+        up_elevation = ifthenelse(basin, scalar(subcatchment(ldd, height_river)), scalar(spreadzone(height_river, 0, weight)))
+        # replace areas outside of basin by a spread zone calculation.
+    hand = max(scalar(ordinal(dem*100))-up_elevation, 0)/100
+    dist = ldddist(ldd, stream, 1)
+        
+    return hand, dist
 
     
 def sCurve(X,a=0.0,b=1.0,c=1.0):

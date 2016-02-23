@@ -431,10 +431,9 @@ def main(argv=None):
                 var.append(flst)
                 varname.append(flst)
             else:
-                mapstackname = flst
-                var =flst
-                varname =flst
-
+                mapstackname = a
+                var =a
+                varname =a
 
     # Use first timestep as clone-map
     logger = setlogger('pcr2netcdf.log','pcr2netcdf', thelevel = logging.DEBUG)
