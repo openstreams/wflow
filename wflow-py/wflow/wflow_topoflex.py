@@ -40,7 +40,7 @@ import pdb
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
 # import scipy
-from copy import copy as copylist
+from copy import deepcopy as copylist
 
 # TODO: see below
 """
@@ -135,7 +135,7 @@ class WflowModel(DynamicModel):
       
       :var TSoil: Temperature of the soil [oC]
       """
-        states = ['Si', 'Su', 'Sf', 'Ss', 'Qstate']
+        states = ['Si', 'Su', 'Sf', 'Ss', 'Sw', 'Sa', 'Sfa', 'Qstate']
 
         return states
 
@@ -170,7 +170,13 @@ class WflowModel(DynamicModel):
         
         if self.fewsrun:
             self.logger.info("Saving initial conditions for FEWS...")
-            self.wf_suspend(os.path.join(self.Dir, "outstate"))
+#            self.wf_suspend(os.path.join(self.Dir, "outstate"))
+            [report(self.Si[i], self.Dir + "/outstate/Si" + self.NamesClasses[i] + ".map") for i in self.Classes]
+            [report(self.Su[i], self.Dir + "/outstate/Su" + self.NamesClasses[i] + ".map") for i in self.Classes]
+            [report(self.Sf[i], self.Dir + "/outstate/Sf" + self.NamesClasses[i] + ".map") for i in self.Classes]
+            [report(self.Sr[i], self.Dir + "/outstate/Sr" + self.NamesClasses[i] + ".map") for i in self.Classes]
+            report(self.Ss, self.Dir + "/outstate/Ss.map")
+            report(self.Qstate, self.Dir + "/outstate/Qstate.map")
         
         #: It is advised to use the wf_suspend() function
         #: here which will suspend the variables that are given by stateVariables
@@ -393,6 +399,7 @@ class WflowModel(DynamicModel):
         self.FrDur1 = eval(str(configget(self.config,"model","FrDur1","[0]"))) 
         self.ratFT = eval(str(configget(self.config,"model","ratFT","[0]")))
         self.Tt = eval(str(configget(self.config,"model","Tt","[0]")))
+        self.samin = eval(str(configget(self.config,"model","samin","[0]")))
         self.Tm = eval(str(configget(self.config,"model","Tm","[0]")))
         self.Fm = eval(str(configget(self.config,"model","Fm","[0]")))
         
@@ -487,7 +494,31 @@ class WflowModel(DynamicModel):
             self.Ss = self.Ss + 30 * scalar(self.TopoId)  # for combined gw reservoir
 
         else:
-            self.wf_resume(self.Dir + "/instate/")
+#            self.wf_resume(self.Dir + "/instate/")
+            
+            self.Si = []
+            for i in self.Classes:
+                self.Si.append(readmap(os.path.join(self.Dir, 'instate', 'Si' + self.NamesClasses[i] + '.map')))
+            self.Sw = []
+            for i in self.Classes:
+                self.Sw.append(readmap(os.path.join(self.Dir, 'instate', 'Sw' + self.NamesClasses[i] + '.map')))
+            self.Sa = []
+            for i in self.Classes:
+                self.Sa.append(readmap(os.path.join(self.Dir, 'instate', 'Sa' + self.NamesClasses[i] + '.map')))
+            self.Su = []
+            for i in self.Classes:
+                self.Su.append(readmap(os.path.join(self.Dir, 'instate', 'Su' + self.NamesClasses[i] + '.map')))
+            self.Sf = []
+            for i in self.Classes:
+                self.Sf.append(readmap(os.path.join(self.Dir, 'instate', 'Sf' + self.NamesClasses[i] + '.map')))
+            self.Sfa = []
+            for i in self.Classes:
+                self.Sfa.append(readmap(os.path.join(self.Dir, 'instate', 'Sfa' + self.NamesClasses[i] + '.map')))
+            self.Sr = []
+            for i in self.Classes:
+                self.Sr.append(readmap(os.path.join(self.Dir, 'instate', 'Sr' + self.NamesClasses[i] + '.map')))
+            self.Ss = readmap(os.path.join(self.Dir, 'instate', 'Ss.map'))
+            self.Qstate = readmap(os.path.join(self.Dir, 'instate', 'Qstate.map'))
 
         self.wbSi_ = [self.ZeroMap] * len(self.Classes)
         self.wbSu_ = [self.ZeroMap] * len(self.Classes)
@@ -729,12 +760,16 @@ def main(argv=None):
     caseName = "default"
     runId = "run_default"
     configfile = "wflow_topoflex.ini"
+    LogFileName="wflow.log" 
     _lastTimeStep = 10
     _firstTimeStep = 1
     fewsrun=False
     runinfoFile="runinfo.xml"
     timestepsecs = 86400
     wflow_cloneMap = 'wflow_subcatch.map'
+    NoOverWrite=1
+    loglevel = logging.DEBUG
+	
 
     # This allows us to use the model both on the command line and to call 
     # the model usinge main function from another python script.
@@ -745,7 +780,7 @@ def main(argv=None):
             usage()
             return
 
-    opts, args = getopt.getopt(argv, 'C:S:T:Ic:s:R:')
+    opts, args = getopt.getopt(argv, 'C:S:T:Ic:s:R:F:fl:L:')
 
     for o, a in opts:
         if o == '-F': 
@@ -757,6 +792,9 @@ def main(argv=None):
         if o == '-s': timestepsecs = int(a)
         if o == '-T': _lastTimeStep = int(a)
         if o == '-S': _firstTimeStep = int(a)
+        if o == '-f': NoOverWrite = 0
+        if o == '-L': LogFileName = a 
+        if o == '-l': exec "loglevel = logging." + a
     if (len(opts) <= 1):
         usage()
         
