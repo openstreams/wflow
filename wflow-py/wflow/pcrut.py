@@ -9,6 +9,7 @@ import numpy
 from math import *
 import sys
 import csv
+from pcraster import*
 
 
 from pcraster import *
@@ -29,6 +30,7 @@ def lattometres(lat):
     """
     #radlat = spatial(lat * ((2.0 * math.pi)/360.0))
     #radlat = lat * (2.0 * math.pi)/360.0
+    setglobaloption('degrees')
     radlat = spatial(lat) # pcraster cos/sin work in degrees!
     
     

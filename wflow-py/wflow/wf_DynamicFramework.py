@@ -776,6 +776,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self._update_time_from_DT()
             if rinfo_str != "None":
                 self.DT.update(datetimestart=wflow_adapt.getStartTimefromRuninfo(rinfo), mode=self.runlengthdetermination)
+                self.DT.update(datetimeend=wflow_adapt.getEndTimefromRuninfo(rinfo), mode=self.runlengthdetermination)
                 self._update_time_from_DT()
                 # add one step to start time if it is the same s the state time
                 #if self.skipfirsttimestep:
@@ -783,7 +784,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 #    self.DT.skiptime()
 
                 self._userModel().currentdatetime = self.DT.currentDateTime
-                self.DT.update(datetimeend=wflow_adapt.getEndTimefromRuninfo(rinfo), mode=self.runlengthdetermination)
+
                 self.DT.update(timestepsecs=int(configget(self._userModel().config, 'run', 'timestepsecs', "86400")), mode=self.runlengthdetermination)
                 self._update_time_from_DT()
             else:

@@ -59,7 +59,7 @@ class wflowbmi_csdms(bmi.Bmi):
         self.bmimodels = {}
         self.currenttimestep = 0
         self.exchanges = []
-        self.comp_sep = "."
+        self.comp_sep = "@"
 
     def __getmodulenamefromvar__(self,long_var_name):
         """
@@ -120,7 +120,7 @@ class wflowbmi_csdms(bmi.Bmi):
             for item in self.exchanges:
                 supplymodel = self.__getmodulenamefromvar__(item)
                 if curmodel == supplymodel:
-                    outofmodel = self.get_value(item)
+                    outofmodel = self.get_value(item).copy()
                     tomodel = self.config.get('exchanges',item)
                     self.set_value(tomodel,outofmodel)
 
@@ -209,7 +209,7 @@ class wflowbmi_csdms(bmi.Bmi):
             for item in self.exchanges:
                 supplymodel = self.__getmodulenamefromvar__(item)
                 if curmodel == supplymodel:
-                    outofmodel = self.get_value(item)
+                    outofmodel = self.get_value(item).copy()
                     tomodel = self.config.get('exchanges',item)
                     self.set_value(tomodel,outofmodel)
 
