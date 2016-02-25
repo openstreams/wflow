@@ -547,13 +547,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         """
         Makes sure the logging closed
         """
-        try:
-            pcrut.logging.shutdown()
-            for ofile_list in self.oscv:
-                self.oscv[ofile_list].closeall()
-        except:
-            return
-
         if hasattr(self, 'NcOutput'):
             self.NcOutput.finish()
 
@@ -1241,7 +1234,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         :returns: 1 if the map was present, 0 if a new map was created
         """
 
-        arpcr = numpy2pcr(Scalar, values.copy(), -999)
+        arpcr = numpy2pcr(Scalar, flipud(values).copy(), -999)
 
         self.setviaAPI[mapname] = 1
 
@@ -1520,7 +1513,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     def wf_supplyMapAsNumpy(self, mapname):
         """
         Returns a numpy array (matrix) for the specified map and the current
-        timestep. If the maps is not dynamic the current staus of the map is
+        timestep. If the maps is not dynamic the current status of the map is
         returns which may be undefined for maps that are filled with data
         at the end of a run
         Missing value is -999
@@ -1535,7 +1528,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             # exec "retval = pcr2numpy(self._userModel()." + mapname + ",-999)"
             pcrmap = getattr(self._userModel(), mapname)
             if isinstance(pcrmap, pcraster._pcraster.Field):
-                retval = pcr_as_numpy(pcrmap)
+                tt = pcr2numpy(pcrmap,-999.0)
+                retval = flipud(tt).copy()
             else:
                 retval = pcrmap
             if self.APIDebug:
@@ -1555,9 +1549,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         """
 
         x = xcoordinate((spatial(boolean(1.0))))
-        retval = pcr_as_numpy(x)
+        retval = pcr_as_numpy(x).copy()
 
-        return retval
+        return flipud(retval).copy()
 
     def wf_supplyMapYAsNumpy(self):
         """
@@ -1568,9 +1562,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         """
 
         y = ycoordinate((spatial(boolean(1.0))))
-        retval = pcr_as_numpy(y)
+        retval = pcr_as_numpy(y).copy()
 
-        return retval
+        return flipud(retval).copy()
 
     def wf_supplyMapZAsNumpy(self):
         """
@@ -1584,7 +1578,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         if hasattr(self._userModel(), 'Altitude'):
             retval = getattr(self._userModel(), 'Altitude')
 
-            return pcr2numpy(retval, -999)
+            return flipud(pcr2numpy(retval, -999)).copy()
         else:
             self.logger.warn("Altitude is not defined in the usermodel, returning empty list")
             return []

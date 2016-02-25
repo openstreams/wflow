@@ -6,7 +6,8 @@ import os
 from wflow.pcrut import setlogger
 from wflow.wflow_lib import configget
 import ConfigParser
-
+import logging
+from pcraster import *
 
 def iniFileSetUp(configfile):
     """
@@ -60,6 +61,27 @@ class wflowbmi_csdms(bmi.Bmi):
         self.currenttimestep = 0
         self.exchanges = []
         self.comp_sep = "@"
+        self.wrtodisk = False
+        if os.getenv("wflow_bmi_writetodisk",'False') in 'True':
+            self.wrtodisk = True
+
+        self.loggingmode = logging.ERROR
+        logstr = os.getenv('wflow_bmi_loglevel', 'ERROR')
+        if logstr in 'ERROR':
+            self.loggingmode = logging.ERROR
+        if logstr in 'WARNING':
+            self.loggingmode = logging.WARNING
+        if logstr in 'INFO':
+            self.loggingmode = logging.INFO
+        if logstr in 'DEBUG':
+            self.loggingmode = logging.DEBUG
+
+        self.bmilogger = setlogger('wflow_bmi_combined.log','wflow_bmi_combined_logging',thelevel=self.loggingmode)
+        self.bmilogger.info("__init__: wflow_bmi_combined object initialised.")
+        if self.wrtodisk:
+            self.bmilogger.warn('Will write all bmi set and get grids to disk!...')
+
+
 
     def __getmodulenamefromvar__(self,long_var_name):
         """
@@ -209,7 +231,7 @@ class wflowbmi_csdms(bmi.Bmi):
             for item in self.exchanges:
                 supplymodel = self.__getmodulenamefromvar__(item)
                 if curmodel == supplymodel:
-                    outofmodel = self.get_value(item).copy()
+                    outofmodel = self.get_value(item)
                     tomodel = self.config.get('exchanges',item)
                     self.set_value(tomodel,outofmodel)
 
@@ -284,6 +306,8 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         for key, value in self.bmimodels.iteritems():
             self.bmimodels[key].finalize()
+
+        self.bmilogger.info("finalize.")
 
     def get_component_name(self):
         """
@@ -436,7 +460,7 @@ class wflowbmi_csdms(bmi.Bmi):
         for key, value in self.bmimodels.iteritems():
             st.append(self.bmimodels[key].get_time_step())
 
-        return max(st)
+        return max(st)[0]
 
     def get_time_units(self):
         """
@@ -461,10 +485,15 @@ class wflowbmi_csdms(bmi.Bmi):
         :return: a np array of long_var_name
         """
         # first part should be the component name
+        self.bmilogger.debug('get_value: ' + long_var_name)
         cname = long_var_name.split(self.comp_sep)
         if self.bmimodels.has_key(cname[0]):
-            return self.bmimodels[cname[0]].get_value(cname[1])
+            tmp = self.bmimodels[cname[0]].get_value(cname[1])
+            if self.wrtodisk:
+                report(numpy2pcr(Scalar,tmp, -999),long_var_name + "_get_" + str(self.get_current_time()) + '.map')
+            return tmp
         else:
+            self.bmilogger.error('get_value: ' + long_var_name + ' returning None!!!!')
             return None
 
 
@@ -639,9 +668,13 @@ class wflowbmi_csdms(bmi.Bmi):
                   is present a uniform map will be set in the wflow model.
         """
         # first part should be the component name
+        self.bmilogger.debug('set_value: ' + long_var_name)
         cname = long_var_name.split(self.comp_sep)
         if self.bmimodels.has_key(cname[0]):
             self.bmimodels[cname[0]].set_value(cname[1],src)
+            if self.wrtodisk:
+                report(numpy2pcr(Scalar,src, -999),long_var_name + "_set_" + str(self.get_current_time()) + '.map')
+
 
 
 

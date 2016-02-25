@@ -71,7 +71,6 @@ def main(argv=None):
     end = bmiobj.get_end_time()
     ts = bmiobj.get_time_step()
     curtime = bmiobj.get_current_time()
-
     # Loop over the time duration
     while curtime < end:
         bmiobj.update_until(curtime + ts)
