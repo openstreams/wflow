@@ -447,6 +447,13 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     theparmap = self.readtblFlexDefault(tblname, par.default, *par.lookupmaps)
                     setattr(self._userModel(), par.name, theparmap)
 
+                if par.type == 'tblts' or par.type =='tblsparse':
+                    if not hasattr(self._userModel(), par.name):
+                        self._userModel().logger.info("Initial: Adding " + par.name + " to model.")
+                    tblname = os.path.join(self._userModel().Dir, par.stack)
+                    theparmap = self.readtblFlexDefault(tblname, par.default, *par.lookupmaps)
+                    setattr(self._userModel(), par.name, theparmap)
+
                 if par.type == 'statictbl':
                     if not hasattr(self._userModel(), par.name):
                         self._userModel().logger.info("Adding " + par.name + " to model.")
@@ -512,7 +519,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                                                         par.default)
                     setattr(self._userModel(), par.name, theparmap)
 
-                if par.type == 'tbl':
+                if par.type == 'tblts':
                     if not hasattr(self._userModel(), par.name):
                         self._userModel().logger.info("Adding " + par.name + " to model.")
                     tblname = os.path.join(self._userModel().Dir, par.stack + "_" + str(self._userModel().currentStep))

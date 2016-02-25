@@ -49,7 +49,7 @@ class MyTest(unittest.TestCase):
 
         # nore read the csv results acn check of they match the first run
         # Sum should be approx c 4.569673676
-        my_data = wf.genfromtxt(os.path.join(caseName,runId,"wbsurf.csv"), delimiter=',')
+        my_data = wf.genfromtxt(os.path.join(caseName,runId,"wbsurf.csv"), delimiter=',',usecols=(0,1,2,3,4))
 
         print("Checking surface water budget ....")
         self.assertAlmostEquals(-2.4355218783966848e-06,my_data[:,2].sum())
