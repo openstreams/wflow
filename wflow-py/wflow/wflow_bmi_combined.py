@@ -62,7 +62,7 @@ class wflowbmi_csdms(bmi.Bmi):
         self.exchanges = []
         self.comp_sep = "@"
         self.wrtodisk = False
-        if os.getenv("wflow_bmi_writetodisk",'False') in 'True':
+        if os.getenv("wflow_bmi_combined_writetodisk",'False') in 'True':
             self.wrtodisk = True
 
         self.loggingmode = logging.ERROR
@@ -79,7 +79,7 @@ class wflowbmi_csdms(bmi.Bmi):
         self.bmilogger = setlogger('wflow_bmi_combined.log','wflow_bmi_combined_logging',thelevel=self.loggingmode)
         self.bmilogger.info("__init__: wflow_bmi_combined object initialised.")
         if self.wrtodisk:
-            self.bmilogger.warn('Will write all bmi set and get grids to disk!...')
+            self.bmilogger.warn('Will write all bmi set- and get- grids to disk!...')
 
 
 
