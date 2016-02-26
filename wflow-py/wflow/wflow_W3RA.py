@@ -359,7 +359,7 @@ class WflowModel(DynamicModel):
         u2 = scalar(WindFactor)*self.WINDSPEED*(scalar(1)-(scalar(1)-self.fday)*scalar(0.25))/self.fday
         self.u2 = scalar(WindFactor)*self.WINDSPEED*(scalar(1)-(scalar(1)-self.fday)*scalar(0.25))/self.fday
         pair = self.AIRPRESS # already in Pa
-        ns_alb = self.ALBEDO
+
 
         # diagnostic equations
 
@@ -413,6 +413,7 @@ class WflowModel(DynamicModel):
             keps = 0.655E-3 * pair / pes   # See Appendix A3 (http://www.clw.csiro.au/publications/waterforahealthycountry/2010/wfhc-aus-water-resources-assessment-system.pdf) --------------------------------   check!
         
         elif self.UseETPdata == 0:
+            ns_alb = self.ALBEDO
             Rgeff = Rg/self.fday
             # shortwave radiation balance (3.2)
             #alb_veg = 0.452*Vc
