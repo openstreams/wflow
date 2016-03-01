@@ -145,7 +145,10 @@ Possible parameter types (the second option)are:
 
 + staticmap: Read at startup from map
 + statictbl: [deprecated] Read at startup from tbl, fallback to map (need Landuse, Soil and TopoId (subcatch) maps)!
-+ tbl: Read at startup from tbl and ar runtime fallback to map, lookuptable maps define here.
++ tbl: Read at startup from tbl lookuptable maps define here.
++ tblts: Lookup tables for each timestep, including initial section
++ tblsparse: Lookup tables for each timestep, including initial section. Fills in missing
+  timestep using previous timestep
 + timeseries: read map for each timestep
 + monthlyclim: read a map corresponding to the current month (12 maps in total)
 + dailyclim: read a map corresponding to the current day of the year (366 maps in total)

@@ -35,7 +35,7 @@ f()    # starts the freezing process
 
 ddir = "c:/pcraster4-64/lib/"
 data_files.append((".", glob.glob(ddir + "/*.dll")))
-print data_files
+
 gdaldata = os.getenv("GDAL_DATA")
 data_files.append(("./gdal-data", glob.glob(gdaldata + "/*.*")))
 
