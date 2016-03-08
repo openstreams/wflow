@@ -21,16 +21,16 @@ Configuration
 
 
 It needs a number of settings in the ini file. The default name for the file
-is wflow\_W3RA.ini.
+is wflow\_w3ra.ini.
 
 See below for an example: 
 
 
 
-wflow_W3RA module documentation
+wflow_w3ra module documentation
 -------------------------------
 
-.. automodule:: wflow_W3RA
+.. automodule:: wflow_w3ra
     :members:
     :undoc-members:
     :show-inheritance:
