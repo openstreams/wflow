@@ -1177,7 +1177,7 @@ class WflowModel(DynamicModel):
             self.reinfiltwater = self.ZeroMap
 
         self.RootZonSoilMoisture = self.UStoreDepth * max(1.0, self.RootingDepth/self.zi)
-        # The MAx here may lead to watbal error. Howvere, if inwaterMMM becomes < 0, the kinematic wave becomes very slow......
+        # The MAx here may lead to watbal error. Howevere, if inwaterMMM becomes < 0, the kinematic wave becomes very slow......
         self.InwaterMM = max(0.0,self.ExfiltWater + self.ExcessWater + self.SubCellRunoff + self.SubCellGWRunoff + self.RunoffOpenWater + self.BaseFlow - self.reinfiltwater - self.ActEvapOpenWater)
         self.Inwater = self.InwaterMM * self.ToCubic  # m3/s
 
@@ -1186,7 +1186,12 @@ class WflowModel(DynamicModel):
         self.SubCellRunoffCubic = self.SubCellRunoff * self.ToCubic
         self.InfiltExcessCubic = self.InfiltExcess * self.ToCubic
         self.ReinfiltCubic = -1.0 * self.reinfiltwater * self.ToCubic
-        self.Inwater = self.Inwater + self.Inflow  # Add abstractions/inflows in m^3/sec
+
+        self.Inwater = self.Inwater + self.Inflow   # Add abstractions/inflows in m^3/sec
+        # Check if we do not try to abstract more runoff then present
+        self.SurfaceWaterSupply = ifthenelse (self.Inflow < 0.0 , max(-1.0 * self.Inwater,self.SurfaceRunoff), self.ZeroMap)
+        self.Inwater = ifthenelse(self.SurfaceRunoff + self.Inwater < 0.0, -1.0 * self.SurfaceRunoff, self.Inwater)
+
         #self.Inwater = self.Inwater + self.Inflow  # Add abstractions/inflows in m^3/sec
         ##########################################################################
         # Runoff calculation via Kinematic wave ##################################
