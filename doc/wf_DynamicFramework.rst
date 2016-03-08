@@ -228,6 +228,47 @@ Example::
 
 
 
+Settings in the outputtss/outputcsv sections
+--------------------------------------------
+[outputcsv_0-n]
+[outputtss_0-n]
+
+Number of sections to define output timeseries in csv format. Each section
+should at lears contain one samplemap item and one or more variables to save.
+The samplemap is the map that determines how the timeseries are averaged/sampled. The function
+key specifies how the data is sample: average(default), minimum, maximum, total, majority.
+
+All other items are variable=filename pairs. The filename is given relative
+to the case directory.
+
+Example:
+
+::
+
+    [outputcsv_0]
+    samplemap=staticmaps/wflow_subcatch.map
+    self.SurfaceRunoffMM=Qsubcatch_avg.csv
+    function=average
+    # average is the default
+
+    [outputcsv_1]
+    samplemap=staticmaps/wflow_gauges.map
+    self.SurfaceRunoffMM=Qgauge.csv
+    self.WaterLevel=Hgauge.csv
+
+    [outputtss_0]
+    samplemap=staticmaps/wflow_landuse.map
+    self.SurfaceRunoffMM=Qlu.tss
+    function=total
+
+
+
+In the above example the discharge of this model (self.SurfaceRunoffMM) is
+saved as an average per subcatchment, a sample at the gauge locations and as
+an average per landuse.
+
+
+
 [run] section: The use of date and time
 ---------------------------------------
 

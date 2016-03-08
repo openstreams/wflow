@@ -242,7 +242,7 @@ class wf_sumavg():
 
 
 class wf_OutputTimeSeriesArea():
-    def __init__(self, area, oformat='csv'):
+    def __init__(self, area, oformat='csv', areafunction='average'):
         """
         Replacement timeseries output function for the pcraster framework
 
@@ -258,6 +258,8 @@ class wf_OutputTimeSeriesArea():
         self.area = area
         self.areanp = pcr2numpy(area, 0)
         self.oformat = oformat
+        self.areafunction = areafunction
+        """ average, total, minimum, maximum, majority"""
 
         self.flatarea, self.idx = numpy.unique(self.areanp, return_index=True)
         # print self.flatarea
@@ -308,7 +310,17 @@ class wf_OutputTimeSeriesArea():
 
         self.steps = self.steps + 1
         tmpvar = scalar(spatial(variable))
-        self.resmap = areaaverage(tmpvar, nominal(self.area))
+        if self.areafunction == 'average':
+            self.resmap = areaaverage(tmpvar, nominal(self.area))
+        elif self.areafunction == 'total':
+            self.resmap = areatotal(tmpvar, nominal(self.area))
+        elif self.areafunction == 'maximum':
+            self.resmap = areamaximum(tmpvar, nominal(self.area))
+        elif self.areafunction == 'minimum':
+            self.resmap = areaminimum(tmpvar, nominal(self.area))
+        elif self.areafunction == 'majority':
+            self.resmap = areamajority(tmpvar, nominal(self.area))
+
         self.remap_np = pcr2numpy(self.resmap, 0)
         self.flatres = self.remap_np.flatten()[self.idx]
 
@@ -993,17 +1005,18 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 toprint = configsection(self._userModel().config, thissection)
                 secnr = secnr + 1
                 samplemapname = os.path.join(caseName,configget(self._userModel().config, thissection, "samplemap", "None"))
+                areafunction = configget(self._userModel().config, thissection, "function", "average")
                 if "None" not in samplemapname:
                     try:
                         self.samplemap = self.wf_readmap(samplemapname,0.0,fail=True)
                         idd = tsformat + ":" + samplemapname
-                        self.oscv[idd] = wf_OutputTimeSeriesArea(self.samplemap, oformat=tsformat)
+                        self.oscv[idd] = wf_OutputTimeSeriesArea(self.samplemap, oformat=tsformat,areafunction=areafunction)
                         self.logger.info("Adding " + tsformat + " output at " + samplemapname)
                     except:
                         self.logger.warn("Could not read sample id-map for timeseries: " + samplemapname)
 
                     for a in toprint:
-                        if "samplemap" not in a:
+                        if "samplemap" not in a and 'function' not in a:
                             b = a.replace('self', 'self._userModel()')
                             fn = os.path.join(caseName, runId, self._userModel().config.get(thissection, a))
                             self.samplenamecsv[fn] = idd
