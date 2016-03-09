@@ -449,7 +449,7 @@ class wflowbmi_csdms(bmi.Bmi):
         for key, value in self.bmimodels.iteritems():
             st.append(self.bmimodels[key].get_end_time())
 
-        return st[-1]
+        return numpy.array(st)
 
     def get_time_step(self):
         """
