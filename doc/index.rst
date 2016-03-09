@@ -236,6 +236,8 @@ BMI Basic modeling interface
    :maxdepth: 2
 
    wflow_bmi
+   wflow_bmi_combined
+   bmi2runner
 
 Adding a new model using the framework
 ======================================
