@@ -436,15 +436,18 @@ class wflowbmi_csdms(bmi.Bmi):
         maxNrSteps = 10000
 
 
-        if "wflow_sbm" in filename:
+        if "wflow_sbm" in inifile:
             import wflow.wflow_sbm as wf
             self.name = "wflow_sbm"
-        elif "wflow_hbv" in filename:
+        elif "wflow_hbv" in inifile:
             import wflow.wflow_hbv as wf
             self.name = "wflow_hbv"
-        elif "wflow_routing" in filename:
+        elif "wflow_routing" in inifile:
             import wflow.wflow_routing as wf
             self.name = "wflow_routing"
+        elif "wflow_floodmap" in inifile:
+            import wflow.wflow_floodmap as wf
+            self.name = "wflow_floodmap"
         else:
             modname = os.path.splitext(os.path.basename(filename))[0]
             exec "import wflow." + modname + " as wf"

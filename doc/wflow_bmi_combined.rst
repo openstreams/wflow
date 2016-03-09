@@ -1,5 +1,5 @@
-The wflow_bmi interface
-=======================
+The wflow_bmi_combined interface
+================================
 
 
 Introduction
@@ -14,9 +14,12 @@ self-describing and fully controllable by a modeling framework.
 See also: http://csdms.colorado.edu/wiki/BMI_Description
 
 The wflow_bmi_combined module implement a class that connect 2 or more bmi modules
-and explorts those to the outside as a single bmi model.
+and exports those to the outside as a single bmi model.
 
-
++ A @ character is used to separate the module from the variable. g.g. the variable
+  Flow in module wflow_hbv becomes wflow_hbv@Flow in the combined model (it was Flow in the single interface)
++ The individual models can run in a separate case dir or can be combined into one directory (and share maps
+  that are identical)
 
 wflow_bmi_combined module documentation
 ---------------------------------------

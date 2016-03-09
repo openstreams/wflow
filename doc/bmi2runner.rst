@@ -12,8 +12,9 @@ by the model. Furthermore, in the exchanges section the data flows from model to
 ::
 
     [models]
-    wflow_sbm=wflow_sbm@wflow_sbm_comb.ini
-    wflow_routing=wflow_routing@wflow_routing_comb.ini
+    # moduel name = path to config of module relative to the dir of this ini file
+    wflow_sbm=wflow_sbm/wflow_sbm_comb.ini
+    wflow_routing=wflow_routing/wflow_routing_comb.ini
 
     [exchanges]
     # From_model/var -> To_model/var
@@ -26,8 +27,20 @@ case directories or they can be setup in one case directory. Each model should h
 + the variables are get/set in the order they appear in the exchanges section
 + the script runs explicitly, no iteration is performed
 
+Example
+-------
+
+In the examples directory the file bmirunner.ini is present. You can use this to run a combiend wflow_sbm/wflow_routing
+model. Start this up using the following command (in the examples dir):
+
+::
+
+    bmi2runner.py -c bmirunner.ini
+
+
+
 bmi2runner script
-=================
+-----------------
 
 .. automodule:: bmi2runner
     :members: bmi2runner

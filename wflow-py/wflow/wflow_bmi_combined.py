@@ -44,9 +44,9 @@ class wflowbmi_csdms(bmi.Bmi):
     csdms BMI implementation runner for combined pcraster/python models
 
 
-    + all variables are identified by: component_name/variable_name
-    + this version is specific for a routing component combined by land surface component.
-    + get_component_name returns a comm separated list of components
+    + all variables are identified by: component_name@variable_name
+    + this version is only tested for a one-way link
+    + get_component_name returns a comma separated list of components
 
     """
 
@@ -95,10 +95,10 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         *Extended functionality*, see https://github.com/eWaterCycle/bmi/blob/master/src/main/python/bmi.py
 
-        see initialize
+        Read the ini file for the comnined bmi model and initializes all the bmi models
+        listed in the config file.
 
         :param filename:
-        :param loglevel:
         :return: nothing
         """
 
@@ -126,7 +126,7 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         *Extended functionality*, see https://github.com/eWaterCycle/bmi/blob/master/src/main/python/bmi.py
 
-        see initialize
+        initalises all bmi models listed in the config file. Als does the first (timestep 0) data exchange
 
         :param self:
         :return: nothing
@@ -150,6 +150,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
     def set_start_time(self, start_time):
         """
+        Sets the start time for all bmi models
 
         :param start_time: time in units (seconds) since the epoch
         :return: nothing
@@ -159,6 +160,8 @@ class wflowbmi_csdms(bmi.Bmi):
 
     def set_end_time(self, end_time):
         """
+        sets the end time for all bmi models
+
         :param end_time: time in units (seconds) since the epoch
         :return:
         """
@@ -169,7 +172,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
     def get_attribute_names(self):
         """
-        Get the attributes of the model return in the form of section_name:attribute_name
+        Get the attributes of the model return in the form of model_name@section_name:attribute_name
 
         :return: list of attributes
         """
@@ -183,6 +186,9 @@ class wflowbmi_csdms(bmi.Bmi):
 
     def get_attribute_value(self, attribute_name):
         """
+        gets the attribute value for the name. The name should adhere to the following convention::
+            model_name@section_name:attribute_name
+
         :param attribute_name:
         :return: attribute value
         """
@@ -192,7 +198,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
     def set_attribute_value(self, attribute_name, attribute_value):
         """
-        :param attribute_name: name using the section:option notation
+        :param attribute_name: name using the model_name@section:option notation
         :param attribute_value: string value of the option
         :return:
         """
@@ -204,14 +210,7 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         Initialise the model. Should be called before any other method.
 
-        :var filename: full path to the wflow ini file
-        :var loglevel: optional loglevel (default == DEBUG)
-
-        Assumptions for now:
-
-            - the configfile wih be a full path
-            - we define the case from the basedir of the configfile
-
+        :var filename: full path to the combined model ini file
         """
 
         self.initialize_config(filename)
@@ -222,6 +221,8 @@ class wflowbmi_csdms(bmi.Bmi):
     def update(self):
         """
         Propagate the model to the next model timestep
+
+        The function iterates over all models
         """
         for key, value in self.bmimodels.iteritems():
             # step one update first model

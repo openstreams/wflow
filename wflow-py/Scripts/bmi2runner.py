@@ -11,8 +11,8 @@ Example ini file:
 ::
 
     [models]
-    wflow_sbm=wflow_sbm@wflow_sbm_comb.ini
-    wflow_routing=wflow_routing@wflow_routing_comb.ini
+    wflow_sbm=wflow_sbm/wflow_sbm_comb.ini
+    wflow_routing=wflow_routing/wflow_routing_comb.ini
 
     [exchanges]
     # From_model/var -> To_model/var
