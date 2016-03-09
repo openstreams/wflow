@@ -56,8 +56,9 @@ class wflowbmi_csdms(bmi.Bmi):
 
         :return: nothing
         """
+        from collections import OrderedDict
 
-        self.bmimodels = {}
+        self.bmimodels = OrderedDict()
         self.currenttimestep = 0
         self.exchanges = []
         self.comp_sep = "@"
@@ -91,7 +92,7 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         return long_var_name.split(self.comp_sep)[0]
 
-    def initialize_config(self, filename):
+    def initialize_config(self, filename, loglevel=logging.DEBUG):
         """
         *Extended functionality*, see https://github.com/eWaterCycle/bmi/blob/master/src/main/python/bmi.py
 
@@ -118,7 +119,7 @@ class wflowbmi_csdms(bmi.Bmi):
         # Initialize all bmi model objects
         for key, value in self.bmimodels.iteritems():
             modconf = os.path.join(self.datadir,self.config.get('models',key))
-            self.bmimodels[key].initialize_config(modconf)
+            self.bmimodels[key].initialize_config(modconf,loglevel=loglevel)
 
 
 
@@ -145,6 +146,8 @@ class wflowbmi_csdms(bmi.Bmi):
                     outofmodel = self.get_value(item).copy()
                     tomodel = self.config.get('exchanges',item)
                     self.set_value(tomodel,outofmodel)
+
+        self.bmilogger.info(self.bmimodels)
 
 
 
@@ -206,14 +209,14 @@ class wflowbmi_csdms(bmi.Bmi):
         self.bmimodels[cname[0]].set_attribute_value(cname[1],attribute_value)
 
 
-    def initialize(self, filename):
+    def initialize(self, filename,loglevel=logging.DEBUG):
         """
         Initialise the model. Should be called before any other method.
 
         :var filename: full path to the combined model ini file
         """
 
-        self.initialize_config(filename)
+        self.initialize_config(filename,loglevel=loglevel)
         self.initialize_model()
 
 
@@ -225,7 +228,7 @@ class wflowbmi_csdms(bmi.Bmi):
         The function iterates over all models
         """
         for key, value in self.bmimodels.iteritems():
-            # step one update first model
+            # step one update model
             self.bmimodels[key].update()
             # do all exchanges
             curmodel = self.bmimodels[key].get_component_name()
@@ -424,7 +427,7 @@ class wflowbmi_csdms(bmi.Bmi):
         for key, value in self.bmimodels.iteritems():
             st.append(self.bmimodels[key].get_start_time())
 
-        return st[-1]
+        return numpy.array(st).max()
 
     def get_current_time(self):
         """
@@ -449,7 +452,7 @@ class wflowbmi_csdms(bmi.Bmi):
         for key, value in self.bmimodels.iteritems():
             st.append(self.bmimodels[key].get_end_time())
 
-        return numpy.array(st)
+        return numpy.array(st).min()
 
     def get_time_step(self):
         """

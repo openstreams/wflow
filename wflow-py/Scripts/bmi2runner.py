@@ -4,7 +4,9 @@ bmi2runner - runs multiple linked bmi models
 
 Usage:
 
-        bmi2runner -c configfile
+        bmi2runner -c configfile -l loglevel
+
+        -l: loglevel (most be one of DEBUG, WARNING, ERROR)
 
 Example ini file:
 
@@ -23,6 +25,7 @@ Example ini file:
 import wflow.wflow_bmi_combined as wfbmi
 import getopt
 import sys
+import logging
 import wflow.wflow_bmi_combined as bmi
 import wflow.pcrut as pcrut
 import wflow.wflow_adapt as wfa
@@ -54,32 +57,39 @@ def main(argv=None):
     ## Process command-line options                                        #
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, 'c:')
+        opts, args = getopt.getopt(argv, 'c:l:')
     except getopt.error, msg:
         usage(msg)
 
+    loglevel=logging.WARN
     for o, a in opts:
         if o == '-c': configfile = a
+        if o == '-l': exec "loglevel = logging." + a
 
 
+    combilogger = pcrut.setlogger('bmi2runner.log','bmi2runner_logging',thelevel=loglevel)
     # Construct object and initilize the models
+    combilogger.info('Starting combined bmi object')
     bmiobj = bmi.wflowbmi_csdms()
-    bmiobj.initialize_config(configfile)
+    bmiobj.initialize_config(configfile,loglevel=loglevel)
+    bmiobj.initialize_model()
     start = bmiobj.get_start_time()
     end = bmiobj.get_end_time()
     bmiobj.set_start_time(start)
     bmiobj.set_end_time(end)
-    bmiobj.initialize_model()
     # Get time for the loop
 
     ts = bmiobj.get_time_step()
     curtime = bmiobj.get_current_time()
     # Loop over the time duration
+
     while curtime < end:
+        combilogger.info("time is: " + str(curtime))
         bmiobj.update_until(curtime + ts)
         curtime = bmiobj.get_current_time()
 
     bmiobj.finalize()
+    combilogger.info('Finishing run')
 
 
 
