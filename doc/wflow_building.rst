@@ -52,7 +52,7 @@ required data:
 #. what resolution do I want to run the model on?
 #. do i need to define multiple sub-catchments to report totals/flows for seperately?
 #. what forcing data do i have available for the model (P, Temp, ET)?
-#. do I have gridded forcing data or scalar timeseries?
+#. do I have gridded forcing data or scalar time-series?
 
 
 .. note::
@@ -65,7 +65,7 @@ required data:
 
     Within the earth2observe project tools are being made to automatically download
     and downscale reanalysis date to be used as forcing to the wflow models. See
-    https://code.google.com/p/e2o-downscaling-tools/
+    https://github.com/earth2observe/downscaling-tools
 
 
 
