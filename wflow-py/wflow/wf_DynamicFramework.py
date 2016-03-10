@@ -1009,7 +1009,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 if "None" not in samplemapname:
                     try:
                         self.samplemap = self.wf_readmap(samplemapname,0.0,fail=True)
-                        idd = tsformat + ":" + samplemapname
+                        idd = tsformat + ":" + samplemapname + ":" + areafunction
                         self.oscv[idd] = wf_OutputTimeSeriesArea(self.samplemap, oformat=tsformat,areafunction=areafunction)
                         self.logger.info("Adding " + tsformat + " output at " + samplemapname)
                     except:
