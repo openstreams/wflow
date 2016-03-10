@@ -2,8 +2,7 @@
 
 """
 Definition of the wflow_W3RA model.
---------------------------------------
-
+---------------------------------------
 The model is modified from the Australian Water Resources Assessment
 Landscape (AWRA-L) model version 0.5
 W3RA is documented in

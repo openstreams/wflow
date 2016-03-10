@@ -6,8 +6,8 @@ branch = subprocess.check_output('git rev-parse --abbrev-ref HEAD', shell=True).
 vers='beta'
 
 ###################################
-manualversion = "2015.02." + branch + "." + vers
-manualmainversion = "2015.02." + branch
+manualversion = "2016.01." + branch + "." + vers
+manualmainversion = "2016.01." + branch
 ###################################
 a = open("_version.py","w")
 
