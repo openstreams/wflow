@@ -290,7 +290,7 @@ class wf_OutputTimeSeriesArea():
         """
         # Add new file if not already present
         if fname not in self.fnamelist:
-            bufsize = 1  # Implies line buffered
+            bufsize = 10  # Implies line buffered
             self.fnamelist.append(fname)
 
             self.ofile.append(open(fname, 'wb', bufsize))
@@ -298,14 +298,14 @@ class wf_OutputTimeSeriesArea():
                 self.writer.append(csv.writer(self.ofile[-1]))
                 self.ofile[-1].write("# Timestep,")
                 self.writer[-1].writerow(self.flatarea)
-            if self.oformat == 'tss':  # test
+            elif self.oformat == 'tss':  # test
                 self.writer.append(csv.writer(self.ofile[-1], delimiter=' '))
                 self.ofile[-1].write("timeseries scalar\n")
                 self.ofile[-1].write(str(len(self.flatarea) + 1) + "\n")
                 self.ofile[-1].write("timestep\n")
                 for idd in self.flatarea:
                     self.ofile[-1].write(str(idd) + "\n")
-            if self.oformat == 'netcdf':
+            else:
                 print('Not implemented yet')
 
         self.steps = self.steps + 1
@@ -2067,15 +2067,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         path = os.path.join(directoryPrefix, newName)
 
         if self.outputFormat == 1:
-            if sys.version_info[0] == 2 and sys.version_info[1] >= 6:
-                try:
-                    import pcraster as PCRaster
-                except:
-                    import PCRaster as PCRaster
-            else:
-                import PCRaster
             if not hasattr(self, 'NcOutput'):
-                PCRaster.report(variable, path)
+                report(variable, path)
                 if gzipit:
                     Gzip(path, storePath=True)
             else:
