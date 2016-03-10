@@ -7,6 +7,12 @@ Welcome to wflow's |version| documentation!
       This documentation is for version |version| of wflow, release |release|
       This documentation was generated |today|
 
+      Latest version documentation (development):
+      http://wflow.readthedocs.org/en/latest/
+
+      Latest release (stable) version documentation
+      http://wflow.readthedocs.org/en/stable/
+
 
 .. note::
 
