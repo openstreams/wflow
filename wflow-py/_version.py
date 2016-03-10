@@ -1,2 +1,2 @@
-VERSION="1.0.2016.02.1"
-MVERSION="1.0.2016.02"
+VERSION="1.0.master.beta"
+MVERSION="1.0.master"
