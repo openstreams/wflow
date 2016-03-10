@@ -8,9 +8,11 @@ Welcome to wflow's |version| documentation!
       This documentation was generated |today|
 
       Latest version documentation (development):
+
       http://wflow.readthedocs.org/en/latest/
 
-      Latest release (stable) version documentation
+      Latest release (stable) version documentation:
+
       http://wflow.readthedocs.org/en/stable/
 
 
