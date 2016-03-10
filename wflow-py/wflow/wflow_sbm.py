@@ -954,15 +954,14 @@ class WflowModel(DynamicModel):
         # Interception according to a modified Gash model
         ##########################################################################
         if self.timestepsecs >= (23 * 3600):
-            ThroughFall, Interception, StemFlow, self.CanopyStorage = rainfall_interception_gash(self.Cmax, self.EoverR,
+            self.ThroughFall, self.Interception, self.StemFlow, self.CanopyStorage = rainfall_interception_gash(self.Cmax, self.EoverR,
                                                                                                  self.CanopyGapFraction,
                                                                                                  self.PrecipitationPlusMelt,
                                                                                                  self.CanopyStorage,maxevap=self.PotEvap)
 
-            self.PotTransSoil = cover(max(0.0, self.PotEvap - Interception), 0.0)  # now in mm
-            self.Interception=Interception
+            self.PotTransSoil = cover(max(0.0, self.PotEvap - self.Interception), 0.0)  # now in mm
         else:
-            NetInterception, ThroughFall, StemFlow, LeftOver, Interception, self.CanopyStorage = rainfall_interception_modrut(
+            NetInterception, self.ThroughFall, self.StemFlow, LeftOver, Interception, self.CanopyStorage = rainfall_interception_modrut(
                 self.PrecipitationPlusMelt, self.PotEvap, self.CanopyStorage, self.CanopyGapFraction, self.Cmax)
             self.PotTransSoil = cover(max(0.0, LeftOver), 0.0)  # now in mm
             self.Interception=NetInterception
@@ -973,7 +972,7 @@ class WflowModel(DynamicModel):
         #
         self.FirstZoneDepth = (self.thetaS - self.thetaR) * (self.FirstZoneThickness - self.zi)
 
-        self.AvailableForInfiltration = ThroughFall + StemFlow
+        self.AvailableForInfiltration = self.ThroughFall + self.StemFlow
         UStoreCapacity = self.FirstZoneCapacity - self.FirstZoneDepth - self.UStoreDepth
 
         # Runoff onto water bodies and river network
@@ -1178,7 +1177,9 @@ class WflowModel(DynamicModel):
 
         self.RootZonSoilMoisture = self.UStoreDepth * max(1.0, self.RootingDepth/self.zi)
         # The MAx here may lead to watbal error. Howevere, if inwaterMMM becomes < 0, the kinematic wave becomes very slow......
-        self.InwaterMM = max(0.0,self.ExfiltWater + self.ExcessWater + self.SubCellRunoff + self.SubCellGWRunoff + self.RunoffOpenWater + self.BaseFlow - self.reinfiltwater - self.ActEvapOpenWater)
+        self.InwaterMM = max(0.0,self.ExfiltWater + self.ExcessWater + self.SubCellRunoff + \
+                             self.SubCellGWRunoff + self.RunoffOpenWater + self.BaseFlow -\
+                             self.reinfiltwater - self.ActEvapOpenWater)
         self.Inwater = self.InwaterMM * self.ToCubic  # m3/s
 
         self.ExfiltWaterCubic = self.ExfiltWater * self.ToCubic
@@ -1284,9 +1285,12 @@ class WflowModel(DynamicModel):
                       self.DeltaStorage - \
                       self.FirstZoneFlux + CellInFlow
 
-        self.SurfaceWatbal = self.PrecipitationPlusMelt - self.Interception -\
-                             self.ExcessWater - self.RunoffOpenWater - self.SubCellRunoff - self.ActInfilt -\
-                             (self.CanopyStorage - self.OldCanopyStorage)
+        self.InterceptionWatBal = self.PrecipitationPlusMelt - self.Interception -self.StemFlow - self.ThroughFall -\
+                             (self.OldCanopyStorage - self.CanopyStorage)
+        self.SurfaceWatbal = self.PrecipitationPlusMelt - self.Interception - \
+                             self.ExcessWater - self.RunoffOpenWater - self.SubCellRunoff - \
+                             self.ActInfilt -\
+                             (self.OldCanopyStorage - self.CanopyStorage)
 
         self.watbal = self.SoilWatbal + self.SurfaceWatbal
 

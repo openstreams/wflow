@@ -256,7 +256,7 @@ class wf_OutputTimeSeriesArea():
 
         self.steps = 0
         self.area = area
-        self.areanp = pcr2numpy(area, 0)
+        self.areanp = pcr2numpy(area, 0).copy()
         self.oformat = oformat
         self.areafunction = areafunction
         """ average, total, minimum, maximum, majority"""
@@ -290,7 +290,7 @@ class wf_OutputTimeSeriesArea():
         """
         # Add new file if not already present
         if fname not in self.fnamelist:
-            bufsize = 10  # Implies line buffered
+            bufsize = 1  # Implies line buffered
             self.fnamelist.append(fname)
 
             self.ofile.append(open(fname, 'wb', bufsize))
@@ -1009,9 +1009,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 if "None" not in samplemapname:
                     try:
                         self.samplemap = self.wf_readmap(samplemapname,0.0,fail=True)
-                        idd = tsformat + ":" + samplemapname
+                        idd = tsformat + ":" + samplemapname + ":" + areafunction
                         self.oscv[idd] = wf_OutputTimeSeriesArea(self.samplemap, oformat=tsformat,areafunction=areafunction)
-                        self.logger.info("Adding " + tsformat + " output at " + samplemapname)
+                        self.logger.info("Adding " + tsformat + " output at " + samplemapname + " function: " + areafunction)
                     except:
                         self.logger.warn("Could not read sample id-map for timeseries: " + samplemapname)
 
@@ -1066,14 +1066,19 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         """
         Print .ini defined output csv/tss timeseries per timestep
         """
+
         for a in self.samplenamecsv:
+            found = 1
             try:
                 exec "tmpvar = " + self.varnamecsv[a]
             except:
+                found = 0
                 self.logger.warn("Cannot find: " + self.varnamecsv[a] + " variable not in model.")
 
             #self.oscv[self.samplenamecsv[a]].writestep(tmpvar, a, timestep=self.DT.currentTimeStep,dtobj=self.DT.currentDateTime)
-            self.oscv[self.samplenamecsv[a]].writestep(tmpvar, a, timestep=self.DT.currentTimeStep)
+            if found:
+                self.logger.info(self.varnamecsv[a])
+                self.oscv[self.samplenamecsv[a]].writestep(tmpvar, a, timestep=self.DT.currentTimeStep)
 
 
     def wf_savesummarymaps(self):
