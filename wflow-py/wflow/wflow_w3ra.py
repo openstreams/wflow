@@ -320,8 +320,8 @@ class WflowModel(DynamicModel):
         if self.UseETPdata == 1:
             self.TDAY=cover(self.wf_readmap(self.TDAY_mapstack, 10.0), scalar(10.0)) # T in degC     
             self.EPOT=cover(self.wf_readmap(self.EPOT_mapstack, 0.0), scalar(0.0)) # mm             
-            #self.WINDSPEED=cover(self.wf_readmapClimatology(self.WINDSPEED_mapstack, default=1.0), scalar(1.0))
-            #self.AIRPRESS=cover(self.wf_readmapClimatology(self.AIRPRESS_mapstack, default=980.0), scalar(980.0))
+            self.WINDSPEED=cover(self.wf_readmapClimatology(self.WINDSPEED_mapstack, default=1.0), scalar(1.0))
+            self.AIRPRESS=cover(self.wf_readmapClimatology(self.AIRPRESS_mapstack, default=980.0), scalar(980.0))
             # print "Using climatology for wind, air pressure and albedo." 
         elif self.UseETPdata == 0:
             self.TMIN=cover(self.wf_readmap(self.TMIN_mapstack, 10.0), scalar(10.0)) # T in degC
@@ -356,7 +356,7 @@ class WflowModel(DynamicModel):
             pe = min(scalar(610.8)*(exp(pex)),scalar(10000.0))  # Mean actual vapour pressure, from dewpoint temperature
         # rescale factor because windspeed climatology is at 2m
         WindFactor = 1.0
-        u2 = scalar(WindFactor)*self.WINDSPEED*(scalar(1)-(scalar(1)-self.fday)*scalar(0.25))/self.fday
+            #u2 = scalar(WindFactor)*self.WINDSPEED*(scalar(1)-(scalar(1)-self.fday)*scalar(0.25))/self.fday
         self.u2 = scalar(WindFactor)*self.WINDSPEED*(scalar(1)-(scalar(1)-self.fday)*scalar(0.25))/self.fday
         pair = self.AIRPRESS # already in Pa
 
@@ -403,9 +403,8 @@ class WflowModel(DynamicModel):
         cRE = 0.03449+4.27e-5*Ta
         # Caero = self.fday*0.176*(1+Ta/209.1)*(pair-0.417*pe)*(1-fRH)         -------------- check 
         # keps = 1.4e-3*((Ta/187)**2+Ta/107+1)*(6.36*pair+pe)/pes
-        # Aerodynamic conductance (3.7)
-        ga1 = self.ku2_1*u2
-        ga2 = self.ku2_2*u2
+        ga1 = self.ku2_1*self.u2
+        ga2 = self.ku2_2*self.u2
         
         if self.UseETPdata == 1:
             self.E01 = max(self.EPOT,0)  							
@@ -413,6 +412,8 @@ class WflowModel(DynamicModel):
             keps = 0.655E-3 * pair / pes   # See Appendix A3 (http://www.clw.csiro.au/publications/waterforahealthycountry/2010/wfhc-aus-water-resources-assessment-system.pdf) --------------------------------   check!
         
         elif self.UseETPdata == 0:
+            # Aerodynamic conductance (3.7)
+
             ns_alb = self.ALBEDO
             Rgeff = Rg/self.fday
             # shortwave radiation balance (3.2)
