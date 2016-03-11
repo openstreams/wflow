@@ -45,7 +45,7 @@ in order to run wflow requires the following packages:
 + netCDF4
 + numpy
 + matplotlib
-+ pcraster
++ pcraster (www.pcraster.eu)
 + osgeo (GDAL=1.11)
 + pyproj
 
