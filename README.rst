@@ -53,10 +53,6 @@ The setup.py script will try to install these dependencies but it is best to mak
 sure you have installed and tested those before running the setup.py script.
 Make sure to have 64 bit versions of all packages.
 
-Freezer
-=======
-The make_wflow_exe.py script builds a binary distribution of the models.
-You need the bbfreeze package installed to do this yourself.
 
 
 
