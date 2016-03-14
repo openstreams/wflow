@@ -665,10 +665,14 @@ class WflowModel(DynamicModel):
     :var self.ToCubic: Mutiplier to convert mm to m^3/s for fluxes
     """
 
-    self.wf_updateparameters() # read forcing an dynamic parameters
-    self.Precipitation = max(0.0,self.Precipitation)  * self.Pcorr
+    self.logger.debug("Step: " + str(int(self.currentStep)) + "/" + str(int(self._d_nrTimeSteps)))
+    self.thestep = self.thestep + 1
 
-    #self.Precipitation=cover(self.wf_readmap(self.P_mapstack,0.0),0.0) * self.Pcorr
+    self.wf_updateparameters() # read forcing an dynamic parameters
+    self.Precipitation = max(0.0,self.Precipitation)
+
+    # Hack for afghanistan project
+    self.Precipitation=cover(self.wf_readmap(self.P_mapstack,0.0),0.0) * self.Pcorr
     #self.PotEvaporation=cover(self.wf_readmap(self.PET_mapstack,0.0),0.0)
     #self.Inflow=cover(self.wf_readmap(self.Inflow_mapstack,0.0,verbose=False),0.0)
     # These ar ALWAYS 0 at present!!!
@@ -706,6 +710,7 @@ class WflowModel(DynamicModel):
     InSoil = max(self.FreeWater-MaxFreeWater,0.0)   #abundant water in snow pack which goes into soil
     self.FreeWater=self.FreeWater-InSoil 
     RainAndSnowmelt = RainFall + self.SnowMelt
+    
     # ADDED BY MARK/LAUREN: CALCULATE SNOW COVER AREA
     self.SnowCover = ifthenelse(self.DrySnow >0, scalar(1), scalar(0))
     self.NrCell= areatotal(self.SnowCover,self.TopoId)
@@ -934,7 +939,6 @@ def main(argv=None):
     myModel = WflowModel(wflow_cloneMap, caseName,runId,configfile)
     dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep,firstTimestep=_firstTimeStep,datetimestart=starttime)
     dynModelFw.createRunId(NoOverWrite=NoOverWrite,logfname=LogFileName,level=loglevel,doSetupFramework=False)
-    
 
     for o, a in opts:
         if o == '-P':
