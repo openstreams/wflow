@@ -31,7 +31,7 @@ Welcome to wflow's |version| documentation!
     + gdal
     + pyproj
 
-    Alternatively you can use one of the releases (executable) to run the models withour installing python and the
+    Alternatively you can use one of the releases (executable) to run the models without installing python and the
     required packages:   https://github.com/openstreams/wflow/releases
 
 
