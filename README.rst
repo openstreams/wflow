@@ -60,7 +60,7 @@ To check it the install is successfull, go to the  the the examples directory an
 
 + Python c:\Anaconda\scripts\wflow_sbm.py -C wflow_rhine_hbv -T 100 -R testing 
 
-This shouls run without errors
+This should run without errors
 
 Credits
 =======
