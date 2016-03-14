@@ -573,6 +573,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         fp = open(os.path.join(self._userModel().caseName, self._userModel().runId, "configofrun.ini"), 'wb')
         self._userModel().config.write(fp)
 
+        for key, value in self.oscv.iteritems():
+            value.closeall()
+
+
     def loggingSetUp(self, caseName, runId, logfname, model, modelversion, level=pcrut.logging.INFO):
         """
         Sets up the logging system assuming we are in the runId directory
