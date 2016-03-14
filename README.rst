@@ -42,14 +42,14 @@ Once Anaconda is installed open a command window and install netCDF4, gdal and p
 + Conda install gdal=1.11
 + Conda install pyproj
 
-Installing pcraster
--------------------
+*Installing pcraster*
+
 + Download pcraster from www.pcraster.eu website (version 4.1 64 bit)
 + Extract zip to root of c: This will created c:\pcraster-4.1.0_x86-64
 + Add c:\pcraster-4.1.0_x86-64\python to the PYTHONPATH environment variable
 
-Installing wflow itself
------------------------
+*Installing wflow itself*
+
 Clone with git or Download the latest zip with the source code of wflow. Go to the wflow-py directory and run:
 
 + python setup.py install
