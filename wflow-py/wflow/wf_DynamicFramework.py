@@ -413,6 +413,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self.APIDebug = 0
         self._userModel().currentdatetime = self.DT.currentDateTime
         self._userModel()._setCurrentTimeStep(self.DT.currentTimeStep)
+        self._userModel().timestepsecs = self.DT.timeStepSecs
 
 
     def wf_multparameters(self):
