@@ -31,7 +31,9 @@ if you do not have a python installation. However, it is recommended to install 
 Install as a python package (windows quick install instructions)
 ================================================================
 
-Download Anaconda for python 2.7 64 bit (Tested with anaconda2 2.5.0). From the Anaconda installer choose the followin goptions:
+*Installing Anacond (scientific python distribution)*
+
+Download Anaconda for python 2.7 64 bit (Tested with anaconda2 2.5.0). From the Anaconda installer choose the following options:
 + Install to c:\Anaconda
 + Register as default python
 + Add to path
