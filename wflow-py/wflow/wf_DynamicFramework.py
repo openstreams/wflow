@@ -1073,7 +1073,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             except:
                 self.logger.warn("Cannot find: " + self.varnamecsv[a] + " variable not in model.")
 
-            #self.oscv[self.samplenamecsv[a]].writestep(tmpvar, a, timestep=self.DT.currentTimeStep,dtobj=self.DT.currentDateTime)
+
             self.oscv[self.samplenamecsv[a]].writestep(tmpvar, a, timestep=self.DT.currentTimeStep)
 
 
