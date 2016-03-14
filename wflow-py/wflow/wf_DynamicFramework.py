@@ -1078,7 +1078,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
             #self.oscv[self.samplenamecsv[a]].writestep(tmpvar, a, timestep=self.DT.currentTimeStep,dtobj=self.DT.currentDateTime)
             if found:
-                self.logger.info(self.varnamecsv[a])
                 self.oscv[self.samplenamecsv[a]].writestep(tmpvar, a, timestep=self.DT.currentTimeStep)
 
 
