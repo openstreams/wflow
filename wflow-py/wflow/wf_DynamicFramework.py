@@ -544,11 +544,11 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         self._userModel().logger.info("Adding " + par.name + " to model.")
 
                     tblname = os.path.join(self._userModel().Dir, par.stack + "_" + str(self._userModel().currentStep))
+                    # Only added a new table if available
                     if os.path.exists(tblname):
                         theparmap = self.readtblFlexDefault(tblname, par.default, *par.lookupmaps)
                         setattr(self._userModel(), par.name, theparmap)
-                    else:
-                        self._userModel().logger.debug(tblname + " not available for this step, using previous value.")
+
 
         self.setviaAPI = {}
 

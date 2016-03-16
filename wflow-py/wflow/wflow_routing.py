@@ -326,7 +326,7 @@ class WflowModel(DynamicModel):
         wflow_riverwidth = configget(self.config, "model", "wflow_riverwidth", "staticmaps/wflow_riverwidth.map")
         wflow_floodplainwidth = configget(self.config, "model", "wflow_floodplainwidth", "staticmaps/wflow_floodplainwidth.map")
         wflow_bankfulldepth = configget(self.config, "model", "wflow_bankfulldepth", "staticmaps/wflow_bankfulldepth.map")
-        wflow_floodplaindist = configget(self.config, "model", "wflow_bankfulldepth", "staticmaps/wflow_floodplaindist.map")
+        wflow_floodplaindist = configget(self.config, "model", "wflow_floodplaindist", "staticmaps/wflow_floodplaindist.map")
 
         wflow_landuse = configget(self.config, "model", "wflow_landuse", "staticmaps/wflow_landuse.map")
         wflow_soil = configget(self.config, "model", "wflow_soil", "staticmaps/wflow_soil.map")
