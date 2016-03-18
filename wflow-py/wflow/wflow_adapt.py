@@ -571,7 +571,7 @@ def main():
         logger.info("Ending preadapter")
         sys.exit(0)
     elif mode == "Run":
-        logger.info("Run adapter not implemented...")    # Not implmented -> se pcraster adapter        
+        logger.info("Run adapter not implemented...")    # Not implemented -> se pcraster adapter
         sys.exit(1)
     elif mode == "Post":
         

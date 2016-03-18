@@ -654,6 +654,7 @@ class WflowModel(DynamicModel):
     :var self.CapFlux: capilary rise [mm]
     :var self.SurfaceRunoffMM: SurfaceRunoff in mm
     :var self.KinWaveVolume: Volume in the kinematic wave reservoir
+    :var self.SurfaceWaterSupply: the negative Inflow (water demand) that could be met from the surfacewater [m^3/s]
         
     
     *Static variables*
@@ -706,7 +707,7 @@ class WflowModel(DynamicModel):
     InSoil = max(self.FreeWater-MaxFreeWater,0.0)   #abundant water in snow pack which goes into soil
     self.FreeWater=self.FreeWater-InSoil 
     RainAndSnowmelt = RainFall + self.SnowMelt
-    # ADDED BY MARK/LAUREN: CALCULATE SNOW COVER AREA
+
     self.SnowCover = ifthenelse(self.DrySnow >0, scalar(1), scalar(0))
     self.NrCell= areatotal(self.SnowCover,self.TopoId)
     
@@ -790,7 +791,9 @@ class WflowModel(DynamicModel):
     self.Inwater=self.InwaterMM * self.ToCubic
     self.QuickFlowCubic = (self.QuickFlow + self.RealQuickFlow) * self.ToCubic
     self.BaseFlowCubic = self.BaseFlow * self.ToCubic
-    self.Inwater=self.Inwater + self.Inflow # Add abstractions/inflows in m^3/sec
+
+    self.SurfaceWaterSupply = ifthenelse (self.Inflow < 0.0 , max(-1.0 * self.Inwater,self.SurfaceRunoff), self.ZeroMap)
+    self.Inwater = ifthenelse(self.SurfaceRunoff + self.Inwater < 0.0, -1.0 * self.SurfaceRunoff, self.Inwater)
     
     ##########################################################################
     # Runoff calculation via Kinematic wave ##################################

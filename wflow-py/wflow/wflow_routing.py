@@ -587,6 +587,7 @@ class WflowModel(DynamicModel):
         :var self.WaterLevel: Total aater level in the kinematic wave [m] (above the bottom)
         :var self.Pfp: Actual wetted perimiter of the floodplain [m]
         :var self.Pch: Actual wetted perimiter of the channel [m]
+        :var self.SurfaceWaterSupply: the negative Inflow (water demand) that could be met from the surfacewater [m^3/s]
 
         *Static variables*
 
@@ -615,7 +616,8 @@ class WflowModel(DynamicModel):
             self.Inflow = cover(self.OutflowDwn,self.Inflow)
 
 
-        self.Inwater = self.Inwater + self.Inflow  # Add abstractions/inflows in m^3/sec
+        self.SurfaceWaterSupply = ifthenelse (self.Inflow < 0.0 , max(-1.0 * self.Inwater,self.SurfaceRunoff), self.ZeroMap)
+        self.Inwater = ifthenelse(self.SurfaceRunoff + self.Inwater < 0.0, -1.0 * self.SurfaceRunoff, self.Inwater)
 
 
         ##########################################################################
@@ -629,7 +631,8 @@ class WflowModel(DynamicModel):
         self.SurfaceRunoffMM = self.SurfaceRunoff * self.QMMConv  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
         self.updateRunOff()
         self.InflowKinWaveCell = upstream(self.TopoLdd, self.SurfaceRunoff)
-        self.MassBalKinWave = (-self.KinWaveVolume + self.OldKinWaveVolume) / self.timestepsecs + self.InflowKinWaveCell + self.Inwater - self.SurfaceRunoff
+        self.MassBalKinWave = (-self.KinWaveVolume + self.OldKinWaveVolume) / self.timestepsecs + self.InflowKinWaveCell\
+                              + self.Inwater - self.SurfaceRunoff
 
         Runoff = self.SurfaceRunoff
 
@@ -660,12 +663,6 @@ class WflowModel(DynamicModel):
             self.SurfaceRunoffMM = self.SurfaceRunoff * self.QMMConv  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
             self.updateRunOff()
             Runoff = self.SurfaceRunoff
-
-        ##########################################################################
-        # water balance ###########################################
-        ##########################################################################
-
-        # Single cell based water budget. snow not included yet.
 
 
 def main(argv=None):
