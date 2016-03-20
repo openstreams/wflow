@@ -6,43 +6,35 @@ Linking wflow to OpenDA
 	This is experimental and incomplete
 
 
-
-There are lot of folders that need to be set in the PATH and PYTHONPATH environment variables for this to work. Also you need the latest wflow python scripts, since Jaap fixed a bug a few days ago. These are also in Albrecht's postbox::
-
-\\hafilerk\homes\Deltabox\Postbox\Weerts, Albrecht\vanArno\testWflow\wflow_bin\
-
-
-You need to set the following folders in the following environment variables:
-
-PATH:
-::
-
- 1. folder with jep.dll file (e.g. f:\testWflow\openda_bin\win32_ifort\)
- 2. folder with PCRaster dll files (e.g. C:\PCRaster\apps).
- 3. folder with CPython installation (e.g. C:\Python25)
-
-PYTHONPATH:
-::
-
- 1. folder with WFLOW python scripts (e.g. f:\testWflow\wflow_bin\)
- 2. folder with PCRaster python scripts (e.g. C:\PCRaster\Python).
+Prerequisites
+-------------
++ download the Wflow openda kernel binary release.
++ install openda
 
 
- Furthermore here is the description of the arguments that are configured in the bbStochModelConfig.xml file:
- 6 arguments expected:
+Configuration
+-------------
 
 ::
 
- 1: piRunFile: pi run info file path (relative to working dir)."
- 2: name of the python module that contains the model to use (e.g. wflow_hbv)."
- 3: caseDirectory: case directory path (relative to working dir)."
- 4: templateRunId: name of the runId within the current case (relative to the caseDirectory)."
- 5: configFileName: name of the model configuration file (relative to the caseDirectory)."
- 6: cloneMapFileName: name of the map file that describes the catchment (relative to the staticmaps folder in the caseDirectory)."
 
-
-This should make it run without any errors, however Albrecht and I are still working to get the OpenDA code working correctly, so we might run into some more problems to solve.
-
-.. note::
-  See also the chapter on configuring the models. There are a number of settings in the ini file (the API section) that are 
-  important. See [run wflow\_hbv via API]_
+  <?xml version="1.0" encoding="UTF-8"?>
+  <bmiModelFactoryConfig xmlns="http://www.openda.org" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openda.org bmiModelFactoryConfig.xsd">
+      <pythonModel>
+          <pythonPath>../../../wflow_bin</pythonPath>
+          <moduleName>wflow.wflow_bmi</moduleName>
+          <className>wflowbmi_csdms</className>
+          <!-- You must give an absolute path to the py.exe of the binary distribution -->
+          <pythonExecutable>d:\2015.02\GLOFFIS_SA\Modules\OpenStreams\wflow_bin\py.exe</pythonExecutable>
+      </pythonModel>
+      <modelTemplateDirectory>../../combined</modelTemplateDirectory>
+      <modelConfigFile>wflow_wr3a.ini</modelConfigFile>
+     <bmiModelForcingsConfig>
+          <dataObject>
+              <className>org.openda.exchange.dataobjects.NetcdfDataObject</className>
+              <file>Precipitationmapstack.nc</file>
+              <arg>true</arg>
+              <arg>false</arg>
+          </dataObject>
+      </bmiModelForcingsConfig>
+  </bmiModelFactoryConfig>

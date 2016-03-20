@@ -413,6 +413,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self.APIDebug = 0
         self._userModel().currentdatetime = self.DT.currentDateTime
         self._userModel()._setCurrentTimeStep(self.DT.currentTimeStep)
+        self._userModel().timestepsecs = self.DT.timeStepSecs
 
 
     def wf_multparameters(self):
@@ -543,11 +544,11 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         self._userModel().logger.info("Adding " + par.name + " to model.")
 
                     tblname = os.path.join(self._userModel().Dir, par.stack + "_" + str(self._userModel().currentStep))
+                    # Only added a new table if available
                     if os.path.exists(tblname):
                         theparmap = self.readtblFlexDefault(tblname, par.default, *par.lookupmaps)
                         setattr(self._userModel(), par.name, theparmap)
-                    else:
-                        self._userModel().logger.debug(tblname + " not available for this step, using previous value.")
+
 
         self.setviaAPI = {}
 
@@ -571,6 +572,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         fp = open(os.path.join(self._userModel().caseName, self._userModel().runId, "configofrun.ini"), 'wb')
         self._userModel().config.write(fp)
+
+        for key, value in self.oscv.iteritems():
+            value.closeall()
+
 
     def loggingSetUp(self, caseName, runId, logfname, model, modelversion, level=pcrut.logging.INFO):
         """
@@ -1077,7 +1082,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
             #self.oscv[self.samplenamecsv[a]].writestep(tmpvar, a, timestep=self.DT.currentTimeStep,dtobj=self.DT.currentDateTime)
             if found:
-                self.logger.info(self.varnamecsv[a])
                 self.oscv[self.samplenamecsv[a]].writestep(tmpvar, a, timestep=self.DT.currentTimeStep)
 
 

@@ -623,9 +623,8 @@ class WflowModel(DynamicModel):
             max(0.0001, windowaverage(self.Slope, celllength() * 4.0))) ** (-0.1875) * self.N ** (0.375)
         # Use supplied riverwidth if possible, else calulate
         self.RiverWidth = ifthenelse(self.RiverWidth <= 0.0, W, self.RiverWidth)
-        # Only allow rinfiltration in rover cells
-        self.MaxReinfilt = self.ZeroMap
 
+        # Only allow reinfiltration in river cells
         self.MaxReinfilt = ifthenelse(self.River, self.ZeroMap + 999.0, self.ZeroMap)
 
         # soil thickness based on topographical index (see Environmental modelling: finding simplicity in complexity)
@@ -642,7 +641,7 @@ class WflowModel(DynamicModel):
         # limit roots to top 99% of first zone
         self.RootingDepth = min(self.FirstZoneThickness * 0.99, self.RootingDepth)
 
-        # subgrid runoff generation, determine CC (shorpness of S-Curve) for upper
+        # subgrid runoff generation, determine CC (sharpness of S-Curve) for upper
         # en lower part and take average
         self.DemMax = readmap(self.Dir + "/staticmaps/wflow_demmax")
         self.DrainageBase = readmap(self.Dir + "/staticmaps/wflow_demmin")
@@ -650,7 +649,6 @@ class WflowModel(DynamicModel):
         self.CCup = min(100.0, - ln(1.0 / 0.1 - 1) / min(-0.1, self.Altitude - self.DemMax))
         self.CC = (self.CClow + self.CCup) * 0.5
 
-        #self.GWScale = (self.DemMax-self.DrainageBase)/self.FirstZoneThickness / self.RunoffGeneratingGWPerc
         # Which columns/gauges to use/ignore in updating
         self.UpdateMap = self.ZeroMap
 
@@ -892,7 +890,8 @@ class WflowModel(DynamicModel):
         :var self.Transfer: downward flux from unsaturated to saturated zone [mm]
         :var self.CapFlux: capilary flux from saturated to unsaturated zone [mm]
         :var self.CanopyStorage: Amount of water on the Canopy [mm]
-        :var self.RunoffCoeff: Runoff coefficient (Q/P) for each cell taking into accoutn the whole upstream area [-]
+        :var self.RunoffCoeff: Runoff coefficient (Q/P) for each cell taking into account the whole upstream area [-]
+        :var self.SurfaceWaterSupply: the negative Inflow (water demand) that could be met from the surfacewater [m^3/s]
 
 
         Static variables
@@ -941,12 +940,15 @@ class WflowModel(DynamicModel):
             if self.MassWasting:
                 # Masswasting of dry snow
                 # 5.67 = tan 80 graden
-                SnowFluxFrac = min(0.5,self.Slope/5.67) * min(1.0,self.DrySnow/MaxSnowPack)
-                MaxFlux = SnowFluxFrac * self.DrySnow
-                self.DrySnow = accucapacitystate(self.TopoLdd,self.DrySnow, MaxFlux)
+                SnowFluxFrac = min(0.5,self.Slope/5.67) * min(1.0,self.Snow/MaxSnowPack)
+                MaxFlux = SnowFluxFrac * self.Snow
+                self.Snow = accucapacitystate(self.TopoLdd,self.Snow, MaxFlux)
             else:
                 SnowFluxFrac = self.ZeroMap
                 MaxFlux= self.ZeroMap
+
+            self.SnowCover = ifthenelse(self.Snow >0, scalar(1), scalar(0))
+            self.NrCell= areatotal(self.SnowCover,self.TopoId)
         else:
             self.PrecipitationPlusMelt = self.Precipitation
 
@@ -1165,7 +1167,7 @@ class WflowModel(DynamicModel):
 
         # Estimate water that may re-infiltrate
         # - Never more that 90% of the available water
-        # - self.MaxReinFilt: a map with reinfilt locations (usually the river mak) can be supplied)
+        # - self.MaxReinFilt: a map with reinfilt locations (usually the river mask) can be supplied)
         # - take into account that the river may not cover the whole cell
         if self.reInfilt:
             self.reinfiltwater = min(self.MaxReinfilt,max(0, min(SurfaceWater * self.RiverWidth/self.reallength * 0.9,
@@ -1188,7 +1190,7 @@ class WflowModel(DynamicModel):
         self.InfiltExcessCubic = self.InfiltExcess * self.ToCubic
         self.ReinfiltCubic = -1.0 * self.reinfiltwater * self.ToCubic
 
-        self.Inwater = self.Inwater + self.Inflow   # Add abstractions/inflows in m^3/sec
+        #self.Inwater = self.Inwater + self.Inflow   # Add abstractions/inflows in m^3/sec
         # Check if we do not try to abstract more runoff then present
         self.SurfaceWaterSupply = ifthenelse (self.Inflow < 0.0 , max(-1.0 * self.Inwater,self.SurfaceRunoff), self.ZeroMap)
         self.Inwater = ifthenelse(self.SurfaceRunoff + self.Inwater < 0.0, -1.0 * self.SurfaceRunoff, self.Inwater)

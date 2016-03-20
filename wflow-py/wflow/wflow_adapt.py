@@ -134,7 +134,9 @@ def setlogger(logfilename,loggername,thelevel=logging.INFO):
 def log2xml(logfile,xmldiag):
     """
     Converts a wflow log file to a Delft-Fews XML diag file
+
     """
+
     trans = {'WARNING': '2', 'ERROR': '1', 'INFO': '3','DEBUG': '4'}
     if os.path.exists(logfile):
         ifile = open(logfile,"r")
@@ -146,7 +148,8 @@ def log2xml(logfile,xmldiag):
         ofile.write("xmlns=\"http://www.wldelft.nl/fews/PI\" xsi:schemaLocation=\"http://www.wldelft.nl/fews/PI \n")
         ofile.write("http://fews.wldelft.nl/schemas/version1.0/pi-schemas/pi_diag.xsd\" version=\"1.2\">\n")
         for aline in all:
-            lineparts = aline.strip().split(" - ")
+            alineesc = aline.translate(None,"><&\"\'")
+            lineparts = alineesc.strip().split(" - ")
             ofile.write("<line level=\"" + trans[lineparts[2]] + "\" description=\"" + lineparts[3] + " [" + lineparts[0] + "]\"/>\n")
         ofile.write("</Diag>\n")
 
@@ -568,7 +571,7 @@ def main():
         logger.info("Ending preadapter")
         sys.exit(0)
     elif mode == "Run":
-        logger.info("Run adapter not implemented...")    # Not implmented -> se pcraster adapter        
+        logger.info("Run adapter not implemented...")    # Not implemented -> se pcraster adapter
         sys.exit(1)
     elif mode == "Post":
         
