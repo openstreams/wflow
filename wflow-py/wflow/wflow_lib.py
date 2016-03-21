@@ -141,7 +141,7 @@ def configset(config,section,var,value, overwrite=False):
 
 def configsection(config,section):
     """
-    gets the list of lesy in a section 
+    gets the list of keys in a section
     
     Input:
         - config

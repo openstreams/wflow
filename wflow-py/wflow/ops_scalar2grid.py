@@ -22,6 +22,7 @@ import os
 import os.path
 import shutil, glob
 import getopt
+import wflow.pcrut as pcrut
 
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
@@ -159,6 +160,10 @@ class WflowModel(DynamicModel):
     self.basetimestep=86400
     # Reads all parameter from disk
     self.wf_updateparameters()
+
+    self.interpolationmethod = configget(self.config,'model','interpolationmethod','inverse')
+    self.inversepower = int(configget(self.config,'model','inversepower','3'))
+    self.ToInterpolate = configsection(self.config,"interpolate")
     self.logger.info("Starting Dynamic run...")
 
 
@@ -203,12 +208,21 @@ class WflowModel(DynamicModel):
 
       self.Stations = ordinal(self.Stations)
 
-      self._T = timeinputscalar(self.Dir  + '/intss/rain.tss',self.Stations)
+      for var in self.ToInterpolate:
+        tss = configget(self.config,'interpolate',var,None)
+        tmp = timeinputscalar(self.Dir + '/' + tss ,self.Stations)
 
-      Unq = uniqueid(boolean(self._T));
-      # Now generate polygons and fill those
-      GaugeArea = spreadzone(ordinal(cover(Unq,0)),0,1);
-      self.T = areaaverage(self._T,GaugeArea);
+
+        if self.interpolationmethod == 'thiessen':
+            Unq = uniqueid(boolean(abs(tmp) + 1.0 ))
+            GaugeArea = spreadzone(ordinal(cover(Unq,0)),0,1);
+            exec 'self.' + var + ' = areaaverage(tmp,GaugeArea)'
+        elif self.interpolationmethod == 'inverse':
+            exec 'self.' + var + '=inversedistance(1,tmp,' + str(self.inversepower) + ',0,0)'
+        else:
+            print 'not implemented:' + self.interpolationmethod
+
+
 
 
 
