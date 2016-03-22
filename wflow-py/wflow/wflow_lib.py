@@ -887,3 +887,4 @@ def writeMap(fileName, fileFormat, x, y, data, FillVal):
 
     if verbose:
         print 'Writing to ' + fileName + ' is done!'
+

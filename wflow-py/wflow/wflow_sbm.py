@@ -1192,10 +1192,11 @@ class WflowModel(DynamicModel):
 
         #self.Inwater = self.Inwater + self.Inflow   # Add abstractions/inflows in m^3/sec
         # Check if we do not try to abstract more runoff then present
-        self.SurfaceWaterSupply = ifthenelse (self.Inflow < 0.0 , max(-1.0 * self.Inwater,self.SurfaceRunoff), self.ZeroMap)
-        self.Inwater = ifthenelse(self.SurfaceRunoff + self.Inwater < 0.0, -1.0 * self.SurfaceRunoff, self.Inwater)
+        MaxExtract = self.SurfaceRunoff + self.Inwater
+        self.SurfaceWaterSupply = ifthenelse (self.Inflow < 0.0 , min(MaxExtract,-1.0 * self.Inflow), self.ZeroMap)
+        self.Inwater = self.Inwater + ifthenelse(self.SurfaceWaterSupply> 0, -1.0 * self.SurfaceWaterSupply,self.Inflow)
 
-        #self.Inwater = self.Inwater + self.Inflow  # Add abstractions/inflows in m^3/sec
+
         ##########################################################################
         # Runoff calculation via Kinematic wave ##################################
         ##########################################################################
@@ -1207,7 +1208,8 @@ class WflowModel(DynamicModel):
         self.SurfaceRunoffMM = self.SurfaceRunoff * self.QMMConv  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
         self.updateRunOff()
         self.InflowKinWaveCell = upstream(self.TopoLdd, self.SurfaceRunoff)
-        self.MassBalKinWave = (-self.KinWaveVolume + self.OldKinWaveVolume) / self.timestepsecs + self.InflowKinWaveCell + self.Inwater - self.SurfaceRunoff
+        self.MassBalKinWave = (-self.KinWaveVolume + self.OldKinWaveVolume) / self.timestepsecs +\
+                              self.InflowKinWaveCell + self.Inwater - self.SurfaceRunoff
 
         Runoff = self.SurfaceRunoff
 
