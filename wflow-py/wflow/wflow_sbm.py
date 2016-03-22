@@ -1264,7 +1264,6 @@ class WflowModel(DynamicModel):
         # Single cell based water budget. snow not included yet.
 
         self.CellStorage = self.UStoreDepth + self.FirstZoneDepth + self.LowerZoneStorage
-
         self.DeltaStorage = self.CellStorage - self.OrgStorage
         OutFlow = self.FirstZoneFlux
         CellInFlow = upstream(self.TopoLdd, scalar(self.FirstZoneFlux))
