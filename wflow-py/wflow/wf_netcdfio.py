@@ -453,6 +453,17 @@ class netcdfinput():
                 self.alldat.pop(var, None)
                 logging.warn("Variable " + var + " not found in netcdf file: " + netcdffile)
 
+        # Now check Y values to see if we must flip the data
+        try:
+            self.y = self.dataset.variables['lat'][:]
+        except:
+            self.y = self.dataset.variables['y'][:]
+
+        if self.y[0] > self.y[-1]:
+            self.flip = False
+        else:
+            self.flip = True
+
     def gettimestep(self, timestep, logging, var='P', shifttime=False):
         """
         Gets a map for a single timestep. reads data in blocks assuming sequential access
@@ -476,8 +487,12 @@ class netcdfinput():
                 self.fstep = ncindex
                 self.lstep = ncindex + self.maxsteps
             np_step = self.alldat[var][ncindex - self.fstep, :, :]
+
             miss = float(self.dataset.variables[var]._FillValue)
-            return numpy2pcr(Scalar, np_step, miss), True
+            if self.flip:
+                return numpy2pcr(Scalar, flipud(np_step).copy(), miss), True
+            else:
+                return numpy2pcr(Scalar, np_step, miss), True
         else:
             #logging.debug("Var (" + var + ") not found returning 0")
             return cover(scalar(0.0)), False

@@ -1255,6 +1255,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         set a map with values from a numpy array. Current settings for
         dimensions are assumed. if the name of the maps contains the string "LDD" or "ldd"
         the maps is assumed to be an LDD maps and an lddrepair call is made,
+        assume -999 as missing value
 
         Input:
             - mapname - string with name of map
