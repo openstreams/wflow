@@ -33,6 +33,7 @@ def calcEp(self,k):
     """
 #    resistenceAeroD(self)
 #    potential_evaporation(self,k)
+    self.EpDay = ifthenelse(self.Sw_t[k] > 0, self.EpDaySnow2, self.EpDay2)           #EpDaySnow added on 18-02-2016
     downscale_evaporation(self,k)
     
 def calcEpSnow(self,k):
@@ -42,7 +43,8 @@ def calcEpSnow(self,k):
     """
 #    resistenceAeroD(self)
 #    potential_evaporation(self,k)
-    self.EpDaySnow = self.EpDay
+    self.EpDaySnow = ifthenelse(self.Sw_t[k] > 0, self.EpDaySnow2 * self.lamda / self.lamdaS, self.EpDay2 * self.lamda / self.lamdaS)           #EpDaySnow added on 18-02-2016
+#    self.EpDaySnow = self.EpDay * self.lamda / self.lamdaS
     downscale_evaporation_snow(self,k)
 
 def calcEpSnowHour(self,k):
@@ -52,7 +54,7 @@ def calcEpSnowHour(self,k):
     """
 #    resistenceAeroD(self)
 #    potential_evaporation(self,k)
-    self.EpHour = self.PotEvaporation / self.lamda * self.lamdaS
+    self.EpHour = ifthenelse(self.Sw_t[k] > 0, self.EpDaySnow2 * self.lamda / self.lamdaS, self.EpDay2 * self.lamda / self.lamdaS)           #EpDaySnow added on 31-03-2016
     
 def calcEu_laiFixed(self,k):
     """
@@ -234,7 +236,8 @@ def downscale_evaporation(self,k):
     - 
     """
     
-    teller = numpy.max(pcr2numpy(self.thestep,nan))
+    #teller = numpy.nanmax(pcr2numpy(self.thestep,nan))
+    teller = pcr2numpy(self.thestep,nan)[0,0]
     x = teller - floor(teller/24) * 24 * scalar(self.TopoId)
     DL = self.DE - self.DS + 1
     P = 2 * pi / (2 * DL)                              # period
@@ -242,7 +245,7 @@ def downscale_evaporation(self,k):
     aN = -1 * self.EpDay * P                       # nominator of the amplitude
     aDN = sin((P * (self.DE + SH)) * 180 / pi) - sin((P * (self.DS + SH)) * 180 / pi)     # denominator of the amplitude
     ampl = aN / aDN                                     # amplitude of new signal
-    
+
     self.EpHour = max(ifthenelse(pcrand(x >= self.DS, x <= self.DE), -1 * ampl * cos((P * (x + SH)) * 180 / pi), 0), 0)
     
 
@@ -257,7 +260,7 @@ def downscale_evaporation_snow(self,k):
     - 
     """
     
-    teller = numpy.max(pcr2numpy(self.thestep,nan))
+    teller = pcr2numpy(self.thestep,nan)[0,0]
     x = teller - floor(teller/24) * 24 * scalar(self.TopoId)
     DL = self.DE - self.DS + 1
     P = 2 * pi / (2 * DL)                              # period
