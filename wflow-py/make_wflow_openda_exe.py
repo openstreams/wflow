@@ -11,7 +11,7 @@ def dependencies_for_freeezing():
 
 
 data_files=matplotlib.get_py2exe_datafiles()
-includes = ['wflow.wflow_bmi']
+includes = ['wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined']
 #include_files = glob.glob("c:\Anaconda\Lib\site-packages\zmq\backend\cython\*.pyd")
 
 nrbits = str(ctypes.sizeof(ctypes.c_voidp) * 8)
@@ -29,7 +29,7 @@ f.addScript("openda/thrift_bmi_raster_server.py")
 f.addScript("wflow/wflow_sbm.py")
 f.addScript("wflow/wflow_hbv.py")
 f.addScript("wflow/wflow_adapt.py")
-f.addScript("wflow/wflow_W3RA.py")
+f.addScript("wflow/wflow_w3ra.py")
 #f.addScript("wflow/wflow_hbv_snow2.py")
 f.addScript("wflow/wflow_delwaq.py")
 f.addScript("wflow/wflow_wave.py")
@@ -47,6 +47,10 @@ f()    # starts the freezing process
 # Extra data directories
 ddir = "c:/pcraster4-64/lib/"
 data_files.append((".", glob.glob(ddir + "/*.dll")))
+
+gdaldata = os.getenv("GDAL_DATA")
+data_files.append(("./gdal-data", glob.glob(gdaldata + "/*.*")))
+
 
 
 print "Copying extra data files..."

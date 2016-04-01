@@ -3,11 +3,11 @@ import os
 import subprocess
 branch = subprocess.check_output('git rev-parse --abbrev-ref HEAD', shell=True).strip()
 
-vers='beta'
+vers='1'
 
 ###################################
-manualversion = "2015.02." + branch + "." + vers
-manualmainversion = "2015.02." + branch
+manualversion = "1.0" + "." + branch + "." + vers
+manualmainversion = "1.0" + "." + branch
 ###################################
 a = open("_version.py","w")
 

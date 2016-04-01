@@ -160,7 +160,8 @@ class MyTest(unittest.TestCase):
         bmiobj = bmi.wflowbmi_light()
         bmiobj.initialize('wflow_sceleton/wflow_sceleton.ini',loglevel=logging.DEBUG)
         et = bmiobj.get_end_time()
-        bmiobj.update(-1)
+        st = bmiobj.get_start_time()
+        bmiobj.update(et - st)
         bmiobj.finalize()
 
     def testbmirunnetcdf(self):

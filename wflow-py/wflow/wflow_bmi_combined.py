@@ -6,7 +6,8 @@ import os
 from wflow.pcrut import setlogger
 from wflow.wflow_lib import configget
 import ConfigParser
-
+import logging
+from pcraster import *
 
 def iniFileSetUp(configfile):
     """
@@ -43,9 +44,9 @@ class wflowbmi_csdms(bmi.Bmi):
     csdms BMI implementation runner for combined pcraster/python models
 
 
-    + all variables are identified by: component_name/variable_name
-    + this version is specific for a routing component combined by land surface component.
-    + get_component_name returns a comm separated list of components
+    + all variables are identified by: component_name@variable_name
+    + this version is only tested for a one-way link
+    + get_component_name returns a comma separated list of components
 
     """
 
@@ -55,11 +56,33 @@ class wflowbmi_csdms(bmi.Bmi):
 
         :return: nothing
         """
+        from collections import OrderedDict
 
-        self.bmimodels = {}
+        self.bmimodels = OrderedDict()
         self.currenttimestep = 0
         self.exchanges = []
-        self.comp_sep = "."
+        self.comp_sep = "@"
+        self.wrtodisk = False
+        if os.getenv("wflow_bmi_combined_writetodisk",'False') in 'True':
+            self.wrtodisk = True
+
+        self.loggingmode = logging.ERROR
+        logstr = os.getenv('wflow_bmi_loglevel', 'ERROR')
+        if logstr in 'ERROR':
+            self.loggingmode = logging.ERROR
+        if logstr in 'WARNING':
+            self.loggingmode = logging.WARNING
+        if logstr in 'INFO':
+            self.loggingmode = logging.INFO
+        if logstr in 'DEBUG':
+            self.loggingmode = logging.DEBUG
+
+        self.bmilogger = setlogger('wflow_bmi_combined.log','wflow_bmi_combined_logging',thelevel=self.loggingmode)
+        self.bmilogger.info("__init__: wflow_bmi_combined object initialised.")
+        if self.wrtodisk:
+            self.bmilogger.warn('Will write all bmi set- and get- grids to disk!...')
+
+
 
     def __getmodulenamefromvar__(self,long_var_name):
         """
@@ -69,14 +92,14 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         return long_var_name.split(self.comp_sep)[0]
 
-    def initialize_config(self, filename):
+    def initialize_config(self, filename, loglevel=logging.DEBUG):
         """
         *Extended functionality*, see https://github.com/eWaterCycle/bmi/blob/master/src/main/python/bmi.py
 
-        see initialize
+        Read the ini file for the comnined bmi model and initializes all the bmi models
+        listed in the config file.
 
         :param filename:
-        :param loglevel:
         :return: nothing
         """
 
@@ -96,7 +119,7 @@ class wflowbmi_csdms(bmi.Bmi):
         # Initialize all bmi model objects
         for key, value in self.bmimodels.iteritems():
             modconf = os.path.join(self.datadir,self.config.get('models',key))
-            self.bmimodels[key].initialize_config(modconf)
+            self.bmimodels[key].initialize_config(modconf,loglevel=loglevel)
 
 
 
@@ -104,7 +127,7 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         *Extended functionality*, see https://github.com/eWaterCycle/bmi/blob/master/src/main/python/bmi.py
 
-        see initialize
+        initalises all bmi models listed in the config file. Als does the first (timestep 0) data exchange
 
         :param self:
         :return: nothing
@@ -120,14 +143,17 @@ class wflowbmi_csdms(bmi.Bmi):
             for item in self.exchanges:
                 supplymodel = self.__getmodulenamefromvar__(item)
                 if curmodel == supplymodel:
-                    outofmodel = self.get_value(item)
+                    outofmodel = self.get_value(item).copy()
                     tomodel = self.config.get('exchanges',item)
                     self.set_value(tomodel,outofmodel)
+
+        self.bmilogger.info(self.bmimodels)
 
 
 
     def set_start_time(self, start_time):
         """
+        Sets the start time for all bmi models
 
         :param start_time: time in units (seconds) since the epoch
         :return: nothing
@@ -137,6 +163,8 @@ class wflowbmi_csdms(bmi.Bmi):
 
     def set_end_time(self, end_time):
         """
+        sets the end time for all bmi models
+
         :param end_time: time in units (seconds) since the epoch
         :return:
         """
@@ -147,7 +175,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
     def get_attribute_names(self):
         """
-        Get the attributes of the model return in the form of section_name:attribute_name
+        Get the attributes of the model return in the form of model_name@section_name:attribute_name
 
         :return: list of attributes
         """
@@ -161,6 +189,9 @@ class wflowbmi_csdms(bmi.Bmi):
 
     def get_attribute_value(self, attribute_name):
         """
+        gets the attribute value for the name. The name should adhere to the following convention::
+            model_name@section_name:attribute_name
+
         :param attribute_name:
         :return: attribute value
         """
@@ -170,7 +201,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
     def set_attribute_value(self, attribute_name, attribute_value):
         """
-        :param attribute_name: name using the section:option notation
+        :param attribute_name: name using the model_name@section:option notation
         :param attribute_value: string value of the option
         :return:
         """
@@ -178,21 +209,14 @@ class wflowbmi_csdms(bmi.Bmi):
         self.bmimodels[cname[0]].set_attribute_value(cname[1],attribute_value)
 
 
-    def initialize(self, filename):
+    def initialize(self, filename,loglevel=logging.DEBUG):
         """
         Initialise the model. Should be called before any other method.
 
-        :var filename: full path to the wflow ini file
-        :var loglevel: optional loglevel (default == DEBUG)
-
-        Assumptions for now:
-
-            - the configfile wih be a full path
-            - we define the case from the basedir of the configfile
-
+        :var filename: full path to the combined model ini file
         """
 
-        self.initialize_config(filename)
+        self.initialize_config(filename,loglevel=loglevel)
         self.initialize_model()
 
 
@@ -200,9 +224,11 @@ class wflowbmi_csdms(bmi.Bmi):
     def update(self):
         """
         Propagate the model to the next model timestep
+
+        The function iterates over all models
         """
         for key, value in self.bmimodels.iteritems():
-            # step one update first model
+            # step one update model
             self.bmimodels[key].update()
             # do all exchanges
             curmodel = self.bmimodels[key].get_component_name()
@@ -284,6 +310,8 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         for key, value in self.bmimodels.iteritems():
             self.bmimodels[key].finalize()
+
+        self.bmilogger.info("finalize.")
 
     def get_component_name(self):
         """
@@ -399,7 +427,7 @@ class wflowbmi_csdms(bmi.Bmi):
         for key, value in self.bmimodels.iteritems():
             st.append(self.bmimodels[key].get_start_time())
 
-        return st[-1]
+        return numpy.array(st).max()
 
     def get_current_time(self):
         """
@@ -424,7 +452,7 @@ class wflowbmi_csdms(bmi.Bmi):
         for key, value in self.bmimodels.iteritems():
             st.append(self.bmimodels[key].get_end_time())
 
-        return st[-1]
+        return numpy.array(st).min()
 
     def get_time_step(self):
         """
@@ -436,7 +464,7 @@ class wflowbmi_csdms(bmi.Bmi):
         for key, value in self.bmimodels.iteritems():
             st.append(self.bmimodels[key].get_time_step())
 
-        return max(st)
+        return max(st)[0]
 
     def get_time_units(self):
         """
@@ -461,10 +489,15 @@ class wflowbmi_csdms(bmi.Bmi):
         :return: a np array of long_var_name
         """
         # first part should be the component name
+        self.bmilogger.debug('get_value: ' + long_var_name)
         cname = long_var_name.split(self.comp_sep)
         if self.bmimodels.has_key(cname[0]):
-            return self.bmimodels[cname[0]].get_value(cname[1])
+            tmp = self.bmimodels[cname[0]].get_value(cname[1])
+            if self.wrtodisk:
+                report(numpy2pcr(Scalar,tmp, -999),long_var_name + "_get_" + str(self.get_current_time()) + '.map')
+            return tmp
         else:
+            self.bmilogger.error('get_value: ' + long_var_name + ' returning None!!!!')
             return None
 
 
@@ -639,9 +672,13 @@ class wflowbmi_csdms(bmi.Bmi):
                   is present a uniform map will be set in the wflow model.
         """
         # first part should be the component name
+        self.bmilogger.debug('set_value: ' + long_var_name)
         cname = long_var_name.split(self.comp_sep)
         if self.bmimodels.has_key(cname[0]):
             self.bmimodels[cname[0]].set_value(cname[1],src)
+            if self.wrtodisk:
+                report(numpy2pcr(Scalar,src, -999),long_var_name + "_set_" + str(self.get_current_time()) + '.map')
+
 
 
 

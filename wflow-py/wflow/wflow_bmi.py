@@ -9,6 +9,7 @@ import wflow.bmi as bmi
 import wflow_lib
 import numpy as np
 from wflow.pcrut import setlogger
+from pcraster import *
 
 class wflowbmi_light(object):
     """
@@ -113,10 +114,10 @@ class wflowbmi_light(object):
     def update(self, dt):
         """
         Return type string, compatible with numpy.
-        Propagate the model dt timesteps
+        Propagate the model dt  (in seconds)
         """
 
-        nrsteps = int(dt)
+        nrsteps = int(dt/self.dynModel.DT.timeStepSecs)
         self.bmilogger.debug("update: dt = " + str(dt))
         self.bmilogger.debug("update: update " + str(nrsteps) + " timesteps.")
         if nrsteps >= 1:
@@ -272,11 +273,11 @@ class wflowbmi_light(object):
 
         if self.wrtodisk:
             fname = str(self.currenttimestep) + "_get_" + long_var_name + ".map"
-            arpcr = self.dynModel.numpy2pcr(self.dynModel.Scalar, src, -999)
+            arpcr = numpy2pcr(Scalar, src, -999)
             self.bmilogger.debug("Writing to disk: " + fname)
-            self.dynModel.report(arpcr,fname)
+            report(arpcr,fname)
 
-        return np.flipud(src)
+        return src
 
     def set_var(self, long_var_name, src):
         """
@@ -289,9 +290,9 @@ class wflowbmi_light(object):
 
         if self.wrtodisk:
             fname = str(self.currenttimestep) + "_set_" + long_var_name + ".map"
-            arpcr = self.dynModel.numpy2pcr(self.dynModel.Scalar, np.flipud(src), -999)
+            arpcr = numpy2pcr(Scalar, src, -999)
             self.bmilogger.debug("Writing to disk: " + fname)
-            self.dynModel.report(arpcr,fname)
+            report(arpcr,fname)
 
         if long_var_name in self.outputonlyvars:
             self.bmilogger.error("set_var: " + long_var_name + " is listed as an output only variable, cannot set. " + str(self.outputonlyvars))
@@ -302,7 +303,7 @@ class wflowbmi_light(object):
                 self.dynModel.wf_setValues(long_var_name,float(src))
             else:
                 self.bmilogger.debug("set_var: (grid) " + long_var_name)
-                self.dynModel.wf_setValuesAsNumpy(long_var_name, np.flipud(src))
+                self.dynModel.wf_setValuesAsNumpy(long_var_name, src)
 
 
     def set_var_slice(self, name, start, count, var):
@@ -314,7 +315,7 @@ class wflowbmi_light(object):
         For some implementations it can be equivalent and more efficient to do:
         `get_var(name)[start[0]:start[0]+count[0], ..., start[n]:start[n]+count[n]] = var`
         """
-        tmp = np.flipud(self.get_var(name).copy())
+        tmp = self.get_var(name).copy()
         try:
             # if we have start and count as a number we can do this
             tmp[start:(start+count)] = var
@@ -323,7 +324,7 @@ class wflowbmi_light(object):
             slices = [np.s_[i:(i+n)] for i,n in zip(start, count)]
             tmp[slices]
 
-        self.set_var(name, name, np.flipud(tmp))
+        self.set_var(name, name, tmp)
 
     def set_var_index(self, name, index, var):
         """
@@ -335,9 +336,9 @@ class wflowbmi_light(object):
         and more efficient to do:
         `get_var(name).flat[index] = var`
         """
-        tmp = np.flipud(self.get_var(name).copy())
+        tmp = self.get_var(name).copy()
         tmp.flat[index] = var
-        self.set_var(name, name, np.flipud(tmp))
+        self.set_var(name, name, tmp)
 
     def inq_compound(self, name):
         """
@@ -394,7 +395,7 @@ class wflowbmi_csdms(bmi.Bmi):
         logstr = os.getenv('wflow_bmi_loglevel', 'ERROR')
         self.wrtodisk = False
 
-        if os.getenv("wflow_bmi_writedisk",'False') in 'True':
+        if os.getenv("wflow_bmi_writetodisk",'False') in 'True':
             self.wrtodisk = True
 
         if logstr in 'ERROR':
@@ -408,6 +409,8 @@ class wflowbmi_csdms(bmi.Bmi):
 
         self.bmilogger = setlogger('wflow_bmi.log','wflow_bmi_logging',thelevel=self.loggingmode)
         self.bmilogger.info("__init__: wflow_bmi object initialised.")
+        if self.wrtodisk:
+            self.bmilogger.warn('Will write all bmi set and get grids to disk!...')
 
 
     def initialize_config(self, filename, loglevel=logging.DEBUG):
@@ -431,22 +434,26 @@ class wflowbmi_csdms(bmi.Bmi):
         # set to 10000 for now
         #
         maxNrSteps = 10000
-        self.bmilogger.info("initialize_config: Initialising wflow bmi with ini: " + filename)
 
-        if "wflow_sbm" in filename:
+
+        if "wflow_sbm" in inifile:
             import wflow.wflow_sbm as wf
             self.name = "wflow_sbm"
-        elif "wflow_hbv" in filename:
+        elif "wflow_hbv" in inifile:
             import wflow.wflow_hbv as wf
             self.name = "wflow_hbv"
-        elif "wflow_routing" in filename:
+        elif "wflow_routing" in inifile:
             import wflow.wflow_routing as wf
             self.name = "wflow_routing"
+        elif "wflow_floodmap" in inifile:
+            import wflow.wflow_floodmap as wf
+            self.name = "wflow_floodmap"
         else:
             modname = os.path.splitext(os.path.basename(filename))[0]
             exec "import wflow." + modname + " as wf"
             self.name = modname
 
+        self.bmilogger.info("initialize_config: Initialising wflow bmi with ini: " + filename + " Component name: " + self.name)
         self.myModel = wf.WflowModel(wflow_cloneMap, self.datadir, runid, inifile)
 
         self.dynModel = wf.wf_DynamicFramework(self.myModel, maxNrSteps, firstTimestep = 1)
@@ -835,17 +842,14 @@ class wflowbmi_csdms(bmi.Bmi):
         if long_var_name in self.inputoutputvars:
             ret = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
             self.bmilogger.debug("get_value: " + long_var_name)
+
             if self.wrtodisk:
                 fname = str(self.currenttimestep) + "_get_" + long_var_name + ".map"
-                arpcr = self.dynModel.numpy2pcr(self.dynModel.Scalar, ret, -999)
+                arpcr = numpy2pcr(Scalar, ret, -999)
                 self.bmilogger.debug("Writing to disk: " + fname)
-                self.dynModel.report(arpcr,fname)
+                report(arpcr,fname)
 
-            try:
-                fret = np.flipud(ret)
-                return fret
-            except:
-                return ret
+            return ret
         else:
             self.bmilogger.error("get_value: " + long_var_name + ' not in list of output values ' + str(self.inputoutputvars))
             return None
@@ -862,7 +866,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
         if long_var_name in self.inputoutputvars:
             self.bmilogger.debug("get_value_at_indices: " + long_var_name + ' at ' + str(inds))
-            npmap = np.flipud(self.dynModel.wf_supplyMapAsNumpy(long_var_name))
+            npmap = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
             return npmap[inds]
         else:
             self.bmilogger.error("get_value_at_indices: " + long_var_name + ' not in list of output values ' + str(self.inputoutputvars))
@@ -885,9 +889,9 @@ class wflowbmi_csdms(bmi.Bmi):
             raise ValueError("set_value_at_indices: " + long_var_name + " is listed as an output only variable, cannot set. " + str(self.outputonlyvars))
         else:
             self.bmilogger.debug("set_value_at_indices: " + long_var_name + ' at ' + str(inds))
-            npmap = np.flipud(self.dynModel.wf_supplyMapAsNumpy(long_var_name))
+            npmap = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
             npmap[inds] = src
-            self.dynModel.wf_setValuesAsNumpy(long_var_name,np.flipud(npmap))
+            self.dynModel.wf_setValuesAsNumpy(long_var_name,npmap)
 
     def get_grid_type(self, long_var_name):
         """
@@ -969,7 +973,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
         """
         self.bmilogger.debug("get_grid_y: " + long_var_name)
-        return np.flipud(self.dynModel.wf_supplyMapYAsNumpy())
+        return self.dynModel.wf_supplyMapYAsNumpy()
 
     def get_grid_z(self, long_var_name):
         """
@@ -980,7 +984,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :return: Numpy array of doubles: z coordinate of grid cell center for each grid cell, in the same order as the values returned by function get_value.
         """
         self.bmilogger.debug("get_grid_z: " + long_var_name)
-        return np.flipud(self.dynModel.wf_supplyMapZAsNumpy())
+        return self.dynModel.wf_supplyMapZAsNumpy()
 
     def get_var_units(self, long_var_name):
         """
@@ -1012,11 +1016,12 @@ class wflowbmi_csdms(bmi.Bmi):
                   is present a uniform map will be set in the wflow model.
         """
 
+        self.bmilogger.debug("set_value: " + long_var_name + ":" + str(src))
         if self.wrtodisk:
             fname = str(self.currenttimestep) + "_set_" + long_var_name + ".map"
-            arpcr = self.dynModel.numpy2pcr(self.dynModel.Scalar, src, -999)
+            arpcr = numpy2pcr(Scalar, src, -999)
             self.bmilogger.debug("Writing to disk: " + fname)
-            self.dynModel.report(arpcr,fname)
+            report(arpcr,fname)
 
         if long_var_name in self.outputonlyvars:
             self.bmilogger.error("set_value: " + long_var_name + " is listed as an output only variable, cannot set. " + str(self.outputonlyvars))
@@ -1027,7 +1032,7 @@ class wflowbmi_csdms(bmi.Bmi):
                 self.dynModel.wf_setValues(long_var_name,float(src))
             else:
                 self.bmilogger.debug("set_value: (grid) " + long_var_name)
-                self.dynModel.wf_setValuesAsNumpy(long_var_name, np.flipud(src))
+                self.dynModel.wf_setValuesAsNumpy(long_var_name, src)
 
     def get_grid_connectivity(self, long_var_name):
         """

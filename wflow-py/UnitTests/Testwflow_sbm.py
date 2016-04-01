@@ -3,6 +3,7 @@ __author__ = 'schelle'
 import unittest
 import wflow.wflow_sbm as wf
 import os
+
 """
 Run wflow_sbm for 10 steps and checks if the outcome is approx that of the reference run
 """
@@ -25,7 +26,7 @@ class MyTest(unittest.TestCase):
         dynModelFw = wf.wf_DynamicFramework(myModel, stopTime,startTime)
 
           # Load model config from files and check directory structure
-        dynModelFw.createRunId(NoOverWrite=False,level=wf.logging.ERROR)
+        dynModelFw.createRunId(NoOverWrite=False,level=wf.logging.INFO)
         # Run the initial part of the model (reads parameters and sets initial values)
         dynModelFw._runInitial() # Runs initial part
 
@@ -35,12 +36,12 @@ class MyTest(unittest.TestCase):
             if ts <10:
                 dynModelFw.wf_setValues('P', 0.0)
             elif ts <= 15:
-                dynModelFw.wf_setValues('P', 10.0)
-                sump = sump + 10.0
+                dynModelFw.wf_setValues('P', 5.0)
+                sump = sump + 5.0
             else:
                 dynModelFw.wf_setValues('P', 0.0)
 
-            dynModelFw.wf_setValues('PET', 2.0)
+            dynModelFw.wf_setValues('PET', 3.0)
             dynModelFw.wf_setValues('TEMP', 10.0)
             dynModelFw._runDynamic(ts,ts) # runs for all timesteps
             dynModelFw.logger.info("Doing step: " + str(ts))
@@ -52,10 +53,10 @@ class MyTest(unittest.TestCase):
         my_data = wf.genfromtxt(os.path.join(caseName,runId,"wbsurf.csv"), delimiter=',')
 
         print("Checking surface water budget ....")
-        self.assertAlmostEquals(-2.4355218783966848e-06,my_data[:,2].sum())
+        self.assertAlmostEquals(-1.003901559215592e-06,my_data[:,2].sum(),places=4)
         my_data = wf.genfromtxt(os.path.join(caseName,runId,"wbsoil.csv"), delimiter=',')
         print("Checking soil water budget ....")
-        self.assertAlmostEquals(0.00042846430045528905,my_data[:,2].sum())
+        self.assertAlmostEquals(0.00042846430045528905,my_data[:,2].sum(),places=4)
         print("Checking precip sum ....")
         my_data = wf.genfromtxt(os.path.join(caseName,runId,"P.csv"), delimiter=',')
         self.assertAlmostEquals(sump,my_data[:,2].sum())

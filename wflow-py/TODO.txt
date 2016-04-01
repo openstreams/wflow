@@ -8,11 +8,11 @@ TODO:
 - Add add_reservoir function to framework
 - fix open water treatment (together with reservoirs)
 - split kinematic wave from SBM and HBV
-- Done: Add configurable datum to netcdf export (now only wgs84)
 - Add bare soil evaporation
 - Done: make unittest for W3RA
 - Fix timestep problems, is last time of runinfo included or not
-- Remove FEWSRUN item, shoudl not be needed, or doen by adapter
+- Remove FEWSRUN item, should not be needed, or done by adapter
+- add scalar2grid bmi script to allow scaler input to all models
 
 
 

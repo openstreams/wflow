@@ -25,8 +25,8 @@ syntax:
     pcr2netcdf -S date -E date -N mapstackname -I mapstack_folder
                -O netcdf_name [-b buffersize] [-c inifile][-s start][-d digit][-Y][-P EPSG]
 
-    For single maps
-    pcr2netcdf -M -S date  -N mapname -I mapstack_folder
+    For single maps (no series)
+    pcr2netcdf -M -S date  -N mapname
                -O netcdf_name [-b buffersize] [-c inifile][-s start][-d digit][-Y][-P EPSG]
 
     -M single map mode
@@ -38,6 +38,7 @@ syntax:
     -N Mapstack-name (prefix)
        You can sepcify multiple input mapstack  to merge them into one netcdf
        e.g. -N P -N TEMP -N PET
+       In combination with the -M option you can use wildcards
 
     -I input mapstack folder
     -O output netcdf file
@@ -426,15 +427,14 @@ def main(argv=None):
             timestepsecs = int(a)
         if o == '-N':
             flst = glob.glob(a)
-            if len(flst) ==1:
-                mapstackname.append(flst)
-                var.append(flst)
-                varname.append(flst)
+            if len(flst) == 0:
+                mapstackname.append(a)
+                var.append(a)
+                varname.append(a)
             else:
                 mapstackname = flst
                 var =flst
                 varname =flst
-
 
     # Use first timestep as clone-map
     logger = setlogger('pcr2netcdf.log','pcr2netcdf', thelevel = logging.DEBUG)

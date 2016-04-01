@@ -242,7 +242,7 @@ class wf_sumavg():
 
 
 class wf_OutputTimeSeriesArea():
-    def __init__(self, area, oformat='csv'):
+    def __init__(self, area, oformat='csv', areafunction='average'):
         """
         Replacement timeseries output function for the pcraster framework
 
@@ -256,8 +256,10 @@ class wf_OutputTimeSeriesArea():
 
         self.steps = 0
         self.area = area
-        self.areanp = pcr2numpy(area, 0)
+        self.areanp = pcr2numpy(area, 0).copy()
         self.oformat = oformat
+        self.areafunction = areafunction
+        """ average, total, minimum, maximum, majority"""
 
         self.flatarea, self.idx = numpy.unique(self.areanp, return_index=True)
         # print self.flatarea
@@ -296,19 +298,29 @@ class wf_OutputTimeSeriesArea():
                 self.writer.append(csv.writer(self.ofile[-1]))
                 self.ofile[-1].write("# Timestep,")
                 self.writer[-1].writerow(self.flatarea)
-            if self.oformat == 'tss':  # test
+            elif self.oformat == 'tss':  # test
                 self.writer.append(csv.writer(self.ofile[-1], delimiter=' '))
                 self.ofile[-1].write("timeseries scalar\n")
                 self.ofile[-1].write(str(len(self.flatarea) + 1) + "\n")
                 self.ofile[-1].write("timestep\n")
                 for idd in self.flatarea:
                     self.ofile[-1].write(str(idd) + "\n")
-            if self.oformat == 'netcdf':
+            else:
                 print('Not implemented yet')
 
         self.steps = self.steps + 1
         tmpvar = scalar(spatial(variable))
-        self.resmap = areaaverage(tmpvar, nominal(self.area))
+        if self.areafunction == 'average':
+            self.resmap = areaaverage(tmpvar, nominal(self.area))
+        elif self.areafunction == 'total':
+            self.resmap = areatotal(tmpvar, nominal(self.area))
+        elif self.areafunction == 'maximum':
+            self.resmap = areamaximum(tmpvar, nominal(self.area))
+        elif self.areafunction == 'minimum':
+            self.resmap = areaminimum(tmpvar, nominal(self.area))
+        elif self.areafunction == 'majority':
+            self.resmap = areamajority(tmpvar, nominal(self.area))
+
         self.remap_np = pcr2numpy(self.resmap, 0)
         self.flatres = self.remap_np.flatten()[self.idx]
 
@@ -401,6 +413,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self.APIDebug = 0
         self._userModel().currentdatetime = self.DT.currentDateTime
         self._userModel()._setCurrentTimeStep(self.DT.currentTimeStep)
+        self._userModel().timestepsecs = self.DT.timeStepSecs
 
 
     def wf_multparameters(self):
@@ -441,6 +454,13 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         for par in self.modelparameters:
             if self._userModel()._inInitial():
                 if par.type == 'tbl' or par.type =='tblsparse':
+                    if not hasattr(self._userModel(), par.name):
+                        self._userModel().logger.info("Initial: Adding " + par.name + " to model.")
+                    tblname = os.path.join(self._userModel().Dir, par.stack)
+                    theparmap = self.readtblFlexDefault(tblname, par.default, *par.lookupmaps)
+                    setattr(self._userModel(), par.name, theparmap)
+
+                if par.type == 'tblts' or par.type =='tblsparse':
                     if not hasattr(self._userModel(), par.name):
                         self._userModel().logger.info("Initial: Adding " + par.name + " to model.")
                     tblname = os.path.join(self._userModel().Dir, par.stack)
@@ -512,7 +532,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                                                         par.default)
                     setattr(self._userModel(), par.name, theparmap)
 
-                if par.type == 'tbl':
+                if par.type == 'tblts':
                     if not hasattr(self._userModel(), par.name):
                         self._userModel().logger.info("Adding " + par.name + " to model.")
                     tblname = os.path.join(self._userModel().Dir, par.stack + "_" + str(self._userModel().currentStep))
@@ -524,11 +544,11 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         self._userModel().logger.info("Adding " + par.name + " to model.")
 
                     tblname = os.path.join(self._userModel().Dir, par.stack + "_" + str(self._userModel().currentStep))
+                    # Only added a new table if available
                     if os.path.exists(tblname):
                         theparmap = self.readtblFlexDefault(tblname, par.default, *par.lookupmaps)
                         setattr(self._userModel(), par.name, theparmap)
-                    else:
-                        self._userModel().logger.debug(tblname + " not available for this step, using previous value.")
+
 
         self.setviaAPI = {}
 
@@ -547,18 +567,15 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         """
         Makes sure the logging closed
         """
-        try:
-            pcrut.logging.shutdown()
-            for ofile_list in self.oscv:
-                self.oscv[ofile_list].closeall()
-        except:
-            return
-
         if hasattr(self, 'NcOutput'):
             self.NcOutput.finish()
 
         fp = open(os.path.join(self._userModel().caseName, self._userModel().runId, "configofrun.ini"), 'wb')
         self._userModel().config.write(fp)
+
+        for key, value in self.oscv.iteritems():
+            value.closeall()
+
 
     def loggingSetUp(self, caseName, runId, logfname, model, modelversion, level=pcrut.logging.INFO):
         """
@@ -776,6 +793,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self._update_time_from_DT()
             if rinfo_str != "None":
                 self.DT.update(datetimestart=wflow_adapt.getStartTimefromRuninfo(rinfo), mode=self.runlengthdetermination)
+                self.DT.update(datetimeend=wflow_adapt.getEndTimefromRuninfo(rinfo), mode=self.runlengthdetermination)
                 self._update_time_from_DT()
                 # add one step to start time if it is the same s the state time
                 #if self.skipfirsttimestep:
@@ -783,7 +801,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 #    self.DT.skiptime()
 
                 self._userModel().currentdatetime = self.DT.currentDateTime
-                self.DT.update(datetimeend=wflow_adapt.getEndTimefromRuninfo(rinfo), mode=self.runlengthdetermination)
+
                 self.DT.update(timestepsecs=int(configget(self._userModel().config, 'run', 'timestepsecs', "86400")), mode=self.runlengthdetermination)
                 self._update_time_from_DT()
             else:
@@ -860,6 +878,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 varlst.append(os.path.basename(configget(self._userModel().config, 'inputmapstacks', ms, 'None')))
             self.logger.debug("Found following input variables to get from netcdf file: " + str(varlst))
             self.NcInput = netcdfinput(os.path.join(caseName, self.ncfile), self.logger, varlst)
+
 
 
         if self.ncfilestates != "None":
@@ -991,17 +1010,18 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 toprint = configsection(self._userModel().config, thissection)
                 secnr = secnr + 1
                 samplemapname = os.path.join(caseName,configget(self._userModel().config, thissection, "samplemap", "None"))
+                areafunction = configget(self._userModel().config, thissection, "function", "average")
                 if "None" not in samplemapname:
                     try:
                         self.samplemap = self.wf_readmap(samplemapname,0.0,fail=True)
-                        idd = tsformat + ":" + samplemapname
-                        self.oscv[idd] = wf_OutputTimeSeriesArea(self.samplemap, oformat=tsformat)
-                        self.logger.info("Adding " + tsformat + " output at " + samplemapname)
+                        idd = tsformat + ":" + samplemapname + ":" + areafunction
+                        self.oscv[idd] = wf_OutputTimeSeriesArea(self.samplemap, oformat=tsformat,areafunction=areafunction)
+                        self.logger.info("Adding " + tsformat + " output at " + samplemapname + " function: " + areafunction)
                     except:
                         self.logger.warn("Could not read sample id-map for timeseries: " + samplemapname)
 
                     for a in toprint:
-                        if "samplemap" not in a:
+                        if "samplemap" not in a and 'function' not in a:
                             b = a.replace('self', 'self._userModel()')
                             fn = os.path.join(caseName, runId, self._userModel().config.get(thissection, a))
                             self.samplenamecsv[fn] = idd
@@ -1051,14 +1071,18 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         """
         Print .ini defined output csv/tss timeseries per timestep
         """
+
         for a in self.samplenamecsv:
+            found = 1
             try:
                 exec "tmpvar = " + self.varnamecsv[a]
             except:
+                found = 0
                 self.logger.warn("Cannot find: " + self.varnamecsv[a] + " variable not in model.")
 
             #self.oscv[self.samplenamecsv[a]].writestep(tmpvar, a, timestep=self.DT.currentTimeStep,dtobj=self.DT.currentDateTime)
-            self.oscv[self.samplenamecsv[a]].writestep(tmpvar, a, timestep=self.DT.currentTimeStep)
+            if found:
+                self.oscv[self.samplenamecsv[a]].writestep(tmpvar, a, timestep=self.DT.currentTimeStep)
 
 
     def wf_savesummarymaps(self):
@@ -1231,6 +1255,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         set a map with values from a numpy array. Current settings for
         dimensions are assumed. if the name of the maps contains the string "LDD" or "ldd"
         the maps is assumed to be an LDD maps and an lddrepair call is made,
+        assume -999 as missing value
 
         Input:
             - mapname - string with name of map
@@ -1239,7 +1264,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         :returns: 1 if the map was present, 0 if a new map was created
         """
 
-        arpcr = numpy2pcr(Scalar, values.copy(), -999)
+        arpcr = numpy2pcr(Scalar, flipud(values).copy(), -999)
 
         self.setviaAPI[mapname] = 1
 
@@ -1518,7 +1543,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     def wf_supplyMapAsNumpy(self, mapname):
         """
         Returns a numpy array (matrix) for the specified map and the current
-        timestep. If the maps is not dynamic the current staus of the map is
+        timestep. If the maps is not dynamic the current status of the map is
         returns which may be undefined for maps that are filled with data
         at the end of a run
         Missing value is -999
@@ -1533,7 +1558,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             # exec "retval = pcr2numpy(self._userModel()." + mapname + ",-999)"
             pcrmap = getattr(self._userModel(), mapname)
             if isinstance(pcrmap, pcraster._pcraster.Field):
-                retval = pcr_as_numpy(pcrmap)
+                tt = pcr2numpy(pcrmap,-999.0)
+                retval = flipud(tt).copy()
             else:
                 retval = pcrmap
             if self.APIDebug:
@@ -1553,9 +1579,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         """
 
         x = xcoordinate((spatial(boolean(1.0))))
-        retval = pcr_as_numpy(x)
+        retval = pcr_as_numpy(x).copy()
 
-        return retval
+        return flipud(retval).copy()
 
     def wf_supplyMapYAsNumpy(self):
         """
@@ -1566,9 +1592,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         """
 
         y = ycoordinate((spatial(boolean(1.0))))
-        retval = pcr_as_numpy(y)
+        retval = pcr_as_numpy(y).copy()
 
-        return retval
+        return flipud(retval).copy()
 
     def wf_supplyMapZAsNumpy(self):
         """
@@ -1582,7 +1608,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         if hasattr(self._userModel(), 'Altitude'):
             retval = getattr(self._userModel(), 'Altitude')
 
-            return pcr2numpy(retval, -999)
+            return flipud(pcr2numpy(retval, -999)).copy()
         else:
             self.logger.warn("Altitude is not defined in the usermodel, returning empty list")
             return []
@@ -1872,7 +1898,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
             self._incrementIndentLevel()
             self._atStartOfTimeStep(step)
-            # TODO: Check why the timestep setting doesn't not work.....
+            # TODO: Check why the timestep setting doesn't  work.....
             self._userModel()._setCurrentTimeStep(step)
 
             if hasattr(self._userModel(), 'dynamic'):
@@ -2051,15 +2077,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         path = os.path.join(directoryPrefix, newName)
 
         if self.outputFormat == 1:
-            if sys.version_info[0] == 2 and sys.version_info[1] >= 6:
-                try:
-                    import pcraster as PCRaster
-                except:
-                    import PCRaster as PCRaster
-            else:
-                import PCRaster
             if not hasattr(self, 'NcOutput'):
-                PCRaster.report(variable, path)
+                report(variable, path)
                 if gzipit:
                     Gzip(path, storePath=True)
             else:
@@ -2090,6 +2109,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self.logger.debug(os.path.basename(name) + " set via API, not reading from file, using memory copy")
             return getattr(self._userModel(),os.path.basename(name))
 
+        #TODO: Add support for netcdf files
         directoryPrefix = ""
         if kind == 1:
             month = self.DT.currentDateTime.month
@@ -2184,7 +2204,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 timestep = self._userModel().currentTimeStep()
                 newName = generateNameT(name, timestep)
 
-        if style == 1:  # Normal reading of mapstack from DISK
+        if style == 1:  # Normal reading of mapstack from DISK per via or via netcdf
             path = os.path.join(directoryPrefix, newName)
             assert path is not ""
 

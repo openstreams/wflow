@@ -145,7 +145,10 @@ Possible parameter types (the second option)are:
 
 + staticmap: Read at startup from map
 + statictbl: [deprecated] Read at startup from tbl, fallback to map (need Landuse, Soil and TopoId (subcatch) maps)!
-+ tbl: Read at startup from tbl and ar runtime fallback to map, lookuptable maps define here.
++ tbl: Read at startup from tbl lookuptable maps define here.
++ tblts: Lookup tables for each timestep, including initial section
++ tblsparse: Lookup tables for each timestep, including initial section. Fills in missing
+  timestep using previous timestep
 + timeseries: read map for each timestep
 + monthlyclim: read a map corresponding to the current month (12 maps in total)
 + dailyclim: read a map corresponding to the current day of the year (366 maps in total)
@@ -225,6 +228,47 @@ Example::
 
     [summary_avg]
     self.Precipitation=avgprecip.map
+
+
+
+Settings in the outputtss/outputcsv sections
+--------------------------------------------
+[outputcsv_0-n]
+[outputtss_0-n]
+
+Number of sections to define output timeseries in csv format. Each section
+should at lears contain one samplemap item and one or more variables to save.
+The samplemap is the map that determines how the timeseries are averaged/sampled. The function
+key specifies how the data is sample: average(default), minimum, maximum, total, majority.
+
+All other items are variable=filename pairs. The filename is given relative
+to the case directory.
+
+Example:
+
+::
+
+    [outputcsv_0]
+    samplemap=staticmaps/wflow_subcatch.map
+    self.SurfaceRunoffMM=Qsubcatch_avg.csv
+    function=average
+    # average is the default
+
+    [outputcsv_1]
+    samplemap=staticmaps/wflow_gauges.map
+    self.SurfaceRunoffMM=Qgauge.csv
+    self.WaterLevel=Hgauge.csv
+
+    [outputtss_0]
+    samplemap=staticmaps/wflow_landuse.map
+    self.SurfaceRunoffMM=Qlu.tss
+    function=total
+
+
+
+In the above example the discharge of this model (self.SurfaceRunoffMM) is
+saved as an average per subcatchment, a sample at the gauge locations and as
+an average per landuse.
 
 
 
