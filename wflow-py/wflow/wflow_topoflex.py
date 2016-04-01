@@ -744,7 +744,7 @@ class WflowModel(DynamicModel):
         self.Qstate_WB = areatotal(sum(self.Qstate_t) * 3600, nominal(self.TopoId))
         
         #WBtot in m3/s
-       self.WBtot = (self.P - self.Ei + self.EwiCorr - self.Ew - self.Ea - self.Eu - self.Qtot - self.SiWB + self.Si_WB - self.SuWB + self.Su_WB - self.SaWB + self.Sa_WB - self.SwWB + self.Sw_WB - self.SfWB + self.Sf_WB - self.SfaWB + self.Sfa_WB - self.SrWB + self.Sr_WB - self.SsWB + self.Ss_WB - self.convQuWB +self.convQu_WB - self.convQaWB +self.convQa_WB - self.trackQWB + self.trackQ_WB) / self.timestepsecs     
+        self.WBtot = (self.P - self.Ei + self.EwiCorr - self.Ew - self.Ea - self.Eu - self.Qtot - self.SiWB + self.Si_WB - self.SuWB + self.Su_WB - self.SaWB + self.Sa_WB - self.SwWB + self.Sw_WB - self.SfWB + self.Sf_WB - self.SfaWB + self.Sfa_WB - self.SrWB + self.Sr_WB - self.SsWB + self.Ss_WB - self.convQuWB +self.convQu_WB - self.convQaWB +self.convQa_WB - self.trackQWB + self.trackQ_WB) / self.timestepsecs     
 
         # SUMMED FLUXES ======================================================================================
         self.sumprecip = self.sumprecip + self.Precipitation  # accumulated rainfall for water balance (m/h)
