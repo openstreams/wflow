@@ -301,7 +301,7 @@ class wflowbmi_csdms(bmi.Bmi):
         read.
         """
         for key, value in self.bmimodels.iteritems():
-            self.bmimodels[key].save_state(source_directory)
+            self.bmimodels[key].load_state(source_directory)
 
     def finalize(self):
         """
