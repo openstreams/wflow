@@ -17,17 +17,6 @@ except ImportError:
     from  wf_DynamicFramework import *
 import scipy
 
-def selectSfR(i):
-    """
-    not all functions are still in this file, the older functions can be found
-    (with the same numbering) in h:\My Documents\memo's\python scripts\wflow\
-    """
-    if i == 1:
-        name = 'fastRunoff_lag'
-    if i == 2:
-        name = 'fastRunoff_lag2'
-    return name
-
 def fastRunoff_no_reservoir(self, k):
     """
     This function is used when no unsaturated zone reservoir is used and only
@@ -59,7 +48,6 @@ def fastRunoff_lag2(self, k):
     - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
     and if this leads to negative storage, the outgoing fluxes are corrected to rato
     - not a semi analytical solution for Sf anymore
-    - Code for ini-file: 2
     """
 
     if self.FR_L:
@@ -81,15 +69,10 @@ def fastRunoff_lag2(self, k):
             temp = [self.convQu[k][i] + (2/self.Tfmap-2/(self.Tfmap*(self.Tfmap+1))*(self.Tfmap-i))*self.Qfin for i in range(len(self.convQu[k]))]
             self.convQu[k] = temp
             
-#            self.Qfin_[k] = self.Qfin
-#            self.Qfinput_[k] = self.QfinLag
-                
         else:
             self.Qf = self.Sf[k] * self.Kf[k]                
             self.Sf[k] = self.Sf[k] + self.Qfin - self.Qf
             
-#            self.Qfin_[k] = self.Qfin
-#            self.Qfinput_[k] = self.Qfin
     else:
         self.Qf = self.ZeroMap
         self.Qfinput_[k] = self.ZeroMap
@@ -98,7 +81,7 @@ def fastRunoff_lag2(self, k):
     self.wbSf_[k] = self.Qfin - self.Qf - self.Sf[k] + self.Sf_t[k] - sum(self.convQu[k]) + sum(self.convQu_t[k])    
     
     self.Qf_[k] = self.Qf
-#    self.QuA_[k] = self.Qu
+
 
 def fastRunoff_lag_forAgri_combined(self,k):
     """
@@ -108,7 +91,6 @@ def fastRunoff_lag_forAgri_combined(self,k):
     and if this leads to negative storage, the outgoing fluxes are corrected to rato
     - not a semi analytical solution for Sf anymore
     - When separate ditch/road fast reservoir is taken into account, this option should not be used
-    - Code for ini-file: 3
     """
 
     if self.FR_L:
@@ -156,7 +138,6 @@ def fastRunoff_lag_agriDitch(self,k):
     and if this leads to negative storage, the outgoing fluxes are corrected to rato
     - not a semi analytical solution for Sf anymore
     - very fast responding reservoir to represent fast drainage via roads and ditches
-    - Code for ini-file: 4
     """
 
     if self.FR_L:
@@ -166,8 +147,6 @@ def fastRunoff_lag_agriDitch(self,k):
     
     self.Qfain = self.Qa
 
-# commented on 4 August 2015, as the output of this reservoir should not depent on the value of D       
-#    if self.D[k] < 1.00: 
     if self.convQa[k]:
         self.QfainLag = self.convQa[k][-1]
         self.Qfa = self.Sfa[k] * self.Kfa[k]                
@@ -178,16 +157,10 @@ def fastRunoff_lag_agriDitch(self,k):
         del self.convQa[k][-1]
         temp = [self.convQa[k][i] + (2/self.Tfmap-2/(self.Tfmap*(self.Tfmap+1))*(self.Tfmap-i))*self.Qfain for i in range(len(self.convQa[k]))]
         self.convQa[k] = temp
-        
-            
+
     else:
         self.Qfa = self.Sfa[k] * self.Kfa[k]                
         self.Sfa[k] = self.Sfa[k] + self.Qfain - self.Qfa
-            
-# commented on 4 August 2015, as the output of this reservoir should not depent on the value of D
-#    else:
-#        self.Qfa = self.ZeroMap
-#        self.Qfain_[k] = self.ZeroMap
 
     self.wbSfa_[k] = self.Qfain - self.Qfa - self.Sfa[k] + self.Sfa_t[k] - sum(self.convQa[k]) + sum(self.convQa_t[k])    
     
