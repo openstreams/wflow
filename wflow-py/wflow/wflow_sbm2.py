@@ -1086,7 +1086,8 @@ class WflowModel(DynamicModel):
         MaxInfiltPath = min(self.InfiltCapPath * soilInfRedu, PathInf)
         self.PathInfiltExceeded = self.PathInfiltExceeded + scalar(self.InfiltCapPath * soilInfRedu < PathInf)
 
-        InfiltSoilPath = min(MaxInfiltPath+MaxInfiltSoil,UStoreCapacity)
+        InfiltSoilPath = min(MaxInfiltPath+MaxInfiltSoil,max(0.0,UStoreCapacity))
+
 
 
         self.SumThickness = self.ZeroMap
