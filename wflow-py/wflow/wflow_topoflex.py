@@ -39,7 +39,6 @@ import pdb
 
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
-# import scipy
 from copy import deepcopy as copylist
 
 # TODO: see below
@@ -49,7 +48,6 @@ Documentatie updaten!
 Wegschrijven per class, afkortingen van classes gebruiken (zie outputtss_0) Jaap!
 Routing functies in apart file onderbrengen, aanroepen, configureerbaar maken welke gebruiken Hessel!
 logging toevoegen, ervoor zorgen dat het ook 1 per x aantal stappen weggeschreven kan worden
-States worden nu in outsum dir bewaard, maar moeten naar outstate
 """
 
 
@@ -105,18 +103,6 @@ class WflowModel(DynamicModel):
             self.ParamType(name="Altitude", stack="staticmaps/wflow_dem.map", type="staticmap", default=0.0,
                            verbose=False, lookupmaps=[]))
 
-        # Meteo and other forcing
-        # Meteo and other forcing
-        #modelparameters.append(
-        #    self.ParamType(name="Temperature", stack='intss/T.tss', type="timeseries", default=10.0, verbose=False,
-        #                   lookupmaps=['staticmaps/wflow_subcatch.map']))
-        #modelparameters.append(
-        #    self.ParamType(name="Precipitation", stack='intss/P.tss', type="timeseries", default=0.0, verbose=False,
-        #                   lookupmaps=['staticmaps/wflow_subcatch.map']))
-        #modelparameters.append(
-        #    self.ParamType(name="PotEvaporation", stack='intss/PET.tss', type="timeseries", default=0.0, verbose=False,
-        #                   lookupmaps=['staticmaps/wflow_subcatch.map']))
-
         return modelparameters
 
     def stateVariables(self):
@@ -155,6 +141,40 @@ class WflowModel(DynamicModel):
 
         return self.currentTimeStep() * int(configget(self.config, 'model', 'timestepsecs', '86400'))
 
+
+    def readtblDefault2(self,pathtotbl,landuse,subcatch,soil, default):
+        """
+        First check if a prepared  maps of the same name is present
+        in the staticmaps directory. next try to
+        read a tbl file to match a landuse, catchment and soil map. Returns 
+        the default value if the tbl file is not found.
+    
+        Input:
+            -  pathtotbl: full path to table file
+            -  landuse: landuse map
+            -  subcatch: subcatchment map
+            -  soil: soil map
+            -  default: default value
+    
+        Output: 
+            - map constructed from tbl file or map with default value
+        """
+    
+        mapname = os.path.dirname(pathtotbl) + "/../staticmaps/" + os.path.splitext(os.path.basename(pathtotbl))[0]+".map"
+        if os.path.exists(mapname):
+            self.logger.info("reading map parameter file: " + mapname)
+            rest = cover(readmap(mapname),default)
+        else:
+            if os.path.isfile(pathtotbl):
+                rest=cover(lookupscalar(pathtotbl,landuse,subcatch,soil), default)
+                self.logger.info("Creating map from table: " + pathtotbl)
+            else:
+                self.logger.warn("tbl file not found (" + pathtotbl + ") returning default value: " + str(default))
+                rest = scalar(default)
+        
+        return rest 
+        
+        
     def suspend(self):
         """
       *Required*
@@ -263,6 +283,10 @@ class WflowModel(DynamicModel):
                                          "model", "InputSeries", "1"))  # forcing data in maps (0) or timeseries (1)
         self.reinit = int(configget(self.config,
                                     "model", "reinit", "0"))
+        
+        self.intbl = configget(self.config,
+                                    "model","intbl","intbl")
+                                    
         self.maxTransit = float(configget(self.config,
                                           "model", "maxTransitTime", "34"))  # maximum Transit time in cacthment
         self.distForcing = int(configget(self.config,
@@ -333,6 +357,10 @@ class WflowModel(DynamicModel):
                               "model", "wflow_dem", "staticmaps/wflow_dem.map")
         wflow_ldd = configget(self.config,
                               "model", "wflow_ldd", "staticmaps/wflow_ldd.map")
+        wflow_landuse  = configget(self.config,
+                              "model","wflow_landuse","staticmaps/wflow_landuse.map")
+        wflow_soil  = configget(self.config,
+                                "model","wflow_soil","staticmaps/wflow_soil.map")    
         wflow_gauges = configget(self.config,
                                  "model", "wflow_gauges", "staticmaps/wflow_gauges.map")
         wflow_mgauges = configget(self.config,
@@ -360,6 +388,10 @@ class WflowModel(DynamicModel):
         self.TopoLdd = readmap(os.path.join(self.Dir, wflow_ldd))  #: The local drinage definition map (ldd)
         self.TopoId = readmap(
             os.path.join(self.Dir, wflow_subcatch))  #: Map define the area over which the calculations are done (mask)
+        self.LandUse=ordinal(self.wf_readmap(os.path.join(self.Dir , wflow_landuse),0.0,fail=True))#: Map with lan-use/cover classes
+        self.LandUse=cover(self.LandUse,ordinal(ordinal(subcatch) > 0))
+        self.Soil=ordinal(self.wf_readmap(os.path.join(self.Dir , wflow_soil),0.0,fail=True))#: Map with soil classes
+        self.Soil=cover(self.Soil,ordinal(ordinal(subcatch) > 0)) 
         self.TopoId = ifthen(scalar(self.TopoId) > 0, self.TopoId)
         self.surfaceArea = scalar(readmap(os.path.join(self.Dir, wflow_surfaceArea)))  #: Map with surface area per cell
         self.totalArea = areatotal(self.surfaceArea, nominal(self.TopoId))
@@ -371,53 +403,38 @@ class WflowModel(DynamicModel):
         for i in self.Classes:
             self.percent.append(readmap(os.path.join(self.Dir, wflow_percent[i])))
 
-        # MODEL PARAMETERS
-        self.sumax = eval(str(configget(self.config, "model", "sumax", "[0]")))
-        self.sumin = eval(str(configget(self.config, "model", "sumin", "[0]")))
-        self.samax = eval(str(configget(self.config, "model", "samax", "[0]")))
-        self.srmax = eval(str(configget(self.config, "model", "sumax", "[0]")))
-        self.beta = eval(str(configget(self.config, "model", "beta", "[0]")))
-        self.Fmax = eval(str(configget(self.config,"model","Fmax","[0]")))
-        self.Fmin = eval(str(configget(self.config,"model","Fmin","[0]")))
-        self.decF = eval(str(configget(self.config,"model","decF","[0]")))
-        self.Ce = eval(str(configget(self.config, "model", "Ce", "[0]")))
-        self.Co = eval(str(configget(self.config, "model", "Co", "[0]")))
+        # MODEL PARAMETERS - VALUES PER CLASS
         self.D = eval(str(configget(self.config, "model", "D", "[0]")))
-        self.Kf = eval(str(configget(self.config, "model", "Kf", "[0]")))
-        self.Kfa = eval(str(configget(self.config, "model", "Kfa", "[0]")))
         self.Tf = eval(str(configget(self.config, "model", "Tf", "[0]")))
         self.Tfa = eval(str(configget(self.config, "model", "Tfa", "[0]")))
-        self.imax = eval(str(configget(self.config, "model", "imax", "[0]")))
-        self.perc = eval(str(configget(self.config, "model", "perc", "[0]")))
-        self.cap = eval(str(configget(self.config, "model", "cap", "[0]")))
-        self.Kd = eval(str(configget(self.config, "model", "Kd", "[0]")))
-        self.Kr = eval(str(configget(self.config, "model", "Kr", "[0]")))
-        self.LP = eval(str(configget(self.config, "model", "LP", "[0]")))
-        self.Ks = eval(str(configget(self.config, "model", "Ks", "[0]")))
-        self.dayDeg = eval(str(configget(self.config,"model","dayDeg","[0]")))
-        self.FrDur0 = eval(str(configget(self.config,"model","FrDur0","[0]")))
-        self.FrDur1 = eval(str(configget(self.config,"model","FrDur1","[0]"))) 
-        self.ratFT = eval(str(configget(self.config,"model","ratFT","[0]")))
-        self.Tt = eval(str(configget(self.config,"model","Tt","[0]")))
-        self.samin = eval(str(configget(self.config,"model","samin","[0]")))
-        self.Tm = eval(str(configget(self.config,"model","Tm","[0]")))
-        self.Fm = eval(str(configget(self.config,"model","Fm","[0]")))
+        
+        # MODEL PARAMETERS - BASED ON TABLES 
+        self.imax = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/imax" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,1.5) for i in self.Classes]        
+        self.sumax = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/sumax" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,50) for i in self.Classes]        
+        self.samax = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/samax" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,50) for i in self.Classes]
+        self.samin = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/samin" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.1) for i in self.Classes]
+        self.beta = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/beta" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.4) for i in self.Classes]
+        self.betaA = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/betaA" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.2) for i in self.Classes]        
+        self.Kf = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/Kf" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.005) for i in self.Classes]
+        self.Kfa = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/Kfa" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.05) for i in self.Classes]
+        self.perc = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/perc" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.0035) for i in self.Classes]
+        self.cap = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/cap" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.028) for i in self.Classes]
+        self.LP = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/LP" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.15) for i in self.Classes]
+        self.Ks = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/Ks" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.0004) for i in self.Classes]
+        self.Fmax = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/Fmax" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,1) for i in self.Classes]
+        self.Fmin = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/Fmin" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0) for i in self.Classes]
+        self.decF = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/decF" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.5) for i in self.Classes]
+        self.dayDeg = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/dayDeg" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,1) for i in self.Classes]
+        self.FrDur0 = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/FrDur0" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,-5) for i in self.Classes]
+        self.FrDur1 = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/FrDur1" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0) for i in self.Classes]
+        self.ratFT = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/ratFT" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,1) for i in self.Classes]
+        self.Tt = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/Tt" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,1) for i in self.Classes]
+        self.Tm = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/Tm" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,2) for i in self.Classes]
+        self.Fm = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/Fm" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.2) for i in self.Classes]
         
         # Jarvis stressfunctions
-        self.JC_Topt = eval(str(configget(self.config, "model", "JC_Topt", "[0]")))
-        self.JC_D05 = eval(str(configget(self.config, "model", "JC_D05", "[0]")))
-        self.JC_cd1 = eval(str(configget(self.config, "model", "JC_cd1", "[0]")))
-        self.JC_cd2 = eval(str(configget(self.config, "model", "JC_cd2", "[0]")))
-        self.JC_cr = eval(str(configget(self.config, "model", "JC_cr", "[0]")))
-        self.JC_cuz = eval(str(configget(self.config, "model", "JC_cuz", "[0]")))
-        self.SuFC = eval(str(configget(self.config, "model", "SuFC", "[0]")))
-        self.SuWP = eval(str(configget(self.config, "model", "SuWP", "[0]")))
-        self.JC_rstmin = eval(str(configget(self.config, "model", "JC_rstmin", "[0]")))
-        self.gamma = eval(str(configget(self.config, "model", "gamma", "[0]")))
-        self.Cp = eval(str(configget(self.config, "model", "Cp", "[0]")))
-        self.rhoA = eval(str(configget(self.config, "model", "rhoA", "[0]")))
-        self.rhoW = eval(str(configget(self.config, "model", "rhoW", "[0]")))
         self.lamda = eval(str(configget(self.config, "model", "lamda", "[0]")))
+        self.lamdaS = eval(str(configget(self.config, "model", "lamdaS", "[0]")))
 
         # initialise list for routing
         self.trackQ = [0 * scalar(self.TopoId)] * int(self.maxTransit)
@@ -483,7 +500,6 @@ class WflowModel(DynamicModel):
             self.Sf = [self.ZeroMap] * len(self.Classes)
             self.Sfa = [self.ZeroMap] * len(self.Classes)
             self.Sr = [self.ZeroMap] * len(self.Classes)
-            # self.Ss = [self.ZeroMap] * len(self.Classes)       # for separate gw reservoir per class
             self.Ss = self.ZeroMap  # for combined gw reservoir
             self.Qstate = self.ZeroMap  # for combined gw reservoir
             self.Qstate_t = self.ZeroMap
@@ -544,7 +560,6 @@ class WflowModel(DynamicModel):
         self.Fa_ = [self.ZeroMap] * len(self.Classes)
         self.Qf_ = [self.ZeroMap] * len(self.Classes)
         self.Qfa_ = [self.ZeroMap] * len(self.Classes)
-        # self.Qs_ = [self.ZeroMap] * len(self.Classes)       # for separate gw reservoir per class
         self.Qs_ = self.ZeroMap  # for combined gw reservoir
         self.Qflag_ = [self.ZeroMap] * len(self.Classes)
         self.Qfcub_ = [self.ZeroMap] * len(self.Classes)
@@ -604,7 +619,9 @@ class WflowModel(DynamicModel):
             self.Precipitation = ifthenelse(self.Temperature >= self.Tt[0], self.PrecipTotal,0)
             self.PrecipitationSnow = ifthenelse(self.Temperature < self.Tt[0], self.PrecipTotal,0)
 
-
+        self.EpDay2 = self.EpDay
+        self.EpDaySnow2 = self.EpDaySnow
+        
         for k in self.Classes:
 
             # SNOW =================================================================================================
@@ -698,8 +715,8 @@ class WflowModel(DynamicModel):
         self.Ei = areatotal(sum(multiply(self.Ei_,self.percent)) / 1000 * self.surfaceArea,nominal(self.TopoId))
         self.Ea = areatotal(sum(multiply(self.Ea_,self.percent)) / 1000 * self.surfaceArea,nominal(self.TopoId))
         self.Eu = areatotal(sum(multiply(self.Eu_,self.percent)) / 1000 * self.surfaceArea,nominal(self.TopoId))
-#        self.Er = areatotal(sum(multiply(self.Er_,self.percent)) / 1000 * self.surfaceArea,nominal(self.TopoId))
-#        self.QtotnoRout = areatotal(self.Qftotal + self.Qs_/ 1000 * self.surfaceArea,nominal(self.TopoId))    
+        self.Ew = areatotal(sum(multiply(self.Ew_,self.percent)) / 1000 * self.surfaceArea,nominal(self.TopoId))
+        self.EwiCorr = areatotal(sum(multiply(multiply(self.Ew_, self.lamdaS / self.lamda), self.percent)) / 1000 * self.surfaceArea,nominal(self.TopoId))
         self.Qtot = self.QLagTot * self.timestepsecs
         self.SiWB = areatotal(sum(multiply(self.Si,self.percent)) / 1000 * self.surfaceArea,nominal(self.TopoId))
         self.Si_WB = areatotal(sum(multiply(self.Si_t,self.percent)) / 1000 * self.surfaceArea,nominal(self.TopoId))
@@ -727,7 +744,7 @@ class WflowModel(DynamicModel):
         self.Qstate_WB = areatotal(sum(self.Qstate_t) * 3600, nominal(self.TopoId))
         
         #WBtot in m3/s
-        self.WBtot = (self.P - self.Ei - self.Ea - self.Eu - self.Qtot - self.SiWB + self.Si_WB - self.SuWB + self.Su_WB - self.SaWB + self.Sa_WB - self.SwWB + self.Sw_WB - self.SfWB + self.Sf_WB - self.SfaWB + self.Sfa_WB - self.SrWB + self.Sr_WB - self.SsWB + self.Ss_WB - self.convQuWB +self.convQu_WB - self.convQaWB +self.convQa_WB - self.trackQWB + self.trackQ_WB - self.QstateWB + self.Qstate_WB) / self.timestepsecs     
+        self.WBtot = (self.P - self.Ei + self.EwiCorr - self.Ew - self.Ea - self.Eu - self.Qtot - self.SiWB + self.Si_WB - self.SuWB + self.Su_WB - self.SaWB + self.Sa_WB - self.SwWB + self.Sw_WB - self.SfWB + self.Sf_WB - self.SfaWB + self.Sfa_WB - self.SrWB + self.Sr_WB - self.SsWB + self.Ss_WB - self.convQuWB +self.convQu_WB - self.convQaWB +self.convQa_WB - self.trackQWB + self.trackQ_WB) / self.timestepsecs     
 
         # SUMMED FLUXES ======================================================================================
         self.sumprecip = self.sumprecip + self.Precipitation  # accumulated rainfall for water balance (m/h)
