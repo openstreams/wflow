@@ -659,8 +659,8 @@ class WflowModel(DynamicModel):
 
         # Surface water store water balance (Sr) (2.7)
         self.Sr = self.Sr  +  (self.Fhru1*(QR1 - Er1) ) +  (self.Fhru2*(QR2 - Er2) ) + Qg
-        Qtot = min(self.Sr, (1-exp(-self.K_rout))*self.Sr)
-        self.Sr = self.Sr  - Qtot
+        self.Qtot = min(self.Sr, (1-exp(-self.K_rout))*self.Sr)
+        self.Sr = self.Sr  - self.Qtot
 
         # VEGETATION ADJUSTMENT (5)
 
