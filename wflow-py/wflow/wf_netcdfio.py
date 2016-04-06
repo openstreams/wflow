@@ -441,10 +441,25 @@ class netcdfinput():
         a = pcr2numpy(cover(0.0), 0.0).flatten()
         # Determine steps to load in mem based on estimated memory usage
         floatspermb = 1048576 / 4
-        maxmb = 4000
-        self.maxsteps = maxmb * len(a) / floatspermb + 1
+        maxmb = 40
+
+        maxlentime = len(self.dataset.variables['time'])
+        self.maxsteps = minimum(maxmb * len(a) / floatspermb + 1,maxlentime - 1)
         self.fstep = 0
         self.lstep = self.fstep + self.maxsteps
+
+
+        # Now check Y values to see if we must flip the data
+        try:
+            self.y = self.dataset.variables['lat'][:]
+        except:
+            self.y = self.dataset.variables['y'][:]
+
+        if self.y[0] > self.y[-1]:
+            self.flip = False
+        else:
+            self.flip = True
+
 
         for var in vars:
             try:
@@ -452,6 +467,8 @@ class netcdfinput():
             except:
                 self.alldat.pop(var, None)
                 logging.warn("Variable " + var + " not found in netcdf file: " + netcdffile)
+
+
 
     def gettimestep(self, timestep, logging, var='P', shifttime=False):
         """
@@ -476,8 +493,12 @@ class netcdfinput():
                 self.fstep = ncindex
                 self.lstep = ncindex + self.maxsteps
             np_step = self.alldat[var][ncindex - self.fstep, :, :]
+
             miss = float(self.dataset.variables[var]._FillValue)
-            return numpy2pcr(Scalar, np_step, miss), True
+            if self.flip:
+                return numpy2pcr(Scalar, flipud(np_step).copy(), miss), True
+            else:
+                return numpy2pcr(Scalar, np_step, miss), True
         else:
             #logging.debug("Var (" + var + ") not found returning 0")
             return cover(scalar(0.0)), False
@@ -505,7 +526,7 @@ class netcdfinputstates():
         a = pcr2numpy(cover(0.0), 0.0).flatten()
         # Determine steps to load in mem based on estimated memory usage
         floatspermb = 1048576 / 4
-        maxmb = 4000
+        maxmb = 40
         self.maxsteps = maxmb * len(a) / floatspermb + 1
         self.fstep = 0
         self.lstep = self.fstep + self.maxsteps
