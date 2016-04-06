@@ -441,17 +441,13 @@ class netcdfinput():
         a = pcr2numpy(cover(0.0), 0.0).flatten()
         # Determine steps to load in mem based on estimated memory usage
         floatspermb = 1048576 / 4
-        maxmb = 4000
-        self.maxsteps = maxmb * len(a) / floatspermb + 1
+        maxmb = 40
+
+        maxlentime = len(self.dataset.variables['time'])
+        self.maxsteps = minimum(maxmb * len(a) / floatspermb + 1,maxlentime - 1)
         self.fstep = 0
         self.lstep = self.fstep + self.maxsteps
 
-        for var in vars:
-            try:
-                self.alldat[var] = self.dataset.variables[var][self.fstep:self.maxsteps]
-            except:
-                self.alldat.pop(var, None)
-                logging.warn("Variable " + var + " not found in netcdf file: " + netcdffile)
 
         # Now check Y values to see if we must flip the data
         try:
@@ -463,6 +459,16 @@ class netcdfinput():
             self.flip = False
         else:
             self.flip = True
+
+
+        for var in vars:
+            try:
+                self.alldat[var] = self.dataset.variables[var][self.fstep:self.maxsteps]
+            except:
+                self.alldat.pop(var, None)
+                logging.warn("Variable " + var + " not found in netcdf file: " + netcdffile)
+
+
 
     def gettimestep(self, timestep, logging, var='P', shifttime=False):
         """
@@ -520,7 +526,7 @@ class netcdfinputstates():
         a = pcr2numpy(cover(0.0), 0.0).flatten()
         # Determine steps to load in mem based on estimated memory usage
         floatspermb = 1048576 / 4
-        maxmb = 4000
+        maxmb = 40
         self.maxsteps = maxmb * len(a) / floatspermb + 1
         self.fstep = 0
         self.lstep = self.fstep + self.maxsteps
