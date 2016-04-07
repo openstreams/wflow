@@ -451,14 +451,22 @@ class netcdfinput():
 
         # Now check Y values to see if we must flip the data
         try:
-            self.y = self.dataset.variables['lat'][:]
-        except:
             self.y = self.dataset.variables['y'][:]
+        except:
+            self.y = self.dataset.variables['lat'][:]
 
-        if self.y[0] > self.y[-1]:
-            self.flip = False
-        else:
-            self.flip = True
+        # test if 1D or 2D array
+        if len(self.y.shape) == 1:
+            if self.y[0] > self.y[-1]:
+                self.flip = False
+            else:
+                self.flip = True
+        else: # note sure if this works
+            self.y = self.y[:][0]
+            if self.y[0] > self.y[-1]:
+                self.flip = False
+            else:
+                self.flip = True
 
 
         for var in vars:
