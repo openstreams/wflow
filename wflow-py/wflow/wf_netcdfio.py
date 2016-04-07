@@ -461,7 +461,7 @@ class netcdfinput():
                 self.flip = False
             else:
                 self.flip = True
-        else: # note sure if this works
+        else: # not sure if this works
             self.y = self.y[:][0]
             if self.y[0] > self.y[-1]:
                 self.flip = False
