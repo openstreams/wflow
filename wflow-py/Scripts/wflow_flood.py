@@ -306,7 +306,6 @@ def main():
     print('Saving water layer map to {:s}'.format(flood_vol_map))
     # write to a tiff file
     inun_lib.gdal_writemap(flood_vol_map, 'GTiff', xax, yax, np.maximum(flood_vol_m_data, 0), -999.)
-    pdb.set_trace()
     ds_hand, rasterband_hand = inun_lib.get_gdal_rasterband(hand_file)
     ds_ldd, rasterband_ldd = inun_lib.get_gdal_rasterband(options.ldd_file)
 
