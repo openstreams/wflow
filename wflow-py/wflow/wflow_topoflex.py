@@ -514,26 +514,38 @@ class WflowModel(DynamicModel):
             for i in self.Classes:
                 if self.selectSi[i]:
                     self.Si.append(readmap(os.path.join(self.Dir, 'instate', 'Si' + self.NamesClasses[i] + '.map')))
+                else:
+                    self.Si.append(self.ZeroMap)
             self.Sw = []
             for i in self.Classes:
                 if self.selectSw[i]:
                     self.Sw.append(readmap(os.path.join(self.Dir, 'instate', 'Sw' + self.NamesClasses[i] + '.map')))
+                else:
+                    self.Sw.append(self.ZeroMap)
             self.Sa = []
             for i in self.Classes:
                 if self.selectSa[i]:
                     self.Sa.append(readmap(os.path.join(self.Dir, 'instate', 'Sa' + self.NamesClasses[i] + '.map')))
+                else:
+                    self.Sa.append(self.ZeroMap)
             self.Su = []
             for i in self.Classes:
                 if self.selectSu[i]:
                     self.Su.append(readmap(os.path.join(self.Dir, 'instate', 'Su' + self.NamesClasses[i] + '.map')))
+                else:
+                    self.Su.append(self.ZeroMap)
             self.Sf = []
             for i in self.Classes:
                 if self.selectSf[i]:
                     self.Sf.append(readmap(os.path.join(self.Dir, 'instate', 'Sf' + self.NamesClasses[i] + '.map')))
+                else:
+                    self.Sf.append(self.ZeroMap)
             self.Sfa = []
             for i in self.Classes:
                 if self.selectSfa[i]:                
                     self.Sfa.append(readmap(os.path.join(self.Dir, 'instate', 'Sfa' + self.NamesClasses[i] + '.map')))
+                else:
+                    self.Sfa.append(self.ZeroMap)
             self.Ss = readmap(os.path.join(self.Dir, 'instate', 'Ss.map'))
             self.Qstate = readmap(os.path.join(self.Dir, 'instate', 'Qstate.map'))
 
