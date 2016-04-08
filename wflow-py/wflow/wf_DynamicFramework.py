@@ -320,6 +320,8 @@ class wf_OutputTimeSeriesArea():
             self.resmap = areaminimum(tmpvar, nominal(self.area))
         elif self.areafunction == 'majority':
             self.resmap = areamajority(tmpvar, nominal(self.area))
+        else:
+            self.resmap = areaaverage(tmpvar, nominal(self.area))
 
         self.remap_np = pcr2numpy(self.resmap, 0)
         self.flatres = self.remap_np.flatten()[self.idx]

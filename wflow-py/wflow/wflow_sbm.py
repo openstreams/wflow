@@ -908,14 +908,13 @@ class WflowModel(DynamicModel):
         self.wf_updateparameters()
         self.Precipitation = max(0.0,self.Precipitation)
 
-
         if hasattr(self,"LAI"):
             # Sl must also be defined
             self.Cmax = self.Sl * self.LAI + self.Swood
             self.CanopyGapFraction = exp(-self.Kext * self.LAI)
             self.Ewet = (1 - exp(-self.Kext * self.LAI)) * self.PotenEvap
-            self.EoverR = cover(self.Ewet/max(0.0001,self.Precipitation),0.0)
-
+            self.EoverR = ifthenelse(self.Precipitation > 0.0, \
+                                     min(0.25,cover(self.Ewet/max(0.0001,self.Precipitation),0.0)), 0.0)
 
         #Apply forcing data corrections
         self.PotenEvap = self.PotenEvap * self.et_RefToPot
