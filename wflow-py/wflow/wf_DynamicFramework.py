@@ -1174,7 +1174,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             if nr == 0:
                 try:
                     mpath = os.path.join(directory, var + ".map").replace("\\", "/")
-                    tvar = self.wf_readmap(mpath,0.0,ncfilesource=self.ncfilestates)
+                    tvar = self.wf_readmap(mpath,0.0,ncfilesource=self.ncfilestates,fail=True)
                     wf_readmtvar = self.wf_readmap(mpath,0.0,ncfilesource=self.ncfilestates)
                     setattr(self._userModel(), var,tvar)
                     #execstr = "self._userModel()." + var + "= readmap(\"" + mpath + "\")"

@@ -44,6 +44,8 @@ wflow_hbv::
 
 -i: Set input table directory (default is intbl)
 
+-g: Set input state directory (default is instate)
+
 -x: run for subcatchment only (e.g. -x 1)
 
 -C: set the name  of the case (directory) to run
@@ -326,6 +328,7 @@ class WflowModel(DynamicModel):
 
     self.sCatch = int(configget(self.config,"model","sCatch","0"))
     self.intbl = configget(self.config,"model","intbl","intbl")
+    self.instate = configget(self.config,"model","instate","instate")
     self.P_style = int(configget(self.config,"model","P_style","1"))
     self.PET_style = int(configget(self.config,"model","PET_style","1"))
     self.TEMP_style = int(configget(self.config,"model","TEMP_style","1"))
@@ -612,7 +615,7 @@ class WflowModel(DynamicModel):
         self.WaterLevel = cover(0.0) #: Water level in kinimatic wave (state variable [m])
         self.DrySnow=cover(0.0) #: Snow amount (state variable [mm])
     else:
-        self.wf_resume(os.path.join(self.Dir, "instate"))
+        self.wf_resume(os.path.join(self.Dir, self.instate))
 
     P=self.Bw+(2.0*self.WaterLevel)
     self.Alpha=self.AlpTerm*pow(P,self.AlpPow)
@@ -898,7 +901,7 @@ def main(argv=None):
     ## Main model starts here
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, 'c:QXS:F:hC:Ii:T:R:u:s:P:p:Xx:U:fl:L:')
+        opts, args = getopt.getopt(argv, 'c:QXS:F:hC:Ii:T:R:u:s:P:p:Xx:U:fl:L:g:')
     except getopt.error, msg:
         pcrut.usage(msg)
     
@@ -952,6 +955,7 @@ def main(argv=None):
         if o == '-X': configset(myModel.config,'model','OverWriteInit','1',overwrite=True)
         if o == '-I': configset(myModel.config,'model','reinit','1',overwrite=True)
         if o == '-i': configset(myModel.config,'model','intbl',a,overwrite=True)
+        if o == '-g': configset(myModel.config,'model','instate',a,overwrite=True)
         if o == '-s': configset(myModel.config,'model','timestepsecs',a,overwrite=True)
         if o == '-x': configset(myModel.config,'model','sCatch',a,overwrite=True)
         if o == '-c': configset(myModel.config,'model','configfile', a,overwrite=True)
