@@ -1153,10 +1153,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         a _? postfix)
 
         """
-
         self._incrementIndentLevel()
         self._traceIn("resume")
-
         allvars = self._userModel().stateVariables()
 
         for var in allvars:
