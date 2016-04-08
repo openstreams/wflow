@@ -1179,10 +1179,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 try:
                     mpath = os.path.join(directory, var + ".map").replace("\\", "/")
                     tvar = self.wf_readmap(mpath,0.0,ncfilesource=self.ncfilestates)
-                    wf_readmtvar = self.wf_readmap(mpath,0.0,ncfilesource=self.ncfilestates)
+                    wf_readmtvar = self.wf_readmap(mpath,0.0,ncfilesource=self.ncfilestates,fail=True)
                     setattr(self._userModel(), var,tvar)
-                    #execstr = "self._userModel()." + var + "= readmap(\"" + mpath + "\")"
-                    #exec execstr
                 except:
                     self.logger.error(
                         "problem while reading state variable from disk: " + mpath + " Suggest to use the -I uption to restart")
