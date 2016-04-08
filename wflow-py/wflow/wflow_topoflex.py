@@ -191,20 +191,24 @@ class WflowModel(DynamicModel):
         if self.fewsrun:
             self.logger.info("Saving initial conditions for FEWS...")
 #            self.wf_suspend(os.path.join(self.Dir, "outstate"))
-            [report(self.Si[i], self.Dir + "/outstate/Si" + self.NamesClasses[i] + ".map") for i in self.Classes]
-            [report(self.Su[i], self.Dir + "/outstate/Su" + self.NamesClasses[i] + ".map") for i in self.Classes]
-            [report(self.Sf[i], self.Dir + "/outstate/Sf" + self.NamesClasses[i] + ".map") for i in self.Classes]
-            [report(self.Sr[i], self.Dir + "/outstate/Sr" + self.NamesClasses[i] + ".map") for i in self.Classes]
+            [report(self.Si[i], self.Dir + "/outstate/Si" + self.NamesClasses[i] + ".map") for i in self.Classes if self.selectSi[i]]
+            [report(self.Su[i], self.Dir + "/outstate/Su" + self.NamesClasses[i] + ".map") for i in self.Classes if self.selectSu[i]]
+            [report(self.Sa[i], self.Dir + "/outstate/Sa" + self.NamesClasses[i] + ".map") for i in self.Classes if self.selectSa[i]]
+            [report(self.Sf[i], self.Dir + "/outstate/Sf" + self.NamesClasses[i] + ".map") for i in self.Classes if self.selectSf[i]]
+            [report(self.Sfa[i], self.Dir + "/outstate/Sfa" + self.NamesClasses[i] + ".map") for i in self.Classes if self.selectSfa[i]]
+            [report(self.Sw[i], self.Dir + "/outstate/Sw" + self.NamesClasses[i] + ".map") for i in self.Classes if self.selectSw[i]]
             report(self.Ss, self.Dir + "/outstate/Ss.map")
             report(self.Qstate, self.Dir + "/outstate/Qstate.map")
         
         #: It is advised to use the wf_suspend() function
         #: here which will suspend the variables that are given by stateVariables
         #: function.
-        [report(self.Si[i], self.SaveDir + "/outstate/Si" + self.NamesClasses[i] + ".map") for i in self.Classes]
-        [report(self.Su[i], self.SaveDir + "/outstate/Su" + self.NamesClasses[i] + ".map") for i in self.Classes]
-        [report(self.Sf[i], self.SaveDir + "/outstate/Sf" + self.NamesClasses[i] + ".map") for i in self.Classes]
-        [report(self.Sr[i], self.SaveDir + "/outstate/Sr" + self.NamesClasses[i] + ".map") for i in self.Classes]
+        [report(self.Si[i], self.SaveDir + "/outstate/Si" + self.NamesClasses[i] + ".map") for i in self.Classes if self.selectSi[i]]
+        [report(self.Su[i], self.SaveDir + "/outstate/Su" + self.NamesClasses[i] + ".map") for i in self.Classes if self.selectSu[i]]
+        [report(self.Sa[i], self.SaveDir + "/outstate/Sa" + self.NamesClasses[i] + ".map") for i in self.Classes if self.selectSa[i]]
+        [report(self.Sf[i], self.SaveDir + "/outstate/Sf" + self.NamesClasses[i] + ".map") for i in self.Classes if self.selectSf[i]]
+        [report(self.Sfa[i], self.SaveDir + "/outstate/Sfa" + self.NamesClasses[i] + ".map") for i in self.Classes if self.selectSfa[i]]
+        [report(self.Sw[i], self.SaveDir + "/outstate/Sw" + self.NamesClasses[i] + ".map") for i in self.Classes if self.selectSw[i]]
         report(self.Ss, self.SaveDir + "/outstate/Ss.map")
         report(self.Qstate, self.SaveDir + "/outstate/Qstate.map")
 
@@ -266,7 +270,6 @@ class WflowModel(DynamicModel):
                                     configget(self.config, "model", "DSfile_2", ""))
         self.dayETss = os.path.join(self.Dir,
                                     configget(self.config, "model", "DEfile_2", ""))
-        #    self.laiTss = configget(self.config,"model","LAIfile_2","")
 
 
         self.logger.info(
@@ -342,11 +345,7 @@ class WflowModel(DynamicModel):
             ']', '').replace(
             'None', '').split(',')
         self.selectSs = configget(self.config, "model", "selectSs", "groundWaterCombined3")
-        self.selectSr = configget(self.config, "model",
-                                  "selectSr", "0, 0, 0").replace(
-            ' ', '').replace('[', '').replace(
-            ']', '').replace(
-            'None', '').split(',')
+
             
         self.selectRout = configget(self.config, "model", "selectRout", " ")
 
@@ -499,7 +498,6 @@ class WflowModel(DynamicModel):
             self.Sa = [self.ZeroMap] * len(self.Classes)
             self.Sf = [self.ZeroMap] * len(self.Classes)
             self.Sfa = [self.ZeroMap] * len(self.Classes)
-            self.Sr = [self.ZeroMap] * len(self.Classes)
             self.Ss = self.ZeroMap  # for combined gw reservoir
             self.Qstate = self.ZeroMap  # for combined gw reservoir
             self.Qstate_t = self.ZeroMap
@@ -514,25 +512,28 @@ class WflowModel(DynamicModel):
             
             self.Si = []
             for i in self.Classes:
-                self.Si.append(readmap(os.path.join(self.Dir, 'instate', 'Si' + self.NamesClasses[i] + '.map')))
+                if self.selectSi[i]:
+                    self.Si.append(readmap(os.path.join(self.Dir, 'instate', 'Si' + self.NamesClasses[i] + '.map')))
             self.Sw = []
             for i in self.Classes:
-                self.Sw.append(readmap(os.path.join(self.Dir, 'instate', 'Sw' + self.NamesClasses[i] + '.map')))
+                if self.selectSw[i]:
+                    self.Sw.append(readmap(os.path.join(self.Dir, 'instate', 'Sw' + self.NamesClasses[i] + '.map')))
             self.Sa = []
             for i in self.Classes:
-                self.Sa.append(readmap(os.path.join(self.Dir, 'instate', 'Sa' + self.NamesClasses[i] + '.map')))
+                if self.selectSa[i]:
+                    self.Sa.append(readmap(os.path.join(self.Dir, 'instate', 'Sa' + self.NamesClasses[i] + '.map')))
             self.Su = []
             for i in self.Classes:
-                self.Su.append(readmap(os.path.join(self.Dir, 'instate', 'Su' + self.NamesClasses[i] + '.map')))
+                if self.selectSu[i]:
+                    self.Su.append(readmap(os.path.join(self.Dir, 'instate', 'Su' + self.NamesClasses[i] + '.map')))
             self.Sf = []
             for i in self.Classes:
-                self.Sf.append(readmap(os.path.join(self.Dir, 'instate', 'Sf' + self.NamesClasses[i] + '.map')))
+                if self.selectSf[i]:
+                    self.Sf.append(readmap(os.path.join(self.Dir, 'instate', 'Sf' + self.NamesClasses[i] + '.map')))
             self.Sfa = []
             for i in self.Classes:
-                self.Sfa.append(readmap(os.path.join(self.Dir, 'instate', 'Sfa' + self.NamesClasses[i] + '.map')))
-            self.Sr = []
-            for i in self.Classes:
-                self.Sr.append(readmap(os.path.join(self.Dir, 'instate', 'Sr' + self.NamesClasses[i] + '.map')))
+                if self.selectSfa[i]:                
+                    self.Sfa.append(readmap(os.path.join(self.Dir, 'instate', 'Sfa' + self.NamesClasses[i] + '.map')))
             self.Ss = readmap(os.path.join(self.Dir, 'instate', 'Ss.map'))
             self.Qstate = readmap(os.path.join(self.Dir, 'instate', 'Qstate.map'))
 
@@ -540,7 +541,6 @@ class WflowModel(DynamicModel):
         self.wbSu_ = [self.ZeroMap] * len(self.Classes)
         self.wbSa_ = [self.ZeroMap] * len(self.Classes)
         self.wbSw_ = [self.ZeroMap] * len(self.Classes)
-        self.wbSr_ = [self.ZeroMap] * len(self.Classes)
         self.wbSf_ = [self.ZeroMap] * len(self.Classes)
         self.wbSfa_ = [self.ZeroMap] * len(self.Classes)
         self.wbSfrout = self.ZeroMap
@@ -603,7 +603,6 @@ class WflowModel(DynamicModel):
         self.Sa_t = copylist(self.Sa)
         self.Sf_t = copylist(self.Sf)
         self.Sfa_t = copylist(self.Sfa)
-        self.Sr_t = copylist(self.Sr)
         self.Ss_t = self.Ss
         self.trackQ_t = copylist(self.trackQ)  # copylist(self.trackQ)
         self.convQu_t = [copylist(self.convQu[i]) for i in self.Classes]  # copylist(self.convQu)
@@ -668,11 +667,6 @@ class WflowModel(DynamicModel):
                 eval_str = 'reservoir_Sf.fastAgriRunoff_no_reservoir(self, k)'
             eval(eval_str)
 
-            # RIPARIAN ZONE RESERVOIR ==================================================================================
-            if self.selectSr[k]:
-                eval_str = 'reservoir_Sr.{:s}(self, k)'.format(self.selectSr[k])
-                eval(eval_str)
-
         
         # TOTAL RUNOFF =============================================================================================
         self.Qftotal = sum([x * y for x, y in zip(self.Qf_, self.percent)]) + sum([x*y for x,y in zip(self.Qfa_,self.percent)])
@@ -705,7 +699,6 @@ class WflowModel(DynamicModel):
             multiply(self.Si, self.percent)) + sum(multiply(self.Si_t, self.percent)) - sum(
             multiply(self.Su, self.percent)) + sum(multiply(self.Su_t, self.percent)) - sum(
             multiply(self.Sf, self.percent)) + sum(multiply(self.Sf_t, self.percent)) - sum(
-            multiply(self.Sr, self.percent)) + sum(multiply(self.Sr_t, self.percent)) - sum(
             multiply(self.Ss, self.percent)) + sum(
             multiply(self.Ss_t, self.percent)) - self.trackQWB + self.trackQWB_t - sum(
             multiply(self.convQuWB, self.percent)) + sum(multiply(self.convQuWB_t, self.percent))
@@ -728,8 +721,6 @@ class WflowModel(DynamicModel):
         self.Sf_WB = areatotal(sum(multiply(self.Sf_t,self.percent)) / 1000 * self.surfaceArea,nominal(self.TopoId))
         self.SfaWB = areatotal(sum(multiply(self.Sfa,self.percent)) / 1000 * self.surfaceArea,nominal(self.TopoId))
         self.Sfa_WB = areatotal(sum(multiply(self.Sfa_t,self.percent)) / 1000 * self.surfaceArea,nominal(self.TopoId))
-        self.SrWB = areatotal(sum(multiply(self.Sr,self.percent)) / 1000 * self.surfaceArea,nominal(self.TopoId))
-        self.Sr_WB = areatotal(sum(multiply(self.Sr_t,self.percent)) / 1000 * self.surfaceArea,nominal(self.TopoId))
         self.SwWB = areatotal(sum(multiply(self.Sw,self.percent)) / 1000 * self.surfaceArea,nominal(self.TopoId))
         self.Sw_WB = areatotal(sum(multiply(self.Sw_t,self.percent)) / 1000 * self.surfaceArea,nominal(self.TopoId))
         self.SsWB = areatotal(self.Ss / 1000 * self.surfaceArea,nominal(self.TopoId))
@@ -744,7 +735,7 @@ class WflowModel(DynamicModel):
         self.Qstate_WB = areatotal(sum(self.Qstate_t) * 3600, nominal(self.TopoId))
         
         #WBtot in m3/s
-        self.WBtot = (self.P - self.Ei + self.EwiCorr - self.Ew - self.Ea - self.Eu - self.Qtot - self.SiWB + self.Si_WB - self.SuWB + self.Su_WB - self.SaWB + self.Sa_WB - self.SwWB + self.Sw_WB - self.SfWB + self.Sf_WB - self.SfaWB + self.Sfa_WB - self.SrWB + self.Sr_WB - self.SsWB + self.Ss_WB - self.convQuWB +self.convQu_WB - self.convQaWB +self.convQa_WB - self.trackQWB + self.trackQ_WB) / self.timestepsecs     
+        self.WBtot = (self.P - self.Ei + self.EwiCorr - self.Ew - self.Ea - self.Eu - self.Qtot - self.SiWB + self.Si_WB - self.SuWB + self.Su_WB - self.SaWB + self.Sa_WB - self.SwWB + self.Sw_WB - self.SfWB + self.Sf_WB - self.SfaWB + self.Sfa_WB - self.SsWB + self.Ss_WB - self.convQuWB +self.convQu_WB - self.convQaWB +self.convQa_WB - self.trackQWB + self.trackQ_WB) / self.timestepsecs     
 
         # SUMMED FLUXES ======================================================================================
         self.sumprecip = self.sumprecip + self.Precipitation  # accumulated rainfall for water balance (m/h)
