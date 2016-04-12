@@ -408,13 +408,13 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         :return:
         """
 
-        self._userModel()._setNrTimeSteps(self.DT.runTimeSteps)
+        self._userModel()._setNrTimeSteps(int(self.DT.runTimeSteps))
         self._d_firstTimestep = 1
         self._userModel()._setFirstTimeStep(1)
         self._d_lastTimestep = self.DT.runTimeSteps
         self.APIDebug = 0
         self._userModel().currentdatetime = self.DT.currentDateTime
-        self._userModel()._setCurrentTimeStep(self.DT.currentTimeStep)
+        self._userModel()._setCurrentTimeStep(int(self.DT.currentTimeStep))
         self._userModel().timestepsecs = self.DT.timeStepSecs
 
 
