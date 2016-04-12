@@ -1890,7 +1890,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         if laststep == 0:
             laststep = self._d_lastTimestep
 
-        self._userModel()._setNrTimeSteps(laststep)
+        self._userModel()._setNrTimeSteps(int(laststep))
 
         while step <= self._userModel().nrTimeSteps():
 
