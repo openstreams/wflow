@@ -267,6 +267,9 @@ class WflowModel(DynamicModel):
         if self.fewsrun:
             self.logger.info("Saving initial conditions for FEWS...")
             self.wf_suspend(self.Dir + "/outstate/")
+			
+
+
 
     def initial(self):
         """
@@ -332,6 +335,8 @@ class WflowModel(DynamicModel):
         wflow_soil = configget(self.config, "model", "wflow_soil", "staticmaps/wflow_soil.map")
 
         # 2: Input base maps ########################################################
+        self.instate = configget(self.config,"model","instate","instate")
+		
         subcatch = ordinal(self.wf_readmap(os.path.join(self.Dir,wflow_subcatch),0.0,fail=True))  # Determines the area of calculations (all cells > 0)
         subcatch = ifthen(subcatch > 0, subcatch)
 
@@ -546,7 +551,7 @@ class WflowModel(DynamicModel):
             self.ReservoirVolume = self.ResMaxVolume * self.ResTargetFullFrac
         else:
             self.logger.info("Setting initial conditions from state files")
-            self.wf_resume(os.path.join(self.Dir,"instate"))
+            self.wf_resume(os.path.join(self.Dir, self.instate))
 
         self.Pch = self.wetPerimiterCH(self.WaterLevelCH,self.Bw)
         self.Pfp =  ifthenelse(self.River,self.wetPerimiterFP(self.WaterLevelFP,self.floodPlainWidth,sharpness=self.floodPlainDist),0.0)
@@ -696,7 +701,7 @@ def main(argv=None):
     ## Process command-line options                                        #
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, 'F:L:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:')
+        opts, args = getopt.getopt(argv, 'F:L:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:g:')
     except getopt.error, msg:
         pcrut.usage(msg)
 
@@ -714,6 +719,7 @@ def main(argv=None):
         if o == '-h': usage()
         if o == '-f': _NoOverWrite = 0
         if o == '-l': exec "loglevel = logging." + a
+
 
     if fewsrun:
         ts = getTimeStepsfromRuninfo(runinfoFile, timestepsecs)
@@ -743,6 +749,8 @@ def main(argv=None):
         if o == '-s': configset(myModel.config, 'model', 'timestepsecs', a, overwrite=True)
         if o == '-x': configset(myModel.config, 'model', 'sCatch', a, overwrite=True)
         if o == '-c': configset(myModel.config, 'model', 'configfile', a, overwrite=True)
+        if o == '-g': configset(myModel.config,'model','instate',a,overwrite=True)
+
         if o == '-U':
             configset(myModel.config, 'model', 'updateFile', a, overwrite=True)
             configset(myModel.config, 'model', 'updating', "1", overwrite=True)
