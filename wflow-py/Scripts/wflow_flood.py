@@ -466,6 +466,9 @@ def main():
     ds_hand = None
     ds_ldd = None
     # rename temporary file to final hand file
+    if os.path.isfile(inun_file):
+        # remove an old result if available
+        os.unlink(inun_file)
     os.rename(inun_file_tmp, inun_file)
 
     logger.info('Done! Thank you for using hand_contour_inun.py')
