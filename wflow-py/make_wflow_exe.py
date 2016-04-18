@@ -8,7 +8,7 @@ def dependencies_for_freeezing():
 	import netCDF4_utils 
 
 nrbits = str(ctypes.sizeof(ctypes.c_voidp) * 8)
-data_files=matplotlib.get_py2exe_datafiles()
+
 
 thename = "Wflow"+MVERSION+'-'+nrbits
 f = Freezer("Wflow"+MVERSION+'-'+nrbits)
@@ -34,9 +34,14 @@ f.addScript("Scripts/pcr2netcdf.py")
 f()    # starts the freezing process
 
 
+# matplolib data files
+data_files=matplotlib.get_py2exe_datafiles()
+
+# pcraster dll's
 ddir = "c:/pcraster4-64/lib/"
 data_files.append((".", glob.glob(ddir + "/*.dll")))
 
+# GDAL data files
 gdaldata = os.getenv("GDAL_DATA")
 data_files.append(("./gdal-data", glob.glob(gdaldata + "/*.*")))
 
