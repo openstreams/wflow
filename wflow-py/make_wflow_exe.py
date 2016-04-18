@@ -8,7 +8,7 @@ def dependencies_for_freeezing():
 	import netCDF4_utils 
 
 nrbits = str(ctypes.sizeof(ctypes.c_voidp) * 8)
-includes = ['wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined','wflow.wrapperExtended','bmi','bmi.wrapper']
+includes = ['wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined','bmi','bmi.wrapper']
 
 thename = "Wflow"+MVERSION+'-'+nrbits
 f = Freezer("Wflow"+MVERSION+'-'+nrbits,includes=includes)

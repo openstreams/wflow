@@ -99,7 +99,7 @@ for index in range(len(id_out_wflow)):
 # In[]: Initialize the RTC-Tools model
 os.chdir(Bin_RTC)
 
-from wflow.wrapperExtended import BMIWrapperExtended
+from wrapperExtended import BMIWrapperExtended
 #RTC_model = BMIWrapperExtended(engine=os.path.join(Bin_RTC,"RTCTools_BMI"))
 RTC_model = BMIWrapperExtended(engine=os.path.join(Bin_RTC,"RTCTools_BMI"))
 print 'RTCmodel', Bin_RTC,RTC_model
@@ -190,7 +190,7 @@ while t < min(LA_end, RTC_end):
     for idx, wflow_id in enumerate(id_out_wflow):
         rtc_id = id_out_rtc[id_out_wflow.index(str(wflow_id))]
         Qout = RTC_model.get_var(rtc_id)
-        if isfinite(Qout): # nan's into wflow
+        if isfinite(Qout): # no nan's into wflow
             inflowfield[Reservoir_outflow==int(wflow_id)] = Qout
 
     LA_model.set_value("IF",flipud(inflowfield).copy())
