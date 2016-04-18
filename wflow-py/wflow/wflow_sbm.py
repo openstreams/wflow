@@ -1191,8 +1191,12 @@ class WflowModel(DynamicModel):
 
         #self.Inwater = self.Inwater + self.Inflow   # Add abstractions/inflows in m^3/sec
         # Check if we do not try to abstract more runoff then present
-        MaxExtract = self.SurfaceRunoff + self.Inwater
+        self.InflowKinWaveCell = upstream(self.TopoLdd, self.SurfaceRunoff)   #NG The extraction should be equal to the discharge upstream cell. You should not make the abstraction depended on the downstream cell, because they are correlated. During a stationary sum they will get equal to each other.
+        MaxExtract = self.InflowKinWaveCell + self.Inwater                    #NG
+        # MaxExtract = self.SurfaceRunoff + self.Inwater
         self.SurfaceWaterSupply = ifthenelse (self.Inflow < 0.0 , min(MaxExtract,-1.0 * self.Inflow), self.ZeroMap)
+        self.OldSurfaceRunoff=self.SurfaceRunoff                              #NG Store for iteration
+        self.OldInwater=self.Inwater 
         self.Inwater = self.Inwater + ifthenelse(self.SurfaceWaterSupply> 0, -1.0 * self.SurfaceWaterSupply,self.Inflow)
 
 
@@ -1207,8 +1211,36 @@ class WflowModel(DynamicModel):
         self.SurfaceRunoffMM = self.SurfaceRunoff * self.QMMConv  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
         self.updateRunOff()
         self.InflowKinWaveCell = upstream(self.TopoLdd, self.SurfaceRunoff)
+
+        maxit = 10 # max number of iteration in abstraction calculations
+        nrit = 0
+        if float(mapminimum(spatial(self.Inflow))) < 0.0:
+            while True:
+                nrit += 1
+                oldsup = self.SurfaceWaterSupply
+                ##########################################################################
+                # Iterate to make a better estimation for the supply #####################
+                # (Runoff calculation via Kinematic wave) ################################
+                ##########################################################################
+                MaxExtract = self.InflowKinWaveCell + self.OldInwater
+                self.SurfaceWaterSupply = ifthenelse (self.Inflow < 0.0 , min(MaxExtract,-1.0 * self.Inflow), self.ZeroMap)
+                self.Inwater = self.OldInwater + ifthenelse(self.SurfaceWaterSupply> 0, -1.0 * self.SurfaceWaterSupply,self.Inflow)
+                # per distance along stream
+                q = self.Inwater / self.DCL
+                # discharge (m3/s)
+                self.SurfaceRunoff = kinematic(self.TopoLdd, self.OldSurfaceRunoff, q, self.Alpha, self.Beta, self.Tslice,
+                                               self.timestepsecs, self.DCL)  # m3/s
+                self.SurfaceRunoffMM = self.SurfaceRunoff * self.QMMConv  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
+                self.updateRunOff()
+                self.InflowKinWaveCell = upstream(self.TopoLdd, self.OldSurfaceRunoff)
+
+                deltasup = float(mapmaximum(abs(oldsup - self.SurfaceWaterSupply)))
+
+                if deltasup < 0.01 or nrit >= maxit:
+                    break
+
         self.MassBalKinWave = (-self.KinWaveVolume + self.OldKinWaveVolume) / self.timestepsecs +\
-                              self.InflowKinWaveCell + self.Inwater - self.SurfaceRunoff
+                                self.InflowKinWaveCell + self.Inwater - self.SurfaceRunoff
 
         Runoff = self.SurfaceRunoff
 

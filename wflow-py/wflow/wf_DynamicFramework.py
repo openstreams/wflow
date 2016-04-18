@@ -694,7 +694,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
                 rest = lookupscalar(pathtotbl, *newargs)
             else:
-                self.logger.warn("tbl file not found (" + pathtotbl + ") returning default value: " + str(default))
+                self.logger.debug("tbl file not found (" + pathtotbl + ") returning default value: " + str(default))
                 rest = spatial(scalar(default))
 
 
