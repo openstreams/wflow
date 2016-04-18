@@ -638,11 +638,10 @@ class WflowModel(DynamicModel):
         # discharge (m3/s)
         self.SurfaceRunoff = kinematic(self.TopoLdd, self.SurfaceRunoff, q, self.Alpha, self.Beta, self.Tslice,
                                        self.timestepsecs, self.DCL)  # m3/s
-        self.SurfaceRunoffMM = self.SurfaceRunoff * self.QMMConv  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
-        self.updateRunOff()
+
         self.InflowKinWaveCell = upstream(self.TopoLdd, self.SurfaceRunoff)
 
-        maxit = 10  # max number of iteration in abstraction calculations
+        maxit = 5  # max number of iteration in abstraction calculations
         nrit = 0
         if float(mapminimum(spatial(self.Inflow))) < 0.0:
             while True:
@@ -671,6 +670,10 @@ class WflowModel(DynamicModel):
 
                 if deltasup < 0.01 or nrit >= maxit:
                     break
+        else:
+            self.SurfaceRunoffMM = self.SurfaceRunoff * self.QMMConv  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
+            self.updateRunOff()
+
 
         self.MassBalKinWave = (-self.KinWaveVolume + self.OldKinWaveVolume) / self.timestepsecs + \
                                 self.InflowKinWaveCell + self.Inwater - self.SurfaceRunoff
