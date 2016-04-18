@@ -52,7 +52,7 @@ def ConfigSectionMap(section):
 argv = sys.argv
 
 try:
-   opts, args = getopt.getopt(argv[1:], 'c:w:')
+   opts, args = getopt.getopt(argv[1:], 'c:w:I:')
    print opts
 except getopt.error, msg:
    print 'cannot parse commandline'
@@ -60,7 +60,8 @@ except getopt.error, msg:
 
 for o, a in opts:
    if o == '-c': configfile = a
-   if o == '-w' : cur_dir = a
+   if o == '-w' : cur_dir = os.path.abspath(a)
+   if o == '-I' : IniFile = a
 
 Config = ConfigParser.ConfigParser()
 #inifile = Config.read('c:\FEWS\SI-WAMI\SI-WAMI\Modules\RTC\wflow_rtctools.ini')
@@ -97,7 +98,8 @@ for index in range(len(id_out_wflow)):
 
 # In[]: Initialize the RTC-Tools model
 os.chdir(Bin_RTC)
-from wrapperExtended import BMIWrapperExtended
+
+from wflow.wrapperExtended import BMIWrapperExtended
 #RTC_model = BMIWrapperExtended(engine=os.path.join(Bin_RTC,"RTCTools_BMI"))
 RTC_model = BMIWrapperExtended(engine=os.path.join(Bin_RTC,"RTCTools_BMI"))
 print 'RTCmodel', Bin_RTC,RTC_model
@@ -107,13 +109,14 @@ RTC_model.initialize('..')
 # In[]: Initialize the WFlow model
 os.chdir(dir_wflow)
 LA_model = bmi.wflowbmi_csdms()
-LA_model.initialize(('wflow_sbm.ini'), loglevel=logging.ERROR)
+LA_model.initialize((IniFile), loglevel=logging.DEBUG)
 
 
 # In[]: Investigate start time, end time and time step of both models
 
 print 'WFlow:'
-LA_dt = LA_model.get_value("timestepsecs")
+LA_dt = LA_model.get_time_step()
+
 #LA_start = LA_model.get_start_time()
 timeutc = adapter.getStartTimefromRuninfo('inmaps/runinfo.xml')
 print timeutc
@@ -151,8 +154,8 @@ outflow_list = list(np.unique(Reservoir_outflow[~np.isnan(Reservoir_outflow)]))
 
 
 # In[]:  Overwrite TopoLdd with modified version
-ldd = pcraster.pcr2numpy(pcraster.readmap(os.path.join(dir_wflow,ldd_map)), np.NaN)
-LA_model.set_value("TopoLdd",flipud(ldd))
+ldd = pcraster.pcr2numpy(pcraster.readmap(os.path.join(dir_wflow,ldd_map)), np.NaN).astype(np.float32)
+LA_model.set_value("TopoLdd",flipud(ldd).copy())
 
 
 ########################################################################
@@ -169,7 +172,7 @@ while t < min(LA_end, RTC_end):
     print "calculation timestep = " + str(timecounter)
 
     # Get the inflow from the wflow model runoff map and map
-    inflowQ = flipud(LA_model.get_value("SurfaceRunoff"))
+    inflowQ = flipud(LA_model.get_value("SurfaceRunoff")).copy()
 
     # Map the sum of WFlow Inflow to RTC
     for idx, wflow_id in enumerate(id_in_wflow):
@@ -183,14 +186,14 @@ while t < min(LA_end, RTC_end):
     RTC_model.update(-1.0)
 
     # Extract RTC outflow and supply on WFlow 'inflowfield'
-    inflowfield = zeros_like(inflowQ)
+    inflowfield = zeros_like(inflowQ).copy()
     for idx, wflow_id in enumerate(id_out_wflow):
         rtc_id = id_out_rtc[id_out_wflow.index(str(wflow_id))]
         Qout = RTC_model.get_var(rtc_id)
-        print rtc_id + ' = ' + str(Qout)
-        inflowfield[np.where(Reservoir_outflow==int(wflow_id))] = Qout
+        if isfinite(Qout): # nan's into wflow
+            inflowfield[Reservoir_outflow==int(wflow_id)] = Qout
 
-    LA_model.set_value("IF",flipud(inflowfield))
+    LA_model.set_value("IF",flipud(inflowfield).copy())
     # This not not bmi but needed to update the kinematic wave reservoit
     LA_model.myModel.updateRunOff()
 

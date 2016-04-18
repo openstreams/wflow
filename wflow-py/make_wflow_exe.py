@@ -8,10 +8,10 @@ def dependencies_for_freeezing():
 	import netCDF4_utils 
 
 nrbits = str(ctypes.sizeof(ctypes.c_voidp) * 8)
-
+includes = ['wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined','wflow.wrapperExtended','bmi','bmi.wrapper']
 
 thename = "Wflow"+MVERSION+'-'+nrbits
-f = Freezer("Wflow"+MVERSION+'-'+nrbits)
+f = Freezer("Wflow"+MVERSION+'-'+nrbits,includes=includes)
 f.addScript("wflow/__init__.py")
 f.addScript("wflow/wflow_topoflex.py")
 f.addScript("wflow/wflow_sbm.py")
