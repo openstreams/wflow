@@ -643,7 +643,10 @@ class WflowModel(DynamicModel):
 
         self.InflowKinWaveCell = upstream(self.TopoLdd, self.SurfaceRunoff)
 
+        # If inflow is negative we have abstractions. Check if demand can be met (by looking
+        # at the flow in the upstream cell) and iterate if needed
         self.nrit = 0
+        self.breakoff = 0.0001
         if float(mapminimum(spatial(self.Inflow))) < 0.0:
             while True:
                 self.nrit += 1
@@ -669,8 +672,9 @@ class WflowModel(DynamicModel):
                 self.InflowKinWaveCell = upstream(self.TopoLdd, self.OldSurfaceRunoff)
                 deltasup = float(mapmaximum(abs(oldsup - self.SurfaceWaterSupply)))
 
-                if deltasup < 0.01 or self.nrit >= self.maxitsupply:
+                if deltasup < self.breakoff  or self.nrit >= self.maxitsupply:
                     break
+
             self.updateRunOff()
         else:
             self.SurfaceRunoffMM = self.SurfaceRunoff * self.QMMConv  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
@@ -678,6 +682,7 @@ class WflowModel(DynamicModel):
 
         self.MassBalKinWave = (-self.KinWaveVolume + self.OldKinWaveVolume) / self.timestepsecs + \
                                 self.InflowKinWaveCell + self.Inwater - self.SurfaceRunoff
+
 
 
         Runoff = self.SurfaceRunoff

@@ -1210,7 +1210,10 @@ class WflowModel(DynamicModel):
         self.SurfaceRunoff = kinematic(self.TopoLdd, self.SurfaceRunoff, q, self.Alpha, self.Beta, self.Tslice,
                                        self.timestepsecs, self.DCL)  # m3/s
 
+        # If inflow is negative we have abstractions. Check if demand can be met (by looking
+        # at the flow in the upstream cell) and iterate if needed
         self.nrit = 0
+        self.breakoff = 0.0001
         if float(mapminimum(spatial(self.Inflow))) < 0.0:
             while True:
                 self.nrit += 1
@@ -1221,8 +1224,10 @@ class WflowModel(DynamicModel):
                 # (Runoff calculation via Kinematic wave) ################################
                 ##########################################################################
                 MaxExtract = self.InflowKinWaveCell + self.OldInwater
-                self.SurfaceWaterSupply = ifthenelse (self.Inflow < 0.0 , min(MaxExtract,-1.0 * self.Inflow), self.ZeroMap)
-                self.Inwater = self.OldInwater + ifthenelse(self.SurfaceWaterSupply> 0, -1.0 * self.SurfaceWaterSupply,self.Inflow)
+                self.SurfaceWaterSupply = ifthenelse (self.Inflow < 0.0 , min(MaxExtract,-1.0 * self.Inflow),\
+                                                      self.ZeroMap)
+                self.Inwater = self.OldInwater + ifthenelse(self.SurfaceWaterSupply> 0, -1.0 * self.SurfaceWaterSupply,\
+                                                            self.Inflow)
                 # per distance along stream
                 q = self.Inwater / self.DCL
                 # discharge (m3/s)
@@ -1233,7 +1238,7 @@ class WflowModel(DynamicModel):
                 self.InflowKinWaveCell = upstream(self.TopoLdd, self.OldSurfaceRunoff)
                 deltasup = float(mapmaximum(abs(oldsup - self.SurfaceWaterSupply)))
 
-                if deltasup < 0.01 or self.nrit >= self.maxitsupply:
+                if deltasup < self.breakoff or self.nrit >= self.maxitsupply:
                     break
             self.updateRunOff()
         else:
@@ -1241,7 +1246,7 @@ class WflowModel(DynamicModel):
             self.updateRunOff()
 
 
-
+        print "=======" + str(self.nrit)
         self.MassBalKinWave = (-self.KinWaveVolume + self.OldKinWaveVolume) / self.timestepsecs +\
                                 self.InflowKinWaveCell + self.Inwater - self.SurfaceRunoff
 
