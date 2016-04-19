@@ -45,6 +45,23 @@ def ConfigSectionMap(section):
             dict1[option] = None
     return dict1
 
+
+def gettimestepfname(name,path,timestep):
+    """
+    Get the pcraster filename fro this step
+    :param name:
+    :param path:
+    :param timestep:
+    :return:
+    """
+
+    below_thousand = timestep % 1000
+    above_thousand = timestep / 1000
+    fname  = str(name + '%0' + str(8-len(name)) + '.f.%03.f') % (above_thousand, below_thousand)
+    fname = os.path.join(path,fname)
+
+    return fname
+
 ########################################################################
 ## Process command-line options                                        #
 ########################################################################
@@ -112,6 +129,9 @@ LA_model = bmi.wflowbmi_csdms()
 LA_model.initialize((IniFile), loglevel=logging.WARN)
 
 # now get the forcings that wflow expects
+# The bmi is such that you can get the input variables and the output variables. However, the
+# input variable list also contains the in/out variables. So to
+# get the input only we subtract the two lists.
 invars = LA_model.get_input_var_names()
 outvars = LA_model.get_output_var_names()
 inputmstacks =  list(set(invars) - set(outvars))
@@ -174,6 +194,13 @@ timecounter = 0
 while t < min(LA_end, RTC_end):
     #print "timestep = " + str(t)
     # run the WFlow model
+
+    # first read forcing mapstacks (set in API section) and give to the model
+    for thisstack in inputmstacks:
+        toread =  gettimestepfname(thisstack,os.path.join(dir_wflow,'inmaps'),timecounter+1)
+        nptoset = flipud(pcr2numpy(scalar(pcraster.readmap(os.path.abspath(toread))),-999.0)).copy()
+        LA_model.set_value(thisstack,nptoset)
+
     LA_model.update()
     print "calculation timestep = " + str(timecounter)
 
@@ -200,7 +227,7 @@ while t < min(LA_end, RTC_end):
             inflowfield[Reservoir_outflow==int(wflow_id)] = Qout
 
     LA_model.set_value("IF",flipud(inflowfield).copy())
-    # This not not bmi but needed to update the kinematic wave reservoit
+    # This not not bmi but needed to update the kinematic wave reservoir
     LA_model.myModel.updateRunOff()
 
     #t = LA_model.get_current_time()

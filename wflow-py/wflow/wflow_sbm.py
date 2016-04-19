@@ -1246,7 +1246,6 @@ class WflowModel(DynamicModel):
             self.updateRunOff()
 
 
-        print "=======" + str(self.nrit)
         self.MassBalKinWave = (-self.KinWaveVolume + self.OldKinWaveVolume) / self.timestepsecs +\
                                 self.InflowKinWaveCell + self.Inwater - self.SurfaceRunoff
 
