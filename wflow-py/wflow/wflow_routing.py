@@ -295,6 +295,8 @@ class WflowModel(DynamicModel):
         self.logger.info("running for " + str(self.nrTimeSteps()) + " timesteps")
 
         # Set and get defaults from ConfigFile here ###################################
+        self.maxitsupply = int(configget(self.config, "model", "maxitsupply", "5"))
+        # max number of iteration in abstraction calculations
         self.reinit = int(configget(self.config, "model", "reinit", "0"))
         self.fewsrun = int(configget(self.config, "model", "fewsrun", "0"))
         self.OverWriteInit = int(configget(self.config, "model", "OverWriteInit", "0"))
@@ -641,12 +643,12 @@ class WflowModel(DynamicModel):
 
         self.InflowKinWaveCell = upstream(self.TopoLdd, self.SurfaceRunoff)
 
-        maxit = 5  # max number of iteration in abstraction calculations
-        nrit = 0
+        self.nrit = 0
         if float(mapminimum(spatial(self.Inflow))) < 0.0:
             while True:
-                nrit += 1
+                self.nrit += 1
                 oldsup = self.SurfaceWaterSupply
+                self.InflowKinWaveCell = upstream(self.TopoLdd, self.SurfaceRunoff)
                 ##########################################################################
                 # Iterate to make a better estimation for the supply #####################
                 # (Runoff calculation via Kinematic wave) ################################
@@ -663,17 +665,16 @@ class WflowModel(DynamicModel):
                                                self.Tslice,
                                                self.timestepsecs, self.DCL)  # m3/s
                 self.SurfaceRunoffMM = self.SurfaceRunoff * self.QMMConv  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
-                self.updateRunOff()
-                self.InflowKinWaveCell = upstream(self.TopoLdd, self.OldSurfaceRunoff)
 
+                self.InflowKinWaveCell = upstream(self.TopoLdd, self.OldSurfaceRunoff)
                 deltasup = float(mapmaximum(abs(oldsup - self.SurfaceWaterSupply)))
 
-                if deltasup < 0.01 or nrit >= maxit:
+                if deltasup < 0.01 or self.nrit >= self.maxitsupply:
                     break
+            self.updateRunOff()
         else:
             self.SurfaceRunoffMM = self.SurfaceRunoff * self.QMMConv  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
             self.updateRunOff()
-
 
         self.MassBalKinWave = (-self.KinWaveVolume + self.OldKinWaveVolume) / self.timestepsecs + \
                                 self.InflowKinWaveCell + self.Inwater - self.SurfaceRunoff

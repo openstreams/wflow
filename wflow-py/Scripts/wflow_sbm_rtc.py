@@ -22,7 +22,7 @@ import os
 import numpy as np
 import ConfigParser
 
-reload(bmi)
+#reload(bmi)
 
 ''' Todo: include error handling:
         - When WFlow_ids in the mapping section of config are not in the map
@@ -99,7 +99,7 @@ for index in range(len(id_out_wflow)):
 # In[]: Initialize the RTC-Tools model
 os.chdir(Bin_RTC)
 
-from wrapperExtended import BMIWrapperExtended
+from wflow.wrappers.rtc.wrapperExtended import BMIWrapperExtended
 #RTC_model = BMIWrapperExtended(engine=os.path.join(Bin_RTC,"RTCTools_BMI"))
 RTC_model = BMIWrapperExtended(engine=os.path.join(Bin_RTC,"RTCTools_BMI"))
 print 'RTCmodel', Bin_RTC,RTC_model
@@ -109,7 +109,13 @@ RTC_model.initialize('..')
 # In[]: Initialize the WFlow model
 os.chdir(dir_wflow)
 LA_model = bmi.wflowbmi_csdms()
-LA_model.initialize((IniFile), loglevel=logging.DEBUG)
+LA_model.initialize((IniFile), loglevel=logging.WARN)
+
+# now get the forcings that wflow expects
+invars = LA_model.get_input_var_names()
+outvars = LA_model.get_output_var_names()
+inputmstacks =  list(set(invars) - set(outvars))
+
 
 
 # In[]: Investigate start time, end time and time step of both models
