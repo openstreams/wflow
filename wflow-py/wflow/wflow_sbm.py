@@ -1177,7 +1177,7 @@ class WflowModel(DynamicModel):
             self.reinfiltwater = self.ZeroMap
 
         self.RootZonSoilMoisture = self.UStoreDepth * max(1.0, self.RootingDepth/self.zi)
-        # The Max here may lead to watbal error. Howevere, if inwaterMMM becomes < 0, the kinematic wave becomes very slow......
+        # The Max here may lead to watbal error. However, if inwaterMMM becomes < 0, the kinematic wave becomes very slow......
         if self.reInfilt:
             self.InwaterMM = self.ExfiltWater + self.ExcessWater + self.SubCellRunoff + \
                                  self.SubCellGWRunoff + self.RunoffOpenWater + self.BaseFlow - \
@@ -1321,6 +1321,7 @@ class WflowModel(DynamicModel):
 
         self.CumInt = self.CumInt + self.Interception
 
+        self.SnowCover = ifthenelse(self.Snow > 0.0, self.ZeroMap + 1.0, self.ZeroMap)
         self.CumLeakage = self.CumLeakage + self.ActLeakage
         self.CumInwaterMM = self.CumInwaterMM + self.InwaterMM
         self.CumExfiltWater = self.CumExfiltWater + self.ExfiltWater
