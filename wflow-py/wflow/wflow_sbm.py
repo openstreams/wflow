@@ -668,8 +668,6 @@ class WflowModel(DynamicModel):
             self.DistToUpdPt = cover(
                 min(ldddist(self.TopoLdd, boolean(cover(self.UpdateMap, 0)), 1) * self.reallength / celllength(),
                     self.UpdMaxDist), self.UpdMaxDist)
-            #self.DistToUpdPt = ldddist(self.TopoLdd,boolean(cover(self.OutputId,0.0)),1)
-            #* self.reallength/celllength()
 
         # Initializing of variables
         self.logger.info("Initializing of model variables..")
@@ -844,6 +842,7 @@ class WflowModel(DynamicModel):
         # TOPOG_SBM type soil stuff
         self.f = (self.thetaS - self.thetaR) / self.M
         # NOTE:: This line used to be in the initial section. As a result
+        # NOTE:: This line rused to be in the initial section. As a result
         # simulations will now be different as it used to be before
         # the rescaling of the FirstZoneThickness
         self.GWScale = (self.DemMax - self.DrainageBase) / self.FirstZoneThickness / self.RunoffGeneratingGWPerc
@@ -1034,8 +1033,8 @@ class WflowModel(DynamicModel):
 
         # Limit rootingdepth (if set externally)
         self.RootingDepth = min(self.FirstZoneThickness * 0.99, self.RootingDepth)
-        # Determine transpiration
 
+        # Determine transpiration
         # Split between bare soil and vegetation
         self.potsoilevap = (1.0 - self.CanopyGapFraction) * self.PotTransSoil
         self.PotTrans = self.CanopyGapFraction * self.PotTransSoil
@@ -1178,10 +1177,13 @@ class WflowModel(DynamicModel):
             self.reinfiltwater = self.ZeroMap
 
         self.RootZonSoilMoisture = self.UStoreDepth * max(1.0, self.RootingDepth/self.zi)
-        # The MAx here may lead to watbal error. Howevere, if inwaterMMM becomes < 0, the kinematic wave becomes very slow......
-        self.InwaterMM = max(0.0,self.ExfiltWater + self.ExcessWater + self.SubCellRunoff + \
-                             self.SubCellGWRunoff + self.RunoffOpenWater + self.BaseFlow -\
-                             self.reinfiltwater - self.ActEvapOpenWater)
+        # The Max here may lead to watbal error. Howevere, if inwaterMMM becomes < 0, the kinematic wave becomes very slow......
+        #self.InwaterMM = max(0.0,self.ExfiltWater + self.ExcessWater + self.SubCellRunoff + \
+        #                     self.SubCellGWRunoff + self.RunoffOpenWater + self.BaseFlow -\
+        #                     self.reinfiltwater - self.ActEvapOpenWater)
+        self.InwaterMM = self.ExfiltWater + self.ExcessWater + self.SubCellRunoff + \
+                             self.SubCellGWRunoff + self.RunoffOpenWater + self.BaseFlow - \
+                             self.reinfiltwater - self.ActEvapOpenWater
         self.Inwater = self.InwaterMM * self.ToCubic  # m3/s
 
         self.ExfiltWaterCubic = self.ExfiltWater * self.ToCubic
