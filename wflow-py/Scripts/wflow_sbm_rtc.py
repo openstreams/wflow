@@ -126,7 +126,7 @@ RTC_model.initialize('..')
 # In[]: Initialize the WFlow model
 os.chdir(dir_wflow)
 LA_model = bmi.wflowbmi_csdms()
-LA_model.initialize((IniFile), loglevel=logging.WARN)
+LA_model.initialize((IniFile), loglevel=logging.DEBUG)
 
 # now get the forcings that wflow expects
 # The bmi is such that you can get the input variables and the output variables. However, the
@@ -165,7 +165,7 @@ print RTC_start
 print RTC_end
 
 if LA_start != RTC_start:
-    print 'Error: start time of both model is not identical !!!'
+    print 'Error: start time of both models is not identical !!!'
 
 if LA_dt != RTC_dt:
     print 'Error: time step of both models is not identical !!!'
@@ -190,18 +190,14 @@ LA_model.set_value("TopoLdd",flipud(ldd).copy())
 
 t = LA_start
 timecounter = 0
-
+inmstackbuf={} # Keep track of input mapatsatck by name
 while t < min(LA_end, RTC_end):
-    #print "timestep = " + str(t)
-    # run the WFlow model
-
     # first read forcing mapstacks (set in API section) and give to the model
     for thisstack in inputmstacks:
         toread =  gettimestepfname(thisstack,os.path.join(dir_wflow,'inmaps'),timecounter+1)
-        nptoset = flipud(pcr2numpy(scalar(pcraster.readmap(os.path.abspath(toread))),-999.0)).copy()
-        LA_model.set_value(thisstack,nptoset)
+        inmstackbuf[thisstack] = flipud(pcr2numpy(scalar(pcraster.readmap(os.path.abspath(toread))),-999.0)).copy()
+        LA_model.set_value(thisstack,inmstackbuf[thisstack])
 
-    LA_model.update()
     print "calculation timestep = " + str(timecounter)
 
     # Get the inflow from the wflow model runoff map and map
@@ -218,24 +214,20 @@ while t < min(LA_end, RTC_end):
     # run the RTC-Tools model
     RTC_model.update(-1.0)
 
-    # Extract RTC outflow and supply on WFlow 'inflowfield'
-    inflowfield = zeros_like(inflowQ).copy()
+    # Extract RTC outflow and add to on WFlow 'IF' (abstractions)
+    inflowfield = inmstackbuf['IF']
     for idx, wflow_id in enumerate(id_out_wflow):
         rtc_id = id_out_rtc[id_out_wflow.index(str(wflow_id))]
         Qout = RTC_model.get_var(rtc_id)
+        Qout = 300.0
         if isfinite(Qout): # no nan's into wflow
-            inflowfield[Reservoir_outflow==int(wflow_id)] = Qout
+            inflowfield[Reservoir_outflow==int(wflow_id)] += Qout
 
     LA_model.set_value("IF",flipud(inflowfield).copy())
     # This not not bmi but needed to update the kinematic wave reservoir
-    LA_model.myModel.updateRunOff()
-
-    #t = LA_model.get_current_time()
+    LA_model.update()
     t += LA_dt
     timecounter += 1
-
-
-# In[]: Finalize....
 
 LA_model.finalize()
 RTC_model.finalize()
