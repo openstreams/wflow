@@ -64,10 +64,8 @@ def main():
         sys.exit(1)
     options.dest_path = os.path.abspath(options.dest_path)
 
-    # # delete old files
-    # if os.path.isdir(options.dest_path):
-    #     shutil.rmtree(options.dest_path)
-    # os.makedirs(options.dest_path)
+    if not(os.path.isdir(options.dest_path)):
+        os.makedirs(options.dest_path)
 
     # set up the logger
     flood_name = os.path.split(options.flood_map)[1].split('.')[0]
@@ -310,13 +308,17 @@ def main():
         yax = a.variables['y'][:]
 
         flood_series = a.variables[options.flood_variable][:]
-        flood = flood_series.max(axis=0)
+        flood_data = flood_series.max(axis=0)
+        if np.ma.is_masked(flood_data):
+            flood = flood_data.data
+            flood[flood_data.mask] = 0
         if yax[-1] > yax[0]:
             yax = np.flipud(yax)
             flood = np.flipud(flood)
         a.close()
     elif options.file_format == 1:
         xax, yax, flood, flood_fill_value = inun_lib.gdal_readmap(options.flood_map, 'PCRaster')
+        flood[flood==flood_fill_value] = 0.
     #res_x = x[1]-x[0]
     #res_y = y[1]-y[0]
 
