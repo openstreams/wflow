@@ -23,6 +23,7 @@ import numpy as np
 
 from osgeo import osr, gdal, gdalconst
 import pcraster as pcr
+import pdb
 
 def setlogger(logfilename, logReference, verbose=True):
     """
@@ -103,7 +104,7 @@ def configget(config, section, var, default, datatype='str'):
     except:
         Def = True
         ret = default
-        configset(config, section, var, str(default), overwrite=False)
+        #configset(config, section, var, str(default), overwrite=False)
 
     default = Def
     return ret
@@ -335,11 +336,12 @@ def derive_HAND(dem, ldd, accuThreshold, rivers=None, basin=None):
 
     return hand, dist
 
-def subcatch_stream(ldd, threshold):
+def subcatch_stream(ldd, stream, threshold):
     """
     Derive catchments based upon strahler threshold
     Input:
         ldd -- pcraster object direction, local drain directions
+        stream -- pcraster object direction, streamorder
         threshold -- integer, strahler threshold, subcatchments ge threshold are
                  derived
     output:
@@ -349,7 +351,7 @@ def subcatch_stream(ldd, threshold):
     """
     # derive stream order
 
-    stream = pcr.streamorder(ldd)
+    # stream = pcr.streamorder(ldd)
     stream_ge = pcr.ifthen(stream >= threshold, stream)
     stream_up_sum = pcr.ordinal(pcr.upstream(ldd, pcr.cover(pcr.scalar(stream_ge), 0)))
     # detect any transfer of strahler order, to a higher strahler order.
