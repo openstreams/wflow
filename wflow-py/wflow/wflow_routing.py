@@ -267,6 +267,9 @@ class WflowModel(DynamicModel):
         if self.fewsrun:
             self.logger.info("Saving initial conditions for FEWS...")
             self.wf_suspend(self.Dir + "/outstate/")
+			
+
+
 
     def initial(self):
         """
@@ -292,6 +295,8 @@ class WflowModel(DynamicModel):
         self.logger.info("running for " + str(self.nrTimeSteps()) + " timesteps")
 
         # Set and get defaults from ConfigFile here ###################################
+        self.maxitsupply = int(configget(self.config, "model", "maxitsupply", "5"))
+        # max number of iteration in abstraction calculations
         self.reinit = int(configget(self.config, "model", "reinit", "0"))
         self.fewsrun = int(configget(self.config, "model", "fewsrun", "0"))
         self.OverWriteInit = int(configget(self.config, "model", "OverWriteInit", "0"))
@@ -326,12 +331,14 @@ class WflowModel(DynamicModel):
         wflow_riverwidth = configget(self.config, "model", "wflow_riverwidth", "staticmaps/wflow_riverwidth.map")
         wflow_floodplainwidth = configget(self.config, "model", "wflow_floodplainwidth", "staticmaps/wflow_floodplainwidth.map")
         wflow_bankfulldepth = configget(self.config, "model", "wflow_bankfulldepth", "staticmaps/wflow_bankfulldepth.map")
-        wflow_floodplaindist = configget(self.config, "model", "wflow_floodplaindist", "staticmaps/wflow_floodplaindist.map")
+        wflow_floodplaindist = configget(self.config, "model", "wflow_bankfulldepth", "staticmaps/wflow_floodplaindist.map")
 
         wflow_landuse = configget(self.config, "model", "wflow_landuse", "staticmaps/wflow_landuse.map")
         wflow_soil = configget(self.config, "model", "wflow_soil", "staticmaps/wflow_soil.map")
 
         # 2: Input base maps ########################################################
+        self.instate = configget(self.config,"model","instate","instate")
+		
         subcatch = ordinal(self.wf_readmap(os.path.join(self.Dir,wflow_subcatch),0.0,fail=True))  # Determines the area of calculations (all cells > 0)
         subcatch = ifthen(subcatch > 0, subcatch)
 
@@ -546,7 +553,7 @@ class WflowModel(DynamicModel):
             self.ReservoirVolume = self.ResMaxVolume * self.ResTargetFullFrac
         else:
             self.logger.info("Setting initial conditions from state files")
-            self.wf_resume(os.path.join(self.Dir,"instate"))
+            self.wf_resume(os.path.join(self.Dir, self.instate))
 
         self.Pch = self.wetPerimiterCH(self.WaterLevelCH,self.Bw)
         self.Pfp =  ifthenelse(self.River,self.wetPerimiterFP(self.WaterLevelFP,self.floodPlainWidth,sharpness=self.floodPlainDist),0.0)
@@ -587,7 +594,6 @@ class WflowModel(DynamicModel):
         :var self.WaterLevel: Total aater level in the kinematic wave [m] (above the bottom)
         :var self.Pfp: Actual wetted perimiter of the floodplain [m]
         :var self.Pch: Actual wetted perimiter of the channel [m]
-        :var self.SurfaceWaterSupply: the negative Inflow (water demand) that could be met from the surfacewater [m^3/s]
 
         *Static variables*
 
@@ -615,10 +621,16 @@ class WflowModel(DynamicModel):
             self.OutflowDwn = upstream(self.TopoLddOrg,cover(self.Outflow,scalar(0.0)))
             self.Inflow = cover(self.OutflowDwn,self.Inflow)
 
-
-        self.SurfaceWaterSupply = ifthenelse (self.Inflow < 0.0 , max(-1.0 * self.Inwater,self.SurfaceRunoff), self.ZeroMap)
-        self.Inwater = ifthenelse(self.SurfaceRunoff + self.Inwater < 0.0, -1.0 * self.SurfaceRunoff, self.Inwater)
-
+        # Check if we do not try to abstract more runoff then present
+        self.InflowKinWaveCell = upstream(self.TopoLdd, self.SurfaceRunoff)
+        # The extraction should be equal to the discharge upstream cell.
+        # You should not make the abstraction depended on the downstream cell, because they are correlated.
+        # During a stationary sum they will get equal to each other.
+        MaxExtract = self.InflowKinWaveCell + self.Inwater
+        self.SurfaceWaterSupply = ifthenelse (self.Inflow < 0.0 , min(MaxExtract,-1.0 * self.Inflow), self.ZeroMap)
+        self.OldSurfaceRunoff=self.SurfaceRunoff
+        self.OldInwater=self.Inwater
+        self.Inwater = self.Inwater + ifthenelse(self.SurfaceWaterSupply> 0, -1.0 * self.SurfaceWaterSupply,self.Inflow)
 
         ##########################################################################
         # Runoff calculation via Kinematic wave ##################################
@@ -628,11 +640,50 @@ class WflowModel(DynamicModel):
         # discharge (m3/s)
         self.SurfaceRunoff = kinematic(self.TopoLdd, self.SurfaceRunoff, q, self.Alpha, self.Beta, self.Tslice,
                                        self.timestepsecs, self.DCL)  # m3/s
-        self.SurfaceRunoffMM = self.SurfaceRunoff * self.QMMConv  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
-        self.updateRunOff()
+
         self.InflowKinWaveCell = upstream(self.TopoLdd, self.SurfaceRunoff)
-        self.MassBalKinWave = (-self.KinWaveVolume + self.OldKinWaveVolume) / self.timestepsecs + self.InflowKinWaveCell\
-                              + self.Inwater - self.SurfaceRunoff
+
+        # If inflow is negative we have abstractions. Check if demand can be met (by looking
+        # at the flow in the upstream cell) and iterate if needed
+        self.nrit = 0
+        self.breakoff = 0.0001
+        if float(mapminimum(spatial(self.Inflow))) < 0.0:
+            while True:
+                self.nrit += 1
+                oldsup = self.SurfaceWaterSupply
+                self.InflowKinWaveCell = upstream(self.TopoLdd, self.SurfaceRunoff)
+                ##########################################################################
+                # Iterate to make a better estimation for the supply #####################
+                # (Runoff calculation via Kinematic wave) ################################
+                ##########################################################################
+                MaxExtract = self.InflowKinWaveCell + self.OldInwater
+                self.SurfaceWaterSupply = ifthenelse(self.Inflow < 0.0, min(MaxExtract, -1.0 * self.Inflow),
+                                                     self.ZeroMap)
+                self.Inwater = self.OldInwater + ifthenelse(self.SurfaceWaterSupply > 0, -1.0 * self.SurfaceWaterSupply,
+                                                            self.Inflow)
+                # per distance along stream
+                q = self.Inwater / self.DCL
+                # discharge (m3/s)
+                self.SurfaceRunoff = kinematic(self.TopoLdd, self.OldSurfaceRunoff, q, self.Alpha, self.Beta,
+                                               self.Tslice,
+                                               self.timestepsecs, self.DCL)  # m3/s
+                self.SurfaceRunoffMM = self.SurfaceRunoff * self.QMMConv  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
+
+                self.InflowKinWaveCell = upstream(self.TopoLdd, self.OldSurfaceRunoff)
+                deltasup = float(mapmaximum(abs(oldsup - self.SurfaceWaterSupply)))
+
+                if deltasup < self.breakoff  or self.nrit >= self.maxitsupply:
+                    break
+
+            self.updateRunOff()
+        else:
+            self.SurfaceRunoffMM = self.SurfaceRunoff * self.QMMConv  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
+            self.updateRunOff()
+
+        self.MassBalKinWave = (-self.KinWaveVolume + self.OldKinWaveVolume) / self.timestepsecs + \
+                                self.InflowKinWaveCell + self.Inwater - self.SurfaceRunoff
+
+
 
         Runoff = self.SurfaceRunoff
 
@@ -664,6 +715,12 @@ class WflowModel(DynamicModel):
             self.updateRunOff()
             Runoff = self.SurfaceRunoff
 
+        ##########################################################################
+        # water balance ###########################################
+        ##########################################################################
+
+        # Single cell based water budget. snow not included yet.
+
 
 def main(argv=None):
     """
@@ -693,7 +750,7 @@ def main(argv=None):
     ## Process command-line options                                        #
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, 'F:L:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:')
+        opts, args = getopt.getopt(argv, 'F:L:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:g:')
     except getopt.error, msg:
         pcrut.usage(msg)
 
@@ -711,6 +768,7 @@ def main(argv=None):
         if o == '-h': usage()
         if o == '-f': _NoOverWrite = 0
         if o == '-l': exec "loglevel = logging." + a
+
 
     if fewsrun:
         ts = getTimeStepsfromRuninfo(runinfoFile, timestepsecs)
@@ -740,6 +798,8 @@ def main(argv=None):
         if o == '-s': configset(myModel.config, 'model', 'timestepsecs', a, overwrite=True)
         if o == '-x': configset(myModel.config, 'model', 'sCatch', a, overwrite=True)
         if o == '-c': configset(myModel.config, 'model', 'configfile', a, overwrite=True)
+        if o == '-g': configset(myModel.config,'model','instate',a,overwrite=True)
+
         if o == '-U':
             configset(myModel.config, 'model', 'updateFile', a, overwrite=True)
             configset(myModel.config, 'model', 'updating', "1", overwrite=True)

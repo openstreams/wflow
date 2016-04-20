@@ -320,6 +320,8 @@ class wf_OutputTimeSeriesArea():
             self.resmap = areaminimum(tmpvar, nominal(self.area))
         elif self.areafunction == 'majority':
             self.resmap = areamajority(tmpvar, nominal(self.area))
+        else:
+            self.resmap = areaaverage(tmpvar, nominal(self.area))
 
         self.remap_np = pcr2numpy(self.resmap, 0)
         self.flatres = self.remap_np.flatten()[self.idx]
@@ -406,13 +408,13 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         :return:
         """
 
-        self._userModel()._setNrTimeSteps(self.DT.runTimeSteps)
+        self._userModel()._setNrTimeSteps(int(self.DT.runTimeSteps))
         self._d_firstTimestep = 1
         self._userModel()._setFirstTimeStep(1)
         self._d_lastTimestep = self.DT.runTimeSteps
         self.APIDebug = 0
         self._userModel().currentdatetime = self.DT.currentDateTime
-        self._userModel()._setCurrentTimeStep(self.DT.currentTimeStep)
+        self._userModel()._setCurrentTimeStep(int(self.DT.currentTimeStep))
         self._userModel().timestepsecs = self.DT.timeStepSecs
 
 
@@ -692,7 +694,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
                 rest = lookupscalar(pathtotbl, *newargs)
             else:
-                self.logger.warn("tbl file not found (" + pathtotbl + ") returning default value: " + str(default))
+                self.logger.debug("tbl file not found (" + pathtotbl + ") returning default value: " + str(default))
                 rest = spatial(scalar(default))
 
 
@@ -1153,10 +1155,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         a _? postfix)
 
         """
-
         self._incrementIndentLevel()
         self._traceIn("resume")
-
         allvars = self._userModel().stateVariables()
 
         for var in allvars:
@@ -1179,10 +1179,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 try:
                     mpath = os.path.join(directory, var + ".map").replace("\\", "/")
                     tvar = self.wf_readmap(mpath,0.0,ncfilesource=self.ncfilestates)
-                    wf_readmtvar = self.wf_readmap(mpath,0.0,ncfilesource=self.ncfilestates)
+                    wf_readmtvar = self.wf_readmap(mpath,0.0,ncfilesource=self.ncfilestates,fail=True)
                     setattr(self._userModel(), var,tvar)
-                    #execstr = "self._userModel()." + var + "= readmap(\"" + mpath + "\")"
-                    #exec execstr
                 except:
                     self.logger.error(
                         "problem while reading state variable from disk: " + mpath + " Suggest to use the -I uption to restart")
@@ -1892,7 +1890,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         if laststep == 0:
             laststep = self._d_lastTimestep
 
-        self._userModel()._setNrTimeSteps(laststep)
+        self._userModel()._setNrTimeSteps(int(laststep))
 
         while step <= self._userModel().nrTimeSteps():
 

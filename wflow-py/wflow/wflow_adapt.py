@@ -557,7 +557,7 @@ def main():
     # Try and read config file and set default options
     config = ConfigParser.SafeConfigParser()
     config.optionxform = str
-    config.read(case + "/" + iniFile)
+    config.read(workdir + "/" + case + "/" + iniFile)
     
     # get timestep from wflow ini use comand-line as default
     timestepsecs = int(wflow_lib.configget(config,"model","timestepsecs",str(timestepsecs)))
@@ -611,7 +611,7 @@ def main():
     
                 for aa in tssfiles:
                     if aa not in "samplemap":
-                        tssFile = case + "/" + runId + "/" + config.get(thissection,aa)
+                        tssFile = workdir + "/" + case + "/" + runId + "/" + config.get(thissection,aa)
                         logger.debug("Creating xml from tss: " + tssFile + "==> " + tssFile + ".xml")
                         tss_topixml(tssFile,tssFile + ".xml","wflow",config.get(thissection,aa),sDate,timestepsecs)
 
