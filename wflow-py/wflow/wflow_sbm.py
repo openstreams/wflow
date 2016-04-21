@@ -966,7 +966,7 @@ class WflowModel(DynamicModel):
         self.AvailableForInfiltration = self.ThroughFall + self.StemFlow
         UStoreCapacity = self.FirstZoneCapacity - self.FirstZoneDepth - self.UStoreDepth
 
-        # Runoff onto water bodies and river network
+        # Runoff from water bodies and river network
         self.RunoffOpenWater = min(1.0,self.RiverFrac + self.WaterFrac) * self.AvailableForInfiltration
         #self.RunoffOpenWater = self.ZeroMap
         self.AvailableForInfiltration = self.AvailableForInfiltration - self.RunoffOpenWater

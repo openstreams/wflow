@@ -135,13 +135,13 @@ land cover to extinction coefficient and Swood  to a lookuptable result of
 "canopy" capacity of the vegetation woody fraction.
 
 
-Here it is assumed that Cmax_leaves (Gash’ canopy capacity) relates linearly with LAI (c.f. Van Dijk and Bruijnzeel 2001). This done
-via the Sl (specific leaf storage). Sl is determined via a lookup table with land cover. Next the Cmax_leaves is
+Here it is assumed that Cmax(leaves) (Gash’ canopy capacity for the leaves only) relates linearly with LAI (c.f. Van Dijk and Bruijnzeel 2001). This done
+via the Sl (specific leaf storage). Sl is determined via a lookup table with land cover. Next the Cmax(leaves) is
 determined using:
 
 .. math::
 
-    Cmax_leaves  = Sl  * LAI
+    Cmax(leaves)  = Sl  * LAI
 
 
 ::
@@ -167,16 +167,16 @@ determined using:
 The table above shows lookup table for Sl (as determined from Pitman 1986, Lui 1998).
 
 To get to total storage (Cmax) the woody part of the vegetation also needs to be added. This is done via a simple
- lookup table between land cover tha Cmax_wood:
+ lookup table between land cover the Cmax(wood):
 
 .. digraph:: cmax
 
     "MODIS LandCover" -> "Sl lookuptable";
     "Sl lookuptable" -> Sl -> Multiply;
-    "LAI (monthly)" -> Multiply -> "S (leaves)" -> add;
-    "MODIS LandCover" -> "S Wood lookuptable";
-    "S Wood lookuptable" -> "S (wood)";
-    "S (wood)"-> add;
+    "LAI (monthly)" -> Multiply -> "Cmax (leaves)" -> add;
+    "MODIS LandCover" -> "Cmax Wood lookuptable";
+    "Cmax Wood lookuptable" -> "Cmax (wood)";
+    "Cmax (wood)"-> add;
     add -> Cmax;
 
 
