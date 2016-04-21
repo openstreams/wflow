@@ -526,8 +526,6 @@ class WflowModel(DynamicModel):
                                                  subcatch, self.Soil, 100.0) * self.timestepsecs / self.basetimestep
         self.CapScale = self.readtblDefault(self.Dir + "/" + self.intbl + "/CapScale.tbl", self.LandUse, subcatch,
                                             self.Soil, 100.0)  #
-        self.K4= self.readtblDefault(self.Dir + "/" + self.intbl + "/K4.tbl",
-                                     self.LandUse,subcatch,self.Soil, 0.02307) * self.timestepsecs / self.basetimestep # Recession constant baseflow   #K4=0.07; BASEFLOW:LINEARRESERVOIR
 
         # infiltration capacity of the compacted
         self.InfiltCapPath = self.readtblDefault(self.Dir + "/" + self.intbl + "/InfiltCapPath.tbl", self.LandUse,
@@ -1169,11 +1167,11 @@ class WflowModel(DynamicModel):
         # The Max here may lead to watbal error. However, if inwaterMMM becomes < 0, the kinematic wave becomes very slow......
         if self.reInfilt:
             self.InwaterMM = self.ExfiltWater + self.ExcessWater + self.SubCellRunoff + \
-                                 self.SubCellGWRunoff + self.RunoffOpenWater + self.BaseFlow - \
+                                 self.SubCellGWRunoff + self.RunoffOpenWater - \
                                  self.reinfiltwater - self.ActEvapOpenWater
         else:
             self.InwaterMM = max(0.0,self.ExfiltWater + self.ExcessWater + self.SubCellRunoff + \
-                                 self.SubCellGWRunoff + self.RunoffOpenWater + self.BaseFlow -\
+                                 self.SubCellGWRunoff + self.RunoffOpenWater - \
                                  self.reinfiltwater - self.ActEvapOpenWater)
 
         self.Inwater = self.InwaterMM * self.ToCubic  # m3/s
@@ -1317,7 +1315,7 @@ class WflowModel(DynamicModel):
 
 
         self.SoilWatbal = self.ActInfilt - self.Transpiration - self.soilevap  - self.ExfiltWater  -\
-                      self.SubCellGWRunoff - self.BaseFlow + self.reinfiltwater - \
+                      self.SubCellGWRunoff + self.reinfiltwater - \
                       self.DeltaStorage - \
                       self.FirstZoneFlux + CellInFlow
 
