@@ -265,7 +265,7 @@ class WflowModel(DynamicModel):
                   'Snow',
                   'TSoil',
                   'UStoreDepth',
-                  'SnowWater', 'CanopyStorage','LowerZoneStorage']
+                  'SnowWater', 'CanopyStorage']
 
         return states
 
@@ -536,12 +536,7 @@ class WflowModel(DynamicModel):
                                               self.Soil, 0.0) * self.timestepsecs / self.basetimestep
         self.MaxPercolation = self.readtblDefault(self.Dir + "/" + self.intbl + "/MaxPercolation.tbl", self.LandUse, subcatch,
                                               self.Soil, 0.0) * self.timestepsecs / self.basetimestep
-        if pcr_as_numpy(self.MaxPercolation).sum() >0.0:
-            self.NoLowerZone = False
-            self.logger.info("Enabling HBV Type lower zone")
-        else:
-            self.NoLowerZone = True
-            self.logger.info("Disabling HBV Type lower zone")
+
 
         # areas (paths) in [mm/day]
         # Fraction area with compacted soil (Paths etc.)
@@ -813,10 +808,7 @@ class WflowModel(DynamicModel):
             self.SnowWater = self.ZeroMap
             self.TSoil = self.ZeroMap + 10.0
             self.CanopyStorage = self.ZeroMap
-            if self.NoLowerZone:
-                self.LowerZoneStorage = 0.0
-            else:
-                self.LowerZoneStorage = 1.0/(3.0 * self.K4) #: Storage in Lower Zone (state variable [mm])
+
 
         else:
             self.logger.info("Setting initial conditions from state files")
@@ -834,7 +826,7 @@ class WflowModel(DynamicModel):
         self.OldKinWaveVolume = self.KinWaveVolume
 
         self.QCatchmentMM = self.SurfaceRunoff * self.QMMConvUp
-        self.InitialStorage = self.FirstZoneDepth + self.UStoreDepth + self.CanopyStorage + self.LowerZoneStorage
+        self.InitialStorage = self.FirstZoneDepth + self.UStoreDepth + self.CanopyStorage
         self.CellStorage = self.FirstZoneDepth + self.UStoreDepth
 
         # Determine actual water depth
@@ -924,7 +916,7 @@ class WflowModel(DynamicModel):
         self.wf_multparameters()
 
 
-        self.OrgStorage = self.UStoreDepth + self.FirstZoneDepth + self.LowerZoneStorage
+        self.OrgStorage = self.UStoreDepth + self.FirstZoneDepth
         self.OldCanopyStorage = self.CanopyStorage
         self.PotEvap = self.PotenEvap  #
 
@@ -1092,9 +1084,6 @@ class WflowModel(DynamicModel):
         self.ActLeakage = cover(max(0.0,min(self.MaxLeakage,self.DeepTransfer)),0)
         self.Percolation = cover(max(0.0,min(self.MaxPercolation,self.DeepTransfer)),0)
 
-        self.LowerZoneStorage=self.LowerZoneStorage+self.Percolation
-        self.BaseFlow=self.K4*self.LowerZoneStorage #: Baseflow in mm/timestep
-        self.LowerZoneStorage=self.LowerZoneStorage-self.BaseFlow
 
         #self.ActLeakage = ifthenelse(self.Seepage > 0.0, -1.0 * self.Seepage, self.ActLeakage)
         self.FirstZoneDepth = self.FirstZoneDepth + self.Transfer - self.CapFlux - self.ActLeakage - self.Percolation
@@ -1306,7 +1295,7 @@ class WflowModel(DynamicModel):
         #self.BB = catchmenttotal(cover(1.0), self.TopoLdd)
         # Single cell based water budget. snow not included yet.
 
-        self.CellStorage = self.UStoreDepth + self.FirstZoneDepth + self.LowerZoneStorage
+        self.CellStorage = self.UStoreDepth + self.FirstZoneDepth
         self.DeltaStorage = self.CellStorage - self.OrgStorage
         OutFlow = self.FirstZoneFlux
         CellInFlow = upstream(self.TopoLdd, scalar(self.FirstZoneFlux))
@@ -1325,9 +1314,9 @@ class WflowModel(DynamicModel):
         self.CumLeakage = self.CumLeakage + self.ActLeakage
         self.CumInwaterMM = self.CumInwaterMM + self.InwaterMM
         self.CumExfiltWater = self.CumExfiltWater + self.ExfiltWater
-        # Water budget: Need to make this into seperate budgets
-        #self.watbal = self.CumPrec- self.CumEvap - self.CumInt - self.CumInwaterMM - DeltaStorage  - self.CumOutFlow + self.CumIF
-        self.SoilWatbal = self.ActInfilt - self.Transpiration - self.soilevap  -self.ExfiltWater  +\
+
+
+        self.SoilWatbal = self.ActInfilt - self.Transpiration - self.soilevap  - self.ExfiltWater  -\
                       self.SubCellGWRunoff - self.BaseFlow + self.reinfiltwater - \
                       self.DeltaStorage - \
                       self.FirstZoneFlux + CellInFlow
