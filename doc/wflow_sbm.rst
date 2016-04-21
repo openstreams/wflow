@@ -135,12 +135,112 @@ land cover to extinction coefficient and Swood  to a lookuptable result of
 "canopy" capacity of the vegetation woody fraction.
 
 
+Here it is assumed that Cmax_leaves (Gash’ canopy capacity) relates linearly with LAI (c.f. Van Dijk and Bruijnzeel 2001). This done
+via the Sl (specific leaf storage). Sl is determined via a lookup table with land cover. Next the Cmax_leaves is
+determined using:
+
+.. math::
+
+    Cmax_leaves  = Sl  * LAI
+
+
+::
+
+    0   0	    Water
+    1	0.045	Evergreen Needle leaf Forest
+    2 	0.036	Evergreen Broadleaf Forest
+    3	0.045	Deciduous Needle leaf Forest
+    4 	0.036	Deciduous Broadleaf Forest
+    5 	0.03926	Mixed Forests
+    6 	0.07	Closed Shrublands
+    7	0.07	Open Shrublands
+    8 	0.07	Woody Savannas
+    9 	0.09	Savannas
+    10 	0.1272	Grasslands
+    11 	0.1272	Permanent Wetland
+    12 	0.1272	Croplands
+    13 	0.04	Urban and Built-Up
+    14	0.1272	Cropland/Natural Vegetation Mosaic
+    15 	0.0	    Snow and Ice
+    16 	0.04	Barren or Sparsely Vegetated
+
+The table above shows lookup table for Sl (as determined from Pitman 1986, Lui 1998).
+
+To get to total storage (Cmax) the woody part of the vegetation also needs to be added. This is done via a simple
+ lookup table between land cover tha Cmax_wood:
+
+.. digraph:: cmax
+
+    "MODIS LandCover" -> "Sl lookuptable";
+    "Sl lookuptable" -> Sl -> Multiply;
+    "LAI (monthly)" -> Multiply -> "S (leaves)" -> add;
+    "MODIS LandCover" -> "S Wood lookuptable";
+    "S Wood lookuptable" -> "S (wood)";
+    "S (wood)"-> add;
+    add -> Cmax;
+
+
+::
+
+    0	0	    Water
+    1	0.5 	Evergreen Needle leaf Forest
+    2 	0.5	    Evergreen Broadleaf Forest
+    3	0.5	    Deciduous Needle leaf Forest
+    4 	0.5	    Deciduous Broadleaf Forest
+    5 	0.5	    Mixed Forests
+    6 	0.2	    Closed Shrublands
+    7	0.1	    Open Shrublands
+    8 	0.2	    Woody Savannas
+    9 	0.01	Savannas
+    10 	0.0	    Grasslands
+    11 	0.01	Permanent Wetland
+    12 	0.0	    Croplands
+    13 	0.01	Urban and Built-Up
+    14	0.01	Cropland/Natural Vegetation Mosiac
+    15 	0.0	    Snow and Ice
+    16 	0.04	Barren or Sparsely Vegetated
+
+
+The above table relates the land cover map to the woody part of the Cmax.
+
+
+The canopy gap fraction is determined using the K k: extinction coefficient (van Dijk and Bruijnzeel 2001):
+
+.. math::
+
+    CanopyGapFraction = exp(-k * LAI)
+
+The table below show how k is related to land cover:
+
+::
+
+    0	0.7	Water
+    1	0.8	Evergreen Needle leaf Forest
+    2 	0.8	Evergreen Broadleaf Forest
+    3	0.8	Deciduous Needle leaf Forest
+    4 	0.8	Deciduous Broadleaf Forest
+    5 	0.8	Mixed Forests
+    6 	0.6	Closed Shrublands
+    7	0.6	Open Shrublands
+    8 	0.6	Woody Savannas
+    9 	0.6	Savannas
+    10 	0.6	Grasslands
+    11 	0.6	Permanent Wetland
+    12 	0.6	Croplands
+    13 	0.6	Urban and Built-Up
+    14	0.6	Cropland/Natural Vegetation Mosaic
+    15 	0.6	Snow and Ice
+    16 	0.6	Barren or Sparsely Vegetated
+
+
+
+
 
 
 The modified rutter model
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For subdaily timesteps the model uses a simplification of the Rutter model. The simplyfied
+For subdaily timesteps the model uses a simplification of the Rutter model. The simplified
 model is solved explicitly and does not take drainage from the canopy into account.
 
 ::
