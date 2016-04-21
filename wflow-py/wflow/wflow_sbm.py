@@ -1296,7 +1296,10 @@ class WflowModel(DynamicModel):
         self.CellStorage = self.UStoreDepth + self.FirstZoneDepth
         self.DeltaStorage = self.CellStorage - self.OrgStorage
         OutFlow = self.FirstZoneFlux
-        CellInFlow = upstream(self.TopoLdd, scalar(self.FirstZoneFlux))
+        if self.waterdem:
+            CellInFlow = upstream(self.waterLdd, scalar(self.FirstZoneFlux))
+        else:
+            CellInFlow = upstream(self.TopoLdd, scalar(self.FirstZoneFlux))
 
         self.CumOutFlow = self.CumOutFlow + OutFlow
         self.CumActInfilt = self.CumActInfilt + self.ActInfilt
@@ -1314,10 +1317,9 @@ class WflowModel(DynamicModel):
         self.CumExfiltWater = self.CumExfiltWater + self.ExfiltWater
 
 
-        self.SoilWatbal = self.ActInfilt - self.Transpiration - self.soilevap  - self.ExfiltWater  -\
-                      self.SubCellGWRunoff + self.reinfiltwater - \
-                      self.DeltaStorage - \
-                      self.FirstZoneFlux + CellInFlow
+        self.SoilWatbal = self.ActInfilt + self.reinfiltwater  + CellInFlow - self.Transpiration - self.soilevap  -\
+                          self.ExfiltWater  -  self.SubCellGWRunoff  - self.DeltaStorage -\
+                          self.FirstZoneFlux
 
         self.InterceptionWatBal = self.PrecipitationPlusMelt - self.Interception -self.StemFlow - self.ThroughFall -\
                              (self.OldCanopyStorage - self.CanopyStorage)
