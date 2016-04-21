@@ -143,6 +143,7 @@ determined using:
 
     Cmax(leaves)  = Sl  * LAI
 
+The table below shows lookup table for Sl (as determined from Pitman 1986, Lui 1998).
 
 ::
 
@@ -164,10 +165,10 @@ determined using:
     15 	0.0	    Snow and Ice
     16 	0.04	Barren or Sparsely Vegetated
 
-The table above shows lookup table for Sl (as determined from Pitman 1986, Lui 1998).
+
 
 To get to total storage (Cmax) the woody part of the vegetation also needs to be added. This is done via a simple
- lookup table between land cover the Cmax(wood):
+lookup table between land cover the Cmax(wood):
 
 .. digraph:: cmax
 
@@ -179,6 +180,7 @@ To get to total storage (Cmax) the woody part of the vegetation also needs to be
     "Cmax (wood)"-> add;
     add -> Cmax;
 
+The  table below relates the land cover map to the woody part of the Cmax.
 
 ::
 
@@ -201,10 +203,9 @@ To get to total storage (Cmax) the woody part of the vegetation also needs to be
     16 	0.04	Barren or Sparsely Vegetated
 
 
-The above table relates the land cover map to the woody part of the Cmax.
 
 
-The canopy gap fraction is determined using the K k: extinction coefficient (van Dijk and Bruijnzeel 2001):
+The canopy gap fraction is determined using the  k: extinction coefficient (van Dijk and Bruijnzeel 2001):
 
 .. math::
 
