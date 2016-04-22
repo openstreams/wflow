@@ -1037,6 +1037,7 @@ class WflowModel(DynamicModel):
         # Determine transpiration
         # Split between bare soil and vegetation
         self.potsoilevap = (1.0 - self.CanopyGapFraction) * self.PotTransSoil
+        self.PotTrans = self.PotTransSoil- self.potsoilevap
 
 
         self.SaturationDeficit = self.FirstZoneCapacity - self.FirstZoneDepth
