@@ -909,10 +909,10 @@ class WflowModel(DynamicModel):
                                      min(0.25,cover(self.Ewet/max(0.0001,self.Precipitation),0.0)), 0.0)
             if hasattr(self,'MAXLAI') and hasattr(self,'CWf'):
                 # Adjust rootinggdepth
-                self.ActRootingDept = self.CWf * (self.RootingDepth * self.LAI/max(0.001,self.MAXLAI))\
+                self.ActRootingDepth = self.CWf * (self.RootingDepth * self.LAI/max(0.001,self.MAXLAI))\
                                       + ((1- self.CWf) * self.RootingDepth)
             else:
-                self.ActRootingDept = self.RootingDepth
+                self.ActRootingDepth = self.RootingDepth
 
 
 
@@ -1032,7 +1032,7 @@ class WflowModel(DynamicModel):
         self.CumInfiltExcess = self.CumInfiltExcess + self.InfiltExcess
 
         # Limit rootingdepth (if set externally)
-        self.ActRootingDept = min(self.FirstZoneThickness * 0.99, self.ActRootingDept)
+        self.ActRootingDepth = min(self.FirstZoneThickness * 0.99, self.ActRootingDepth)
 
         # Determine transpiration
         # Split between bare soil and vegetation
@@ -1044,7 +1044,7 @@ class WflowModel(DynamicModel):
         # Linear reduction of soil moisture evaporation based on deficit
         self.soilevap = self.potsoilevap * min(1.0, self.SaturationDeficit/self.FirstZoneCapacity)
 
-        self.Transpiration, self.FirstZoneDepth, self.UStoreDepth, self.ActEvapUStore = actEvap_SBM(self.ActRootingDept,
+        self.Transpiration, self.FirstZoneDepth, self.UStoreDepth, self.ActEvapUStore = actEvap_SBM(self.ActRootingDepth,
                                                                                               self.zi, self.UStoreDepth,
                                                                                               self.FirstZoneDepth,
                                                                                               self.PotTrans,
@@ -1083,8 +1083,8 @@ class WflowModel(DynamicModel):
 
         MaxCapFlux = max(0.0, min(Ksat, self.ActEvapUStore, UStoreCapacity, self.FirstZoneDepth))
         # No capilary flux is roots are in water, max flux if very near to water, lower flux if distance is large
-        CapFluxScale = ifthenelse(self.zi > self.ActRootingDept,
-                                  self.CapScale / (self.CapScale + self.zi - self.ActRootingDept) *\
+        CapFluxScale = ifthenelse(self.zi > self.ActRootingDepth,
+                                  self.CapScale / (self.CapScale + self.zi - self.ActRootingDepth) *\
                                   self.timestepsecs/self.basetimestep, 0.0)
         self.CapFlux = MaxCapFlux * CapFluxScale
 
@@ -1176,7 +1176,7 @@ class WflowModel(DynamicModel):
         else:
             self.reinfiltwater = self.ZeroMap
 
-        self.RootZonSoilMoisture = self.UStoreDepth * max(1.0, self.ActRootingDept/self.zi)
+        self.RootZonSoilMoisture = self.UStoreDepth * max(1.0, self.ActRootingDepth/self.zi)
         # The Max here may lead to watbal error. However, if inwaterMMM becomes < 0, the kinematic wave becomes very slow......
         if self.reInfilt:
             self.InwaterMM = self.ExfiltWater + self.ExcessWater + self.SubCellRunoff + \
@@ -1294,7 +1294,7 @@ class WflowModel(DynamicModel):
         # Determine Soil moisture profile
         # 1: average volumetric soil in total unsat store
         self.SMVol = (cover(self.UStoreDepth/self.zi,0.0) + self.thetaR) * (self. thetaS - self.thetaR)
-        self.SMRootVol = (cover(self.UStoreDepth/min(self.ActRootingDept,self.zi),0.0) + self.thetaR) * (self. thetaS - self.thetaR)
+        self.SMRootVol = (cover(self.UStoreDepth/min(self.ActRootingDepth,self.zi),0.0) + self.thetaR) * (self. thetaS - self.thetaR)
         # 2:
         ##########################################################################
         # water balance ###########################################
