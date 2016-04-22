@@ -1161,15 +1161,17 @@ class WflowModel(DynamicModel):
 
         Ksat = self.FirstZoneKsatVer * exp(-self.f * self.zi)
 
-        SurfaceWater = self.SurfaceRunoff * self.QMMConv  # SurfaceWater (mm) from SurfaceRunoff (m3/s)
+
+        # Estimate water that may reinfilt
+        SurfaceWater = self.WaterLevel/1000.0  # SurfaceWater (mm)
         self.CumSurfaceWater = self.CumSurfaceWater + SurfaceWater
 
         # Estimate water that may re-infiltrate
-        # - Never more that 90% of the available water
+        # - Never more that 70% of the available water
         # - self.MaxReinFilt: a map with reinfilt locations (usually the river mask) can be supplied)
         # - take into account that the river may not cover the whole cell
         if self.reInfilt:
-            self.reinfiltwater = min(self.MaxReinfilt,max(0, min(SurfaceWater * self.RiverWidth/self.reallength * 0.9,
+            self.reinfiltwater = min(self.MaxReinfilt,max(0, min(SurfaceWater * self.RiverWidth/self.reallength * 0.7,
                                                        min(self.InfiltCapSoil * (1.0 - self.PathFrac), UStoreCapacity))))
             self.CumReinfilt = self.CumReinfilt + self.reinfiltwater
             self.UStoreDepth = self.UStoreDepth + self.reinfiltwater
