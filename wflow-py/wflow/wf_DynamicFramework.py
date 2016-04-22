@@ -1183,7 +1183,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     setattr(self._userModel(), var,tvar)
                 except:
                     self.logger.error(
-                        "problem while reading state variable from disk: " + mpath + " Suggest to use the -I uption to restart")
+                        "problem while reading state variable from disk: " + mpath + " Suggest to use the -I option to restart")
                     exit(1)
 
         self._traceOut("resume")
