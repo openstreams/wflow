@@ -504,7 +504,7 @@ class WflowModel(DynamicModel):
 
             self.Cmax = self.Sl * self.LAI + self.Swood
             self.CanopyGapFraction = exp(-self.Kext * self.LAI)
-
+            # TODO: Add MAXLAI and CWf lookup
         else:
             self.Cmax = self.readtblDefault(self.Dir + "/" + self.intbl + "/MaxCanopyStorage.tbl", self.LandUse, subcatch,
                                         self.Soil, 1.0)
@@ -900,11 +900,17 @@ class WflowModel(DynamicModel):
 
         if hasattr(self,"LAI"):
             # Sl must also be defined
+            ##TODO: add MAXLAI and CWf
             self.Cmax = self.Sl * self.LAI + self.Swood
             self.CanopyGapFraction = exp(-self.Kext * self.LAI)
             self.Ewet = (1 - exp(-self.Kext * self.LAI)) * self.PotenEvap
             self.EoverR = ifthenelse(self.Precipitation > 0.0, \
                                      min(0.25,cover(self.Ewet/max(0.0001,self.Precipitation),0.0)), 0.0)
+            if hasattr(self,'MAXLAI') and hasattr(self,'CWf'):
+                # Adjust rootinggdepth
+                self.ActRootingDept = self.CWf * (self.RootingDepth * self.LAI/self.MAXLAI) + ((1- self.CWf) * self.RootingDepth)
+
+
 
         #Apply forcing data corrections
         self.PotenEvap = self.PotenEvap * self.et_RefToPot
@@ -1027,7 +1033,8 @@ class WflowModel(DynamicModel):
         # Determine transpiration
         # Split between bare soil and vegetation
         self.potsoilevap = (1.0 - self.CanopyGapFraction) * self.PotTransSoil
-        self.PotTrans = self.CanopyGapFraction * self.PotTransSoil
+
+
         self.SaturationDeficit = self.FirstZoneCapacity - self.FirstZoneDepth
         # Linear reduction of soil moisture evaporation based on deficit
         self.soilevap = self.potsoilevap * min(1.0, self.SaturationDeficit/self.FirstZoneCapacity)
