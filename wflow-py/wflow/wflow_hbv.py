@@ -740,7 +740,9 @@ class WflowModel(DynamicModel):
     # I nthe origal HBV code
     RestEvap = max(0.0,self.PotEvaporation-IntEvap)   
         
-    SoilEvap=ifthenelse(self.SoilMoisture > self.Treshold,RestEvap,min(RestEvap,self.PotEvaporation*(self.SoilMoisture/self.Treshold))) #: soil evapotranspiration
+    SoilEvap=ifthenelse(self.SoilMoisture > self.Treshold,min(self.SoilMoisture,RestEvap),\
+                        min(self.SoilMoisture,min(RestEvap,self.PotEvaporation*(self.SoilMoisture/self.Treshold))))
+    #: soil evapotranspiration
     self.SoilMoisture=self.SoilMoisture-SoilEvap           #evaporation from soil moisture storage
     
    
