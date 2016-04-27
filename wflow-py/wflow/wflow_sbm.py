@@ -913,6 +913,8 @@ class WflowModel(DynamicModel):
                                       + ((1- self.CWf) * self.RootingDepth)
             else:
                 self.ActRootingDepth = self.RootingDepth
+        else:
+            self.ActRootingDepth = self.RootingDepth
 
 
 
@@ -990,7 +992,7 @@ class WflowModel(DynamicModel):
                                                      self.SubCellFrac + self.RiverFrac + self.WaterFrac - 1.0, 0.0)
             self.SubCellRunoff = (self.SubCellFrac - Frac_correction) * self.AvailableForInfiltration
             self.SubCellGWRunoff = min(self.SubCellFrac * self.FirstZoneDepth,
-                                       self.SubCellFrac * self.Slope * self.FirstZoneKsatVer * exp(-self.f * self.zi))
+                                       max(0.0,self.SubCellFrac * self.Slope * self.FirstZoneKsatVer * exp(-self.f * self.zi)))
             self.FirstZoneDepth = self.FirstZoneDepth - self.SubCellGWRunoff
             self.AvailableForInfiltration = self.AvailableForInfiltration - self.SubCellRunoff
         else:
@@ -1035,28 +1037,33 @@ class WflowModel(DynamicModel):
         self.ActRootingDepth = min(self.FirstZoneThickness * 0.99, self.ActRootingDepth)
 
         # Determine transpiration
-        # Split between bare soil and vegetation
-        self.potsoilevap = (1.0 - self.CanopyGapFraction) * self.PotTransSoil
-        self.PotTrans = self.PotTransSoil- self.potsoilevap
+        # Split between bare soil/open water and vegetation
+        self.potsoilopenwaterevap = (1.0 - self.CanopyGapFraction) * self.PotTransSoil
+        self.PotTrans = self.PotTransSoil - self.potsoilopenwaterevap
 
 
         self.SaturationDeficit = self.FirstZoneCapacity - self.FirstZoneDepth
         # Linear reduction of soil moisture evaporation based on deficit
-        self.soilevap = self.potsoilevap * min(1.0, self.SaturationDeficit/self.FirstZoneCapacity)
 
         self.Transpiration, self.FirstZoneDepth, self.UStoreDepth, self.ActEvapUStore = actEvap_SBM(self.ActRootingDepth,
                                                                                               self.zi, self.UStoreDepth,
                                                                                               self.FirstZoneDepth,
                                                                                               self.PotTrans,
                                                                                               self.rootdistpar)
-        self.soilevap = min(self.soilevap, self.UStoreDepth)
-        self.UStoreDepth = self.UStoreDepth - self.soilevap
-        self.ActEvap = self.Transpiration + self.soilevap
+
+
         # Determine Open Water EVAP. Later subtract this from water that
         # enters the Kinematic wave
-        self.EvapRest = self.PotTransSoil - self.ActEvap
-        self.ActEvapOpenWater =  min(self.WaterLevel * 1000.0 * self.WaterFrac ,self.WaterFrac * self.EvapRest)
-        self.ActEvap = self.ActEvap + self.ActEvapOpenWater
+        self.RestEvap = (self.PotTrans - self.Transpiration) + self.potsoilopenwaterevap
+        self.ActEvapOpenWater =  min(self.WaterLevel * 1000.0 * self.WaterFrac ,self.WaterFrac * self.RestEvap)
+        self.RestEvap = self.RestEvap - self.ActEvapOpenWater
+
+        # Next the rest is used for soil evaporation
+        self.soilevap = self.RestEvap * max(0.0,min(1.0, self.SaturationDeficit / self.FirstZoneCapacity))
+        self.soilevap = min(self.soilevap, self.UStoreDepth)
+        self.UStoreDepth = self.UStoreDepth - self.soilevap
+        self.ActEvap = self.Transpiration + self.soilevap + self.ActEvapOpenWater
+
 
         ##########################################################################
         # Transfer of water from unsaturated to saturated store...################
@@ -1121,25 +1128,15 @@ class WflowModel(DynamicModel):
             self.waterLdd = lddcreate(self.WaterDem, 1E35, 1E35, 1E35, 1E35)
             #waterLdd = lddcreate(waterDem,1,1,1,1)
 
-        if self.waterdem:
-            if self.LateralMethod == 1:
-                Lateral = self.FirstZoneKsatVer * self.waterSlope * exp(-self.SaturationDeficit / self.M)
-            elif self.LateralMethod == 2:
-                Lateral = Ksat * self.waterSlope
 
+        #TODO: We should make a couple ot itterations here...
+        if self.waterdem:
+            Lateral = self.FirstZoneKsatVer * self.waterSlope * exp(-self.SaturationDeficit / self.M)
             MaxHor = max(0.0, min(Lateral, self.FirstZoneDepth))
             self.FirstZoneFlux = accucapacityflux(self.waterLdd, self.FirstZoneDepth, MaxHor)
             self.FirstZoneDepth = accucapacitystate(self.waterLdd, self.FirstZoneDepth, MaxHor)
         else:
-            #
-            #MaxHor = max(0,min(self.FirstZoneKsatVer * self.Slope * exp(-SaturationDeficit/self.M),self.FirstZoneDepth*(self.thetaS-self.thetaR))) * timestepsecs/basetimestep
-            #MaxHor = max(0.0, min(self.FirstZoneKsatVer * self.Slope * exp(-self.SaturationDeficit / self.M),
-            #                      self.FirstZoneDepth))
-            if self.LateralMethod == 1:
-                Lateral = self.FirstZoneKsatVer * self.waterSlope * exp(-self.SaturationDeficit / self.M)
-            elif self.LateralMethod == 2:
-                Lateral = Ksat * self.waterSlope
-
+            Lateral = self.FirstZoneKsatVer * self.waterSlope * exp(-self.SaturationDeficit / self.M)
             MaxHor = max(0.0, min(Lateral, self.FirstZoneDepth))
             #MaxHor = self.ZeroMap
             self.FirstZoneFlux = accucapacityflux(self.TopoLdd, self.FirstZoneDepth, MaxHor)
@@ -1154,10 +1151,18 @@ class WflowModel(DynamicModel):
         self.FirstZoneDepth = self.FirstZoneDepth - self.ExfiltWater
 
         # Re-determine UStoreCapacity
-        UStoreCapacity = self.FirstZoneCapacity - self.FirstZoneDepth - self.UStoreDepth
+
+
 
         self.zi = max(0.0, self.FirstZoneThickness - self.FirstZoneDepth / (
             self.thetaS - self.thetaR))  # Determine actual water depth
+
+        self.ExfiltFromUstore = ifthenelse(self.zi == 0.0,\
+                                           ifthenelse(self.UStoreDepth > 0.0,self.UStoreDepth,self.ZeroMap),self.ZeroMap)
+
+        self.ExfiltWater = self.ExfiltWater + self.ExfiltFromUstore
+        self.UStoreDepth = self.UStoreDepth - self.ExfiltFromUstore
+        UStoreCapacity = self.FirstZoneCapacity - self.FirstZoneDepth - self.UStoreDepth
 
         Ksat = self.FirstZoneKsatVer * exp(-self.f * self.zi)
 

@@ -940,7 +940,12 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             for thismap in _maps:
                 thismapname = os.path.join(caseName, runId, 'outsum',
                                            self._userModel().config.get("summary_" + sttype, thismap))
-                thismap = thismap.split('self.')[1]
+                try:
+                    thismap = thismap.split('self.')[1]
+                except:
+                    logging.error("Entry in ini invalid: " + thismap)
+                    raise ValueError
+
                 self.statslst.append(wf_sumavg(thismap, mode=sttype, filename=thismapname))
 
 
