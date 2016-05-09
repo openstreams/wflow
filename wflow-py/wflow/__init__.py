@@ -13,5 +13,4 @@ if hasattr(sys, "frozen"):
 else:
     _ROOT = os.path.abspath(os.path.dirname(__file__))
 
-
 import osgeo.gdal as gdal
