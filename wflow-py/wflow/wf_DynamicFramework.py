@@ -1564,7 +1564,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 tt = pcr2numpy(pcrmap,-999.0)
                 retval = flipud(tt).copy()
             else:
-                if type(pcrmap) in (numpy.ndarray):
+                if type(pcrmap) == numpy.ndarray:
                     retval = pcrmap
                 else:
                     retval = array(pcrmap)
