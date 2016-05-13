@@ -108,61 +108,6 @@ class WflowModel(DynamicModel):
         self.SaveDir = os.path.join(self.Dir,self.runId)
 
 
-    def reallysimpelreservoir(self,storage,inflow,K, deadvolume):
-        """
-        :param storage: storage in m^3
-        :param deadvolume: dead storage in m^3
-        :param inflow: inflow in m^3/sec
-        :param K: reservoir constant -
-        :return storage, outflow: storage in m^3, outflow in m^3/sec
-        """
-        inflow = ifthen(boolean(self.ReserVoirLocs),inflow)
-        oldstorage = storage
-        storage = storage + (inflow * self.timestepsecs)
-        outflow = (((storage + oldstorage) * 0.5) - deadvolume) * K * self.timestepsecs/self.basetimestep
-        outflow = ifthen(boolean(self.ReserVoirLocs),outflow)
-        storage = storage - outflow
-        return storage, outflow/self.timestepsecs
-
-
-    def simpelreservoir(self,storage,inflow,maxstorage,target_perc_full,maximum_Q,demand,minimum_full_perc):
-        """
-
-        :param storage: initial storage m^3
-        :param inflow: inflow m^3/s
-        :param maxstorage: maximum storage (above which water is spilled) m^3
-        :param target_perc_full: target fraction full (of max storage) -
-        :param maximum_Q: maximum Q to release m^3/s if below spillway
-        :param demand: water demand (all combined) m^3/s
-        :param minimum_full_perc: target minimum full fraction (of max storage) -
-        :return: storage, outflow (m^3, m^3/s)
-        """
-
-        inflow = ifthen(boolean(self.ReserVoirLocs),inflow)
-        oldstorage = storage
-        storage = storage + (inflow * self.timestepsecs)
-        percfull = ((storage + oldstorage) * 0.5)/maxstorage
-        # first determine environmental flow using a simple sigmoid curve to scale for target level
-        fac = sCurve(percfull,a=minimum_full_perc,c=30.0)
-
-        demandRelease =fac * demand * self.timestepsecs
-
-        storage = storage - demandRelease
-
-        # Re-determine percfull
-        percfull = ((storage + oldstorage) * 0.5)/maxstorage
-
-        wantrel  =  max(0.0,storage - (maxstorage * target_perc_full) )
-        # Assume extra maximum Q if spilling
-        overflowQ = (percfull - 1.0) * (storage - maxstorage)
-        torelease = min(wantrel, overflowQ + maximum_Q * self.timestepsecs)
-        storage = storage - torelease
-        outflow = (torelease + demandRelease)/self.timestepsecs
-        percfull = storage/maxstorage
-
-        return storage, outflow, percfull, demandRelease/self.timestepsecs
-
-
     def wetPerimiterFP(self,Waterlevel, floodplainwidth,threshold=0.0,sharpness=0.5):
         """
 
@@ -614,10 +559,10 @@ class WflowModel(DynamicModel):
 
         #only run the reservoir module if needed
         if self.nrres > 0:
-            self.ReservoirVolume, self.Outflow,self.ResPecrFull,self.DemandRelease = self.simpelreservoir(self.ReservoirVolume,self.SurfaceRunoff,
+            self.ReservoirVolume, self.Outflow,self.ResPecrFull,self.DemandRelease = simpelreservoir(self.ReservoirVolume,self.SurfaceRunoff,
                                                                       self.ResMaxVolume,self.ResTargetFullFrac,
                                                                       self.ResMaxRelease, self.ResDemand,
-                                                                      self.ResTargetMinFrac)
+                                                                      self.ResTargetMinFrac,self.ReserVoirLocs,timestepsecs=self.timestepsecs)
             self.OutflowDwn = upstream(self.TopoLddOrg,cover(self.Outflow,scalar(0.0)))
             self.Inflow = cover(self.OutflowDwn,self.Inflow)
 

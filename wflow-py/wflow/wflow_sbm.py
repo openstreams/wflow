@@ -229,6 +229,26 @@ class WflowModel(DynamicModel):
         self.configfile = configfile
         self.SaveDir = os.path.join(self.Dir,self.runId)
 
+    def irrigationdemand(self, pottrans, acttrans, irareas):
+        """
+        Determine irrigation water demand from the difference bewteen potential
+        transpiration and actual transpiration.
+
+        :param pottrans: potential transpiration (epot minus interception and soil/open water evaporation)
+        :param acttrans: actual transpiration
+        :param ir_areas: maps of irrigation areas
+
+        :return: demand
+        """
+
+        Et_diff = areaaverage(pottrans-acttrans, nominal(irareas))
+        # Now determine demand in m^3/s for each area
+        sqmarea = areatotal(self.reallength * self.reallength,nominal(irareas))
+        m3sec = Et_diff * sqmarea/1000.0/self.timestepsecs
+
+        return Et_diff, m3sec
+
+
 
     def updateRunOff(self):
         """
@@ -259,13 +279,12 @@ class WflowModel(DynamicModel):
        :var self.UStoreDepth: Water in the Unsaturated Store [mm]
        :var self.FirstZoneDepth: Water in the saturated store [mm]
        :var self.CanopyStorage: Amount of water on the Canopy [mm]
+       :var self.ReservoirVolume: Volume of each reservoir [m^3]
        """
         states = ['SurfaceRunoff', 'WaterLevel',
-                  'FirstZoneDepth',
-                  'Snow',
-                  'TSoil',
-                  'UStoreDepth',
-                  'SnowWater', 'CanopyStorage']
+                  'FirstZoneDepth','Snow',
+                  'TSoil','UStoreDepth','SnowWater',
+                  'CanopyStorage','ReservoirVolume']
 
         return states
 
@@ -315,6 +334,16 @@ class WflowModel(DynamicModel):
         modelparameters.append(self.ParamType(name="PotenEvap",stack=self.PET_mapstack,type="timeseries",default=0.0,verbose=True,lookupmaps=[]))
         modelparameters.append(self.ParamType(name="Temperature",stack=self.TEMP_mapstack,type="timeseries",default=10.0,verbose=True,lookupmaps=[]))
         modelparameters.append(self.ParamType(name="Inflow",stack=self.Inflow_mapstack,type="timeseries",default=0.0,verbose=False,lookupmaps=[]))
+        modelparameters.append(self.ParamType(name="ReserVoirLocs",stack='staticmaps/wflow_reservoirlocs.map',type="staticmap",default=0.0,verbose=False,lookupmaps=[]))
+        modelparameters.append(self.ParamType(name="IrrigationAreas", stack='staticmaps/wflow_irrigationareas.map',
+                                              type="staticmap", default=0.0, verbose=False, lookupmaps=[]))
+        modelparameters.append(self.ParamType(name="IrrigationSurfaceIntakes", stack='staticmaps/wflow_irrisurfaceintake.map',
+                                              type="staticmap", default=0.0, verbose=False, lookupmaps=[]))
+        modelparameters.append(self.ParamType(name="ResTargetFullFrac",stack='intbl/ResTargetFullFrac.tbl',type="tblsparse",default=0.8,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
+        modelparameters.append(self.ParamType(name="ResTargetMinFrac",stack='intbl/ResTargetMinFrac.tbl',type="tblsparse",default=0.4,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
+        modelparameters.append(self.ParamType(name="ResMaxVolume",stack='intbl/ResMaxVolume.tbl',type="tblsparse",default=0.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
+        modelparameters.append(self.ParamType(name="ResMaxRelease",stack='intbl/ResMaxRelease.tbl',type="tblsparse",default=1.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
+        modelparameters.append(self.ParamType(name="ResDemand",stack='intbl/ResDemand.tbl',type="tblsparse",default=1.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
 
 
         return modelparameters
@@ -323,70 +352,65 @@ class WflowModel(DynamicModel):
 
     def initial(self):
         """
-    Initial part of the model, executed only once. Reads all static data from disk
+        Initial part of the model, executed only once. Reads all static data from disk
 
 
-    *Soil*
+        *Soil*
 
-    :var M.tbl: M parameter in the SBM model. Governs the decay of Ksat with depth [-]
-    :var thetaR.tbl: Residual water content [mm/mm]
-    :var thetaS.tbl: Saturated water content (porosity) [mm/mm]
-    :var FirstZoneKsatVer.tbl: Saturated conductivity [mm/d]
-    :var PathFrac.tbl: Fraction of compacted area per grid cell [-]
-    :var InfiltCapSoil.tbl: Soil infiltration capacity [m/d]
-    :var InfiltCapPath.tbl: Infiltration capacity of the compacted areas [mm/d]
-    :var FirstZoneMinCapacity.tbl: Minimum wdepth of the soil [mm]
-    :var FirstZoneCapacity.tbl: Maximum depth of the soil [m]
-    :var RootingDepth.tbl: Depth of the roots [mm]
-    :var MaxLeakage.tbl: Maximum leakage out of the soil profile [mm/d]
-    :var CapScale.tbl: Scaling factor in the Capilary rise calculations (100) [mm/d]
-    :var RunoffGeneratingGWPerc: Fraction of the soil depth that contributes to subcell runoff (0.1) [-]
-    :var rootdistpar.tbl: Determine how roots are linked to water table. The number 
-        should be negative. A more negative  number means that all roots are wet if the water 
-        table is above the lowest part of the roots. 
-        A less negative number smooths this. [mm] (default = -80000)
+        :var M.tbl: M parameter in the SBM model. Governs the decay of Ksat with depth [-]
+        :var thetaR.tbl: Residual water content [mm/mm]
+        :var thetaS.tbl: Saturated water content (porosity) [mm/mm]
+        :var FirstZoneKsatVer.tbl: Saturated conductivity [mm/d]
+        :var PathFrac.tbl: Fraction of compacted area per grid cell [-]
+        :var InfiltCapSoil.tbl: Soil infiltration capacity [m/d]
+        :var InfiltCapPath.tbl: Infiltration capacity of the compacted areas [mm/d]
+        :var FirstZoneMinCapacity.tbl: Minimum wdepth of the soil [mm]
+        :var FirstZoneCapacity.tbl: Maximum depth of the soil [m]
+        :var RootingDepth.tbl: Depth of the roots [mm]
+        :var MaxLeakage.tbl: Maximum leakage out of the soil profile [mm/d]
+        :var CapScale.tbl: Scaling factor in the Capilary rise calculations (100) [mm/d]
+        :var RunoffGeneratingGWPerc: Fraction of the soil depth that contributes to subcell runoff (0.1) [-]
+        :var rootdistpar.tbl: Determine how roots are linked to water table. The number
+            should be negative. A more negative  number means that all roots are wet if the water
+            table is above the lowest part of the roots.
+            A less negative number smooths this. [mm] (default = -80000)
 
-    
 
-    *Canopy*
-    
-    :var CanopyGapFraction.tbl: Fraction of precipitation that does not hit the canopy directly [-]
-    :var MaxCanopyStorage.tbl: Canopy interception storage capacity [mm]
-    :var EoverR.tbl: Ratio of average wet canopy evaporation rate over rainfall rate [-]
-    
-    *Surface water*
-    
-    :var N.tbl: Manning's N parameter
-    :var N_river.tbl: Manning's N parameter for cells marked as river
-    
-    
-    *Snow and frozen soil modelling parameters*
 
-    :var cf_soil.tbl: Soil infiltration reduction factor when soil is frozen [-] (< 1.0)
-    :var TTI.tbl: critical temperature for snowmelt and refreezing  (1.000) [oC]
-    :var TT.tbl: defines interval in which precipitation falls as rainfall and snowfall (-1.41934) [oC]
-    :var Cfmax.tbl: meltconstant in temperature-index ( 3.75653) [-]
-    :var WHC.tbl: fraction of Snowvolume that can store water (0.1) [-]
-    :var w_soil.tbl: Soil temperature smooth factor. Given for daily timesteps. (0.1125) [-] Wigmosta, M. S., L. J. Lane, J. D. Tagestad, and A. M. Coleman (2009).
- 
-    """
+        *Canopy*
+
+        :var CanopyGapFraction.tbl: Fraction of precipitation that does not hit the canopy directly [-]
+        :var MaxCanopyStorage.tbl: Canopy interception storage capacity [mm]
+        :var EoverR.tbl: Ratio of average wet canopy evaporation rate over rainfall rate [-]
+
+        *Surface water*
+
+        :var N.tbl: Manning's N parameter
+        :var N_river.tbl: Manning's N parameter for cells marked as river
+
+
+        *Snow and frozen soil modelling parameters*
+
+        :var cf_soil.tbl: Soil infiltration reduction factor when soil is frozen [-] (< 1.0)
+        :var TTI.tbl: critical temperature for snowmelt and refreezing  (1.000) [oC]
+        :var TT.tbl: defines interval in which precipitation falls as rainfall and snowfall (-1.41934) [oC]
+        :var Cfmax.tbl: meltconstant in temperature-index ( 3.75653) [-]
+        :var WHC.tbl: fraction of Snowvolume that can store water (0.1) [-]
+        :var w_soil.tbl: Soil temperature smooth factor. Given for daily timesteps. (0.1125) [-] Wigmosta, M. S., L. J. Lane, J. D. Tagestad, and A. M. Coleman (2009).
+
+        """
         global statistics
         global multpars
         global updateCols
-
 
         self.thestep = scalar(0)
         self.basetimestep = 86400
         self.SSSF = False
         setglobaloption("unittrue")
 
-
-
         self.logger.info("running for " + str(self.nrTimeSteps()) + " timesteps")
 
-
         # Set and get defaults from ConfigFile here ###################################
-
         self.Tslice = int(configget(self.config, "model", "Tslice", "1"))
         self.reinit = int(configget(self.config, "model", "reinit", "0"))
         self.fewsrun = int(configget(self.config, "model", "fewsrun", "0"))
@@ -422,8 +446,6 @@ class WflowModel(DynamicModel):
         self.reInfilt = int(configget(self.config, 'model', 'reInfilt', '0'))
         self.MassWasting = int(configget(self.config,"model","MassWasting","0"))
 
-
-
         # static maps to use (normally default)
         wflow_subcatch = configget(self.config, "model", "wflow_subcatch", "staticmaps/wflow_subcatch.map")
         wflow_dem = configget(self.config, "model", "wflow_dem", "staticmaps/wflow_dem.map")
@@ -437,7 +459,6 @@ class WflowModel(DynamicModel):
         wflow_gauges = configget(self.config, "model", "wflow_gauges", "staticmaps/wflow_gauges.map")
         wflow_inflow = configget(self.config, "model", "wflow_inflow", "staticmaps/wflow_inflow.map")
         wflow_riverwidth = configget(self.config, "model", "wflow_riverwidth", "staticmaps/wflow_riverwidth.map")
-
 
         # 2: Input base maps ########################################################
         subcatch = ordinal(self.wf_readmap(os.path.join(self.Dir,wflow_subcatch),0.0,fail=True))  # Determines the area of calculations (all cells > 0)
@@ -556,6 +577,19 @@ class WflowModel(DynamicModel):
                                                     subcatch, self.Soil, 3000.0) * self.timestepsecs / self.basetimestep
         self.MporeFrac = self.readtblDefault(self.Dir + "/" + self.intbl + "/MporeFrac.tbl", self.LandUse,
                                                     subcatch, self.Soil, 0.0)
+
+        # Check if we have reservoirs
+        tt = pcr2numpy(self.ReserVoirLocs, 0.0)
+        self.nrres = tt.max()
+        if self.nrres > 0:
+            self.logger.info("A total of " + str(self.nrres) + " reservoirs found.")
+            self.ReserVoirDownstreamLocs = downstream(self.TopoLdd, self.ReserVoirLocs)
+            self.TopoLddOrg = self.TopoLdd
+            self.TopoLdd = lddrepair(cover(ifthen(boolean(self.ReserVoirLocs), ldd(5)), self.TopoLdd))
+
+        # Check if we have irrigation areas
+        tt = pcr2numpy(self.IrrigationAreas, 0.0)
+        self.nrirri = tt.max()
 
         self.Beta = scalar(0.6)  # For sheetflow
 
@@ -716,6 +750,7 @@ class WflowModel(DynamicModel):
         self.CumCellInFlow = self.ZeroMap
         self.CumIF = self.ZeroMap
         self.CumActInfilt = self.ZeroMap
+        self.IRSupplymm = self.ZeroMap
         self.Aspect = scalar(aspect(self.Altitude))  # aspect [deg]
         self.Aspect = ifthenelse(self.Aspect <= 0.0, scalar(0.001), self.Aspect)
         # On Flat areas the Aspect function fails, fill in with average...
@@ -806,6 +841,7 @@ class WflowModel(DynamicModel):
             self.SnowWater = self.ZeroMap
             self.TSoil = self.ZeroMap + 10.0
             self.CanopyStorage = self.ZeroMap
+            self.ReservoirVolume = self.ResMaxVolume * self.ResTargetFullFrac
 
 
         else:
@@ -953,6 +989,7 @@ class WflowModel(DynamicModel):
         else:
             self.PrecipitationPlusMelt = self.Precipitation
 
+
         ##########################################################################
         # Interception according to a modified Gash model
         ##########################################################################
@@ -975,7 +1012,8 @@ class WflowModel(DynamicModel):
         #
         self.FirstZoneDepth = (self.thetaS - self.thetaR) * (self.FirstZoneThickness - self.zi)
 
-        self.AvailableForInfiltration = self.ThroughFall + self.StemFlow
+        self.AvailableForInfiltration = self.ThroughFall + self.StemFlow + self.IRSupplymm
+
         UStoreCapacity = self.FirstZoneCapacity - self.FirstZoneDepth - self.UStoreDepth
 
         # Runoff from water bodies and river network
@@ -1041,7 +1079,6 @@ class WflowModel(DynamicModel):
         self.potsoilopenwaterevap = (1.0 - self.CanopyGapFraction) * self.PotTransSoil
         self.PotTrans = self.PotTransSoil - self.potsoilopenwaterevap
 
-
         self.SaturationDeficit = self.FirstZoneCapacity - self.FirstZoneDepth
         # Linear reduction of soil moisture evaporation based on deficit
 
@@ -1051,6 +1088,13 @@ class WflowModel(DynamicModel):
                                                                                               self.PotTrans,
                                                                                               self.rootdistpar)
 
+
+        # Run only if we have irrigation areas, determine irrigation demand based on potrans and acttrans
+        if self.nrirri > 0:
+            self.IrriDemand, self.IrriDemandm3 = self.irrigationdemand(self.PotTrans,self.Transpiration,self.IrrigationAreas)
+            IRDemand = idtoid(self.IrrigationAreas, self.IrrigationSurfaceIntakes, self.IrriDemandm3)  * -1.0
+            # loop over irrigation areas and assign Q to linked river extraction points
+            self.Inflow = cover(IRDemand,self.Inflow)
 
         # Determine Open Water EVAP. Later subtract this from water that
         # enters the Kinematic wave
@@ -1151,9 +1195,6 @@ class WflowModel(DynamicModel):
         self.FirstZoneDepth = self.FirstZoneDepth - self.ExfiltWater
 
         # Re-determine UStoreCapacity
-
-
-
         self.zi = max(0.0, self.FirstZoneThickness - self.FirstZoneDepth / (
             self.thetaS - self.thetaR))  # Determine actual water depth
 
@@ -1194,6 +1235,17 @@ class WflowModel(DynamicModel):
                                  self.reinfiltwater - self.ActEvapOpenWater)
 
         self.Inwater = self.InwaterMM * self.ToCubic  # m3/s
+
+        #only run the reservoir module if needed
+        if self.nrres > 0:
+            self.ReservoirVolume, self.Outflow,self.ResPecrFull,self.DemandRelease = simpelreservoir(self.ReservoirVolume,self.SurfaceRunoff,
+                                                                      self.ResMaxVolume,self.ResTargetFullFrac,
+                                                                      self.ResMaxRelease, self.ResDemand,
+                                                                      self.ResTargetMinFrac,self.ReserVoirLocs,
+                                                                        timestepsecs=self.timestepsecs)
+            self.OutflowDwn = upstream(self.TopoLddOrg,cover(self.Outflow,scalar(0.0)))
+            self.Inflow = cover(self.OutflowDwn,self.Inflow)
+
 
         self.ExfiltWaterCubic = self.ExfiltWater * self.ToCubic
         self.SubCellGWRunoffCubic = self.SubCellGWRunoff * self.ToCubic
@@ -1256,6 +1308,13 @@ class WflowModel(DynamicModel):
             self.SurfaceRunoffMM = self.SurfaceRunoff * self.QMMConv  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
             self.updateRunOff()
 
+        # Now add the supply that is linked to irrigation areas to extra precip
+        if self.nrirri > 0:
+            # loop over irrigation areas and spread-out the supply over the area
+            IRSupplymm = idtoid(self.IrrigationSurfaceIntakes, self.IrrigationAreas, self.SurfaceWaterSupply)
+            sqmarea = areatotal(self.reallength * self.reallength, nominal(self.IrrigationAreas))
+
+            self.IRSupplymm = cover(IRSupplymm/ (sqmarea / 1000.0 / self.timestepsecs),0.0)
 
         self.MassBalKinWave = (-self.KinWaveVolume + self.OldKinWaveVolume) / self.timestepsecs +\
                                 self.InflowKinWaveCell + self.Inwater - self.SurfaceRunoff

@@ -46,11 +46,70 @@ from osgeo.gdalconst import *
 from pcraster import *
 from pcraster.framework import *
 import scipy
+import numpy as np
 import netCDF4 as nc4
 import gzip, zipfile
 
 
+def idtoid(sourceidmap, targetidmap,valuemap):
+    """
+    tranfer the values from valuemap at the point id's in sourceidmap to the areas in targetidmap.
 
+    :param pointmap:
+    :param areamap:
+    :param valuemap:
+    :return:
+    """
+
+    _area = pcr2numpy(targetidmap,0.0).copy()
+    _pt = pcr2numpy(sourceidmap,0.0).copy()
+    _val = pcr2numpy(valuemap,0.0).copy()
+
+    for val in np.unique(_pt):
+        if val > 0:  #
+            _area[_area == val] = np.mean(_val[_pt == val])
+
+    retmap = numpy2pcr(Scalar,_area,0.0)
+
+    return retmap
+
+
+def simpelreservoir(storage, inflow, maxstorage, target_perc_full, maximum_Q, demand, minimum_full_perc,ReserVoirLocs,timestepsecs=86400):
+    """
+
+    :param storage: initial storage m^3
+    :param inflow: inflow m^3/s
+    :param maxstorage: maximum storage (above which water is spilled) m^3
+    :param target_perc_full: target fraction full (of max storage) -
+    :param maximum_Q: maximum Q to release m^3/s if below spillway
+    :param demand: water demand (all combined) m^3/s
+    :param minimum_full_perc: target minimum full fraction (of max storage) -
+    :param ReserVoirLocs: map with reservoir locations
+    :param timestepsecs: timestep of the model in seconds (default = 86400)
+    :return: storage (m^3), outflow (m^3/s), PercentageFull (0-1), Release (m^3/sec)
+    """
+
+    inflow = ifthen(boolean(ReserVoirLocs), inflow)
+    oldstorage = storage
+    storage = storage + (inflow * timestepsecs)
+    percfull = ((storage + oldstorage) * 0.5) / maxstorage
+    # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
+    fac = sCurve(percfull, a=minimum_full_perc, c=30.0)
+    demandRelease = fac * demand * timestepsecs
+    storage = storage - demandRelease
+
+    # Re-determine percfull
+    percfull = ((storage + oldstorage) * 0.5) / maxstorage
+
+    wantrel = max(0.0, storage - (maxstorage * target_perc_full))
+    # Assume extra maximum Q if spilling
+    overflowQ = (percfull - 1.0) * (storage - maxstorage)
+    torelease = min(wantrel, overflowQ + maximum_Q * timestepsecs)
+    storage = storage - torelease
+    outflow = (torelease + demandRelease) / timestepsecs
+    percfull = storage / maxstorage
+
+    return storage, outflow, percfull, demandRelease/timestepsecs
 
 
 Verbose=0
