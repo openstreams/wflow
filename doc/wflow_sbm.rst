@@ -526,7 +526,7 @@ to zero thus setting the capilary rise to zero.
 Irrigation
 ~~~~~~~~~~
 
-Irrigation areas can be define by specifying two maps:
+Irrigation areas can be defined by specifying two maps:
 
 :wflow_irrigationareas.map:
     Map of areas where irrigation is applied. Each area has a unique id. The areas do not need to be continuous but
