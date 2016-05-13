@@ -334,7 +334,8 @@ class WflowModel(DynamicModel):
         modelparameters.append(self.ParamType(name="PotenEvap",stack=self.PET_mapstack,type="timeseries",default=0.0,verbose=True,lookupmaps=[]))
         modelparameters.append(self.ParamType(name="Temperature",stack=self.TEMP_mapstack,type="timeseries",default=10.0,verbose=True,lookupmaps=[]))
         modelparameters.append(self.ParamType(name="Inflow",stack=self.Inflow_mapstack,type="timeseries",default=0.0,verbose=False,lookupmaps=[]))
-        modelparameters.append(self.ParamType(name="ReserVoirLocs",stack='staticmaps/wflow_reservoirlocs.map',type="staticmap",default=0.0,verbose=False,lookupmaps=[]))
+        modelparameters.append(self.ParamType(name="ReserVoirLocs",stack='staticmaps/wflow_reservoirlocs.map',
+                                              type="staticmap",default=0.0,verbose=False,lookupmaps=[]))
         modelparameters.append(self.ParamType(name="IrrigationAreas", stack='staticmaps/wflow_irrigationareas.map',
                                               type="staticmap", default=0.0, verbose=False, lookupmaps=[]))
         modelparameters.append(self.ParamType(name="IrrigationSurfaceIntakes", stack='staticmaps/wflow_irrisurfaceintake.map',

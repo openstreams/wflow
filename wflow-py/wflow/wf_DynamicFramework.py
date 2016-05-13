@@ -692,7 +692,12 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         theparmap = cover(theparmap, default)
                         newargs.append(theparmap)
 
-                rest = lookupscalar(pathtotbl, *newargs)
+                for lmap in newargs:
+                    if not os.path.exists(lmap):
+                        rest = spatial(scalar(default))
+                        self.logger.debug("map file not found (" + lmap + ") returning default value: " + str(default))
+                    else:
+                        rest = lookupscalar(pathtotbl, *newargs)
             else:
                 self.logger.debug("tbl file not found (" + pathtotbl + ") returning default value: " + str(default))
                 rest = spatial(scalar(default))

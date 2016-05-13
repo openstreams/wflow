@@ -523,6 +523,11 @@ to zero thus setting the capilary rise to zero.
    the kinematic wave reservoir
 
 
+Irrigation
+~~~~~~~~~~
+
+Irrgation area can be define by specifying a map
+
 Lower zone and leakage
 ~~~~~~~~~~~~~~~~~~~~~~
 
