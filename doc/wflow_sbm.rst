@@ -526,17 +526,28 @@ to zero thus setting the capilary rise to zero.
 Irrigation
 ~~~~~~~~~~
 
-Irrgation area can be define by specifying a map
+Irrigation areas can be define by specifying two maps:
 
-Lower zone and leakage
-~~~~~~~~~~~~~~~~~~~~~~
+:wflow_irrigationareas.map:
+    Map of areas where irrigation is applied. Each area has a unique id. The areas do not need to be continuous but
+    all cells with the same id are assumed to belong to the same irrigation area.
 
-If the parameter MaxPercolation is set > 0 this is used to transfer water from the bottom of the
-FirstZone to a HBV-type groundwater reservoir (LowerZone). The K4 parameter is used to set the
-recession rate of the lower zone.
+:wflow_irrisurfaceintake.map:
+    Map of intake points at the river(s). The id of each point should correspond to the id of an area in the
+    wflow_irrigationareas map.
 
-Alternatively a MaxLeage parameter may be set > 0. In that case the water is lost from the FirstZone and
-not transferred to the LowerZone.
+The irrigation algorithim works as follows: For each of the areas the difference between potential transpiration
+and actual transpiration is determined. Next, this is converted to a demand in :math:`m^3/s` at the corresponding
+intake point at the river. The demand is converted to a supply (taking into account the available water in the river)
+and converted to an amount in mm over the irrigation area. The supply is converted in the *next timestep* as extra water
+available for infiltration in the irrigation area.
+
+This option has only be tested in combination with a monthly LAI climatology as input.
+
+Leakage
+~~~~~~~
+
+If the MaxLeakage parameter may is set > 0  water is lost from the FirstZone and runs out of the model.
 
 Soil temperature
 ~~~~~~~~~~~~~~~~
