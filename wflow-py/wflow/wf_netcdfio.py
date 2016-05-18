@@ -80,6 +80,7 @@ def prepare_nc(trgFile, timeList, x, y, metadata, logger, EPSG="EPSG:4326", unit
     endDayNr = netCDF4.date2num(timeList[-1].replace(tzinfo=None), units=units, calendar=calendar)
 
     timeAR = linspace(startDayNr, endDayNr, num=len(timeList))
+
     nc_trg = netCDF4.Dataset(trgFile, 'w', format=Format, zlib=zlib, complevel=complevel)
 
     logger.info(

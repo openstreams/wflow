@@ -24,6 +24,7 @@ syntax:
 
     pcr2netcdf -S date -E date -N mapstackname -I mapstack_folder
                -O netcdf_name [-b buffersize] [-c inifile][-s start][-d digit][-Y][-P EPSG]
+               [-i inputformat][-F netcdfformat]
 
     For single maps (no series)
     pcr2netcdf -M -S date  -N mapname
@@ -34,9 +35,10 @@ syntax:
     -E endDate in "%d-%m-%Y %H:%M:%S"
     -s startstep (in the mapstack, default = 1)
     -Y Make seperate files per year
+    -i GDAL Input file format string (default: PCRaster)
     -P set the EPSG string. default: "EPSG:4326"
     -N Mapstack-name (prefix)
-       You can sepcify multiple input mapstack  to merge them into one netcdf
+       You can specify multiple input mapstack  to merge them into one netcdf
        e.g. -N P -N TEMP -N PET
        In combination with the -M option you can use wildcards
 
@@ -144,6 +146,7 @@ def _readMap(fileName, fileFormat,logger):
     del ds
     # #ds = None
 
+    return x, y, data, FillVal
 
 
 
@@ -273,8 +276,8 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
         pcraster_path = os.path.join(srcFolder, pcraster_file)
         # write grid to PCRaster file
         logger.debug("processing map: " + pcraster_file)
-        x, y, data, FillVal = readMap(pcraster_path, 'PCRaster',logger)
-        #xx, yy, ddata, dFillVal = _readMap(pcraster_path, 'PCRaster',logger)
+        #x, y, data, FillVal = readMap(pcraster_path, 'PCRaster',logger)
+        x, y, data, FillVal = _readMap(pcraster_path, 'PCRaster',logger)
         logger.debug("Setting fillval...")
         data[data==FillVal] = nc_Fill
 
@@ -388,7 +391,8 @@ def main(argv=None):
     timestepsecs = 86400
     
     clonemap=None
-    Format="NETCDF4"
+    OFormat="NETCDF4"
+    IFormat = 'PCRaster'
     EPSG="EPSG:4326"
     Singlemap = False
     zlib=True
@@ -404,7 +408,7 @@ def main(argv=None):
     ## Main model starts here
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, 'c:S:E:N:I:O:b:t:F:zs:d:YP:M')
+        opts, args = getopt.getopt(argv, 'c:S:E:N:I:O:b:t:F:zs:d:YP:Mi:')
     except getopt.error, msg:
         usage(msg)
 
@@ -413,6 +417,7 @@ def main(argv=None):
         if o == '-s':
             startstep = int(a)
         if o == '-E': endstr = a
+        if o == '-i': IFormat = a
         if o == '-O': ncoutfile = a
         if o == '-c': inifile = a
         if o == '-I': mapstackfolder = a
@@ -421,7 +426,7 @@ def main(argv=None):
         if o == '-z': zlib=True
         if o == '-P': EPSG = a
         if o == '-M': Singlemap = True
-        if o == '-F': Format=a
+        if o == '-F': OFormat=a
         if o == '-d': least_significant_digit = int(a)
         if o == '-t': 
             timestepsecs = int(a)
@@ -442,17 +447,22 @@ def main(argv=None):
     count = 1
     below_thousand = count % 1000
     above_thousand = count / 1000
+
     clonemapname  = str(mapstackname[0] + '%0' + str(8-len(mapstackname[0])) + '.f.%03.f') % (above_thousand, below_thousand)
     clonemap = os.path.join(mapstackfolder, clonemapname)
-
     if Singlemap:
         clonemap = mapstackname[0]
 
-    _pcrut.setclone(clonemap)
+
+    if IFormat == 'PCRaster':
+        _pcrut.setclone(clonemap)
    
-    x = _pcrut.pcr2numpy(_pcrut.xcoordinate(_pcrut.boolean(_pcrut.cover(1.0))),NaN)[0,:]
-    y = _pcrut.pcr2numpy(_pcrut.ycoordinate(_pcrut.boolean(_pcrut.cover(1.0))),NaN)[:,0]
-    
+        x = _pcrut.pcr2numpy(_pcrut.xcoordinate(_pcrut.boolean(_pcrut.cover(1.0))),NaN)[0,:]
+        y = _pcrut.pcr2numpy(_pcrut.ycoordinate(_pcrut.boolean(_pcrut.cover(1.0))),NaN)[:,0]
+    else:
+        x, y, data, FillVal = _readMap(clonemap, IFormat, logger)
+
+
 
     start=dt.datetime.strptime(startstr,"%d-%m-%Y %H:%M:%S")
 
@@ -488,7 +498,7 @@ def main(argv=None):
         if perYear:
             for yr_timelist in timeList:
                 ncoutfile_yr = os.path.splitext(ncoutfile)[0] + "_" + str(yr_timelist[0].year) + os.path.splitext(ncoutfile)[1]
-                ncdf.prepare_nc(ncoutfile_yr, yr_timelist, x, y, metadata, logger,Format=Format,zlib=zlib,EPSG=EPSG)
+                ncdf.prepare_nc(ncoutfile_yr, yr_timelist, x, y, metadata, logger,Format=OFormat,zlib=zlib,EPSG=EPSG)
 
                 idx = 0
                 for mname in mapstackname:
@@ -497,13 +507,14 @@ def main(argv=None):
                     if os.path.exists(inifile):
                         varmeta = getvarmetadatafromini(inifile,var[idx])
 
-                    write_netcdf_timeseries(mapstackfolder, mname, ncoutfile_yr, var[idx], unit, varname[idx], yr_timelist, varmeta, logger,maxbuf=mbuf,Format=Format,zlib=zlib,least_significant_digit=least_significant_digit,startidx=startmapstack,EPSG=EPSG)
+                    write_netcdf_timeseries(mapstackfolder, mname, ncoutfile_yr, var[idx], unit, varname[idx], \
+                                            yr_timelist, varmeta, logger,maxbuf=mbuf,Format=OFormat,zlib=zlib,least_significant_digit=least_significant_digit,startidx=startmapstack,EPSG=EPSG)
                     idx = idx + 1
 
                 startmapstack = startmapstack + len(yr_timelist)
         else:
              #ncoutfile_yr = os.path.splitext(ncoutfile)[0] + "_" + str(yr_timelist[0].year) + os.path.splitext(ncoutfile)[1]
-             ncdf.prepare_nc(ncoutfile, timeList, x, y, metadata, logger,Format=Format,zlib=zlib,EPSG=EPSG)
+             ncdf.prepare_nc(ncoutfile, timeList, x, y, metadata, logger,Format=OFormat,zlib=zlib,EPSG=EPSG)
              idx = 0
              for mname in mapstackname:
                 logger.info("Converting mapstack: " + mname + " to " + ncoutfile)
@@ -511,11 +522,13 @@ def main(argv=None):
                 if os.path.exists(inifile):
                     varmeta = getvarmetadatafromini(inifile,var[idx])
 
-                write_netcdf_timeseries(mapstackfolder, mname, ncoutfile, var[idx], unit, varname[idx], timeList, varmeta, logger,maxbuf=mbuf,Format=Format,zlib=zlib,least_significant_digit=least_significant_digit,startidx=startmapstack,EPSG=EPSG)
+                write_netcdf_timeseries(mapstackfolder, mname, ncoutfile, var[idx], unit, varname[idx], timeList, varmeta,\
+                                        logger,maxbuf=mbuf,Format=OFormat,zlib=zlib,least_significant_digit=least_significant_digit,\
+                                        startidx=startmapstack,EPSG=EPSG)
                 idx = idx + 1
     else:
         NcOutput = ncdf.netcdfoutputstatic(ncoutfile, logger, timeList[0],1,timestepsecs=timestepsecs,
-                                                     maxbuf=1, metadata=metadata, EPSG=EPSG,Format=Format,
+                                                     maxbuf=1, metadata=metadata, EPSG=EPSG,Format=OFormat,
                                                      zlib=zlib)
 
         for file in mapstackname:
