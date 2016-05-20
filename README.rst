@@ -48,7 +48,7 @@ Once Anaconda is installed open a command window and install netCDF4, gdal and p
 
 + Download pcraster from www.pcraster.eu website (version 4.1 64 bit)
 + Extract zip to root of c: This will created c:\pcraster-4.1.0_x86-64
-+ Add c:\pcraster-4.1.0_x86-64\python to the PYTHONPATH environment variable
++ Add c:\\pcraster-4.1.0_x86-64\\python to the PYTHONPATH environment variable
 
 *Installing wflow itself*
 
@@ -58,7 +58,7 @@ Clone with git or Download the latest zip with the source code of wflow. Go to t
 
 To check it the install is successfull, go to the  the the examples directory and run the following command:
 
-+ Python c:\Anaconda\scripts\wflow_sbm.py -C wflow_rhine_hbv -T 100 -R testing 
++ Python c:\\Anaconda\\scripts\\wflow_sbm.py -C wflow_rhine_hbv -T 100 -R testing 
 
 This should run without errors
 
