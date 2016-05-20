@@ -24,12 +24,19 @@ widely. The main differences are:
 The sections below describe the working of the model in more detail.
 
 
+
+.. figure:: _images/wflow_sbm_soil.png
+    :width: 640px
+    :align: center
+
+    Overview of the different processes and fluxes in the wflow_sbm model.
+
 Limitations
 ~~~~~~~~~~~
 
-The \_sbm concept has been developed for small catchments and relatively thin soils. In addition, the numerical solution
-of the soil water flow is a simple explicit scheme and the lateral groundwater flow follows topography rather than true
-hydraulic head. Although the waterdem=1 forces the model to recalculate the flow direction each timestep -- thus giving
+The wflow\_sbm concept has been developed steep catchments and relatively thin soils. In addition, the numerical
+solution of the soil water flow is a simple explicit scheme and the lateral groundwater flow follows topography rather than true
+hydraulic head. Although the waterdem=1 option forces the model to recalculate the flow direction each timestep -- thus giving
 a more realistic groundwater flow -- the following limitation apply:
 
 + Results for deep soils > 2m may be unrealistic (also due to the simple representation of the unsaturated zone)
@@ -37,7 +44,7 @@ a more realistic groundwater flow -- the following limitation apply:
 + The lateral movement of groundwater may be very wrong in terrain that is not steep (use the waterdem=1 option)
 
 + The simple numerical solution means that results from a daily timestep model may be  different from those
-  with an hourly timestep. This caa also cause water budget problems
+  with an hourly timestep. This can also cause water budget problems
 
 
 
