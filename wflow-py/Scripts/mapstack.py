@@ -72,7 +72,7 @@ class WflowModel(DynamicModel):
       """
       modelparameters = []
 
-      modelparameters.append(self.ParamType(name="locMap",stack='inLoc.map',type="staticmap",default=0.0,verbose=True,lookupmaps=[]))
+      #modelparameters.append(self.ParamType(name="locMap",stack='inLoc.map',type="staticmap",default=0.0,verbose=True,lookupmaps=[]))
 
       return modelparameters
 
@@ -174,8 +174,9 @@ class WflowModel(DynamicModel):
       self.logger.debug("Processing step: " + str(self.currentTimeStep()))
       self.wf_updateparameters() # read the temperature map for each step (see parameters())
 
-      self.MapStack = timeinputscalar(os.path.join(self.caseName, self.inTSS),self.locMap)
-      self.MapStack = pcrut.interpolategauges(self.MapStack,self.interpolmethod)
+      if hasattr(self,'locMap'):
+        self.MapStack = timeinputscalar(os.path.join(self.caseName, self.inTSS),self.locMap)
+        self.MapStack = pcrut.interpolategauges(self.MapStack,self.interpolmethod)
       #self.MapStack = ifthen(self.locMap >= 1,self.MapStack)
 
 
