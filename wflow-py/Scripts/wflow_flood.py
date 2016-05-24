@@ -57,6 +57,9 @@ def main():
     parser.add_option('-d', '--destination',
                       dest='dest_path', default='inun',
                       help='Destination path')
+    parser.add_option('-H', '--hand_file',
+                      dest='hand_file', default='',
+                      help='optional HAND file (already generated)')
     (options, args) = parser.parse_args()
 
     if not os.path.exists(options.inifile):
@@ -166,7 +169,10 @@ def main():
     ############### TODO ######
     # setup a HAND file
     dem_name = os.path.split(options.dem_file)[1].split('.')[0]
-    hand_file = os.path.join(options.dest_path, '{:s}_hand_strahler_{:02d}.tif'.format(dem_name, options.hand_strahler))
+    if os.path.isfile(options.hand_file):
+        hand_file = options.hand_file
+    else:
+        hand_file = os.path.join(options.dest_path, '{:s}_hand_strahler_{:02d}.tif'.format(dem_name, options.hand_strahler))
     if not(os.path.isfile(hand_file)):
     # hand file does not exist yet! Generate it, otherwise skip!
         logger.info('HAND file {:s} setting up...please wait...'.format(hand_file))
@@ -303,6 +309,7 @@ def main():
     # load the data with river levels and compute the volumes
     if options.file_format == 0:
         # assume we need the maximum value in a NetCDF time series grid
+        logger.info('Reading flood from {:s} NetCDF file'.format(options.flood_map))
         a = nc.Dataset(options.flood_map, 'r')
         xax = a.variables['x'][:]
         yax = a.variables['y'][:]
@@ -317,6 +324,7 @@ def main():
             flood = np.flipud(flood)
         a.close()
     elif options.file_format == 1:
+        logger.info('Reading flood from {:s} PCRaster file'.format(options.flood_map))
         xax, yax, flood, flood_fill_value = inun_lib.gdal_readmap(options.flood_map, 'PCRaster')
         flood[flood==flood_fill_value] = 0.
     #res_x = x[1]-x[0]
@@ -327,15 +335,21 @@ def main():
         bankfull = np.zeros(flood.shape)
     else:
         if options.file_format == 0:
+            logger.info('Reading bankfull from {:s} NetCDF file'.format(options.bankfull_map))
             a = nc.Dataset(options.bankfull_map, 'r')
             xax = a.variables['x'][:]
             yax = a.variables['y'][:]
-            bankfull = a.variables[options.flood_variable][0, :, :]
+            bankfull_series = a.variables[options.flood_variable][:]
+            bankfull_data = bankfull_series.max(axis=0)
+            if np.ma.is_masked(bankfull_data):
+                bankfull = bankfull_data.data
+                bankfull[bankfull_data.mask] = 0
             if yax[-1] > yax[0]:
                 yax = np.flipud(yax)
-                bankfull = np.flipud(bankful)
+                bankfull = np.flipud(bankfull)
             a.close()
         elif options.file_format == 1:
+            logger.info('Reading bankfull from {:s} PCRaster file'.format(options.bankfull_map))
             xax, yax, bankfull, bankfull_fill_value = inun_lib.gdal_readmap(options.bankfull_map, 'PCRaster')
 #     flood = bankfull*2
     # res_x = 2000
