@@ -454,6 +454,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         """
 
         for par in self.modelparameters:
+
             if self._userModel()._inInitial():
                 if par.type == 'tbl' or par.type =='tblsparse':
                     if not hasattr(self._userModel(), par.name):
@@ -485,7 +486,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     fname = os.path.join(self._userModel().Dir, par.stack)
                     fileName, fileExtension = os.path.splitext(fname)
                     if fileExtension == '.map':
-                        theparmap = self.wf_readmap(fname,par.default,fail=par.verbose)
+                        theparmap = self.wf_readmap(fname,par.default,fail=int(par.verbose))
                     else:
                         self._userModel().logger.error(fname + " Does not have a .map extension")
 
@@ -499,7 +500,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         self._userModel().logger.info("Adding " + par.name + " to model.")
 
                     theparmap = self.wf_readmap(os.path.join(self._userModel().caseName, par.stack), par.default,
-                                                verbose=par.verbose)
+                                                verbose=int(par.verbose))
                     theparmap = cover(theparmap, par.default)
                     setattr(self._userModel(), par.name, theparmap)
 
@@ -507,7 +508,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     if not hasattr(self._userModel(), par.name):
                         self._userModel().logger.info("Adding " + par.name + " to model.")
                     theparmap = self.wf_readmapClimatology(os.path.join(self._userModel().caseName, par.stack), kind=1,
-                                                           default=par.default, verbose=par.verbose)
+                                                           default=par.default, verbose=int(par.verbose))
                     theparmap = cover(theparmap, par.default)
                     setattr(self._userModel(), par.name, theparmap)
 
@@ -522,7 +523,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     if not hasattr(self._userModel(), par.name):
                         self._userModel().logger.info(par.name + " is not defined yet, adding anyway.")
                     theparmap = self.wf_readmapClimatology(os.path.join(self._userModel().caseName, par.stack), kind=2,
-                                                           default=par.default, verbose=par.verbose)
+                                                           default=par.default, verbose=int(par.verbose))
                     setattr(self._userModel(), par.name, theparmap)
 
             if self._userModel()._inDynamic():

@@ -206,6 +206,30 @@ def SnowPackHBV(Snow, SnowWater, Precipitation, Temperature, TTI, TT, Cfmax, WHC
     return Snow, SnowWater, SnowMelt, RainFall
 
 
+def GlacierMelt(GlacierStore,  Snow, Temperature, TT, Cfmax):
+    """
+    Glacier modelling using a Temperature degree factor. Melting
+    only occurs if the snow cover > 10 mm
+
+
+    :ivar GlacierStore:
+    :ivar Snow: Snow pack on top of Glacier
+    :ivar Temperature:
+
+    :returns: GlacierStore,GlacierMelt,
+    """
+
+
+    PotMelt = ifthenelse(Temperature > TT, Cfmax * (Temperature - TT),
+                             scalar(0.0))  # Potential snow melt, based on temperature
+
+    GlacierMelt = ifthenelse(Snow > 10.0,min(PotMelt, GlacierStore),cover(0.0))  # actual Glacier melt
+    GlacierStore = GlacierStore - GlacierMelt  # dry snow content
+
+
+    return GlacierStore,  GlacierMelt
+
+
 class WflowModel(DynamicModel):
     """
     .. versionchanged:: 0.91
@@ -284,7 +308,7 @@ class WflowModel(DynamicModel):
         states = ['SurfaceRunoff', 'WaterLevel',
                   'FirstZoneDepth','Snow',
                   'TSoil','UStoreDepth','SnowWater',
-                  'CanopyStorage','ReservoirVolume']
+                  'CanopyStorage','ReservoirVolume','GlacierStore']
 
         return states
 
@@ -535,6 +559,9 @@ class WflowModel(DynamicModel):
             self.EoverR = self.readtblDefault(self.Dir + "/" + self.intbl + "/EoverR.tbl", self.LandUse, subcatch,
                                           self.Soil, 0.1)
 
+
+
+
         self.RootingDepth = self.readtblDefault(self.Dir + "/" + self.intbl + "/RootingDepth.tbl", self.LandUse,
                                                 subcatch, self.Soil, 750.0)  #rooting depth
         #: rootdistpar determien how roots are linked to water table.
@@ -625,6 +652,8 @@ class WflowModel(DynamicModel):
             self.cf_soil = min(0.99,
                                self.readtblDefault(self.Dir + "/" + self.intbl + "/cf_soil.tbl", self.LandUse, subcatch,
                                                    self.Soil, 0.038))  # Ksat reduction factor fro frozen soi
+            # We are modelling gletchers
+
 
         # Determine real slope and cell length
 
@@ -843,11 +872,11 @@ class WflowModel(DynamicModel):
             self.TSoil = self.ZeroMap + 10.0
             self.CanopyStorage = self.ZeroMap
             self.ReservoirVolume = self.ResMaxVolume * self.ResTargetFullFrac
-
-
+            self.GlacierStore = self.wf_readmap(os.path.join(self.Dir,"staticmaps","GlacierStore.map"), 55.0 * 1000)
         else:
             self.logger.info("Setting initial conditions from state files")
             self.wf_resume(os.path.join(self.Dir,"instate"))
+
 
 
 
@@ -987,6 +1016,26 @@ class WflowModel(DynamicModel):
 
             self.SnowCover = ifthenelse(self.Snow >0, scalar(1), scalar(0))
             self.NrCell= areatotal(self.SnowCover,self.TopoId)
+
+            if hasattr(self,'GlacierFrac'):
+                """
+                Run Glacier module and add the snowpack on-top of it.
+                Snow becomes ice when pressure is about 830 k/m^2, e.g 8300 mm
+                If below that a max amount of 2mm/day can be converted to glacier-ice
+                """
+                #TODO: document glacier module
+                self.Snow2Glacier = ifthenelse(self.Snow > 8300, self.Snow - 8300 , \
+                                               self.Snow/4150 * 2.0 * self.timestepsecs/self.basetimestep )
+
+                self.Snow2Glacier = ifthenelse(self.GlacierFrac > 0.0, self.Snow2Glacier,self.ZeroMap)
+
+                self.Snow = self.Snow - (self.Snow2Glacier * self.GlacierFrac)
+
+                self.GlacierStore, self.GlacierMelt = GlacierMelt(self.GlacierStore + self.Snow2Glacier,self.Snow,self.Temperature,\
+                                                                  self.G_TT, self.G_Cfmax)
+                # Convert to mm per grid cell and add to snowmelt
+                self.GlacierMelt = self.GlacierMelt * self.GlacierFrac
+                self.PrecipitationPlusMelt = self.PrecipitationPlusMelt + self.GlacierMelt
         else:
             self.PrecipitationPlusMelt = self.Precipitation
 
