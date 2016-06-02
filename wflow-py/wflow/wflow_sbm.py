@@ -306,14 +306,17 @@ class WflowModel(DynamicModel):
        :var self.ReservoirVolume: Volume of each reservoir [m^3]
        :var self.GlacierStore: Thickness of the Glacier in a gridcell [mm]
        """
+
         states = ['SurfaceRunoff', 'WaterLevel',
-                  'FirstZoneDepth','Snow',
-                  'TSoil','UStoreDepth','SnowWater',
-                  'CanopyStorage','ReservoirVolume','GlacierStore']
-        defaults = [0.0,0.0,
-                    0.0, 0.0,
-                    10.0,0.0,0.0,
-                    0.0,0.0,0.0]
+                  'FirstZoneDepth', 'Snow',
+                  'TSoil', 'UStoreDepth', 'SnowWater',
+                  'CanopyStorage']
+
+        if hasattr(self, 'GlacierFrac'):
+            states.append('GlacierStore')
+
+        if hasattr(self,'ReserVoirLocs'):
+            states.append('ReservoirVolume')
 
         return states
 
@@ -363,17 +366,18 @@ class WflowModel(DynamicModel):
         modelparameters.append(self.ParamType(name="PotenEvap",stack=self.PET_mapstack,type="timeseries",default=0.0,verbose=True,lookupmaps=[]))
         modelparameters.append(self.ParamType(name="Temperature",stack=self.TEMP_mapstack,type="timeseries",default=10.0,verbose=True,lookupmaps=[]))
         modelparameters.append(self.ParamType(name="Inflow",stack=self.Inflow_mapstack,type="timeseries",default=0.0,verbose=False,lookupmaps=[]))
-        modelparameters.append(self.ParamType(name="ReserVoirLocs",stack='staticmaps/wflow_reservoirlocs.map',
-                                              type="staticmap",default=0.0,verbose=False,lookupmaps=[]))
+
         modelparameters.append(self.ParamType(name="IrrigationAreas", stack='staticmaps/wflow_irrigationareas.map',
                                               type="staticmap", default=0.0, verbose=False, lookupmaps=[]))
         modelparameters.append(self.ParamType(name="IrrigationSurfaceIntakes", stack='staticmaps/wflow_irrisurfaceintake.map',
                                               type="staticmap", default=0.0, verbose=False, lookupmaps=[]))
-        modelparameters.append(self.ParamType(name="ResTargetFullFrac",stack='intbl/ResTargetFullFrac.tbl',type="tblsparse",default=0.8,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
-        modelparameters.append(self.ParamType(name="ResTargetMinFrac",stack='intbl/ResTargetMinFrac.tbl',type="tblsparse",default=0.4,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
-        modelparameters.append(self.ParamType(name="ResMaxVolume",stack='intbl/ResMaxVolume.tbl',type="tblsparse",default=0.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
-        modelparameters.append(self.ParamType(name="ResMaxRelease",stack='intbl/ResMaxRelease.tbl',type="tblsparse",default=1.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
-        modelparameters.append(self.ParamType(name="ResDemand",stack='intbl/ResDemand.tbl',type="tblsparse",default=1.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
+        # modelparameters.append(self.ParamType(name="ReserVoirLocs", stack='staticmaps/wflow_reservoirlocs.map',
+        #                                       type="staticmap", default=0.0, verbose=False, lookupmaps=[]))
+        # modelparameters.append(self.ParamType(name="ResTargetFullFrac",stack='intbl/ResTargetFullFrac.tbl',type="tblsparse",default=0.8,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
+        # modelparameters.append(self.ParamType(name="ResTargetMinFrac",stack='intbl/ResTargetMinFrac.tbl',type="tblsparse",default=0.4,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
+        # modelparameters.append(self.ParamType(name="ResMaxVolume",stack='intbl/ResMaxVolume.tbl',type="tblsparse",default=0.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
+        # modelparameters.append(self.ParamType(name="ResMaxRelease",stack='intbl/ResMaxRelease.tbl',type="tblsparse",default=1.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
+        # modelparameters.append(self.ParamType(name="ResDemand",stack='intbl/ResDemand.tbl',type="tblsparse",default=1.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
 
 
         return modelparameters
@@ -609,14 +613,18 @@ class WflowModel(DynamicModel):
         self.MporeFrac = self.readtblDefault(self.Dir + "/" + self.intbl + "/MporeFrac.tbl", self.LandUse,
                                                     subcatch, self.Soil, 0.0)
 
-        # Check if we have reservoirs
-        tt = pcr2numpy(self.ReserVoirLocs, 0.0)
-        self.nrres = tt.max()
-        if self.nrres > 0:
-            self.logger.info("A total of " + str(self.nrres) + " reservoirs found.")
-            self.ReserVoirDownstreamLocs = downstream(self.TopoLdd, self.ReserVoirLocs)
-            self.TopoLddOrg = self.TopoLdd
-            self.TopoLdd = lddrepair(cover(ifthen(boolean(self.ReserVoirLocs), ldd(5)), self.TopoLdd))
+
+        if hasattr(self,'ReservoirLocs'):
+            # Check if we have reservoirs
+            tt = pcr2numpy(self.ReserVoirLocs, 0.0)
+            self.nrres = tt.max()
+            if self.nrres > 0:
+                self.logger.info("A total of " + str(self.nrres) + " reservoirs found.")
+                self.ReserVoirDownstreamLocs = downstream(self.TopoLdd, self.ReserVoirLocs)
+                self.TopoLddOrg = self.TopoLdd
+                self.TopoLdd = lddrepair(cover(ifthen(boolean(self.ReserVoirLocs), ldd(5)), self.TopoLdd))
+        else:
+            self.nrres = 0
 
         # Check if we have irrigation areas
         tt = pcr2numpy(self.IrrigationAreas, 0.0)
