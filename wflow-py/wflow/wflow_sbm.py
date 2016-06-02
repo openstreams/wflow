@@ -614,7 +614,7 @@ class WflowModel(DynamicModel):
                                                     subcatch, self.Soil, 0.0)
 
 
-        if hasattr(self,'ReservoirLocs'):
+        if hasattr(self,'ReserVoirLocs'):
             # Check if we have reservoirs
             tt = pcr2numpy(self.ReserVoirLocs, 0.0)
             self.nrres = tt.max()
