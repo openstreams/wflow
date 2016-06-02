@@ -203,7 +203,7 @@ def SnowPackHBV(Snow, SnowWater, Precipitation, Temperature, TTI, TT, Cfmax, WHC
     RainFall = max(SnowWater - MaxSnowWater, 0.0)  # rain + surpluss snowwater
     SnowWater = SnowWater - RainFall
 
-    return Snow, SnowWater, SnowMelt, RainFall
+    return Snow, SnowWater, SnowMelt, RainFall,SnowFall
 
 
 def GlacierMelt(GlacierStore,  Snow, Temperature, TT, Cfmax):
@@ -304,11 +304,16 @@ class WflowModel(DynamicModel):
        :var self.FirstZoneDepth: Water in the saturated store [mm]
        :var self.CanopyStorage: Amount of water on the Canopy [mm]
        :var self.ReservoirVolume: Volume of each reservoir [m^3]
+       :var self.GlacierStore: Thickness of the Glacier in a gridcell [mm]
        """
         states = ['SurfaceRunoff', 'WaterLevel',
                   'FirstZoneDepth','Snow',
                   'TSoil','UStoreDepth','SnowWater',
                   'CanopyStorage','ReservoirVolume','GlacierStore']
+        defaults = [0.0,0.0,
+                    0.0, 0.0,
+                    10.0,0.0,0.0,
+                    0.0,0.0,0.0]
 
         return states
 
@@ -399,8 +404,6 @@ class WflowModel(DynamicModel):
             should be negative. A more negative  number means that all roots are wet if the water
             table is above the lowest part of the roots.
             A less negative number smooths this. [mm] (default = -80000)
-
-
 
         *Canopy*
 
@@ -999,7 +1002,7 @@ class WflowModel(DynamicModel):
         if self.modelSnow:
             self.TSoil = self.TSoil + self.w_soil * (self.Temperature - self.TSoil)
             # return Snow,SnowWater,SnowMelt,RainFall
-            self.Snow, self.SnowWater, self.SnowMelt, self.PrecipitationPlusMelt = SnowPackHBV(self.Snow, self.SnowWater,
+            self.Snow, self.SnowWater, self.SnowMelt, self.PrecipitationPlusMelt,self.SnowFall = SnowPackHBV(self.Snow, self.SnowWater,
                                                                                        self.Precipitation,
                                                                                        self.Temperature, self.TTI,
                                                                                        self.TT, self.Cfmax, self.WHC)

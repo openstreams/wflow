@@ -61,7 +61,118 @@ to be potential.
 Snow
 ----
 
-The wflow\_sbm model uses the same snow routine as the wflow\_hbv model.
+Precipitation enters the model via the snow routine. If the air temperature,
+:math:`T_{a}`, is below a user-defined threshold :math:`TT (\approx0^{o}C)`
+precipitation occurs as snowfall, whereas it occurs as rainfall if
+:math:`T_{a}\geq TT`. A another parameter :math:`TTI` defines how precipitation
+can occur partly as rain of snowfall (see the figure below).
+If precipitation occurs as snowfall, it is added to the dry snow component
+within the snow pack. Otherwise it ends up in the free water reservoir,
+which represents the liquid water content of the snow pack. Between
+the two components of the snow pack, interactions take place, either
+through snow melt (if temperatures are above a threshold :math:`TT`) or
+through snow refreezing (if temperatures are below threshold :math:`TT`).
+The respective rates of snow melt and refreezing are:
+
+.. math::
+
+    Q_{m}  =  cfmax(T_{a}-TT)\;\;;T_{a}>TT
+
+    Q_{r}  =  cfmax*cfr(TT-T_{a})\;;T_{a}<TT
+
+
+
+where :math:`Q_{m}` is the rate of snow melt, :math:`Q_{r}` is the rate of snow
+refreezing, and $cfmax$ and $cfr$ are user defined model parameters
+(the melting factor :math:`mm/(^{o}C*day)` and the refreezing factor
+respectively)
+
+.. note::
+
+    The FoCFMAX parameter from the original HBV version is not used. instead
+    the CFMAX is presumed to be for the landuse per pixel. Normally for
+    forested pixels the CFMAX is 0.6 {*} CFMAX
+
+
+The air temperature, :math:`T_{a}`, is related to measured daily average
+temperatures. In the original HBV-concept, elevation differences within
+the catchment are represented through a distribution function (i.e.
+a hypsographic curve) which makes the snow module semi-distributed.
+In the modified version that is applied here, the temperature, :math:`T_{a}`,
+is represented in a fully distributed manner, which means for each
+grid cell the temperature is related to the grid elevation.
+
+The fraction of liquid water in the snow pack (free water) is at most
+equal to a user defined fraction, :math:`WHC`, of the water equivalent
+of the dry snow content. If the liquid water concentration exceeds
+:math:`WHC`, either through snow melt or incoming rainfall, the surpluss
+water becomes available for infiltration into the soil:
+
+.. math::
+
+    Q_{in}=max\{(SW-WHC*SD);\;0.0\}
+
+
+
+where :math:`Q_{in}` is the volume of water added to the soil module, :math:`SW`
+is the free water content of the snow pack and :math:`SD` is the dry snow
+content of the snow pack.
+
+
+.. figure:: _images/hbv-snow.png
+	:width: 600px
+
+	Schematic view of the snow routine
+
+
+The snow model als has an optional (experimental) 'mass-wasting' routine. This transports snow downhill
+using the local drainage network. To use it set the variable MassWasting in the model section to 1.
+
+::
+
+       # Masswasting of snow
+       # 5.67 = tan 80 graden
+       SnowFluxFrac = min(0.5,self.Slope/5.67) * min(1.0,self.DrySnow/MaxSnowPack)
+       MaxFlux = SnowFluxFrac * self.DrySnow
+       self.DrySnow = accucapacitystate(self.TopoLdd,self.DrySnow, MaxFlux)
+       self.FreeWater = accucapacitystate(self.TopoLdd,self.FreeWater,SnowFluxFrac * self.FreeWater )
+
+
+
+Glaciers
+--------
+If snow modeling is enabled Glacier modelling can be enables by including the following three entries
+in the modelparameters section:
+
+::
+    [modelparameters]
+    GlacierFrac=staticmaps/GlacierFrac.map,staticmap,0.0,0
+    G_TT=intbl/G_TT.tbl,tbl,0.0,1,staticmaps/GlacierFrac.map
+    G_Cfmax=intbl/G_Cfmax.tbl,tbl,3.0,1,staticmaps/GlacierFrac.map
+
+
+*GlacierFrac* is a map that gives the fraction of each grid cell covered by a glacier as a number between zero and one.
+Furthermore two lokup tables must be defined: *G\_TT* and *G\_Cfmax*. If the air temperature,
+:math:`T_{a}`, is below  :math:`G\_TT (\approx0^{o}C)`
+precipitation occurs as snowfall, whereas it occurs as rainfall if
+:math:`T_{a}\geq G\_TT`.
+
+With this the rate of glacier melt in mm is estimated as:
+
+.. math::
+
+    Q_{m}  =  cfmax(T_{a}-G\_TT)\;\;;T_{a}>G\_TT
+
+where :math:`Q_{m}` is the rate of glacier meltand $cfmax$ is the melting factor in :math:`mm/(^{o}C*day)`.
+
+Accumulated snow on top of the glacier is converted to ice (and will thus become part of the glacier mass) if
+the total snow depth > 8300 mm. If the snow pack is < 8300 mm the following equation is used to convert part of the snow pack
+to ice:
+
+::
+
+    ToIce = Snow/4150 * 2.0 * timestepsecs/basetimestep
+
 
 The rainfall interception model
 -------------------------------
