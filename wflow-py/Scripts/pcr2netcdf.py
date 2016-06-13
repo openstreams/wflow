@@ -137,8 +137,10 @@ def _readMap(fileName, fileFormat,logger):
     cols = ds.RasterXSize
     rows = ds.RasterYSize
     x = linspace(originX+resX/2,originX+resX/2+resX*(cols-1),cols)
-    y = linspace(originY+resY/2,originY+resY/2+resY*(rows-1),rows)
-    # Retrieve raster
+    if resY < 0.0:
+        y = linspace(originY+abs(resY)/2,originY+abs(resY)/2+abs(resY)*(rows-1),rows)[::-1]
+    else:
+        y = linspace(originY + resY / 2, originY + resY / 2 + resY * (rows - 1), rows)
     RasterBand = ds.GetRasterBand(1) # there's only 1 band, starting from 1
     data = RasterBand.ReadAsArray(0,0,cols,rows)
     FillVal = RasterBand.GetNoDataValue()
@@ -146,7 +148,7 @@ def _readMap(fileName, fileFormat,logger):
     del ds
     # #ds = None
 
-    return x, y, data, FillVal
+    return x, y, data.copy(), FillVal
 
 
 
@@ -456,11 +458,8 @@ def main(argv=None):
 
     if IFormat == 'PCRaster':
         _pcrut.setclone(clonemap)
-   
-        x = _pcrut.pcr2numpy(_pcrut.xcoordinate(_pcrut.boolean(_pcrut.cover(1.0))),NaN)[0,:]
-        y = _pcrut.pcr2numpy(_pcrut.ycoordinate(_pcrut.boolean(_pcrut.cover(1.0))),NaN)[:,0]
-    else:
-        x, y, data, FillVal = _readMap(clonemap, IFormat, logger)
+
+    x, y, data, FillVal = _readMap(clonemap, IFormat, logger)
 
 
 
