@@ -1364,6 +1364,8 @@ class WflowModel(DynamicModel):
 
                 if deltasup < self.breakoff or self.nrit >= self.maxitsupply:
                     break
+
+            self.InflowKinWaveCell = upstream(self.TopoLdd, self.SurfaceRunoff)
             self.updateRunOff()
         else:
             self.SurfaceRunoffMM = self.SurfaceRunoff * self.QMMConv  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
