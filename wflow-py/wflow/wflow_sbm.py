@@ -882,8 +882,10 @@ class WflowModel(DynamicModel):
             self.SnowWater = self.ZeroMap
             self.TSoil = self.ZeroMap + 10.0
             self.CanopyStorage = self.ZeroMap
-            self.ReservoirVolume = self.ResMaxVolume * self.ResTargetFullFrac
-            self.GlacierStore = self.wf_readmap(os.path.join(self.Dir,"staticmaps","GlacierStore.map"), 55.0 * 1000)
+            if hasattr(self, 'ReserVoirLocs'):
+                self.ReservoirVolume = self.ResMaxVolume * self.ResTargetFullFrac
+            if hasattr(self, 'GlacierFrac'):
+                self.GlacierStore = self.wf_readmap(os.path.join(self.Dir,"staticmaps","GlacierStore.map"), 55.0 * 1000)
         else:
             self.logger.info("Setting initial conditions from state files")
             self.wf_resume(os.path.join(self.Dir,"instate"))
@@ -1035,10 +1037,12 @@ class WflowModel(DynamicModel):
                 If below that a max amount of 2mm/day can be converted to glacier-ice
                 """
                 #TODO: document glacier module
-                self.Snow2Glacier = ifthenelse(self.Snow > 8300, self.Snow - 8300 , \
-                                               self.Snow/4150 * 2.0 * self.timestepsecs/self.basetimestep )
+                self.snowdist = sCurve(self.Snow,a=8300.,c=0.06)
+                self.Snow2Glacier = ifthenelse(self.Snow > 8300, self.snowdist * (self.Snow - 8300), self.ZeroMap)
 
                 self.Snow2Glacier = ifthenelse(self.GlacierFrac > 0.0, self.Snow2Glacier,self.ZeroMap)
+                # Max conversion to 8mm/day
+                self.Snow2Glacier = min(self.Snow2Glacier,8.0) * self.timestepsecs/self.basetimestep
 
                 self.Snow = self.Snow - (self.Snow2Glacier * self.GlacierFrac)
 
