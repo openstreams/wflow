@@ -784,7 +784,10 @@ def sCurve(X,a=0.0,b=1.0,c=1.0):
     Output:
         - result
     """
-    s = 1.0/(b + exp(-c * (X-a)))
+    try:
+        s = 1.0/(b + exp(-c * (X-a)))
+    except:
+        s = 1.0 / (b + np.exp(-c * (X - a)))
     return s
 
 def sCurveSlope(X,a=0.0,b=1.0,c=1.0):

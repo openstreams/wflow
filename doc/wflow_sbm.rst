@@ -141,7 +141,7 @@ using the local drainage network. To use it set the variable MassWasting in the 
 
 Glaciers
 --------
-If snow modeling is enabled Glacier modelling can be enables by including the following three entries
+If snow modeling is enabled Glacier modelling can also be enabled by including the following three entries
 in the modelparameters section:
 
 ::
@@ -152,7 +152,7 @@ in the modelparameters section:
 
 
 *GlacierFrac* is a map that gives the fraction of each grid cell covered by a glacier as a number between zero and one.
-Furthermore two lokup tables must be defined: *G\_TT* and *G\_Cfmax*. If the air temperature,
+Furthermore two lookup tables must be defined: *G\_TT* and *G\_Cfmax*. If the air temperature,
 :math:`T_{a}`, is below  :math:`G\_TT (\approx0^{o}C)`
 precipitation occurs as snowfall, whereas it occurs as rainfall if
 :math:`T_{a}\geq G\_TT`.
@@ -165,14 +165,15 @@ With this the rate of glacier melt in mm is estimated as:
 
 where :math:`Q_{m}` is the rate of glacier meltand $cfmax$ is the melting factor in :math:`mm/(^{o}C*day)`.
 
-Accumulated snow on top of the glacier is converted to ice (and will thus become part of the glacier mass) if
-the total snow depth > 8300 mm. If the snow pack is < 8300 mm the following equation is used to convert part of the snow pack
-to ice:
+Accumulated snow on top of the glacier is converted to ice (and will thus become part of the glacier store) if
+the total snow depth > 8300 mm. An S-curve is used to smooth the transition. A maximum of 8mm/day can be converted to ice.
 
-::
+.. plot:: plots/glacier-plot.py
 
-    ToIce = Snow/4150 * 2.0 * timestepsecs/basetimestep
 
+Becuase the glacier store (GlacierStore.map) cannot be initialized by running the model a couple of year a default
+initial state map should be supplied by placing a GlacierStore.map file in the staticmaps directory. This map gives
+the amount of water (in mm) within the Glaciers at each gridcell)
 
 The rainfall interception model
 -------------------------------
