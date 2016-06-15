@@ -496,19 +496,24 @@ def main(argv=None):
 
         if perYear:
             for yr_timelist in timeList:
+
                 ncoutfile_yr = os.path.splitext(ncoutfile)[0] + "_" + str(yr_timelist[0].year) + os.path.splitext(ncoutfile)[1]
-                ncdf.prepare_nc(ncoutfile_yr, yr_timelist, x, y, metadata, logger,Format=OFormat,zlib=zlib,EPSG=EPSG)
 
-                idx = 0
-                for mname in mapstackname:
-                    logger.info("Converting mapstack: " + mname + " to " + ncoutfile)
-                    # get variable attributes from ini file here
-                    if os.path.exists(inifile):
-                        varmeta = getvarmetadatafromini(inifile,var[idx])
+                if os.path.exists(ncoutfile_yr):
+                    logger.info("Skipping file: " + ncoutfile_yr)
+                else:
+                    ncdf.prepare_nc(ncoutfile_yr, yr_timelist, x, y, metadata, logger,Format=OFormat,zlib=zlib,EPSG=EPSG)
 
-                    write_netcdf_timeseries(mapstackfolder, mname, ncoutfile_yr, var[idx], unit, varname[idx], \
-                                            yr_timelist, varmeta, logger,maxbuf=mbuf,Format=OFormat,zlib=zlib,least_significant_digit=least_significant_digit,startidx=startmapstack,EPSG=EPSG)
-                    idx = idx + 1
+                    idx = 0
+                    for mname in mapstackname:
+                        logger.info("Converting mapstack: " + mname + " to " + ncoutfile)
+                        # get variable attributes from ini file here
+                        if os.path.exists(inifile):
+                            varmeta = getvarmetadatafromini(inifile,var[idx])
+
+                        write_netcdf_timeseries(mapstackfolder, mname, ncoutfile_yr, var[idx], unit, varname[idx], \
+                                                yr_timelist, varmeta, logger,maxbuf=mbuf,Format=OFormat,zlib=zlib,least_significant_digit=least_significant_digit,startidx=startmapstack,EPSG=EPSG)
+                        idx = idx + 1
 
                 startmapstack = startmapstack + len(yr_timelist)
         else:
