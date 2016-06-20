@@ -137,12 +137,13 @@ lines in the .ini file of the model.
     [modelparameters]
     # Add this if you want to model reservoirs
     ReserVoirLocs=staticmaps/wflow_reservoirlocs.map,staticmap,0.0,0
-    ResTargetFullFrac=intbl/ResTargetFullFrac.tbl,tblsparse,0.8,0,staticmaps/wflow_reservoirlocs.map
-    ResTargetMinFrac=intbl/ResTargetMinFrac.tbl,tblsparse,0.4,0,staticmaps/wflow_reservoirlocs.map
-    ResMaxVolume=intbl/ResMaxVolume.tbl,tblsparse,0.0,0,staticmaps/wflow_reservoirlocs.map
-    ResMaxRelease=intbl/ResMaxRelease.tbl,tblsparse,1.0,0,staticmaps/wflow_reservoirlocs.map
-    ResDemand=intbl/ResDemand.tbl,tblsparse,1.0,0,staticmaps/wflow_reservoirlocs.map
+    ResTargetFullFrac=intbl/ResTargetFullFrac.tbl,tbl,0.8,0,staticmaps/wflow_reservoirlocs.map
+    ResTargetMinFrac=intbl/ResTargetMinFrac.tbl,tbl,0.4,0,staticmaps/wflow_reservoirlocs.map
+    ResMaxVolume=intbl/ResMaxVolume.tbl,tbl,0.0,0,staticmaps/wflow_reservoirlocs.map
+    ResMaxRelease=intbl/ResMaxRelease.tbl,tbl,1.0,0,staticmaps/wflow_reservoirlocs.map
+    ResDemand=intbl/ResDemand.tbl,tblmonthlyclim,1.0,0,staticmaps/wflow_reservoirlocs.map
 
+In the above example most values are fixed thought the year, only the demand is given per month of the year.
 
 Configuration
 -------------

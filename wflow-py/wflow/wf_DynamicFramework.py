@@ -463,13 +463,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     theparmap = self.readtblFlexDefault(tblname, par.default, *par.lookupmaps)
                     setattr(self._userModel(), par.name, theparmap)
 
-                if par.type == 'tblts' or par.type =='tblsparse':
-                    if not hasattr(self._userModel(), par.name):
-                        self._userModel().logger.info("Initial: Adding " + par.name + " to model.")
-                    tblname = os.path.join(self._userModel().Dir, par.stack)
-                    theparmap = self.readtblFlexDefault(tblname, par.default, *par.lookupmaps)
-                    setattr(self._userModel(), par.name, theparmap)
-
                 if par.type == 'statictbl':
                     if not hasattr(self._userModel(), par.name):
                         self._userModel().logger.info("Adding " + par.name + " to model.")
@@ -512,12 +505,21 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     theparmap = cover(theparmap, par.default)
                     setattr(self._userModel(), par.name, theparmap)
 
+                if par.type == 'tblmonthlyclim':
+                    if not hasattr(self._userModel(), par.name):
+                        self._userModel().logger.info("Initial: Adding " + par.name + " to model.")
+                    month = self.DT.currentDateTime.month
+                    ptex = os.path.splitext(par.stack)
+                    newName = ptex[0] + "_" + str(month) + ptex[1]
+                    tblname = os.path.join(self._userModel().Dir, newName)
+                    theparmap = self.readtblFlexDefault(tblname, par.default, *par.lookupmaps)
+                    setattr(self._userModel(), par.name, theparmap)
 
                 if par.type == 'hourlyclim':
                     if not hasattr(self._userModel(), par.name):
                         self._userModel().logger.info("Adding " + par.name + " to model.")
                     print "hourlyclim has " + par.name + par.stack
-                    print "Not implemented yet"
+                    print "not been implemented yet"
 
                 if par.type == 'dailyclim':
                     if not hasattr(self._userModel(), par.name):

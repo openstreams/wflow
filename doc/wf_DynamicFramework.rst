@@ -149,6 +149,7 @@ Possible parameter types (the second option)are:
 + tblts: Lookup tables for each timestep, including initial section
 + tblsparse: Lookup tables for each timestep, including initial section. Fills in missing
   timestep using previous timestep
++ tblmonthlyclim: read a tbl file corresponding to the current month (12 maps in total)
 + timeseries: read map for each timestep
 + monthlyclim: read a map corresponding to the current month (12 maps in total)
 + dailyclim: read a map corresponding to the current day of the year (366 maps in total)
