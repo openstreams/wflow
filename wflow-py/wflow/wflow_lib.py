@@ -74,7 +74,7 @@ def idtoid(sourceidmap, targetidmap,valuemap):
     return retmap
 
 
-def simpelreservoir(storage, inflow, maxstorage, target_perc_full, maximum_Q, demand, minimum_full_perc,ReserVoirLocs,timestepsecs=86400):
+def simplereservoir(storage, inflow, maxstorage, target_perc_full, maximum_Q, demand, minimum_full_perc, ReserVoirLocs, timestepsecs=86400):
     """
 
     :param storage: initial storage m^3

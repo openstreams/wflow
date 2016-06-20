@@ -119,7 +119,29 @@ The code is implemented in the updateRunoff attribute of the model class as foll
 
 Reservoirs
 ----------
+Simple reservoirs can be included within the kinematic wave routing by supplying a map with the locations of the
+reservoirs in which each reservoir has a unique id.  Furthermore a set of lookuptables must be defined linking
+the reservoir-id's to reservoir characteristics:
 
++ ResTargetFullFrac.tbl - Target fraction full (of max storage) for the reservoir: number between 0 and 1
++ ResTargetMinFrac.tbl - Target minimum full fraction (of max storage). Number between 01 and 1 <  ResTargetFullFrac
++ ResMaxVolume.tbl - Maximum reservoir storage (above which water is spilled) [m^3]
++ ResDemand.tbl - Water demand on the reservoir (all combined) m^3/s
++ ResMaxRelease.tbl - Maximum Q that can be released if below spillway [m^3/s]
+
+By default the reservoirs are not included in the model. To include them put the following
+lines in the .ini file of the model.
+
+::
+
+    [modelparameters]
+    # Add this if you want to model reservoirs
+    ReserVoirLocs=staticmaps/wflow_reservoirlocs.map,staticmap,0.0,0
+    ResTargetFullFrac=intbl/ResTargetFullFrac.tbl,tblsparse,0.8,0,staticmaps/wflow_reservoirlocs.map
+    ResTargetMinFrac=intbl/ResTargetMinFrac.tbl,tblsparse,0.4,0,staticmaps/wflow_reservoirlocs.map
+    ResMaxVolume=intbl/ResMaxVolume.tbl,tblsparse,0.0,0,staticmaps/wflow_reservoirlocs.map
+    ResMaxRelease=intbl/ResMaxRelease.tbl,tblsparse,1.0,0,staticmaps/wflow_reservoirlocs.map
+    ResDemand=intbl/ResDemand.tbl,tblsparse,1.0,0,staticmaps/wflow_reservoirlocs.map
 
 
 Configuration

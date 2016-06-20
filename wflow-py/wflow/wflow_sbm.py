@@ -1303,11 +1303,12 @@ class WflowModel(DynamicModel):
 
         #only run the reservoir module if needed
         if self.nrres > 0:
-            self.ReservoirVolume, self.Outflow,self.ResPecrFull,self.DemandRelease = simpelreservoir(self.ReservoirVolume,self.SurfaceRunoff,
-                                                                      self.ResMaxVolume,self.ResTargetFullFrac,
-                                                                      self.ResMaxRelease, self.ResDemand,
-                                                                      self.ResTargetMinFrac,self.ReserVoirLocs,
-                                                                        timestepsecs=self.timestepsecs)
+            self.ReservoirVolume, self.Outflow, self.ResPecrFull,\
+            self.DemandRelease = simplereservoir(self.ReservoirVolume, self.SurfaceRunoff,\
+                                                 self.ResMaxVolume, self.ResTargetFullFrac,
+                                                 self.ResMaxRelease, self.ResDemand,
+                                                 self.ResTargetMinFrac, self.ReserVoirLocs,
+                                                 timestepsecs=self.timestepsecs)
             self.OutflowDwn = upstream(self.TopoLddOrg,cover(self.Outflow,scalar(0.0)))
             self.Inflow = cover(self.OutflowDwn,self.Inflow)
 
