@@ -1311,6 +1311,8 @@ class WflowModel(DynamicModel):
                                                  timestepsecs=self.timestepsecs)
             self.OutflowDwn = upstream(self.TopoLddOrg,cover(self.Outflow,scalar(0.0)))
             self.Inflow = self.OutflowDwn + cover(self.Inflow,self.ZeroMap)
+        else:
+            self.Inflow= cover(self.Inflow,self.ZeroMap)
 
 
         self.ExfiltWaterCubic = self.ExfiltWater * self.ToCubic
