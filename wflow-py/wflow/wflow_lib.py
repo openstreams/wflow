@@ -474,6 +474,7 @@ def areastat(Var,Area):
     
 
 
+
 def checkerboard(mapin,fcc):
     """
     checkerboard create a checkerboard map with unique id's in a 
@@ -887,7 +888,12 @@ def zipFiles(fileList, fileTarget):
 
 
 def readMap(fileName, fileFormat):
-    """ Read geographical file into memory
+    """
+    Read geographical file into memory
+
+    :param fileName:
+    :param fileFormat:
+    :return x, y, data, FillVal:
     """
     # Open file for binary-reading
     mapFormat = gdal.GetDriverByName(fileFormat)
@@ -914,6 +920,39 @@ def readMap(fileName, fileFormat):
     ds = None
     return x, y, data, FillVal
 
+
+def cutMapById(data,subcatchmap,id,x,y,FillVal):
+    """
+
+    :param data: 2d numpy array to cut
+    :param subcatchmap: 2d numpy array with subcatch
+    :param id: id (value in the array) to cut by
+    :param x: array with x values
+    :param y:  array with y values
+    :return: x,y, data
+    """
+
+    #data[data == FillVal] = 0
+    scid = subcatchmap == id
+    data[np.logical_not(scid)] = FillVal
+    xid, = np.where(scid.max(axis=0))
+    xmin = xid.min()
+    xmax = xid.max()
+    if xmin >= 1:
+        xmin = xmin -1
+    if xmax < len(x) -1:
+        xmax = xmax + 1
+
+    yid, = np.where(scid.max(axis=1))
+    ymin = yid.min()
+    ymax = yid.max()
+    if ymin >= 1:
+        ymin = ymin -1
+    if ymax < len(y) -1:
+        ymax = ymax + 1
+
+    return x[xmin:xmax].copy(), y[ymin:ymax].copy(), data[ymin:ymax, xmin:xmax].copy()
+
 def writeMap(fileName, fileFormat, x, y, data, FillVal):
     """ Write geographical data into file"""
 
@@ -926,7 +965,11 @@ def writeMap(fileName, fileFormat, x, y, data, FillVal):
     if verbose:
         print 'Writing to temporary file ' + fileName + '.tif'
     # Create Output filename from (FEWS) product name and data and open for writing
-    TempDataset = driver1.Create(fileName + '.tif',data.shape[1],data.shape[0],1,gdal.GDT_Float32)
+
+    if data.dtype == np.int32:
+        TempDataset = driver1.Create(fileName + '.tif', data.shape[1], data.shape[0], 1, gdal.GDT_Int32)
+    else:
+        TempDataset = driver1.Create(fileName + '.tif',data.shape[1],data.shape[0],1,gdal.GDT_Float32)
     # Give georeferences
     xul = x[0]-(x[1]-x[0])/2
     yul = y[0]+(y[0]-y[1])/2
