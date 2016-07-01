@@ -147,27 +147,41 @@ def main():
         allcmd = []
         for mfile in glob.glob(ddir + '/*.map'):
             x, y, data, FillVal = readMap(mfile,'PCRaster')
-            xn, yn, datan = cutMapById(data,subcatchmap,subcatch,x,y,FillVal)
-            ofile = mfile.replace(caseName,caseNameNew)
-            if data.dtype == np.int32 or  data.dtype == np.uint8:
-                writeMap(ofile,'PCRaster',xn,yn,datan.astype(np.int32),FillVal)
-            else:
-                writeMap(ofile, 'PCRaster', xn, yn, datan, FillVal)
+            try:
+                good = 1
+                xn, yn, datan = cutMapById(data,subcatchmap,subcatch,x,y,FillVal)
+            except:
+                good = 0
+                print "Skipping: " + mfile
 
-            # Assume ldd and repair
-            if data.dtype == np.uint8:
-                myldd = ldd(readmap(ofile))
-                myldd = lddrepair(myldd)
-                report(myldd,ofile)
+            if good:
+                ofile = mfile.replace(caseName,caseNameNew)
+                if data.dtype == np.int32 or  data.dtype == np.uint8:
+                    writeMap(ofile,'PCRaster',xn,yn,datan.astype(np.int32),FillVal)
+                else:
+                    writeMap(ofile, 'PCRaster', xn, yn, datan, FillVal)
+
+                # Assume ldd and repair
+                if data.dtype == np.uint8:
+                    myldd = ldd(readmap(ofile))
+                    myldd = lddrepair(myldd)
+                    report(myldd,ofile)
 
         for mfile in glob.glob(ddir + '/*.[0-9][0-9][0-9]'):
             x, y, data, FillVal = readMap(mfile,'PCRaster')
-            xn, yn, datan = cutMapById(data,subcatchmap,subcatch,x,y,FillVal)
-            ofile = mfile.replace(caseName,caseNameNew)
-            if data.dtype == np.int32 or  data.dtype == np.uint8:
-                writeMap(ofile,'PCRaster',xn,yn,datan.astype(np.int32),FillVal)
-            else:
-                writeMap(ofile, 'PCRaster', xn, yn, datan, FillVal)
+            try:
+                good = 1
+                xn, yn, datan = cutMapById(data,subcatchmap,subcatch,x,y,FillVal)
+            except:
+                good = 0
+                print "Skipping: " + mfile
+
+            if good:
+                ofile = mfile.replace(caseName,caseNameNew)
+                if data.dtype == np.int32 or  data.dtype == np.uint8:
+                    writeMap(ofile,'PCRaster',xn,yn,datan.astype(np.int32),FillVal)
+                else:
+                    writeMap(ofile, 'PCRaster', xn, yn, datan, FillVal)
 
 
         for ext in ext_to_copy:
