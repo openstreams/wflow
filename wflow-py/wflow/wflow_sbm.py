@@ -987,7 +987,7 @@ class WflowModel(DynamicModel):
             self.EoverR = ifthenelse(self.Precipitation > 0.0, \
                                      min(0.25,cover(self.Ewet/max(0.0001,self.Precipitation),0.0)), 0.0)
             if hasattr(self,'MAXLAI') and hasattr(self,'CWf'):
-                # Adjust rootinggdepth
+                # Adjust rootinggdept
                 self.ActRootingDepth = self.CWf * (self.RootingDepth * self.LAI/max(0.001,self.MAXLAI))\
                                       + ((1- self.CWf) * self.RootingDepth)
             else:
