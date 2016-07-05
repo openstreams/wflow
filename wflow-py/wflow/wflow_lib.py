@@ -932,26 +932,29 @@ def cutMapById(data,subcatchmap,id,x,y,FillVal):
     :return: x,y, data
     """
 
-    #data[data == FillVal] = 0
-    scid = subcatchmap == id
-    data[np.logical_not(scid)] = FillVal
-    xid, = np.where(scid.max(axis=0))
-    xmin = xid.min()
-    xmax = xid.max()
-    if xmin >= 1:
-        xmin = xmin -1
-    if xmax < len(x) -1:
-        xmax = xmax + 1
 
-    yid, = np.where(scid.max(axis=1))
-    ymin = yid.min()
-    ymax = yid.max()
-    if ymin >= 1:
-        ymin = ymin -1
-    if ymax < len(y) -1:
-        ymax = ymax + 1
+    if len(data.flatten()) == len(subcatchmap.flatten()):
+        scid = subcatchmap == id
+        data[np.logical_not(scid)] = FillVal
+        xid, = np.where(scid.max(axis=0))
+        xmin = xid.min()
+        xmax = xid.max()
+        if xmin >= 1:
+            xmin = xmin -1
+        if xmax < len(x) -1:
+            xmax = xmax + 1
 
-    return x[xmin:xmax].copy(), y[ymin:ymax].copy(), data[ymin:ymax, xmin:xmax].copy()
+        yid, = np.where(scid.max(axis=1))
+        ymin = yid.min()
+        ymax = yid.max()
+        if ymin >= 1:
+            ymin = ymin -1
+        if ymax < len(y) -1:
+            ymax = ymax + 1
+
+        return x[xmin:xmax].copy(), y[ymin:ymax].copy(), data[ymin:ymax, xmin:xmax].copy()
+    else:
+        return None, None, None
 
 def writeMap(fileName, fileFormat, x, y, data, FillVal):
     """ Write geographical data into file"""
