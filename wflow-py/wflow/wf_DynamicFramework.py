@@ -429,7 +429,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 try:
                     exec execstr
                 except:
-                    self.logger.error("Variable change string (apply_timestep) could not be execute: " + execstr)
+                    self.logger.error("Variable change string (apply_timestep) could not be executed: " + execstr)
 
         if self._userModel()._inInitial():
 
@@ -438,7 +438,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 try:
                     exec execstr
                 except:
-                    self.logger.error("Variable change string (apply_once) could not be execute: " + execstr)
+                    self.logger.error("Variable change string (apply_once) could not be executed: " + execstr)
 
 
 
