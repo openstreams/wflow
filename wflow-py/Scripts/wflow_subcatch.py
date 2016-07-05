@@ -147,12 +147,12 @@ def main():
         allcmd = []
         for mfile in glob.glob(ddir + '/*.map'):
             x, y, data, FillVal = readMap(mfile,'PCRaster')
-            try:
-                good = 1
-                xn, yn, datan = cutMapById(data,subcatchmap,subcatch,x,y,FillVal)
-            except:
-                good = 0
-                print "Skipping: " + mfile
+            #try:
+            good = 1
+            xn, yn, datan = cutMapById(data,subcatchmap,subcatch,x,y,FillVal)
+            #except:
+            #good = 0
+            #print "Skipping: " + mfile
 
             if good:
                 ofile = mfile.replace(caseName,caseNameNew)
