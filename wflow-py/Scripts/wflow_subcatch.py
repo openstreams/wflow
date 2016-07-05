@@ -146,47 +146,53 @@ def main():
         print ddir
         allcmd = []
         for mfile in glob.glob(ddir + '/*.map'):
-            x, y, data, FillVal = readMap(mfile,'PCRaster')
-            try:
-                good = 1
-                xn, yn, datan = cutMapById(data,subcatchmap,subcatch,x,y,FillVal)
-            except Exception,e:
-                good = 0
-                print "Skipping: " + mfile + " exception: " + str(e)
+            if not os.path.exists(mfile.replace(caseName,caseNameNew)):
+                x, y, data, FillVal = readMap(mfile,'PCRaster')
+                try:
+                    good = 1
+                    xn, yn, datan = cutMapById(data,subcatchmap,subcatch,x,y,FillVal)
+                except Exception,e:
+                    good = 0
+                    print "Skipping: " + mfile + " exception: " + str(e)
 
-            if xn == None:
-                good = 0
-                print "Skipping: " + mfile + " size does not match..."
+                if xn == None:
+                    good = 0
+                    print "Skipping: " + mfile + " size does not match..."
 
 
-            if good:
-                ofile = mfile.replace(caseName,caseNameNew)
-                if data.dtype == np.int32 or  data.dtype == np.uint8:
-                    writeMap(ofile,'PCRaster',xn,yn,datan.astype(np.int32),FillVal)
-                else:
-                    writeMap(ofile, 'PCRaster', xn, yn, datan, FillVal)
+                if good:
+                    ofile = mfile.replace(caseName,caseNameNew)
+                    if data.dtype == np.int32 or  data.dtype == np.uint8:
+                        writeMap(ofile,'PCRaster',xn,yn,datan.astype(np.int32),FillVal)
+                    else:
+                        writeMap(ofile, 'PCRaster', xn, yn, datan, FillVal)
 
-                # Assume ldd and repair
-                if data.dtype == np.uint8:
-                    myldd = ldd(readmap(ofile))
-                    myldd = lddrepair(myldd)
-                    report(myldd,ofile)
+                    # Assume ldd and repair
+                    if data.dtype == np.uint8:
+                        myldd = ldd(readmap(ofile))
+                        myldd = lddrepair(myldd)
+                        report(myldd,ofile)
 
         for mfile in glob.glob(ddir + '/*.[0-9][0-9][0-9]'):
-            x, y, data, FillVal = readMap(mfile,'PCRaster')
-            try:
-                good = 1
-                xn, yn, datan = cutMapById(data,subcatchmap,subcatch,x,y,FillVal)
-            except:
-                good = 0
-                print "Skipping: " + mfile
+            if not os.path.exists(mfile.replace(caseName, caseNameNew)):
+                x, y, data, FillVal = readMap(mfile,'PCRaster')
+                try:
+                    good = 1
+                    xn, yn, datan = cutMapById(data, subcatchmap, subcatch, x, y, FillVal)
+                except Exception, e:
+                    good = 0
+                    print "Skipping: " + mfile + " exception: " + str(e)
 
-            if good:
-                ofile = mfile.replace(caseName,caseNameNew)
-                if data.dtype == np.int32 or  data.dtype == np.uint8:
-                    writeMap(ofile,'PCRaster',xn,yn,datan.astype(np.int32),FillVal)
-                else:
-                    writeMap(ofile, 'PCRaster', xn, yn, datan, FillVal)
+                if xn == None:
+                    good = 0
+                    print "Skipping: " + mfile + " size does not match..."
+
+                if good:
+                    ofile = mfile.replace(caseName,caseNameNew)
+                    if data.dtype == np.int32 or  data.dtype == np.uint8:
+                        writeMap(ofile,'PCRaster',xn,yn,datan.astype(np.int32),FillVal)
+                    else:
+                        writeMap(ofile, 'PCRaster', xn, yn, datan, FillVal)
 
 
         for ext in ext_to_copy:
