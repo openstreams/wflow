@@ -966,6 +966,7 @@ def main(argv=None):
             updateCols = zz
 
     dynModelFw.setupFramework()
+    dynModelFw.logger.info("Command line: " + str(argv))
     dynModelFw._runInitial()
     dynModelFw._runResume()
     dynModelFw._runDynamic(0,0)

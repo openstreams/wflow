@@ -82,7 +82,7 @@ usage
     -p: set parameter change string (e.g: -P "self.Precipitation = self.Precipitation * 1.11") for
         dynamic variables
 
-    -l: loglevel (most be one of DEBUG, WARNING, ERROR)
+    -l: loglevel (must be one of DEBUG, INFO, WARNING, ERROR)
 
 
 
@@ -1577,6 +1577,7 @@ def main(argv=None):
         if o == '-W': configset(myModel.config, 'model', 'waterdem', '1', overwrite=True)
 
     dynModelFw.setupFramework()
+    dynModelFw.logger.info("Command line: " + str(argv))
     dynModelFw._runInitial()
     dynModelFw._runResume()
     dynModelFw._runDynamic(0, 0)
