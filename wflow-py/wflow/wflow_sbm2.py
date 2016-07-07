@@ -772,28 +772,25 @@ class WflowModel(DynamicModel):
         self.maskLayer = []
 
         self.SumThickness = self.ZeroMap
-        self.nrLayersMap = self.ZeroMap + 1.0
+        self.nrLayersMap = self.ZeroMap
 
 
-        for n in arange(0,self.USatLayers):
-            if self.nrLayers > 1:
-                UstoreThick = float(UStoreLayerThickness.split(',')[n])+self.ZeroMap
+        for n in arange(0,self.USatLayers + 1):
+            self.SumLayer = self.SumThickness
+            if self.nrLayers > 1 and n < self.USatLayers:
+                UstoreThick_temp = float(UStoreLayerThickness.split(',')[n])+self.ZeroMap
+                UstoreThick = min(UstoreThick_temp,max(self.SoilThickness-self.SumLayer,0.0))
             else:
                 UstoreThick = self.SoilThickness
 
-            self.SumThickness = UstoreThick + self.SumThickness
-            self.nrLayersMap = ifthenelse(self.SumThickness<=self.SoilThickness,min(self.nrLayersMap + n,self.USatLayers + 1),self.nrLayersMap)
 
-            self.UStoreLayerThickness.append(ifthenelse(self.SumThickness<=self.SoilThickness,UstoreThick,0.0))
-            self.UStoreLayerDepth.append(ifthen(self.SumThickness<=self.SoilThickness, self.SoilThickness*0.0))
-            self.T.append(ifthen(self.SumThickness<=self.SoilThickness, self.SoilThickness*0.0))
-            self.maskLayer.append(ifthen(self.SumThickness<=self.SoilThickness, self.SoilThickness*0.0))
+            self.SumThickness = UstoreThick_temp + self.SumThickness
+            self.nrLayersMap = ifthenelse((self.SoilThickness>=self.SumThickness) | (self.SoilThickness-self.SumLayer>self.ZeroMap) , self.nrLayersMap + 1 ,self.nrLayersMap)
 
-        if self.nrLayers > 1:
-            self.UStoreLayerThickness.append(max(self.SoilThickness-self.UStoreLayerThickness[self.USatLayers-1],0.0))
-            self.UStoreLayerDepth.append(ifthen(self.SumThickness<=self.SoilThickness, self.SoilThickness*0.0))
-            self.T.append(ifthen(self.SumThickness<=self.SoilThickness, self.SoilThickness*0.0))
-            self.maskLayer.append(ifthen(self.SumThickness<=self.SoilThickness, self.SoilThickness*0.0))
+            self.UStoreLayerThickness.append(ifthenelse((self.SumThickness<=self.SoilThickness) | (self.SoilThickness-self.SumLayer>self.ZeroMap),UstoreThick,0.0))
+            self.UStoreLayerDepth.append(ifthen((self.SumThickness<=self.SoilThickness) | (self.SoilThickness-self.SumLayer>self.ZeroMap), self.SoilThickness*0.0))
+            self.T.append(ifthen((self.SumThickness<=self.SoilThickness) | (self.SoilThickness-self.SumLayer>self.ZeroMap), self.SoilThickness*0.0))
+            self.maskLayer.append(ifthen((self.SumThickness<=self.SoilThickness) | (self.SoilThickness-self.SumLayer>self.ZeroMap), self.SoilThickness*0.0))
 
 
 
