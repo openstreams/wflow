@@ -281,6 +281,7 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
         #x, y, data, FillVal = readMap(pcraster_path, 'PCRaster',logger)
         x, y, data, FillVal = _readMap(pcraster_path, 'PCRaster',logger)
         logger.debug("Setting fillval...")
+
         data[data==FillVal] = nc_Fill
 
         # print x
@@ -295,9 +296,10 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
         logger.debug("Adding data to array...")
         timestepbuffer[bufpos,:,:] =  data
 
+        logger.debug("index: " + str(idx-bufpos) + " index: " + str(idx) + "bufpos: " + str(bufpos) + "idx: " + str(idx))
         if buffreset == 0 or idx ==  bufsize -1 or nn + 1 == len(timeList):
             logger.info("Writing buffer to file at: " + str(curTime) + " " + str(int(bufpos) + 1) + " timesteps")
-            nc_var[idx-bufsize+1:idx+1,:,:] = timestepbuffer
+            nc_var[idx-bufpos:idx+1,:,:] = timestepbuffer[0:bufpos+1,:,:]
             nc_trg.sync()
 
 
