@@ -475,8 +475,8 @@ class netcdfinput():
         x = _pcrut.pcr2numpy(_pcrut.xcoordinate(_pcrut.boolean(_pcrut.cover(1.0))), NaN)[0, :]
         y = _pcrut.pcr2numpy(_pcrut.ycoordinate(_pcrut.boolean(_pcrut.cover(1.0))), NaN)[:, 0]
 
-        (self.latidx,) = logical_and(self.x >= x.min(), self.x < x.max()).nonzero()
-        (self.lonidx,) = logical_and(self.y >= x.min(), self.y < y.max()).nonzero()
+        (self.latidx,) = logical_and(self.y >= y.min(), self.y <= y.max()).nonzero()
+        (self.lonidx,) = logical_and(self.x >= x.min(), self.x <= x.max()).nonzero()
 
         for var in vars:
             try:

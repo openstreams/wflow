@@ -1034,7 +1034,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         self.logger.info("Adding " + tsformat + " output at " + samplemapname + " function: " + areafunction)
                     except:
                         self.logger.warn("Could not read sample id-map for timeseries: " + samplemapname)
-
+                        self.logger.warn(sys.exc_info())
                     for a in toprint:
                         if "samplemap" not in a and 'function' not in a:
                             b = a.replace('self', 'self._userModel()')
@@ -1076,6 +1076,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             except:
                 self.logger.warn("Problem saving state variable: " + var)
                 self.logger.warn(execstr)
+                self.logger.warn(sys.exc_info())
 
         # Save the summary maps
         self.wf_savesummarymaps()

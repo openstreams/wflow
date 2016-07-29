@@ -371,6 +371,13 @@ class WflowModel(DynamicModel):
                                               type="staticmap", default=0.0, verbose=False, lookupmaps=[]))
         modelparameters.append(self.ParamType(name="IrrigationSurfaceIntakes", stack='staticmaps/wflow_irrisurfaceintake.map',
                                               type="staticmap", default=0.0, verbose=False, lookupmaps=[]))
+        modelparameters.append(
+            self.ParamType(name="IrrigationSurfaceReturn", stack='staticmaps/wflow_irrisurfacereturn.map',
+                           type="staticmap", default=0.0, verbose=False, lookupmaps=[]))
+        #modelparameters.append(
+        #    self.ParamType(name="IrriDemand", stack="/inmaps/IRD", type="timeseries", default=0.0, verbose=False,
+        #                   lookupmaps=[]))
+
         # modelparameters.append(self.ParamType(name="ReserVoirLocs", stack='staticmaps/wflow_reservoirlocs.map',
         #                                       type="staticmap", default=0.0, verbose=False, lookupmaps=[]))
         # modelparameters.append(self.ParamType(name="ResTargetFullFrac",stack='intbl/ResTargetFullFrac.tbl',type="tblsparse",default=0.8,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
@@ -568,6 +575,8 @@ class WflowModel(DynamicModel):
 
 
 
+        if not hasattr(self,'DemandReturnFlowFraction'):
+            self.DemandReturnFlowFraction = self.ZeroMap
 
         self.RootingDepth = self.readtblDefault(self.Dir + "/" + self.intbl + "/RootingDepth.tbl", self.LandUse,
                                                 subcatch, self.Soil, 750.0)  #rooting depth
@@ -1156,13 +1165,16 @@ class WflowModel(DynamicModel):
                                                                                               self.rootdistpar)
 
 
-        # Run only if we have irrigation areas, determine irrigation demand based on potrans and acttrans
-        if self.nrirri > 0:
-            self.IrriDemand, self.IrriDemandm3 = self.irrigationdemand(self.PotTrans,self.Transpiration,self.IrrigationAreas)
-            IRDemand = idtoid(self.IrrigationAreas, self.IrrigationSurfaceIntakes, self.IrriDemandm3)  * -1.0
+        # Run only if we have irrigation areas or an externally given demand, determine irrigation demand based on potrans and acttrans
+        if self.nrirri > 0 or hasattr(self,"IrriDemandExternal"):
+            if not hasattr(self,"IrriDemandExternal"): # if not given
+                self.IrriDemand, self.IrriDemandm3 = self.irrigationdemand(self.PotTrans,self.Transpiration,self.IrrigationAreas)
+                IRDemand = idtoid(self.IrrigationAreas, self.IrrigationSurfaceIntakes, self.IrriDemandm3)  * -1.0
+            else:
+                IRDemand = self.IrriDemandExternal
             # loop over irrigation areas and assign Q to linked river extraction points
             self.Inflow = cover(IRDemand,self.Inflow)
-
+            #XXXXXXXXXXXXXXXXXX next step: apply fraction fro return flow, put on surface areas
         # Determine Open Water EVAP. Later subtract this from water that
         # enters the Kinematic wave
         self.RestEvap = (self.PotTrans - self.Transpiration) + self.potsoilopenwaterevap
@@ -1370,6 +1382,9 @@ class WflowModel(DynamicModel):
 
                 self.InflowKinWaveCell = upstream(self.TopoLdd, self.OldSurfaceRunoff)
                 deltasup = float(mapmaximum(abs(oldsup - self.SurfaceWaterSupply)))
+
+                # Fraction of demand that is not used but flows back into the river
+                self.DemandReturnFlow = self.DemandReturnFlowFraction * self.SurfaceWaterSupply
 
                 if deltasup < self.breakoff or self.nrit >= self.maxitsupply:
                     break
