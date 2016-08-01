@@ -369,10 +369,10 @@ class WflowModel(DynamicModel):
 
         modelparameters.append(self.ParamType(name="IrrigationAreas", stack='staticmaps/wflow_irrigationareas.map',
                                               type="staticmap", default=0.0, verbose=False, lookupmaps=[]))
-        modelparameters.append(self.ParamType(name="IrrigationSurfaceIntakes", stack='staticmaps/wflow_irrisurfaceintake.map',
+        modelparameters.append(self.ParamType(name="IrrigationSurfaceIntakes", stack='staticmaps/wflow_irrisurfaceintakes.map',
                                               type="staticmap", default=0.0, verbose=False, lookupmaps=[]))
         modelparameters.append(
-            self.ParamType(name="IrrigationSurfaceReturn", stack='staticmaps/wflow_irrisurfacereturn.map',
+            self.ParamType(name="IrrigationSurfaceReturn", stack='staticmaps/wflow_irrisurfacereturns.map',
                            type="staticmap", default=0.0, verbose=False, lookupmaps=[]))
         #modelparameters.append(
         #    self.ParamType(name="IrriDemand", stack="/inmaps/IRD", type="timeseries", default=0.0, verbose=False,
@@ -1174,7 +1174,7 @@ class WflowModel(DynamicModel):
                 IRDemand = self.IrriDemandExternal
             # loop over irrigation areas and assign Q to linked river extraction points
             self.Inflow = cover(IRDemand,self.Inflow)
-            #XXXXXXXXXXXXXXXXXX next step: apply fraction fro return flow, put on surface areas
+
         # Determine Open Water EVAP. Later subtract this from water that
         # enters the Kinematic wave
         self.RestEvap = (self.PotTrans - self.Transpiration) + self.potsoilopenwaterevap
@@ -1369,10 +1369,14 @@ class WflowModel(DynamicModel):
                 # (Runoff calculation via Kinematic wave) ################################
                 ##########################################################################
                 MaxExtract = self.InflowKinWaveCell + self.OldInwater
-                self.SurfaceWaterSupply = ifthenelse (self.Inflow < 0.0 , min(MaxExtract,-1.0 * self.Inflow),\
+                self.SurfaceWaterSupply = ifthenelse(self.Inflow < 0.0, min(MaxExtract, -1.0 * self.Inflow),\
                                                       self.ZeroMap)
+                # Fraction of demand that is not used but flows back into the river get fracttion and move to return locations
+                self.DemandReturnFlow = cover(idtoid(self.IrrigationSurfaceIntakes,self.IrrigationSurfaceReturn,
+                                               self.DemandReturnFlowFraction * self.SurfaceWaterSupply),0.0)
+
                 self.Inwater = self.OldInwater + ifthenelse(self.SurfaceWaterSupply> 0, -1.0 * self.SurfaceWaterSupply,\
-                                                            self.Inflow)
+                                                            self.Inflow) + self.DemandReturnFlow
                 # per distance along stream
                 q = self.Inwater / self.DCL
                 # discharge (m3/s)
@@ -1383,8 +1387,7 @@ class WflowModel(DynamicModel):
                 self.InflowKinWaveCell = upstream(self.TopoLdd, self.OldSurfaceRunoff)
                 deltasup = float(mapmaximum(abs(oldsup - self.SurfaceWaterSupply)))
 
-                # Fraction of demand that is not used but flows back into the river
-                self.DemandReturnFlow = self.DemandReturnFlowFraction * self.SurfaceWaterSupply
+
 
                 if deltasup < self.breakoff or self.nrit >= self.maxitsupply:
                     break
@@ -1398,7 +1401,8 @@ class WflowModel(DynamicModel):
         # Now add the supply that is linked to irrigation areas to extra precip
         if self.nrirri > 0:
             # loop over irrigation areas and spread-out the supply over the area
-            IRSupplymm = idtoid(self.IrrigationSurfaceIntakes, self.IrrigationAreas, self.SurfaceWaterSupply)
+            IRSupplymm = idtoid(self.IrrigationSurfaceIntakes, self.IrrigationAreas,
+                                self.SurfaceWaterSupply * (1 - self.DemandReturnFlowFraction))
             sqmarea = areatotal(self.reallength * self.reallength, nominal(self.IrrigationAreas))
 
             self.IRSupplymm = cover(IRSupplymm/ (sqmarea / 1000.0 / self.timestepsecs),0.0)
@@ -1500,6 +1504,8 @@ class WflowModel(DynamicModel):
 def main(argv=None):
     """
     Perform command line execution of the model.
+
+
     """
     caseName = "default_sbm"
     global multpars
