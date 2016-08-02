@@ -853,16 +853,16 @@ A PCRaster local drainage direction (ldd) map only allows for one downstream nei
 by providing the following files:
  
 :wflow_bifurcations.map: PCRaster ordinal map, identifying all bifurcations; cells having two downstream neighbours, 
-of which only on is represented by the ldd.
+   of which only on is represented by the ldd.
 
-:wflow_bifurcations_ds.map: PCRaster ordinal map, identifying the locations in the bifurcation canal to which a part of the
-main river runoff (self.SurfaceRunoff), at the location of bifurcation, is to be diverted to. The IDs in this map match the IDs in 
-wflow_bifurcations.map
+:wflow_bifurcations_ds.map: PCRaster ordinal map, identifying the locations in the bifurcation canal to which a part of the 
+   main river runoff (self.SurfaceRunoff), at the location of bifurcation, is to be diverted to. The IDs in this map match the IDs in 
+   wflow_bifurcations.map
 
 :Bifurcations.tbl: a table with the part of the discharge (self.SurfaceRunoff) at the location of the bifurcation, specified 
-in wflow_bifurcations.map, which is diverted to the location specified in wflow_bifurcations_ds.map. The table consists of 
-two columns: (1) a column with the bifurcation ID matching the IDs in both map-files and (2) the part of self.SurfaceRunoff 
-at the bifurcation to be diverted to the bifurcation canal.
+   in wflow_bifurcations.map, which is diverted to the location specified in wflow_bifurcations_ds.map. The table consists of 
+   two columns: (1) a column with the bifurcation ID matching the IDs in both map-files and (2) the part of self.SurfaceRunoff 
+   at the bifurcation to be diverted to the bifurcation canal at the location specified in wflow_bifurcations_ds.map.
 
 Example of a tbl-file::
 
