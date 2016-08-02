@@ -642,71 +642,7 @@ to zero thus setting the capilary rise to zero.
    the kinematic wave reservoir
 
 
-Irrigation and water demand
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Water demand (surface water only) by irrigation can be configured in two ways:
-
-1. By specifying the water demand externally (as a lookup table, series of maps etc)
-
-2. By defining irrigation areas. Within those areas the demand is calculated as the difference between
-   potential ET and actual transpiration
-
-For both options a fraction of the supplied water can be put back into the river a specified locations
-
-The following maps and variables can be defined:
-
-:wflow_irrigationareas.map:
-    Map of areas where irrigation is applied. Each area has a unique id. The areas do not need to be continuous but
-    all cells with the same id are assumed to belong to the same irrigation area.
-
-:wflow_irrisurfaceintake.map:
-    Map of intake points at the river(s). The id of each point should correspond to the id of an area in the
-    wflow_irrigationareas map.
-
-:wflow_irrisurfacereturns.map:
-    Map of water return points at the river(s). The id of each point should correspond to the id of an area in the
-    wflow_irrigationareas map or/and the wflow_irrisurfaceintake.map.
-
-:IrriDemandExternal: Irrigation demand supplied to the model. This can be doen by adding an entry to the
-    modelparameters section. if this is doen the irrigation demand supplied here is used and it is NOT determined
-    by the model. Water demand should be given with a negative sign! See below for and example entry
-    in the modelparameters section: ::
-
-        IrriDemandExternal=intbl/IrriDemandExternal.tbl,tbl,-34.0,0,staticmaps/wflow_irrisurfaceintakes.map
-
-    In this example the default demand is :math:`-34 m^3/s`. The demand must be linked to the map
-    wflow_irrisurfaceintakes.map. Alternatively we can define this as a timeseries of
-    maps: ::
-
-        IrriDemandExternal=/inmaps/IRD,timeseries,-34.0,0
-
-
-
-:DemandReturnFlowFraction: Fraction of the supplied water the returns back into the river system (between 0 and 1).
-    This fraction must  be supplied at the  wflow_irrisurfaceintakes.map locations but the water that is returned
-    to the river will be returned at the wflow_irrisurfacereturns.map locations. If this variable is not defined
-    the default is 0.0. See below for an example entry in the modelparameters section: ::
-
-    DemandReturnFlowFraction=intbl/IrriDemandReturn.tbl,tbl,0.0,0,staticmaps/wflow_irrisurfaceintakes.map
-
-
-The  irrigation model can be used in the following two modes:
-
-1. An external water demand is given (the user has specified the IrriDemandExternal variable). In this case the demand
-   is enforced. If a matching irrigation area is found the supplied water is converted to an amount in mm over the
-   irrigation area. The supply is converted in the *next timestep* as extra water available for infiltration in
-   the irrigation area. If a DemandReturnFlowFraction is defined this fraction is the supply is returned to the
-   river at the wflow_irrisurfacereturns.map points.
-
-2. Irrigation areas have been defined and no IrriDemandExternal has been defined. In this case the model will
-   estimate the irrigation water demand. The irrigation algorithim works as follows: For each of the areas the
-   difference between potential transpiration and actual transpiration is determined. Next, this is converted to a
-   demand in :math:`m^3/s` at the corresponding intake point at the river. The demand is converted to a supply
-   (taking into account the available water in the river) and converted to an amount in mm over the irrigation area.
-   The supply is converted in the *next timestep* as extra water available for infiltration in the irrigation area.
-   This option has only be tested in combination with a monthly LAI climatology as input. If a DemandReturnFlowFraction
-   is defined this fraction is the supply is returned to the river at the wflow_irrisurfacereturns.map points.
 
 Leakage
 ~~~~~~~
@@ -801,7 +737,7 @@ where:
 
 .. note::
 
-    The model determines the C for the upper hals and the lower half of the curve
+    The model determines the C for the upper half and the lower half of the curve
      seperate and averages the results.
 
 .. warning::
@@ -833,6 +769,82 @@ in dynamic::
             exp(-self.f * self.zi) * self.timestepsecs/self.basetimestep)
         self.FirstZoneDepth=self.FirstZoneDepth-self.SubCellGWRunoff
         FreeWaterDepth = FreeWaterDepth - self.SubCellRunoff
+
+
+
+Irrigation and water demand
+---------------------------
+
+Water demand (surface water only) by irrigation can be configured in two ways:
+
+1. By specifying the water demand externally (as a lookup table, series of maps etc)
+
+2. By defining irrigation areas. Within those areas the demand is calculated as the difference between
+   potential ET and actual transpiration
+
+For both options a fraction of the supplied water can be put back into the river a specified locations
+
+The following maps and variables can be defined:
+
+:wflow_irrigationareas.map:
+    Map of areas where irrigation is applied. Each area has a unique id. The areas do not need to be continuous but
+    all cells with the same id are assumed to belong to the same irrigation area.
+
+:wflow_irrisurfaceintake.map:
+    Map of intake points at the river(s). The id of each point should correspond to the id of an area in the
+    wflow_irrigationareas map.
+
+:wflow_irrisurfacereturns.map:
+    Map of water return points at the river(s). The id of each point should correspond to the id of an area in the
+    wflow_irrigationareas map or/and the wflow_irrisurfaceintake.map.
+
+:IrriDemandExternal: Irrigation demand supplied to the model. This can be doen by adding an entry to the
+    modelparameters section. if this is doen the irrigation demand supplied here is used and it is NOT determined
+    by the model. Water demand should be given with a negative sign! See below for and example entry
+    in the modelparameters section: ::
+
+        IrriDemandExternal=intbl/IrriDemandExternal.tbl,tbl,-34.0,0,staticmaps/wflow_irrisurfaceintakes.map
+
+    In this example the default demand is :math:`-34 m^3/s`. The demand must be linked to the map
+    wflow_irrisurfaceintakes.map. Alternatively we can define this as a timeseries of
+    maps: ::
+
+        IrriDemandExternal=/inmaps/IRD,timeseries,-34.0,0
+
+
+
+:DemandReturnFlowFraction: Fraction of the supplied water the returns back into the river system (between 0 and 1).
+    This fraction must  be supplied at the  wflow_irrisurfaceintakes.map locations but the water that is returned
+    to the river will be returned at the wflow_irrisurfacereturns.map locations. If this variable is not defined
+    the default is 0.0. See below for an example entry in the modelparameters section: ::
+
+    DemandReturnFlowFraction=intbl/IrriDemandReturn.tbl,tbl,0.0,0,staticmaps/wflow_irrisurfaceintakes.map
+
+
+
+.. figure:: _images/wflow_irrigation.png
+    :width: 640px
+    :align: center
+
+    Figure showing the three maps that define the irrigation intake points areas and return flow locations.
+
+
+The  irrigation model can be used in the following two modes:
+
+1. An external water demand is given (the user has specified the IrriDemandExternal variable). In this case the demand
+   is enforced. If a matching irrigation area is found the supplied water is converted to an amount in mm over the
+   irrigation area. The supply is converted in the *next timestep* as extra water available for infiltration in
+   the irrigation area. If a DemandReturnFlowFraction is defined this fraction is the supply is returned to the
+   river at the wflow_irrisurfacereturns.map points.
+
+2. Irrigation areas have been defined and no IrriDemandExternal has been defined. In this case the model will
+   estimate the irrigation water demand. The irrigation algorithim works as follows: For each of the areas the
+   difference between potential transpiration and actual transpiration is determined. Next, this is converted to a
+   demand in :math:`m^3/s` at the corresponding intake point at the river. The demand is converted to a supply
+   (taking into account the available water in the river) and converted to an amount in mm over the irrigation area.
+   The supply is converted in the *next timestep* as extra water available for infiltration in the irrigation area.
+   This option has only be tested in combination with a monthly LAI climatology as input. If a DemandReturnFlowFraction
+   is defined this fraction is the supply is returned to the river at the wflow_irrisurfacereturns.map points.
 
 
 
