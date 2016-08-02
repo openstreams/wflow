@@ -849,17 +849,21 @@ The  irrigation model can be used in the following two modes:
 Bifurcations
 ---------------------------
 
-A PCRaster local drainage direction (ldd) map only alows for one downstream neighbor cell. Bifurcations can be included in Wflow
+A PCRaster local drainage direction (ldd) map only allows for one downstream neighbor cell. Bifurcations can be included in WFlow
 by providing the following files:
  
-:wflow_bifurcations.map: PCRaster ordinal map, identifying all bifurcations; cells having two downstream neighbors which
-cannot be represented in the ldd map.
+:wflow_bifurcations.map: PCRaster ordinal map, identifying all bifurcations; cells having two downstream neighbors, 
+of which only on is respresented by the ldd.
 
 :wflow_bifurcations_ds.map: PCRaster ordinal map, identifying the locations in the bifurcation canal to which a part of the
-main river discharge, at the location of bifurcation, should be diverted to
+main river runoff (self.SurfaceRunoff), at the location of bifurcation, is to be diverted to. The IDs in this map match the IDs in 
+wflow_bifurcations.map
 
-:Bifurcations.tbl: a table with the part of the discharge (self.SurfaceRunoff) at the location of the bifurcation, 
-specified in wflow_bifurcations.map, which is diverted to the location specified in wflow_bifurcations_ds.map.
+:Bifurcations.tbl: a table with the part of the discharge (self.SurfaceRunoff) at the location of the bifurcation, specified 
+in wflow_bifurcations.map, which is diverted to the location specified in wflow_bifurcations_ds.map. The table consits of 
+two columns: (1) a column with the bifurcation ID matching the IDs in both map-files and (2) the part of self.SurfaceRunoff 
+at the bifurcation to be diverted to the bifurcation canal.
+
 Example of a tbl-file::
 
         1 0.5
