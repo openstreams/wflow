@@ -374,17 +374,6 @@ class WflowModel(DynamicModel):
         modelparameters.append(
             self.ParamType(name="IrrigationSurfaceReturn", stack='staticmaps/wflow_irrisurfacereturns.map',
                            type="staticmap", default=0.0, verbose=False, lookupmaps=[]))
-        #modelparameters.append(
-        #    self.ParamType(name="IrriDemand", stack="/inmaps/IRD", type="timeseries", default=0.0, verbose=False,
-        #                   lookupmaps=[]))
-
-        # modelparameters.append(self.ParamType(name="ReserVoirLocs", stack='staticmaps/wflow_reservoirlocs.map',
-        #                                       type="staticmap", default=0.0, verbose=False, lookupmaps=[]))
-        # modelparameters.append(self.ParamType(name="ResTargetFullFrac",stack='intbl/ResTargetFullFrac.tbl',type="tblsparse",default=0.8,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
-        # modelparameters.append(self.ParamType(name="ResTargetMinFrac",stack='intbl/ResTargetMinFrac.tbl',type="tblsparse",default=0.4,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
-        # modelparameters.append(self.ParamType(name="ResMaxVolume",stack='intbl/ResMaxVolume.tbl',type="tblsparse",default=0.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
-        # modelparameters.append(self.ParamType(name="ResMaxRelease",stack='intbl/ResMaxRelease.tbl',type="tblsparse",default=1.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
-        # modelparameters.append(self.ParamType(name="ResDemand",stack='intbl/ResDemand.tbl',type="tblsparse",default=1.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
 
 
         return modelparameters
