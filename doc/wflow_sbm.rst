@@ -782,7 +782,7 @@ Water demand (surface water only) by irrigation can be configured in two ways:
 2. By defining irrigation areas. Within those areas the demand is calculated as the difference between
    potential ET and actual transpiration
 
-For both options a fraction of the supplied water can be put back into the river a specified locations
+For both options a fraction of the supplied water can be put back into the river at specified locations
 
 The following maps and variables can be defined:
 
