@@ -202,7 +202,6 @@ import os
 from optparse import OptionParser
 import numpy as np
 
-from hydrotools import gis
 from osgeo import gdal, gdalconst
 import pcraster as pcr
 import netCDF4 as nc
