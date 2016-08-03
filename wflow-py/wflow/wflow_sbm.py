@@ -1158,6 +1158,27 @@ class WflowModel(DynamicModel):
         self.SaturationDeficit = self.FirstZoneCapacity - self.FirstZoneDepth
         # Linear reduction of soil moisture evaporation based on deficit
 
+        # Determine transpiration
+        # Split between bare soil/open water and vegetation
+        self.potsoilopenwaterevap = (1.0 - self.CanopyGapFraction) * self.PotTransSoil
+
+        # Determine Open Water EVAP. Later subtract this from water that
+        # enters the Kinematic wave
+        self.RestEvap = self.potsoilopenwaterevap
+        self.ActEvapOpenWater =  min(self.WaterLevel * 1000.0 * self.WaterFrac ,self.WaterFrac * self.RestEvap)
+        self.RestEvap = self.RestEvap - self.ActEvapOpenWater
+
+        # Next the rest is used for soil evaporation
+        self.soilevap = self.RestEvap * max(0.0,min(1.0, self.SaturationDeficit / self.FirstZoneCapacity))
+        self.soilevap = min(self.soilevap, self.UStoreDepth)
+        self.UStoreDepth = self.UStoreDepth - self.soilevap
+
+        # rest is used for transpiration
+
+        self.PotTrans = self.PotTransSoil - self.soilevap - self.ActEvapOpenWater
+
+
+
         self.Transpiration, self.FirstZoneDepth, self.UStoreDepth, self.ActEvapUStore = actEvap_SBM(self.ActRootingDepth,
                                                                                               self.zi, self.UStoreDepth,
                                                                                               self.FirstZoneDepth,
@@ -1176,17 +1197,6 @@ class WflowModel(DynamicModel):
             # loop over irrigation areas and assign Q to linked river extraction points
             self.Inflow = cover(IRDemand,self.Inflow)
 
-        # Determine Open Water EVAP. Later subtract this from water that
-        # enters the Kinematic wave
-        self.RestEvap = (self.PotTrans - self.Transpiration) + self.potsoilopenwaterevap
-        self.ActEvapOpenWater =  min(self.WaterLevel * 1000.0 * self.WaterFrac ,self.WaterFrac * self.RestEvap)
-        self.RestEvap = self.RestEvap - self.ActEvapOpenWater
-
-        # Next the rest is used for soil evaporation
-        self.soilevap = self.RestEvap * max(0.0,min(1.0, self.SaturationDeficit / self.FirstZoneCapacity))
-        self.soilevap = min(self.soilevap, self.UStoreDepth)
-        self.UStoreDepth = self.UStoreDepth - self.soilevap
-        self.ActEvap = self.Transpiration + self.soilevap + self.ActEvapOpenWater
 
 
         ##########################################################################
