@@ -164,17 +164,21 @@ def actEvap_SBM(RootingDepth, WTable, UStoreDepth, FirstZoneDepth, PotTrans, smo
     return ActEvap, FirstZoneDepth, UStoreDepth, ActEvapUStore
 
 
-def SnowPackHBV(Snow, SnowWater, Precipitation, Temperature, TTI, TT, Cfmax, WHC):
+def SnowPackHBV(Snow, SnowWater, Precipitation, Temperature, TTI, TT, TTM, Cfmax, WHC):
     """
     HBV Type snowpack modelling using a Temperature degree factor. All correction
     factors (RFCF and SFCF) are set to 1. The refreezing efficiency factor is set to 0.05.
-    
-    :ivar Snow:
-    :ivar SnowWater:
-    :ivar Precipitation:
-    :ivar Temperature:
 
-    :returns: Snow,SnowMelt,Precipitation   
+    :param Snow:
+    :param SnowWater:
+    :param Precipitation:
+    :param Temperature:
+    :param TTI:
+    :param TT:
+    :param TTM:
+    :param Cfmax:
+    :param WHC:
+    :return: Snow,SnowMelt,Precipitation
     """
 
     RFCF = 1.0  # correction factor for rainfall
@@ -189,11 +193,11 @@ def SnowPackHBV(Snow, SnowWater, Precipitation, Temperature, TTI, TT, Cfmax, WHC
 
     SnowFall = SnowFrac * Precipitation  #snowfall depth
     RainFall = RainFrac * Precipitation  #rainfall depth
-    PotSnowMelt = ifthenelse(Temperature > TT, Cfmax * (Temperature - TT),
+    PotSnowMelt = ifthenelse(Temperature > TTM, Cfmax * (Temperature - TTM),
                              scalar(0.0))  #Potential snow melt, based on temperature
-    PotRefreezing = ifthenelse(Temperature < TT, Cfmax * CFR * (TT - Temperature),
+    PotRefreezing = ifthenelse(Temperature < TTM, Cfmax * CFR * (TTM - Temperature),
                                0.0)  #Potential refreezing, based on temperature
-    Refreezing = ifthenelse(Temperature < TT, min(PotRefreezing, SnowWater), 0.0)  #actual refreezing
+    Refreezing = ifthenelse(Temperature < TTM, min(PotRefreezing, SnowWater), 0.0)  #actual refreezing
     # No landuse correction here
     SnowMelt = min(PotSnowMelt, Snow)  #actual snow melt
     Snow = Snow + SnowFall + Refreezing - SnowMelt  #dry snow content
@@ -648,6 +652,8 @@ class WflowModel(DynamicModel):
             # TT = -1.41934 # defines interval in which precipitation falls as rainfall and snowfall
             self.TT = self.readtblDefault(self.Dir + "/" + self.intbl + "/TT.tbl", self.LandUse, subcatch, self.Soil,
                                           -1.41934)
+            self.TTM = self.readtblDefault(self.Dir + "/" + self.intbl + "/TTM.tbl", self.LandUse, subcatch, self.Soil,
+                                           -1.41934)
             #Cfmax = 3.75653 # meltconstant in temperature-index
             self.Cfmax = self.readtblDefault(self.Dir + "/" + self.intbl + "/Cfmax.tbl", self.LandUse, subcatch,
                                              self.Soil, 3.75653)
@@ -1015,7 +1021,7 @@ class WflowModel(DynamicModel):
             self.Snow, self.SnowWater, self.SnowMelt, self.PrecipitationPlusMelt,self.SnowFall = SnowPackHBV(self.Snow, self.SnowWater,
                                                                                        self.Precipitation,
                                                                                        self.Temperature, self.TTI,
-                                                                                       self.TT, self.Cfmax, self.WHC)
+                                                                                       self.TT, self.TTM, self.Cfmax, self.WHC)
             MaxSnowPack = 10000.0
             if self.MassWasting:
                 # Masswasting of dry snow
