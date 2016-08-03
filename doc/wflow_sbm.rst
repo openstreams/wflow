@@ -846,7 +846,37 @@ The  irrigation model can be used in the following two modes:
    This option has only be tested in combination with a monthly LAI climatology as input. If a DemandReturnFlowFraction
    is defined this fraction is the supply is returned to the river at the wflow_irrisurfacereturns.map points.
 
+Bifurcations
+---------------------------
 
+A PCRaster local drainage direction (ldd) map only allows for one downstream neighbour cell. Bifurcations can be included in WFlow
+by providing the following files:
+ 
+:wflow_bifurcations.map: PCRaster ordinal map, identifying all bifurcations; cells having two downstream neighbours, 
+   of which only on is represented by the ldd.
+
+:wflow_bifurcations_ds.map: PCRaster ordinal map, identifying the locations in the bifurcation canal to which a part of the 
+   main river runoff (self.SurfaceRunoff), at the location of bifurcation, is to be diverted to. The IDs in this map match the IDs in 
+   wflow_bifurcations.map
+
+:Bifurcations.tbl: a table with the part of the discharge (self.SurfaceRunoff) at the location of the bifurcation, specified 
+   in wflow_bifurcations.map, which is diverted to the location specified in wflow_bifurcations_ds.map. The table consists of 
+   two columns: (1) a column with the bifurcation ID matching the IDs in both map-files and (2) the part of self.SurfaceRunoff 
+   at the bifurcation to be diverted to the bifurcation canal at the location specified in wflow_bifurcations_ds.map.
+
+Example of a tbl-file::
+
+        1 0.5
+        2 0.3
+
+The locations in wflow_bifurcations.map are interpreted as sinks, where a part of the total flow will be extracted. 
+The locations in wflow_bifurcations_ds.map are interpreted as sources, where a the extracted part will be supplied.
+
+.. figure:: _images/wflow_bifurcation.png
+    :width: 640px
+    :align: center
+
+    Figure showing (left) wflow_bifurcations.map, (middle) wflow_bifurcations_ds.map, (right) wflow_ldd.map
 
 Kinematic wave and River Width
 ------------------------------
