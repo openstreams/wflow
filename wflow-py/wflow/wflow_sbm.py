@@ -620,6 +620,9 @@ class WflowModel(DynamicModel):
         self.MporeFrac = self.readtblDefault(self.Dir + "/" + self.intbl + "/MporeFrac.tbl", self.LandUse,
                                                     subcatch, self.Soil, 0.0)
 
+        self.FirstZoneKsatHorFrac = self.readtblDefault(self.Dir + "/" + self.intbl + "/FirstZoneKsatHorFrac.tbl", self.LandUse,
+                                                    subcatch, self.Soil, 1.0)
+
 
         if hasattr(self,'ReserVoirLocs'):
             # Check if we have reservoirs
@@ -1106,7 +1109,8 @@ class WflowModel(DynamicModel):
                                                      self.SubCellFrac + self.RiverFrac + self.WaterFrac - 1.0, 0.0)
             self.SubCellRunoff = (self.SubCellFrac - Frac_correction) * self.AvailableForInfiltration
             self.SubCellGWRunoff = min(self.SubCellFrac * self.FirstZoneDepth,
-                                       max(0.0,self.SubCellFrac * self.Slope * self.FirstZoneKsatVer * exp(-self.f * self.zi)))
+                                       max(0.0,self.SubCellFrac * self.Slope * self.FirstZoneKsatVer * \
+                                           self.FirstZoneKsatHorFrac * exp(-self.f * self.zi)))
             self.FirstZoneDepth = self.FirstZoneDepth - self.SubCellGWRunoff
             self.AvailableForInfiltration = self.AvailableForInfiltration - self.SubCellRunoff
         else:
@@ -1265,12 +1269,12 @@ class WflowModel(DynamicModel):
 
         #TODO: We should make a couple ot itterations here...
         if self.waterdem:
-            Lateral = self.FirstZoneKsatVer * self.waterSlope * exp(-self.SaturationDeficit / self.M)
+            Lateral = self.FirstZoneKsatVer * self.FirstZoneKsatHorFrac * self.waterSlope * exp(-self.SaturationDeficit / self.M)
             MaxHor = max(0.0, min(Lateral, self.FirstZoneDepth))
             self.FirstZoneFlux = accucapacityflux(self.waterLdd, self.FirstZoneDepth, MaxHor)
             self.FirstZoneDepth = accucapacitystate(self.waterLdd, self.FirstZoneDepth, MaxHor)
         else:
-            Lateral = self.FirstZoneKsatVer * self.waterSlope * exp(-self.SaturationDeficit / self.M)
+            Lateral = self.FirstZoneKsatVer * self.FirstZoneKsatHorFrac * self.waterSlope * exp(-self.SaturationDeficit / self.M)
             MaxHor = max(0.0, min(Lateral, self.FirstZoneDepth))
             #MaxHor = self.ZeroMap
             self.FirstZoneFlux = accucapacityflux(self.TopoLdd, self.FirstZoneDepth, MaxHor)
