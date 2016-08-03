@@ -118,7 +118,7 @@ def usage(*args):
     sys.exit(0)
 
 
-def actEvap_SBM(RootingDepth, WTable, UStoreDepth, FirstZoneDepth, PotTrans, smoothpar):
+def actEvap_SBM(RootingDepth, WTable, UStoreDepth, FirstZoneDepth, PotTrans, smoothpar,ust=0):
     """
     Actual evaporation function:
     Actual evaporation function:
@@ -127,6 +127,8 @@ def actEvap_SBM(RootingDepth, WTable, UStoreDepth, FirstZoneDepth, PotTrans, smo
     - secondly try to get the remaining water from the unsaturated store
     - it uses an S-Curve the make sure roots het wet/dry gradually (basically)
       representing a root-depth distribution
+
+      if ust is True, all ustore is deems to be avaiable fro the roots a
 
     Input:
     
@@ -154,7 +156,10 @@ def actEvap_SBM(RootingDepth, WTable, UStoreDepth, FirstZoneDepth, PotTrans, smo
     # now try unsat store  
     #AvailCap = min(1.0, max(0.0, (WTable - RootingDepth) / (RootingDepth + 1.0)))
 
-    AvailCap = max(0.0,ifthenelse(WTable < RootingDepth,  cover(1.0),  RootingDepth/(WTable + 1.0)))
+    if ust >= 1:
+        AvailCap = UStoreDepth * 0.99
+    else:
+        AvailCap = max(0.0,ifthenelse(WTable < RootingDepth,  cover(1.0),  RootingDepth/(WTable + 1.0)))
     MaxExtr = AvailCap * UStoreDepth
     ActEvapUStore = min(MaxExtr, RestPotEvap, UStoreDepth)
     UStoreDepth = UStoreDepth - ActEvapUStore
@@ -451,7 +456,7 @@ class WflowModel(DynamicModel):
         self.updateFile = configget(self.config, "model", "updateFile", "no_set")
         self.LateralMethod = int(configget(self.config, "model", "lateralmethod", "1"))
         self.maxitsupply = int(configget(self.config, "model", "maxitsupply", "5"))
-
+        self.UST = int(configget(self.config, "model", "Whole_UST_Avail", "0"))
 
         if self.LateralMethod == 1:
             self.logger.info("Applying the original topog_sbm lateral transfer formulation")
@@ -1157,7 +1162,8 @@ class WflowModel(DynamicModel):
                                                                                               self.zi, self.UStoreDepth,
                                                                                               self.FirstZoneDepth,
                                                                                               self.PotTrans,
-                                                                                              self.rootdistpar)
+                                                                                              self.rootdistpar,
+                                                                                              ust=self.UST)
 
 
         # Run only if we have irrigation areas or an externally given demand, determine irrigation demand based on potrans and acttrans
