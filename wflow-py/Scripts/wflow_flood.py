@@ -1,10 +1,193 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/python
+
 """
-Created on Wed Jul 08 16:12:29 2015
+Definition of the wflow_flood post processor.
+---------------------------------------------
 
-@author: winsemi
+Performs a planar volume spreading on outputs of a wflow\_sbm|hbv|routing model run.
+The module can be used to post-process model outputs into a flood map that has a 
+(much) higher resolution than the model resolution. 
 
-$Id: wflow_flood_lib.py $
+The routine aggregates flooded water volumes occurring across all river pixels 
+across a user-defined strahler order basin scale (typically a quite small subcatchment)
+and then spreads this volume over a high resolution terrain model. To ensure that the 
+flood volume is not spread in a rice-field kind of way (first filling the lowest cell in
+the occurring subbasin), the terrain data is first normalised to a Height-Above-Nearest-Drain
+(HAND) map of the associated typically flooding rivers (to be provided by user through a strahler order)
+and flooding is estimated from this HAND map. 
+
+TODO:: perform routing from small to large scale using a sequential flood mapping from small
+to large strahler orders.
+
+Preferrably a user should use from the outputs of a wflow\_routing model
+because then the user can use the floodplain water level only (usually saved 
+in a variable name levfp). If estimates from a HBV or SBM (or other wflow) model are used
+we recommend that the user also provides a "bank-full" water level in the command line 
+arguments. If not provided, wflow_flood will also spread water volumes occuring
+within the banks of the river, probably leading to an overestimation of flooding.
+
+The wflow\_sbm|hbv model must have a saved mapstacks in NetCDF containing (over-bank) water levels
+The module selects the maximum occurring value in the map stacks provided (NetCDF)
+and spreads this out over a high resolution terrain dataset using the high resolution
+terrain, associated ldd and stream order map.
+
+TODO:: enable selection of a time step.
+
+Ini-file settings
+-----------------
+
+The module uses an ini file and a number of command line arguments to run. The ini-file
+contains inputs that are typically the same across a number of runs with the module for
+a given study area (e.g. the used DEM, LDD, and some run parameters). For instance,
+a user can prepare flood maps from different flood events computed with one WFLOW model,
+using the same .ini file for each event.
+
+The .ini file sections are treated below:
+
+::
+
+	[maps]
+	dem_file = /p/1220657-afghanistan-disaster-risk/Processed DEMs/SRTM 90m merged/BEST90m_WGS_UTM42N.tif
+	ldd_file = /p/1220657-afghanistan-disaster-risk/Processed DEMs/SRTM 90m merged/LDD/ldd_SRTM0090m_WGS_UTM42N.map
+	stream_file = /p/1220657-afghanistan-disaster-risk/Processed DEMs/SRTM 90m merged/stream.map
+	riv_length_file = /p/1220657-afghanistan-disaster-risk/floodhazardsimulations/Stepf_output/river_length.map
+	riv_width_file = /p/1220657-afghanistan-disaster-risk/floodhazardsimulations/Stepf_output/wflow_floodplainwidth.map
+
+The dem\_file contains a file with the high-res terrain data. It MUST be in .tif format.
+This is because .tif files can contain projection information. At the moment the .tif file
+must have the same projection as the WFLOW model (can be WGS84, but also any local projection 
+in meters), but we intend to also facilitate projections in the future.
+
+The ldd\_file contains the ldd, derived from the dem_file (PCRaster format)
+
+The stream\_file contains a stream order file (made with the PCRaster stream order file) 
+derived from the LDD in ldd\_file.
+
+riv\_length\_file and riv\_width\_file contain the dimensions of the channels within the WFLOW 
+pixels (unit meters) and are therefore in the resolution of the WFLOW model. The user can derive
+these by multiplying the LDD length from cell to cell within the LDD network with the 
+wflow\_riverlength_fact.map map, typically located in the staticmaps folder of the used WFLOW model.
+The width map is also in meters, and should contain the flood plain width in case the wflow_routing 
+model is used (typical name is wflow_floodplainwidth.map). If a HBV or SBM model is used, you should 
+use the river width map instead (typical name wflow_riverwidth.map).
+
+::
+
+	[metadata_global]
+	source=WFLOW model XXX
+	institution=Deltares
+	title=fluvial flood hazard from a wflow model
+	references=http://www.deltares.nl/
+	Conventions=CF-1.6
+	project=Afhanistan multi-peril country wide risk assessment
+
+In the metadata\_global section the user can enter typical project details as metadata. These are
+used in the outcoming .tif file. We recommend to follow Climate and Forecast conventions for typical
+metadata entries (see http://cfconventions.org/). You can insert as many key/value pairs as you like.
+Some examples are given above.
+
+::
+
+	[tiling]
+	x_tile=2000
+	y_tile=2000
+	x_overlap=500
+	y_overlap=500
+
+When very large domains are processed, the complete rasters will not fit into memory. In this
+case, the routine will break the domain into several tiles and process these separately. The
+x\_tile and y\_tile parameters are used to set the tile size. If you are confident that the whole
+domain will fit into memory (typically when the size is smaller than about 5,000 x 5,000 rows and
+columns) then just enter a number larger than the total amount of rows and columns. The x\_overlap
+and y\_overlap parameters should be large enough to prevent edge effects at the edges of each tile
+where averaging subbasins are cut off from the edge. Slightly larger tiles (defined by the overlap)
+are therefore processed and the edges are consequently cut off after processing one tile to get a
+seamless product.
+
+Some trial and error may be required to yield the right tile sizes and overlaps.
+
+::
+	[inundation]
+	area_multiplier=1
+	iterations=20
+	initial_level=32
+
+The inundation section contains a number of settings for the flood fill algorithm. The area_multiplier
+should for the moment always be set to 1. This may change in the future of reprojection from one to 
+another projection is considered. The number of iterations can be changed, we recommend to set it to 20 for
+an accurate results. The initial\_level is the largest water level that can occur during flooding. Make 
+sure it is set to a level (much) higher than anticipated to occur but not to a value close to infinity.
+If you set it orders too high, the solution will not converge to a reasonable estimate.
+
+Command line arguments
+----------------------
+
+When wflow\_flood.py is run with the -h argument, you will receive the following feedback:
+
+::
+
+	python wflow_flood.py -h
+	Usage: wflow_flood.py [options]
+
+	Options:
+	  -h, --help            show this help message and exit
+	  -q, --quiet           do not print status messages to stdout
+	  -i INIFILE, --ini=INIFILE
+				ini configuration file
+	  -f FLOOD_MAP, --flood_map=FLOOD_MAP
+				Flood map file (NetCDF point time series file
+	  -v FLOOD_VARIABLE, --flood_variable=FLOOD_VARIABLE
+				variable name of flood water level
+	  -b BANKFULL_MAP, --bankfull_map=BANKFULL_MAP
+				Map containing bank full level (is subtracted from
+				flood map, in NetCDF)
+	  -c CATCHMENT_STRAHLER, --catchment=CATCHMENT_STRAHLER
+				Strahler order threshold >= are selected as catchment
+				boundaries
+	  -s HAND_STRAHLER, --hand_strahler=HAND_STRAHLER
+				Strahler order threshold >= selected as riverine
+	  -d DEST_PATH, --destination=DEST_PATH
+				Destination path
+	  -H HAND_FILE, --hand_file=HAND_FILE
+				optional HAND file (already generated)
+
+
+Further explanation:
+
+    -i = the .ini file described in the previous section
+
+    -f = The NetCDF output time series or a GeoTIFF containing the flood event to be downscaled. In case of NetCDF, this is a typical NetCDF output file from a WFLOW model. Alternatively, you can provide a GeoTIFF file that contains the exact flood depths for a given time step user defined statistic (for example the maximum value across all time steps)
+
+    -v = Variable within the aforementioned file that contains the depth within the flood plain (typical levfp)
+    
+    -b = Similar file as -f but providing the bank full water level. Can e provided in case you know that a certain water depth is blocked, or remains within banks. In cae a NetCDF is provided, the maximum values are used, alternatively, you can provide a GeoTIFF.
+
+    -c = catchment strahler order over which flood volumes are averaged, before spreading. This is the strahler order, at the resolution of the flood map (not WFLOW)
+    
+    -s = strahler order used to derive the Heigh-Above-Nearest-Drain, from which flood mapping originates
+    
+    -d = path where the file is stored
+    
+    -H = HAND file. As interim product, the module produces a HAND file. This is a very time consuming process and therefore the user can also supply a previously generated HAND file here (GeoTIFF format)
+    
+Outputs
+-------
+
+wflow\_flood produces the following outputs:
+
+Table: outputs of the wflow_flood module
+
++----------------------------------------------------------------------------+---------------------------------------------------------------------+
+|hand\_contour\_inun.log                                                     | log file of the module, contains info and error messages            |
++----------------------------------------------------------------------------+---------------------------------------------------------------------+
+|inun_<-f>\_hand\_<-s>\_catch\_<-c>\\inun_<-f>\_hand\_<-s>\_catch\_<-c>.tif   | resulting inundation map (GeoTIFF)                                  |
++----------------------------------------------------------------------------+---------------------------------------------------------------------+
+|<dem_file>\_hand\_strahler_<-s>.tif                                         | HAND file based upon strahler order given with -s (only without -H  |
++----------------------------------------------------------------------------+---------------------------------------------------------------------+
+
+Questions can be directed to hessel.winsemius@deltares.nl
+
+$Id: wflow_flood.py $
 $Date: 2016-04-07 12:05:38 +0200 (Thu, 7 Apr 2016) $
 $Author: winsemi $
 $Revision: $
