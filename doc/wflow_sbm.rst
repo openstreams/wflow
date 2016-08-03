@@ -24,12 +24,19 @@ widely. The main differences are:
 The sections below describe the working of the model in more detail.
 
 
+
+.. figure:: _images/wflow_sbm_soil.png
+    :width: 640px
+    :align: center
+
+    Overview of the different processes and fluxes in the wflow_sbm model.
+
 Limitations
 ~~~~~~~~~~~
 
-The \_sbm concept has been developed for small catchments and relatively thin soils. In addition, the numerical solution
-of the soil water flow is a simple explicit scheme and the lateral groundwater flow follows topography rather than true
-hydraulic head. Although the waterdem=1 forces the model to recalculate the flow direction each timestep -- thus giving
+The wflow\_sbm concept has been developed steep catchments and relatively thin soils. In addition, the numerical
+solution of the soil water flow is a simple explicit scheme and the lateral groundwater flow follows topography rather than true
+hydraulic head. Although the waterdem=1 option forces the model to recalculate the flow direction each timestep -- thus giving
 a more realistic groundwater flow -- the following limitation apply:
 
 + Results for deep soils > 2m may be unrealistic (also due to the simple representation of the unsaturated zone)
@@ -37,7 +44,7 @@ a more realistic groundwater flow -- the following limitation apply:
 + The lateral movement of groundwater may be very wrong in terrain that is not steep (use the waterdem=1 option)
 
 + The simple numerical solution means that results from a daily timestep model may be  different from those
-  with an hourly timestep. This caa also cause water budget problems
+  with an hourly timestep. This can also cause water budget problems
 
 
 
@@ -54,7 +61,119 @@ to be potential.
 Snow
 ----
 
-The wflow\_sbm model uses the same snow routine as the wflow\_hbv model.
+Precipitation enters the model via the snow routine. If the air temperature,
+:math:`T_{a}`, is below a user-defined threshold :math:`TT (\approx0^{o}C)`
+precipitation occurs as snowfall, whereas it occurs as rainfall if
+:math:`T_{a}\geq TT`. A another parameter :math:`TTI` defines how precipitation
+can occur partly as rain of snowfall (see the figure below).
+If precipitation occurs as snowfall, it is added to the dry snow component
+within the snow pack. Otherwise it ends up in the free water reservoir,
+which represents the liquid water content of the snow pack. Between
+the two components of the snow pack, interactions take place, either
+through snow melt (if temperatures are above a threshold :math:`TT`) or
+through snow refreezing (if temperatures are below threshold :math:`TT`).
+The respective rates of snow melt and refreezing are:
+
+.. math::
+
+    Q_{m}  =  cfmax(T_{a}-TT)\;\;;T_{a}>TT
+
+    Q_{r}  =  cfmax*cfr(TT-T_{a})\;;T_{a}<TT
+
+
+
+where :math:`Q_{m}` is the rate of snow melt, :math:`Q_{r}` is the rate of snow
+refreezing, and $cfmax$ and $cfr$ are user defined model parameters
+(the melting factor :math:`mm/(^{o}C*day)` and the refreezing factor
+respectively)
+
+.. note::
+
+    The FoCFMAX parameter from the original HBV version is not used. instead
+    the CFMAX is presumed to be for the landuse per pixel. Normally for
+    forested pixels the CFMAX is 0.6 {*} CFMAX
+
+
+The air temperature, :math:`T_{a}`, is related to measured daily average
+temperatures. In the original HBV-concept, elevation differences within
+the catchment are represented through a distribution function (i.e.
+a hypsographic curve) which makes the snow module semi-distributed.
+In the modified version that is applied here, the temperature, :math:`T_{a}`,
+is represented in a fully distributed manner, which means for each
+grid cell the temperature is related to the grid elevation.
+
+The fraction of liquid water in the snow pack (free water) is at most
+equal to a user defined fraction, :math:`WHC`, of the water equivalent
+of the dry snow content. If the liquid water concentration exceeds
+:math:`WHC`, either through snow melt or incoming rainfall, the surpluss
+water becomes available for infiltration into the soil:
+
+.. math::
+
+    Q_{in}=max\{(SW-WHC*SD);\;0.0\}
+
+
+
+where :math:`Q_{in}` is the volume of water added to the soil module, :math:`SW`
+is the free water content of the snow pack and :math:`SD` is the dry snow
+content of the snow pack.
+
+
+.. figure:: _images/hbv-snow.png
+	:width: 600px
+
+	Schematic view of the snow routine
+
+
+The snow model als has an optional (experimental) 'mass-wasting' routine. This transports snow downhill
+using the local drainage network. To use it set the variable MassWasting in the model section to 1.
+
+::
+
+       # Masswasting of snow
+       # 5.67 = tan 80 graden
+       SnowFluxFrac = min(0.5,self.Slope/5.67) * min(1.0,self.DrySnow/MaxSnowPack)
+       MaxFlux = SnowFluxFrac * self.DrySnow
+       self.DrySnow = accucapacitystate(self.TopoLdd,self.DrySnow, MaxFlux)
+       self.FreeWater = accucapacitystate(self.TopoLdd,self.FreeWater,SnowFluxFrac * self.FreeWater )
+
+
+
+Glaciers
+--------
+If snow modeling is enabled Glacier modelling can also be enabled by including the following three entries
+in the modelparameters section:
+
+::
+    [modelparameters]
+    GlacierFrac=staticmaps/GlacierFrac.map,staticmap,0.0,0
+    G_TT=intbl/G_TT.tbl,tbl,0.0,1,staticmaps/GlacierFrac.map
+    G_Cfmax=intbl/G_Cfmax.tbl,tbl,3.0,1,staticmaps/GlacierFrac.map
+
+
+*GlacierFrac* is a map that gives the fraction of each grid cell covered by a glacier as a number between zero and one.
+Furthermore two lookup tables must be defined: *G\_TT* and *G\_Cfmax*. If the air temperature,
+:math:`T_{a}`, is below  :math:`G\_TT (\approx0^{o}C)`
+precipitation occurs as snowfall, whereas it occurs as rainfall if
+:math:`T_{a}\geq G\_TT`.
+
+With this the rate of glacier melt in mm is estimated as:
+
+.. math::
+
+    Q_{m}  =  cfmax(T_{a}-G\_TT)\;\;;T_{a}>G\_TT
+
+where :math:`Q_{m}` is the rate of glacier meltand $cfmax$ is the melting factor in :math:`mm/(^{o}C*day)`.
+
+Accumulated snow on top of the glacier is converted to ice (and will thus become part of the glacier store) if
+the total snow depth > 8300 mm. An S-curve is used to smooth the transition. A maximum of 8mm/day can be converted to ice.
+
+.. plot:: plots/glacier-plot.py
+
+
+Becuase the glacier store (GlacierStore.map) cannot be initialized by running the model a couple of year a default
+initial state map should be supplied by placing a GlacierStore.map file in the staticmaps directory. This map gives
+the amount of water (in mm) within the Glaciers at each gridcell)
 
 The rainfall interception model
 -------------------------------
@@ -135,12 +254,113 @@ land cover to extinction coefficient and Swood  to a lookuptable result of
 "canopy" capacity of the vegetation woody fraction.
 
 
+Here it is assumed that Cmax(leaves) (Gash’ canopy capacity for the leaves only) relates linearly with LAI (c.f. Van Dijk and Bruijnzeel 2001). This done
+via the Sl (specific leaf storage). Sl is determined via a lookup table with land cover. Next the Cmax(leaves) is
+determined using:
+
+.. math::
+
+    Cmax(leaves)  = Sl  * LAI
+
+The table below shows lookup table for Sl (as determined from Pitman 1986, Lui 1998).
+
+::
+
+    0   0	    Water
+    1	0.045	Evergreen Needle leaf Forest
+    2 	0.036	Evergreen Broadleaf Forest
+    3	0.045	Deciduous Needle leaf Forest
+    4 	0.036	Deciduous Broadleaf Forest
+    5 	0.03926	Mixed Forests
+    6 	0.07	Closed Shrublands
+    7	0.07	Open Shrublands
+    8 	0.07	Woody Savannas
+    9 	0.09	Savannas
+    10 	0.1272	Grasslands
+    11 	0.1272	Permanent Wetland
+    12 	0.1272	Croplands
+    13 	0.04	Urban and Built-Up
+    14	0.1272	Cropland/Natural Vegetation Mosaic
+    15 	0.0	    Snow and Ice
+    16 	0.04	Barren or Sparsely Vegetated
+
+
+
+To get to total storage (Cmax) the woody part of the vegetation also needs to be added. This is done via a simple
+lookup table between land cover the Cmax(wood):
+
+.. digraph:: cmax
+
+    "MODIS LandCover" -> "Sl lookuptable";
+    "Sl lookuptable" -> Sl -> Multiply;
+    "LAI (monthly)" -> Multiply -> "Cmax (leaves)" -> add;
+    "MODIS LandCover" -> "Cmax Wood lookuptable";
+    "Cmax Wood lookuptable" -> "Cmax (wood)";
+    "Cmax (wood)"-> add;
+    add -> Cmax;
+
+The  table below relates the land cover map to the woody part of the Cmax.
+
+::
+
+    0	0	    Water
+    1	0.5 	Evergreen Needle leaf Forest
+    2 	0.5	    Evergreen Broadleaf Forest
+    3	0.5	    Deciduous Needle leaf Forest
+    4 	0.5	    Deciduous Broadleaf Forest
+    5 	0.5	    Mixed Forests
+    6 	0.2	    Closed Shrublands
+    7	0.1	    Open Shrublands
+    8 	0.2	    Woody Savannas
+    9 	0.01	Savannas
+    10 	0.0	    Grasslands
+    11 	0.01	Permanent Wetland
+    12 	0.0	    Croplands
+    13 	0.01	Urban and Built-Up
+    14	0.01	Cropland/Natural Vegetation Mosiac
+    15 	0.0	    Snow and Ice
+    16 	0.04	Barren or Sparsely Vegetated
+
+
+
+
+The canopy gap fraction is determined using the  k: extinction coefficient (van Dijk and Bruijnzeel 2001):
+
+.. math::
+
+    CanopyGapFraction = exp(-k * LAI)
+
+The table below show how k is related to land cover:
+
+::
+
+    0	0.7	Water
+    1	0.8	Evergreen Needle leaf Forest
+    2 	0.8	Evergreen Broadleaf Forest
+    3	0.8	Deciduous Needle leaf Forest
+    4 	0.8	Deciduous Broadleaf Forest
+    5 	0.8	Mixed Forests
+    6 	0.6	Closed Shrublands
+    7	0.6	Open Shrublands
+    8 	0.6	Woody Savannas
+    9 	0.6	Savannas
+    10 	0.6	Grasslands
+    11 	0.6	Permanent Wetland
+    12 	0.6	Croplands
+    13 	0.6	Urban and Built-Up
+    14	0.6	Cropland/Natural Vegetation Mosaic
+    15 	0.6	Snow and Ice
+    16 	0.6	Barren or Sparsely Vegetated
+
+
+
+
 
 
 The modified rutter model
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For subdaily timesteps the model uses a simplification of the Rutter model. The simplyfied
+For subdaily timesteps the model uses a simplification of the Rutter model. The simplified
 model is solved explicitly and does not take drainage from the canopy into account.
 
 ::
@@ -422,15 +642,12 @@ to zero thus setting the capilary rise to zero.
    the kinematic wave reservoir
 
 
-Lower zone and leakage
-~~~~~~~~~~~~~~~~~~~~~~
 
-If the parameter MaxPercolation is set > 0 this is used to transfer water from the bottom of the
-FirstZone to a HBV-type groundwater reservoir (LowerZone). The K4 parameter is used to set the
-recession rate of the lower zone.
 
-Alternatively a MaxLeage parameter may be set > 0. In that case the water is lost from the FirstZone and
-not transferred to the LowerZone.
+Leakage
+~~~~~~~
+
+If the MaxLeakage parameter may is set > 0  water is lost from the FirstZone and runs out of the model.
 
 Soil temperature
 ~~~~~~~~~~~~~~~~
@@ -520,7 +737,7 @@ where:
 
 .. note::
 
-    The model determines the C for the upper hals and the lower half of the curve
+    The model determines the C for the upper half and the lower half of the curve
      seperate and averages the results.
 
 .. warning::
@@ -554,6 +771,112 @@ in dynamic::
         FreeWaterDepth = FreeWaterDepth - self.SubCellRunoff
 
 
+
+Irrigation and water demand
+---------------------------
+
+Water demand (surface water only) by irrigation can be configured in two ways:
+
+1. By specifying the water demand externally (as a lookup table, series of maps etc)
+
+2. By defining irrigation areas. Within those areas the demand is calculated as the difference between
+   potential ET and actual transpiration
+
+For both options a fraction of the supplied water can be put back into the river at specified locations
+
+The following maps and variables can be defined:
+
+:wflow_irrigationareas.map:
+    Map of areas where irrigation is applied. Each area has a unique id. The areas do not need to be continuous but
+    all cells with the same id are assumed to belong to the same irrigation area.
+
+:wflow_irrisurfaceintake.map:
+    Map of intake points at the river(s). The id of each point should correspond to the id of an area in the
+    wflow_irrigationareas map.
+
+:wflow_irrisurfacereturns.map:
+    Map of water return points at the river(s). The id of each point should correspond to the id of an area in the
+    wflow_irrigationareas map or/and the wflow_irrisurfaceintake.map.
+
+:IrriDemandExternal: Irrigation demand supplied to the model. This can be doen by adding an entry to the
+    modelparameters section. if this is doen the irrigation demand supplied here is used and it is NOT determined
+    by the model. Water demand should be given with a negative sign! See below for and example entry
+    in the modelparameters section: ::
+
+        IrriDemandExternal=intbl/IrriDemandExternal.tbl,tbl,-34.0,0,staticmaps/wflow_irrisurfaceintakes.map
+
+    In this example the default demand is :math:`-34 m^3/s`. The demand must be linked to the map
+    wflow_irrisurfaceintakes.map. Alternatively we can define this as a timeseries of
+    maps: ::
+
+        IrriDemandExternal=/inmaps/IRD,timeseries,-34.0,0
+
+
+
+:DemandReturnFlowFraction: Fraction of the supplied water the returns back into the river system (between 0 and 1).
+    This fraction must  be supplied at the  wflow_irrisurfaceintakes.map locations but the water that is returned
+    to the river will be returned at the wflow_irrisurfacereturns.map locations. If this variable is not defined
+    the default is 0.0. See below for an example entry in the modelparameters section: ::
+
+    DemandReturnFlowFraction=intbl/IrriDemandReturn.tbl,tbl,0.0,0,staticmaps/wflow_irrisurfaceintakes.map
+
+
+
+.. figure:: _images/wflow_irrigation.png
+    :width: 640px
+    :align: center
+
+    Figure showing the three maps that define the irrigation intake points areas and return flow locations.
+
+
+The  irrigation model can be used in the following two modes:
+
+1. An external water demand is given (the user has specified the IrriDemandExternal variable). In this case the demand
+   is enforced. If a matching irrigation area is found the supplied water is converted to an amount in mm over the
+   irrigation area. The supply is converted in the *next timestep* as extra water available for infiltration in
+   the irrigation area. If a DemandReturnFlowFraction is defined this fraction is the supply is returned to the
+   river at the wflow_irrisurfacereturns.map points.
+
+2. Irrigation areas have been defined and no IrriDemandExternal has been defined. In this case the model will
+   estimate the irrigation water demand. The irrigation algorithim works as follows: For each of the areas the
+   difference between potential transpiration and actual transpiration is determined. Next, this is converted to a
+   demand in :math:`m^3/s` at the corresponding intake point at the river. The demand is converted to a supply
+   (taking into account the available water in the river) and converted to an amount in mm over the irrigation area.
+   The supply is converted in the *next timestep* as extra water available for infiltration in the irrigation area.
+   This option has only be tested in combination with a monthly LAI climatology as input. If a DemandReturnFlowFraction
+   is defined this fraction is the supply is returned to the river at the wflow_irrisurfacereturns.map points.
+
+Bifurcations
+---------------------------
+
+A PCRaster local drainage direction (ldd) map only allows for one downstream neighbour cell. Bifurcations can be included in WFlow
+by providing the following files:
+ 
+:wflow_bifurcations.map: PCRaster ordinal map, identifying all bifurcations; cells having two downstream neighbours, 
+   of which only on is represented by the ldd.
+
+:wflow_bifurcations_ds.map: PCRaster ordinal map, identifying the locations in the bifurcation canal to which a part of the 
+   main river runoff (self.SurfaceRunoff), at the location of bifurcation, is to be diverted to. The IDs in this map match the IDs in 
+   wflow_bifurcations.map
+
+:Bifurcations.tbl: a table with the part of the discharge (self.SurfaceRunoff) at the location of the bifurcation, specified 
+   in wflow_bifurcations.map, which is diverted to the location specified in wflow_bifurcations_ds.map. The table consists of 
+   two columns: (1) a column with the bifurcation ID matching the IDs in both map-files and (2) the part of self.SurfaceRunoff 
+   at the bifurcation to be diverted to the bifurcation canal at the location specified in wflow_bifurcations_ds.map.
+
+Example of a tbl-file::
+
+        1 0.5
+        2 0.3
+
+The locations in wflow_bifurcations.map are interpreted as sinks, where a part of the total flow will be extracted. 
+The locations in wflow_bifurcations_ds.map are interpreted as sources, where a the extracted part will be supplied.
+
+.. figure:: _images/wflow_bifurcation.png
+    :width: 640px
+    :align: center
+
+    Figure showing (left) wflow_bifurcations.map, (middle) wflow_bifurcations_ds.map, (right) wflow_ldd.map
 
 Kinematic wave and River Width
 ------------------------------

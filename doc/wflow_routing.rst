@@ -5,7 +5,8 @@ The wflow_routing Model
 Introduction
 ------------
 The wflow routing module uses the pcraster kinematic wave to route water over a DEM. By adding a bankfull level
-and a floodplainwidth to the configuration the model can also include estimated flow over a floodplain.
+and a floodplainwidth to the configuration the model can also include estimated flow over a floodplain. In addition,
+simple reservoirs can be configured.
 
 Method
 ------
@@ -116,6 +117,33 @@ The code is implemented in the updateRunoff attribute of the model class as foll
 
 
 
+Reservoirs
+----------
+Simple reservoirs can be included within the kinematic wave routing by supplying a map with the locations of the
+reservoirs in which each reservoir has a unique id.  Furthermore a set of lookuptables must be defined linking
+the reservoir-id's to reservoir characteristics:
+
++ ResTargetFullFrac.tbl - Target fraction full (of max storage) for the reservoir: number between 0 and 1
++ ResTargetMinFrac.tbl - Target minimum full fraction (of max storage). Number between 01 and 1 <  ResTargetFullFrac
++ ResMaxVolume.tbl - Maximum reservoir storage (above which water is spilled) [m^3]
++ ResDemand.tbl - Water demand on the reservoir (all combined) m^3/s
++ ResMaxRelease.tbl - Maximum Q that can be released if below spillway [m^3/s]
+
+By default the reservoirs are not included in the model. To include them put the following
+lines in the .ini file of the model.
+
+::
+
+    [modelparameters]
+    # Add this if you want to model reservoirs
+    ReserVoirLocs=staticmaps/wflow_reservoirlocs.map,staticmap,0.0,0
+    ResTargetFullFrac=intbl/ResTargetFullFrac.tbl,tbl,0.8,0,staticmaps/wflow_reservoirlocs.map
+    ResTargetMinFrac=intbl/ResTargetMinFrac.tbl,tbl,0.4,0,staticmaps/wflow_reservoirlocs.map
+    ResMaxVolume=intbl/ResMaxVolume.tbl,tbl,0.0,0,staticmaps/wflow_reservoirlocs.map
+    ResMaxRelease=intbl/ResMaxRelease.tbl,tbl,1.0,0,staticmaps/wflow_reservoirlocs.map
+    ResDemand=intbl/ResDemand.tbl,tblmonthlyclim,1.0,0,staticmaps/wflow_reservoirlocs.map
+
+In the above example most values are fixed thought the year, only the demand is given per month of the year.
 
 Configuration
 -------------
@@ -169,7 +197,23 @@ Lookup tables
 :N_FloodPlain.tbl:
     Manning's N for the floodplain. A floodplain is always linked to a river cell. Defaults to 2* N of the river
 
-As with all models the lookup tables can be replaced by a map with the same name (but with the .map extension) in the staticmaps directory.
+:ResDemand.tbl:
+    Lookup table of demand (:math:`m^3/s`) for reservoir locations.
+
+:ResMaxRelease.tbl:
+    Lookup table of maximum release capcity (:math:`m^3/s`) for reservoir locations.
+
+:ResMaxVolume.tbl:
+    Lookup table of reservoi maximum volume (:math:`m^3`) for reservoir locations.
+
+:ResTargetFullFrac:
+    Lookup table of the target maximum full fraction (0-1) (:math:`m^3/s`) for reservoir locations.
+
+:ResTargetMinFrac:
+    Lookup table of the target minimum full fraction (0-1) (:math:`m^3/s`) for reservoir locations.
+
+As with all models the lookup tables can be replaced by a map with the same name (but with the .map extension) in the
+staticmaps directory.
 
 staticmaps
 ~~~~~~~~~~
@@ -208,7 +252,7 @@ staticmaps
     Optional map of the level at which the river starts to flood and water will also be conducted over the floodplain.
 
 :wflow_floodplaindist.map:
-    Optional map that defines the relation between the water level in the floodplain
+    Optional map that defines the the relation between bankfulldepth and the floodplaindepth. Default = 0.5
 
 :wflow_landuse.map:
     Required map of landuse/land cover. This map is used in the lookup tables to relate parameters to landuse/landcover.
@@ -231,6 +275,9 @@ The model needs the following files with initial conditions:
 
 :SurfaceRunoff:
     Discharge in each grid-cell
+
+:ReservoirVolume:
+    Volume of each reservoir in :math:`m^3`
 
 The total waterlevel is obtained by adding the two water levels.
 

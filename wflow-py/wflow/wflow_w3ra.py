@@ -155,11 +155,11 @@ class WflowModel(DynamicModel):
     self.EPOT_mapstack=self.Dir + configget(self.config,"inputmapstacks","EPOT","/inmaps/EPOT")        
     self.PRECIP_mapstack=self.Dir + configget(self.config,"inputmapstacks","PRECIP","/inmaps/PRECIP")
     self.RAD_mapstack=self.Dir + configget(self.config,"inputmapstacks","RAD","/inmaps/RAD")
-    self.WINDSPEED_mapstack=self.Dir + configget(self.config,"inputmapstacks","WINDSPEED","/inmaps/ClimatologyMapFiles/WINDS/WNDSPEED")
-    self.AIRPRESS_mapstack=self.Dir + configget(self.config,"inputmapstacks","AIRPRESS","/inmaps/ClimatologyMapFiles/AIRPRESS/AIRPRESS")
+    #self.WINDSPEED_mapstack=self.Dir + configget(self.config,"inputmapstacks","WINDSPEED","/inmaps/ClimatologyMapFiles/WINDS/WNDSPEED")
+    #self.AIRPRESS_mapstack=self.Dir + configget(self.config,"inputmapstacks","AIRPRESS","/inmaps/ClimatologyMapFiles/AIRPRESS/AIRPRESS")
     self.ALBEDO_mapstack=self.Dir + configget(self.config,"inputmapstacks","ALBEDO","/inmaps/ClimatologyMapFiles/ALBEDO/ALBEDO")
-    #self.WINDSPEED_mapstack=self.Dir + configget(self.config,"inputmapstacks","WINDSPEED","/inmaps/WIND")
-    #self.AIRPRESS_mapstack=self.Dir + configget(self.config,"inputmapstacks","AIRPRESS","/inmaps/PRES")
+    self.WINDSPEED_mapstack=self.Dir + configget(self.config,"inputmapstacks","WINDSPEED","/inmaps/WIND")
+    self.AIRPRESS_mapstack=self.Dir + configget(self.config,"inputmapstacks","AIRPRESS","/inmaps/PRES")
 
     self.Altitude=readmap(self.Dir + "/staticmaps/wflow_dem")
 
@@ -320,8 +320,8 @@ class WflowModel(DynamicModel):
         if self.UseETPdata == 1:
             self.TDAY=cover(self.wf_readmap(self.TDAY_mapstack, 10.0), scalar(10.0)) # T in degC     
             self.EPOT=cover(self.wf_readmap(self.EPOT_mapstack, 0.0), scalar(0.0)) # mm             
-            self.WINDSPEED=cover(self.wf_readmapClimatology(self.WINDSPEED_mapstack, default=1.0), scalar(1.0))
-            self.AIRPRESS=cover(self.wf_readmapClimatology(self.AIRPRESS_mapstack, default=980.0), scalar(980.0))
+            self.WINDSPEED=cover(self.wf_readmap(self.WINDSPEED_mapstack, default=1.0), scalar(1.0))
+            self.AIRPRESS=cover(self.wf_readmap(self.AIRPRESS_mapstack, default=980.0), scalar(980.0))
             # print "Using climatology for wind, air pressure and albedo." 
         elif self.UseETPdata == 0:
             self.TMIN=cover(self.wf_readmap(self.TMIN_mapstack, 10.0), scalar(10.0)) # T in degC
@@ -481,7 +481,7 @@ class WflowModel(DynamicModel):
         Et2 = min(Utot2, Etmax2)
         
         # # Root water uptake distribution (2.3)
-        U01 = max(min((U0max1/(U0max1 + Usmax1 + Udmax1))*Et1,self. S01-1e-2),0)
+        U01 = max(min((U0max1/(U0max1 + Usmax1 + Udmax1))*Et1, self.S01-1e-2),0)
         Us1 = max(min((Usmax1/(U0max1 + Usmax1 + Udmax1))*Et1, self.Ss1-1e-2),0)
         Ud1 = max(min((Udmax1/(U0max1 + Usmax1 + Udmax1))*Et1, self.Sd1-1e-2),0)
         Et1 = U01 + Us1 + Ud1      # to ensure mass balance
@@ -516,6 +516,10 @@ class WflowModel(DynamicModel):
         fER2 = self.ER_frac_ref2*fveg2
         Pwet2 = -ln(1-fER2/fveg2)*Sveg2/fER2
         Ei2 = scalar(Pg<Pwet2)*fveg2*Pg+scalar(Pg>=Pwet2)*(fveg2*Pwet2+fER2*(Pg-Pwet2))
+
+	self.EACT1=(Et1+Es1+Eg1+Er1+Ei1)*self.Fhru1
+	self.EACT2=(Et2+Es2+Eg2+Er2+Ei2)*self.Fhru2
+	self.EACT=self.EACT1+self.EACT2
 
         # HBV snow routine
         # Matlab: function [FreeWater,DrySnow,InSoil]=snow_submodel(Precipitation,Temperature,FreeWater,DrySnow)

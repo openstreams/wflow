@@ -11,7 +11,7 @@ def dependencies_for_freeezing():
 
 
 data_files=matplotlib.get_py2exe_datafiles()
-includes = ["zmq.backend.cython","requests","zmq.eventloop.zmqstream","pandas","matplotlib",'wflow.wflow_bmi','wflow.wrapperExtended']
+includes = ["zmq","zmq.backend.cython","zmq.utils.garbage","requests","zmq.eventloop.zmqstream","pandas","matplotlib",'wflow.wflow_bmi']
 #include_files = glob.glob("c:\Anaconda\Lib\site-packages\zmq\backend\cython\*.pyd")
 
 nrbits = str(ctypes.sizeof(ctypes.c_voidp) * 8)

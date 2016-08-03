@@ -180,6 +180,7 @@ class MyTest(unittest.TestCase):
         ts = bmiobj.get_time_step()
 
         bmiobj.initialize_model()
+        tt = bmiobj.get_value('timestepsecs')
         curtime = st
         cnt = 0
         lastcurtime = bmiobj.get_current_time()

@@ -429,7 +429,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 try:
                     exec execstr
                 except:
-                    self.logger.error("Variable change string (apply_timestep) could not be execute: " + execstr)
+                    self.logger.error("Variable change string (apply_timestep) could not be executed: " + execstr)
 
         if self._userModel()._inInitial():
 
@@ -438,7 +438,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 try:
                     exec execstr
                 except:
-                    self.logger.error("Variable change string (apply_once) could not be execute: " + execstr)
+                    self.logger.error("Variable change string (apply_once) could not be executed: " + execstr)
 
 
 
@@ -454,15 +454,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         """
 
         for par in self.modelparameters:
+
             if self._userModel()._inInitial():
                 if par.type == 'tbl' or par.type =='tblsparse':
-                    if not hasattr(self._userModel(), par.name):
-                        self._userModel().logger.info("Initial: Adding " + par.name + " to model.")
-                    tblname = os.path.join(self._userModel().Dir, par.stack)
-                    theparmap = self.readtblFlexDefault(tblname, par.default, *par.lookupmaps)
-                    setattr(self._userModel(), par.name, theparmap)
-
-                if par.type == 'tblts' or par.type =='tblsparse':
                     if not hasattr(self._userModel(), par.name):
                         self._userModel().logger.info("Initial: Adding " + par.name + " to model.")
                     tblname = os.path.join(self._userModel().Dir, par.stack)
@@ -485,7 +479,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     fname = os.path.join(self._userModel().Dir, par.stack)
                     fileName, fileExtension = os.path.splitext(fname)
                     if fileExtension == '.map':
-                        theparmap = self.wf_readmap(fname,par.default,fail=par.verbose)
+                        theparmap = self.wf_readmap(fname,par.default,fail=int(par.verbose))
                     else:
                         self._userModel().logger.error(fname + " Does not have a .map extension")
 
@@ -499,7 +493,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         self._userModel().logger.info("Adding " + par.name + " to model.")
 
                     theparmap = self.wf_readmap(os.path.join(self._userModel().caseName, par.stack), par.default,
-                                                verbose=par.verbose)
+                                                verbose=int(par.verbose))
                     theparmap = cover(theparmap, par.default)
                     setattr(self._userModel(), par.name, theparmap)
 
@@ -507,22 +501,31 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     if not hasattr(self._userModel(), par.name):
                         self._userModel().logger.info("Adding " + par.name + " to model.")
                     theparmap = self.wf_readmapClimatology(os.path.join(self._userModel().caseName, par.stack), kind=1,
-                                                           default=par.default, verbose=par.verbose)
+                                                           default=par.default, verbose=int(par.verbose))
                     theparmap = cover(theparmap, par.default)
                     setattr(self._userModel(), par.name, theparmap)
 
+                if par.type == 'tblmonthlyclim':
+                    if not hasattr(self._userModel(), par.name):
+                        self._userModel().logger.info("Initial: Adding " + par.name + " to model.")
+                    month = self.DT.currentDateTime.month
+                    ptex = os.path.splitext(par.stack)
+                    newName = ptex[0] + "_" + str(month) + ptex[1]
+                    tblname = os.path.join(self._userModel().Dir, newName)
+                    theparmap = self.readtblFlexDefault(tblname, par.default, *par.lookupmaps)
+                    setattr(self._userModel(), par.name, theparmap)
 
                 if par.type == 'hourlyclim':
                     if not hasattr(self._userModel(), par.name):
                         self._userModel().logger.info("Adding " + par.name + " to model.")
                     print "hourlyclim has " + par.name + par.stack
-                    print "Not implemented yet"
+                    print "not been implemented yet"
 
                 if par.type == 'dailyclim':
                     if not hasattr(self._userModel(), par.name):
                         self._userModel().logger.info(par.name + " is not defined yet, adding anyway.")
                     theparmap = self.wf_readmapClimatology(os.path.join(self._userModel().caseName, par.stack), kind=2,
-                                                           default=par.default, verbose=par.verbose)
+                                                           default=par.default, verbose=int(par.verbose))
                     setattr(self._userModel(), par.name, theparmap)
 
             if self._userModel()._inDynamic():
@@ -692,7 +695,12 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         theparmap = cover(theparmap, default)
                         newargs.append(theparmap)
 
-                rest = lookupscalar(pathtotbl, *newargs)
+                for lmap in newargs:
+                    if not os.path.exists(lmap):
+                        rest = spatial(scalar(default))
+                        self.logger.debug("map file not found (" + lmap + ") returning default value: " + str(default))
+                    else:
+                        rest = lookupscalar(pathtotbl, *newargs)
             else:
                 self.logger.debug("tbl file not found (" + pathtotbl + ") returning default value: " + str(default))
                 rest = spatial(scalar(default))
@@ -940,7 +948,12 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             for thismap in _maps:
                 thismapname = os.path.join(caseName, runId, 'outsum',
                                            self._userModel().config.get("summary_" + sttype, thismap))
-                thismap = thismap.split('self.')[1]
+                try:
+                    thismap = thismap.split('self.')[1]
+                except:
+                    logging.error("Entry in ini invalid: " + thismap)
+                    raise ValueError
+
                 self.statslst.append(wf_sumavg(thismap, mode=sttype, filename=thismapname))
 
 
@@ -1021,7 +1034,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         self.logger.info("Adding " + tsformat + " output at " + samplemapname + " function: " + areafunction)
                     except:
                         self.logger.warn("Could not read sample id-map for timeseries: " + samplemapname)
-
+                        self.logger.warn(sys.exc_info())
                     for a in toprint:
                         if "samplemap" not in a and 'function' not in a:
                             b = a.replace('self', 'self._userModel()')
@@ -1063,6 +1076,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             except:
                 self.logger.warn("Problem saving state variable: " + var)
                 self.logger.warn(execstr)
+                self.logger.warn(sys.exc_info())
 
         # Save the summary maps
         self.wf_savesummarymaps()
@@ -1183,7 +1197,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     setattr(self._userModel(), var,tvar)
                 except:
                     self.logger.error(
-                        "problem while reading state variable from disk: " + mpath + " Suggest to use the -I uption to restart")
+                        "problem while reading state variable from disk: " + mpath + " Suggest to use the -I option to restart")
                     exit(1)
 
         self._traceOut("resume")
@@ -1559,7 +1573,11 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 tt = pcr2numpy(pcrmap,-999.0)
                 retval = flipud(tt).copy()
             else:
-                retval = pcrmap
+                if type(pcrmap) == numpy.ndarray:
+                    retval = pcrmap
+                else:
+                    retval = array(pcrmap)
+
             if self.APIDebug:
                 self.logger.debug("wf_supplyMapAsNumpy returning: " + mapname)
         else:

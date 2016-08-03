@@ -80,6 +80,7 @@ def prepare_nc(trgFile, timeList, x, y, metadata, logger, EPSG="EPSG:4326", unit
     endDayNr = netCDF4.date2num(timeList[-1].replace(tzinfo=None), units=units, calendar=calendar)
 
     timeAR = linspace(startDayNr, endDayNr, num=len(timeList))
+
     nc_trg = netCDF4.Dataset(trgFile, 'w', format=Format, zlib=zlib, complevel=complevel)
 
     logger.info(
@@ -448,7 +449,10 @@ class netcdfinput():
         self.fstep = 0
         self.lstep = self.fstep + self.maxsteps
 
-
+        try:
+            self.x = self.dataset.variables['x'][:]
+        except:
+            self.x = self.dataset.variables['lon'][:]
         # Now check Y values to see if we must flip the data
         try:
             self.y = self.dataset.variables['y'][:]
@@ -468,6 +472,11 @@ class netcdfinput():
             else:
                 self.flip = True
 
+        x = _pcrut.pcr2numpy(_pcrut.xcoordinate(_pcrut.boolean(_pcrut.cover(1.0))), NaN)[0, :]
+        y = _pcrut.pcr2numpy(_pcrut.ycoordinate(_pcrut.boolean(_pcrut.cover(1.0))), NaN)[:, 0]
+
+        (self.latidx,) = logical_and(self.y >= y.min(), self.y <= y.max()).nonzero()
+        (self.lonidx,) = logical_and(self.x >= x.min(), self.x <= x.max()).nonzero()
 
         for var in vars:
             try:
@@ -486,6 +495,9 @@ class netcdfinput():
         :var logging: python logging object
         :var var: variable to get from the file
         :var shifttime: is True start at 1 in the NC file (instead of 0)
+
+
+            window = data[dpos,latidx.min():latidx.max()+1,lonidx.min():lonidx.max()+1]
         """
         if shifttime:
             ncindex = timestep
@@ -500,7 +512,8 @@ class netcdfinput():
 
                 self.fstep = ncindex
                 self.lstep = ncindex + self.maxsteps
-            np_step = self.alldat[var][ncindex - self.fstep, :, :]
+            np_step = self.alldat[var][ncindex - self.fstep, self.latidx.min():self.latidx.max()+1,
+                      self.lonidx.min():self.lonidx.max()+1]
 
             miss = float(self.dataset.variables[var]._FillValue)
             if self.flip:
@@ -539,6 +552,23 @@ class netcdfinputstates():
         self.fstep = 0
         self.lstep = self.fstep + self.maxsteps
 
+        try:
+            self.x = self.dataset.variables['x'][:]
+        except:
+            self.x = self.dataset.variables['lon'][:]
+        # Now check Y values to see if we must flip the data
+        try:
+            self.y = self.dataset.variables['y'][:]
+        except:
+            self.y = self.dataset.variables['lat'][:]
+
+
+        x = _pcrut.pcr2numpy(_pcrut.xcoordinate(_pcrut.boolean(_pcrut.cover(1.0))), NaN)[0, :]
+        y = _pcrut.pcr2numpy(_pcrut.ycoordinate(_pcrut.boolean(_pcrut.cover(1.0))), NaN)[:, 0]
+
+        (self.latidx,) = logical_and(self.x >= x.min(), self.x < x.max()).nonzero()
+        (self.lonidx,) = logical_and(self.y >= x.min(), self.y < y.max()).nonzero()
+
         for var in vars:
             try:
                 self.alldat[var] = self.dataset.variables[var][self.fstep:self.maxsteps]
@@ -562,7 +592,8 @@ class netcdfinputstates():
                     self.alldat[vars] = self.dataset.variables[vars][ncindex:ncindex + self.maxsteps]
                 self.fstep = ncindex
                 self.lstep = ncindex + self.maxsteps
-            np_step = self.alldat[var][ncindex - self.fstep, :, :]
+            np_step = self.alldat[var][ncindex - self.fstep, self.latidx.min():self.latidx.max() + 1,
+                      self.lonidx.min():self.lonidx.max() + 1]
             miss = float(self.dataset.variables[var]._FillValue)
             return numpy2pcr(Scalar, np_step, miss), True
         else:
@@ -587,6 +618,24 @@ class netcdfinputstatic():
             logging.error(os.path.abspath(netcdffile) + " not found!")
             exit(ValueError)
 
+
+        try:
+            self.x = self.dataset.variables['x'][:]
+        except:
+            self.x = self.dataset.variables['lon'][:]
+        # Now check Y values to see if we must flip the data
+        try:
+            self.y = self.dataset.variables['y'][:]
+        except:
+            self.y = self.dataset.variables['lat'][:]
+
+        x = _pcrut.pcr2numpy(_pcrut.xcoordinate(_pcrut.boolean(_pcrut.cover(1.0))), NaN)[0, :]
+        y = _pcrut.pcr2numpy(_pcrut.ycoordinate(_pcrut.boolean(_pcrut.cover(1.0))), NaN)[:, 0]
+
+        (self.latidx,) = logical_and(self.x >= x.min(), self.x < x.max()).nonzero()
+        (self.lonidx,) = logical_and(self.y >= x.min(), self.y < y.max()).nonzero()
+
+
         logging.info("Reading static input from netCDF file: " + netcdffile + ": " + str(self.dataset).replace('\n', ' '))
 
 
@@ -601,7 +650,8 @@ class netcdfinputstatic():
         """
 
         if self.dataset.variables.has_key(var):
-            np_step = self.dataset.variables[var][timestep-1,:,:]
+            np_step = self.alldat[var][timestep-1, self.latidx.min():self.latidx.max() + 1,
+                      self.lonidx.min():self.lonidx.max() + 1]
             miss = float(self.dataset.variables[var]._FillValue)
             return numpy2pcr(Scalar, np_step, miss), True
         else:
