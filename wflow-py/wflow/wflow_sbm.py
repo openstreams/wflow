@@ -1191,6 +1191,7 @@ class WflowModel(DynamicModel):
                                                                                               ust=self.UST)
 
 
+
         self.ActEvap = self.Transpiration + self.soilevap + self.ActEvapOpenWater
         # Run only if we have irrigation areas or an externally given demand, determine irrigation demand based on potrans and acttrans
         if self.nrirri > 0 or hasattr(self,"IrriDemandExternal"):
