@@ -314,7 +314,7 @@ def main():
     metadata_var = {}
     metadata_var['units'] = 'm'
     metadata_var['standard_name'] = 'water_surface_height_above_reference_datum'
-    metadata_var['long_name'] = 'Coastal flooding'
+    metadata_var['long_name'] = 'flooding'
     metadata_var['comment'] = 'water_surface_reference_datum_altitude is given in file {:s}'.format(options.dem_file)
     if not os.path.exists(options.dem_file):
         logger.error('path to dem file {:s} cannot be found'.format(options.dem_file))
@@ -439,7 +439,6 @@ def main():
 
                 # compute streams
                 stream_ge, subcatch = inun_lib.subcatch_stream(drainage_pcr, stream_pcr, options.hand_strahler) # generate streams
-
                 basin = pcr.boolean(subcatch)
                 hand_pcr, dist_pcr = inun_lib.derive_HAND(terrain_pcr, drainage_pcr, 3000, rivers=pcr.boolean(stream_ge), basin=basin)
                 # convert to numpy
@@ -454,6 +453,7 @@ def main():
                 band_hand.WriteArray(hand_cut, x_start, y_start)
                 os.unlink(terrain_temp_file)
                 os.unlink(drainage_temp_file)
+                os.unlink(stream_temp_file)
                 band_hand.FlushCache()
         ds_dem = None
         ds_ldd = None
@@ -614,11 +614,6 @@ def main():
             stream_pcr = pcr.scalar(pcr.readmap(drainage_temp_file))  # convert to ldd type map
             # prepare a subcatchment map
 
-            stream_ge, subcatch = inun_lib.subcatch_stream(drainage_pcr, stream_pcr, options.catchment_strahler) # generate subcatchments
-            drainage_surf = pcr.ifthen(stream_ge > 0, pcr.accuflux(drainage_pcr, 1))  # proxy of drainage surface inaccurate at tile edges
-           # compute weights for spreadzone (1/drainage_surf)
-            subcatch = pcr.spreadzone(subcatch, 0, 0)
-
             # TODO check weighting scheme, perhaps not necessary
             # weight = 1./pcr.scalar(pcr.spreadzone(pcr.cover(pcr.ordinal(drainage_surf), 0), 0, 0))
             # subcatch_fill = pcr.scalar(pcr.spreadzone(subcatch, 0, weight))
@@ -630,7 +625,18 @@ def main():
             x_tile_ax, y_tile_ax, flood_meter, fill_value = inun_lib.gdal_readmap(flood_vol_temp_file, 'GTiff')
             # convert meter depth to volume [m3]
             flood_vol = pcr.numpy2pcr(pcr.Scalar, flood_meter, fill_value)*((x_tile_ax[1] - x_tile_ax[0]) * (y_tile_ax[0] - y_tile_ax[1]))  # resolution of SRTM *1166400000.
+
+            # TODO: loop over river order options.catchment_strahler to maximum order found in tile
+            stream_ge, subcatch = inun_lib.subcatch_stream(drainage_pcr, stream_pcr, options.catchment_strahler) # generate subcatchments
+            # TODO: mask subcatchments with river order lower than thres or higher than thres
+            drainage_surf = pcr.ifthen(stream_ge > 0, pcr.accuflux(drainage_pcr, 1))  # proxy of drainage surface inaccurate at tile edges
+           # compute weights for spreadzone (1/drainage_surf)
+            subcatch = pcr.spreadzone(subcatch, 0, 0)
+
+
+            # TODO: put areas outside subcatch to zero
             ## now we have some nice volume. Now we need to redistribute!
+            # TODO: insert selected HAND map
             inundation_pcr = inun_lib.volume_spread(drainage_pcr, hand_pcr, subcatch, flood_vol,
                                            volume_thres=0., iterations=options.iterations,
                                            area_multiplier=options.area_multiplier) # 1166400000.
@@ -640,6 +646,7 @@ def main():
                 y_overlap_max = -inundation.shape[0]
             if x_overlap_max == 0:
                 x_overlap_max = -inundation.shape[1]
+            # TODO: use maximum value of inundation_cut and new inundation for higher strahler order
             inundation_cut = inundation[0+y_overlap_min:-y_overlap_max, 0+x_overlap_min:-x_overlap_max]
             # inundation_cut
             band_inun.WriteArray(inundation_cut, x_start, y_start)
