@@ -394,7 +394,7 @@ def volume_spread(ldd, hand, subcatch, volume, volume_thres=0., area_multiplier=
     volume_catch = pcr.areatotal(volume, subcatch)
     # pcr.report(volume_catch, 'volume_catch.map')
 
-    depth_catch = volume_catch/surface
+    depth_catch = volume_catch/surface  # meters water disc averaged over subcatchment
     pcr.report(depth_catch, 'depth_catch.map')
 
     dem_max = pcr.ifthenelse(volume_catch > volume_thres, pcr.scalar(32.),
