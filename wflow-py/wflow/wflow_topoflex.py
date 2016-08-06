@@ -352,6 +352,8 @@ class WflowModel(DynamicModel):
         # static maps to use (normally default)
         wflow_subcatch = configget(self.config,
                                    "model", "wflow_subcatch", "staticmaps/wflow_subcatch.map")
+        wflow_catchArea = configget(self.config,
+                                   "model", "wflow_subcatch", "staticmaps/wflow_catchmentAreas.map")
         wflow_dem = configget(self.config,
                               "model", "wflow_dem", "staticmaps/wflow_dem.map")
         wflow_ldd = configget(self.config,
@@ -387,6 +389,7 @@ class WflowModel(DynamicModel):
         self.TopoLdd = readmap(os.path.join(self.Dir, wflow_ldd))  #: The local drinage definition map (ldd)
         self.TopoId = readmap(
             os.path.join(self.Dir, wflow_subcatch))  #: Map define the area over which the calculations are done (mask)
+        self.catchArea = scalar(ifthen(self.TopoId > 0, scalar(1)))
         self.LandUse=ordinal(self.wf_readmap(os.path.join(self.Dir , wflow_landuse),0.0,fail=True))#: Map with lan-use/cover classes
         self.LandUse=cover(self.LandUse,ordinal(ordinal(subcatch) > 0))
         self.Soil=ordinal(self.wf_readmap(os.path.join(self.Dir , wflow_soil),0.0,fail=True))#: Map with soil classes
@@ -407,9 +410,9 @@ class WflowModel(DynamicModel):
         self.Tf = eval(str(configget(self.config, "model", "Tf", "[0]")))
         self.Tfa = eval(str(configget(self.config, "model", "Tfa", "[0]")))
         
-        # MODEL PARAMETERS - BASED ON TABLES 
-        self.imax = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/imax" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,1.5) for i in self.Classes]        
-        self.sumax = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/sumax" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,50) for i in self.Classes]        
+        # MODEL PARAMETERS - BASED ON TABLES
+        self.imax = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/imax" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,1.5) for i in self.Classes]            
+        self.sumax = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/sumax" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,70) for i in self.Classes]        
         self.samax = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/samax" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,50) for i in self.Classes]
         self.samin = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/samin" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.1) for i in self.Classes]
         self.beta = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/beta" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.4) for i in self.Classes]
@@ -436,11 +439,11 @@ class WflowModel(DynamicModel):
         self.lamdaS = eval(str(configget(self.config, "model", "lamdaS", "[0]")))
 
         # initialise list for routing
-        self.trackQ = [0 * scalar(self.TopoId)] * int(self.maxTransit)
+        self.trackQ = [0 * scalar(self.catchArea)] * int(self.maxTransit)
 
         # initialise list for lag function
-        self.convQu = [[0 * scalar(self.TopoId)] * self.Tf[i] for i in self.Classes]
-        self.convQa = [[0 * scalar(self.TopoId)] * self.Tfa[i] for i in self.Classes]
+        self.convQu = [[0 * scalar(self.catchArea)] * self.Tf[i] for i in self.Classes]
+        self.convQa = [[0 * scalar(self.catchArea)] * self.Tfa[i] for i in self.Classes]
 
         if self.scalarInput:
             self.gaugesMap = nominal(readmap(os.path.join(self.Dir,
@@ -471,7 +474,7 @@ class WflowModel(DynamicModel):
         self.sumrunoff = self.ZeroMap  # accumulated runoff for water balance (weigthted for upstream area)
         self.sumpotevap = self.ZeroMap  # accumulated runoff for water balance
         self.sumtemp = self.ZeroMap  # accumulated runoff for water balance
-        self.Q = self.ZeroMap
+        self.Q = self.ZeroMap 
         self.sumwb = self.ZeroMap
 
         # Define timeseries outputs There seems to be a bug and the .tss files are
@@ -499,13 +502,14 @@ class WflowModel(DynamicModel):
             self.Sf = [self.ZeroMap] * len(self.Classes)
             self.Sfa = [self.ZeroMap] * len(self.Classes)
             self.Ss = self.ZeroMap  # for combined gw reservoir
-            self.Qstate = self.ZeroMap  # for combined gw reservoir
-            self.Qstate_t = self.ZeroMap
+            self.Qstate = self.catchArea * 0  # for combined gw reservoir
+            self.Qstate_t = self.catchArea * 0
 
             # set initial storage values
-            self.Sa = [0.05 * self.samax[i] * scalar(self.TopoId) for i in self.Classes]
-     	    self.Su = [self.sumax[i] * scalar(self.TopoId) for i in self.Classes]
-            self.Ss = self.Ss + 30 * scalar(self.TopoId)  # for combined gw reservoir
+#            pdb.set_trace()
+            self.Sa = [0.05 * self.samax[i] * scalar(self.catchArea) for i in self.Classes]
+            self.Su = [self.sumax[i] * scalar(self.catchArea) for i in self.Classes]
+            self.Ss = self.Ss + 30 * scalar(self.catchArea)  # for combined gw reservoir
 
         else:
 #            self.wf_resume(self.Dir + "/instate/")
@@ -606,8 +610,11 @@ class WflowModel(DynamicModel):
 
         # TODO: change rainfall .tss files into grids
         self.wf_updateparameters()  # read the temperature map for each step (see parameters())
-        self.logger.debug("Step: "+str(int(self.thestep + self._d_firstTimeStep))+"/"+str(int(self._d_nrTimeSteps)))
+        # self.logger.debug("Step: "+str(int(self.thestep + self._d_firstTimeStep))+"/"+str(int(self._d_nrTimeSteps)))
         self.thestep = self.thestep + 1
+
+	#if self.thestep == 26:
+#		pdb.set_trace()
 
         self.Si_t = copylist(self.Si)
         self.Sw_t = copylist(self.Sw)
@@ -632,6 +639,9 @@ class WflowModel(DynamicModel):
 
         self.EpDay2 = self.EpDay
         self.EpDaySnow2 = self.EpDaySnow
+        
+        #if self.thestep >= 45:
+        	#pdb.set_trace()
         
         for k in self.Classes:
 
@@ -684,10 +694,10 @@ class WflowModel(DynamicModel):
         self.Qftotal = sum([x * y for x, y in zip(self.Qf_, self.percent)]) + sum([x*y for x,y in zip(self.Qfa_,self.percent)])
 
         # SLOW RUNOFF RESERVOIR ===========================================================================
-	if self.selectSs:
-	    eval_str = 'reservoir_Ss.{:s}(self)'.format(self.selectSs)
-	else:
-	    eval_str = 'reservoir_Ss.groundWater_no_reservoir(self)'
+        if self.selectSs:
+            eval_str = 'reservoir_Ss.{:s}(self)'.format(self.selectSs)
+        else:
+            eval_str = 'reservoir_Ss.groundWater_no_reservoir(self)'
         eval(eval_str)
         
         # ROUTING
@@ -745,9 +755,13 @@ class WflowModel(DynamicModel):
         self.trackQ_WB = areatotal(sum(self.trackQ_t),nominal(self.TopoId)) 
         self.QstateWB = areatotal(sum(self.Qstate) * 3600, nominal(self.TopoId))
         self.Qstate_WB = areatotal(sum(self.Qstate_t) * 3600, nominal(self.TopoId))
-        
+#        self.QstateWB = areatotal(sum(self.Qstate) * 0.0405, nominal(self.TopoId))
+#        self.Qstate_WB = areatotal(sum(self.Qstate_t) * 0.0405, nominal(self.TopoId))
+#        self.QstateWB = areatotal(self.Qstate, nominal(self.TopoId))
+#        self.Qstate_WB = areatotal(self.Qstate_t, nominal(self.TopoId))
+#        
         #WBtot in m3/s
-        self.WBtot = (self.P - self.Ei + self.EwiCorr - self.Ew - self.Ea - self.Eu - self.Qtot - self.SiWB + self.Si_WB - self.SuWB + self.Su_WB - self.SaWB + self.Sa_WB - self.SwWB + self.Sw_WB - self.SfWB + self.Sf_WB - self.SfaWB + self.Sfa_WB - self.SsWB + self.Ss_WB - self.convQuWB +self.convQu_WB - self.convQaWB +self.convQa_WB - self.trackQWB + self.trackQ_WB) / self.timestepsecs     
+        self.WBtot = (self.P - self.Ei + self.EwiCorr - self.Ew - self.Ea - self.Eu - self.Qtot - self.SiWB + self.Si_WB - self.SuWB + self.Su_WB - self.SaWB + self.Sa_WB - self.SwWB + self.Sw_WB - self.SfWB + self.Sf_WB - self.SfaWB + self.Sfa_WB - self.SsWB + self.Ss_WB - self.convQuWB +self.convQu_WB - self.convQaWB +self.convQa_WB - self.trackQWB + self.trackQ_WB - self.QstateWB + self.Qstate_WB) / self.timestepsecs     
 
         # SUMMED FLUXES ======================================================================================
         self.sumprecip = self.sumprecip + self.Precipitation  # accumulated rainfall for water balance (m/h)
