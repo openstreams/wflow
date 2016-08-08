@@ -296,7 +296,7 @@ def gdal_warp(src_filename, clone_filename, dst_filename, gdal_type=gdalconst.GD
         # write to final file in the chosen file format
         gdal.GetDriverByName(format).CreateCopy(dst_filename, dst_mem, 0)
 
-def derive_HAND(dem, ldd, accuThreshold, rivers=None, basin=None):
+def derive_HAND(dem, ldd, accuThreshold, rivers=None, basin=None, up_area=None):
     """
     Function derives Height-Above-Nearest-Drain.
     See http://www.sciencedirect.com/science/article/pii/S003442570800120X
@@ -312,38 +312,54 @@ def derive_HAND(dem, ldd, accuThreshold, rivers=None, basin=None):
                         and areas with False by means of the nearest friction distance. Friction distance estimated using the
                         upstream area as weight (i.e. drains with a bigger upstream area have a lower friction)
                         the spreadzone operator is used in this case.
+        up_area=None -- provide the upstream area (if not assigned a guesstimate is prepared, assuming the LDD covers a
+                        full catchment area)
     Output:
         hand -- pcraster bject float32, height, normalised to nearest stream
         dist -- distance to nearest stream measured in cell lengths
             according to D8 directions
     """
     if rivers is None:
+        # prepare stream from a strahler threshold
         stream = pcr.ifthenelse(pcr.accuflux(ldd, 1) >= accuThreshold,
                                 pcr.boolean(1), pcr.boolean(0))
     else:
+        # convert stream network to boolean
         stream = pcr.boolean(pcr.cover(rivers, 0))
-
+    # determine height in river (in DEM*100 unit as ordinal)
     height_river = pcr.ifthenelse(stream, pcr.ordinal(dem*100), 0)
     if basin is None:
         up_elevation = pcr.scalar(pcr.subcatchment(ldd, height_river))
     else:
-        drainage_surf = pcr.ifthen(rivers, pcr.accuflux(ldd, 1))
-        weight = 1./pcr.scalar(pcr.spreadzone(pcr.cover(pcr.ordinal(drainage_surf), 0), 0, 0))
-        up_elevation = pcr.ifthenelse(basin, pcr.scalar(pcr.subcatchment(ldd, height_river)), pcr.scalar(pcr.spreadzone(height_river, 0, weight)))
+        # use basin to allocate areas outside basin to the nearest stream. Nearest is weighted by upstream area
+        if up_area is None:
+            up_area = pcr.accuflux(ldd, 1)
+        up_area = pcr.ifthen(stream, up_area)  # mask areas outside streams
+        friction = 1./pcr.scalar(pcr.spreadzone(pcr.cover(pcr.ordinal(up_area), 0), 0, 0))
+        # if basin, use nearest river within subcatchment, if outside basin, use weighted-nearest river
+        up_elevation = pcr.ifthenelse(basin, pcr.scalar(pcr.subcatchment(ldd, height_river)), pcr.scalar(pcr.spreadzone(height_river, 0, friction)))
         # replace areas outside of basin by a spread zone calculation.
-    hand = pcr.max(pcr.scalar(pcr.ordinal(dem*100))-up_elevation, 0)/100
-    dist = pcr.ldddist(ldd, stream, 1)
-
+    hand = pcr.max(pcr.scalar(pcr.ordinal(dem*100))-up_elevation, 0)/100  # convert back to float in DEM units
+    dist = pcr.ldddist(ldd, stream, 1)  # compute horizontal distance estimate
     return hand, dist
 
-def subcatch_stream(ldd, stream, threshold):
+def subcatch_stream(ldd, stream, threshold, min_strahler=-999, max_strahler=999, assign_edge=False, assign_existing=False, up_area=None):
     """
     Derive catchments based upon strahler threshold
     Input:
         ldd -- pcraster object direction, local drain directions
-        stream -- pcraster object direction, streamorder
-        threshold -- integer, strahler threshold, subcatchments ge threshold are
-                 derived
+        threshold -- integer, strahler threshold, subcatchments ge threshold
+            are derived
+        min_strahler -- integer, minimum strahler threshold of river catchments
+            to return
+        max_strahler -- integer, maximum strahler threshold of river catchments
+            to return
+        assign_unique=False -- if set to True, unassigned connected areas at
+            the edges of the domain are assigned a unique id as well. If set
+            to False, edges are not assigned
+        assign_existing=False == if set to True, unassigned edges are assigned
+            to existing basins with an upstream weighting. If set to False,
+            edges are assigned to unique IDs, or not assigned
     output:
         stream_ge -- pcraster object, streams of strahler order ge threshold
         subcatch -- pcraster object, subcatchments of strahler order ge threshold
@@ -357,14 +373,34 @@ def subcatch_stream(ldd, stream, threshold):
     # detect any transfer of strahler order, to a higher strahler order.
     transition_strahler = pcr.ifthenelse(pcr.downstream(ldd, stream_ge) != stream_ge, pcr.boolean(1),
                                          pcr.ifthenelse(pcr.nominal(ldd) == 5, pcr.boolean(1), pcr.ifthenelse(pcr.downstream(ldd, pcr.scalar(stream_up_sum)) > pcr.scalar(stream_ge), pcr.boolean(1),
-                                                                                           pcr.boolean(0))))
-
+                                                                                                              pcr.boolean(0))))
     # make unique ids (write to file)
     transition_unique = pcr.ordinal(pcr.uniqueid(transition_strahler))
 
     # derive upstream catchment areas (write to file)
     subcatch = pcr.nominal(pcr.subcatchment(ldd, transition_unique))
-    return stream_ge, subcatch
+
+    if assign_edge:
+        # fill unclassified areas (in pcraster equal to zero) with a unique id, above the maximum id assigned so far
+        unique_edge = pcr.clump(pcr.ifthen(subcatch==0, pcr.ordinal(0)))
+        subcatch = pcr.ifthenelse(subcatch==0, pcr.nominal(pcr.mapmaximum(pcr.scalar(subcatch)) + pcr.scalar(unique_edge)), pcr.nominal(subcatch))
+    elif assign_existing:
+        # unaccounted areas are added to largest nearest draining basin
+        if up_area is None:
+            up_area = pcr.ifthen(pcr.boolean(pcr.cover(stream_ge, 0)), pcr.accuflux(ldd, 1))
+        riverid = pcr.ifthen(pcr.boolean(pcr.cover(stream_ge, 0)), subcatch)
+
+        friction = 1./pcr.scalar(pcr.spreadzone(pcr.cover(pcr.ordinal(up_area), 0), 0, 0)) # *(pcr.scalar(ldd)*0+1)
+        delta = pcr.ifthen(pcr.scalar(ldd)>=0, pcr.ifthen(pcr.cover(subcatch, 0)==0, pcr.spreadzone(pcr.cover(riverid, 0), 0, friction)))
+        subcatch = pcr.ifthenelse(pcr.boolean(pcr.cover(subcatch, 0)),
+                                      subcatch,
+                                      delta)
+
+    # finally, only keep basins with minimum and maximum river order flowing through them
+    strahler_subcatch = pcr.areamaximum(stream, subcatch)
+    subcatch = pcr.ifthen(pcr.ordinal(strahler_subcatch) >= min_strahler, pcr.ifthen(pcr.ordinal(strahler_subcatch) <= max_strahler, subcatch))
+
+    return stream_ge, pcr.ordinal(subcatch)
 
 def volume_spread(ldd, hand, subcatch, volume, volume_thres=0., area_multiplier=1., iterations=15):
     """

@@ -439,8 +439,11 @@ def main():
 
                 # compute streams
                 stream_ge, subcatch = inun_lib.subcatch_stream(drainage_pcr, stream_pcr, options.hand_strahler) # generate streams
+                pcr.report(stream_ge, 'stream_ge.map')
+                pcr.report(pcr.scalar(subcatch), 'subcatch.map')
                 basin = pcr.boolean(subcatch)
-                hand_pcr, dist_pcr = inun_lib.derive_HAND(terrain_pcr, drainage_pcr, 3000, rivers=pcr.boolean(stream_ge), basin=basin)
+                hand_pcr, dist_pcr = inun_lib.derive_HAND(terrain_pcr, drainage_pcr, 3000,
+                                                          rivers=pcr.boolean(stream_ge), basin=basin)
                 # convert to numpy
                 hand = pcr.pcr2numpy(hand_pcr, -9999.)
                 # cut relevant part
