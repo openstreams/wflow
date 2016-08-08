@@ -17,6 +17,19 @@ except ImportError:
 import JarvisCoefficients
 
 
+def selectSiR(i):
+    """
+    not all functions are still in this file, the older functions can be found
+    (with the same numbering) in h:\My Documents\memo's\python scripts\wflow\
+    """
+    if i == 1:
+        name = 'interception_overflow'
+    if i == 2:
+        name = 'interception_overflow2'
+    if i == 3:
+        name = 'interception_overflow_Ep'        
+    return name
+
 def interception_no_reservoir(self, k):
     """
     Effective rainfall = rainfall
@@ -32,6 +45,7 @@ def interception_overflow2(self, k):
     """
     - Effective rainfall is all that does not fit into the interception reservoir
     - Outgoing fluxes are determined separately
+    - Code for ini-file: 2
     """
     
     self.Pe = max(self.Precipitation - (self.imax[k] - self.Si_t[k]),0)
@@ -60,6 +74,7 @@ def interception_overflow_Ep(self,k):
     - Effective rainfall is all that does not fit into the interception reservoir
     - Outgoing fluxes are determined separately
     - this version cannot be run with Su averaged (for the current code)
+    - Code for ini-file: 3
     """
 
     JarvisCoefficients.calcEp(self,k)
