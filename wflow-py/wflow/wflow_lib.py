@@ -61,7 +61,7 @@ def idtoid(sourceidmap, targetidmap,valuemap):
     :return:
     """
 
-    _area = pcr2numpy(targetidmap,0.0).copy()
+    _area = pcr2numpy(targetidmap,0.0).copy().astype(float)
     _pt = pcr2numpy(sourceidmap,0.0).copy()
     _val = pcr2numpy(valuemap,0.0).copy()
 
