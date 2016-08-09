@@ -340,19 +340,23 @@ def derive_HAND(dem, ldd, accuThreshold, rivers=None, basin=None, up_area=None):
         up_elevation = pcr.ifthenelse(basin, pcr.scalar(pcr.subcatchment(ldd, height_river)), pcr.scalar(pcr.spreadzone(height_river, 0, friction)))
         # replace areas outside of basin by a spread zone calculation.
     hand = pcr.max(pcr.scalar(pcr.ordinal(dem*100))-up_elevation, 0)/100  # convert back to float in DEM units
+    # hand = (pcr.scalar(pcr.ordinal(dem*100))-up_elevation)/100  # convert back to float in DEM units
     dist = pcr.ldddist(ldd, stream, 1)  # compute horizontal distance estimate
     return hand, dist
 
-def subcatch_stream(ldd, stream, threshold, min_strahler=-999, max_strahler=999, assign_edge=False, assign_existing=False, up_area=None):
+def subcatch_stream(ldd, threshold, stream=None, min_strahler=-999, max_strahler=999, assign_edge=False, assign_existing=False, up_area=None, basin=None):
     """
     Derive catchments based upon strahler threshold
     Input:
         ldd -- pcraster object direction, local drain directions
         threshold -- integer, strahler threshold, subcatchments ge threshold
             are derived
-        min_strahler -- integer, minimum strahler threshold of river catchments
+        stream=None -- pcraster object ordinal, stream order map (made with pcr.streamorder), if provided, stream order
+            map is not generated on the fly but used from this map. Useful when a subdomain within a catchment is
+            provided, which would cause edge effects in the stream order map
+        min_strahler=-999 -- integer, minimum strahler threshold of river catchments
             to return
-        max_strahler -- integer, maximum strahler threshold of river catchments
+        max_strahler=999 -- integer, maximum strahler threshold of river catchments
             to return
         assign_unique=False -- if set to True, unassigned connected areas at
             the edges of the domain are assigned a unique id as well. If set
@@ -367,7 +371,9 @@ def subcatch_stream(ldd, stream, threshold, min_strahler=-999, max_strahler=999,
     """
     # derive stream order
 
-    # stream = pcr.streamorder(ldd)
+    if stream is None:
+        stream = pcr.streamorder(ldd)
+
     stream_ge = pcr.ifthen(stream >= threshold, stream)
     stream_up_sum = pcr.ordinal(pcr.upstream(ldd, pcr.cover(pcr.scalar(stream_ge), 0)))
     # detect any transfer of strahler order, to a higher strahler order.
@@ -379,6 +385,9 @@ def subcatch_stream(ldd, stream, threshold, min_strahler=-999, max_strahler=999,
 
     # derive upstream catchment areas (write to file)
     subcatch = pcr.nominal(pcr.subcatchment(ldd, transition_unique))
+    # mask out areas outside basin
+    if basin is not None:
+        subcatch = pcr.ifthen(basin, subcatch)
 
     if assign_edge:
         # fill unclassified areas (in pcraster equal to zero) with a unique id, above the maximum id assigned so far
@@ -402,7 +411,7 @@ def subcatch_stream(ldd, stream, threshold, min_strahler=-999, max_strahler=999,
 
     return stream_ge, pcr.ordinal(subcatch)
 
-def volume_spread(ldd, hand, subcatch, volume, volume_thres=0., area_multiplier=1., iterations=15):
+def volume_spread(ldd, hand, subcatch, volume, volume_thres=0., area_multiplier=1., iterations=15, logging=logging):
     """
     Estimate 2D flooding from a 1D simulation per subcatchment reach
     Input:
@@ -419,33 +428,25 @@ def volume_spread(ldd, hand, subcatch, volume, volume_thres=0., area_multiplier=
     #initial values
     pcr.setglobaloption("unittrue")
     dem_min = pcr.areaminimum(hand, subcatch)  # minimum elevation in subcatchments
-    # pcr.report(dem_min, 'dem_min.map')
     dem_norm = hand - dem_min
-    # pcr.report(dem_norm, 'dem_norm.map')
     # surface of each subcatchment
     surface = pcr.areaarea(subcatch)*area_multiplier
-    pcr.report(surface, 'surface.map')
 
     error_abs = pcr.scalar(1e10)  # initial error (very high)
     volume_catch = pcr.areatotal(volume, subcatch)
-    # pcr.report(volume_catch, 'volume_catch.map')
 
     depth_catch = volume_catch/surface  # meters water disc averaged over subcatchment
-    pcr.report(depth_catch, 'depth_catch.map')
 
     dem_max = pcr.ifthenelse(volume_catch > volume_thres, pcr.scalar(32.),
                              pcr.scalar(0))  # bizarre high inundation depth
     dem_min = pcr.scalar(0.)
     for n in range(iterations):
-        print('Iteration: {:02d}'.format(n + 1))
+        logging.debug('Iteration: {:02d}'.format(n + 1))
         #####while np.logical_and(error_abs > error_thres, dem_min < dem_max):
         dem_av = (dem_min + dem_max)/2
-        # pcr.report(dem_av, 'dem_av00.{:03d}'.format(n + 1))
         # compute value at dem_av
         average_depth_catch = pcr.areaaverage(pcr.max(dem_av - dem_norm, 0), subcatch)
-        # pcr.report(average_depth_catch, 'depth_c0.{:03d}'.format(n + 1))
         error = pcr.cover((depth_catch-average_depth_catch)/depth_catch, depth_catch*0)
-        # pcr.report(error, 'error000.{:03d}'.format(n + 1))
         dem_min = pcr.ifthenelse(error > 0, dem_av, dem_min)
         dem_max = pcr.ifthenelse(error <= 0, dem_av, dem_max)
     # error_abs = np.abs(error)  # TODO: not needed probably, remove
@@ -523,7 +524,7 @@ def gdal_writemap(file_name, file_format, x, y, data, fill_val, zlib=False,
     TempDataset = None
     os.remove(temp_file_name)
 
-def gdal_readmap(file_name, file_format, give_geotrans=False):
+def gdal_readmap(file_name, file_format, give_geotrans=False, logging=logging):
     """ Read geographical file into memory
     Dependencies are osgeo.gdal and numpy
     Input:

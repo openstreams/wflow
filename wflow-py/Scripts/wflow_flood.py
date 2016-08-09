@@ -438,9 +438,7 @@ def main():
                 stream_pcr = pcr.scalar(pcr.readmap(stream_temp_file))  # convert to ldd type map
 
                 # compute streams
-                stream_ge, subcatch = inun_lib.subcatch_stream(drainage_pcr, stream_pcr, options.hand_strahler) # generate streams
-                pcr.report(stream_ge, 'stream_ge.map')
-                pcr.report(pcr.scalar(subcatch), 'subcatch.map')
+                stream_ge, subcatch = inun_lib.subcatch_stream(drainage_pcr, options.hand_strahler, stream=stream_pcr) # generate streams
                 basin = pcr.boolean(subcatch)
                 hand_pcr, dist_pcr = inun_lib.derive_HAND(terrain_pcr, drainage_pcr, 3000,
                                                           rivers=pcr.boolean(stream_ge), basin=basin)
@@ -473,9 +471,9 @@ def main():
     #  HAND file has now been prepared, moving to flood mapping part                    #
     #####################################################################################
     # load the staticmaps needed to estimate volumes across all
-    xax, yax, riv_length, fill_value = inun_lib.gdal_readmap(options.riv_length_file, 'GTiff')
+    xax, yax, riv_length, fill_value = inun_lib.gdal_readmap(options.riv_length_file, 'GTiff', logging=logger)
     riv_length = np.ma.masked_where(riv_length==fill_value, riv_length)
-    xax, yax, riv_width, fill_value = inun_lib.gdal_readmap(options.riv_width_file, 'GTiff')
+    xax, yax, riv_width, fill_value = inun_lib.gdal_readmap(options.riv_width_file, 'GTiff', logging=logger)
     riv_width[riv_width == fill_value] = 0
 
     x_res = np.abs((xax[-1]-xax[0])/(len(xax)-1))
@@ -510,7 +508,7 @@ def main():
         a.close()
     elif options.file_format == 1:
         logger.info('Reading flood from {:s} PCRaster file'.format(options.flood_map))
-        xax, yax, flood, flood_fill_value = inun_lib.gdal_readmap(options.flood_map, 'PCRaster')
+        xax, yax, flood, flood_fill_value = inun_lib.gdal_readmap(options.flood_map, 'PCRaster', logging=logger)
         flood[flood==flood_fill_value] = 0.
     #res_x = x[1]-x[0]
     #res_y = y[1]-y[0]
@@ -535,7 +533,7 @@ def main():
             a.close()
         elif options.file_format == 1:
             logger.info('Reading bankfull from {:s} PCRaster file'.format(options.bankfull_map))
-            xax, yax, bankfull, bankfull_fill_value = inun_lib.gdal_readmap(options.bankfull_map, 'PCRaster')
+            xax, yax, bankfull, bankfull_fill_value = inun_lib.gdal_readmap(options.bankfull_map, 'PCRaster', logging=logger)
 #     flood = bankfull*2
     # res_x = 2000
     # res_y = 2000
@@ -544,9 +542,9 @@ def main():
     flood_vol_m = riv_length*riv_width*flood_vol/(x_res * y_res)  # volume expressed in meters water disc (1e6 is the surface area of one wflow grid cell)
     flood_vol_m_data = flood_vol_m.data
     flood_vol_m_data[flood_vol_m.mask] = -999.
-    print('Saving water layer map to {:s}'.format(flood_vol_map))
+    logger.info('Saving water layer map to {:s}'.format(flood_vol_map))
     # write to a tiff file
-    inun_lib.gdal_writemap(flood_vol_map, 'GTiff', xax, yax, np.maximum(flood_vol_m_data, 0), -999.)
+    inun_lib.gdal_writemap(flood_vol_map, 'GTiff', xax, yax, np.maximum(flood_vol_m_data, 0), -999., logging=logger)
     ds_hand, rasterband_hand = inun_lib.get_gdal_rasterband(hand_file)
     ds_ldd, rasterband_ldd = inun_lib.get_gdal_rasterband(options.ldd_file)
     ds_stream, rasterband_stream = inun_lib.get_gdal_rasterband(options.stream_file)
@@ -614,27 +612,26 @@ def main():
             pcr.setclone(hand_temp_file)
             hand_pcr = pcr.readmap(hand_temp_file)
             drainage_pcr = pcr.lddrepair(pcr.ldd(pcr.readmap(drainage_temp_file)))  # convert to ldd type map
-            stream_pcr = pcr.scalar(pcr.readmap(drainage_temp_file))  # convert to ldd type map
+            stream_pcr = pcr.scalar(pcr.readmap(stream_temp_file))  # convert to ldd type map
             # prepare a subcatchment map
 
             # TODO check weighting scheme, perhaps not necessary
             # weight = 1./pcr.scalar(pcr.spreadzone(pcr.cover(pcr.ordinal(drainage_surf), 0), 0, 0))
             # subcatch_fill = pcr.scalar(pcr.spreadzone(subcatch, 0, weight))
             # # cover subcatch with subcatch_fill
-            # pcr.report(weight, 'weight_{:02d}.map'.format(n))
-            # pcr.report(subcatch, 'subcatch_{:02d}.map'.format(n))
-            # pcr.report(pcr.nominal(subcatch_fill), 'subcatch_fill_{:02d}.map'.format(n))
             inun_lib.gdal_warp(flood_vol_map, hand_temp_file, flood_vol_temp_file, gdal_interp=gdalconst.GRA_NearestNeighbour) # ,
-            x_tile_ax, y_tile_ax, flood_meter, fill_value = inun_lib.gdal_readmap(flood_vol_temp_file, 'GTiff')
+            x_tile_ax, y_tile_ax, flood_meter, fill_value = inun_lib.gdal_readmap(flood_vol_temp_file, 'GTiff', logging=logger)
             # convert meter depth to volume [m3]
             flood_vol = pcr.numpy2pcr(pcr.Scalar, flood_meter, fill_value)*((x_tile_ax[1] - x_tile_ax[0]) * (y_tile_ax[0] - y_tile_ax[1]))  # resolution of SRTM *1166400000.
 
+            # first prepare a basin map, belonging to the HAND order we are looking at
+            # TODO: replace options.hand_strahler by current HAND strahler order
+            stream_ge_hand, subcatch_hand = inun_lib.subcatch_stream(drainage_pcr, options.hand_strahler, stream=stream_pcr)
             # TODO: loop over river order options.catchment_strahler to maximum order found in tile
-            stream_ge, subcatch = inun_lib.subcatch_stream(drainage_pcr, stream_pcr, options.catchment_strahler) # generate subcatchments
+            stream_ge, subcatch = inun_lib.subcatch_stream(drainage_pcr, options.catchment_strahler, stream=stream_pcr, basin=pcr.boolean(pcr.cover(subcatch_hand, 0)), assign_existing=True) # generate subcatchments, only within basin for HAND
             # TODO: mask subcatchments with river order lower than thres or higher than thres
             drainage_surf = pcr.ifthen(stream_ge > 0, pcr.accuflux(drainage_pcr, 1))  # proxy of drainage surface inaccurate at tile edges
-           # compute weights for spreadzone (1/drainage_surf)
-            subcatch = pcr.spreadzone(subcatch, 0, 0)
+            # subcatch = pcr.spreadzone(subcatch, 0, 0)
 
 
             # TODO: put areas outside subcatch to zero
@@ -642,7 +639,7 @@ def main():
             # TODO: insert selected HAND map
             inundation_pcr = inun_lib.volume_spread(drainage_pcr, hand_pcr, subcatch, flood_vol,
                                            volume_thres=0., iterations=options.iterations,
-                                           area_multiplier=options.area_multiplier) # 1166400000.
+                                           area_multiplier=options.area_multiplier, logging=logger) # 1166400000.
             inundation = pcr.pcr2numpy(inundation_pcr, -9999.)
             # cut relevant part
             if y_overlap_max == 0:
