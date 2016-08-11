@@ -19,7 +19,7 @@ and flooding is estimated from this HAND map.
 TODO:: perform routing from small to large scale using a sequential flood mapping from small
 to large strahler orders.
 
-Preferrably a user should use from the outputs of a wflow\_routing model
+Preferrably a user should use from the outputs of a wflow\_routing mode
 because then the user can use the floodplain water level only (usually saved 
 in a variable name levfp). If estimates from a HBV or SBM (or other wflow) model are used
 we recommend that the user also provides a "bank-full" water level in the command line 
@@ -233,9 +233,12 @@ def main():
     parser.add_option('-c', '--catchment',
                       dest='catchment_strahler', default=7, type='int',
                       help='Strahler order threshold >= are selected as catchment boundaries')
-    parser.add_option('-s', '--hand_strahler',
-                      dest='hand_strahler', default=7, type='int',
-                      help='Strahler order threshold >= selected as riverine')
+    # parser.add_option('-s', '--hand_strahler',
+    #                   dest='hand_strahler', default=7, type='int',
+    #                   help='Strahler order threshold >= selected as riverine')
+    parser.add_option('-m', '--max_strahler',
+                      dest = 'max_strahler', default=1000, type='int',
+                      help='Maximum Strahler order to loop over')
     parser.add_option('-d', '--destination',
                       dest='dest_path', default='inun',
                       help='Destination path')
@@ -254,7 +257,8 @@ def main():
 
     # set up the logger
     flood_name = os.path.split(options.flood_map)[1].split('.')[0]
-    case_name = 'inun_{:s}_hand_{:02d}_catch_{:02d}'.format(flood_name, options.hand_strahler, options.catchment_strahler)
+    # case_name = 'inun_{:s}_hand_{:02d}_catch_{:02d}'.format(flood_name, options.hand_strahler, options.catchment_strahler)
+    case_name = 'inun_{:s}_hand_catch_{:02d}'.format(flood_name, options.catchment_strahler)
     logfilename = os.path.join(options.dest_path, 'hand_contour_inun.log')
     logger, ch = inun_lib.setlogger(logfilename, 'HAND_INUN', options.verbose)
     logger.info('$Id: $')
@@ -349,123 +353,129 @@ def main():
 
     # first write subcatch maps and hand maps
     ############### TODO ######
-    # setup a HAND file
-    dem_name = os.path.split(options.dem_file)[1].split('.')[0]
-    if os.path.isfile(options.hand_file):
-        hand_file = options.hand_file
-    else:
-        hand_file = os.path.join(options.dest_path, '{:s}_hand_strahler_{:02d}.tif'.format(dem_name, options.hand_strahler))
-    if not(os.path.isfile(hand_file)):
-    # hand file does not exist yet! Generate it, otherwise skip!
-        logger.info('HAND file {:s} setting up...please wait...'.format(hand_file))
-        hand_file_tmp = os.path.join(options.dest_path, '{:s}_hand_strahler_{:02d}.tif.tmp'.format(dem_name, options.hand_strahler))
-        ds_hand = inun_lib.prepare_gdal(hand_file_tmp, x, y, logging=logger, srs=srs)
-        band_hand = ds_hand.GetRasterBand(1)
+    # setup a HAND file for each strahler order
 
-        # Open terrain data for reading
-        ds_dem, rasterband_dem = inun_lib.get_gdal_rasterband(options.dem_file)
-        ds_ldd, rasterband_ldd = inun_lib.get_gdal_rasterband(options.ldd_file)
-        ds_stream, rasterband_stream = inun_lib.get_gdal_rasterband(options.stream_file)
-        n = 0
-        for x_loop in range(0, len(x), options.x_tile):
-            x_start = np.maximum(x_loop, 0)
-            x_end = np.minimum(x_loop + options.x_tile, len(x))
-            # determine actual overlap for cutting
-            for y_loop in range(0, len(y), options.y_tile):
-                x_overlap_min = x_start - np.maximum(x_start - options.x_overlap, 0)
-                x_overlap_max = np.minimum(x_end + options.x_overlap, len(x)) - x_end
-                n += 1
-                # print('tile {:001d}:'.format(n))
-                y_start = np.maximum(y_loop, 0)
-                y_end = np.minimum(y_loop + options.y_tile, len(y))
-                y_overlap_min = y_start - np.maximum(y_start - options.y_overlap, 0)
-                y_overlap_max = np.minimum(y_end + options.y_overlap, len(y)) - y_end
-                # cut out DEM
-                logger.debug('Computing HAND for xmin: {:d} xmax: {:d} ymin {:d} ymax {:d}'.format(x_start, x_end,y_start, y_end))
-                terrain = rasterband_dem.ReadAsArray(x_start - x_overlap_min,
-                                                     y_start - y_overlap_min,
-                                                     (x_end + x_overlap_max) - (x_start - x_overlap_min),
-                                                     (y_end + y_overlap_max) - (y_start - y_overlap_min)
-                                                     )
+    max_s = inun_lib.define_max_strahler(options.stream_file, logging=logger)
+    stream_max = np.minimum(max_s, options.max_strahler)
 
-                drainage = rasterband_ldd.ReadAsArray(x_start - x_overlap_min,
-                                                     y_start - y_overlap_min,
-                                                     (x_end + x_overlap_max) - (x_start - x_overlap_min),
-                                                     (y_end + y_overlap_max) - (y_start - y_overlap_min)
-                                                     )
-                stream = rasterband_stream.ReadAsArray(x_start - x_overlap_min,
-                                                       y_start - y_overlap_min,
-                                                       (x_end + x_overlap_max) - (x_start - x_overlap_min),
-                                                       (y_end + y_overlap_max) - (y_start - y_overlap_min)
-                                                       )
-                # write to temporary file
-                terrain_temp_file = os.path.join(options.dest_path, 'terrain_temp.map')
-                drainage_temp_file = os.path.join(options.dest_path, 'drainage_temp.map')
-                stream_temp_file = os.path.join(options.dest_path, 'stream_temp.map')
-                if rasterband_dem.GetNoDataValue() is not None:
-                    inun_lib.gdal_writemap(terrain_temp_file, 'PCRaster',
+    for hand_strahler in range(options.catchment_strahler, stream_max + 1, 1):
+
+        dem_name = os.path.split(options.dem_file)[1].split('.')[0]
+        if os.path.isfile(options.hand_file):
+            hand_file = options.hand_file
+        else:
+            hand_file = os.path.join(options.dest_path, '{:s}_hand_strahler_{:02d}.tif'.format(dem_name, hand_strahler))
+        if not(os.path.isfile(hand_file)):
+        # hand file does not exist yet! Generate it, otherwise skip!
+            logger.info('HAND file {:s} setting up...please wait...'.format(hand_file))
+            hand_file_tmp = os.path.join(options.dest_path, '{:s}_hand_strahler_{:02d}.tif.tmp'.format(dem_name, hand_strahler))
+            ds_hand = inun_lib.prepare_gdal(hand_file_tmp, x, y, logging=logger, srs=srs)
+            band_hand = ds_hand.GetRasterBand(1)
+
+            # Open terrain data for reading
+            ds_dem, rasterband_dem = inun_lib.get_gdal_rasterband(options.dem_file)
+            ds_ldd, rasterband_ldd = inun_lib.get_gdal_rasterband(options.ldd_file)
+            ds_stream, rasterband_stream = inun_lib.get_gdal_rasterband(options.stream_file)
+            n = 0
+            for x_loop in range(0, len(x), options.x_tile):
+                x_start = np.maximum(x_loop, 0)
+                x_end = np.minimum(x_loop + options.x_tile, len(x))
+                # determine actual overlap for cutting
+                for y_loop in range(0, len(y), options.y_tile):
+                    x_overlap_min = x_start - np.maximum(x_start - options.x_overlap, 0)
+                    x_overlap_max = np.minimum(x_end + options.x_overlap, len(x)) - x_end
+                    n += 1
+                    # print('tile {:001d}:'.format(n))
+                    y_start = np.maximum(y_loop, 0)
+                    y_end = np.minimum(y_loop + options.y_tile, len(y))
+                    y_overlap_min = y_start - np.maximum(y_start - options.y_overlap, 0)
+                    y_overlap_max = np.minimum(y_end + options.y_overlap, len(y)) - y_end
+                    # cut out DEM
+                    logger.debug('Computing HAND for xmin: {:d} xmax: {:d} ymin {:d} ymax {:d}'.format(x_start, x_end,y_start, y_end))
+                    terrain = rasterband_dem.ReadAsArray(x_start - x_overlap_min,
+                                                         y_start - y_overlap_min,
+                                                         (x_end + x_overlap_max) - (x_start - x_overlap_min),
+                                                         (y_end + y_overlap_max) - (y_start - y_overlap_min)
+                                                         )
+
+                    drainage = rasterband_ldd.ReadAsArray(x_start - x_overlap_min,
+                                                         y_start - y_overlap_min,
+                                                         (x_end + x_overlap_max) - (x_start - x_overlap_min),
+                                                         (y_end + y_overlap_max) - (y_start - y_overlap_min)
+                                                         )
+                    stream = rasterband_stream.ReadAsArray(x_start - x_overlap_min,
+                                                           y_start - y_overlap_min,
+                                                           (x_end + x_overlap_max) - (x_start - x_overlap_min),
+                                                           (y_end + y_overlap_max) - (y_start - y_overlap_min)
+                                                           )
+                    # write to temporary file
+                    terrain_temp_file = os.path.join(options.dest_path, 'terrain_temp.map')
+                    drainage_temp_file = os.path.join(options.dest_path, 'drainage_temp.map')
+                    stream_temp_file = os.path.join(options.dest_path, 'stream_temp.map')
+                    if rasterband_dem.GetNoDataValue() is not None:
+                        inun_lib.gdal_writemap(terrain_temp_file, 'PCRaster',
+                                          np.arange(0, terrain.shape[1]),
+                                          np.arange(0, terrain.shape[0]),
+                                          terrain, rasterband_dem.GetNoDataValue(),
+                                          gdal_type=gdal.GDT_Float32,
+                                          logging=logger)
+                    else:
+                        # in case no nodata value is found
+                        logger.warning('No nodata value found in {:s}. assuming -9999'.format(options.dem_file))
+                        inun_lib.gdal_writemap(terrain_temp_file, 'PCRaster',
+                                          np.arange(0, terrain.shape[1]),
+                                          np.arange(0, terrain.shape[0]),
+                                          terrain, -9999.,
+                                          gdal_type=gdal.GDT_Float32,
+                                          logging=logger)
+
+                    inun_lib.gdal_writemap(drainage_temp_file, 'PCRaster',
                                       np.arange(0, terrain.shape[1]),
                                       np.arange(0, terrain.shape[0]),
-                                      terrain, rasterband_dem.GetNoDataValue(),
-                                      gdal_type=gdal.GDT_Float32,
+                                      drainage, rasterband_ldd.GetNoDataValue(),
+                                      gdal_type=gdal.GDT_Int32,
                                       logging=logger)
-                else:
-                    # in case no nodata value is found
-                    logger.warning('No nodata value found in {:s}. assuming -9999'.format(options.dem_file))
-                    inun_lib.gdal_writemap(terrain_temp_file, 'PCRaster',
+                    inun_lib.gdal_writemap(stream_temp_file, 'PCRaster',
                                       np.arange(0, terrain.shape[1]),
                                       np.arange(0, terrain.shape[0]),
-                                      terrain, -9999.,
-                                      gdal_type=gdal.GDT_Float32,
+                                      stream, rasterband_ldd.GetNoDataValue(),
+                                      gdal_type=gdal.GDT_Int32,
                                       logging=logger)
+                    # read as pcr objects
+                    pcr.setclone(terrain_temp_file)
+                    terrain_pcr = pcr.readmap(terrain_temp_file)
+                    drainage_pcr = pcr.lddrepair(pcr.ldd(pcr.readmap(drainage_temp_file)))  # convert to ldd type map
+                    stream_pcr = pcr.scalar(pcr.readmap(stream_temp_file))  # convert to ldd type map
 
-                inun_lib.gdal_writemap(drainage_temp_file, 'PCRaster',
-                                  np.arange(0, terrain.shape[1]),
-                                  np.arange(0, terrain.shape[0]),
-                                  drainage, rasterband_ldd.GetNoDataValue(),
-                                  gdal_type=gdal.GDT_Int32,
-                                  logging=logger)
-                inun_lib.gdal_writemap(stream_temp_file, 'PCRaster',
-                                  np.arange(0, terrain.shape[1]),
-                                  np.arange(0, terrain.shape[0]),
-                                  stream, rasterband_ldd.GetNoDataValue(),
-                                  gdal_type=gdal.GDT_Int32,
-                                  logging=logger)
-                # read as pcr objects
-                pcr.setclone(terrain_temp_file)
-                terrain_pcr = pcr.readmap(terrain_temp_file)
-                drainage_pcr = pcr.lddrepair(pcr.ldd(pcr.readmap(drainage_temp_file)))  # convert to ldd type map
-                stream_pcr = pcr.scalar(pcr.readmap(stream_temp_file))  # convert to ldd type map
+                    # compute streams
+                    stream_ge, subcatch = inun_lib.subcatch_stream(drainage_pcr, hand_strahler, stream=stream_pcr) # generate streams
+                    basin = pcr.boolean(subcatch)
+                    hand_pcr, dist_pcr = inun_lib.derive_HAND(terrain_pcr, drainage_pcr, 3000,
+                                                              rivers=pcr.boolean(stream_ge), basin=basin)
+                    # convert to numpy
+                    hand = pcr.pcr2numpy(hand_pcr, -9999.)
+                    # cut relevant part
+                    if y_overlap_max == 0:
+                        y_overlap_max = -hand.shape[0]
+                    if x_overlap_max == 0:
+                        x_overlap_max = -hand.shape[1]
+                    hand_cut = hand[0+y_overlap_min:-y_overlap_max, 0+x_overlap_min:-x_overlap_max]
 
-                # compute streams
-                stream_ge, subcatch = inun_lib.subcatch_stream(drainage_pcr, options.hand_strahler, stream=stream_pcr) # generate streams
-                basin = pcr.boolean(subcatch)
-                hand_pcr, dist_pcr = inun_lib.derive_HAND(terrain_pcr, drainage_pcr, 3000,
-                                                          rivers=pcr.boolean(stream_ge), basin=basin)
-                # convert to numpy
-                hand = pcr.pcr2numpy(hand_pcr, -9999.)
-                # cut relevant part
-                if y_overlap_max == 0:
-                    y_overlap_max = -hand.shape[0]
-                if x_overlap_max == 0:
-                    x_overlap_max = -hand.shape[1]
-                hand_cut = hand[0+y_overlap_min:-y_overlap_max, 0+x_overlap_min:-x_overlap_max]
-
-                band_hand.WriteArray(hand_cut, x_start, y_start)
-                os.unlink(terrain_temp_file)
-                os.unlink(drainage_temp_file)
-                os.unlink(stream_temp_file)
-                band_hand.FlushCache()
-        ds_dem = None
-        ds_ldd = None
-        ds_stream = None
-        band_hand.SetNoDataValue(-9999.)
-        ds_hand = None
-        logger.info('Finalizing {:s}'.format(hand_file))
-        # rename temporary file to final hand file
-        os.rename(hand_file_tmp, hand_file)
-    else:
-        logger.info('HAND file {:s} already exists...skipping...'.format(hand_file))
+                    band_hand.WriteArray(hand_cut, x_start, y_start)
+                    os.unlink(terrain_temp_file)
+                    os.unlink(drainage_temp_file)
+                    os.unlink(stream_temp_file)
+                    band_hand.FlushCache()
+            ds_dem = None
+            ds_ldd = None
+            ds_stream = None
+            band_hand.SetNoDataValue(-9999.)
+            ds_hand = None
+            logger.info('Finalizing {:s}'.format(hand_file))
+            # rename temporary file to final hand file
+            os.rename(hand_file_tmp, hand_file)
+        else:
+            logger.info('HAND file {:s} already exists...skipping...'.format(hand_file))
 
     #####################################################################################
     #  HAND file has now been prepared, moving to flood mapping part                    #
@@ -545,7 +555,8 @@ def main():
     logger.info('Saving water layer map to {:s}'.format(flood_vol_map))
     # write to a tiff file
     inun_lib.gdal_writemap(flood_vol_map, 'GTiff', xax, yax, np.maximum(flood_vol_m_data, 0), -999., logging=logger)
-    ds_hand, rasterband_hand = inun_lib.get_gdal_rasterband(hand_file)
+    # this is placed later in the hand loop
+    # ds_hand, rasterband_hand = inun_lib.get_gdal_rasterband(hand_file)
     ds_ldd, rasterband_ldd = inun_lib.get_gdal_rasterband(options.ldd_file)
     ds_stream, rasterband_stream = inun_lib.get_gdal_rasterband(options.stream_file)
 
@@ -573,11 +584,7 @@ def main():
 
             # cut out DEM
             logger.debug('handling xmin: {:d} xmax: {:d} ymin {:d} ymax {:d}'.format(x_start, x_end, y_start, y_end))
-            hand = rasterband_hand.ReadAsArray(x_start - x_overlap_min,
-                                                 y_start - y_overlap_min,
-                                                 (x_end + x_overlap_max) - (x_start - x_overlap_min),
-                                                 (y_end + y_overlap_max) - (y_start - y_overlap_min)
-                                                 )
+
 
             drainage = rasterband_ldd.ReadAsArray(x_start - x_overlap_min,
                                                  y_start - y_overlap_min,
@@ -589,13 +596,10 @@ def main():
                                                    (x_end + x_overlap_max) - (x_start - x_overlap_min),
                                                    (y_end + y_overlap_max) - (y_start - y_overlap_min)
                                                    )
-            print('len x-ax: {:d} len y-ax {:d} x-shape {:d} y-shape {:d}'.format(len(x_tile_ax), len(y_tile_ax), hand.shape[1], hand.shape[0]))
-            inun_lib.gdal_writemap(hand_temp_file, 'PCRaster',
-                              x_tile_ax,
-                              y_tile_ax,
-                              hand, rasterband_hand.GetNoDataValue(),
-                              gdal_type=gdal.GDT_Float32,
-                              logging=logger)
+
+            # stream_max = np.minimum(stream.max(), options.max_strahler)
+
+
             inun_lib.gdal_writemap(drainage_temp_file, 'PCRaster',
                               x_tile_ax,
                               y_tile_ax,
@@ -608,9 +612,9 @@ def main():
                               stream, rasterband_stream.GetNoDataValue(),
                               gdal_type=gdal.GDT_Int32,
                               logging=logger)
+
             # read as pcr objects
-            pcr.setclone(hand_temp_file)
-            hand_pcr = pcr.readmap(hand_temp_file)
+            pcr.setclone(stream_temp_file)
             drainage_pcr = pcr.lddrepair(pcr.ldd(pcr.readmap(drainage_temp_file)))  # convert to ldd type map
             stream_pcr = pcr.scalar(pcr.readmap(stream_temp_file))  # convert to ldd type map
             # prepare a subcatchment map
@@ -619,34 +623,57 @@ def main():
             # weight = 1./pcr.scalar(pcr.spreadzone(pcr.cover(pcr.ordinal(drainage_surf), 0), 0, 0))
             # subcatch_fill = pcr.scalar(pcr.spreadzone(subcatch, 0, weight))
             # # cover subcatch with subcatch_fill
-            inun_lib.gdal_warp(flood_vol_map, hand_temp_file, flood_vol_temp_file, gdal_interp=gdalconst.GRA_NearestNeighbour) # ,
+            inun_lib.gdal_warp(flood_vol_map, stream_temp_file, flood_vol_temp_file, gdal_interp=gdalconst.GRA_NearestNeighbour) # ,
             x_tile_ax, y_tile_ax, flood_meter, fill_value = inun_lib.gdal_readmap(flood_vol_temp_file, 'GTiff', logging=logger)
             # convert meter depth to volume [m3]
             flood_vol = pcr.numpy2pcr(pcr.Scalar, flood_meter, fill_value)*((x_tile_ax[1] - x_tile_ax[0]) * (y_tile_ax[0] - y_tile_ax[1]))  # resolution of SRTM *1166400000.
 
             # first prepare a basin map, belonging to the HAND order we are looking at
-            # TODO: replace options.hand_strahler by current HAND strahler order
-            stream_ge_hand, subcatch_hand = inun_lib.subcatch_stream(drainage_pcr, options.hand_strahler, stream=stream_pcr)
-            # TODO: loop over river order options.catchment_strahler to maximum order found in tile
-            stream_ge, subcatch = inun_lib.subcatch_stream(drainage_pcr, options.catchment_strahler, stream=stream_pcr, basin=pcr.boolean(pcr.cover(subcatch_hand, 0)), assign_existing=True) # generate subcatchments, only within basin for HAND
-            # TODO: mask subcatchments with river order lower than thres or higher than thres
-            drainage_surf = pcr.ifthen(stream_ge > 0, pcr.accuflux(drainage_pcr, 1))  # proxy of drainage surface inaccurate at tile edges
-            # subcatch = pcr.spreadzone(subcatch, 0, 0)
+            inundation_pcr = pcr.scalar(stream_pcr) * 0
+            for hand_strahler in range(options.catchment_strahler, stream_max + 1, 1):
+                # hand_temp_file = os.path.join(flood_folder, 'hand_temp.map')
+                hand_file = os.path.join(options.dest_path, '{:s}_hand_strahler_{:02d}.tif'.format(dem_name, hand_strahler))
+                ds_hand, rasterband_hand = inun_lib.get_gdal_rasterband(hand_file)
+                hand = rasterband_hand.ReadAsArray(x_start - x_overlap_min,
+                                             y_start - y_overlap_min,
+                                             (x_end + x_overlap_max) - (x_start - x_overlap_min),
+                                             (y_end + y_overlap_max) - (y_start - y_overlap_min)
+                                             )
+                print('len x-ax: {:d} len y-ax {:d} x-shape {:d} y-shape {:d}'.format(len(x_tile_ax), len(y_tile_ax), hand.shape[1], hand.shape[0]))
 
+                inun_lib.gdal_writemap(hand_temp_file, 'PCRaster',
+                          x_tile_ax,
+                          y_tile_ax,
+                          hand, rasterband_hand.GetNoDataValue(),
+                          gdal_type=gdal.GDT_Float32,
+                          logging=logger)
 
-            # TODO: put areas outside subcatch to zero
-            ## now we have some nice volume. Now we need to redistribute!
-            # TODO: insert selected HAND map
-            inundation_pcr = inun_lib.volume_spread(drainage_pcr, hand_pcr, subcatch, flood_vol,
-                                           volume_thres=0., iterations=options.iterations,
-                                           area_multiplier=options.area_multiplier, logging=logger) # 1166400000.
+                hand_pcr = pcr.readmap(hand_temp_file)
+
+                stream_ge_hand, subcatch_hand = inun_lib.subcatch_stream(drainage_pcr, hand_strahler, stream=stream_pcr)
+                stream_ge, subcatch = inun_lib.subcatch_stream(drainage_pcr,
+                                                               options.catchment_strahler,
+                                                               stream=stream_pcr,
+                                                               basin=pcr.boolean(pcr.cover(subcatch_hand, 0)),
+                                                               assign_existing=True,
+                                                               min_strahler=hand_strahler,
+                                                               max_strahler=hand_strahler) # generate subcatchments, only within basin for HAND
+                flood_vol_strahler = pcr.ifthenelse(pcr.boolean(pcr.cover(subcatch, 0)), flood_vol, 0)
+                inundation_pcr_step = inun_lib.volume_spread(drainage_pcr, hand_pcr,
+                                                             pcr.subcatchment(drainage_pcr, subcatch), # to make sure backwater effects can occur from higher order rivers to lower order rivers
+                                                             flood_vol_strahler,
+                                                             volume_thres=0.,
+                                                             iterations=options.iterations,
+                                                             area_multiplier=options.area_multiplier,
+                                                             logging=logger) # 1166400000.
+                # use maximum value of inundation_pcr_step and new inundation for higher strahler order
+                inundation_pcr = pcr.max(inundation_pcr, inundation_pcr_step)
             inundation = pcr.pcr2numpy(inundation_pcr, -9999.)
             # cut relevant part
             if y_overlap_max == 0:
                 y_overlap_max = -inundation.shape[0]
             if x_overlap_max == 0:
                 x_overlap_max = -inundation.shape[1]
-            # TODO: use maximum value of inundation_cut and new inundation for higher strahler order
             inundation_cut = inundation[0+y_overlap_min:-y_overlap_max, 0+x_overlap_min:-x_overlap_max]
             # inundation_cut
             band_inun.WriteArray(inundation_cut, x_start, y_start)

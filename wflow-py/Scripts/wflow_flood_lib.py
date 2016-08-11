@@ -572,3 +572,8 @@ def gdal_readmap(file_name, file_format, give_geotrans=False, logging=logging):
 
     else:
         return x, y, data, fill_val
+
+def define_max_strahler(stream_file, logging=logging):
+    xax, yax, stream_data, fill_value = gdal_readmap(stream_file, 'GTiff', logging=logging)
+    return stream_data.max()
+
