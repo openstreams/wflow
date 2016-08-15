@@ -13,13 +13,17 @@ across a user-defined strahler order basin scale (typically a quite small subcat
 and then spreads this volume over a high resolution terrain model. To ensure that the 
 flood volume is not spread in a rice-field kind of way (first filling the lowest cell in
 the occurring subbasin), the terrain data is first normalised to a Height-Above-Nearest-Drain
-(HAND) map of the associated typically flooding rivers (to be provided by user through a strahler order)
-and flooding is estimated from this HAND map. 
+(HAND) map of the associated typically flooding rivers (to be provided by user through a catchment order)
+and flooding is estimated from this HAND map.
 
-TODO:: perform routing from small to large scale using a sequential flood mapping from small
-to large strahler orders.
+A sequential flood mapping is performed starting from the user defined Strahler order basin scale to the highest
+Strahler orders. A HAND map is derived for each river order starting from the lowest order. These maps are then
+used sequentially to spread flood volumes over the high resolution terrain model starting from the lowest catchment
+order provided by the user (using the corresponding HAND map) to the highest stream order.
+Backwater effects from flooding of higher orders catchments to lower order catchments are taken into account by taking
+the maximum flood level of both.
 
-Preferrably a user should use from the outputs of a wflow\_routing mode
+Preferrably a user should use from the outputs of a wflow\_routing model
 because then the user can use the floodplain water level only (usually saved 
 in a variable name levfp). If estimates from a HBV or SBM (or other wflow) model are used
 we recommend that the user also provides a "bank-full" water level in the command line 
@@ -46,12 +50,14 @@ The .ini file sections are treated below:
 
 ::
 
-	[maps]
+	[HighResMaps]
 	dem_file = /p/1220657-afghanistan-disaster-risk/Processed DEMs/SRTM 90m merged/BEST90m_WGS_UTM42N.tif
 	ldd_file = /p/1220657-afghanistan-disaster-risk/Processed DEMs/SRTM 90m merged/LDD/ldd_SRTM0090m_WGS_UTM42N.map
 	stream_file = /p/1220657-afghanistan-disaster-risk/Processed DEMs/SRTM 90m merged/stream.map
+	[wflowResMaps]
 	riv_length_file = /p/1220657-afghanistan-disaster-risk/floodhazardsimulations/Stepf_output/river_length.map
 	riv_width_file = /p/1220657-afghanistan-disaster-risk/floodhazardsimulations/Stepf_output/wflow_floodplainwidth.map
+	file_format = 0
 
 The dem\_file contains a file with the high-res terrain data. It MUST be in .tif format.
 This is because .tif files can contain projection information. At the moment the .tif file
@@ -70,6 +76,9 @@ wflow\_riverlength_fact.map map, typically located in the staticmaps folder of t
 The width map is also in meters, and should contain the flood plain width in case the wflow_routing 
 model is used (typical name is wflow_floodplainwidth.map). If a HBV or SBM model is used, you should 
 use the river width map instead (typical name wflow_riverwidth.map).
+
+If file_format is set to 0, the flood map is expected to be given in netCDF format (in the command line after -F)
+if set to 1, format is expected to be PCRaster format
 
 ::
 
@@ -107,6 +116,7 @@ seamless product.
 Some trial and error may be required to yield the right tile sizes and overlaps.
 
 ::
+
 	[inundation]
 	area_multiplier=1
 	iterations=20
@@ -142,10 +152,10 @@ When wflow\_flood.py is run with the -h argument, you will receive the following
 				Map containing bank full level (is subtracted from
 				flood map, in NetCDF)
 	  -c CATCHMENT_STRAHLER, --catchment=CATCHMENT_STRAHLER
-				Strahler order threshold >= are selected as catchment
-				boundaries
-	  -s HAND_STRAHLER, --hand_strahler=HAND_STRAHLER
-				Strahler order threshold >= selected as riverine
+				Smallest Strahler order threshold over which flooding
+				may occur
+	  -m MAX_CATCHMENT_STRAHLER, --max_catchment=MAX_CATCHMENT_STRAHLER
+				Largest Strahler order over which flooding may occur
 	  -d DEST_PATH, --destination=DEST_PATH
 				Destination path
 	  -H HAND_FILE, --hand_file=HAND_FILE
@@ -162,9 +172,11 @@ Further explanation:
     
     -b = Similar file as -f but providing the bank full water level. Can e provided in case you know that a certain water depth is blocked, or remains within banks. In cae a NetCDF is provided, the maximum values are used, alternatively, you can provide a GeoTIFF.
 
-    -c = catchment strahler order over which flood volumes are averaged, before spreading. This is the strahler order, at the resolution of the flood map (not WFLOW)
+    -c = starting point of catchment strahler order over which flood volumes are averaged, before spreading.
+         The Height-Above-Nearest-Drain maps are derived from this Strahler order on (until max Strahler order).
+         NB: This is the strahler order of the high resolution stream order map
     
-    -s = strahler order used to derive the Heigh-Above-Nearest-Drain, from which flood mapping originates
+    -m = maximum strahler order over which flooding may occur (default value is the highest order in high res stream map)
     
     -d = path where the file is stored
     
@@ -180,9 +192,9 @@ Table: outputs of the wflow_flood module
 +----------------------------------------------------------------------------+---------------------------------------------------------------------+
 |hand\_contour\_inun.log                                                     | log file of the module, contains info and error messages            |
 +----------------------------------------------------------------------------+---------------------------------------------------------------------+
-|inun_<-f>\_hand\_<-s>\_catch\_<-c>\\inun_<-f>\_hand\_<-s>\_catch\_<-c>.tif   | resulting inundation map (GeoTIFF)                                  |
+|inun_<-f>\_catch\_<-c>.tif                                                  | resulting inundation map (GeoTIFF)                                  |
 +----------------------------------------------------------------------------+---------------------------------------------------------------------+
-|<dem_file>\_hand\_strahler_<-s>.tif                                         | HAND file based upon strahler order given with -s (only without -H  |
+|<dem_file>\_hand\_strahler_<-c>.tif                                         | HAND file based upon strahler order given with -c (only without -H  |
 +----------------------------------------------------------------------------+---------------------------------------------------------------------+
 
 Questions can be directed to hessel.winsemius@deltares.nl
@@ -258,7 +270,7 @@ def main():
     # set up the logger
     flood_name = os.path.split(options.flood_map)[1].split('.')[0]
     # case_name = 'inun_{:s}_hand_{:02d}_catch_{:02d}'.format(flood_name, options.hand_strahler, options.catchment_strahler)
-    case_name = 'inun_{:s}_hand_catch_{:02d}'.format(flood_name, options.catchment_strahler)
+    case_name = 'inun_{:s}_catch_{:02d}'.format(flood_name, options.catchment_strahler)
     logfilename = os.path.join(options.dest_path, 'hand_contour_inun.log')
     logger, ch = inun_lib.setlogger(logfilename, 'HAND_INUN', options.verbose)
     logger.info('$Id: $')
@@ -271,22 +283,22 @@ def main():
     config = inun_lib.open_conf(options.inifile)
     
     # read settings
-    options.dem_file = inun_lib.configget(config, 'maps',
+    options.dem_file = inun_lib.configget(config, 'HighResMaps',
                                   'dem_file',
                                   True)
-    options.ldd_file = inun_lib.configget(config, 'maps',
+    options.ldd_file = inun_lib.configget(config, 'HighResMaps',
                                 'ldd_file',
                                  True)
-    options.stream_file = inun_lib.configget(config, 'maps',
+    options.stream_file = inun_lib.configget(config, 'HighResMaps',
                                 'stream_file',
                                  True)
-    options.riv_length_file = inun_lib.configget(config, 'maps',
+    options.riv_length_file = inun_lib.configget(config, 'wflowResMaps',
                                 'riv_length_file',
                                  True)
-    options.riv_width_file = inun_lib.configget(config, 'maps',
+    options.riv_width_file = inun_lib.configget(config, 'wflowResMaps',
                                 'riv_width_file',
                                  True)
-    options.file_format = inun_lib.configget(config, 'maps',
+    options.file_format = inun_lib.configget(config, 'wflowResMaps',
                                 'file_format', 0, datatype='int')
     options.x_tile = inun_lib.configget(config, 'tiling',
                                   'x_tile', 10000, datatype='int')
@@ -658,7 +670,7 @@ def main():
                                                                assign_existing=True,
                                                                min_strahler=hand_strahler,
                                                                max_strahler=hand_strahler) # generate subcatchments, only within basin for HAND
-                flood_vol_strahler = pcr.ifthenelse(pcr.boolean(pcr.cover(subcatch, 0)), flood_vol, 0)
+                flood_vol_strahler = pcr.ifthenelse(pcr.boolean(pcr.cover(subcatch, 0)), flood_vol, 0) # mask the flood volume map with the created subcatch map for strahler order = hand_strahler
                 inundation_pcr_step = inun_lib.volume_spread(drainage_pcr, hand_pcr,
                                                              pcr.subcatchment(drainage_pcr, subcatch), # to make sure backwater effects can occur from higher order rivers to lower order rivers
                                                              flood_vol_strahler,
@@ -682,6 +694,7 @@ def main():
             os.unlink(flood_vol_temp_file)
             os.unlink(drainage_temp_file)
             os.unlink(hand_temp_file)
+            os.unlink(stream_temp_file)     #also remove temp stream file from output folder
 
             # if n == 35:
             #     band_inun.SetNoDataValue(-9999.)
