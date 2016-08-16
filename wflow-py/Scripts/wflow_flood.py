@@ -55,7 +55,7 @@ The .ini file sections are treated below:
 	ldd_file = /p/1220657-afghanistan-disaster-risk/Processed DEMs/SRTM 90m merged/LDD/ldd_SRTM0090m_WGS_UTM42N.map
 	stream_file = /p/1220657-afghanistan-disaster-risk/Processed DEMs/SRTM 90m merged/stream.map
 	[wflowResMaps]
-	riv_length_file = /p/1220657-afghanistan-disaster-risk/floodhazardsimulations/Stepf_output/river_length.map
+	riv_length_fact_file = /p/1220657-afghanistan-disaster-risk/floodhazardsimulations/Stepf_output/river_length_fact.map
 	riv_width_file = /p/1220657-afghanistan-disaster-risk/floodhazardsimulations/Stepf_output/wflow_floodplainwidth.map
 	ldd_wflow = /p/1220657-afghanistan-disaster-risk/floodhazardsimulations/Stepf_output/wflow_ldd.map
 	[file_settings]
@@ -72,9 +72,9 @@ The ldd\_file contains the ldd, derived from the dem_file (PCRaster format)
 The stream\_file contains a stream order file (made with the PCRaster stream order file) 
 derived from the LDD in ldd\_file.
 
-riv\_length\_file and riv\_width\_file contain the dimensions of the channels within the WFLOW 
-pixels (unit meters) and are therefore in the resolution of the WFLOW model. The user can derive
-these by multiplying the LDD length from cell to cell within the LDD network with the 
+riv\_length\_fact\_file and riv\_width\_file contain the dimensions of the channels within the WFLOW
+pixels (unit meters) and are therefore in the resolution of the WFLOW model. The riv\_length\_fact\_file is used
+ to derive a riv_length by multiplying the LDD length from cell to cell within the LDD network with the
 wflow\_riverlength_fact.map map, typically located in the staticmaps folder of the used WFLOW model.
 The width map is also in meters, and should contain the flood plain width in case the wflow_routing 
 model is used (typical name is wflow_floodplainwidth.map). If a HBV or SBM model is used, you should 
@@ -227,6 +227,7 @@ import netCDF4 as nc
 
 import wflow_flood_lib as inun_lib
 import wflow.pcrut as pcrut
+import wflow.wflow_lib as wflow_lib
 
 import pdb
 
@@ -301,8 +302,8 @@ def main():
     options.stream_file = inun_lib.configget(config, 'HighResMaps',
                                 'stream_file',
                                  True)
-    options.riv_length_file = inun_lib.configget(config, 'wflowResMaps',
-                                'riv_length_file',
+    options.riv_length_fact_file = inun_lib.configget(config, 'wflowResMaps',
+                                'riv_length_fact_file',
                                  True)
     options.ldd_wflow = inun_lib.configget(config, 'wflowResMaps',
                                 'ldd_wflow',
@@ -507,8 +508,8 @@ def main():
     #  HAND file has now been prepared, moving to flood mapping part                    #
     #####################################################################################
     # load the staticmaps needed to estimate volumes across all
-    xax, yax, riv_length, fill_value = inun_lib.gdal_readmap(options.riv_length_file, 'GTiff', logging=logger)
-    riv_length = np.ma.masked_where(riv_length==fill_value, riv_length)
+    # xax, yax, riv_length, fill_value = inun_lib.gdal_readmap(options.riv_length_file, 'GTiff', logging=logger)
+    # riv_length = np.ma.masked_where(riv_length==fill_value, riv_length)
     xax, yax, riv_width, fill_value = inun_lib.gdal_readmap(options.riv_width_file, 'GTiff', logging=logger)
     riv_width[riv_width == fill_value] = 0
     pcr.setclone(options.ldd_wflow)
@@ -518,8 +519,15 @@ def main():
     xax, yax, riv_width, fill_value = inun_lib.gdal_readmap(options.riv_width_file, 'GTiff', logging=logger)
 
     # determine cell length in meters using ldd_pcr as clone (if latlon=True, values are converted to m2
-    x_res, y_res, reallength = pcrut.detRealCellLength(pcr.scalar(ldd_pcr), not(bool(options.latlon)))
+    x_res, y_res, reallength_wflow = pcrut.detRealCellLength(pcr.scalar(ldd_pcr), not(bool(options.latlon)))
     cell_surface_wflow = pcr.pcr2numpy(x_res * y_res, 0)
+
+    xax, yax, riv_length_fact, fill_value = inun_lib.gdal_readmap(options.riv_length_fact_file, 'GTiff', logging=logger)
+    riv_length_fact = np.ma.masked_where(riv_length_fact==fill_value, riv_length_fact)
+    drain_length = wflow_lib.detdrainlength(ldd_pcr, x_res, y_res)
+
+    riv_length = pcr.pcr2numpy(drain_length, 0) * riv_length_fact
+    # riv_length_pcr = pcr.numpy2pcr(pcr.Scalar, riv_length, 0)
 
     flood_folder = os.path.join(options.dest_path, case_name)
     flood_vol_map = os.path.join(flood_folder, '{:s}_vol.tif'.format(os.path.split(options.flood_map)[1].split('.')[0]))
