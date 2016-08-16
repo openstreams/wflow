@@ -158,8 +158,8 @@ When wflow\_flood.py is run with the -h argument, you will receive the following
 				Largest Strahler order over which flooding may occur
 	  -d DEST_PATH, --destination=DEST_PATH
 				Destination path
-	  -H HAND_FILE, --hand_file=HAND_FILE
-				optional HAND file (already generated)
+	  -H HAND_FILE_PREFIX, --hand_file=HAND_FILE_PREFIX
+				optional HAND file prefix of already generated HAND maps for different Strahler orders
 
 
 Further explanation:
@@ -180,7 +180,9 @@ Further explanation:
     
     -d = path where the file is stored
     
-    -H = HAND file. As interim product, the module produces a HAND file. This is a very time consuming process and therefore the user can also supply a previously generated HAND file here (GeoTIFF format)
+    -H = HAND file prefix. As interim product, the module produces HAND files. This is a very time consuming process and therefore the user can also supply previously generated HAND files here (GeoTIFF format)
+        The names of the HAND files should be constructed as follows: hand_prefix_{:02d}.format{hand_strahler}, so for example hand_prefix_03 for HAND map with minimum Strahler order 3. (in this case -H hand_prefix should be given)
+        Maps should be made for Strahler orders from -c to -m (or maximum strahler order in the stream map)
     
 Outputs
 -------
@@ -219,6 +221,8 @@ import pcraster as pcr
 import netCDF4 as nc
 
 import wflow_flood_lib as inun_lib
+import wflow.pcrut as pcrut
+
 import pdb
 
 def main():
@@ -254,9 +258,9 @@ def main():
     parser.add_option('-d', '--destination',
                       dest='dest_path', default='inun',
                       help='Destination path')
-    parser.add_option('-H', '--hand_file',
-                      dest='hand_file', default='',
-                      help='optional HAND file (already generated)')
+    parser.add_option('-H', '--hand_file_prefix',
+                      dest='hand_file_prefix', default='',
+                      help='optional HAND file prefix of already generated HAND files')
     (options, args) = parser.parse_args()
 
     if not os.path.exists(options.inifile):
@@ -295,11 +299,16 @@ def main():
     options.riv_length_file = inun_lib.configget(config, 'wflowResMaps',
                                 'riv_length_file',
                                  True)
+    options.ldd_wflow = inun_lib.configget(config, 'wflowResMaps',
+                                'ldd_wflow',
+                                True)
     options.riv_width_file = inun_lib.configget(config, 'wflowResMaps',
                                 'riv_width_file',
                                  True)
     options.file_format = inun_lib.configget(config, 'wflowResMaps',
                                 'file_format', 0, datatype='int')
+    options.sizeinmetres = inun_lib.configget(config, 'wflowResMaps',
+                                 'sizeinmetres', 0, datatype='int')
     options.x_tile = inun_lib.configget(config, 'tiling',
                                   'x_tile', 10000, datatype='int')
     options.y_tile = inun_lib.configget(config, 'tiling',
@@ -371,15 +380,15 @@ def main():
     stream_max = np.minimum(max_s, options.max_strahler)
 
     for hand_strahler in range(options.catchment_strahler, stream_max + 1, 1):
-
         dem_name = os.path.split(options.dem_file)[1].split('.')[0]
-        if os.path.isfile(options.hand_file):
-            hand_file = options.hand_file
+        if os.path.isfile('{:s}_{:02d}.tif'.format(options.hand_file_prefix, hand_strahler)):
+            hand_file = '{:s}_{:02d}.tif'.format(options.hand_file_prefix, hand_strahler)
         else:
+            logger.info('No HAND files with HAND prefix were found, checking {:s}_hand_strahler_{:02d}.tif'.format(dem_name, hand_strahler))
             hand_file = os.path.join(options.dest_path, '{:s}_hand_strahler_{:02d}.tif'.format(dem_name, hand_strahler))
         if not(os.path.isfile(hand_file)):
         # hand file does not exist yet! Generate it, otherwise skip!
-            logger.info('HAND file {:s} setting up...please wait...'.format(hand_file))
+            logger.info('HAND file {:s} not found, start setting up...please wait...'.format(hand_file))
             hand_file_tmp = os.path.join(options.dest_path, '{:s}_hand_strahler_{:02d}.tif.tmp'.format(dem_name, hand_strahler))
             ds_hand = inun_lib.prepare_gdal(hand_file_tmp, x, y, logging=logger, srs=srs)
             band_hand = ds_hand.GetRasterBand(1)
@@ -644,7 +653,10 @@ def main():
             inundation_pcr = pcr.scalar(stream_pcr) * 0
             for hand_strahler in range(options.catchment_strahler, stream_max + 1, 1):
                 # hand_temp_file = os.path.join(flood_folder, 'hand_temp.map')
-                hand_file = os.path.join(options.dest_path, '{:s}_hand_strahler_{:02d}.tif'.format(dem_name, hand_strahler))
+                if os.path.isfile(os.path.join(options.dest_path, '{:s}_hand_strahler_{:02d}.tif'.format(dem_name, hand_strahler))):
+                    hand_file = os.path.join(options.dest_path, '{:s}_hand_strahler_{:02d}.tif'.format(dem_name, hand_strahler))
+                else:
+                    hand_file = '{:s}_{:02d}.tif'.format(options.hand_file_prefix, hand_strahler)
                 ds_hand, rasterband_hand = inun_lib.get_gdal_rasterband(hand_file)
                 hand = rasterband_hand.ReadAsArray(x_start - x_overlap_min,
                                              y_start - y_overlap_min,
