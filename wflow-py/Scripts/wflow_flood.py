@@ -57,6 +57,8 @@ The .ini file sections are treated below:
 	[wflowResMaps]
 	riv_length_file = /p/1220657-afghanistan-disaster-risk/floodhazardsimulations/Stepf_output/river_length.map
 	riv_width_file = /p/1220657-afghanistan-disaster-risk/floodhazardsimulations/Stepf_output/wflow_floodplainwidth.map
+	ldd_wflow = /p/1220657-afghanistan-disaster-risk/floodhazardsimulations/Stepf_output/wflow_ldd.map
+	sizeinmetres = 0
 	file_format = 0
 
 The dem\_file contains a file with the high-res terrain data. It MUST be in .tif format.
@@ -76,6 +78,10 @@ wflow\_riverlength_fact.map map, typically located in the staticmaps folder of t
 The width map is also in meters, and should contain the flood plain width in case the wflow_routing 
 model is used (typical name is wflow_floodplainwidth.map). If a HBV or SBM model is used, you should 
 use the river width map instead (typical name wflow_riverwidth.map).
+
+ldd\_wflow is the ldd, derived at wflow resolution (typically wflow_ldd.map)
+
+If sizeinmetres is 0, the cell-size is given in lat/long (the default)
 
 If file_format is set to 0, the flood map is expected to be given in netCDF format (in the command line after -F)
 if set to 1, format is expected to be PCRaster format
