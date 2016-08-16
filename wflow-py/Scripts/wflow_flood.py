@@ -58,7 +58,8 @@ The .ini file sections are treated below:
 	riv_length_file = /p/1220657-afghanistan-disaster-risk/floodhazardsimulations/Stepf_output/river_length.map
 	riv_width_file = /p/1220657-afghanistan-disaster-risk/floodhazardsimulations/Stepf_output/wflow_floodplainwidth.map
 	ldd_wflow = /p/1220657-afghanistan-disaster-risk/floodhazardsimulations/Stepf_output/wflow_ldd.map
-	sizeinmetres = 0
+	[file_settings]
+	latlon = 0
 	file_format = 0
 
 The dem\_file contains a file with the high-res terrain data. It MUST be in .tif format.
@@ -81,7 +82,7 @@ use the river width map instead (typical name wflow_riverwidth.map).
 
 ldd\_wflow is the ldd, derived at wflow resolution (typically wflow_ldd.map)
 
-If sizeinmetres is 0, the cell-size is given in lat/long (the default)
+If latlon is 0, the cell-size is given in meters (the default)
 
 If file_format is set to 0, the flood map is expected to be given in netCDF format (in the command line after -F)
 if set to 1, format is expected to be PCRaster format
@@ -124,13 +125,11 @@ Some trial and error may be required to yield the right tile sizes and overlaps.
 ::
 
 	[inundation]
-	area_multiplier=1
 	iterations=20
 	initial_level=32
 
-The inundation section contains a number of settings for the flood fill algorithm. The area_multiplier
-should for the moment always be set to 1. This may change in the future of reprojection from one to 
-another projection is considered. The number of iterations can be changed, we recommend to set it to 20 for
+The inundation section contains a number of settings for the flood fill algorithm.
+The number of iterations can be changed, we recommend to set it to 20 for
 an accurate results. The initial\_level is the largest water level that can occur during flooding. Make 
 sure it is set to a level (much) higher than anticipated to occur but not to a value close to infinity.
 If you set it orders too high, the solution will not converge to a reasonable estimate.
@@ -311,10 +310,10 @@ def main():
     options.riv_width_file = inun_lib.configget(config, 'wflowResMaps',
                                 'riv_width_file',
                                  True)
-    options.file_format = inun_lib.configget(config, 'wflowResMaps',
+    options.file_format = inun_lib.configget(config, 'file_settings',
                                 'file_format', 0, datatype='int')
-    options.sizeinmetres = inun_lib.configget(config, 'wflowResMaps',
-                                 'sizeinmetres', 0, datatype='int')
+    options.latlon = inun_lib.configget(config, 'file_settings',
+                                 'latlon', 0, datatype='int')
     options.x_tile = inun_lib.configget(config, 'tiling',
                                   'x_tile', 10000, datatype='int')
     options.y_tile = inun_lib.configget(config, 'tiling',
@@ -327,8 +326,8 @@ def main():
                                   'iterations', 20, datatype='int')
     options.initial_level = inun_lib.configget(config, 'inundation',
                                   'initial_level', 32., datatype='float')
-    options.area_multiplier = inun_lib.configget(config, 'inundation',
-                                  'area_multiplier', 1., datatype='float')
+    # options.area_multiplier = inun_lib.configget(config, 'inundation',
+    #                               'area_multiplier', 1., datatype='float')
     logger.info('DEM file: {:s}'.format(options.dem_file))
     logger.info('LDD file: {:s}'.format(options.ldd_file))
     logger.info('Columns per tile: {:d}'.format(options.x_tile))
@@ -512,13 +511,15 @@ def main():
     riv_length = np.ma.masked_where(riv_length==fill_value, riv_length)
     xax, yax, riv_width, fill_value = inun_lib.gdal_readmap(options.riv_width_file, 'GTiff', logging=logger)
     riv_width[riv_width == fill_value] = 0
-    # determine cell length in meters
-    if options.latlon == 0:
-        x_res = np.abs((xax[-1]-xax[0])/(len(xax)-1))
-        y_res = np.abs((yax[-1]-yax[0])/(len(yax)-1))
-    else:
-        x_res, y_res, reallength = pcrut.detRealCellLength(self.ZeroMap, sizeinmetres)
+    pcr.setclone(options.ldd_wflow)
 
+    # read wflow ldd as pcraster object
+    ldd_pcr = pcr.readmap(options.ldd_wflow)
+    xax, yax, riv_width, fill_value = inun_lib.gdal_readmap(options.riv_width_file, 'GTiff', logging=logger)
+
+    # determine cell length in meters using ldd_pcr as clone (if latlon=True, values are converted to m2
+    x_res, y_res, reallength = pcrut.detRealCellLength(pcr.scalar(ldd_pcr), not(bool(options.latlon)))
+    cell_surface_wflow = pcr.pcr2numpy(x_res * y_res, 0)
 
     flood_folder = os.path.join(options.dest_path, case_name)
     flood_vol_map = os.path.join(flood_folder, '{:s}_vol.tif'.format(os.path.split(options.flood_map)[1].split('.')[0]))
@@ -551,9 +552,6 @@ def main():
         logger.info('Reading flood from {:s} PCRaster file'.format(options.flood_map))
         xax, yax, flood, flood_fill_value = inun_lib.gdal_readmap(options.flood_map, 'PCRaster', logging=logger)
         flood[flood==flood_fill_value] = 0.
-    #res_x = x[1]-x[0]
-    #res_y = y[1]-y[0]
-
     # load the bankfull depths
     if options.bankfull_map == '':
         bankfull = np.zeros(flood.shape)
@@ -580,7 +578,7 @@ def main():
     # res_y = 2000
     # subtract the bankfull water level to get flood levels (above bankfull)
     flood_vol = np.maximum(flood-bankfull, 0)
-    flood_vol_m = riv_length*riv_width*flood_vol/(x_res * y_res)  # volume expressed in meters water disc (1e6 is the surface area of one wflow grid cell)
+    flood_vol_m = riv_length*riv_width*flood_vol/cell_surface_wflow  # volume expressed in meters water disc
     flood_vol_m_data = flood_vol_m.data
     flood_vol_m_data[flood_vol_m.mask] = -999.
     logger.info('Saving water layer map to {:s}'.format(flood_vol_map))
@@ -656,8 +654,11 @@ def main():
             # # cover subcatch with subcatch_fill
             inun_lib.gdal_warp(flood_vol_map, stream_temp_file, flood_vol_temp_file, gdal_interp=gdalconst.GRA_NearestNeighbour) # ,
             x_tile_ax, y_tile_ax, flood_meter, fill_value = inun_lib.gdal_readmap(flood_vol_temp_file, 'GTiff', logging=logger)
+            x_res_tile, y_res_tile, reallength = pcrut.detRealCellLength(pcr.scalar(stream_pcr), not(bool(options.latlon)))
+            cell_surface_tile = pcr.pcr2numpy(x_res_tile * y_res_tile, 0)
+
             # convert meter depth to volume [m3]
-            flood_vol = pcr.numpy2pcr(pcr.Scalar, flood_meter, fill_value)*((x_tile_ax[1] - x_tile_ax[0]) * (y_tile_ax[0] - y_tile_ax[1]))  # resolution of SRTM *1166400000.
+            flood_vol = pcr.numpy2pcr(pcr.Scalar, flood_meter*cell_surface_tile, fill_value)
 
             # first prepare a basin map, belonging to the HAND order we are looking at
             inundation_pcr = pcr.scalar(stream_pcr) * 0
@@ -698,7 +699,7 @@ def main():
                                                              flood_vol_strahler,
                                                              volume_thres=0.,
                                                              iterations=options.iterations,
-                                                             area_multiplier=options.area_multiplier,
+                                                             cell_surface=pcr.numpy2pcr(pcr.Scalar, cell_surface_tile, -9999),
                                                              logging=logger) # 1166400000.
                 # use maximum value of inundation_pcr_step and new inundation for higher strahler order
                 inundation_pcr = pcr.max(inundation_pcr, inundation_pcr_step)

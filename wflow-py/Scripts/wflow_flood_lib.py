@@ -411,7 +411,7 @@ def subcatch_stream(ldd, threshold, stream=None, min_strahler=-999, max_strahler
 
     return stream_ge, pcr.ordinal(subcatch)
 
-def volume_spread(ldd, hand, subcatch, volume, volume_thres=0., area_multiplier=1., iterations=15, logging=logging):
+def volume_spread(ldd, hand, subcatch, volume, volume_thres=0., cell_surface=1., iterations=15, logging=logging):
     """
     Estimate 2D flooding from a 1D simulation per subcatchment reach
     Input:
@@ -426,12 +426,11 @@ def volume_spread(ldd, hand, subcatch, volume, volume_thres=0., area_multiplier=
         inundation -- pcraster object float32, scalar inundation estimate
     """
     #initial values
-    pcr.setglobaloption("unittrue")
+    pcr.setglobaloption("unitcell")
     dem_min = pcr.areaminimum(hand, subcatch)  # minimum elevation in subcatchments
     dem_norm = hand - dem_min
     # surface of each subcatchment
-    surface = pcr.areaarea(subcatch)*area_multiplier
-
+    surface = pcr.areaarea(subcatch)*pcr.areaaverage(cell_surface, subcatch) # area_multiplier
     error_abs = pcr.scalar(1e10)  # initial error (very high)
     volume_catch = pcr.areatotal(volume, subcatch)
 
@@ -449,7 +448,6 @@ def volume_spread(ldd, hand, subcatch, volume, volume_thres=0., area_multiplier=
         error = pcr.cover((depth_catch-average_depth_catch)/depth_catch, depth_catch*0)
         dem_min = pcr.ifthenelse(error > 0, dem_av, dem_min)
         dem_max = pcr.ifthenelse(error <= 0, dem_av, dem_max)
-    # error_abs = np.abs(error)  # TODO: not needed probably, remove
     inundation = pcr.max(dem_av - dem_norm, 0)
     return inundation
 
