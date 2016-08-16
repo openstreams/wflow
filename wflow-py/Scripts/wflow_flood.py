@@ -512,9 +512,13 @@ def main():
     riv_length = np.ma.masked_where(riv_length==fill_value, riv_length)
     xax, yax, riv_width, fill_value = inun_lib.gdal_readmap(options.riv_width_file, 'GTiff', logging=logger)
     riv_width[riv_width == fill_value] = 0
+    # determine cell length in meters
+    if options.latlon == 0:
+        x_res = np.abs((xax[-1]-xax[0])/(len(xax)-1))
+        y_res = np.abs((yax[-1]-yax[0])/(len(yax)-1))
+    else:
+        x_res, y_res, reallength = pcrut.detRealCellLength(self.ZeroMap, sizeinmetres)
 
-    x_res = np.abs((xax[-1]-xax[0])/(len(xax)-1))
-    y_res = np.abs((yax[-1]-yax[0])/(len(yax)-1))
 
     flood_folder = os.path.join(options.dest_path, case_name)
     flood_vol_map = os.path.join(flood_folder, '{:s}_vol.tif'.format(os.path.split(options.flood_map)[1].split('.')[0]))
