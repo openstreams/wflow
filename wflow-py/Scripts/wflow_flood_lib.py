@@ -23,6 +23,8 @@ import numpy as np
 
 from osgeo import osr, gdal, gdalconst
 import pcraster as pcr
+import netCDF4 as nc
+import datetime as dt
 import pdb
 
 def setlogger(logfilename, logReference, verbose=True):
@@ -191,7 +193,48 @@ def get_gdal_rasterband(filename, band=1, logging=logging):
     # Retrieve geoTransform info
     return ds, ds.GetRasterBand(band)   # there's only 1 band, starting from 1
 
+def prepare_nc(trg_file, times, x, y, metadata={}, logging=logging, units='Days since 1900-01-01 00:00:00', calendar='gregorian'):
+    """
+    This function prepares a NetCDF file with given metadata, for a certain year, daily basis data
+    The function assumes a gregorian calendar and a time unit 'Days since 1900-01-01 00:00:00'
+    """
+    logger.info('Setting up "' + trg_file + '"')
+    times_list = nc.date2num(times, units=units, calendar=calendar)
+    nc_trg = nc.Dataset(trg_file, 'w')
+    logger.info('Setting up dimensions and attributes')
+    nc_trg.createDimension('time', 0) #NrOfDays*8
+    nc_trg.createDimension('lat', len(y))
+    nc_trg.createDimension('lon', len(x))
+    times_nc = nc_trg.createVariable('time', 'f8', ('time',))
+    times_nc.units = units
+    times_nc.calendar = calendar
+    times_nc.standard_name = 'time'
+    times_nc.long_name = 'time'
+    times_nc[:] = times_list
+    y_var = nc_trg.createVariable('lat', 'f4', ('lat',))
+    y_var.standard_name = 'latitude'
+    y_var.long_name = 'latitude'
+    y_var.units = 'degrees_north'
+    x_var = nc_trg.createVariable('lon', 'f4', ('lon',))
+    x_var.standard_name = 'longitude'
+    x_var.long_name = 'longitude'
+    x_var.units = 'degrees_east'
+    y_var[:] = y
+    x_var[:] = x
+    projection= nc_trg.createVariable('projection', 'c')
+    projection.long_name = 'wgs84'
+    projection.EPSG_code = 'EPSG:4326'
+    projection.proj4_params = '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
+    projection.grid_mapping_name = 'latitude_longitude'
+
+    # now add all attributes from user-defined metadata
+    for attr in metadata:
+        nc_trg.setncattr(attr, metadata[attr])
+    nc_trg.sync()
+    return nc_trg
+
 def prepare_gdal(filename, x, y, format='GTiff', logging=logging,
+                 metadata={}, metadata_var={},
                  gdal_type=gdal.GDT_Float32, zlib=True, srs=None):
     # prepare geotrans
     xul = x[0] - (x[1] - x[0]) / 2
@@ -215,9 +258,36 @@ def prepare_gdal(filename, x, y, format='GTiff', logging=logging,
     if srs:
         ds.SetProjection(srs.ExportToWkt())
     # get rasterband entry
+    band = ds.GetRasterBand(1)
+    band.SetNoDataValue(-9999.)
+    ds.SetMetadata(metadata)
+    band.SetMetadata(metadata_var)
+
     logging.info('Prepared {:s}'.format(filename))
 
-    return ds
+    return ds, band
+
+def write_tile_nc(var, data, x_start, y_start, flipud=False):
+    """
+
+    :param var: netcdf variable to write into
+    :param data:
+    :param x_start: column to start writing
+    :param y_start: row to start writing (is flipped up-side-down)
+    :return: var
+    """
+    # determine x end and y end
+    x_end = x_start + data.shape[1]
+    y_end = y_start + data.shape[0]
+    if flipud:
+        if y_start == 0:
+            var[-y_end:, x_start:x_end] = data
+        else:
+            var[-y_end:-y_start, x_start:x_end] = data
+    else:
+        var[y_start:y_end] = data
+    return var
+
 
 def gdal_warp(src_filename, clone_filename, dst_filename, gdal_type=gdalconst.GDT_Float32,
               gdal_interp=gdalconst.GRA_Bilinear, format='GTiff', ds_in=None, override_src_proj=None):
@@ -411,7 +481,7 @@ def subcatch_stream(ldd, threshold, stream=None, min_strahler=-999, max_strahler
 
     return stream_ge, pcr.ordinal(subcatch)
 
-def volume_spread(ldd, hand, subcatch, volume, volume_thres=0., cell_surface=1., iterations=15, logging=logging):
+def volume_spread(ldd, hand, subcatch, volume, volume_thres=0., cell_surface=1., iterations=15, logging=logging, order=0):
     """
     Estimate 2D flooding from a 1D simulation per subcatchment reach
     Input:
@@ -433,9 +503,9 @@ def volume_spread(ldd, hand, subcatch, volume, volume_thres=0., cell_surface=1.,
     surface = pcr.areaarea(subcatch)*pcr.areaaverage(cell_surface, subcatch) # area_multiplier
     error_abs = pcr.scalar(1e10)  # initial error (very high)
     volume_catch = pcr.areatotal(volume, subcatch)
-
     depth_catch = volume_catch/surface  # meters water disc averaged over subcatchment
-
+    # pcr.report(depth_catch, 'depth_catch_{:02d}.map'.format(order))
+    # pcr.report(volume, 'volume_{:02d}.map'.format(order))
     dem_max = pcr.ifthenelse(volume_catch > volume_thres, pcr.scalar(32.),
                              pcr.scalar(0))  # bizarre high inundation depth
     dem_min = pcr.scalar(0.)
