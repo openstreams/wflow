@@ -504,7 +504,7 @@ def volume_spread(ldd, hand, subcatch, volume, volume_thres=0., cell_surface=1.,
     error_abs = pcr.scalar(1e10)  # initial error (very high)
     volume_catch = pcr.areatotal(volume, subcatch)
     depth_catch = volume_catch/surface  # meters water disc averaged over subcatchment
-    # pcr.report(depth_catch, 'depth_catch_{:02d}.map'.format(order))
+    # ilt(depth_catch, 'depth_catch_{:02d}.map'.format(order))
     # pcr.report(volume, 'volume_{:02d}.map'.format(order))
     dem_max = pcr.ifthenelse(volume_catch > volume_thres, pcr.scalar(32.),
                              pcr.scalar(0))  # bizarre high inundation depth
