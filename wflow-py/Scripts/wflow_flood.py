@@ -232,6 +232,7 @@ import datetime as dt
 
 import pdb
 
+
 def main():
     ### Read input arguments #####
     parser = OptionParser()
@@ -483,13 +484,20 @@ def main():
                     drainage_pcr = pcr.lddrepair(pcr.ldd(pcr.readmap(drainage_temp_file)))  # convert to ldd type map
                     stream_pcr = pcr.scalar(pcr.readmap(stream_temp_file))  # convert to ldd type map
 
+                    #check if the highest stream order of the tile is below the hand_strahler
+                    # if the highest stream order of the tile is smaller than hand_strahler, than DEM values are taken instead of HAND values.
+                    max_stream_tile = inun_lib.define_max_strahler(stream_temp_file, logging=logger)
+                    if max_stream_tile < hand_strahler:
+                        hand_pcr = terrain_pcr
+                        logger.info('For this tile, DEM values are used instead of HAND because there is no stream order larger than {:02d}'.format(hand_strahler))
+                    else:
                     # compute streams
-                    stream_ge, subcatch = inun_lib.subcatch_stream(drainage_pcr, hand_strahler, stream=stream_pcr) # generate streams
-                    # compute basins
-                    stream_ge_dummy, subcatch = inun_lib.subcatch_stream(drainage_pcr, options.catchment_strahler, stream=stream_pcr) # generate streams
-                    basin = pcr.boolean(subcatch)
-                    hand_pcr, dist_pcr = inun_lib.derive_HAND(terrain_pcr, drainage_pcr, 3000,
-                                                              rivers=pcr.boolean(stream_ge), basin=basin)
+                        stream_ge, subcatch = inun_lib.subcatch_stream(drainage_pcr, hand_strahler, stream=stream_pcr) # generate streams
+                        # compute basins
+                        stream_ge_dummy, subcatch = inun_lib.subcatch_stream(drainage_pcr, options.catchment_strahler, stream=stream_pcr) # generate streams
+                        basin = pcr.boolean(subcatch)
+                        hand_pcr, dist_pcr = inun_lib.derive_HAND(terrain_pcr, drainage_pcr, 3000,
+                                                                  rivers=pcr.boolean(stream_ge), basin=basin)
                     # convert to numpy
                     hand = pcr.pcr2numpy(hand_pcr, -9999.)
                     # cut relevant part
@@ -543,7 +551,6 @@ def main():
         # compute river length in each cell
         riv_length = pcr.pcr2numpy(drain_length, 0) * riv_length_fact
         # riv_length_pcr = pcr.numpy2pcr(pcr.Scalar, riv_length, 0)
-
 
     flood_folder = os.path.join(options.dest_path, case_name)
     flood_vol_map = os.path.join(flood_folder, '{:s}_vol.tif'.format(os.path.split(options.flood_map)[1].split('.')[0]))
@@ -621,6 +628,7 @@ def main():
     flood_vol = np.maximum(flood-bankfull, 0)
     if options.flood_volume_type == 0:
         flood_vol_m = riv_length*riv_width*flood_vol/cell_surface_wflow  # volume expressed in meters water disc
+        flood_vol_m_pcr = pcr.numpy2pcr(pcr.Scalar, flood_vol_m, 0)
     else:
         flood_vol_m = flood_vol/cell_surface_wflow
     flood_vol_m_data = flood_vol_m.data
@@ -657,7 +665,6 @@ def main():
             y_overlap_max = np.minimum(y_end + options.y_overlap, len(y)) - y_end
             x_tile_ax = x[x_start - x_overlap_min:x_end + x_overlap_max]
             y_tile_ax = y[y_start - y_overlap_min:y_end + y_overlap_max]
-
             # cut out DEM
             logger.debug('handling xmin: {:d} xmax: {:d} ymin {:d} ymax {:d}'.format(x_start, x_end, y_start, y_end))
 
@@ -689,6 +696,7 @@ def main():
                               gdal_type=gdal.GDT_Int32,
                               logging=logger)
 
+
             # read as pcr objects
             pcr.setclone(stream_temp_file)
             drainage_pcr = pcr.lddrepair(pcr.ldd(pcr.readmap(drainage_temp_file)))  # convert to ldd type map
@@ -697,6 +705,7 @@ def main():
             # warp of flood volume to inundation resolution
             inun_lib.gdal_warp(flood_vol_map, stream_temp_file, flood_vol_temp_file, gdal_interp=gdalconst.GRA_NearestNeighbour) # ,
             x_tile_ax, y_tile_ax, flood_meter, fill_value = inun_lib.gdal_readmap(flood_vol_temp_file, 'GTiff', logging=logger)
+            # make sure that the option unittrue is on !! (if unitcell was is used in another function)
             x_res_tile, y_res_tile, reallength = pcrut.detRealCellLength(pcr.scalar(stream_pcr), not(bool(options.latlon)))
             cell_surface_tile = pcr.pcr2numpy(x_res_tile * y_res_tile, 0)
 
@@ -730,7 +739,6 @@ def main():
 
                 stream_ge_hand, subcatch_hand = inun_lib.subcatch_stream(drainage_pcr, options.catchment_strahler, stream=stream_pcr)
                 # stream_ge_hand, subcatch_hand = inun_lib.subcatch_stream(drainage_pcr, hand_strahler, stream=stream_pcr)
-                # pcr.report(subcatch_hand, 'subcatch_hand.map')
                 stream_ge, subcatch = inun_lib.subcatch_stream(drainage_pcr,
                                                                options.catchment_strahler,
                                                                stream=stream_pcr,
@@ -739,10 +747,6 @@ def main():
                                                                min_strahler=hand_strahler,
                                                                max_strahler=hand_strahler) # generate subcatchments, only within basin for HAND
                 flood_vol_strahler = pcr.ifthenelse(pcr.boolean(pcr.cover(subcatch, 0)), flood_vol, 0) # mask the flood volume map with the created subcatch map for strahler order = hand_strahler
-                # pdb.set_trace()
-                # pcr.report(pcr.scalar(subcatch), 'subcatch_{:02d}.map'.format(hand_strahler))
-                # pcr.report(pcr.scalar(pcr.subcatchment(drainage_pcr, subcatch)), 'subcatch_upstream_{:02d}.map'.format(hand_strahler))
-
 
                 inundation_pcr_step = inun_lib.volume_spread(drainage_pcr, hand_pcr,
                                                              pcr.subcatchment(drainage_pcr, subcatch), # to make sure backwater effects can occur from higher order rivers to lower order rivers
@@ -752,7 +756,6 @@ def main():
                                                              cell_surface=pcr.numpy2pcr(pcr.Scalar, cell_surface_tile, -9999),
                                                              logging=logger,
                                                              order=hand_strahler) # 1166400000.
-                # pcr.report(inundation_pcr_step, 'inun_step_{:02d}.map'.format(hand_strahler))
                 # use maximum value of inundation_pcr_step and new inundation for higher strahler order
                 inundation_pcr = pcr.max(inundation_pcr, inundation_pcr_step)
             inundation = pcr.pcr2numpy(inundation_pcr, -9999.)

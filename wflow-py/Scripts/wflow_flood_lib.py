@@ -519,6 +519,7 @@ def volume_spread(ldd, hand, subcatch, volume, volume_thres=0., cell_surface=1.,
         dem_min = pcr.ifthenelse(error > 0, dem_av, dem_min)
         dem_max = pcr.ifthenelse(error <= 0, dem_av, dem_max)
     inundation = pcr.max(dem_av - dem_norm, 0)
+    pcr.setglobaloption('unittrue')
     return inundation
 
 def gdal_writemap(file_name, file_format, x, y, data, fill_val, zlib=False,
