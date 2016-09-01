@@ -114,10 +114,10 @@ class wflowbmi_light(object):
     def update(self, dt):
         """
         Return type string, compatible with numpy.
-        Propagate the model dt timesteps
+        Propagate the model dt  (in seconds)
         """
 
-        nrsteps = int(dt)
+        nrsteps = int(dt/self.dynModel.DT.timeStepSecs)
         self.bmilogger.debug("update: dt = " + str(dt))
         self.bmilogger.debug("update: update " + str(nrsteps) + " timesteps.")
         if nrsteps >= 1:

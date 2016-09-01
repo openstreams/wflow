@@ -11,7 +11,7 @@ Welcome to wflow's |version| documentation!
 
       http://wflow.readthedocs.org/en/latest/
 
-      Latest release (stable) version documentation:
+      Latest release (stable) version documentation
 
       http://wflow.readthedocs.org/en/stable/
 
@@ -29,8 +29,9 @@ Welcome to wflow's |version| documentation!
     + numpy
     + matplotlib
     + gdal
+    + pyproj
 
-    Alternatively you can use one of the releases (executable) to run the models withour installing python and the
+    Alternatively you can use one of the releases (executable) to run the models without installing python and the
     required packages:   https://github.com/openstreams/wflow/releases
 
 
@@ -89,8 +90,8 @@ linked as part of larger modelling systems:
     BMI [shape=square];
     "PI" [shape=square];
     dpi=69;
-    
-    
+
+
 .. note::
 
     wflow is part of the Deltares OpenStreams project
@@ -173,7 +174,7 @@ The wflow\_gr4 model
 .. toctree::
    :maxdepth: 2
 
-   wflow_gr4   
+   wflow_gr4
 
 The wflow\_W3RA model
 =====================
@@ -228,12 +229,12 @@ wflow modules and libraries
    wflow_lib
    wflow_delwaq
 
-   
+
 Examples and tests
 ==================
 .. toctree::
    :maxdepth: 2
-   
+
    testrunner_wflowhbv
    calib_report
 
@@ -255,7 +256,7 @@ Adding a new model using the framework
    framework
    wf_DynamicFramework
 
-   
+
 Release notes
 =============
 .. toctree::

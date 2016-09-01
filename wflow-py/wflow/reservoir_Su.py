@@ -176,16 +176,17 @@ def unsatZone_LP_beta_Ep(self,k):
     - Code for ini-file: 13
     """
     
+    #pdb.set_trace()
     JarvisCoefficients.calcEp(self,k)
-    self.PotEvaporation = self.EpHour
-
+    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0),0)  
+    
     self.Su[k] = ifthenelse(self.Su_t[k] + self.Pe > self.sumax[k], self.sumax[k], self.Su_t[k] + self.Pe) 
     self.Quadd = ifthenelse(self.Su_t[k] + self.Pe > self.sumax[k], self.Su_t[k] + self.Pe - self.sumax[k], 0)
     self.SuN = self.Su[k] / self.sumax[k]
     self.SiN = self.Si[k] / self.imax[k]    
     
     self.Eu1 = max((self.PotEvaporation - self.Ei),0) * min(self.Su[k] / (self.sumax[k] * self.LP[k]),1)
-        
+    
     self.Qu1 = (self.Pe - self.Quadd) * (1 - (1 - self.SuN) ** self.beta[k])
     self.Perc1 = self.perc[k] * self.SuN
     self.Su[k] = self.Su_t[k] + (self.Pe - self.Quadd) - self.Qu1 - self.Eu1 - self.Perc1
@@ -209,7 +210,201 @@ def unsatZone_LP_beta_Ep(self,k):
     self.Perc_[k] = self.Perc
 #    self.Su_diff_[k] = self.Su_diff
 #    self.Quadd_[k] = self.Quadd
+    self.Epot_[k] = self.PotEvaporation
+
+def unsatZone_LP_beta_Ep_Ei(self,k):
+    """
+    - Potential evaporation is calculated with formula in 'JarvisCoefficients', but without
+    using the Jarvis stress functions
+    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Formula for evaporation linear until LP, from than with potential rate
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato
+    - Qu is determined with a beta function (same as in HBV?)
+    - Code for ini-file: 13
+    """
     
+    #pdb.set_trace()
+    JarvisCoefficients.calcEp(self,k)
+    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0),0)  
+    
+    self.Su[k] = ifthenelse(self.Su_t[k] + self.Pe > self.sumax[k], self.sumax[k], self.Su_t[k] + self.Pe) 
+    self.Quadd = ifthenelse(self.Su_t[k] + self.Pe > self.sumax[k], self.Su_t[k] + self.Pe - self.sumax[k], 0)
+    self.SuN = self.Su[k] / self.sumax[k]
+    self.SiN = self.Si[k] / self.imax[k]    
+    
+    self.Eu1 = ifthenelse(self.SiN == 1, 0, max((self.PotEvaporation),0) * min(self.Su[k] / (self.sumax[k] * self.LP[k]),1))
+#    self.Eu1 = max((self.PotEvaporation),0) * min(self.Su[k] / (self.sumax[k] * self.LP[k]),1)
+    
+    self.Qu1 = (self.Pe - self.Quadd) * (1 - (1 - self.SuN) ** self.beta[k])
+    self.Perc1 = self.perc[k] * self.SuN
+    self.Su[k] = self.Su_t[k] + (self.Pe - self.Quadd) - self.Qu1 - self.Eu1 - self.Perc1
+
+    self.Su_diff = ifthenelse(self.Su[k] < 0, self.Su[k], 0)
+    self.Eu = self.Eu1 + (self.Eu1 / ifthenelse(self.Qu1 + self.Eu1 +self.Perc1 > 0 , self.Qu1 + self.Eu1 + self.Perc1 , 1)) * self.Su_diff
+    self.Qu = self.Qu1 + (self.Qu1/ifthenelse(self.Qu1 + self.Eu1 + self.Perc1 > 0 , self.Qu1 + self.Eu1 + self.Perc1 , 1)) * self.Su_diff
+    self.Perc = ifthenelse (self.Perc1 > 0, self.Perc1 + (self.Perc1/ifthenelse(self.Qu1 + self.Eu1 + self.Perc1 > 0 , self.Qu1 + self.Eu1 + self.Perc1 , 1)) * self.Su_diff, self.Perc1)
+    self.Su[k] = self.Su_t[k] + (self.Pe - self.Quadd) - self.Eu - self.Qu - self.Perc   
+    self.Su[k] = ifthenelse(self.Su[k] < 0, 0 , self.Su[k])    
+    self.Su_diff2 = ifthen(self.Su[k] < 0, self.Su[k]) 
+
+    self.Cap = min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)    
+    self.Su[k] = self.Su[k] + self.Cap    
+    
+    self.wbSu_[k] = self.Pe - self.Eu - self.Qu - self.Quadd - self.Perc + self. Cap - self.Su[k] + self.Su_t[k]
+    
+    self.Eu_[k] = self.Eu
+    self.Qu_[k] = self.Qu + self.Quadd
+    self.Cap_[k] = self.Cap
+    self.Perc_[k] = self.Perc
+#    self.Su_diff_[k] = self.Su_diff
+#    self.Quadd_[k] = self.Quadd
+    self.Epot_[k] = self.PotEvaporation
+
+def unsatZone_LP_beta_Ep_percD(self,k):
+    """
+    - Potential evaporation is calculated with formula in 'JarvisCoefficients', but without
+    using the Jarvis stress functions
+    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Formula for evaporation linear until LP, from than with potential rate
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato
+    - Qu is determined with a beta function (same as in HBV?)
+    - Code for ini-file: 13
+    """
+    
+    JarvisCoefficients.calcEp(self,k)
+    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0),0)  
+
+    self.Su[k] = ifthenelse(self.Su_t[k] + self.Pe > self.sumax[k], self.sumax[k], self.Su_t[k] + self.Pe) 
+    self.Quadd = ifthenelse(self.Su_t[k] + self.Pe > self.sumax[k], self.Su_t[k] + self.Pe - self.sumax[k], 0)
+    self.SuN = self.Su[k] / self.sumax[k]
+    self.SiN = self.Si[k] / self.imax[k]    
+    
+    self.Eu1 = max((self.PotEvaporation - self.Ei),0) * min(self.Su[k] / (self.sumax[k] * self.LP[k]),1)
+    
+    self.percDeep = self.percD[-1]
+    self.Qu1 = (self.Pe - self.Quadd) * (1 - (1 - self.SuN) ** self.beta[k])
+    self.Perc1 = self.perc[k] * self.SuN + self.percDeep
+    self.Su[k] = self.Su_t[k] + (self.Pe - self.Quadd) - self.Qu1 - self.Eu1 - self.Perc1
+
+    self.Su_diff = ifthenelse(self.Su[k] < 0, self.Su[k], 0)
+    self.Eu = self.Eu1 + (self.Eu1 / ifthenelse(self.Qu1 + self.Eu1 +self.Perc1 > 0 , self.Qu1 + self.Eu1 + self.Perc1 , 1)) * self.Su_diff
+    self.Qu = self.Qu1 + (self.Qu1/ifthenelse(self.Qu1 + self.Eu1 + self.Perc1 > 0 , self.Qu1 + self.Eu1 + self.Perc1 , 1)) * self.Su_diff
+    self.Perc = ifthenelse (self.Perc1 > 0, self.Perc1 + (self.Perc1/ifthenelse(self.Qu1 + self.Eu1 + self.Perc1 > 0 , self.Qu1 + self.Eu1 + self.Perc1 , 1)) * self.Su_diff, self.Perc1)
+    self.Su[k] = self.Su_t[k] + (self.Pe - self.Quadd) - self.Eu - self.Qu - self.Perc   
+    self.Su[k] = ifthenelse(self.Su[k] < 0, 0 , self.Su[k])    
+    self.Su_diff2 = ifthen(self.Su[k] < 0, self.Su[k]) 
+
+    self.Cap = min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)    
+    self.Su[k] = self.Su[k] + self.Cap    
+    
+    self.wbSu_[k] = self.Pe - self.Eu - self.Qu - self.Quadd - self.Perc + self. Cap - self.Su[k] + self.Su_t[k]
+    
+    self.Eu_[k] = self.Eu
+    self.Qu_[k] = self.Qu + self.Quadd
+    self.Cap_[k] = self.Cap
+    self.Perc_[k] = self.Perc
+    self.Epot_[k] = self.PotEvaporation
+    
+def unsatZone_LP_beta_Ep_percD(self,k):
+    """
+    - Potential evaporation is calculated with formula in 'JarvisCoefficients', but without
+    using the Jarvis stress functions
+    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Formula for evaporation linear until LP, from than with potential rate
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato
+    - Qu is determined with a beta function (same as in HBV?)
+    - Code for ini-file: 13
+    """
+    
+    JarvisCoefficients.calcEp(self,k)
+    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0),0)  
+
+    self.Su[k] = ifthenelse(self.Su_t[k] + self.Pe > self.sumax[k], self.sumax[k], self.Su_t[k] + self.Pe) 
+    self.Quadd = ifthenelse(self.Su_t[k] + self.Pe > self.sumax[k], self.Su_t[k] + self.Pe - self.sumax[k], 0)
+    self.SuN = self.Su[k] / self.sumax[k]
+    self.SiN = self.Si[k] / self.imax[k]    
+    
+    self.Eu1 = max((self.PotEvaporation - self.Ei),0) * min(self.Su[k] / (self.sumax[k] * self.LP[k]),1)
+    
+    self.percDeep = self.percD[-1]
+    self.Qu1 = (self.Pe - self.Quadd) * (1 - (1 - self.SuN) ** self.beta[k])
+    self.Perc1 = self.perc[k] * self.SuN + self.percDeep
+    self.Su[k] = self.Su_t[k] + (self.Pe - self.Quadd) - self.Qu1 - self.Eu1 - self.Perc1
+
+    self.Su_diff = ifthenelse(self.Su[k] < 0, self.Su[k], 0)
+    self.Eu = self.Eu1 + (self.Eu1 / ifthenelse(self.Qu1 + self.Eu1 +self.Perc1 > 0 , self.Qu1 + self.Eu1 + self.Perc1 , 1)) * self.Su_diff
+    self.Qu = self.Qu1 + (self.Qu1/ifthenelse(self.Qu1 + self.Eu1 + self.Perc1 > 0 , self.Qu1 + self.Eu1 + self.Perc1 , 1)) * self.Su_diff
+    self.Perc = ifthenelse (self.Perc1 > 0, self.Perc1 + (self.Perc1/ifthenelse(self.Qu1 + self.Eu1 + self.Perc1 > 0 , self.Qu1 + self.Eu1 + self.Perc1 , 1)) * self.Su_diff, self.Perc1)
+    self.Su[k] = self.Su_t[k] + (self.Pe - self.Quadd) - self.Eu - self.Qu - self.Perc   
+    self.Su[k] = ifthenelse(self.Su[k] < 0, 0 , self.Su[k])    
+    self.Su_diff2 = ifthen(self.Su[k] < 0, self.Su[k]) 
+
+    self.Cap = min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)    
+    self.Su[k] = self.Su[k] + self.Cap    
+    
+    self.wbSu_[k] = self.Pe - self.Eu - self.Qu - self.Quadd - self.Perc + self. Cap - self.Su[k] + self.Su_t[k]
+    
+    self.Eu_[k] = self.Eu
+    self.Qu_[k] = self.Qu + self.Quadd
+    self.Cap_[k] = self.Cap
+    self.Perc_[k] = self.Perc
+    self.Epot_[k] = self.PotEvaporation
+
+
+def unsatZone_LP_beta_Ep_percDvar(self,k):
+    """
+    - Potential evaporation is calculated with formula in 'JarvisCoefficients', but without
+    using the Jarvis stress functions
+    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Formula for evaporation linear until LP, from than with potential rate
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato
+    - Qu is determined with a beta function (same as in HBV?)
+    - Code for ini-file: 13
+    """
+    
+    JarvisCoefficients.calcEp(self,k)
+    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0),0)  
+    
+    self.Su[k] = ifthenelse(self.Su_t[k] + self.Pe > self.sumax[k], self.sumax[k], self.Su_t[k] + self.Pe) 
+    self.Quadd = ifthenelse(self.Su_t[k] + self.Pe > self.sumax[k], self.Su_t[k] + self.Pe - self.sumax[k], 0)
+    self.SuN = self.Su[k] / self.sumax[k]
+    self.SiN = self.Si[k] / self.imax[k]    
+
+    self.drought = ifthenelse(self.SuN < self.LP[k], self.TopoId, ifthenelse(pcrand(self.SuN < 0.8, self.drought), self.TopoId, boolean(scalar(self.TopoId) * 0)))
+    self.stijg = max(min(scalar(ifthenelse(self.drought == 1, self.stijg + self.Su_t[k] - self.Su_t2[k], 0)), self.sumax[k] * 100), 0)
+    
+    self.Eu1 = max((self.PotEvaporation - self.Ei),0) * min(self.Su[k] / (self.sumax[k] * self.LP[k]),1)
+    
+    self.Qu1 = (self.Pe - self.Quadd) * (1 - (1 - self.SuN) ** self.beta[k])
+#    self.percDeep = max(10 * (1 - self.Ss / 30) * self.perc[k], 0)
+    self.percDeep = 0.8 * self.stijg * self.perc[k]
+    self.Perc1 = self.perc[k] * self.SuN + self.percDeep
+    self.Su[k] = self.Su_t[k] + (self.Pe - self.Quadd) - self.Qu1 - self.Eu1 - self.Perc1
+
+    self.Su_diff = ifthenelse(self.Su[k] < 0, self.Su[k], 0)
+    self.Eu = self.Eu1 + (self.Eu1 / ifthenelse(self.Qu1 + self.Eu1 +self.Perc1 > 0 , self.Qu1 + self.Eu1 + self.Perc1 , 1)) * self.Su_diff
+    self.Qu = self.Qu1 + (self.Qu1/ifthenelse(self.Qu1 + self.Eu1 + self.Perc1 > 0 , self.Qu1 + self.Eu1 + self.Perc1 , 1)) * self.Su_diff
+    self.Perc = ifthenelse (self.Perc1 > 0, self.Perc1 + (self.Perc1/ifthenelse(self.Qu1 + self.Eu1 + self.Perc1 > 0 , self.Qu1 + self.Eu1 + self.Perc1 , 1)) * self.Su_diff, self.Perc1)
+    self.Su[k] = self.Su_t[k] + (self.Pe - self.Quadd) - self.Eu - self.Qu - self.Perc   
+    self.Su[k] = ifthenelse(self.Su[k] < 0, 0 , self.Su[k])    
+    self.Su_diff2 = ifthen(self.Su[k] < 0, self.Su[k]) 
+
+    self.Cap = min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)    
+    self.Su[k] = self.Su[k] + self.Cap    
+    
+    self.wbSu_[k] = self.Pe - self.Eu - self.Qu - self.Quadd - self.Perc + self. Cap - self.Su[k] + self.Su_t[k]
+    
+    self.Eu_[k] = self.Eu
+    self.Qu_[k] = self.Qu + self.Quadd
+    self.Cap_[k] = self.Cap
+    self.Perc_[k] = self.Perc
+    self.Epot_[k] = self.PotEvaporation
+    self.percDeep_[k] = self.percDeep
+
 def unsatZone_LP_beta_Ep_cropG(self,k):
     """
     - Potential evaporation is calculated with formula in 'JarvisCoefficients', but without
@@ -224,7 +419,7 @@ def unsatZone_LP_beta_Ep_cropG(self,k):
     """
     
     JarvisCoefficients.calcEp(self,k)
-    self.PotEvaporation = self.EpHour
+    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0),0)  
 
     self.cropG_scal = pcr2numpy(self.cropG,NaN)
     if any(self.cropG_scal == 1):
@@ -319,14 +514,14 @@ def unsatZone_forAgri_Ep(self,k):
     """
     
     JarvisCoefficients.calcEp(self,k)
-    self.PotEvaporation = self.EpHour
+    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0),0)  
 
     self.Su[k] = ifthenelse(self.Su_t[k] + self.Fa > self.sumax[k], self.sumax[k], self.Su_t[k] + self.Fa) 
     self.Quadd = ifthenelse(self.Su_t[k] + self.Fa > self.sumax[k], self.Su_t[k] + self.Fa - self.sumax[k], 0)
     self.SuN = self.Su[k] / self.sumax[k]
     self.SiN = self.Si[k] / self.imax[k]    
     
-    self.Eu1 = max((self.PotEvaporation - self.Ei - self.Ea),0) * min(self.Su[k] / (self.sumax[k] * self.LP[k]),1)        
+    self.Eu1 = ifthenelse(self.Ft_[k] == 1, max((self.PotEvaporation - self.Ei - self.Ea),0) * min(self.Su[k] / (self.sumax[k] * self.LP[k]),1), 0)         # no transpiration in case of frozen soil. Added on 22 feb 2016        
     
     self.Qu1 = (self.Fa - self.Quadd) * (1 - (1 - self.SuN) ** self.beta[k])
     self.Perc1 = self.perc[k] * self.SuN
@@ -349,7 +544,143 @@ def unsatZone_forAgri_Ep(self,k):
     self.Qu_[k] = self.Qu + self.Quadd
     self.Cap_[k] = self.Cap
     self.Perc_[k] = self.Perc
+
+def unsatZone_forAgri_Ep_percD(self,k):
+    """
+    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Formula for evaporation based on beta/LP
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is 
+    no longer taken into account for this correction
+    - Qu is determined with a beta function (same as in HBV?)
+    - inflow is infiltration from agriculture reservoir
+    - Code for ini-file: 17
+    """
     
+    JarvisCoefficients.calcEp(self,k)
+    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0),0)  
+
+    self.Su[k] = ifthenelse(self.Su_t[k] + self.Fa > self.sumax[k], self.sumax[k], self.Su_t[k] + self.Fa) 
+    self.Quadd = ifthenelse(self.Su_t[k] + self.Fa > self.sumax[k], self.Su_t[k] + self.Fa - self.sumax[k], 0)
+    self.SuN = self.Su[k] / self.sumax[k]
+    self.SiN = self.Si[k] / self.imax[k]    
+    
+    self.Eu1 = ifthenelse(self.Ft_[k] == 1, max((self.PotEvaporation - self.Ei - self.Ea),0) * min(self.Su[k] / (self.sumax[k] * self.LP[k]),1), 0)         # no transpiration in case of frozen soil. Added on 22 feb 2016        
+    
+    self.percDeep = self.percD[-1]
+    self.Qu1 = (self.Fa - self.Quadd) * (1 - (1 - self.SuN) ** self.beta[k])
+    self.Perc1 = self.perc[k] * self.SuN + self.percDeep
+    self.Su[k] = self.Su_t[k] + (self.Fa - self.Quadd) - self.Qu1 - self.Eu - self.Perc1
+
+    self.Su_diff = ifthenelse(self.Su[k] < 0, self.Su[k], 0)
+    self.Eu = self.Eu1 + (self.Eu1 / ifthenelse(self.Qu1 + self.Eu1 + self.Perc1 > 0 , self.Qu1 + self.Eu1 + self.Perc1 , 1)) * self.Su_diff
+    self.Qu = self.Qu1 + (self.Qu1 / ifthenelse(self.Qu1 + self.Eu1 + self.Perc1 > 0 , self.Qu1 + self.Eu1 + self.Perc1 , 1)) * self.Su_diff
+    self.Perc = ifthenelse (self.Perc1 > 0, self.Perc1 + (self.Perc1 / ifthenelse(self.Qu1 + self.Eu1 + self.Perc1 > 0 , self.Qu1 + self.Eu1 + self.Perc1 , 1)) * self.Su_diff, self.Perc1)
+    self.Su[k] = self.Su_t[k] + (self.Fa - self.Quadd) - self.Eu - self.Qu - self.Perc   
+    self.Su[k] = ifthenelse(self.Su[k] < 0, 0 , self.Su[k])    
+    self.Su_diff2 = ifthen(self.Su[k] < 0, self.Su[k]) 
+
+    self.Cap = min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)    
+    self.Su[k] = self.Su[k] + self.Cap    
+    
+    self.wbSu_[k] = self.Fa - self.Eu - self.Qu - self.Quadd - self.Perc + self. Cap - self.Su[k] + self.Su_t[k]
+    
+    self.Eu_[k] = self.Eu
+    self.Qu_[k] = self.Qu + self.Quadd
+    self.Cap_[k] = self.Cap
+    self.Perc_[k] = self.Perc
+
+def unsatZone_forAgri_Ep_percDvar(self,k):
+    """
+    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Formula for evaporation based on beta/LP
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is 
+    no longer taken into account for this correction
+    - Qu is determined with a beta function (same as in HBV?)
+    - inflow is infiltration from agriculture reservoir
+    - Code for ini-file: 17
+    """
+    
+    JarvisCoefficients.calcEp(self,k)
+    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0),0)  
+
+    self.Su[k] = ifthenelse(self.Su_t[k] + self.Fa > self.sumax[k], self.sumax[k], self.Su_t[k] + self.Fa) 
+    self.Quadd = ifthenelse(self.Su_t[k] + self.Fa > self.sumax[k], self.Su_t[k] + self.Fa - self.sumax[k], 0)
+    self.SuN = self.Su[k] / self.sumax[k]
+    self.SiN = self.Si[k] / self.imax[k]    
+    
+    self.drought = ifthenelse(self.SuN < self.LP[k], self.TopoId, ifthenelse(pcrand(self.SuN < 0.8, self.drought), self.TopoId, boolean(scalar(self.TopoId) * 0)))
+    self.stijg = max(min(scalar(ifthenelse(self.drought == 1, self.stijg + self.Su_t[k] - self.Su_t2[k], 0)), self.sumax[k] * 100), 0)    
+#    self.stijg = max(self.Su_t[k] - self.Su_t2[k], 0)    
+    
+    self.Eu1 = ifthenelse(self.Ft_[k] == 1, max((self.PotEvaporation - self.Ei - self.Ea),0) * min(self.Su[k] / (self.sumax[k] * self.LP[k]),1), 0)         # no transpiration in case of frozen soil. Added on 22 feb 2016        
+    
+    self.percDeep = 0.8 * self.stijg * self.perc[k]
+    self.Qu1 = (self.Fa - self.Quadd) * (1 - (1 - self.SuN) ** self.beta[k])
+    self.Perc1 = self.perc[k] * self.SuN + self.percDeep
+    self.Su[k] = self.Su_t[k] + (self.Fa - self.Quadd) - self.Qu1 - self.Eu - self.Perc1
+
+    self.Su_diff = ifthenelse(self.Su[k] < 0, self.Su[k], 0)
+    self.Eu = self.Eu1 + (self.Eu1 / ifthenelse(self.Qu1 + self.Eu1 + self.Perc1 > 0 , self.Qu1 + self.Eu1 + self.Perc1 , 1)) * self.Su_diff
+    self.Qu = self.Qu1 + (self.Qu1 / ifthenelse(self.Qu1 + self.Eu1 + self.Perc1 > 0 , self.Qu1 + self.Eu1 + self.Perc1 , 1)) * self.Su_diff
+    self.Perc = ifthenelse (self.Perc1 > 0, self.Perc1 + (self.Perc1 / ifthenelse(self.Qu1 + self.Eu1 + self.Perc1 > 0 , self.Qu1 + self.Eu1 + self.Perc1 , 1)) * self.Su_diff, self.Perc1)
+    self.Su[k] = self.Su_t[k] + (self.Fa - self.Quadd) - self.Eu - self.Qu - self.Perc   
+    self.Su[k] = ifthenelse(self.Su[k] < 0, 0 , self.Su[k])    
+    self.Su_diff2 = ifthen(self.Su[k] < 0, self.Su[k]) 
+
+    self.Cap = min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)    
+    self.Su[k] = self.Su[k] + self.Cap    
+    
+    self.wbSu_[k] = self.Fa - self.Eu - self.Qu - self.Quadd - self.Perc + self. Cap - self.Su[k] + self.Su_t[k]
+    
+    self.Eu_[k] = self.Eu
+    self.Qu_[k] = self.Qu + self.Quadd
+    self.Cap_[k] = self.Cap
+    self.Perc_[k] = self.Perc
+
+def unsatZone_forAgri_hourlyEp(self,k):
+    """
+    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Formula for evaporation based on beta/LP
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is 
+    no longer taken into account for this correction
+    - Qu is determined with a beta function (same as in HBV?)
+    - inflow is infiltration from agriculture reservoir
+    - Code for ini-file: 25
+    """
+    
+    self.Su[k] = ifthenelse(self.Su_t[k] + self.Fa > self.sumax[k], self.sumax[k], self.Su_t[k] + self.Fa) 
+    self.Quadd = ifthenelse(self.Su_t[k] + self.Fa > self.sumax[k], self.Su_t[k] + self.Fa - self.sumax[k], 0)
+    self.SuN = self.Su[k] / self.sumax[k]
+    self.SiN = self.Si[k] / self.imax[k]    
+    
+    self.Eu1 = ifthenelse(self.Ft_[k] == 1, max((self.PotEvaporation - self.Ei - self.Ea),0) * min(self.Su[k] / (self.sumax[k] * self.LP[k]),1), 0)         # no transpiration in case of frozen soil. Added on 31 mrt 2016        
+    
+    self.Qu1 = (self.Fa - self.Quadd) * (1 - (1 - self.SuN) ** self.beta[k])
+    self.Perc1 = self.perc[k] * self.SuN
+    self.Su[k] = self.Su_t[k] + (self.Fa - self.Quadd) - self.Qu1 - self.Eu - self.Perc1
+
+    self.Su_diff = ifthenelse(self.Su[k] < 0, self.Su[k], 0)
+    self.Eu = self.Eu1 + (self.Eu1 / ifthenelse(self.Qu1 + self.Eu1 + self.Perc1 > 0 , self.Qu1 + self.Eu1 + self.Perc1 , 1)) * self.Su_diff
+    self.Qu = self.Qu1 + (self.Qu1 / ifthenelse(self.Qu1 + self.Eu1 + self.Perc1 > 0 , self.Qu1 + self.Eu1 + self.Perc1 , 1)) * self.Su_diff
+    self.Perc = ifthenelse (self.Perc1 > 0, self.Perc1 + (self.Perc1 / ifthenelse(self.Qu1 + self.Eu1 + self.Perc1 > 0 , self.Qu1 + self.Eu1 + self.Perc1 , 1)) * self.Su_diff, self.Perc1)
+    self.Su[k] = self.Su_t[k] + (self.Fa - self.Quadd) - self.Eu - self.Qu - self.Perc   
+    self.Su[k] = ifthenelse(self.Su[k] < 0, 0 , self.Su[k])    
+    self.Su_diff2 = ifthen(self.Su[k] < 0, self.Su[k]) 
+
+    self.Cap = min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)    
+    self.Su[k] = self.Su[k] + self.Cap    
+    
+    self.wbSu_[k] = self.Fa - self.Eu - self.Qu - self.Quadd - self.Perc + self. Cap - self.Su[k] + self.Su_t[k]
+    
+    self.Eu_[k] = self.Eu
+    self.Qu_[k] = self.Qu + self.Quadd
+    self.Cap_[k] = self.Cap
+    self.Perc_[k] = self.Perc
+
+
 def unsatZone_forAgri_Jarvis_cropG(self,k):
     """
     - Potential evaporation is decreased by energy used for interception evaporation    
@@ -410,7 +741,7 @@ def unsatZone_forAgri_Ep_cropG(self,k):
     """
     
     JarvisCoefficients.calcEp(self,k)
-    self.PotEvaporation = self.EpHour
+    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0),0)  
     
     self.cropG_scal = pcr2numpy(self.cropG,NaN)
     if any(self.cropG_scal == 1):
@@ -506,7 +837,7 @@ def unsatZone_withAgri_Ep(self,k):
     """
 
     JarvisCoefficients.calcEp(self,k)
-    self.PotEvaporation = self.EpHour
+    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0),0)  
 
     self.Sa[k] = ifthenelse(self.Sa_t[k] + self.Pe > self.samax[k], self.samax[k], self.Sa_t[k] + self.Pe) 
     self.Qaadd = ifthenelse(self.Sa_t[k] + self.Pe > self.samax[k], self.Sa_t[k] + self.Pe - self.samax[k], 0)    

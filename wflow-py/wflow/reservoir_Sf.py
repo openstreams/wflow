@@ -75,8 +75,8 @@ def fastRunoff_lag2(self, k):
             self.Qf = self.Sf[k] * self.Kf[k]                
             self.Sf[k] = self.Sf[k] + self.QfinLag - self.Qf
                 
-            self.convQu[k].insert(0, 0 * scalar(self.TopoId))            #convolution Qu for following time steps
-            self.Tfmap = self.Tf[k] * scalar(self.TopoId)
+            self.convQu[k].insert(0, 0 * scalar(self.catchArea))            #convolution Qu for following time steps
+            self.Tfmap = self.Tf[k] * scalar(self.catchArea)
             del self.convQu[k][-1]
             temp = [self.convQu[k][i] + (2/self.Tfmap-2/(self.Tfmap*(self.Tfmap+1))*(self.Tfmap-i))*self.Qfin for i in range(len(self.convQu[k]))]
             self.convQu[k] = temp
@@ -99,6 +99,7 @@ def fastRunoff_lag2(self, k):
     
     self.Qf_[k] = self.Qf
 #    self.QuA_[k] = self.Qu
+
 
 def fastRunoff_lag_forAgri_combined(self,k):
     """
@@ -127,8 +128,8 @@ def fastRunoff_lag_forAgri_combined(self,k):
             self.Qf = self.Sf[k] * self.Kf[k]                
             self.Sf[k] = self.Sf[k] + self.QfinLag - self.Qf
                 
-            self.convQu[k].insert(0, 0 * scalar(self.TopoId))            #convolution Qu for following time steps
-            self.Tfmap = self.Tf[k] * scalar(self.TopoId)
+            self.convQu[k].insert(0, 0 * scalar(self.catchArea))            #convolution Qu for following time steps
+            self.Tfmap = self.Tf[k] * scalar(self.catchArea)
             del self.convQu[k][-1]
             temp = [self.convQu[k][i] + (2/self.Tfmap-2/(self.Tfmap*(self.Tfmap+1))*(self.Tfmap-i))*self.Qfin for i in range(len(self.convQu[k]))]
             self.convQu[k] = temp
@@ -173,8 +174,8 @@ def fastRunoff_lag_agriDitch(self,k):
         self.Qfa = self.Sfa[k] * self.Kfa[k]                
         self.Sfa[k] = self.Sfa[k] + self.QfainLag - self.Qfa
             
-        self.convQa[k].insert(0, 0 * scalar(self.TopoId))            #convolution Qu for following time steps
-        self.Tfmap = self.Tfa[k] * scalar(self.TopoId)
+        self.convQa[k].insert(0, 0 * scalar(self.catchArea))            #convolution Qu for following time steps
+        self.Tfmap = self.Tfa[k] * scalar(self.catchArea)
         del self.convQa[k][-1]
         temp = [self.convQa[k][i] + (2/self.Tfmap-2/(self.Tfmap*(self.Tfmap+1))*(self.Tfmap-i))*self.Qfain for i in range(len(self.convQa[k]))]
         self.convQa[k] = temp
@@ -193,6 +194,47 @@ def fastRunoff_lag_agriDitch(self,k):
     
     self.Qfa_[k] = self.Qfa
     
+def fastRunoff_lag_agriDitch_reInfilt(self,k):
+    """
+    - Lag is applied before inflow into the fast reservoir 
+    - Lag formula is derived from Fenicia (2011)
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato
+    - not a semi analytical solution for Sf anymore
+    - very fast responding reservoir to represent fast drainage via roads and ditches
+    - Code for ini-file: 5
+    """
+
+    if self.FR_L:
+        self.Qa = areatotal(self.Qa_[k] * self.percentArea ,nominal(self.TopoId)) 
+    else:
+        self.Qa = self.Qa_[k]
+    
+    self.Qfain = self.Qa
+ 
+    if self.convQa[k]:
+        self.QfainLag = self.convQa[k][-1]
+        self.Qfa = self.Sfa[k] * self.Kfa[k]    
+        self.Percfa = ifthenelse(self.Ft_[k] == 1, self.Sfa[k] * self.perc[k] * 200, 0)
+        self.Sfa[k] = self.Sfa[k] + self.QfainLag - self.Qfa - self.Percfa
+            
+        self.convQa[k].insert(0, 0 * scalar(self.catchArea))            #convolution Qu for following time steps
+        self.Tfmap = self.Tfa[k] * scalar(self.catchArea)
+        del self.convQa[k][-1]
+        temp = [self.convQa[k][i] + (2/self.Tfmap-2/(self.Tfmap*(self.Tfmap+1))*(self.Tfmap-i))*self.Qfain for i in range(len(self.convQa[k]))]
+        self.convQa[k] = temp
+        
+            
+    else:
+        self.Qfa = self.Sfa[k] * self.Kfa[k] 
+        self.Percfa = ifthenelse(self.Ft_[k] == 1, self.Sfa[k] * self.perc[k] * 200, 0)               
+        self.Sfa[k] = self.Sfa[k] + self.Qfain - self.Qfa - self.Percfa
+            
+    self.wbSfa_[k] = self.Qfain - self.Qfa - self.Sfa[k] + self.Sfa_t[k] - sum(self.convQa[k]) + sum(self.convQa_t[k]) - self.Percfa
+    
+    self.Qfa_[k] = self.Qfa
+    self.Percfa_[k] = self.Percfa
+    
 def routingQf_combined(self):       
     """
     - Routing of fluxes from fast reservoir 
@@ -202,12 +244,12 @@ def routingQf_combined(self):
            
     if nansum(pcr2numpy(self.Transit,NaN)) > 0:
         self.Qflag = self.trackQ[0]  # first bucket is transferred to outlet
-        self.trackQ.append(0 * scalar(self.TopoId))  # add new bucket for present time step
+        self.trackQ.append(0 * scalar(self.catchArea))  # add new bucket for present time step
         del self.trackQ[0]  # remove first bucket (transferred to outlet)
-        temp = [self.trackQ[i] + ifthenelse(rounddown(self.Transit) == i*scalar(self.TopoId),
-                                            (self.Transit - i*scalar(self.TopoId)) * self.Qftotal / 1000 * self.surfaceArea,
-                                            ifthenelse(roundup(self.Transit) == i*scalar(self.TopoId),
-                                                       (i*scalar(self.TopoId) - self.Transit) * self.Qftotal / 1000 * self.surfaceArea, 0)) for i in range(len(self.trackQ))]
+        temp = [self.trackQ[i] + ifthenelse(rounddown(self.Transit) == i*scalar(self.catchArea),
+                                            (self.Transit - i*scalar(self.catchArea)) * self.Qftotal / 1000 * self.surfaceArea,
+                                            ifthenelse(roundup(self.Transit) == i*scalar(self.catchArea),
+                                                       (i*scalar(self.catchArea) - self.Transit) * self.Qftotal / 1000 * self.surfaceArea, 0)) for i in range(len(self.trackQ))]
         self.trackQ = temp    
     
     else:
@@ -228,7 +270,29 @@ def routingQf_Qs_grid(self):
     """
     self.Qtot = self.Qftotal + self.Qs_  # total local discharge in mm/hour
     self.Qtotal = self.Qtot / 1000 * self.surfaceArea / self.timestepsecs  # total local discharge in m3/s
+    self.QtotNoRout = accuflux(self.TopoLdd, self.Qtotal)
     self.Qstate_t = self.Qstate
+    self.Qtest = self.Qstate + self.Qtotal
+    self.Qrout = accutraveltimeflux(self.TopoLdd, self.Qstate + self.Qtotal, self.velocity)
+    self.Qstate = accutraveltimestate(self.TopoLdd, self.Qstate + self.Qtotal, self.velocity)
+    
+    self.Qtlag = self.Qrout
+    self.QLagTot = self.Qrout
+    
+    # water balance of flux routing
+    self.dSdt = self.Qstate-self.Qstate_t
+    self.WB_rout = (accuflux(self.TopoLdd, self.Qtotal - self.dSdt)-self.Qrout)/accuflux(self.TopoLdd, self.Qtotal)
+    
+def routingQf_Qs_grid_mm(self):
+    """
+    - Routing of both Qf and Qs
+    - based on a velocity map
+    """
+    self.Qtot = self.Qftotal + self.Qs_  # total local discharge in mm/hour
+    self.Qtotal = self.Qtot
+    self.QtotNoRout = accuflux(self.TopoLdd, self.Qtotal)
+    self.Qstate_t = self.Qstate
+    self.Qtest = self.Qstate + self.Qtotal
     self.Qrout = accutraveltimeflux(self.TopoLdd, self.Qstate + self.Qtotal, self.velocity)
     self.Qstate = accutraveltimestate(self.TopoLdd, self.Qstate + self.Qtotal, self.velocity)
     

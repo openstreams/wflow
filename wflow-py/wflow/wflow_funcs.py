@@ -78,13 +78,13 @@ def rainfall_interception_gash(Cmax,EoverR,CanopyGapFraction, Precipitation, Can
     ThroughFall = Precipitation- Iwet - Idry- Isat - Itrunc - StemFlow
     Interception = Iwet + Idry + Isat + Itrunc
     
-    # No corect for area without any Interception (say open water Cmax -- zero)
+    # Non corect for area without any Interception (say open water Cmax -- zero)
     CmaxZero = Cmax <= 0.0
     ThroughFall=ifthenelse(CmaxZero, Precipitation,ThroughFall)
     Interception=ifthenelse(CmaxZero, scalar(0.0),Interception)
     StemFlow=ifthenelse(CmaxZero, scalar(0.0),StemFlow)
 
-    # Now corect for amximum potential evap
+    # Now corect for maximum potential evap
     OverEstimate = ifthenelse(Interception > maxevap,Interception - maxevap,scalar(0.0))
     Interception = min(Interception,maxevap)
     # Add surpluss to the thoughdfall

@@ -52,6 +52,10 @@ def selectSaR(i):
         name = 'agriZone_hourlyEp_Sa_beta_frost'
     elif i == 11:
         name = 'agriZone_hourlyEp_Sa_beta_frostSamax'
+    elif i == 12:
+        name = 'agriZone_Ep_Sa_beta_frostSamax'
+    elif i == 13:
+        name = 'agriZone_Ep_Sa_beta_frostSamax_surfTemp'
     return name
 
 def agriZone_no_reservoir(self, k):
@@ -82,7 +86,7 @@ def agriZone_Jarvis(self,k):
     """
     self.Qa = max(self.Pe - (self.samax[k] - self.Sa_t[k]),0)    
     self.Sa[k] = self.Sa_t[k] + (self.Pe - self.Qa)
-    self.SaN = self.Sa[k] / self.samax[k]
+    self.SaN = min(self.Sa[k] / self.samax2, 1)
     self.SuN = self.Su[k] / self.sumax[k]
     
     JarvisCoefficients.calcEu(self,k,1)           #calculation of Ea based on Jarvis stress functions
@@ -116,11 +120,11 @@ def agriZone_Ep(self,k):
     - Code for ini-file: 2
     """
     JarvisCoefficients.calcEp(self,k)
-    self.PotEvaporation = self.EpHour    
+    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0),0)  
     
     self.Qa = max(self.Pe - (self.samax[k] - self.Sa_t[k]),0)    
     self.Sa[k] = self.Sa_t[k] + (self.Pe - self.Qa)
-    self.SaN = self.Sa[k] / self.samax[k]
+    self.SaN = min(self.Sa[k] / self.samax2, 1)
     self.SuN = self.Su[k] / self.sumax[k]
     
     self.Ea1 = max((self.PotEvaporation - self.Ei),0) * min(self.Sa[k] / (self.samax[k] * self.LP[k]),1)        
@@ -153,11 +157,11 @@ def agriZone_Ep_Sa(self,k):
     - Code for ini-file: 3
     """
     JarvisCoefficients.calcEp(self,k)
-    self.PotEvaporation = self.EpHour    
+    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0),0)   
     
     self.Qa = max(self.Pe - (self.samax[k] - self.Sa_t[k]),0)    
     self.Sa[k] = self.Sa_t[k] + (self.Pe - self.Qa)
-    self.SaN = self.Sa[k] / self.samax[k]
+    self.SaN = min(self.Sa[k] / self.samax2, 1)
     self.SuN = self.Su[k] / self.sumax[k]
     
     self.Ea1 = max((self.PotEvaporation - self.Ei),0) * min(self.Sa[k] / (self.samax[k] * self.LP[k]),1)        
@@ -191,14 +195,14 @@ def agriZone_Ep_Sa_cropG(self,k):
     - Code for ini-file: 4
     """
     JarvisCoefficients.calcEp(self,k)
-    self.PotEvaporation = self.EpHour    
+    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0),0)   
     
     self.samax2 = self.samax[k] * self.cropG   
     self.Qaadd = max(self.Sa_t[k] - self.samax2,0)
     
     self.Qa = max(self.Pe - (self.samax2 - self.Sa_t[k]),0) + self.Qaadd
     self.Sa[k] = self.Sa_t[k] + (self.Pe - self.Qa)
-    self.SaN = self.Sa[k] / self.samax2
+    self.SaN = min(self.Sa[k] / self.samax2, 1)
     self.SuN = self.Su[k] / self.sumax[k]
     
     self.Ea1 = max((self.PotEvaporation - self.Ei),0) * min(self.Sa[k] / (self.samax2 * self.LP[k]),1)        
@@ -232,13 +236,13 @@ def agriZone_Ep_Sa_cropG_beta(self,k):
     """
 
     JarvisCoefficients.calcEp(self,k)
-    self.PotEvaporation = self.EpHour    
+    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0),0)   
     
     self.samax2 = self.samax[k] * self.cropG   
     self.Qaadd = max(self.Sa_t[k] + self.Pe - self.samax2,0)
     
     self.Sa[k] = self.Sa_t[k] + (self.Pe - self.Qaadd)
-    self.SaN = self.Sa[k] / self.samax2
+    self.SaN = min(self.Sa[k] / self.samax2, 1)
     self.SuN = self.Su[k] / self.sumax[k]
     
     self.Ea1 = max((self.PotEvaporation - self.Ei),0) * min(self.Sa[k] / (self.samax2 * self.LP[k]),1)        
@@ -276,11 +280,11 @@ def agriZone_Ep_Sa_beta(self,k):
     JarvisCoefficients.calcEp(self,k)
     self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0),0)
     
-    self.samax2 = self.samax[k] * scalar(self.TopoId)
+    self.samax2 = self.samax[k] * scalar(self.catchArea)
     self.Qaadd = max(self.Sa_t[k] + self.Pe - self.samax2,0)
     
     self.Sa[k] = self.Sa_t[k] + (self.Pe - self.Qaadd)
-    self.SaN = self.Sa[k] / self.samax2
+    self.SaN = min(max(self.Sa[k] / self.samax2, 0), 1)
     self.SuN = self.Su[k] / self.sumax[k]
     
     self.Ea1 = max((self.PotEvaporation - self.Ei),0) * min(self.Sa[k] / (self.samax2 * self.LP[k]),1)        
@@ -318,12 +322,12 @@ def agriZone_Ep_Sa_beta_frost(self,k):
     JarvisCoefficients.calcEp(self,k)
     self.PotEvaporation = self.EpHour    
     
-    self.samax2 = self.samax[k] * scalar(self.TopoId)
+    self.samax2 = self.samax[k] * scalar(self.catchArea)
     self.Qaadd = max(self.Sa_t[k] + self.Pe - self.samax2,0)
     self.FrDur[k] = min(self.FrDur[k] + (self.Tmean - 273.15) / 86400 * self.timestepsecs * self.dayDeg[k], 0)
     
     self.Sa[k] = self.Sa_t[k] + (self.Pe - self.Qaadd)
-    self.SaN = self.Sa[k] / self.samax2
+    self.SaN = min(self.Sa[k] / self.samax2, 1)
     self.SuN = self.Su[k] / self.sumax[k]
     
     self.Ea1 = max((self.PotEvaporation - self.Ei),0) * min(self.Sa[k] / (self.samax2 * self.LP[k]),1)        
@@ -364,12 +368,12 @@ def agriZone_hourlyEp_Sa_beta_frost(self,k):
     #JarvisCoefficients.calcEp(self,k)
     #self.PotEvaporation = self.EpHour    
     
-    self.samax2 = self.samax[k] * scalar(self.TopoId)
+    self.samax2 = self.samax[k] * scalar(self.catchArea)
     self.Qaadd = max(self.Sa_t[k] + self.Pe - self.samax2,0)
     self.FrDur[k] = min(self.FrDur[k] + (self.Temperature) / 86400 * self.timestepsecs * self.dayDeg[k], 0)
     
     self.Sa[k] = self.Sa_t[k] + (self.Pe - self.Qaadd)
-    self.SaN = self.Sa[k] / self.samax2
+    self.SaN = min(self.Sa[k] / self.samax2, 1)
     self.SuN = self.Su[k] / self.sumax[k]
     
     self.Ea1 = max((self.PotEvaporation - self.Ei),0) * min(self.Sa[k] / (self.samax2 * self.LP[k]),1)        
@@ -414,11 +418,11 @@ def agriZone_hourlyEp_Sa_beta_frostSamax(self,k):
     self.Ft = min(max(self.FrDur[k] / (self.FrDur1[k] - self.FrDur0[k]) - self.FrDur0[k] / (self.FrDur1[k] - self.FrDur0[k]), 0.1), 1)
     
     
-    self.samax2 = self.samax[k] * scalar(self.TopoId) * self.Ft
+    self.samax2 = self.samax[k] * scalar(self.catchArea) * self.Ft
     self.Qaadd = max(self.Sa_t[k] + self.Pe - self.samax2,0)
     
     self.Sa[k] = self.Sa_t[k] + (self.Pe - self.Qaadd)
-    self.SaN = self.Sa[k] / self.samax2
+    self.SaN = min(self.Sa[k] / self.samax2, 1)
     self.SuN = self.Su[k] / self.sumax[k]
     
     self.Ea1 = max((self.PotEvaporation - self.Ei),0) * min(self.Sa[k] / (self.samax2 * self.LP[k]),1)        
@@ -456,17 +460,64 @@ def agriZone_Ep_Sa_beta_frostSamax(self,k):
     """
 
     JarvisCoefficients.calcEp(self,k)
-    self.PotEvaporation = self.EpHour    
+    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0),0)   
      
-    self.FrDur[k] = min(self.FrDur[k] + ifthenelse(self.Temperature > 0, self.ratFT[k] * self.dayDeg[k] * self.Temperature, self.Temperature) * self.dayDeg[k], 0)
-    self.Ft = min(max(self.FrDur[k] / (self.FrDur1[k] - self.FrDur0[k]) - self.FrDur0[k] / (self.FrDur1[k] - self.FrDur0[k]), 0.05), 1)
+    self.FrDur[k] = min(self.FrDur[k] + ifthenelse(self.Temperature > 0, self.ratFT[k] * self.Temperature, self.Temperature) * self.dayDeg[k], 0)
+    self.Ft = min(max(self.FrDur[k] / (self.FrDur1[k] - self.FrDur0[k]) - self.FrDur0[k] / (self.FrDur1[k] - self.FrDur0[k]), self.samin[k]), 1)
     
-    
-    self.samax2 = self.samax[k] * scalar(self.TopoId) * self.Ft
+    self.samax2 = self.samax[k] * scalar(self.catchArea) * self.Ft
     self.Qaadd = max(self.Sa_t[k] + self.Pe - self.samax2,0)
     
     self.Sa[k] = self.Sa_t[k] + (self.Pe - self.Qaadd)
-    self.SaN = self.Sa[k] / self.samax2
+    self.SaN = min(self.Sa[k] / self.samax2, 1)
+    self.SuN = self.Su[k] / self.sumax[k]
+    
+    self.Ea1 = max((self.PotEvaporation - self.Ei),0) * min(self.Sa[k] / (self.samax2 * self.LP[k]),1)        
+    self.Qa1 = (self.Pe - self.Qaadd) * (1 - (1 - self.SaN) ** self.beta[k])
+    
+    self.Fa1 = ifthenelse(self.SaN > 0,self.Fmin[k] + (self.Fmax[k] - self.Fmin[k]) * e ** (-self.decF[k] * (1 - self.SaN)),0)
+    
+    self.Sa[k] = self.Sa_t[k] + (self.Pe - self.Qaadd) - self.Qa1 - self.Fa1 - self.Ea1
+
+    self.Sa_diff = ifthenelse(self.Sa[k] < 0, self.Sa[k], 0)
+    self.Qa = self.Qa1 + (self.Qa1/ifthenelse(self.Fa1 + self.Ea1 + self.Qa1 > 0, self.Fa1 + self.Ea1 + self.Qa1, 1)) * self.Sa_diff    
+    self.Fa = self.Fa1 + (self.Fa1/ifthenelse(self.Fa1 + self.Ea1 + self.Qa1 > 0, self.Fa1 + self.Ea1 + self.Qa1, 1)) * self.Sa_diff
+    self.Ea = self.Ea1 + (self.Ea1/ifthenelse(self.Fa1 + self.Ea1 + self.Qa1 > 0, self.Fa1 + self.Ea1 + self.Qa1, 1)) * self.Sa_diff
+    self.Sa[k] = self.Sa_t[k] + (self.Pe - self.Qaadd) - self.Ea - self.Fa - self.Qa
+    self.Sa[k] = ifthenelse(self.Sa[k] < 0, 0 , self.Sa[k])    
+    self.Sa_diff2 = ifthen(self.Sa[k] < 0, self.Sa[k]) 
+
+    self.wbSa_[k] = self.Pe - self.Ea - self.Qa - self.Qaadd - self.Fa - self.Sa[k] + self.Sa_t[k]
+    
+    self.Ea_[k] = self.Ea
+    self.Qa_[k] = self.Qa + self.Qaadd
+    self.Fa_[k] = self.Fa
+    self.Ft_[k] = self.Ft
+
+def agriZone_Ep_Sa_beta_frostSamax_surfTemp(self,k):
+    """
+    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Formula for evaporation based on LP
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is 
+    no longer taken into account for this correction
+    - Qa u is determined from overflow from Sa --> incorporation of beta function
+    - Fa is based on storage in Sa
+    - Fa is decreased in case of frozen soil
+    - Code for ini-file: 13
+    """
+
+    JarvisCoefficients.calcEp(self,k)
+    self.PotEvaporation = self.EpHour    
+     
+    self.FrDur[k] = min(self.FrDur[k] + ifthenelse(self.TempSurf > 0, self.ratFT[k] * self.TempSurf, self.TempSurf) * self.dayDeg[k], 0)
+    self.Ft = min(max(self.FrDur[k] / (self.FrDur1[k] - self.FrDur0[k]) - self.FrDur0[k] / (self.FrDur1[k] - self.FrDur0[k]), self.samin[k]), 1)
+    
+    self.samax2 = self.samax[k] * scalar(self.catchArea) * self.Ft
+    self.Qaadd = max(self.Sa_t[k] + self.Pe - self.samax2,0)
+    
+    self.Sa[k] = self.Sa_t[k] + (self.Pe - self.Qaadd)
+    self.SaN = min(self.Sa[k] / self.samax2, 1)
     self.SuN = self.Su[k] / self.sumax[k]
     
     self.Ea1 = max((self.PotEvaporation - self.Ei),0) * min(self.Sa[k] / (self.samax2 * self.LP[k]),1)        
@@ -506,11 +557,11 @@ def agriZone_Ep_Sa_beta_Fvar(self,k):
     JarvisCoefficients.calcEp(self,k)
     self.PotEvaporation = self.EpHour    
     
-    self.samax2 = self.samax[k] * scalar(self.TopoId)
+    self.samax2 = self.samax[k] * scalar(self.catchArea)
     self.Qaadd = max(self.Sa_t[k] + self.Pe - self.samax2,0)
     
     self.Sa[k] = self.Sa_t[k] + (self.Pe - self.Qaadd)
-    self.SaN = self.Sa[k] / self.samax2
+    self.SaN = min(self.Sa[k] / self.samax2, 1)
     self.SuN = self.Su[k] / self.sumax[k]
     
     self.Ea1 = max((self.PotEvaporation - self.Ei),0) * min(self.Sa[k] / (self.samax2 * self.LP[k]),1)        
@@ -547,11 +598,11 @@ def agriZone_hourlyEp_Sa_beta_Fvar(self,k):
 #    JarvisCoefficients.calcEp(self,k)
 #    self.PotEvaporation = self.EpHour    
     
-    self.samax2 = self.samax[k] * scalar(self.TopoId)
+    self.samax2 = self.samax[k] * scalar(self.catchArea)
     self.Qaadd = max(self.Sa_t[k] + self.Pe - self.samax2,0)
     
     self.Sa[k] = self.Sa_t[k] + (self.Pe - self.Qaadd)
-    self.SaN = self.Sa[k] / self.samax2
+    self.SaN = min(self.Sa[k] / self.samax2, 1)
     self.SuN = self.Su[k] / self.sumax[k]
     
     self.Ea1 = max((self.PotEvaporation - self.Ei),0) * min(self.Sa[k] / (self.samax2 * self.LP[k]),1)        

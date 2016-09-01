@@ -1,9 +1,16 @@
 Release notes
 =============
 
-Trunk
------
-Under heavy development
+2016.02
+-------
++ added better BMI support
++ added bmi2runner and wflow_bmi_combined
++ updated date/time framework
++ added wflow_topoflex model
++ added reservoir support to wflow_routing
++ added support for other functions apart from averaging in output of time series
++ wflow_delwaq support netCDF files
++ wflow_sbm2 updated
 
 
 2015.02

@@ -28,37 +28,39 @@ Binaries for windows
 For windows binaries check the releases (https://github.com/openstreams/wflow/releases). These can be used 
 if you do not have a python installation. However, it is recommended to install wflow as a python package (see below).
 
-Install as a python package
-===========================
+Install as a python package (windows quick install instructions)
+================================================================
 
-Assuming you have all supporting packages install installing a new wflow
-distribution entails running the setup.py script. This script follows
-the general python setup.py syntax. As such running:
+*Installing Anaconda (scientific python distribution)*
 
-./setup.py install
+Download Anaconda for python 2.7 64 bit (Tested with anaconda2 2.5.0). From the Anaconda installer choose the following options:
++ Install to c:\Anaconda
++ Register as default python
++ Add to path
 
-should install the package as part of your local python installation.
+Once Anaconda is installed open a command window and install netCDF4, gdal and pyproj using the following commands:
 
++ Conda install netCDF4
++ Conda install gdal=1.11
++ Conda install pyproj
 
-in order to run wflow requires the following packages:
+*Installing pcraster*
 
-+ netCDF4
-+ numpy
-+ matplotlib
-+ pcraster
-+ osgeo (GDAL=1.11)
-+ pyproj
++ Download pcraster from www.pcraster.eu website (version 4.1 64 bit)
++ Extract zip to root of c: This will created c:\pcraster-4.1.0_x86-64
++ Add c:\\pcraster-4.1.0_x86-64\\python to the PYTHONPATH environment variable
 
-The setup.py script will try to install these dependencies but it is best to make
-sure you have installed and tested those before running the setup.py script.
-Make sure to have 64 bit versions of all packages.
+*Installing wflow itself*
 
-Freezer
-=======
-The make_wflow_exe.py script builds a binary distribution of the models.
-You need the bbfreeze package installed to do this yourself.
+Clone with git or Download the latest zip with the source code of wflow. Go to the wflow-py directory and run:
 
++ python setup.py install
 
+To check it the install is successfull, go to the  the the examples directory and run the following command:
+
++ Python c:\\Anaconda\\scripts\\wflow_sbm.py -C wflow_rhine_hbv -T 100 -R testing 
+
+This should run without errors
 
 Credits
 =======

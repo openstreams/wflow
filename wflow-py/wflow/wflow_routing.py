@@ -108,61 +108,6 @@ class WflowModel(DynamicModel):
         self.SaveDir = os.path.join(self.Dir,self.runId)
 
 
-    def reallysimpelreservoir(self,storage,inflow,K, deadvolume):
-        """
-        :param storage: storage in m^3
-        :param deadvolume: dead storage in m^3
-        :param inflow: inflow in m^3/sec
-        :param K: reservoir constant -
-        :return storage, outflow: storage in m^3, outflow in m^3/sec
-        """
-        inflow = ifthen(boolean(self.ReserVoirLocs),inflow)
-        oldstorage = storage
-        storage = storage + (inflow * self.timestepsecs)
-        outflow = (((storage + oldstorage) * 0.5) - deadvolume) * K * self.timestepsecs/self.basetimestep
-        outflow = ifthen(boolean(self.ReserVoirLocs),outflow)
-        storage = storage - outflow
-        return storage, outflow/self.timestepsecs
-
-
-    def simpelreservoir(self,storage,inflow,maxstorage,target_perc_full,maximum_Q,demand,minimum_full_perc):
-        """
-
-        :param storage: initial storage m^3
-        :param inflow: inflow m^3/s
-        :param maxstorage: maximum storage (above which water is spilled) m^3
-        :param target_perc_full: target fraction full (of max storage) -
-        :param maximum_Q: maximum Q to release m^3/s if below spillway
-        :param demand: water demand (all combined) m^3/s
-        :param minimum_full_perc: target minimum full fraction (of max storage) -
-        :return: storage, outflow (m^3, m^3/s)
-        """
-
-        inflow = ifthen(boolean(self.ReserVoirLocs),inflow)
-        oldstorage = storage
-        storage = storage + (inflow * self.timestepsecs)
-        percfull = ((storage + oldstorage) * 0.5)/maxstorage
-        # first determine environmental flow using a simple sigmoid curve to scale for target level
-        fac = sCurve(percfull,a=minimum_full_perc,c=30.0)
-
-        demandRelease =fac * demand * self.timestepsecs
-
-        storage = storage - demandRelease
-
-        # Re-determine percfull
-        percfull = ((storage + oldstorage) * 0.5)/maxstorage
-
-        wantrel  =  max(0.0,storage - (maxstorage * target_perc_full) )
-        # Assume extra maximum Q if spilling
-        overflowQ = (percfull - 1.0) * (storage - maxstorage)
-        torelease = min(wantrel, overflowQ + maximum_Q * self.timestepsecs)
-        storage = storage - torelease
-        outflow = (torelease + demandRelease)/self.timestepsecs
-        percfull = storage/maxstorage
-
-        return storage, outflow, percfull, demandRelease/self.timestepsecs
-
-
     def wetPerimiterFP(self,Waterlevel, floodplainwidth,threshold=0.0,sharpness=0.5):
         """
 
@@ -267,6 +212,9 @@ class WflowModel(DynamicModel):
         if self.fewsrun:
             self.logger.info("Saving initial conditions for FEWS...")
             self.wf_suspend(self.Dir + "/outstate/")
+			
+
+
 
     def initial(self):
         """
@@ -292,6 +240,8 @@ class WflowModel(DynamicModel):
         self.logger.info("running for " + str(self.nrTimeSteps()) + " timesteps")
 
         # Set and get defaults from ConfigFile here ###################################
+        self.maxitsupply = int(configget(self.config, "model", "maxitsupply", "5"))
+        # max number of iteration in abstraction calculations
         self.reinit = int(configget(self.config, "model", "reinit", "0"))
         self.fewsrun = int(configget(self.config, "model", "fewsrun", "0"))
         self.OverWriteInit = int(configget(self.config, "model", "OverWriteInit", "0"))
@@ -332,6 +282,8 @@ class WflowModel(DynamicModel):
         wflow_soil = configget(self.config, "model", "wflow_soil", "staticmaps/wflow_soil.map")
 
         # 2: Input base maps ########################################################
+        self.instate = configget(self.config,"model","instate","instate")
+		
         subcatch = ordinal(self.wf_readmap(os.path.join(self.Dir,wflow_subcatch),0.0,fail=True))  # Determines the area of calculations (all cells > 0)
         subcatch = ifthen(subcatch > 0, subcatch)
 
@@ -377,6 +329,9 @@ class WflowModel(DynamicModel):
             self.TopoLddOrg = self.TopoLdd
             self.TopoLdd = lddrepair(cover(ifthen(boolean(self.ReserVoirLocs),ldd(5)), self.TopoLdd))
 
+        # Check if we have irrigation areas
+        tt = pcr2numpy(self.IrrigationAreas, 0.0)
+        self.nrirri = tt.max()
 
         self.Beta = scalar(0.6)  # For sheetflow
 
@@ -531,7 +486,12 @@ class WflowModel(DynamicModel):
         modelparameters.append(self.ParamType(name="ResMaxVolume",stack='intbl/ResMaxVolume.tbl',type="tblsparse",default=0.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
         modelparameters.append(self.ParamType(name="ResMaxRelease",stack='intbl/ResMaxRelease.tbl',type="tblsparse",default=1.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
         modelparameters.append(self.ParamType(name="ResDemand",stack='intbl/ResDemand.tbl',type="tblsparse",default=1.0,verbose=False,lookupmaps=['staticmaps/wflow_reservoirlocs.map']))
-
+        modelparameters.append(self.ParamType(name="IrrigationAreas", stack='staticmaps/wflow_irrigationareas.map',
+                                              type="staticmap", default=0.0, verbose=False, lookupmaps=[]))
+        modelparameters.append(self.ParamType(name="IrrigationSurfaceIntakes", stack='staticmaps/wflow_irrisurfaceintakes.map',
+                       type="staticmap", default=0.0, verbose=False, lookupmaps=[]))
+        modelparameters.append(self.ParamType(name="IrrigationSurfaceReturn", stack='staticmaps/wflow_irrisurfacereturns.map',
+                       type="staticmap", default=0.0, verbose=False, lookupmaps=[]))
 
         return modelparameters
 
@@ -546,7 +506,7 @@ class WflowModel(DynamicModel):
             self.ReservoirVolume = self.ResMaxVolume * self.ResTargetFullFrac
         else:
             self.logger.info("Setting initial conditions from state files")
-            self.wf_resume(os.path.join(self.Dir,"instate"))
+            self.wf_resume(os.path.join(self.Dir, self.instate))
 
         self.Pch = self.wetPerimiterCH(self.WaterLevelCH,self.Bw)
         self.Pfp =  ifthenelse(self.River,self.wetPerimiterFP(self.WaterLevelFP,self.floodPlainWidth,sharpness=self.floodPlainDist),0.0)
@@ -607,16 +567,39 @@ class WflowModel(DynamicModel):
 
         #only run the reservoir module if needed
         if self.nrres > 0:
-            self.ReservoirVolume, self.Outflow,self.ResPecrFull,self.DemandRelease = self.simpelreservoir(self.ReservoirVolume,self.SurfaceRunoff,
-                                                                      self.ResMaxVolume,self.ResTargetFullFrac,
-                                                                      self.ResMaxRelease, self.ResDemand,
-                                                                      self.ResTargetMinFrac)
+            self.ReservoirVolume, self.Outflow, self.ResPercFull,\
+            self.DemandRelease = simplereservoir(self.ReservoirVolume, self.SurfaceRunoff,\
+                                                 self.ResMaxVolume, self.ResTargetFullFrac,
+                                                 self.ResMaxRelease, self.ResDemand,
+                                                 self.ResTargetMinFrac, self.ReserVoirLocs,
+                                                 timestepsecs=self.timestepsecs)
             self.OutflowDwn = upstream(self.TopoLddOrg,cover(self.Outflow,scalar(0.0)))
-            self.Inflow = cover(self.OutflowDwn,self.Inflow)
+            self.Inflow = self.OutflowDwn + cover(self.Inflow,self.ZeroMap)
+        else:
+            self.Inflow= cover(self.Inflow,self.ZeroMap)
 
 
-        self.Inwater = self.Inwater + self.Inflow  # Add abstractions/inflows in m^3/sec
+        # Run only if we have irrigation areas or an externally given demand, determine irrigation demand based on potrans and acttrans
+        if self.nrirri > 0 or hasattr(self,"IrriDemandExternal"):
+            if not hasattr(self,"IrriDemandExternal"): # if not given
+                self.IrriDemand, self.IrriDemandm3 = self.irrigationdemand(self.PotTrans,self.Transpiration,self.IrrigationAreas)
+                IRDemand = idtoid(self.IrrigationAreas, self.IrrigationSurfaceIntakes, self.IrriDemandm3)  * -1.0
+            else:
+                IRDemand = self.IrriDemandExternal
+            # loop over irrigation areas and assign Q to linked river extraction points
+            self.Inflow = cover(IRDemand,self.Inflow)
 
+
+        # Check if we do not try to abstract more runoff then present
+        self.InflowKinWaveCell = upstream(self.TopoLdd, self.SurfaceRunoff)
+        # The extraction should be equal to the discharge upstream cell.
+        # You should not make the abstraction depended on the downstream cell, because they are correlated.
+        # During a stationary sum they will get equal to each other.
+        MaxExtract = self.InflowKinWaveCell + self.Inwater
+        self.SurfaceWaterSupply = ifthenelse (self.Inflow < 0.0 , min(MaxExtract,-1.0 * self.Inflow), self.ZeroMap)
+        self.OldSurfaceRunoff=self.SurfaceRunoff
+        self.OldInwater=self.Inwater
+        self.Inwater = self.Inwater + ifthenelse(self.SurfaceWaterSupply> 0, -1.0 * self.SurfaceWaterSupply,self.Inflow)
 
         ##########################################################################
         # Runoff calculation via Kinematic wave ##################################
@@ -626,10 +609,65 @@ class WflowModel(DynamicModel):
         # discharge (m3/s)
         self.SurfaceRunoff = kinematic(self.TopoLdd, self.SurfaceRunoff, q, self.Alpha, self.Beta, self.Tslice,
                                        self.timestepsecs, self.DCL)  # m3/s
-        self.SurfaceRunoffMM = self.SurfaceRunoff * self.QMMConv  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
-        self.updateRunOff()
+
         self.InflowKinWaveCell = upstream(self.TopoLdd, self.SurfaceRunoff)
-        self.MassBalKinWave = (-self.KinWaveVolume + self.OldKinWaveVolume) / self.timestepsecs + self.InflowKinWaveCell + self.Inwater - self.SurfaceRunoff
+
+        # If inflow is negative we have abstractions. Check if demand can be met (by looking
+        # at the flow in the upstream cell) and iterate if needed
+        self.nrit = 0
+        self.breakoff = 0.0001
+        if float(mapminimum(spatial(self.Inflow))) < 0.0:
+            while True:
+                self.nrit += 1
+                oldsup = self.SurfaceWaterSupply
+                self.InflowKinWaveCell = upstream(self.TopoLdd, self.SurfaceRunoff)
+                ##########################################################################
+                # Iterate to make a better estimation for the supply #####################
+                # (Runoff calculation via Kinematic wave) ################################
+                ##########################################################################
+                MaxExtract = self.InflowKinWaveCell + self.OldInwater
+                self.SurfaceWaterSupply = ifthenelse(self.Inflow < 0.0, min(MaxExtract, -1.0 * self.Inflow),\
+                                                      self.ZeroMap)
+                # Fraction of demand that is not used but flows back into the river get fracttion and move to return locations
+                self.DemandReturnFlow = cover(idtoid(self.IrrigationSurfaceIntakes,self.IrrigationSurfaceReturn,
+                                               self.DemandReturnFlowFraction * self.SurfaceWaterSupply),0.0)
+
+                self.Inwater = self.OldInwater + ifthenelse(self.SurfaceWaterSupply> 0, -1.0 * self.SurfaceWaterSupply,\
+                                                            self.Inflow) + self.DemandReturnFlow
+                # per distance along stream
+                q = self.Inwater / self.DCL
+                # discharge (m3/s)
+                self.SurfaceRunoff = kinematic(self.TopoLdd, self.OldSurfaceRunoff, q, self.Alpha, self.Beta, self.Tslice,
+                                               self.timestepsecs, self.DCL)  # m3/s
+                self.SurfaceRunoffMM = self.SurfaceRunoff * self.QMMConv  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
+
+                self.InflowKinWaveCell = upstream(self.TopoLdd, self.OldSurfaceRunoff)
+                deltasup = float(mapmaximum(abs(oldsup - self.SurfaceWaterSupply)))
+
+
+
+                if deltasup < self.breakoff or self.nrit >= self.maxitsupply:
+                    break
+
+            self.InflowKinWaveCell = upstream(self.TopoLdd, self.SurfaceRunoff)
+            self.updateRunOff()
+        else:
+            self.SurfaceRunoffMM = self.SurfaceRunoff * self.QMMConv  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
+            self.updateRunOff()
+
+        # Now add the supply that is linked to irrigation areas to extra precip
+        if self.nrirri > 0:
+            # loop over irrigation areas and spread-out the supply over the area
+            IRSupplymm = idtoid(self.IrrigationSurfaceIntakes, self.IrrigationAreas,
+                                self.SurfaceWaterSupply * (1 - self.DemandReturnFlowFraction))
+            sqmarea = areatotal(self.reallength * self.reallength, nominal(self.IrrigationAreas))
+
+            self.IRSupplymm = cover(IRSupplymm/ (sqmarea / 1000.0 / self.timestepsecs),0.0)
+
+        self.MassBalKinWave = (-self.KinWaveVolume + self.OldKinWaveVolume) / self.timestepsecs +\
+                                self.InflowKinWaveCell + self.Inwater - self.SurfaceRunoff
+
+
 
         Runoff = self.SurfaceRunoff
 
@@ -696,7 +734,7 @@ def main(argv=None):
     ## Process command-line options                                        #
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, 'F:L:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:')
+        opts, args = getopt.getopt(argv, 'F:L:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:g:')
     except getopt.error, msg:
         pcrut.usage(msg)
 
@@ -714,6 +752,7 @@ def main(argv=None):
         if o == '-h': usage()
         if o == '-f': _NoOverWrite = 0
         if o == '-l': exec "loglevel = logging." + a
+
 
     if fewsrun:
         ts = getTimeStepsfromRuninfo(runinfoFile, timestepsecs)
@@ -743,6 +782,8 @@ def main(argv=None):
         if o == '-s': configset(myModel.config, 'model', 'timestepsecs', a, overwrite=True)
         if o == '-x': configset(myModel.config, 'model', 'sCatch', a, overwrite=True)
         if o == '-c': configset(myModel.config, 'model', 'configfile', a, overwrite=True)
+        if o == '-g': configset(myModel.config,'model','instate',a,overwrite=True)
+
         if o == '-U':
             configset(myModel.config, 'model', 'updateFile', a, overwrite=True)
             configset(myModel.config, 'model', 'updating', "1", overwrite=True)

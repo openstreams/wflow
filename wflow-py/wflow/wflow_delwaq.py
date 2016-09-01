@@ -1141,7 +1141,8 @@ def dw_WriteHydFile(fname, d):
     f.write(buff)
     f.close()
 
-def read_timestep(nc, var, timestep):
+#TODO: fix this for pcraster maps
+def read_timestep(nc, var, timestep,logger):
     """
     Returns a map of the given variable at the given timestep.
     """
@@ -1352,7 +1353,7 @@ def main():
         
         for i in range(firstTimeStep,timeSteps * timestepsecs,timestepsecs):
 
-            volume_map = read_timestep(nc, 'vol', ts)
+            volume_map = read_timestep(nc, 'vol', ts,logger)
             volume_block = dw_pcrToDataBlock(volume_map)
             
             # volume for each timestep and number of segments
@@ -1362,12 +1363,12 @@ def main():
         
             # Now write the flows (exchnages)
             # First read the flows in the kinematic wave reservoir (internal exchnages)
-            flow = read_timestep(nc, 'run', ts)
+            flow = read_timestep(nc, 'run', ts,logger)
             flow_block_Q = dw_pcrToDataBlock(flow)
             # now the inw
             flowblock = flow_block_Q
             
-            wlevel = read_timestep(nc, 'lev', ts)
+            wlevel = read_timestep(nc, 'lev', ts,logger)
             areadyn = wlevel * internalflowwidth
             area_block_Q = dw_pcrToDataBlock(areadyn)
             area_block = area_block_Q
@@ -1376,7 +1377,7 @@ def main():
             # wave reservoir). Also write the areas
             for source in sourcesMap:
                 logger.info("Step: " + str(ts) + " source: " + str(source))
-                thesource = read_timestep(nc, source, ts)
+                thesource = read_timestep(nc, source, ts,logger)
                 thesource = zero_map + thesource
                 flow_block_IN = dw_pcrToDataBlock(thesource)
                 flowblock = hstack((flowblock,flow_block_IN))
@@ -1412,7 +1413,7 @@ def main():
         dw_WriteSegmentOrExchangeData(i,dwdir + '/includes_flow/flow.dat',flowblock,1,WriteAscii)
  
             
-        volume_map = read_timestep(nc, 'kwv', ts)
+        volume_map = read_timestep(nc, 'kwv', ts,logger)
         volume_block = dw_pcrToDataBlock(volume_map)
         logger.info("Writing volumes.dat. Nr of points: " + str(size(volume_block)))
         dw_WriteSegmentOrExchangeData(i,dwdir + '/includes_flow/volume.dat',volume_block,1,WriteAscii)

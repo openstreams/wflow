@@ -46,11 +46,70 @@ from osgeo.gdalconst import *
 from pcraster import *
 from pcraster.framework import *
 import scipy
+import numpy as np
 import netCDF4 as nc4
 import gzip, zipfile
 
 
+def idtoid(sourceidmap, targetidmap,valuemap):
+    """
+    tranfer the values from valuemap at the point id's in sourceidmap to the areas in targetidmap.
 
+    :param pointmap:
+    :param areamap:
+    :param valuemap:
+    :return:
+    """
+
+    _area = pcr2numpy(targetidmap,0.0).copy()
+    _pt = pcr2numpy(sourceidmap,0.0).copy()
+    _val = pcr2numpy(valuemap,0.0).copy()
+
+    for val in np.unique(_pt):
+        if val > 0:  #
+            _area[_area == val] = np.mean(_val[_pt == val])
+
+    retmap = numpy2pcr(Scalar,_area,0.0)
+
+    return retmap
+
+
+def simplereservoir(storage, inflow, maxstorage, target_perc_full, maximum_Q, demand, minimum_full_perc, ReserVoirLocs, timestepsecs=86400):
+    """
+
+    :param storage: initial storage m^3
+    :param inflow: inflow m^3/s
+    :param maxstorage: maximum storage (above which water is spilled) m^3
+    :param target_perc_full: target fraction full (of max storage) -
+    :param maximum_Q: maximum Q to release m^3/s if below spillway
+    :param demand: water demand (all combined) m^3/s
+    :param minimum_full_perc: target minimum full fraction (of max storage) -
+    :param ReserVoirLocs: map with reservoir locations
+    :param timestepsecs: timestep of the model in seconds (default = 86400)
+    :return: storage (m^3), outflow (m^3/s), PercentageFull (0-1), Release (m^3/sec)
+    """
+
+    inflow = ifthen(boolean(ReserVoirLocs), inflow)
+    oldstorage = storage
+    storage = storage + (inflow * timestepsecs)
+    percfull = ((storage + oldstorage) * 0.5) / maxstorage
+    # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
+    fac = sCurve(percfull, a=minimum_full_perc, c=30.0)
+    demandRelease = fac * demand * timestepsecs
+    storage = storage - demandRelease
+
+    # Re-determine percfull
+    percfull = ((storage + oldstorage) * 0.5) / maxstorage
+
+    wantrel = max(0.0, storage - (maxstorage * target_perc_full))
+    # Assume extra maximum Q if spilling
+    overflowQ = (percfull - 1.0) * (storage - maxstorage)
+    torelease = min(wantrel, overflowQ + maximum_Q * timestepsecs)
+    storage = storage - torelease
+    outflow = (torelease + demandRelease) / timestepsecs
+    percfull = storage / maxstorage
+
+    return storage, outflow, percfull, demandRelease/timestepsecs
 
 
 Verbose=0
@@ -141,7 +200,7 @@ def configset(config,section,var,value, overwrite=False):
 
 def configsection(config,section):
     """
-    gets the list of lesy in a section 
+    gets the list of keys in a section
     
     Input:
         - config
@@ -413,6 +472,7 @@ def areastat(Var,Area):
     
     return Sd,Avg,Max,Min
     
+
 
 
 def checkerboard(mapin,fcc):
@@ -725,7 +785,10 @@ def sCurve(X,a=0.0,b=1.0,c=1.0):
     Output:
         - result
     """
-    s = 1.0/(b + exp(-c * (X-a)))
+    try:
+        s = 1.0/(b + exp(-c * (X-a)))
+    except:
+        s = 1.0 / (b + np.exp(-c * (X - a)))
     return s
 
 def sCurveSlope(X,a=0.0,b=1.0,c=1.0):
@@ -825,7 +888,12 @@ def zipFiles(fileList, fileTarget):
 
 
 def readMap(fileName, fileFormat):
-    """ Read geographical file into memory
+    """
+    Read geographical file into memory
+
+    :param fileName:
+    :param fileFormat:
+    :return x, y, data, FillVal:
     """
     # Open file for binary-reading
     mapFormat = gdal.GetDriverByName(fileFormat)
@@ -852,6 +920,42 @@ def readMap(fileName, fileFormat):
     ds = None
     return x, y, data, FillVal
 
+
+def cutMapById(data,subcatchmap,id,x,y,FillVal):
+    """
+
+    :param data: 2d numpy array to cut
+    :param subcatchmap: 2d numpy array with subcatch
+    :param id: id (value in the array) to cut by
+    :param x: array with x values
+    :param y:  array with y values
+    :return: x,y, data
+    """
+
+
+    if len(data.flatten()) == len(subcatchmap.flatten()):
+        scid = subcatchmap == id
+        data[np.logical_not(scid)] = FillVal
+        xid, = np.where(scid.max(axis=0))
+        xmin = xid.min()
+        xmax = xid.max()
+        if xmin >= 1:
+            xmin = xmin -1
+        if xmax < len(x) -1:
+            xmax = xmax + 1
+
+        yid, = np.where(scid.max(axis=1))
+        ymin = yid.min()
+        ymax = yid.max()
+        if ymin >= 1:
+            ymin = ymin -1
+        if ymax < len(y) -1:
+            ymax = ymax + 1
+
+        return x[xmin:xmax].copy(), y[ymin:ymax].copy(), data[ymin:ymax, xmin:xmax].copy()
+    else:
+        return None, None, None
+
 def writeMap(fileName, fileFormat, x, y, data, FillVal):
     """ Write geographical data into file"""
 
@@ -864,7 +968,11 @@ def writeMap(fileName, fileFormat, x, y, data, FillVal):
     if verbose:
         print 'Writing to temporary file ' + fileName + '.tif'
     # Create Output filename from (FEWS) product name and data and open for writing
-    TempDataset = driver1.Create(fileName + '.tif',data.shape[1],data.shape[0],1,gdal.GDT_Float32)
+
+    if data.dtype == np.int32:
+        TempDataset = driver1.Create(fileName + '.tif', data.shape[1], data.shape[0], 1, gdal.GDT_Int32)
+    else:
+        TempDataset = driver1.Create(fileName + '.tif',data.shape[1],data.shape[0],1,gdal.GDT_Float32)
     # Give georeferences
     xul = x[0]-(x[1]-x[0])/2
     yul = y[0]+(y[0]-y[1])/2
@@ -887,3 +995,4 @@ def writeMap(fileName, fileFormat, x, y, data, FillVal):
 
     if verbose:
         print 'Writing to ' + fileName + ' is done!'
+

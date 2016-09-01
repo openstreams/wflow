@@ -15,6 +15,7 @@ List all function versions
 """
 
 import numpy
+import pdb
 from copy import copy as copylist
 
 try:
@@ -77,7 +78,164 @@ def snow(self,k):
     
     self.Ew_[k] = self.Ew
     self.Qw_[k] = self.Qw
-	
+    
+def snow_rain(self,k):
+    """
+    - snow melt based on degree day factor and minimum surface temperature
+    - meltfactor increases with temperature
+    - 
+    - Code for ini-file: 6
+    """
+   
+    JarvisCoefficients.calcEpSnow(self,k)
+    #self.PotEvaporation = self.EpHour
+    self.PotEvaporation = cover(ifthenelse(self.EpHour > 0, self.EpHour, 0),0)
+    
+    self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow
+    
+    self.Fm2 = max(self.Fm[k] * self.Precipitation, self.Fm[k])
+    self.Ew1 = max(min(self.PotEvaporation, self.Sw[k]),0)
+    self.Qw1 = max(min(self.Fm2 * (self.Temperature - self.Tm[k]), self.Sw[k]), 0)
+    
+    self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow - self.Ew1 - self.Qw1
+
+    self.Sw_diff = ifthenelse(self.Sw[k] < 0, self.Sw[k], 0)
+    self.Ew = self.Ew1 + (self.Ew1/ifthenelse(self.Ew1 + self.Qw1 > 0 , self.Ew1 + self.Qw1 , 1)) * self.Sw_diff
+    self.Qw = self.Qw1 + (self.Qw1/ifthenelse(self.Ew1 + self.Qw1 > 0 , self.Ew1 + self.Qw1 , 1)) * self.Sw_diff
+    self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow - self.Ew - self.Qw
+    self.Sw[k] = ifthenelse(self.Sw[k] < 0, 0 , self.Sw[k])    
+    self.Sw_diff2 = ifthen(self.Sw[k] < 0, self.Sw[k]) 
+
+    self.wbSw_[k] = self.PrecipitationSnow - self.Ew - self.Qw - self.Sw[k] + self.Sw_t[k]
+    
+    self.Ew_[k] = self.Ew
+    self.Qw_[k] = self.Qw
+
+def snow_rain_hourlyEp(self,k):
+    """
+    - snow melt based on degree day factor and minimum surface temperature
+    - meltfactor increases with temperature
+    - 
+    - Code for ini-file: 6
+    """
+   
+    JarvisCoefficients.calcEpSnowHour(self,k)
+    self.PotEvaporation = cover(ifthenelse(self.EpHour > 0, self.EpHour, 0),0)
+    
+    self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow
+    
+    self.Fm2 = max(self.Fm[k] * self.Precipitation, self.Fm[k])
+    self.Ew1 = max(min(self.PotEvaporation, self.Sw[k]),0)
+    self.Qw1 = max(min(self.Fm2 * (self.Temperature - self.Tm[k]), self.Sw[k]), 0)
+    
+    self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow - self.Ew1 - self.Qw1
+
+    self.Sw_diff = ifthenelse(self.Sw[k] < 0, self.Sw[k], 0)
+    self.Ew = self.Ew1 + (self.Ew1/ifthenelse(self.Ew1 + self.Qw1 > 0 , self.Ew1 + self.Qw1 , 1)) * self.Sw_diff
+    self.Qw = self.Qw1 + (self.Qw1/ifthenelse(self.Ew1 + self.Qw1 > 0 , self.Ew1 + self.Qw1 , 1)) * self.Sw_diff
+    self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow - self.Ew - self.Qw
+    self.Sw[k] = ifthenelse(self.Sw[k] < 0, 0 , self.Sw[k])    
+    self.Sw_diff2 = ifthen(self.Sw[k] < 0, self.Sw[k]) 
+
+    self.wbSw_[k] = self.PrecipitationSnow - self.Ew - self.Qw - self.Sw[k] + self.Sw_t[k]
+    
+    self.Ew_[k] = self.Ew
+    self.Qw_[k] = self.Qw
+
+def snow_rain_Tsurf(self,k):
+    """
+    - snow melt based on degree day factor and minimum surface temperature
+    - meltfactor increases with temperature
+    - 
+    - Code for ini-file: 3
+    """
+   
+    JarvisCoefficients.calcEpSnow(self,k)
+    #self.PotEvaporation = self.EpHour
+    self.PotEvaporation = cover(ifthenelse(self.EpHour > 0, self.EpHour, 0),0)
+    
+    self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow
+    
+    self.Fm2 = max(self.Fm[k] * self.Precipitation, self.Fm[k])
+    self.Ew1 = max(min(self.PotEvaporation, self.Sw[k]),0)
+    self.Qw1 = max(min(self.Fm2 * (self.TempSurf - self.Tm[k]), self.Sw[k]), 0)
+    
+    self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow - self.Ew1 - self.Qw1
+
+    self.Sw_diff = ifthenelse(self.Sw[k] < 0, self.Sw[k], 0)
+    self.Ew = self.Ew1 + (self.Ew1/ifthenelse(self.Ew1 + self.Qw1 > 0 , self.Ew1 + self.Qw1 , 1)) * self.Sw_diff
+    self.Qw = self.Qw1 + (self.Qw1/ifthenelse(self.Ew1 + self.Qw1 > 0 , self.Ew1 + self.Qw1 , 1)) * self.Sw_diff
+    self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow - self.Ew - self.Qw
+    self.Sw[k] = ifthenelse(self.Sw[k] < 0, 0 , self.Sw[k])    
+    self.Sw_diff2 = ifthen(self.Sw[k] < 0, self.Sw[k]) 
+
+    self.wbSw_[k] = self.PrecipitationSnow - self.Ew - self.Qw - self.Sw[k] + self.Sw_t[k]
+    
+    self.Ew_[k] = self.Ew
+    self.Qw_[k] = self.Qw
+
+def snow_rain_TsurfAir(self,k):
+    """
+    - snow melt based on degree day factor and minimum surface temperature
+    - meltfactor increases with temperature
+    - 
+    - Code for ini-file: 4
+    """
+    JarvisCoefficients.calcEpSnow(self,k)
+    #self.PotEvaporation = self.EpHour
+    self.PotEvaporation = cover(ifthenelse(self.EpHour > 0, self.EpHour, 0),0)
+    
+    self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow
+    self.Temp = (self.TempSurf + self.Temperature) / 2
+    
+    self.Fm2 = max(self.Fm[k] * self.Precipitation, self.Fm[k])
+    self.Ew1 = max(min(self.PotEvaporation, self.Sw[k]),0)
+    self.Qw1 = max(min(self.Fm2 * (self.Temp - self.Tm[k]), self.Sw[k]), 0)
+    
+    self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow - self.Ew1 - self.Qw1
+
+    self.Sw_diff = ifthenelse(self.Sw[k] < 0, self.Sw[k], 0)
+    self.Ew = self.Ew1 + (self.Ew1/ifthenelse(self.Ew1 + self.Qw1 > 0 , self.Ew1 + self.Qw1 , 1)) * self.Sw_diff
+    self.Qw = self.Qw1 + (self.Qw1/ifthenelse(self.Ew1 + self.Qw1 > 0 , self.Ew1 + self.Qw1 , 1)) * self.Sw_diff
+    self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow - self.Ew - self.Qw
+    self.Sw[k] = ifthenelse(self.Sw[k] < 0, 0 , self.Sw[k])    
+    self.Sw_diff2 = ifthen(self.Sw[k] < 0, self.Sw[k]) 
+
+    self.wbSw_[k] = self.PrecipitationSnow - self.Ew - self.Qw - self.Sw[k] + self.Sw_t[k]
+    
+    self.Ew_[k] = self.Ew
+    self.Qw_[k] = self.Qw
+
+def snow_rain_Tsurf_noEw(self,k):
+    """
+    - snow melt based on degree day factor and minimum surface temperature
+    - meltfactor increases with temperature
+    - 
+    - Code for ini-file: 5
+    """
+    JarvisCoefficients.calcEpSnow(self,k)
+    #self.PotEvaporation = self.EpHour
+    self.PotEvaporation = cover(ifthenelse(self.EpHour > 0, self.EpHour, 0),0)
+    
+    self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow
+    
+    self.Fm2 = max(self.Fm[k] * self.Precipitation, self.Fm[k])
+    self.Ew1 = 0
+    self.Qw1 = max(min(self.Fm2 * (self.TempSurf - self.Tm[k]), self.Sw[k]), 0)
+    
+    self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow - self.Ew1 - self.Qw1
+
+    self.Sw_diff = ifthenelse(self.Sw[k] < 0, self.Sw[k], 0)
+    self.Ew = self.Ew1 + (self.Ew1/ifthenelse(self.Ew1 + self.Qw1 > 0 , self.Ew1 + self.Qw1 , 1)) * self.Sw_diff
+    self.Qw = self.Qw1 + (self.Qw1/ifthenelse(self.Ew1 + self.Qw1 > 0 , self.Ew1 + self.Qw1 , 1)) * self.Sw_diff
+    self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow - self.Ew - self.Qw
+    self.Sw[k] = ifthenelse(self.Sw[k] < 0, 0 , self.Sw[k])    
+    self.Sw_diff2 = ifthen(self.Sw[k] < 0, self.Sw[k]) 
+
+    self.wbSw_[k] = self.PrecipitationSnow - self.Ew - self.Qw - self.Sw[k] + self.Sw_t[k]
+    
+    self.Ew_[k] = self.Ew
+    self.Qw_[k] = self.Qw
 
 def snowHour(self,k):
     """

@@ -8,17 +8,17 @@ def dependencies_for_freeezing():
 	import netCDF4_utils 
 
 nrbits = str(ctypes.sizeof(ctypes.c_voidp) * 8)
-data_files=matplotlib.get_py2exe_datafiles()
+includes = ['wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined','bmi','bmi.wrapper']
 
 thename = "Wflow"+MVERSION+'-'+nrbits
-f = Freezer("Wflow"+MVERSION+'-'+nrbits)
+f = Freezer("Wflow"+MVERSION+'-'+nrbits,includes=includes)
 f.addScript("wflow/__init__.py")
 f.addScript("wflow/wflow_topoflex.py")
 f.addScript("wflow/wflow_sbm.py")
 f.addScript("Scripts/wflow_sbm_rtc.py")
 f.addScript("wflow/wflow_hbv.py")
 f.addScript("wflow/wflow_adapt.py")
-f.addScript("wflow/wflow_W3RA.py")
+f.addScript("wflow/wflow_w3ra.py")
 #f.addScript("wflow/wflow_hbv_snow2.py")
 f.addScript("wflow/wflow_delwaq.py")
 f.addScript("wflow/wflow_wave.py")
@@ -34,9 +34,14 @@ f.addScript("Scripts/pcr2netcdf.py")
 f()    # starts the freezing process
 
 
+# matplolib data files
+data_files=matplotlib.get_py2exe_datafiles()
+
+# pcraster dll's
 ddir = "c:/pcraster4-64/lib/"
 data_files.append((".", glob.glob(ddir + "/*.dll")))
 
+# GDAL data files
 gdaldata = os.getenv("GDAL_DATA")
 data_files.append(("./gdal-data", glob.glob(gdaldata + "/*.*")))
 

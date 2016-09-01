@@ -56,7 +56,7 @@ def interception_overflow2(self, k):
     self.wbSi_[k] = self.Precipitation - self.Ei - self.Pe - self.Si[k] + self.Si_t[k]        
     
     self.Pe = self.Pe + self.Qw_[k]         #added on 3-11-2015 for snow module
-    self.Ei = self.Ei + self.Ew_[k]
+    self.Ei = self.Ei + (self.Ew_[k] / self.lamda * self.lamdaS)            #lambda added on 31-3-2016
     
     self.Ei_[k]=self.Ei
     self.Pe_[k]=self.Pe
@@ -82,13 +82,13 @@ def interception_overflow_Ep(self,k):
     
     self.Pe = max(self.Precipitation - (self.imax[k] - self.Si_t[k]),0)
     self.Si[k] = self.Si_t[k] + (self.Precipitation - self.Pe)
-    self.Ei = ifthenelse(self.Sw[k] == 0, min(self.PotEvaporation, self.Si[k]), 0)           #ifstatement added on 3-11-2015 for snow module
+    self.Ei = ifthenelse(self.Sw[k] == 0, min((self.PotEvaporation - (self.Ew_[k] / self.lamda * self.lamdaS)), self.Si[k]), 0)           #ifstatement added on 3-11-2015 for snow module, '-self.Ew_[k]' added on 17-2-2016
     self.Si[k] = self.Si[k] - self.Ei    
     
     self.wbSi_[k] = self.Precipitation - self.Ei - self.Pe - self.Si[k] + self.Si_t[k]        
     
     self.Pe = self.Pe + self.Qw_[k]         #added on 3-11-2015 for snow module
-    self.Ei = self.Ei + self.Ew_[k]
+    self.Ei = self.Ei + (self.Ew_[k] / self.lamda * self.lamdaS)            #lambda added on 17-2-2016
     
     self.Ei_[k]=self.Ei
     self.Pe_[k]=self.Pe         
