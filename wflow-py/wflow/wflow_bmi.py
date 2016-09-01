@@ -60,13 +60,13 @@ class wflowbmi_light(object):
         #       Get name of module from ini file name
 
         maxNrSteps = 10000
-        if "wflow_sbm.ini" in configfile:
+        if "wflow" in configfile and "sbm" in configfile and ".ini" in configfile:
             import wflow_sbm as wf
             self.name = "wflow_sbm"
-        elif "wflow_hbv.ini" in configfile:
+        elif "wflow" in configfile and "hbv" in configfile and ".ini" in configfile:
             import wflow_hbv as wf
             self.name = "wflow_hbv"
-        elif "wflow_routing.ini" in configfile:
+        elif "wflow" in configfile and "routing" in configfile and ".ini" in configfile:
             import wflow_routing as wf
             self.name = "wflow_routing"
         else:
