@@ -572,8 +572,12 @@ def main():
         # assume we need the maximum value in a NetCDF time series grid
         logger.info('Reading flood from {:s} NetCDF file'.format(options.flood_map))
         a = nc.Dataset(options.flood_map, 'r')
-        xax = a.variables['x'][:]
-        yax = a.variables['y'][:]
+        if options.latlon == 0:
+            xax = a.variables['x'][:]
+            yax = a.variables['y'][:]
+        else:
+            xax = a.variables['lon'][:]
+            yax = a.variables['lat'][:]
         if options.time == '':
             time_list = nc.num2date(a.variables['time'][:], units = a.variables['time'].units, calendar=a.variables['time'].calendar)
             time = [time_list[len(time_list)/2]]
