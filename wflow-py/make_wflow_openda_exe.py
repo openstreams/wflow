@@ -45,6 +45,8 @@ f.addScript("Scripts/pcr2netcdf.py")
 #f.addScript("wflow/wflow_fit.py") # Does not work becuse of QT
 f()    # starts the freezing process
 
+
+os.system('conda list' + ">" + os.path.join(thename,'packages.txt'))
 # Extra data directories
 ddir = "c:/pcraster4-64/lib/"
 data_files.append((".", glob.glob(ddir + "/*.dll")))

@@ -53,6 +53,7 @@ data_files.append(("./gdal-data", glob.glob(gdaldata + "/*.*")))
 
 shutil.copy("c:\Anaconda\Lib\site-packages\zmq\libzmq.pyd",thename  +"/")
 
+os.system('conda list' + ">" + os.path.join(thename,'packages.txt'))
 print "Copying extra data files..."
 for dirr in data_files:
     timake = os.path.join(thename ,dirr[0])

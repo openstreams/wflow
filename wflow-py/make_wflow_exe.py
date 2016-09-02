@@ -34,6 +34,7 @@ f.addScript("Scripts/pcr2netcdf.py")
 f()    # starts the freezing process
 
 
+os.system('conda list' + ">" + os.path.join(thename,'packages.txt'))
 # matplolib data files
 data_files=matplotlib.get_py2exe_datafiles()
 
