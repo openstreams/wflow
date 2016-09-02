@@ -58,7 +58,7 @@ Clone with git or Download the latest zip with the source code of wflow. Go to t
 
 To check it the install is successfull, go to the  the the examples directory and run the following command:
 
-+ Python c:\\Anaconda\\scripts\\wflow_sbm.py -C wflow_rhine_hbv -T 100 -R testing 
++ Python c:\\Anaconda\\scripts\\wflow_sbm.py -C wflow_rhine_sbm -T 100 -R testing
 
 This should run without errors
 
