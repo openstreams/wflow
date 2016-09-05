@@ -23,8 +23,8 @@ class MyTest(unittest.TestCase):
 
         print("-------------- Grid origin: ")
         gorigin = bmiobj.get_grid_origin('Altitude')
-        print(gorigin)
-        self.assertAlmostEquals(sum([52.054268, 5.2271633]), sum(gorigin),places=4)
+        #print(gorigin)
+        self.assertAlmostEquals(sum([45.875934703275561, 5.2088299822062254]), sum(gorigin),places=4)
 
         print("-------------- Grid shape: ")
         print(bmiobj.get_grid_shape('Altitude'))
