@@ -944,9 +944,11 @@ class wflowbmi_csdms(bmi.Bmi):
 
         :return: X, Y: ,the lower left corner of the grid.
         """
-        dims = self.dynModel.wf_supplyGridDim()
-        x = dims[0]
-        y = dims[1]
+        dims = self.dynModel.wf_supplyGridDim() # returns in cell centre
+        xsize = dims[2]
+        ysize = dims[3]
+        x = dims[6] - (xsize * 0.5)
+        y = dims[7] - (ysize * 0.5)
         self.bmilogger.debug("get_grid_origin: " + long_var_name + ' result: ' + str([y, x]))
         return [y, x]
 

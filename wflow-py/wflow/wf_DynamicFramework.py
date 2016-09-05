@@ -1671,7 +1671,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         """
         return the dimension of the current model grid as list::
 
-         [ Xul, Yul, xsize, ysize, rows, cols]
+         [ Xul, Yul, xsize, ysize, rows, cols, Xlr, Ylr]
         """
 
         return getgridparams()

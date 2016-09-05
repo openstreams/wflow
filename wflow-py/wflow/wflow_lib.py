@@ -257,10 +257,11 @@ def getgridparams():
         - ysize - size of a cell in y direction
         - cols - number of columns
         - rows - number of rows
-        - xlr
-        - ylr
+        - xlr -  x lower right centre
+        - ylr -  y lower right centre
     """
-    
+    # This is the default, but add for safety...
+    setglobaloption("coorcentre")
     # x and Y are the same for now
     xy = pcr2numpy(celllength(),numpy.nan)[0,0]
     xu = pcr2numpy(xcoordinate(1),numpy.nan)[0,0]
