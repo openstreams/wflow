@@ -1162,9 +1162,6 @@ class WflowModel(DynamicModel):
         self.SaturationDeficit = self.FirstZoneCapacity - self.FirstZoneDepth
         # Linear reduction of soil moisture evaporation based on deficit
 
-        # Determine transpiration
-        # Split between bare soil/open water and vegetation
-        self.potsoilopenwaterevap = (1.0 - self.CanopyGapFraction) * self.PotTransSoil
 
         # Determine Open Water EVAP. Later subtract this from water that
         # enters the Kinematic wave
