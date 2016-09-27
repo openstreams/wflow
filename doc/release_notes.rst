@@ -1,6 +1,12 @@
 Release notes
 =============
 
+
+2016.03
+-------
++ last tag before moving to new names in SBM
++ irrigation added to SBM/SBM2
+
 2016.02
 -------
 + added better BMI support
