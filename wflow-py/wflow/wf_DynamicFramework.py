@@ -652,6 +652,64 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self.logger.info("Applying multiplication from table: " + multname)
 
         return rest
+    
+    def readtblLayersDefault(self,pathtotbl, landuse, subcatch, soil, layer, default):
+        """
+        First check if a prepared  maps of the same name is present
+        in the staticmaps directory. next try to
+        read a tbl file to match a landuse, catchment and soil map. Returns
+        the default value if the tbl file is not found.
+
+        Finally check of a tbl file exists with a .mult postfix (e.g. Cmax.tbl.mult) and apply the
+        multiplication to the loaded data.
+
+        Input:
+            -  pathtotbl: full path to table file
+            -  landuse: landuse map
+            -  subcatch: subcatchment map
+            -  soil: soil map
+            -  default: default value
+
+
+        Output:
+            - map constructed from tbl file or map with default value
+
+        .. todo::
+
+            Add checking for missing values
+        """
+
+        mapname = os.path.join(os.path.dirname(pathtotbl),"../staticmaps", os.path.splitext(os.path.basename(pathtotbl))[
+            0] + ".map")
+        if os.path.exists(mapname):
+            self.logger.info("reading map parameter file: " + mapname)
+            rest = cover(readmap(mapname), default)
+        else:
+            if os.path.isfile(pathtotbl):
+                rest = lookupscalar(pathtotbl, landuse, subcatch, soil, layer)
+                self.logger.info("Creating map from table: " + pathtotbl)
+            else:
+                self.logger.warn("tbl file not found (" + pathtotbl + ") returning default value: " + str(default))
+                rest = spatial(cover(scalar(default)))
+
+            cmask = self._userModel().TopoId
+
+            cmask = ifthen(cmask > 0, cmask)
+            totalzeromap = pcr2numpy(maptotal(scalar(defined(cmask))), 0)
+            resttotal = pcr2numpy(maptotal(scalar(defined(rest))), 0)
+
+            if resttotal[0, 0] < totalzeromap[0, 0]:
+                self.logger.warn("Not all catchment cells have a value for [" + pathtotbl + "] : " + str(
+                    resttotal[0, 0]) + "!=" + str(totalzeromap[0, 0]))
+
+        # Apply multiplication table if present
+        multname = os.path.dirname(pathtotbl) + ".mult"
+        if os.path.exists(multname):
+            multfac = lookupscalar(multname, landuse, subcatch, soil)
+            rest = rest * multfac
+            self.logger.info("Applying multiplication from table: " + multname)
+
+        return rest        
 
     def readtblFlexDefault(self, pathtotbl, default, *args):
         """
