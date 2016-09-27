@@ -379,6 +379,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self._addMethodToClass(self.wf_multparameters)
         self._addMethodToClass(self.wf_readmapClimatology)
         self._addMethodToClass(self.readtblDefault)
+        self._addMethodToClass(self.readtblLayersDefault)
         self._addMethodToClass(self.wf_supplyVariableNamesAndRoles)
         self._addMethodToClass(self.wf_updateparameters)
         self._addAttributeToClass("ParamType", self.ParamType)
