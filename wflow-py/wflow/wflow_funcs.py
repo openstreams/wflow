@@ -120,7 +120,7 @@ def rainfall_interception_modrut(Precipitation,PotEvap,CanopyStorage,CanopyGapFr
     Pfrac = (1 - p -pt) * Precipitation
 
     # S cannot be larger than Cmax, no gravity drainage below that
-    DD = ifthenelse (CanopyStorage > Cmax , Cmax - CanopyStorage , 0.0)
+    DD = ifthenelse (CanopyStorage > Cmax , CanopyStorage - Cmax , 0.0)
     CanopyStorage = CanopyStorage - DD
 
     # Add the precipitation that falls on the canopy to the store

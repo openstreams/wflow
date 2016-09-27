@@ -1005,8 +1005,9 @@ class WflowModel(DynamicModel):
             self.logger.info("Setting initial conditions to default")
             self.SatWaterDepth = self.SoilWaterCapacity * 0.85
 
-            for n in arange(0,self.nrLayers):
-                self.UStoreLayerDepth[n]
+            #for n in arange(0,self.nrLayers):
+            #    self.UStoreLayerDepth[n] = self.ZeroMap
+            # TODO: move UStoreLayerDepth from initial to here
 
             self.WaterLevel = self.ZeroMap
             self.SurfaceRunoff = self.ZeroMap
@@ -1793,6 +1794,7 @@ class WflowModel(DynamicModel):
 
             # update/nudge self.UStoreDepth for the whole upstream area,
             # not sure how much this helps or worsens things
+            # TODO: FIx this for multiple layers
             UpdSoil = True
             if UpdSoil:
                 toadd = (self.UStoreDepth * UpRatioSoil) - self.UStoreDepth

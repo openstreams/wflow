@@ -1263,10 +1263,9 @@ class WflowModel(DynamicModel):
         self.waterSlope = max(0.000001, slope(self.WaterDem) * celllength() / self.reallength)
         if self.waterdem:
             self.waterLdd = lddcreate(self.WaterDem, 1E35, 1E35, 1E35, 1E35)
-            #waterLdd = lddcreate(waterDem,1,1,1,1)
 
 
-        #TODO: We should make a couple ot itterations here...
+        #TODO: We should make a couple ot iterations here...
         if self.waterdem:
             Lateral = self.FirstZoneKsatVer * self.FirstZoneKsatHorFrac * self.waterSlope * exp(-self.SaturationDeficit / self.M)
             MaxHor = max(0.0, min(Lateral, self.FirstZoneDepth))
@@ -1299,7 +1298,6 @@ class WflowModel(DynamicModel):
         UStoreCapacity = self.FirstZoneCapacity - self.FirstZoneDepth - self.UStoreDepth
 
         Ksat = self.FirstZoneKsatVer * exp(-self.f * self.zi)
-
 
         # Estimate water that may reinfilt
         SurfaceWater = self.WaterLevel/1000.0  # SurfaceWater (mm)
@@ -1401,8 +1399,6 @@ class WflowModel(DynamicModel):
                 self.InflowKinWaveCell = upstream(self.TopoLdd, self.OldSurfaceRunoff)
                 deltasup = float(mapmaximum(abs(oldsup - self.SurfaceWaterSupply)))
 
-
-
                 if deltasup < self.breakoff or self.nrit >= self.maxitsupply:
                     break
 
@@ -1501,7 +1497,7 @@ class WflowModel(DynamicModel):
 
 
         self.SoilWatbal = self.ActInfilt + self.reinfiltwater  + CellInFlow - self.Transpiration - self.soilevap  -\
-                          self.ExfiltWater  -  self.SubCellGWRunoff  - self.DeltaStorage -\
+                          self.ExfiltWater - self.SubCellGWRunoff - self.DeltaStorage -\
                           self.FirstZoneFlux
 
         self.InterceptionWatBal = self.PrecipitationPlusMelt - self.Interception -self.StemFlow - self.ThroughFall -\
