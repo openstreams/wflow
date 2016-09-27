@@ -2,6 +2,17 @@ Release notes
 =============
 
 
+2016.04
+-------
++ update soil names in sbm to the sbm2 names:
+  + FirstZoneKsatVer -> KsatVer
+  + FirstZoneMinCapacity -> SoilMinThickness
+  + FirstZoneCapacity (FirstZoneThickness) -> SoilThickness
+  + FirstZoneCapacity -> SoilWaterCapacity
+  + FirstZoneFlux -> SatWaterFlux
+  + FirstZoneDepth -> SatWaterDepth
+
+
 2016.03
 -------
 + last tag before moving to new names in SBM

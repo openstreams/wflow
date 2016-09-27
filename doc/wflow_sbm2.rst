@@ -1,5 +1,5 @@
-The wflow_sbm Model
-===================
+The wflow_sbm2 Model
+====================
 
 
 Introduction
