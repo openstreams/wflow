@@ -169,6 +169,14 @@ The wflow\_sbm model
 
    wflow_sbm
 
+
+The wflow\_sbm2 model
+=====================
+.. toctree::
+   :maxdepth: 2
+
+   wflow_sbm2
+
 The wflow\_gr4 model
 ====================
 .. toctree::
