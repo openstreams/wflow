@@ -1033,8 +1033,8 @@ class WflowModel(DynamicModel):
         self.OldKinWaveVolume = self.KinWaveVolume
 
         self.QCatchmentMM = self.SurfaceRunoff * self.QMMConvUp
-        self.InitialStorage = self.SatWaterDepth + sum_UstoreLayerDepth(self.UStoreLayerThickness,self.ZeroMap,self.UStoreLayerDepth) + self.CanopyStorage
-        self.CellStorage = self.SatWaterDepth + sum_UstoreLayerDepth(self.UStoreLayerThickness,self.ZeroMap,self.UStoreLayerDepth)
+        self.InitialStorage = self.SatWaterDepth + sum_list_cover(self.UStoreLayerDepth,self.ZeroMap) + self.CanopyStorage
+        self.CellStorage = self.SatWaterDepth + sum_list_cover(self.UStoreLayerDepth,self.ZeroMap)
 
         # Determine actual water depth
         self.zi = max(0.0, self.SoilThickness - self.SatWaterDepth / (self.thetaS - self.thetaR))
@@ -1136,7 +1136,7 @@ class WflowModel(DynamicModel):
 
         self.wf_multparameters()
 
-        self.OrgStorage = sum_UstoreLayerDepth(self.UStoreLayerThickness,self.ZeroMap,self.UStoreLayerDepth) + self.SatWaterDepth
+        self.OrgStorage = sum_list_cover(self.UStoreLayerDepth,self.ZeroMap) + self.SatWaterDepth
         self.OldCanopyStorage = self.CanopyStorage
         self.OldPondingDepth = self.PondingDepth
         self.PotEvap = self.PotenEvap  #
@@ -1212,7 +1212,7 @@ class WflowModel(DynamicModel):
         self.AvailableForInfiltration = self.ThroughFall + self.StemFlow + self.IRSupplymm
         self.oldIRSupplymm = self.IRSupplymm
 
-        UStoreCapacity = self.SoilWaterCapacity - self.SatWaterDepth - sum_UstoreLayerDepth(self.UStoreLayerThickness,self.ZeroMap,self.UStoreLayerDepth)
+        UStoreCapacity = self.SoilWaterCapacity - self.SatWaterDepth - sum_list_cover(self.UStoreLayerDepth,self.ZeroMap)
 
         # Runoff from water bodies and river network
         self.RunoffOpenWater = min(1.0,self.RiverFrac + self.WaterFrac) * self.AvailableForInfiltration
@@ -1449,7 +1449,7 @@ class WflowModel(DynamicModel):
             #self.UStoreLayerDepth[n] = ifthenelse(self.ZiLayer<=n, self.UStoreLayerDepth[n]-diff,self.UStoreLayerDepth[n])
 
         SatFlow = self.ToExtra
-        UStoreCapacity = self.SoilWaterCapacity - self.SatWaterDepth - sum_UstoreLayerDepth(self.UStoreLayerThickness,self.ZeroMap,self.UStoreLayerDepth)
+        UStoreCapacity = self.SoilWaterCapacity - self.SatWaterDepth - sum_list_cover(self.UStoreLayerDepth,self.ZeroMap)
 
         MaxCapFlux = max(0.0, min(Ksat, self.ActEvapUStore, UStoreCapacity, self.SatWaterDepth))
 
@@ -1600,7 +1600,7 @@ class WflowModel(DynamicModel):
 
 
         # Re-determine UStoreCapacityield' object does not support item assignment
-        UStoreCapacity = self.SoilWaterCapacity - self.SatWaterDepth - sum_UstoreLayerDepth(self.UStoreLayerThickness,self.ZeroMap,self.UStoreLayerDepth)
+        UStoreCapacity = self.SoilWaterCapacity - self.SatWaterDepth - sum_list_cover(self.UStoreLayerDepth,self.ZeroMap)
 
 
         #self.AvailableForInfiltration = self.AvailableForInfiltration - InfiltSoilPath - SatFlow #MaxInfiltPath+MaxInfiltSoil + SatFlow
@@ -1633,7 +1633,7 @@ class WflowModel(DynamicModel):
         
     
 
-        UStoreCapacity = self.SoilWaterCapacity - self.SatWaterDepth - sum_UstoreLayerDepth(self.UStoreLayerThickness,self.ZeroMap,self.UStoreLayerDepth)
+        UStoreCapacity = self.SoilWaterCapacity - self.SatWaterDepth - sum_list_cover(self.UStoreLayerDepth,self.ZeroMap)
 
         Ksat = self.KsatVer * exp(-self.f*self.zi)
 
@@ -1818,9 +1818,9 @@ class WflowModel(DynamicModel):
         #self.BB = catchmenttotal(cover(1.0), self.TopoLdd)
         # Single cell based water budget. snow not included yet.
 
-        self.CellStorage = sum_UstoreLayerDepth(self.UStoreLayerThickness,self.ZeroMap,self.UStoreLayerDepth) + self.SatWaterDepth
+        self.CellStorage = sum_list_cover(self.UStoreLayerDepth,self.ZeroMap) + self.SatWaterDepth
 
-        self.sumUstore = sum_UstoreLayerDepth(self.UStoreLayerThickness,self.ZeroMap,self.UStoreLayerDepth)
+        self.sumUstore = sum_list_cover(self.UStoreLayerDepth,self.ZeroMap)
 
         self.DeltaStorage = self.CellStorage - self.OrgStorage
         OutFlow = self.SatWaterFlux

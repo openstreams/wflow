@@ -51,6 +51,23 @@ import netCDF4 as nc4
 import gzip, zipfile
 
 
+
+def sum_list_cover(list_of_maps, covermap):
+    """
+    Sums a list of pcrastermap using cover to fill in missing values
+
+    :param list_of_maps: list of maps to sum
+    :param covermap: maps/ value to use fro cover
+
+    :return: sum of list of maps (single map)
+    """
+    sum_ = cover(0.0)
+    for map in list_of_maps:
+        sum_ = sum_ + cover(map,covermap)
+
+    return sum_
+
+
 def idtoid(sourceidmap, targetidmap,valuemap):
     """
     tranfer the values from valuemap at the point id's in sourceidmap to the areas in targetidmap.
