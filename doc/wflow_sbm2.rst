@@ -5,6 +5,10 @@ The wflow_sbm2 Model
 Introduction
 ------------
 
+.. info::
+
+    This documentation is incomplete it currently describes the original model
+
 The soil part of wflow\_sbm model follows the same concepts as the 
 topog\_sbm model. topog\_sbm is specifically designed to similate fast 
 runoff processes in small catchments while wflow\_sbm can be applied more

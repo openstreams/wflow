@@ -552,7 +552,7 @@ to the amount of bare soil).
 
 Soi evaporation is scaled according to:
 
-:math:`soilevap = potensoilevap * SaturationDeficit/FirstZoneCapacity`
+:math:`soilevap = potensoilevap * SaturationDeficit/SoilWaterCapacity`
 
 As such, evaporation will be potential if the soil is fully wetted and it decreases linear
 with increasing soil moisture deficit.
@@ -591,21 +591,21 @@ unsaturated store:
 
 ::
 
-    FirstZoneDepth = FirstZoneDepth - ActEvapSat
+    wetroots = sCurve(WTable, a=RootingDepth, c=smoothpar)
+    ActEvapSat = min(PotTrans * wetroots, SatWaterDepth)
+    SatWaterDepth = SatWaterDepth - ActEvapSat
     RestPotEvap = PotTrans - ActEvapSat
-  
-    # now try unsat store  
-    AvailCap = min(1.0,max (0.0,(WTable - RootingDepth)/(RootingDepth + 1.0)))       
-	
-    MaxExtr = AvailCap  * UStoreDepth
-    ActEvapUStore = min(MaxExtr,RestPotEvap,UStoreDepth)
+
+    # now try unsat store
+    AvailCap = max(0.0,ifthenelse(WTable < RootingDepth,  cover(1.0),  RootingDepth/(WTable + 1.0)))
+    MaxExtr = AvailCap * UStoreDepth
+    ActEvapUStore = min(MaxExtr, RestPotEvap, UStoreDepth)
     UStoreDepth = UStoreDepth - ActEvapUStore
-    
+
     ActEvap = ActEvapSat + ActEvapUStore
 
 
-
-Remaining evaporative demand is used to for evaporation of open water. This amount
+Remaining evaporative demand is split between  evaporation of open water and soil evaporation. This first amount
 is subtracted from the water that would otherwise enter the kinematic wave.
 
 Capilary rise is determined using the following approach:
@@ -647,7 +647,7 @@ to zero thus setting the capilary rise to zero.
 Leakage
 ~~~~~~~
 
-If the MaxLeakage parameter may is set > 0  water is lost from the FirstZone and runs out of the model.
+If the MaxLeakage parameter may is set > 0  water is lost from the Saturated zone and runs out of the model.
 
 Soil temperature
 ~~~~~~~~~~~~~~~~
@@ -730,7 +730,7 @@ where:
     self.DemMax=readmap(self.Dir + "/staticmaps/wflow_demmax")  
     self.DrainageBase=readmap(self.Dir + "/staticmaps/wflow_demmin")        
     self.CC = min(100.0,-log(1.0/0.1 - 1)/min(-0.1,self.DrainageBase - self.Altitude))
-    self.GWScale = (self.DemMax-self.DrainageBase)/self.FirstZoneThickness / self.RunoffGeneratingGWPerc
+    self.GWScale = (self.DemMax-self.DrainageBase)/self.SoilThickness / self.RunoffGeneratingGWPerc
 
 
 
@@ -761,14 +761,16 @@ and generate ouflow from the groundwater reservoir:
 
 in dynamic::
 
-        self.AbsoluteGW=self.DemMax-(self.zi*self.GWScale)
-        self.SubCellFrac = sCurve(self.AbsoluteGW,c=self.CC,a=self.Altitude+1.0)
-        self.SubCellRunoff = self.SubCellFrac * FreeWaterDepth
-        self.SubCellGWRunoff = min(self.SubCellFrac * self.FirstZoneDepth,\ 
-            self.SubCellFrac * self.Slope * self.FirstZoneKsatVer * \ 
-            exp(-self.f * self.zi) * self.timestepsecs/self.basetimestep)
-        self.FirstZoneDepth=self.FirstZoneDepth-self.SubCellGWRunoff
-        FreeWaterDepth = FreeWaterDepth - self.SubCellRunoff
+            self.AbsoluteGW = self.DemMax - (self.zi * self.GWScale)
+            # Determine saturated fraction of cell
+            self.SubCellFrac = sCurve(self.AbsoluteGW, c=self.CC, a=self.Altitude + 1.0)
+            # Make sure total of SubCellFRac + WaterFRac + RiverFrac <=1 to avoid double counting
+            Frac_correction = ifthenelse((self.SubCellFrac + self.RiverFrac + self.WaterFrac) > 1.0,
+                                                     self.SubCellFrac + self.RiverFrac + self.WaterFrac - 1.0, 0.0)
+            self.SubCellRunoff = (self.SubCellFrac - Frac_correction) * self.AvailableForInfiltration
+            self.SubCellGWRunoff = min(self.SubCellFrac * self.SatWaterDepth,
+                                       max(0.0,self.SubCellFrac * self.Slope * self.KsatVer * \
+                                           self.KsatHorFrac * exp(-self.f * self.zi)))
 
 
 
@@ -955,14 +957,14 @@ onlys shows the soil and Kinematic wave reservoir, not the canopy model.
     node[shape=record];
     UStoreDepth [shape=box];
     OutSide [style=dotted];
-    FirstZoneDepth [shape=box];
-    UStoreDepth -> FirstZoneDepth [label="Transfer [mm]"];
-    FirstZoneDepth -> UStoreDepth [label="CapFlux [mm]"];        
-    FirstZoneDepth ->KinematicWaveStore [label="ExfiltWaterCubic [m^3/s]"];
+    SoilWaterDepth [shape=box];
+    UStoreDepth -> SoilWaterDepth [label="Transfer [mm]"];
+    SoilWaterDepth -> UStoreDepth [label="CapFlux [mm]"];        
+    SoilWaterDepth ->KinematicWaveStore [label="ExfiltWaterCubic [m^3/s]"];
     "OutSide" -> UStoreDepth [label="ActInfilt [mm]"];
     UStoreDepth -> OutSide [label="ActEvapUStore [mm]"];
-    FirstZoneDepth -> OutSide [label="ActEvap-ActEvapUStore [mm]"];
-    FirstZoneDepth -> KinematicWaveStore [label="SubCellGWRunoffCubic [m^3/s]"];
+    SoilWaterDepth -> OutSide [label="ActEvap-ActEvapUStore [mm]"];
+    SoilWaterDepth -> KinematicWaveStore [label="SubCellGWRunoffCubic [m^3/s]"];
     "OutSide" -> KinematicWaveStore [label="SubCellRunoffCubic [m^3/s]"];
     "OutSide" -> KinematicWaveStore [label="RunoffOpenWater [m^3/s]"] ;
     "OutSide" -> KinematicWaveStore [label="FreeWaterDepthCubic [m^3/s]"] ;
