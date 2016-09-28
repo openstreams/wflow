@@ -16,7 +16,7 @@ class MyTest(unittest.TestCase):
         currentTime = 1
 
           # set runid, clonemap and casename. Also define the ini file
-        runId = "unittest"
+        runId = "unittestsbm2"
         configfile="wflow_sbm.ini"
         wflow_cloneMap = 'wflow_catchment.map'
         caseName="wflow_sbm"
@@ -56,7 +56,7 @@ class MyTest(unittest.TestCase):
         self.assertAlmostEquals(-1.003901559215592e-06,my_data[:,2].sum(),places=4)
         my_data = wf.genfromtxt(os.path.join(caseName,runId,"wbsoil.csv"), delimiter=',')
         print("Checking soil water budget ....")
-        self.assertAlmostEquals(0.00087007716069820162,my_data[:,2].sum(),places=4)
+        self.assertAlmostEquals(0.00055469494748194847,my_data[:,2].sum(),places=4)
         print("Checking precip sum ....")
         my_data = wf.genfromtxt(os.path.join(caseName,runId,"P.csv"), delimiter=',')
         self.assertAlmostEquals(sump,my_data[:,2].sum())

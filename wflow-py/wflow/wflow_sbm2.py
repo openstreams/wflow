@@ -717,14 +717,10 @@ class WflowModel(DynamicModel):
                                                     subcatch, self.Soil, 10.0)
 
         self.KsatVerFrac = []
-        for n in arange(0,self.nrLayers):
+        for n in arange(0,self.nrLayers + 1): # JS: had to add + 1 to make it work
             self.KsatVerFrac.append(self.readtblLayersDefault(self.Dir + "/" + self.intbl + "/KsatVerFrac.tbl", self.LandUse,
                                                     subcatch, self.Soil, self.ZeroMap+n, 1.0))
 
-        report(self.KsatVerFrac[0], self.Dir + "/" + self.runId + "/outsum/KsatVerFactor0.map")
-        report(self.KsatVerFrac[1], self.Dir + "/" + self.runId + "/outsum/KsatVerFactor1.map")
-        report(self.KsatVerFrac[2], self.Dir + "/" + self.runId + "/outsum/KsatVerFactor2.map")
-        report(self.KsatVerFrac[3], self.Dir + "/" + self.runId + "/outsum/KsatVerFactor3.map")
 
         if self.modelSnow:
             # HBV Snow parameters
@@ -821,6 +817,8 @@ class WflowModel(DynamicModel):
                 UstoreThick = min(UstoreThick_temp,max(self.SoilThickness-self.SumLayer,0.0))
             else:
                 UstoreThick = self.SoilThickness
+                UstoreThick_temp = self.ZeroMap
+                # JS: Not sure what happens here but this was needed if only one layers is configured
 
 
             self.SumThickness = UstoreThick_temp + self.SumThickness
@@ -960,9 +958,6 @@ class WflowModel(DynamicModel):
         # Save some summary maps
         self.logger.info("Saving summary maps...")
 
-        if self.updating:
-            report(self.DistToUpdPt, self.Dir + "/" + self.runId + "/outsum/DistToUpdPt.map")
-
         #self.IF = self.ZeroMap
         self.logger.info("End of initial section")
 
@@ -1038,7 +1033,7 @@ class WflowModel(DynamicModel):
         self.OldKinWaveVolume = self.KinWaveVolume
 
         self.QCatchmentMM = self.SurfaceRunoff * self.QMMConvUp
-        self.InitialStorage = self.SatWaterDepth + sum_UstoreLayerDepth(self.UStoreLayerThickness,self.ZeroMap,self.UStoreLayerDepth) + self.CanopyStorage + self.LowerZoneStorage
+        self.InitialStorage = self.SatWaterDepth + sum_UstoreLayerDepth(self.UStoreLayerThickness,self.ZeroMap,self.UStoreLayerDepth) + self.CanopyStorage
         self.CellStorage = self.SatWaterDepth + sum_UstoreLayerDepth(self.UStoreLayerThickness,self.ZeroMap,self.UStoreLayerDepth)
 
         # Determine actual water depth
@@ -1141,7 +1136,7 @@ class WflowModel(DynamicModel):
 
         self.wf_multparameters()
 
-        self.OrgStorage = sum_UstoreLayerDepth(self.UStoreLayerThickness,self.ZeroMap,self.UStoreLayerDepth) + self.SatWaterDepth + self.LowerZoneStorage
+        self.OrgStorage = sum_UstoreLayerDepth(self.UStoreLayerThickness,self.ZeroMap,self.UStoreLayerDepth) + self.SatWaterDepth
         self.OldCanopyStorage = self.CanopyStorage
         self.OldPondingDepth = self.PondingDepth
         self.PotEvap = self.PotenEvap  #
@@ -1261,7 +1256,7 @@ class WflowModel(DynamicModel):
         self.PathInfiltExceeded = self.PathInfiltExceeded + scalar(self.InfiltCapPath * soilInfRedu < PathInf)
 
         InfiltSoilPath = min(MaxInfiltPath+MaxInfiltSoil,max(0.0,UStoreCapacity))
-
+        self.ActInfilt = InfiltSoilPath # JS Ad this to be compatible with rest
 
         self.SumThickness = self.ZeroMap
         self.ZiLayer = self.ZeroMap
@@ -1312,7 +1307,6 @@ class WflowModel(DynamicModel):
 
             # First layer is treated differently than layers below first layer
             if n == 0:
-
                 if len(self.UStoreLayerThickness)==1:
                     DownWard = InfiltSoilPath#MaxInfiltPath+MaxInfiltSoil
                     self.UStoreLayerDepth[n] = self.UStoreLayerDepth[n] + DownWard
@@ -1811,8 +1805,8 @@ class WflowModel(DynamicModel):
 
         # Determine Soil moisture profile
         # 1: average volumetric soil in total unsat store
-        self.SMVol = (cover(self.UStoreDepth/self.zi,0.0) + self.thetaR) * (self. thetaS - self.thetaR)
-        self.SMRootVol = (cover(self.UStoreDepth/min(self.ActRootingDepth,self.zi),0.0) + self.thetaR) * (self. thetaS - self.thetaR)
+        #self.SMVol = (cover(self.UStoreDepth/self.zi,0.0) + self.thetaR) * (self. thetaS - self.thetaR)
+        #self.SMRootVol = (cover(self.UStoreDepth/min(self.ActRootingDepth,self.zi),0.0) + self.thetaR) * (self. thetaS - self.thetaR)
         # 2:
         ##########################################################################
         # water balance ###########################################
@@ -1824,7 +1818,7 @@ class WflowModel(DynamicModel):
         #self.BB = catchmenttotal(cover(1.0), self.TopoLdd)
         # Single cell based water budget. snow not included yet.
 
-        self.CellStorage = sum_UstoreLayerDepth(self.UStoreLayerThickness,self.ZeroMap,self.UStoreLayerDepth) + self.SatWaterDepth  + self.LowerZoneStorage
+        self.CellStorage = sum_UstoreLayerDepth(self.UStoreLayerThickness,self.ZeroMap,self.UStoreLayerDepth) + self.SatWaterDepth
 
         self.sumUstore = sum_UstoreLayerDepth(self.UStoreLayerThickness,self.ZeroMap,self.UStoreLayerDepth)
 
