@@ -976,6 +976,7 @@ class WflowModel(DynamicModel):
         :var self.CanopyStorage: Amount of water on the Canopy [mm]
         :var self.RunoffCoeff: Runoff coefficient (Q/P) for each cell taking into account the whole upstream area [-]
         :var self.SurfaceWaterSupply: the negative Inflow (water demand) that could be met from the surfacewater [m^3/s]
+        :var: self.QCatchmentMM: Catchment runoff in mm for the upstream area
 
 
         Static variables
