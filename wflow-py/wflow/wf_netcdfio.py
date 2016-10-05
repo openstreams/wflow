@@ -478,9 +478,21 @@ class netcdfinput():
         x = _pcrut.pcr2numpy(_pcrut.xcoordinate(_pcrut.boolean(_pcrut.cover(1.0))), NaN)[0, :]
         y = _pcrut.pcr2numpy(_pcrut.ycoordinate(_pcrut.boolean(_pcrut.cover(1.0))), NaN)[:, 0]
 
-        (self.latidx,) = logical_and(self.y >= y.min(), self.y <= y.max()).nonzero()
-        (self.lonidx,) = logical_and(self.x >= x.min(), self.x <= x.max()).nonzero()
+        #Get average cell size
+        acc = diff(x).mean() * 0.25
+        if self.flip:
+            (self.latidx,) = logical_and(self.y[::-1] +acc >= y.min(), self.y[::-1] <= y.max() + acc).nonzero()
+            (self.lonidx,) = logical_and(self.x + acc >= x.min(), self.x <= x.max() + acc).nonzero()
+        else:
+            (self.latidx,) = logical_and(self.y +acc >= y.min(), self.y <= y.max() + acc).nonzero()
+            (self.lonidx,) = logical_and(self.x +acc >= x.min(), self.x <= x.max() + acc).nonzero()
+        # TODO: Check length from cover and netcdf
 
+        if len(self.lonidx) != len(x):
+            logging.error("error in determining X coordinates in netcdf...")
+
+        if len(self.latidx) != len(y):
+            logging.error("error in determining X coordinates in netcdf...")
 
         for var in vars:
             try:
