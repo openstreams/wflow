@@ -11,6 +11,7 @@ Release notes
   + FirstZoneCapacity -> SoilWaterCapacity
   + FirstZoneFlux -> SatWaterFlux
   + FirstZoneDepth -> SatWaterDepth
++ [model]reinit moved to [run]reinit (same for fewsrun) in all models
 
 
 2016.03

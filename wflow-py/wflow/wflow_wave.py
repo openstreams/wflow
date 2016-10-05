@@ -300,8 +300,8 @@ class WflowModel(DynamicModel):
     #: Note the use of the configget functione below. This way you sepcify a default
     #: for a parameter but it can be overwritten by the uses in the ini file.
     self.timestepsecs = int(configget(self.config,'model','timestepsecs','86400'))
-    self.reinit = int(configget(self.config,"model","reinit","0"))
-    self.fewsrun = int(configget(self.config,"model","fewsrun","0"))
+    self.reinit = int(configget(self.config,"run","reinit","0"))
+    self.fewsrun = int(configget(self.config,"run","fewsrun","0"))
     
     Qname=configget(self.config,"inputmapstacks","Q","run")
     Hname=configget(self.config,"inputmapstacks","H","lev")

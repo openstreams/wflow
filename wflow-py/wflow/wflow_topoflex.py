@@ -285,7 +285,7 @@ class WflowModel(DynamicModel):
         self.InputSeries = int(configget(self.config,
                                          "model", "InputSeries", "1"))  # forcing data in maps (0) or timeseries (1)
         self.reinit = int(configget(self.config,
-                                    "model", "reinit", "0"))
+                                    "run", "reinit", "0"))
         
         self.intbl = configget(self.config,
                                     "model","intbl","intbl")

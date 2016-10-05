@@ -204,8 +204,8 @@ class WflowModel(DynamicModel):
     #: for a parameter but it can be overwritten by the uses in the ini file.
     self.timestepsecs = int(configget(self.config,'model','timestepsecs','86400'))
     self.maxdist = float(configget(self.config,'model','maxflooddist','1E31'))
-    self.reinit = int(configget(self.config,"model","reinit","0"))
-    self.fewsrun = int(configget(self.config,"model","fewsrun","0"))
+    self.reinit = int(configget(self.config,"run","reinit","0"))
+    self.fewsrun = int(configget(self.config,"run","fewsrun","0"))
     
     self.wf_updateparameters()
 
