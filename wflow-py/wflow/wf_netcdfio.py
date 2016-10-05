@@ -486,7 +486,6 @@ class netcdfinput():
         else:
             (self.latidx,) = logical_and(self.y +acc >= y.min(), self.y <= y.max() + acc).nonzero()
             (self.lonidx,) = logical_and(self.x +acc >= x.min(), self.x <= x.max() + acc).nonzero()
-        # TODO: Check length from cover and netcdf
 
         if len(self.lonidx) != len(x):
             logging.error("error in determining X coordinates in netcdf...")
