@@ -5,7 +5,6 @@ Using the .ini file
 A number of settings of the framework can be set in the ini file for each model.
 The settings are explained in the section below.
 
-
 Settings in the run section
 ===========================
 
