@@ -24,7 +24,7 @@ performed:
 -  wflow_[sbm|hbv].py needs to be run with the -F option where the argument refers
    to a Delft-FEWS runinfo.xml file
 
--  you need to specify fewsrun=1 in the model section of the .ini file
+-  you need to specify fewsrun=1 in the run section of the .ini file
 
 -  The postadapter (wflow\_adapt.py) needs to be run after the wflow run
 

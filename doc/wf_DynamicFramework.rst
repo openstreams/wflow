@@ -22,10 +22,13 @@ to a Delft-FEWS runinfo.xml file can be given. An example is shown below.
     endtime= 1995-02-28 00:00:00
     # required, base timestep of the model
     timestepsecs = 86400
+    fewsrun=0
+    #Indicates the model is running from Delft-FEWS or not
 
 
 If this section is not present and a runinfo.xml is also not used you will need
 to specify the number of timesteps using the -T option on the command line (for most models).
+
 
 
 Settings in the framework section
@@ -400,6 +403,7 @@ The 'runlengthdetermination' variable in the run section can also be set to 'int
     timestepsecs = 86400
     #start model with cold state
     reinit=1
+    fewsrun=0
     # Default behaviour: steps
     runlengthdetermination=intervals
 

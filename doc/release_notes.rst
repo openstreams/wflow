@@ -4,6 +4,10 @@ Release notes
 
 2016.04
 -------
+.. note::
+
+    Several none-backwards compatible changes will be part of this release. Use 2016.03 for older models
+
 + update soil names in sbm to the sbm2 names:
   + FirstZoneKsatVer -> KsatVer
   + FirstZoneMinCapacity -> SoilMinThickness
