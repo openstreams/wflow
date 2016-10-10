@@ -1,12 +1,14 @@
 
-import wflow.bmi as bmi
+import wflow.bmi
 import wflow.wflow_bmi as wfbmi
+
 import wflow
 import os
 from wflow.pcrut import setlogger
 from wflow.wflow_lib import configget
 import ConfigParser
 import logging
+import numpy as np
 from pcraster import *
 
 def iniFileSetUp(configfile):
@@ -39,12 +41,14 @@ def configsection(config,section):
 
     return ret
 
-class wflowbmi_csdms(bmi.Bmi):
+
+class wflowbmi_csdms(wflow.bmi.Bmi):
     """
-    csdms BMI implementation runner for combined pcraster/python models
+    csdms BMI implementation runner for combined pcraster/python and rtc models
 
 
     + all variables are identified by: component_name@variable_name
+    + idmapping between model locations is identifief by a file with indices:component_name@variable_name@file
     + this version is only tested for a one-way link
     + get_component_name returns a comma separated list of components
 
@@ -61,6 +65,8 @@ class wflowbmi_csdms(bmi.Bmi):
         self.bmimodels = OrderedDict()
         self.currenttimestep = 0
         self.exchanges = []
+        self.indices_from = []
+        self.indices_to = []
         self.comp_sep = "@"
         self.wrtodisk = False
         if os.getenv("wflow_bmi_combined_writetodisk",'False') in 'True':
@@ -112,14 +118,48 @@ class wflowbmi_csdms(bmi.Bmi):
 
         self.models = configsection(self.config,'models')
         self.exchanges= configsection(self.config,'exchanges')
+        
+        for item in self.exchanges:
+            exchange_from = item.split(self.comp_sep)
 
+            if len(exchange_from)==3:
+                indices = np.loadtxt(exchange_from[2],delimiter=',',dtype=int)
+                self.indices_from.append([list(indices[0]),list(indices[1])])
+            else:
+                self.indices_from.append([])
+            exchange_to = self.config.get('exchanges',item).split(self.comp_sep)
+            
+            if len(exchange_to)==3:
+                indices = np.loadtxt(exchange_to[2],delimiter=',',dtype=int)
+                print indices
+                self.indices_to.append([[indices[0]],[indices[1]]])
+            else:
+                self.indices_to.append([])
+                
+            
+            
+        # Initialize rtc bmi model object
         for mod in self.models:
-            self.bmimodels[mod] = wfbmi.wflowbmi_csdms()
+            if mod.startswith('RTC'):
+                bin_rtc = os.path.join(self.datadir,self.config.get('RTC wrapper engine','bin_rtc'))
+                print bin_rtc
+                os.chdir(bin_rtc)
+                import rtc_wflow_bmi as rtcwfbmi
+                print bin_rtc
+                self.bmimodels[mod] = rtcwfbmi.rtcbmi_csdms(os.path.join(bin_rtc,"RTCTools_BMI"))
+            
+            else:
+                self.bmimodels[mod] = wfbmi.wflowbmi_csdms()
+        
+            
 
-        # Initialize all bmi model objects
+        # Initialize all wflow bmi model objects
         for key, value in self.bmimodels.iteritems():
-            modconf = os.path.join(self.datadir,self.config.get('models',key))
-            self.bmimodels[key].initialize_config(modconf,loglevel=loglevel)
+            if key.startswith('wflow'):
+                modconf = os.path.join(self.datadir,self.config.get('models',key))
+                self.bmimodels[key].initialize_config(modconf,loglevel=loglevel)
+        
+        
 
 
 
@@ -135,17 +175,29 @@ class wflowbmi_csdms(bmi.Bmi):
 
         for key, value in self.bmimodels.iteritems():
             self.bmimodels[key].initialize_model()
-
+   
         # Copy and set the variables to be exchanged for step 0
         for key, value in self.bmimodels.iteritems():
             # step one update first model
             curmodel = self.bmimodels[key].get_component_name()
-            for item in self.exchanges:
+            for (item,idfrom,idto) in zip(self.exchanges,self.indices_from,self.indices_to):
                 supplymodel = self.__getmodulenamefromvar__(item)
                 if curmodel == supplymodel:
-                    outofmodel = self.get_value(item).copy()
+                    if len(idfrom)>0:                      
+                        sum_ind = np.sum(self.get_value_at_indices(item,idfrom))
+                        outofmodel = np.ndarray(shape=(1,1))
+                        outofmodel[0][0] = sum_ind
+                        
+                    else:
+                        outofmodel = self.get_value(item).copy()
                     tomodel = self.config.get('exchanges',item)
-                    self.set_value(tomodel,outofmodel)
+
+                    if len(idto)>0:
+                        self.set_value_at_indices(tomodel,idto,outofmodel)
+                    else:
+                        self.set_value(tomodel,outofmodel)
+            
+                        
 
         self.bmilogger.info(self.bmimodels)
 
@@ -159,7 +211,8 @@ class wflowbmi_csdms(bmi.Bmi):
         :return: nothing
         """
         for key, value in self.bmimodels.iteritems():
-            self.bmimodels[key].set_start_time(start_time)
+            if key.startswith('wflow'):
+                self.bmimodels[key].set_start_time(start_time)
 
     def set_end_time(self, end_time):
         """
@@ -169,7 +222,8 @@ class wflowbmi_csdms(bmi.Bmi):
         :return:
         """
         for key, value in self.bmimodels.iteritems():
-            self.bmimodels[key].set_end_time(end_time)
+            if key.startswith('wflow'):
+                self.bmimodels[key].set_end_time(end_time)
 
 
 
@@ -227,17 +281,35 @@ class wflowbmi_csdms(bmi.Bmi):
 
         The function iterates over all models
         """
+        
+
         for key, value in self.bmimodels.iteritems():
-            # step one update model
+
             self.bmimodels[key].update()
+
+
             # do all exchanges
+            # step one update first model
             curmodel = self.bmimodels[key].get_component_name()
-            for item in self.exchanges:
+            
+            for (item,idfrom,idto) in zip(self.exchanges,self.indices_from,self.indices_to):
                 supplymodel = self.__getmodulenamefromvar__(item)
                 if curmodel == supplymodel:
-                    outofmodel = self.get_value(item)
+                    if len(idfrom)>0:
+                        sum_ind = np.sum(self.get_value_at_indices(item,idfrom))
+                        outofmodel = np.ndarray(shape=(1,1))
+                        outofmodel[0][0] = sum_ind
+                    else:
+                        outofmodel = self.get_value(item).copy()
+                    
                     tomodel = self.config.get('exchanges',item)
-                    self.set_value(tomodel,outofmodel)
+
+                    if len(idto)>0:
+                        self.set_value_at_indices(tomodel,idto,outofmodel)
+                    else:
+                        self.set_value(tomodel,outofmodel)
+            
+                        
 
         self.currenttimestep = self.currenttimestep + 1
 
