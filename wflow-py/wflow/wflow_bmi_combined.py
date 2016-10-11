@@ -9,6 +9,7 @@ from wflow.wflow_lib import configget
 import ConfigParser
 import logging
 import numpy as np
+import json
 from pcraster import *
 
 def iniFileSetUp(configfile):
@@ -123,16 +124,30 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
             exchange_from = item.split(self.comp_sep)
 
             if len(exchange_from)==3:
-                indices = np.loadtxt(exchange_from[2],delimiter=',',dtype=int)
-                self.indices_from.append([list(indices[0]),list(indices[1])])
+                if exchange_from[2].startswith('['):
+                    ind = json.loads(exchange_from[2])
+                else:
+                    ind_temp = np.loadtxt(exchange_from[2],delimiter=',',dtype=int)
+                    if ind_temp.size == 2:
+                        ind = [[ind_temp[0]],[ind_temp[1]]]
+                    else:
+                        ind = [list(ind_temp[0]),list(ind_temp[1])]
+                self.indices_from.append(ind)
             else:
                 self.indices_from.append([])
+            
             exchange_to = self.config.get('exchanges',item).split(self.comp_sep)
             
             if len(exchange_to)==3:
-                indices = np.loadtxt(exchange_to[2],delimiter=',',dtype=int)
-                print indices
-                self.indices_to.append([[indices[0]],[indices[1]]])
+                if exchange_to[2].startswith('['):
+                    ind = json.loads(exchange_to[2])
+                else:
+                    ind_temp = np.loadtxt(exchange_to[2],delimiter=',',dtype=int)
+                    if ind_temp.size == 2:
+                        ind = [[ind_temp[0]],[ind_temp[1]]]
+                    else:
+                        ind = [list(ind_temp[0]),list(ind_temp[1])]
+                self.indices_from.append(ind)
             else:
                 self.indices_to.append([])
                 
