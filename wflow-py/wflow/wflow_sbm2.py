@@ -1840,6 +1840,7 @@ class WflowModel(DynamicModel):
         self.CumLeakage = self.CumLeakage + self.ActLeakage
         self.CumInwaterMM = self.CumInwaterMM + self.InwaterMM
         self.CumExfiltWater = self.CumExfiltWater + self.ExfiltWater
+        #TODO: Fix soilwatbal, it is not good at present!
         self.SoilWatbal = self.ActInfilt + self.reinfiltwater  + CellInFlow - self.Transpiration - self.soilevap  -\
                           self.ExfiltWater  -  self.SubCellGWRunoff  - self.DeltaStorage -\
                           self.SatWaterFlux
