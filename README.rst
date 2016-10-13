@@ -72,4 +72,6 @@ Credits
 
 + netCDF4 is developed by unidata (http://unidata.github.io/netcdf4-python/)
 
++ GDAL is released under an X/MIT style Open Source license by the Open Source Geospatial Foundation (http://www.gdal.org).
+
 

@@ -38,10 +38,10 @@ class MyTest(unittest.TestCase):
         dynModelFw._wf_shutdown()
 
         # Now read the csv results and check of they match the first run
-        # Sum should be approx c 48.992157936096191
+        # Sum should be approx c -1.1690310351550579
         my_data = wf.genfromtxt(os.path.join(caseName,runId,"tes.csv"), delimiter=',')
 
-        self.assertAlmostEquals(48.992157936096191,my_data[:,2].sum())
+        self.assertAlmostEquals(-1.1690310351550579,my_data[:,2].sum())
 
 
 if __name__ == '__main__':
