@@ -29,7 +29,7 @@ class MyTest(unittest.TestCase):
         print dynModelFw.DT
 
           # Load model config from files and check directory structure
-        dynModelFw.createRunId(NoOverWrite=False,level=wf.logging.DEBUG)
+        dynModelFw.createRunId(NoOverWrite=False,level=wf.logging.ERROR)
         # Run the initial part of the model (reads parameters and sets initial values)
         dynModelFw._runInitial() # Runs initial part
 

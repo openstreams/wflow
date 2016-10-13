@@ -26,7 +26,7 @@ class MyTest(unittest.TestCase):
         dynModelFw = wf.wf_DynamicFramework(myModel, stopTime,startTime)
 
           # Load model config from files and check directory structure
-        dynModelFw.createRunId(NoOverWrite=False,level=wf.logging.INFO)
+        dynModelFw.createRunId(NoOverWrite=False,level=wf.logging.ERROR)
         # Run the initial part of the model (reads parameters and sets initial values)
         dynModelFw._runInitial() # Runs initial part
 
