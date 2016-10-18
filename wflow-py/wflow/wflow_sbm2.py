@@ -703,7 +703,7 @@ class WflowModel(DynamicModel):
         # Check of we have paddy irrigation areas
         tt = pcr2numpy(self.IrrigationPaddyAreas, 0.0)
         self.nrpaddyirri = tt.max()
-        
+
         self.Beta = scalar(0.6)  # For sheetflow
 
         self.M = self.readtblDefault(self.Dir + "/" + self.intbl + "/M.tbl", self.LandUse, subcatch, self.Soil,
@@ -793,7 +793,7 @@ class WflowModel(DynamicModel):
         # determine number of layers based on total soil thickness
         # assign thickness, unsaturated water store and transfer to these layers (initializing)
         UStoreLayerThickness = configget(self.config,"model","UStoreLayerThickness",'0')
-        if UStoreLayerThickness != '0':     
+        if UStoreLayerThickness != '0':
             self.USatLayers = len(UStoreLayerThickness.split(','))
             self.maxLayers = self.USatLayers + 1
         else:
@@ -1260,6 +1260,7 @@ class WflowModel(DynamicModel):
         self.PathInfiltExceeded = self.PathInfiltExceeded + scalar(self.InfiltCapPath * soilInfRedu < PathInf)
 
         InfiltSoilPath = min(MaxInfiltPath+MaxInfiltSoil,max(0.0,UStoreCapacity))
+        self.In = InfiltSoilPath
         self.ActInfilt = InfiltSoilPath # JS Ad this to be compatible with rest
 
         self.SumThickness = self.ZeroMap
@@ -1272,6 +1273,7 @@ class WflowModel(DynamicModel):
         # Split between bare soil/open water and vegetation
         self.potsoilopenwaterevap = (1.0 - self.CanopyGapFraction) * self.PotTransSoil
         self.PotTrans = self.PotTransSoil - self.potsoilopenwaterevap
+        self.PotTrans0 = self.PotTrans
 
         # Determine Open Water EVAP. Later subtract this from water that
         # enters the Kinematic wave
@@ -1279,12 +1281,13 @@ class WflowModel(DynamicModel):
         #self.RestEvap = (self.PotTrans - self.Transpiration) + self.potsoilopenwaterevap
         self.ActEvapOpenWater =  min(self.WaterLevel * 1000.0 * self.WaterFrac ,self.WaterFrac * self.RestEvap)
         self.RestEvap = self.RestEvap - self.ActEvapOpenWater
-        
-        self.ActEvapPond = self.ZeroMap          
+        self.RE = self.RestEvap
+
+        self.ActEvapPond = self.ZeroMap
         if self.nrpaddyirri > 0:
-            self.ActEvapPond = min(self.PondingDepth,self.RestEvap)  
+            self.ActEvapPond = min(self.PondingDepth,self.RestEvap)
             self.PondingDepth = self.PondingDepth -  self.ActEvapPond
-            self.RestEvap = self.RestEvap - self.ActEvapPond        
+            self.RestEvap = self.RestEvap - self.ActEvapPond
 
 
         # Go from top to bottom layer
@@ -1326,21 +1329,20 @@ class WflowModel(DynamicModel):
             if n == 0:
                 DownWard = InfiltSoilPath#MaxInfiltPath+MaxInfiltSoil
                 self.UStoreLayerDepth[n] = self.UStoreLayerDepth[n] + DownWard
-                
+
                 self.soilevap = soilevap_SBM(self.CanopyGapFraction,self.RestEvap,self.SoilWaterCapacity,self.SatWaterDepth,self.UStoreLayerDepth,self.zi,self.thetaS,self.thetaR,self.UStoreLayerThickness)
-                
                 #assume soil evaporation is from first soil layer
-                if self.nrpaddyirri > 0:        
+                if self.nrpaddyirri > 0:
                     self.soilevap = ifthenelse(self.PondingDepth > 0.0, 0.0,min(self.soilevap, self.UStoreLayerDepth[0]))
-                else:    
+                else:
                     self.soilevap = min(self.soilevap, self.UStoreLayerDepth[n])
+
 
                 self.UStoreLayerDepth[n] = self.UStoreLayerDepth[n] - self.soilevap
 
                 self.PotTrans = self.PotTransSoil - self.soilevap - self.ActEvapOpenWater
-                
-                self.RestPotEvap, self.SatWaterDepth, self.ActEvapSat = actEvap_sat_SBM(self.ActRootingDepth, self.zi, self.SatWaterDepth, self.PotTrans, self.rootdistpar)
 
+                self.RestPotEvap, self.SatWaterDepth, self.ActEvapSat = actEvap_sat_SBM(self.ActRootingDepth, self.zi, self.SatWaterDepth, self.PotTrans, self.rootdistpar)
 
                 self.UStoreLayerDepth[n], self.ActEvapUStore, self.RestPotEvap, self.ET =  actEvap_unsat_SBM(self.ActRootingDepth, self.zi, self.UStoreLayerDepth[n],
                                                                 self.ZiLayer,  self.UStoreLayerThickness[n],
@@ -1379,21 +1381,17 @@ class WflowModel(DynamicModel):
         # Determine transpiration
         self.Transpiration = self.ActEvapUStore + self.ActEvapSat
 
+        self.ActEvap = self.Transpiration + self.soilevap + self.ActEvapOpenWater + self.ActEvapPond
 
-        # Run only if we have irrigation areas, determine irrigation demand based on potrans and acttrans
-        if self.nrirri > 0:
-            self.IrriDemand, self.IrriDemandm3 = self.irrigationdemand(self.PotTrans,self.Transpiration,self.IrrigationAreas)
-            IRDemand = idtoid(self.IrrigationAreas, self.IrrigationSurfaceIntakes, self.IrriDemandm3)  * -1.0
+        # Run only if we have irrigation areas or an externally given demand, determine irrigation demand based on potrans and acttrans
+        if self.nrirri > 0 or hasattr(self,"IrriDemandExternal"):
+            if not hasattr(self,"IrriDemandExternal"): # if not given
+                self.IrriDemand, self.IrriDemandm3 = self.irrigationdemand(self.PotTrans,self.Transpiration,self.IrrigationAreas)
+                IRDemand = idtoid(self.IrrigationAreas, self.IrrigationSurfaceIntakes, self.IrriDemandm3)  * -1.0
+            else:
+                IRDemand = self.IrriDemandExternal
             # loop over irrigation areas and assign Q to linked river extraction points
             self.Inflow = cover(IRDemand,self.Inflow)
-
-      
-        else:
-            self.soilevap = min(self.soilevap, self.UStoreLayerDepth[0])
-        
-        
-
-        self.ActEvap = self.Transpiration + self.soilevap + self.ActEvapOpenWater + self.ActEvapPond
 
 
         ##########################################################################
@@ -1467,7 +1465,6 @@ class WflowModel(DynamicModel):
             ToAdd = ToAdd - cover(thisLayer,0.0)
             sumLayer = sumLayer + cover(thisLayer,0.0)
 
-
         # Determine Ksat at base
         self.DeepTransfer = min(self.SatWaterDepth,self.DeepKsat)
         #ActLeakage = 0.0
@@ -1483,8 +1480,6 @@ class WflowModel(DynamicModel):
         for n in arange(0,len(self.UStoreLayerThickness)):
             self.UStoreLayerDepth[n] = ifthenelse(self.ZiLayer==n,self.UStoreLayerDepth[n] - self.Transfer, self.UStoreLayerDepth[n])
 
-
-
         # Determine % saturated taking into account subcell fraction
         self.Sat = max(self.SubCellFrac, scalar(self.SatWaterDepth >= (self.SoilWaterCapacity * 0.999)))
 
@@ -1494,9 +1489,6 @@ class WflowModel(DynamicModel):
 
         self.zi = max(0.0, self.SoilThickness - self.SatWaterDepth / (
             self.thetaS - self.thetaR))  # Determine actual water depth
-
-
-
 
 
         # Re-Determine saturation deficit. NB, as noted by Vertessy and Elsenbeer 1997
@@ -1550,8 +1542,6 @@ class WflowModel(DynamicModel):
         self.SatWaterDepth = self.SatWaterDepth - self.ExfiltWater
 
         # Re-determine UStoreCapacity
-
-
         self.zi = max(0.0, self.SoilThickness - self.SatWaterDepth / (
             self.thetaS - self.thetaR))  # Determine actual water depth
 
@@ -1594,7 +1584,6 @@ class WflowModel(DynamicModel):
             if n>0:
                 self.UStoreLayerDepth[n-1] = self.UStoreLayerDepth[n-1] + self.ExfiltFromUstore
 
-
         # Re-determine UStoreCapacityield' object does not support item assignment
         UStoreCapacity = self.SoilWaterCapacity - self.SatWaterDepth - sum_list_cover(self.UStoreLayerDepth,self.ZeroMap)
 
@@ -1616,7 +1605,7 @@ class WflowModel(DynamicModel):
         self.ExfiltWater = self.ExfiltWater + self.ExfiltFromUstore
 
         self.inund = self.ExfiltWater + self.ExcessWater
-        
+
         ponding_add = self.ZeroMap
         if self.nrpaddyirri > 0:
             ponding_add = min(self.inund,self.h_p-self.PondingDepth)
@@ -1625,10 +1614,10 @@ class WflowModel(DynamicModel):
             sqmarea = areatotal(self.reallength * self.reallength, nominal(self.IrrigationPaddyAreas))
             self.IrriDemandm3 = (irr_depth/1000.0)*sqmarea
             IRDemand = idtoid(self.IrrigationPaddyAreas, self.IrrigationSurfaceIntakes, self.IrriDemandm3)  * (-1.0 / self.timestepsecs)
-            self.IRDemand= IRDemand            
+            self.IRDemand= IRDemand
             self.Inflow = cover(IRDemand,self.Inflow)
-        
-    
+
+
 
         UStoreCapacity = self.SoilWaterCapacity - self.SatWaterDepth - sum_list_cover(self.UStoreLayerDepth,self.ZeroMap)
 
@@ -1840,7 +1829,7 @@ class WflowModel(DynamicModel):
         self.CumLeakage = self.CumLeakage + self.ActLeakage
         self.CumInwaterMM = self.CumInwaterMM + self.InwaterMM
         self.CumExfiltWater = self.CumExfiltWater + self.ExfiltWater
-        #TODO: Fix soilwatbal, it is not good at present!
+
         self.SoilWatbal = self.ActInfilt + self.reinfiltwater  + CellInFlow - self.Transpiration - self.soilevap  -\
                           self.ExfiltWater  -  self.SubCellGWRunoff  - self.DeltaStorage -\
                           self.SatWaterFlux
