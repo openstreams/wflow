@@ -165,6 +165,8 @@ When wflow\_flood.py is run with the -h argument, you will receive the following
 				Destination path
 	  -H HAND_FILE_PREFIX, --hand_file=HAND_FILE_PREFIX
 				optional HAND file prefix of already generated HAND maps for different Strahler orders
+	  -n neg_HAND, --negHAND=0
+	            optional functionality to allow HAND maps to become negative (if set to 1, default=0)
 
 
 Further explanation:
@@ -188,6 +190,10 @@ Further explanation:
     -H = HAND file prefix. As interim product, the module produces HAND files. This is a very time consuming process and therefore the user can also supply previously generated HAND files here (GeoTIFF format)
         The names of the HAND files should be constructed as follows: hand_prefix_{:02d}.format{hand_strahler}, so for example hand_prefix_03 for HAND map with minimum Strahler order 3. (in this case -H hand_prefix should be given)
         Maps should be made for Strahler orders from -c to -m (or maximum strahler order in the stream map)
+
+    -n = allow for negative HAND maps - if this option is set to 1, the user allows the HAND maps to become negative. This can be useful when there are natural embankments which result in a lower elevation than the river bed.
+        However, this option leads to artifacts when the used SRTM is not corrected for elevation and when the river shapefile is not entirely correct (for example if the burned in river is following an old meander.
+         Therefore the user must be very confident about the used data sources (river shape file and digital elevation model corrected for vegetation) when this option is set to 1!
     
 Outputs
 -------
@@ -272,6 +278,9 @@ def main():
     parser.add_option('-H', '--hand_file_prefix',
                       dest='hand_file_prefix', default='',
                       help='optional HAND file prefix of already generated HAND files')
+    parser.add_option('-n', '--neg_HAND',
+                      dest='neg_HAND', default=0, type='int',
+                      help='if set to 1, allow for negative HAND values in HAND maps')
     (options, args) = parser.parse_args()
 
     if not os.path.exists(options.inifile):
@@ -497,7 +506,7 @@ def main():
                         stream_ge_dummy, subcatch = inun_lib.subcatch_stream(drainage_pcr, options.catchment_strahler, stream=stream_pcr) # generate streams
                         basin = pcr.boolean(subcatch)
                         hand_pcr, dist_pcr = inun_lib.derive_HAND(terrain_pcr, drainage_pcr, 3000,
-                                                                  rivers=pcr.boolean(stream_ge), basin=basin)
+                                                                  rivers=pcr.boolean(stream_ge), basin=basin, neg_HAND=options.neg_HAND)
                     # convert to numpy
                     hand = pcr.pcr2numpy(hand_pcr, -9999.)
                     # cut relevant part
@@ -759,7 +768,8 @@ def main():
                                                              iterations=options.iterations,
                                                              cell_surface=pcr.numpy2pcr(pcr.Scalar, cell_surface_tile, -9999),
                                                              logging=logger,
-                                                             order=hand_strahler) # 1166400000.
+                                                             order=hand_strahler,
+                                                             neg_HAND=options.neg_HAND) # 1166400000.
                 # use maximum value of inundation_pcr_step and new inundation for higher strahler order
                 inundation_pcr = pcr.max(inundation_pcr, inundation_pcr_step)
             inundation = pcr.pcr2numpy(inundation_pcr, -9999.)
