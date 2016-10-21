@@ -62,7 +62,7 @@ def convertCoord(proj_src, proj_trg, x, y):
 
 
 def prepare_nc(trgFile, timeList, x, y, metadata, logger, EPSG="EPSG:4326", units=None,
-               calendar='gregorian', Format="NETCDF4", complevel=9, zlib=True, least_significant_digit=None):
+               calendar='gregorian', Format="NETCDF4", complevel=9, zlib=True, least_significant_digit=None,FillValue=1E31):
     """
     This function prepares a NetCDF file with given metadata, for a certain year, daily basis data
     The function assumes a gregorian calendar and a time unit 'Days since 1900-01-01 00:00:00'
@@ -91,7 +91,7 @@ def prepare_nc(trgFile, timeList, x, y, metadata, logger, EPSG="EPSG:4326", unit
     else:
         nc_trg.createDimension('time', 0)  # NrOfDays*8
 
-    DateHour = nc_trg.createVariable('time', 'f8', ('time',), fill_value=-9999., zlib=zlib, complevel=complevel)
+    DateHour = nc_trg.createVariable('time', 'f8', ('time',), fill_value=FillValue, zlib=zlib, complevel=complevel)
     DateHour.units = units
     DateHour.calendar = calendar
     DateHour.standard_name = 'time'
@@ -113,12 +113,12 @@ def prepare_nc(trgFile, timeList, x, y, metadata, logger, EPSG="EPSG:4326", unit
     if srs.IsProjected() == 0: # ONly lat lon needed
         nc_trg.createDimension('lat', len(y))
         nc_trg.createDimension('lon', len(x))
-        y_var = nc_trg.createVariable('lat', 'f4', ('lat',), fill_value=-9999., zlib=zlib, complevel=complevel)
+        y_var = nc_trg.createVariable('lat', 'f4', ('lat',), fill_value=FillValue, zlib=zlib, complevel=complevel)
         y_var.standard_name = 'latitude'
         y_var.long_name = 'latitude'
         y_var.units = 'degrees_north'
         y_var.axis = 'Y'
-        x_var = nc_trg.createVariable('lon', 'f4', ('lon',), fill_value=-9999., zlib=zlib, complevel=complevel)
+        x_var = nc_trg.createVariable('lon', 'f4', ('lon',), fill_value=FillValue, zlib=zlib, complevel=complevel)
         x_var.standard_name = 'longitude'
         x_var.long_name = 'longitude'
         x_var.units = 'degrees_east'
@@ -132,12 +132,12 @@ def prepare_nc(trgFile, timeList, x, y, metadata, logger, EPSG="EPSG:4326", unit
     else:  # Assume regular grid in m
         nc_trg.createDimension('y', len(y))
         nc_trg.createDimension('x', len(x))
-        y_var = nc_trg.createVariable('y', 'f4', ('y',), fill_value=-9999., zlib=zlib, complevel=complevel)
+        y_var = nc_trg.createVariable('y', 'f4', ('y',), fill_value=FillValue, zlib=zlib, complevel=complevel)
         y_var.standard_name = 'projection_y_coordinate'
         y_var.long_name = 'y-coordinate in Cartesian system'
         y_var.units = 'm'
         y_var.axis = 'Y'
-        x_var = nc_trg.createVariable('x', 'f4', ('x',), fill_value=-9999., zlib=zlib, complevel=complevel)
+        x_var = nc_trg.createVariable('x', 'f4', ('x',), fill_value=FillValue, zlib=zlib, complevel=complevel)
         x_var.standard_name = 'projection_x_coordinate'
         x_var.long_name = 'x-coordinate in Cartesian system'
         x_var.units = 'm'

@@ -50,6 +50,7 @@ syntax:
     -z switch on zlib compression (default=On)
     -d least_significant_digit (set precision for more compression)
     -c inifile (contains netcdf meta data)
+    -C clonemap.map use maps as mask and clone
 
 This utility is made to simplify running wflow models with OpenDA. The
 OpenDA link needs the forcing timeseries to be in netcdf format. Use this to convert
@@ -86,6 +87,59 @@ def usage(*args):
     print __doc__
     sys.exit(0)
 
+def writeMap(fileName, fileFormat, x, y, data, FillVal):
+    """
+    Write geographical data into file. Also replace NaN by FillVall
+
+    :param fileName:
+    :param fileFormat:
+    :param x:
+    :param y:
+    :param data:
+    :param FillVal:
+    :return:
+    """
+
+
+    verbose = False
+    gdal.AllRegister()
+    driver1 = gdal.GetDriverByName('GTiff')
+    driver2 = gdal.GetDriverByName(fileFormat)
+
+    data[isnan(data)] = FillVal
+    # Processing
+    if verbose:
+        print 'Writing to temporary file ' + fileName + '.tif'
+        print "Output format: " + fileFormat
+    # Create Output filename from (FEWS) product name and date and open for writing
+    TempDataset = driver1.Create(fileName + '.tif',data.shape[1],data.shape[0],1,gdal.GDT_Float32)
+    # Give georeferences
+    xul = x[0]-(x[1]-x[0])/2
+    yul = y[0]+(y[0]-y[1])/2
+
+    TempDataset.SetGeoTransform( [ xul, x[1]-x[0], 0, yul, 0, y[1]-y[0] ] )
+    # get rasterband entry
+    TempBand = TempDataset.GetRasterBand(1)
+    # fill rasterband with array
+    TempBand.WriteArray(data.astype(float32),0,0)
+    TempBand.FlushCache()
+    TempBand.SetNoDataValue(FillVal)
+
+    # Create data to write to correct format (supported by 'CreateCopy')
+    if verbose:
+        print 'Writing to ' + fileName + '.map'
+    if fileFormat == 'GTiff':
+        outDataset = driver2.CreateCopy(fileName, TempDataset, 0 ,options = ['COMPRESS=LZW'])
+    else:
+        outDataset = driver2.CreateCopy(fileName, TempDataset, 0)
+    TempDataset = None
+    outDataset = None
+    if verbose:
+        print 'Removing temporary file ' + fileName + '.tif'
+    os.remove(fileName + '.tif');
+
+    if verbose:
+        print 'Writing to ' + fileName + ' is done!'
 
 def readMap(fileName, fileFormat,logger,unzipcmd='pigz -d -k'):
     """ 
@@ -199,7 +253,9 @@ def getvarmetadatafromini(inifile,var):
     return metadata
 
 
-def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trgName, timeList, metadata, logger,maxbuf=600,Format="NETCDF4",zlib=True,least_significant_digit=None,startidx=0,EPSG="EPSG:4326"):
+def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trgName, timeList, metadata,
+                            logger,clone,maxbuf=600,Format="NETCDF4",zlib=True,least_significant_digit=None,startidx=0,EPSG="EPSG:4326",
+                            FillVal=1E31):
     """
     Write pcraster mapstack to netcdf file. Taken from GLOFRIS_Utils.py
     
@@ -235,11 +291,11 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
         # prepare the variable
 
         if EPSG.lower() == "epsg:4326":
-            nc_var = nc_trg.createVariable(trgVar, 'f4', ('time', 'lat', 'lon',), fill_value=-9999.0, zlib=True,
+            nc_var = nc_trg.createVariable(trgVar, 'f4', ('time', 'lat', 'lon',), fill_value=FillVal, zlib=True,
                                                         complevel=9, least_significant_digit=least_significant_digit)
             nc_var.coordinates = "lat lon"
         else:
-            nc_var = nc_trg.createVariable(trgVar, 'f4', ('time', 'y', 'x',), fill_value=-9999.0, zlib=True,
+            nc_var = nc_trg.createVariable(trgVar, 'f4', ('time', 'y', 'x',), fill_value=FillVal, zlib=True,
                                                         complevel=9, least_significant_digit=least_significant_digit)
             nc_var.coordinates = "lat lon"
             nc_var.grid_mapping = "crs"
@@ -279,10 +335,15 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
         # write grid to PCRaster file
         logger.debug("processing map: " + pcraster_file)
         #x, y, data, FillVal = readMap(pcraster_path, 'PCRaster',logger)
-        x, y, data, FillVal = _readMap(pcraster_path, 'PCRaster',logger)
+        x, y, data, FFillVal = _readMap(pcraster_path, 'PCRaster',logger)
         logger.debug("Setting fillval...")
 
-        data[data==FillVal] = nc_Fill
+
+        data[data==FFillVal] = float(nc_Fill)
+        data[isinf(data)] = float(nc_Fill)
+        data[isnan(data)] = float(nc_Fill)
+        data[clone <= -999] = float(nc_Fill)
+        data[clone == FFillVal] = float(nc_Fill)
 
         # print x
         # print ddata
@@ -393,13 +454,15 @@ def main(argv=None):
     endstr="2-2-1990 00:00:00"
     mbuf=600
     timestepsecs = 86400
-    
+
+    outputFillVal = 1E31
     clonemap=None
     OFormat="NETCDF4"
     IFormat = 'PCRaster'
     EPSG="EPSG:4326"
     Singlemap = False
     zlib=True
+    clonemask = 'None'
     least_significant_digit=None
     startstep = 1
     perYear = False
@@ -409,10 +472,11 @@ def main(argv=None):
             usage()
             return    
 
+
     ## Main model starts here
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, 'c:S:E:N:I:O:b:t:F:zs:d:YP:Mi:')
+        opts, args = getopt.getopt(argv, 'c:S:E:N:I:O:b:t:F:zs:d:YP:Mi:C:')
     except getopt.error, msg:
         usage(msg)
 
@@ -432,6 +496,7 @@ def main(argv=None):
         if o == '-M': Singlemap = True
         if o == '-F': OFormat=a
         if o == '-d': least_significant_digit = int(a)
+        if o == '-C': clonemask = a
         if o == '-t': 
             timestepsecs = int(a)
         if o == '-N':
@@ -454,6 +519,7 @@ def main(argv=None):
 
     clonemapname  = str(mapstackname[0] + '%0' + str(8-len(mapstackname[0])) + '.f.%03.f') % (above_thousand, below_thousand)
     clonemap = os.path.join(mapstackfolder, clonemapname)
+    clonemap = os.path.join(mapstackfolder, "clone.map")
     if Singlemap:
         clonemap = mapstackname[0]
 
@@ -461,7 +527,7 @@ def main(argv=None):
     if IFormat == 'PCRaster':
         _pcrut.setclone(clonemap)
 
-    x, y, data, FillVal = _readMap(clonemap, IFormat, logger)
+    x, y, clone, FillVal = _readMap(clonemap, IFormat, logger)
 
 
 
@@ -504,7 +570,8 @@ def main(argv=None):
                 if os.path.exists(ncoutfile_yr):
                     logger.info("Skipping file: " + ncoutfile_yr)
                 else:
-                    ncdf.prepare_nc(ncoutfile_yr, yr_timelist, x, y, metadata, logger,Format=OFormat,zlib=zlib,EPSG=EPSG)
+                    ncdf.prepare_nc(ncoutfile_yr, yr_timelist, x, y, metadata, logger,Format=OFormat,zlib=zlib,
+                                    EPSG=EPSG,FillValue=outputFillVal)
 
                     idx = 0
                     for mname in mapstackname:
@@ -514,7 +581,9 @@ def main(argv=None):
                             varmeta = getvarmetadatafromini(inifile,var[idx])
 
                         write_netcdf_timeseries(mapstackfolder, mname, ncoutfile_yr, var[idx], unit, varname[idx], \
-                                                yr_timelist, varmeta, logger,maxbuf=mbuf,Format=OFormat,zlib=zlib,least_significant_digit=least_significant_digit,startidx=startmapstack,EPSG=EPSG)
+                                                yr_timelist, varmeta, logger, clone,maxbuf=mbuf,Format=OFormat,
+                                                zlib=zlib,least_significant_digit=least_significant_digit,
+                                                startidx=startmapstack,EPSG=EPSG,FillVal=outputFillVal)
                         idx = idx + 1
 
                 startmapstack = startmapstack + len(yr_timelist)
@@ -529,8 +598,8 @@ def main(argv=None):
                     varmeta = getvarmetadatafromini(inifile,var[idx])
 
                 write_netcdf_timeseries(mapstackfolder, mname, ncoutfile, var[idx], unit, varname[idx], timeList, varmeta,\
-                                        logger,maxbuf=mbuf,Format=OFormat,zlib=zlib,least_significant_digit=least_significant_digit,\
-                                        startidx=startmapstack,EPSG=EPSG)
+                                        logger,clone,maxbuf=mbuf,Format=OFormat,zlib=zlib,least_significant_digit=least_significant_digit,\
+                                        startidx=startmapstack,EPSG=EPSG,FillVal=outputFillVal)
                 idx = idx + 1
     else:
         NcOutput = ncdf.netcdfoutputstatic(ncoutfile, logger, timeList[0],1,timestepsecs=timestepsecs,
