@@ -191,10 +191,11 @@ def _readMap(fileName, fileFormat,logger):
     cols = ds.RasterXSize
     rows = ds.RasterYSize
     x = linspace(originX+resX/2,originX+resX/2+resX*(cols-1),cols)
-    if resY < 0.0:
-        y = linspace(originY+abs(resY)/2,originY+abs(resY)/2+abs(resY)*(rows-1),rows)[::-1]
-    else:
-        y = linspace(originY + resY / 2, originY + resY / 2 + resY * (rows - 1), rows)
+    #if resY < 0.0:
+    #    y = linspace(originY+abs(resY)/2,originY+abs(resY)/2+abs(resY)*(rows-1),rows)[::-1]
+    #    y = linspace(originY + resY / 2, originY + resY / 2 + resY * (rows - 1), rows)
+    #else:
+    y = linspace(originY + resY / 2, originY + resY / 2 + resY * (rows - 1), rows)
     RasterBand = ds.GetRasterBand(1) # there's only 1 band, starting from 1
     data = RasterBand.ReadAsArray(0,0,cols,rows)
     FillVal = RasterBand.GetNoDataValue()
@@ -314,7 +315,7 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
 
     if len(shape(nc_trg.variables['lat'])) == 2:
         latlen = shape(nc_trg.variables['lat'])[0]
-        lonlen = shape(nc_trg.variables['lat'])[1]
+        lonlen = shape(nc_trg.variables['lon'])[1]
     else:
         latlen = len(nc_trg.variables['lat'])
         lonlen = len(nc_trg.variables['lon'])
@@ -345,15 +346,8 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
         data[clone <= -999] = float(nc_Fill)
         data[clone == FFillVal] = float(nc_Fill)
 
-        # print x
-        # print ddata
-        # print data
-        # _pcrut.report(_pcrut.numpy2pcr(_pcrut.Scalar,data,1E31),"tt.map")
-        # _pcrut.report(_pcrut.numpy2pcr(_pcrut.Scalar,ddata,1E31),"ttt.map")
         buffreset = (idx + 1) % maxbuf
         bufpos = (idx) % maxbuf
-        #timestepbuffer[bufpos,:,:] =  flipud(data)
-        # Weird, the flupud is no longer needed!!!!
         logger.debug("Adding data to array...")
         timestepbuffer[bufpos,:,:] =  data
 
