@@ -411,7 +411,7 @@ def date_range_peryear(start, end, tdelta="days"):
         ed = min(dt.datetime(yrs+1,1,1), end)
 
         if tdelta == "days":
-            r = (ed-dt.datetime(yrs,1,1)).days
+            r = (ed-dt.datetime(yrs,1,1)).days + 1
             ret.append([dt.datetime(yrs,1,1)+dt.timedelta(days=i) for i in range(r)])
         else:
             r = ((ed-dt.datetime(yrs,1,1)).days) * 24
