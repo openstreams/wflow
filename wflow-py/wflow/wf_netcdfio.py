@@ -449,6 +449,16 @@ class netcdfinput():
         self.fstep = 0
         self.lstep = self.fstep + self.maxsteps
 
+        self.datetime = self.dataset.variables['time'][:]
+        if hasattr(self.dataset.variables['time'],'units'):
+            self.timeunits=self.dataset.variables['time'].units
+        else:
+            self.timeunits ='Seconds since 1970-01-01 00:00:00'
+        if hasattr(self.dataset.variables['time'], 'calendar'):
+            self.calendar= self.dataset.variables['time'].calendar
+        else:
+            self.calendar ='gregorian'
+        self.datetimelist=netCDF4.num2date(self.datetime,self.timeunits, calendar=self.calendar)
 
         try:
             self.x = self.dataset.variables['x'][:]
@@ -502,7 +512,7 @@ class netcdfinput():
 
 
 
-    def gettimestep(self, timestep, logging, var='P', shifttime=False):
+    def gettimestep(self, timestep, logging, tsdatetime=None, var='P', shifttime=False):
         """
         Gets a map for a single timestep. reads data in blocks assuming sequential access
 
@@ -510,6 +520,7 @@ class netcdfinput():
         :var logging: python logging object
         :var var: variable to get from the file
         :var shifttime: is True start at 1 in the NC file (instead of 0)
+        :var tsdatetime: Assumed date/time of this timestep
 
 
             window = data[dpos,latidx.min():latidx.max()+1,lonidx.min():lonidx.max()+1]
@@ -518,6 +529,10 @@ class netcdfinput():
             ncindex = timestep
         else:
             ncindex = timestep - 1
+
+        if tsdatetime != None:
+            if tsdatetime != self.datetimelist[ncindex]:
+                logging.warn("Date/time does not match. Wanted " + str(tsdatetime) + " got " + str(self.datetimelist[ncindex]))
 
         if self.alldat.has_key(var):
             if ncindex == self.lstep:  # Read new block of data in mem

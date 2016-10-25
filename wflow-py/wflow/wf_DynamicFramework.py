@@ -96,6 +96,7 @@ class runDateTimeInfo():
                 self.runStateTime = self.runStartTime - datetime.timedelta(seconds=self.timeStepSecs)
             else:
                 self.runStateTime = self.runStartTime
+
             self.outPutStartTime = self.runStateTime + datetime.timedelta(seconds=self.timeStepSecs)
         elif timestepsecs and runTimeSteps:
             self.timeStepSecs = timestepsecs
@@ -2286,7 +2287,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
             if self._userModel()._inDynamic():
                 if 'None' not in self.ncfile:
-                    retval, succ = self.NcInput.gettimestep(self._userModel().currentTimeStep(), self.logger, var=varname,shifttime=self.DT.startadjusted)
+                    retval, succ = self.NcInput.gettimestep(self._userModel().currentTimeStep(), self.logger,
+                                                            tsdatetime=self.DT.currentDateTime + datetime.timedelta(seconds=self.DT.timeStepSecs), var=varname,
+                                                            shifttime=self.DT.startadjusted)
                     if succ:
                         return retval
                     else:
