@@ -28,7 +28,7 @@ syntax:
 
     For single maps (no series)
     pcr2netcdf -M -S date  -N mapname
-               -O netcdf_name [-b buffersize] [-c inifile][-s start][-d digit][-Y][-P EPSG]
+               -O netcdf_name [-b buffersize] [-c inifile][-s start][-d digit][-Y][-P EPSG][-C clone]
 
     -M single map mode
     -S startdate in "%d-%m-%Y %H:%M:%S" e.g. 31-12-1990 00:00:00
@@ -456,8 +456,8 @@ def main(argv=None):
     EPSG="EPSG:4326"
     Singlemap = False
     zlib=True
-    clonemask = 'None'
     least_significant_digit=None
+    clonemapname = 'None'
     startstep = 1
     perYear = False
     if argv is None:
@@ -490,7 +490,7 @@ def main(argv=None):
         if o == '-M': Singlemap = True
         if o == '-F': OFormat=a
         if o == '-d': least_significant_digit = int(a)
-        if o == '-C': clonemask = a
+        if o == '-C': clonemapname = a
         if o == '-t': 
             timestepsecs = int(a)
         if o == '-N':
@@ -511,9 +511,12 @@ def main(argv=None):
     below_thousand = count % 1000
     above_thousand = count / 1000
 
-    clonemapname  = str(mapstackname[0] + '%0' + str(8-len(mapstackname[0])) + '.f.%03.f') % (above_thousand, below_thousand)
+    if clonemapname == 'None':
+        clonemapname = str(mapstackname[0] + '%0' + str(8 - len(mapstackname[0])) + '.f.%03.f') % (above_thousand, below_thousand)
+
     clonemap = os.path.join(mapstackfolder, clonemapname)
-    clonemap = os.path.join(mapstackfolder, "clone.map")
+
+
     if Singlemap:
         clonemap = mapstackname[0]
 
