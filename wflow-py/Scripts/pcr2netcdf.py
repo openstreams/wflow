@@ -407,15 +407,16 @@ def setlogger(logfilename,loggername, thelevel=logging.INFO):
 def date_range_peryear(start, end, tdelta="days"):
 
     ret = []
-    for yrs in range(start.year,end.year+1):
+    for yrs in range(start.year,end.year):
         ed = min(dt.datetime(yrs+1,1,1), end)
 
         if tdelta == "days":
-            r = (ed-dt.datetime(yrs,1,1)).days + 1
+            r = (ed-dt.datetime(yrs,1,1)).days +1
             ret.append([dt.datetime(yrs,1,1)+dt.timedelta(days=i) for i in range(r)])
         else:
             r = ((ed-dt.datetime(yrs,1,1)).days) * 24
             ret.append([dt.datetime(yrs,1,1)+dt.timedelta(hours=i) for i in range(r)])
+
 
     return ret
 
