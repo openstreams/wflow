@@ -584,7 +584,9 @@ def main(argv=None):
                                                 startidx=startmapstack,EPSG=EPSG,FillVal=outputFillVal)
                         idx = idx + 1
 
-                startmapstack = startmapstack + len(yr_timelist)
+                logger.info("Old stack: " + str(startmapstack) + " new startpoint " + str(startmapstack + len(yr_timelist) -1))
+                startmapstack = startmapstack + len(yr_timelist) -1
+
         else:
              #ncoutfile_yr = os.path.splitext(ncoutfile)[0] + "_" + str(yr_timelist[0].year) + os.path.splitext(ncoutfile)[1]
              ncdf.prepare_nc(ncoutfile, timeList, x, y, metadata, logger,Format=OFormat,zlib=zlib,EPSG=EPSG)
