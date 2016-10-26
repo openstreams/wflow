@@ -411,7 +411,7 @@ def date_range_peryear(start, end, tdelta="days"):
         ed = min(dt.datetime(yrs+1,1,1), end)
 
         if tdelta == "days":
-            r = (ed-dt.datetime(yrs,1,1)).days +1
+            r = (ed-dt.datetime(yrs,1,1)).days
             ret.append([dt.datetime(yrs,1,1)+dt.timedelta(days=i) for i in range(r)])
         else:
             r = ((ed-dt.datetime(yrs,1,1)).days) * 24
@@ -585,7 +585,7 @@ def main(argv=None):
                         idx = idx + 1
 
                 logger.info("Old stack: " + str(startmapstack) + " new startpoint " + str(startmapstack + len(yr_timelist) -1))
-                startmapstack = startmapstack + len(yr_timelist) -1
+                startmapstack = startmapstack + len(yr_timelist)
 
         else:
              #ncoutfile_yr = os.path.splitext(ncoutfile)[0] + "_" + str(yr_timelist[0].year) + os.path.splitext(ncoutfile)[1]
