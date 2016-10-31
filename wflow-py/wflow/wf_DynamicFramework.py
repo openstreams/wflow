@@ -200,6 +200,58 @@ class wf_exchnageVariables():
         return 1
 
 
+class wf_online_stats():
+    def __init__(self):
+        """
+
+        :param invarname:
+        :param mode:
+        :param points:
+        :param filename:
+        """
+        self.count = {}
+        self.rangecount= {}
+        self.result = {}
+        self.mode ={}
+        self.points = {}
+        self.filename = {}
+        self.statvarname = {}
+
+    def addstat (self, name, mode='mean', points=30, filename=None):
+        """
+
+        :param name:
+        :param mode:
+        :param points:
+        :param filename:
+        :return:
+        """
+        self.statvarname[name] = name + '_' + mode + '_' + str(points)
+        self.mode[name] = mode
+        self.points[name] = points
+        self.count[name] = 0
+        self.rangecount[name] = 0
+        self.filename[name] = filename
+
+    def getstat(self,data,name):
+        """
+
+        :param data:
+        :param name:
+        :return:
+        """
+
+
+        if self.count[name] == 0:
+            self.result[name] = data
+        else:
+            if self.mode[name] =='mean':
+                self.result[name] -= self.result[name]/self.points[name]
+                self.result[name] += data/self.points[name]
+
+        self.count[name] = self.count[name] + 1
+        return self.result[name]
+
 class wf_sumavg():
     def __init__(self, varname, mode='sum', filename=None):
         """
@@ -1001,6 +1053,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
 
 
+        # Add the on-lien statistics
+        self.onlinestat = wf_online_stats()
+
+        self.onlinestat.addstat('SurfaceRunoff',points=10)
         # Fill the summary (stat) list from the ini file
         self.statslst = []
         _type = wf_sumavg(None)
@@ -1991,6 +2047,11 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 for a in range(0, len(self.statslst)):
                     data = getattr(self._userModel(), self.statslst[a].varname)
                     self.statslst[a].add_one(data)
+
+                for key in self.onlinestat.statvarname:
+                    stvar = self.onlinestat.getstat(getattr(self._userModel(),key),key)
+                    setattr(self._userModel(),self.onlinestat.statvarname[key],stvar)
+
 
             #self.currentdatetime = self.currentdatetime + dt.timedelta(seconds=self._userModel().timestepsecs)
 
