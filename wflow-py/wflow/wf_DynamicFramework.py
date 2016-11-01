@@ -96,6 +96,7 @@ class runDateTimeInfo():
                 self.runStateTime = self.runStartTime - datetime.timedelta(seconds=self.timeStepSecs)
             else:
                 self.runStateTime = self.runStartTime
+
             self.outPutStartTime = self.runStateTime + datetime.timedelta(seconds=self.timeStepSecs)
         elif timestepsecs and runTimeSteps:
             self.timeStepSecs = timestepsecs
@@ -198,6 +199,56 @@ class wf_exchnageVariables():
                     return 1
         return 1
 
+
+class wf_online_stats():
+    def __init__(self):
+        """
+
+        :param invarname:
+        :param mode:
+        :param points:
+        :param filename:
+        """
+        self.count = {}
+        self.rangecount= {}
+        self.result = {}
+        self.mode ={}
+        self.points = {}
+        self.filename = {}
+        self.statvarname = {}
+
+    def addstat (self, name, mode='mean', points=30, filename=None):
+        """
+
+        :param name:
+        :param mode:
+        :param points:
+        :param filename:
+        :return:
+        """
+        self.statvarname[name] = name + '_' + mode + '_' + str(points)
+        self.mode[name] = mode
+        self.points[name] = points
+        self.count[name] = 0
+        self.rangecount[name] = 0
+        self.filename[name] = filename
+
+    def getstat(self,data,name):
+        """
+
+        :param data:
+        :param name:
+        :return:
+        """
+        if self.count[name] == 0:
+            self.result[name] = data
+        else:
+            if self.mode[name] =='mean':
+                self.result[name] = self.result[name] * (self.points[name] -1)/self.points[name] + data/self.points[name]
+
+        self.count[name] = self.count[name] + 1
+
+        return self.result[name]
 
 class wf_sumavg():
     def __init__(self, varname, mode='sum', filename=None):
@@ -379,6 +430,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self._addMethodToClass(self.wf_multparameters)
         self._addMethodToClass(self.wf_readmapClimatology)
         self._addMethodToClass(self.readtblDefault)
+        self._addMethodToClass(self.readtblLayersDefault)
         self._addMethodToClass(self.wf_supplyVariableNamesAndRoles)
         self._addMethodToClass(self.wf_updateparameters)
         self._addAttributeToClass("ParamType", self.ParamType)
@@ -998,6 +1050,19 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
 
 
+
+        # Add the on-lien statistics
+        self.onlinestat = wf_online_stats()
+
+        rollingvars = configsection(self._userModel().config, "rollingmean")
+        for thisvar in rollingvars:
+            try:
+                thisvarnoself = thisvar.split('self.')[1]
+            except:
+                logging.error("Entry in ini invalid: " + thisvar)
+                raise ValueError
+            pts = int(self._userModel().config.get("rollingmean", thisvar))
+            self.onlinestat.addstat(thisvarnoself,points=pts)
 
         # Fill the summary (stat) list from the ini file
         self.statslst = []
@@ -1984,11 +2049,18 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 self._decrementIndentLevel()
                 # Save state variables in memory
                 self.wf_QuickSuspend()
-                self.wf_savedynMaps()
-                self.wf_saveTimeSeries()
+
                 for a in range(0, len(self.statslst)):
                     data = getattr(self._userModel(), self.statslst[a].varname)
                     self.statslst[a].add_one(data)
+
+                for key in self.onlinestat.statvarname:
+                    #stvar = self.onlinestat.getstat(getattr(self._userModel(),key),key)
+                    stvar = self.onlinestat.getstat(cover(self.DT.currentTimeStep * 1.0), key)
+                    setattr(self._userModel(),self.onlinestat.statvarname[key],stvar)
+
+                self.wf_savedynMaps()
+                self.wf_saveTimeSeries()
 
             #self.currentdatetime = self.currentdatetime + dt.timedelta(seconds=self._userModel().timestepsecs)
 
@@ -2285,7 +2357,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
             if self._userModel()._inDynamic():
                 if 'None' not in self.ncfile:
-                    retval, succ = self.NcInput.gettimestep(self._userModel().currentTimeStep(), self.logger, var=varname,shifttime=self.DT.startadjusted)
+                    retval, succ = self.NcInput.gettimestep(self._userModel().currentTimeStep(), self.logger,
+                                                            tsdatetime=self.DT.currentDateTime + datetime.timedelta(seconds=self.DT.timeStepSecs), var=varname,
+                                                            shifttime=self.DT.startadjusted)
                     if succ:
                         return retval
                     else:
