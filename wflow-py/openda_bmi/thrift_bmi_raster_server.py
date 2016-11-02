@@ -4,14 +4,16 @@ Created on Jul 8, 2014
 @author: niels
 '''
 
+
+
 from thrift.transport import TSocket
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
 
-from openda.bmi.thrift.BMIService import Iface
-from openda.bmi.thrift.BMIService import Processor
-from openda.bmi.thrift.ttypes import ModelException, BmiGridType
+from openda_bmi.openda.bmi.thrift.BMIService import Iface
+from openda_bmi.openda.bmi.thrift.BMIService import Processor
+from openda_bmi.openda.bmi.thrift.ttypes import ModelException, BmiGridType
 
 import sys
 import signal
