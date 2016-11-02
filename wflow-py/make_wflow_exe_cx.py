@@ -9,9 +9,9 @@ target = 'openda'
 
 import sys
 
-includefiles_list=[]
+data_files=[]
 scipy_path = os.path.dirname(scipy.__file__)
-includefiles_list.append(scipy_path)
+data_files.append(scipy_path)
 
 
 def load_scipy_patched(finder, module):
@@ -35,7 +35,7 @@ def mkdatatuples(thelist,destdir="."):
         ret.append((item,destfile))
     return ret
 
-data_files = ['packages.txt']
+data_files.append('packages.txt')
 os.system('conda list' + ">" + os.path.join('packages.txt'))
 # matplolib data files
 

@@ -278,7 +278,7 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
     if len(srcPrefix) > 8:
         srcPrefix = srcPrefix[0:8]
     # Open target netCDF file
-    nc_trg = nc4.Dataset(trgFile, 'a',format=Format,zlib=zlib)
+    nc_trg = nc4.Dataset(trgFile, 'a',format=Format)
     # read time axis and convert to time objects
     logger.debug("Creating time object..")
     time = nc_trg.variables['time']
@@ -292,18 +292,18 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
         # prepare the variable
 
         if EPSG.lower() == "epsg:4326":
-            nc_var = nc_trg.createVariable(trgVar, 'f4', ('time', 'lat', 'lon',), fill_value=FillVal, zlib=True,
-                                                        complevel=9, least_significant_digit=least_significant_digit)
+            nc_var = nc_trg.createVariable(trgVar, 'f4', ('time', 'lat', 'lon',), fill_value=FillVal, zlib=zlib,
+                                                        complevel=complevel, least_significant_digit=least_significant_digit)
             nc_var.coordinates = "lat lon"
         else:
-            nc_var = nc_trg.createVariable(trgVar, 'f4', ('time', 'y', 'x',), fill_value=FillVal, zlib=True,
-                                                        complevel=9, least_significant_digit=least_significant_digit)
+            nc_var = nc_trg.createVariable(trgVar, 'f4', ('time', 'y', 'x',), fill_value=FillVal, zlib=zlib,
+                                                        complevel=complevel, least_significant_digit=least_significant_digit)
             nc_var.coordinates = "lat lon"
             nc_var.grid_mapping = "crs"
 
         nc_var.units = trgUnits
         nc_var.standard_name = trgName
-        print metadata
+        #print metadata
         for attr in metadata:
             #print metadata[attr]
             nc_var.setncattr(attr, metadata[attr])
