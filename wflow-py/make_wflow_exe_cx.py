@@ -4,10 +4,14 @@ from _version import *
 import ctypes,glob,os,shutil
 import matplotlib
 import scipy
+import sys
+
+
+os.system("python mkversion.py")
 
 target = 'openda'
 
-import sys
+
 
 data_files=[]
 scipy_path = os.path.dirname(scipy.__file__)
