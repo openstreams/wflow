@@ -11,7 +11,6 @@ os.system("python mkversion.py")
 
 target = 'openda'
 
-
 data_files=[]
 scipy_path = os.path.dirname(scipy.__file__)
 data_files.append(scipy_path)
