@@ -5,14 +5,12 @@ Using the .ini file
 A number of settings of the framework can be set in the ini file for each model.
 The settings are explained in the section below.
 
-
 Settings in the run section
 ===========================
 
 Information for the current run can be given in the run section. Here the start
 and end-time of the run as well as the timestep can be given. Alternatively a link
 to a Delft-FEWS runinfo.xml file can be given. An example is shown below.
-
 ::
 
     [run]
@@ -22,10 +20,13 @@ to a Delft-FEWS runinfo.xml file can be given. An example is shown below.
     endtime= 1995-02-28 00:00:00
     # required, base timestep of the model
     timestepsecs = 86400
+    fewsrun=0
+    #Indicates the model is running from Delft-FEWS or not
 
 
 If this section is not present and a runinfo.xml is also not used you will need
 to specify the number of timesteps using the -T option on the command line (for most models).
+
 
 
 Settings in the framework section
@@ -195,6 +196,19 @@ See below for a configuration example. Some models may also support this via the
     # Increases the paved area fraction of the model by 10 %
 
 
+Settings in the [rollingmean] section
+-------------------------------------
+
+The rollingmean section allows you to define a rolling mean for each variable in the model. This variable can
+be used by other applications (e.g. data assimilation) or you can report it  as output. Example:
+
+
+::
+
+    [rollingmean]
+    self.Surfacerunoff=12
+
+The above will make a 12 timestep rollingmean and store this in the variable self.Surfacerunoff_mean_12
 
 Settings in the summary_* sections
 ----------------------------------
@@ -400,6 +414,7 @@ The 'runlengthdetermination' variable in the run section can also be set to 'int
     timestepsecs = 86400
     #start model with cold state
     reinit=1
+    fewsrun=0
     # Default behaviour: steps
     runlengthdetermination=intervals
 

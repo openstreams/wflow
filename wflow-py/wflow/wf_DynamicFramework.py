@@ -17,6 +17,7 @@ import datetime
 import ConfigParser
 
 from wflow.wf_netcdfio import *
+import wflow
 import pcrut
 import glob
 import traceback
@@ -32,6 +33,7 @@ import calendar
 
 from wflow import __version__
 from wflow import __release__
+from wflow import __build__
 
 def log_uncaught_exceptions(ex_cls, ex, tb):
     global logging
@@ -248,7 +250,7 @@ class wf_online_stats():
 
         self.count[name] = self.count[name] + 1
 
-        return self.result[name]
+        return scalar(self.result[name])
 
 class wf_sumavg():
     def __init__(self, varname, mode='sum', filename=None):
@@ -435,6 +437,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self._addMethodToClass(self.wf_updateparameters)
         self._addAttributeToClass("ParamType", self.ParamType)
         self._addAttributeToClass("timestepsecs", self.DT.timeStepSecs)
+        self._addAttributeToClass("__version__", __version__)
+        self._addAttributeToClass("__release__", __release__)
+        self._addAttributeToClass("__build__", __build__)
         self.skipfirsttimestep = 0
 
         if firstTimestep == 0:
@@ -870,6 +875,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self._userModel().logger = self.loggingSetUp(caseName, runId, logfname, model, modelVersion, level=level)
 
         self.logger = self._userModel().logger
+
+        self.logger.info("Initialise framework version: " + __version__ + "(" + __release__ + ")")
 
         global logging
         logging = self.logger
@@ -2055,8 +2062,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     self.statslst[a].add_one(data)
 
                 for key in self.onlinestat.statvarname:
-                    #stvar = self.onlinestat.getstat(getattr(self._userModel(),key),key)
-                    stvar = self.onlinestat.getstat(cover(self.DT.currentTimeStep * 1.0), key)
+                    stvar = self.onlinestat.getstat(getattr(self._userModel(),key),key)
+                    #stvar = self.onlinestat.getstat(cover(self.DT.currentTimeStep * 1.0), key)
                     setattr(self._userModel(),self.onlinestat.statvarname[key],stvar)
 
                 self.wf_savedynMaps()
