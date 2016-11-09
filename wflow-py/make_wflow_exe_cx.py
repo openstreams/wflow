@@ -6,6 +6,46 @@ import matplotlib
 import scipy
 import sys
 
+pdir = os.path.dirname(sys.executable) + "/"
+
+# list comes from: c:\Anaconda\conda-meta\mkl-11.3.3-1.json
+MKL_files= [pdir + "Library/bin/cilkrts20.dll",
+    pdir + "Library/bin/ifdlg100.dll",
+    pdir + "Library/bin/libchkp.dll",
+    pdir + "Library/bin/libicaf.dll",
+    pdir + "Library/bin/libifcoremd.dll",
+    pdir + "Library/bin/libifcoremdd.dll",
+    pdir + "Library/bin/libifcorert.dll",
+    pdir + "Library/bin/libifcorertd.dll",
+    pdir + "Library/bin/libifportmd.dll",
+    pdir + "Library/bin/libimalloc.dll",
+    pdir + "Library/bin/libiomp5md.dll",
+    pdir + "Library/bin/libiompstubs5md.dll",
+    pdir + "Library/bin/libmmd.dll",
+    pdir + "Library/bin/libmmdd.dll",
+    pdir + "Library/bin/libmpx.dll",
+    pdir + "Library/bin/liboffload.dll",
+    pdir + "Library/bin/mkl_avx.dll",
+    pdir + "Library/bin/mkl_avx2.dll",
+    pdir + "Library/bin/mkl_avx512.dll",
+    pdir + "Library/bin/mkl_core.dll",
+    pdir + "Library/bin/mkl_def.dll",
+    pdir + "Library/bin/mkl_intel_thread.dll",
+    pdir + "Library/bin/mkl_mc.dll",
+    pdir + "Library/bin/mkl_mc3.dll",
+    pdir + "Library/bin/mkl_msg.dll",
+    pdir + "Library/bin/mkl_rt.dll",
+    pdir + "Library/bin/mkl_sequential.dll",
+    pdir + "Library/bin/mkl_tbb_thread.dll",
+    pdir + "Library/bin/mkl_vml_avx.dll",
+    pdir + "Library/bin/mkl_vml_avx2.dll",
+    pdir + "Library/bin/mkl_vml_avx512.dll",
+    pdir + "Library/bin/mkl_vml_cmpt.dll",
+    pdir + "Library/bin/mkl_vml_def.dll",
+    pdir + "Library/bin/mkl_vml_mc.dll",
+    pdir + "Library/bin/mkl_vml_mc2.dll",
+    pdir + "Library/bin/mkl_vml_mc3.dll",
+    pdir + "Library/bin/svml_dispmd.dll"]
 
 os.system("python mkversion.py")
 
@@ -50,6 +90,7 @@ for mpldir in mpl:
     data_files.extend(mkdatatuples(mpldir[1],destdir=ddir))
 
 
+data_files.extend(mkdatatuples(MKL_files,destdir="."))
 # pcraster dll's
 ddir = "c:/pcraster/lib/"
 data_files.extend(mkdatatuples(glob.glob(ddir + "/*.dll"),destdir='.'))
@@ -64,11 +105,12 @@ nrbits = str(ctypes.sizeof(ctypes.c_voidp) * 8)
 
 thename = "Wflow"+MVERSION+'-'+nrbits
 
-packages = ["osgeo"]
+packages = ["osgeo","numpy"]
 
 
 if target == 'openda':
-    includes = ['wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined']
+    includes = ['wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined',
+                'thrift.transport','thrift.protocol','thrift.server']
     packages.append('openda_bmi')
 else:
     includes = ['wflow.wflow_bmi', 'wflow.wflow_w3ra', 'wflow.wflow_bmi_combined']
