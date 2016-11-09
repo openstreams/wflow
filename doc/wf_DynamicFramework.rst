@@ -196,6 +196,19 @@ See below for a configuration example. Some models may also support this via the
     # Increases the paved area fraction of the model by 10 %
 
 
+Settings in the [rollingmean] section
+-------------------------------------
+
+The rollingmean section allows you to define a rolling mean for each variable in the model. This variable can
+be used by other applications (e.g. data assimilation) or you can report it  as output. Example:
+
+
+::
+
+    [rollingmean]
+    self.Surfacerunoff=12
+
+The above will make a 12 timestep rollingmean and store this in the variable self.Surfacerunoff_mean_12
 
 Settings in the summary_* sections
 ----------------------------------
