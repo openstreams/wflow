@@ -250,7 +250,7 @@ class wf_online_stats():
 
         self.count[name] = self.count[name] + 1
 
-        return self.result[name]
+        return scalar(self.result[name])
 
 class wf_sumavg():
     def __init__(self, varname, mode='sum', filename=None):
@@ -2062,8 +2062,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     self.statslst[a].add_one(data)
 
                 for key in self.onlinestat.statvarname:
-                    #stvar = self.onlinestat.getstat(getattr(self._userModel(),key),key)
-                    stvar = self.onlinestat.getstat(cover(self.DT.currentTimeStep * 1.0), key)
+                    stvar = self.onlinestat.getstat(getattr(self._userModel(),key),key)
+                    #stvar = self.onlinestat.getstat(cover(self.DT.currentTimeStep * 1.0), key)
                     setattr(self._userModel(),self.onlinestat.statvarname[key],stvar)
 
                 self.wf_savedynMaps()
