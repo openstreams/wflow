@@ -27,6 +27,7 @@ Binaries for windows
 ====================
 For windows binaries check the releases (https://github.com/openstreams/wflow/releases). These can be used 
 if you do not have a python installation. However, it is recommended to install wflow as a python package (see below).
+There is absolutely no guarantee the executables will work on your computer.
 
 Install as a python package (windows quick install instructions)
 ================================================================
@@ -47,7 +48,7 @@ Once Anaconda is installed open a command window and install netCDF4, gdal and p
 *Installing pcraster*
 
 + Download pcraster from www.pcraster.eu website (version 4.1 64 bit)
-+ Extract zip to root of c: This will created c:\pcraster-4.1.0_x86-64
++ Extract zip to root of c: This will create c:\\pcraster-4.1.0_x86-64
 + Add c:\\pcraster-4.1.0_x86-64\\python to the PYTHONPATH environment variable
 
 *Installing wflow itself*
@@ -56,7 +57,7 @@ Clone with git or Download the latest zip with the source code of wflow. Go to t
 
 + python setup.py install
 
-To check it the install is successfull, go to the  the the examples directory and run the following command:
+To check it the install is successful, go to the examples directory and run the following command:
 
 + Python c:\\Anaconda\\scripts\\wflow_sbm.py -C wflow_rhine_sbm -T 100 -R testing
 
@@ -70,5 +71,7 @@ Credits
 + pcraster is developed and maintained by Utrecht University (http://www.pcraster.eu)
 
 + netCDF4 is developed by unidata (http://unidata.github.io/netcdf4-python/)
+
++ GDAL is released under an X/MIT style Open Source license by the Open Source Geospatial Foundation (http://www.gdal.org).
 
 

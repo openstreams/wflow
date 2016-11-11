@@ -188,8 +188,7 @@ UpdMaxDist=10000.0
     Maximum distance from the gauge to apply updating to. Only used if
     you force the model with measured discharge
 
-fewsrun=0
-    Indicates the model is running from Delft-FEWS or not
+
 
 Specific options for  wflow\_sbm :
 
@@ -198,9 +197,7 @@ RunoffGenSigmaFunction = 0
     percentile Dems. (wflow\_sbm only) 
 
     
-reinit = 0
-    If set to 1 (one) the model will not read the saved initial state files
-    from the instates directory but start with cold states.
+
     
 OverWriteInit = 0
     If set to one the initial states will be overwritten
@@ -308,7 +305,9 @@ model (see the code). A few useful variables are listed below.
 
 .. tip:: 
     NB See the wflow.py code for all the available variables as this list
-    is incomplete.
+    is incomplete. Also check the framwework documentation for the [run] section
+
+
 
 The values on the right side of the equal sign can be choosen freely.
 

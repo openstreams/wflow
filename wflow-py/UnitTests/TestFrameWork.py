@@ -11,7 +11,7 @@ class MyTest(unittest.TestCase):
 
     def testapirun(self):
         startTime = 1
-        stopTime = 10
+        stopTime = 20
         currentTime = 1
 
           # set runid, clonemap and casename. Also define the ini file
@@ -37,11 +37,11 @@ class MyTest(unittest.TestCase):
         dynModelFw._runSuspend() # saves the state variables
         dynModelFw._wf_shutdown()
 
-        # Now read the csv results and check of they match the first run
-        # Sum should be approx c 48.992157936096191
         my_data = wf.genfromtxt(os.path.join(caseName,runId,"tes.csv"), delimiter=',')
 
-        self.assertAlmostEquals(48.992157936096191,my_data[:,2].sum())
+        self.assertAlmostEquals(134.16633081436157,my_data[:,2].sum())
+        my_data_mean = wf.genfromtxt(os.path.join(caseName, runId, "tes_mean_5.csv"), delimiter=',')
+        self.assertAlmostEquals(112.25376296043396, my_data_mean[:, 2].sum())
 
 
 if __name__ == '__main__':

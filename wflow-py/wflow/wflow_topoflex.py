@@ -285,7 +285,7 @@ class WflowModel(DynamicModel):
         self.InputSeries = int(configget(self.config,
                                          "model", "InputSeries", "1"))  # forcing data in maps (0) or timeseries (1)
         self.reinit = int(configget(self.config,
-                                    "model", "reinit", "0"))
+                                    "run", "reinit", "0"))
         
         self.intbl = configget(self.config,
                                     "model","intbl","intbl")
@@ -753,8 +753,8 @@ class WflowModel(DynamicModel):
         self.convQa_WB = areatotal(sum(multiply([sum(self.convQa_t[i]) for i in self.Classes],self.percent)) / 1000 * self.surfaceArea,nominal(self.TopoId))
         self.trackQWB = areatotal(sum(self.trackQ),nominal(self.TopoId))
         self.trackQ_WB = areatotal(sum(self.trackQ_t),nominal(self.TopoId)) 
-        self.QstateWB = areatotal(sum(self.Qstate) * 3600, nominal(self.TopoId))
-        self.Qstate_WB = areatotal(sum(self.Qstate_t) * 3600, nominal(self.TopoId))
+        self.QstateWB = areatotal(sum(self.Qstate) * self.timestepsecs, nominal(self.TopoId))
+        self.Qstate_WB = areatotal(sum(self.Qstate_t) * self.timestepsecs, nominal(self.TopoId))
 #        self.QstateWB = areatotal(sum(self.Qstate) * 0.0405, nominal(self.TopoId))
 #        self.Qstate_WB = areatotal(sum(self.Qstate_t) * 0.0405, nominal(self.TopoId))
 #        self.QstateWB = areatotal(self.Qstate, nominal(self.TopoId))

@@ -258,8 +258,8 @@ class WflowModel(DynamicModel):
 
     self.timestepsecs = int(configget(self.config,'model','timestepsecs','3600'))    
     self.basetimestep=3600
-    self.reinit = int(configget(self.config,"model","reinit","0"))
-    self.fewsrun = int(configget(self.config,"model","fewsrun","0"))
+    self.reinit = int(configget(self.config,"run","reinit","0"))
+    self.fewsrun = int(configget(self.config,"run","fewsrun","0"))
     self.OverWriteInit = int(configget(self.config,"model","OverWriteInit","0"))
     self.SaveMapDir = self.Dir + "/" + self.runId + "/outmaps"
     self.TEMP_mapstack=self.Dir + configget(self.config,"inputmapstacks","Temperature","/inmaps/TEMP") 

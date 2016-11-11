@@ -266,8 +266,8 @@ class WflowModel(DynamicModel):
         # Set and get defaults from ConfigFile here ###################################
 
     self.interpolMethod = configget(self.config,"model","InterpolationMethod","inv")
-    self.reinit = int(configget(self.config,"model","reinit","0"))
-    self.fewsrun = int(configget(self.config,"model","fewsrun","0"))
+    self.reinit = int(configget(self.config,"run","reinit","0"))
+    self.fewsrun = int(configget(self.config,"run","fewsrun","0"))
     self.OverWriteInit = int(configget(self.config,"model","OverWriteInit","0"))
 
     self.intbl = configget(self.config,"model","intbl","intbl")

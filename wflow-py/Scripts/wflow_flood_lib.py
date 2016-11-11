@@ -366,7 +366,7 @@ def gdal_warp(src_filename, clone_filename, dst_filename, gdal_type=gdalconst.GD
         # write to final file in the chosen file format
         gdal.GetDriverByName(format).CreateCopy(dst_filename, dst_mem, 0)
 
-def derive_HAND(dem, ldd, accuThreshold, rivers=None, basin=None, up_area=None):
+def derive_HAND(dem, ldd, accuThreshold, rivers=None, basin=None, up_area=None, neg_HAND=None):
     """
     Function derives Height-Above-Nearest-Drain.
     See http://www.sciencedirect.com/science/article/pii/S003442570800120X
@@ -384,6 +384,8 @@ def derive_HAND(dem, ldd, accuThreshold, rivers=None, basin=None, up_area=None):
                         the spreadzone operator is used in this case.
         up_area=None -- provide the upstream area (if not assigned a guesstimate is prepared, assuming the LDD covers a
                         full catchment area)
+        neg_HAND=None -- if set to 1, HAND maps can have negative values when elevation outside of stream is lower than
+                        stream (for example when there are natural embankments)
     Output:
         hand -- pcraster bject float32, height, normalised to nearest stream
         dist -- distance to nearest stream measured in cell lengths
@@ -409,8 +411,11 @@ def derive_HAND(dem, ldd, accuThreshold, rivers=None, basin=None, up_area=None):
         # if basin, use nearest river within subcatchment, if outside basin, use weighted-nearest river
         up_elevation = pcr.ifthenelse(basin, pcr.scalar(pcr.subcatchment(ldd, height_river)), pcr.scalar(pcr.spreadzone(height_river, 0, friction)))
         # replace areas outside of basin by a spread zone calculation.
-    hand = pcr.max(pcr.scalar(pcr.ordinal(dem*100))-up_elevation, 0)/100  # convert back to float in DEM units
-    # hand = (pcr.scalar(pcr.ordinal(dem*100))-up_elevation)/100  # convert back to float in DEM units
+    # make negative HANDS also possible
+    if neg_HAND == 1:
+        hand = (pcr.scalar(pcr.ordinal(dem*100))-up_elevation)/100  # convert back to float in DEM units
+    else:
+        hand = pcr.max(pcr.scalar(pcr.ordinal(dem*100))-up_elevation, 0)/100  # convert back to float in DEM units
     dist = pcr.ldddist(ldd, stream, 1)  # compute horizontal distance estimate
     return hand, dist
 
@@ -481,7 +486,7 @@ def subcatch_stream(ldd, threshold, stream=None, min_strahler=-999, max_strahler
 
     return stream_ge, pcr.ordinal(subcatch)
 
-def volume_spread(ldd, hand, subcatch, volume, volume_thres=0., cell_surface=1., iterations=15, logging=logging, order=0):
+def volume_spread(ldd, hand, subcatch, volume, volume_thres=0., cell_surface=1., iterations=15, logging=logging, order=0, neg_HAND=None):
     """
     Estimate 2D flooding from a 1D simulation per subcatchment reach
     Input:
@@ -492,6 +497,8 @@ def volume_spread(ldd, hand, subcatch, volume, volume_thres=0., cell_surface=1.,
         volume_thres=0. -- scalar threshold, at least this amount of m3 of volume should be present in a catchment
         area_multiplier=1. -- in case the maps are not in m2, set a multiplier other than 1. to convert
         iterations=15 -- number of iterations to use
+        neg_HAND -- if set to 1, HAND maps can have negative values when elevation outside of stream is lower than
+        stream (for example when there are natural embankments)
     Output:
         inundation -- pcraster object float32, scalar inundation estimate
     """
@@ -506,9 +513,14 @@ def volume_spread(ldd, hand, subcatch, volume, volume_thres=0., cell_surface=1.,
     depth_catch = volume_catch/surface  # meters water disc averaged over subcatchment
     # ilt(depth_catch, 'depth_catch_{:02d}.map'.format(order))
     # pcr.report(volume, 'volume_{:02d}.map'.format(order))
-    dem_max = pcr.ifthenelse(volume_catch > volume_thres, pcr.scalar(32.),
-                             pcr.scalar(0))  # bizarre high inundation depth
-    dem_min = pcr.scalar(0.)
+    if neg_HAND == 1:
+        dem_max = pcr.ifthenelse(volume_catch > volume_thres, pcr.scalar(32.),
+                             pcr.scalar(-32.))  # bizarre high inundation depth☻
+        dem_min = pcr.scalar(-32.)
+    else:
+        dem_max = pcr.ifthenelse(volume_catch > volume_thres, pcr.scalar(32.),
+                             pcr.scalar(0.))  # bizarre high inundation depth☻
+        dem_min = pcr.scalar(0.)
     for n in range(iterations):
         logging.debug('Iteration: {:02d}'.format(n + 1))
         #####while np.logical_and(error_abs > error_thres, dem_min < dem_max):

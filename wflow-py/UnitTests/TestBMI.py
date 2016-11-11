@@ -142,7 +142,7 @@ class MyTest(unittest.TestCase):
 
     def testbmirun(self):
         bmiobj = bmi.wflowbmi_csdms()
-        bmiobj.initialize('wflow_sceleton/wflow_sceleton.ini',loglevel=logging.DEBUG)
+        bmiobj.initialize('wflow_sceleton/wflow_sceleton.ini',loglevel=logging.ERROR)
         print(bmiobj.get_var_type("IF"))
         et = bmiobj.get_end_time()
         st = bmiobj.get_start_time()
@@ -158,7 +158,7 @@ class MyTest(unittest.TestCase):
     def testbmirun_l(self):
         print 'Run with update(-1)'
         bmiobj = bmi.wflowbmi_light()
-        bmiobj.initialize('wflow_sceleton/wflow_sceleton.ini',loglevel=logging.DEBUG)
+        bmiobj.initialize('wflow_sceleton/wflow_sceleton.ini',loglevel=logging.ERROR)
         et = bmiobj.get_end_time()
         st = bmiobj.get_start_time()
         bmiobj.update(et - st)
@@ -166,7 +166,7 @@ class MyTest(unittest.TestCase):
 
     def testbmirunnetcdf(self):
         bmiobj = bmi.wflowbmi_csdms()
-        bmiobj.initialize_config('wflow_sbm/wflow_sbm_nc.ini',loglevel=logging.DEBUG)
+        bmiobj.initialize_config('wflow_sbm/wflow_sbm_nc.ini',loglevel=logging.ERROR)
         #bmiobj.set_attribute_value('run:starttime','2014-05-01 01:00:00')
         #bmiobj.set_attribute_value('run:endtime','2014-05-17 00:00:00')
         #bmiobj.set_attribute_value('run:runlengthdetermination','steps')

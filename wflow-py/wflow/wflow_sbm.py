@@ -449,8 +449,8 @@ class WflowModel(DynamicModel):
 
         # Set and get defaults from ConfigFile here ###################################
         self.Tslice = int(configget(self.config, "model", "Tslice", "1"))
-        self.reinit = int(configget(self.config, "model", "reinit", "0"))
-        self.fewsrun = int(configget(self.config, "model", "fewsrun", "0"))
+        self.reinit = int(configget(self.config, "run", "reinit", "0"))
+        self.fewsrun = int(configget(self.config, "run", "fewsrun", "0"))
         self.OverWriteInit = int(configget(self.config, "model", "OverWriteInit", "0"))
         self.updating = int(configget(self.config, "model", "updating", "0"))
         self.updateFile = configget(self.config, "model", "updateFile", "no_set")

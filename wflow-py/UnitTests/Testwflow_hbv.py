@@ -29,7 +29,7 @@ class MyTest(unittest.TestCase):
         print dynModelFw.DT
 
           # Load model config from files and check directory structure
-        dynModelFw.createRunId(NoOverWrite=False,level=wf.logging.DEBUG)
+        dynModelFw.createRunId(NoOverWrite=False,level=wf.logging.ERROR)
         # Run the initial part of the model (reads parameters and sets initial values)
         dynModelFw._runInitial() # Runs initial part
 
@@ -55,11 +55,11 @@ class MyTest(unittest.TestCase):
         my_data = wf.genfromtxt(os.path.join(caseName,runId,"watbal.csv"), delimiter=',')
 
         print("Checking  water budget ....")
-        self.assertAlmostEquals(-0.0006561279296875,my_data[:,2].sum(),places=4)
+        self.assertAlmostEquals(0.001434326171875,my_data[:,2].sum(),places=4)
 
         my_data = wf.genfromtxt(os.path.join(caseName,runId,"run.csv"), delimiter=',')
         print("Checking  discharge ....")
-        self.assertAlmostEquals(1073.2958811442056,my_data[:,2].mean(),places=4)
+        self.assertAlmostEquals(1096.3764185587565,my_data[:,2].mean(),places=4)
 
         print("Checking precip sum ....")
         my_data = wf.genfromtxt(os.path.join(caseName,runId,"P.csv"), delimiter=',')
@@ -111,11 +111,11 @@ class MyTest(unittest.TestCase):
         my_data = wf.genfromtxt(os.path.join(caseName,runId,"watbal.csv"), delimiter=',')
 
         print("Checking  water budget ....")
-        self.assertAlmostEquals(-0.0006561279296875,my_data[:,2].sum(),places=4)
+        self.assertAlmostEquals( 0.001434326171875,my_data[:,2].sum(),places=4)
 
         my_data = wf.genfromtxt(os.path.join(caseName,runId,"run.csv"), delimiter=',')
         print("Checking  discharge ....")
-        self.assertAlmostEquals(2141.2660095214842,my_data[:,2].mean(),places=4)
+        self.assertAlmostEquals(1880.7582671801249,my_data[:,2].mean(),places=4)
 
         print("Checking precip sum ....")
         my_data = wf.genfromtxt(os.path.join(caseName,runId,"P.csv"), delimiter=',')
