@@ -10,6 +10,7 @@ import getopt
 
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
+from time import strftime
 #import scipy
 
 #from datetime import date
@@ -42,6 +43,11 @@ $Author: SanderCdeVries $
 $Id: lintul1.py 2015-11-20 16:08:06Z 
 $Rev: 001 $
 """
+
+runinfoFile           = "runinfo.xml"
+runinfoFile_Lintul    = os.path.join(os.path.abspath("wflow_lintul"), "inmaps", runinfoFile)
+starttime             = getStartTimefromRuninfo(runinfoFile_Lintul)
+DOY_wflow             = starttime.strftime('%j')
 
 def NOTNUL(matrix):
     """    
@@ -159,6 +165,7 @@ LAT         = 3.16        # the latitude of Bah Lias, North Sumatra, for now.
 DELT        = 1	          # Time step = 1 day.
 TSUMI       = 362.        # TSUM at transplanting, kind of crop specific, actually.
 TINY        = 1e-6
+iDOY_wflow             = int(starttime.strftime('%j'))
 
 # This needs to be set according to the geographic extent (map dimensions) of your study area/catchment:
 np_Zero     = numpy.zeros((219,286))
@@ -516,7 +523,7 @@ class WflowModel(DynamicModel):
      output should also be saved here.
      """
      self.wf_updateparameters() # read the temperature map for each step (see parameters())
-	 
+     
 	# Create numpy array from states (make pointers): 
      np_Day                = pcr_as_numpy(self.DAY)
      np_DVS                = pcr_as_numpy(self.DVS)
@@ -539,7 +546,11 @@ class WflowModel(DynamicModel):
      np_WCWET              = WCWET * np_One[:]
      np_WCST               = WCST  * np_One[:]
 
-	 
+#     runinfoFile           = "runinfo.xml"
+#     runinfoFile_Lintul    = os.path.join(os.path.abspath("wflow_lintul"), "inmaps", runinfoFile)
+#     starttime             = getStartTimefromRuninfo(runinfoFile_Lintul)
+#     DOY_wflow             = starttime.strftime('%j')
+     
 	# Implement forcing data, coefficients and some handy numbers spatially, as numpy arrays:
      np_StartDay           = StartDay * np_One[:]
      np_StartNow           = np.equal(np_Day[:], np_StartDay[:] - np_One[:])    
@@ -575,7 +586,7 @@ class WflowModel(DynamicModel):
      #np_CanGrowDownward    = np.less_equal(np_ROOTD[:], ROOTDM * np_One[:])
      
 	# Check when certain important decision moments are reached, in chronological order: 
-     SimStart              = self.DAY == 0.
+     SimStart              = self.DAY == 0. #todo: do we need ROOTDI before emergence?
      np_Simstart           = pcr_as_numpy(SimStart)
      Just_Before_Start     = self.DAY == StartDay - 3.
      np_Just_Before_Start  = pcr_as_numpy(Just_Before_Start)
@@ -724,8 +735,8 @@ class WflowModel(DynamicModel):
 	 
      np_Transpiration = pcr_as_numpy(self.Transpiration) 	 
      np_PotTrans      = pcr_as_numpy(self.PotTrans)
-     #TRANRF           = np_Transpiration[:] / NOTNUL(np_PotTrans[:])
-     TRANRF           = np_One[:]
+     TRANRF           = np_Transpiration[:] / NOTNUL(np_PotTrans[:])
+     #TRANRF           = np_One[:]
 	 
 	 #############################################################################################################
 	##BMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMI
@@ -831,24 +842,28 @@ class WflowModel(DynamicModel):
 	#----------------------------------------------------------------------
      
      self.Test            = numpy2pcr(Scalar, np_PotTrans[:], -99)
-     #self.Test             = self.ROOTD
+     bla                  = self.timestepsecs/self.basetimestep
 
      self.DAY              += 1. 
-	 
+     DOY_wflow = iDOY_wflow + self.currentTimeStep() - 1
+
      np_ROOTD_mm = pcr_as_numpy(self.ROOTD_mm)
+     
 	 
      print "********************************************"
-     print "LAI      via Lintul",  "\n"
-     print np_LAI[:] , "\n"
-     print "ROOTD    via Lintul",  "\n"
+     print self.currentTimeStep(), DOY_wflow, np_Day[1,1]
+     print starttime
+     #print "LAI      via Lintul",  "\n"
+     #print np_LAI[:] , "\n"
+     #print "ROOTD    via Lintul",  "\n"
      #print cellvalue(self.ROOTD, 1), "\n"
-     print np_ROOTD_mm[:], "\n"
-     print "PotTrans   via Lintul",  "\n"
-     print np_PotTrans[0,:5],  "\n"
+     #print np_ROOTD_mm[:], "\n"
+     #print "PotTrans   via Lintul",  "\n"
+     #print np_PotTrans[0,:5],  "\n"
      #print "np_EMERG via Lintul"
      #print cellvalue(EMERG, 1)#[1,1], np_Day[1,1]
-     print "WA       via Lintul",  "\n"
-     print np_WA, "\n"
+     #print "WA       via Lintul",  "\n"
+     #print np_WA, "\n"
 	 
     #----------------------------------------------------------------------
   
