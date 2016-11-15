@@ -86,7 +86,7 @@ import getopt
 from wflow.wf_DynamicFramework import *
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
-from wflow_adapt import *    
+from wflow.wflow_adapt import *
         
 #import scipy
 #import pcrut
