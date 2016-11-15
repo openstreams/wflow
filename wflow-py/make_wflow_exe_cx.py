@@ -1,5 +1,18 @@
-import sys
+
+
+"""
+This script makes a stand-alone 'executable' of the wflow models. It is tested using
+Anaconda on windows 64 bit and ubuntu xenial 64 bit
+
+supported tagets:
+- normal
+- openda - includes thrift connection to openda, Make sure you have thrift installed first
+- deltashell - includes bmi/mmi link top deltashell. Windows only. Make sure you have zmq, bmi and mmi
+  installed. bmi and mmi can be downloaded from the openearth github repository
+"""
 from cx_Freeze import setup, Executable, hooks
+
+
 from _version import *
 import ctypes,glob,os,shutil
 import matplotlib
