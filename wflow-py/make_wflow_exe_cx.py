@@ -110,7 +110,6 @@ thename = "Wflow"+MVERSION+'-'+target+'-'+nrbits
 
 packages = ["osgeo"]
 
-
 if target == 'openda':
     includes = ['wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined']
     packages.append('openda_bmi')
@@ -124,7 +123,9 @@ elif target == 'deltashell':
 else:
     includes = ['wflow.wflow_bmi', 'wflow.wflow_w3ra', 'wflow.wflow_bmi_combined']
 
-options = { "includes": includes, "packages": packages,'include_files': data_files, "build_exe": thename,'excludes': ['collections.abc']}
+#  "include_msvcr": True,
+options = {"includes": includes, "packages": packages,'include_files': data_files, "build_exe": thename,
+            'excludes': ['collections.abc']}
 base=None
 
 
