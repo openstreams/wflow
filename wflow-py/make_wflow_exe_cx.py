@@ -10,6 +10,10 @@ supported tagets:
 - deltashell - includes bmi/mmi link top deltashell. Windows only. Make sure you have zmq, bmi and mmi
   installed. bmi and mmi can be downloaded from the openearth github repository
 """
+
+target = 'deltashell'
+#target ='normal'
+
 from cx_Freeze import setup, Executable, hooks
 
 
@@ -66,8 +70,7 @@ if sys.platform == 'win32':
 
 os.system("python mkversion.py")
 
-target = 'deltashell'
-target ='normal'
+
 
 data_files=[]
 scipy_path = os.path.dirname(scipy.__file__)
