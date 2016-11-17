@@ -366,7 +366,7 @@ class WflowModel(DynamicModel):
     
     self.Altitude=self.wf_readmap(os.path.join(self.Dir,wflow_dem),0.0,fail=True) * scalar(defined(subcatch)) #: The digital elevation map (DEM)
     self.TopoLdd=self.wf_readmap(os.path.join(self.Dir, wflow_ldd),0.0,fail=True)        #: The local drinage definition map (ldd)
-    self.TopoId=self.wf_readmap(os.path.join(self.Dir, wflow_subcatch),0.0,fail=True)        #: Map define the area over which the calculations are done (mask)
+    self.TopoId=ordinal(self.wf_readmap(os.path.join(self.Dir, wflow_subcatch),0.0,fail=True) )       #: Map define the area over which the calculations are done (mask)
     self.River=cover(boolean(self.wf_readmap(os.path.join(self.Dir, wflow_river),0.0,fail=True)),0) #: river network map. Fro those cell that belong to a river a specific width is used in the kinematic wave caulations
     self.RiverLength=self.wf_readmap(os.path.join(self.Dir, wflow_riverlength),0.0)
     # Factor to multiply riverlength with (defaults to 1.0)    
