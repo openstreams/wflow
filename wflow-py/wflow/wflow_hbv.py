@@ -237,14 +237,7 @@ class WflowModel(DynamicModel):
         self.logger.info("Saving initial conditions for FEWS...")
         self.wf_suspend(os.path.join(self.Dir, "outstate"))
         
-    report(self.sumprecip,os.path.join(self.SaveDir,"outsum","sumprecip.map"))
-    report(self.sumevap,os.path.join(self.SaveDir, "outsum","sumevap.map"))
-    report(self.sumpotevap,os.path.join(self.SaveDir, "outsum","sumpotevap.map"))
-    report(self.sumtemp,os.path.join(self.SaveDir, "outsum","sumtemp.map"))
-    report(self.sumlevel,os.path.join(self.SaveDir, "outsum","sumlevel.map"))
-    report(self.sumrunoff/catchmenttotal(1,self.TopoLdd),os.path.join(self.SaveDir,"outsum","sumrunoff.map"))
 
-    report(self.suminflow,os.path.join(self.SaveDir, "outsum","suminflow.map"))
       
   def initial(self):
       

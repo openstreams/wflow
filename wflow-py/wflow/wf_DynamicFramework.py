@@ -1003,10 +1003,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         # Setup all the netCDF files that may be used for input/output
         if self.ncfile != "None":
-            mstacks = configsection(self._userModel().config, "inputmapstacks")
             varlst = []
-            for ms in mstacks:
-                varlst.append(os.path.basename(configget(self._userModel().config, 'inputmapstacks', ms, 'None')))
+            for ms in self._userModel().parameters():
+                if ms.type == 'timeseries':
+                    varlst.append(os.path.basename(ms.stack))
             self.logger.debug("Found following input variables to get from netcdf file: " + str(varlst))
             self.NcInput = netcdfinput(os.path.join(caseName, self.ncfile), self.logger, varlst)
 
