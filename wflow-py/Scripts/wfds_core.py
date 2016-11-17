@@ -20,19 +20,19 @@ Optional arguments:
   --bmi-class              when used - the engine is assumed to be the full name of a Python class that implements bmi [default: bmi.wrapper.BMIWrapper]
 
 """
-
-import mmi
 import bmi
+import mmi.runner
+
 
 import sys
 import docopt
-from mmi.runner import runner
+#from mmi.runner import runner
 
 
 def call_functionality(arguments):
     print 'hello'
     print arguments
-    runner(arguments)
+    mmi.runner.runner(arguments)
 
 arguments = docopt.docopt(__doc__)
 call_functionality(arguments)

@@ -78,8 +78,9 @@ class wflowbmi_light(object):
         myModel = wf.WflowModel(wflow_cloneMap, datadir, runid, inifile)
 
         self.dynModel = wf.wf_DynamicFramework(myModel, maxNrSteps, firstTimestep = 1)
+        self.bmilogger.info("Framework initialized...")
         self.dynModel.createRunId(NoOverWrite=0,level=loglevel,model=os.path.basename(configfile))
-
+        self.bmilogger.info("initialize: created runID...")
 
         namesroles = self.dynModel.wf_supplyVariableNamesAndRoles()
         inames = []
@@ -97,7 +98,9 @@ class wflowbmi_light(object):
         self.inputoutputvars = inames
 
         self.dynModel._runInitial()
+        self.bmilogger.info("Model initialised...")
         self.dynModel._runResume()
+        self.bmilogger.info("Resumed states...")
 
         return retval
 

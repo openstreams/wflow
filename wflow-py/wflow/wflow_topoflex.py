@@ -21,13 +21,13 @@ $Id: wflow_sceleton.py 898 2014-01-09 14:47:06Z schelle $
 $Rev: 898 $
 """
 
-import reservoir_Si
-import reservoir_Sa
-import reservoir_Sw
-import reservoir_Su
-import reservoir_Sf
-import reservoir_Ss
-import JarvisCoefficients
+import wflow.reservoir_Si as reservoir_Si
+import wflow.reservoir_Sa as reservoir_Sa
+import wflow.reservoir_Sw as reservoir_Sw
+import wflow.reservoir_Su as reservoir_Su
+import wflow.reservoir_Sf as reservoir_Sf
+import wflow.reservoir_Ss as reservoir_Ss
+import wflow.JarvisCoefficients as JarvisCoefficients
 
 import numpy
 import os

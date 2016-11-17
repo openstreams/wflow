@@ -615,7 +615,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         self.setviaAPI = {}
 
+    def wf_supplyStartTimeDOY(self):
+        DOY = self.DT.runStartTime.utctimetuple().tm_yday
 
+        return DOY
 
     def wf_timeinputscalar(self, tssfile, areamap, default):
         """
