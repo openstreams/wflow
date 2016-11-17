@@ -17,6 +17,7 @@ Release notes
   + FirstZoneDepth -> SatWaterDepth
 + [model]reinit moved to [run]reinit (same for fewsrun) in all models
 + added [rollingmean] section in framework
++ updates to topoflex
 
 
 2016.03

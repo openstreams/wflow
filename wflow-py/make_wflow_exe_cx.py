@@ -12,7 +12,7 @@ supported tagets:
 """
 
 target = 'deltashell'
-#target ='normal'
+target ='normal'
 
 from cx_Freeze import setup, Executable, hooks
 
