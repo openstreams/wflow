@@ -1111,8 +1111,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         self._userModel().logger.debug(
                             "Creating extra parameter specification for par: " + par + " (" + str(vals) + ")")
                         self.modelparameters.append(
-                            self.ParamType(name=par, stack=vals[0], type=vals[1], default=float(vals[2])),
-                            verbose=vals[3], lookupmaps=vals[4:])
+                            self.ParamType(name=par, stack=vals[0], type=vals[1], default=float(vals[2])), verbose=vals[3], lookupmaps=vals[4:])
                     else:
                         self._userModel().logger.debug(
                             "Updating existing parameter specification for par: " + par + " (" + str(vals) + ")")
@@ -2368,7 +2367,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             if self._userModel()._inDynamic():
                 if 'None' not in self.ncfile:
                     retval, succ = self.NcInput.gettimestep(self._userModel().currentTimeStep(), self.logger,
-                                                            tsdatetime=self.DT.currentDateTime + datetime.timedelta(seconds=self.DT.timeStepSecs), var=varname,
+                                                            tsdatetime=self.DT.currentDateTime, var=varname,
                                                             shifttime=self.DT.startadjusted)
                     if succ:
                         return retval
