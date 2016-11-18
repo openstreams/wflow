@@ -660,7 +660,7 @@ class WflowModel(DynamicModel):
     """
 
     self.wf_updateparameters() # read forcing an dynamic parameters
-    self.Precipitation = max(0.0,self.Precipitation)  * self.Pcorr
+    self.Precipitation = max(0.0,self.Precipitation) * self.Pcorr
 
     #self.Precipitation=cover(self.wf_readmap(self.P_mapstack,0.0),0.0) * self.Pcorr
     #self.PotEvaporation=cover(self.wf_readmap(self.PET_mapstack,0.0),0.0)

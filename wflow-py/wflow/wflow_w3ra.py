@@ -280,6 +280,7 @@ class WflowModel(DynamicModel):
         See wf_updateparameters and the parameters section of the ini file
         If you use this make sure to all wf_updateparameters at the start of the dynamic section
         and at the start/end of the initial section
+        :returns modelparameters: list of model parameters
         """
         modelparameters = []
 
@@ -300,7 +301,7 @@ class WflowModel(DynamicModel):
         #modelparameters.append(self.ParamType(name="PotenEvap",stack=self.PET_mapstack,type="timeseries",default=0.0,verbose=True,lookupmaps=[]))
         #modelparameters.append(self.ParamType(name="Temperature",stack=self.TEMP_mapstack,type="timeseries",default=10.0,verbose=True,lookupmaps=[]))
         #modelparameters.append(self.ParamType(name="Inflow",stack=self.Inflow_mapstack,type="timeseries",default=0.0,verbose=False,lookupmaps=[]))
-
+        return modelparameters
 
 
 
