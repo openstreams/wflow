@@ -446,6 +446,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self._addMethodToClass(self.readtblLayersDefault)
         self._addMethodToClass(self.wf_supplyVariableNamesAndRoles)
         self._addMethodToClass(self.wf_updateparameters)
+        self._addMethodToClass(self.wf_supplyStartTimeDOY)
         self._addAttributeToClass("ParamType", self.ParamType)
         self._addAttributeToClass("timestepsecs", self.DT.timeStepSecs)
         self._addAttributeToClass("__version__", __version__)
