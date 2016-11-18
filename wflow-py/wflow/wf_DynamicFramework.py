@@ -1033,8 +1033,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self.logger.debug("Found following input variables to get from netcdf file: " + str(varlst))
             self.NcInput = netcdfinput(os.path.join(caseName, self.ncfile), self.logger, varlst)
 
-            self.logger.debug("Found following input variables to get from netcdf file: " + str(varlst))
-            self.NcInput = netcdfinput(os.path.join(caseName, self.ncfile), self.logger, varlst)
 
 
 
