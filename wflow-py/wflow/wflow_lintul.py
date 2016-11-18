@@ -386,7 +386,7 @@ class WflowModel(DynamicModel):
 
       #Static model parameters
       #e.g.: modelparameters.append(self.ParamType(name="RunoffGeneratingGWPerc",stack="intbl/RunoffGeneratingGWPerc.tbl",type="static",default=0.1)) 
-      modelparameters.append(self.ParamType(name="Altitude",stack="staticmaps/wflow_dem.map",type="staticmap",default=0.0,verbose=False,lookupmaps=[])),
+      #modelparameters.append(self.ParamType(name="Altitude",stack="staticmaps/wflow_dem.map",type="staticmap",default=0.0,verbose=False,lookupmaps=[])),
       #modelparameters.append(self.ParamType(name="WCAD",stack="staticmaps/wcad.map",type="staticmap",default=0.0,verbose=False,lookupmaps=[])),
       #modelparameters.append(self.ParamType(name="WCWP",stack="staticmaps/wcwp.map",type="staticmap",default=0.0,verbose=False,lookupmaps=[])),	  
       #modelparameters.append(self.ParamType(name="WCFC",stack="staticmaps/wcfc.map",type="staticmap",default=0.0,verbose=False,lookupmaps=[])),	  

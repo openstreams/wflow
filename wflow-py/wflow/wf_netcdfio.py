@@ -533,6 +533,7 @@ class netcdfinput():
         if tsdatetime != None:
             if tsdatetime != self.datetimelist[ncindex]:
                 logging.warn("Date/time does not match. Wanted " + str(tsdatetime) + " got " + str(self.datetimelist[ncindex]))
+                logging.warn("Index: " + str(ncindex) + " Par: " + var)
 
         if self.alldat.has_key(var):
             if ncindex == self.lstep:  # Read new block of data in mem
