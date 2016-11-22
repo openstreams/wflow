@@ -10,6 +10,7 @@ import getopt
 
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
+from time import strftime
 #import scipy
 
 #from datetime import date
@@ -42,6 +43,11 @@ $Author: SanderCdeVries $
 $Id: lintul1.py 2015-11-20 16:08:06Z 
 $Rev: 001 $
 """
+
+#runinfoFile           = "runinfo.xml"
+#runinfoFile_Lintul    = os.path.join(os.path.abspath("wflow_lintul"), "inmaps", runinfoFile)
+#starttime             = getStartTimefromRuninfo(runinfoFile_Lintul)
+#DOY_wflow             = starttime.strftime('%j')
 
 def NOTNUL(matrix):
     """    
@@ -153,12 +159,14 @@ class Afgen2(object):
 
 ###############################################################################
 # Some general information for setting up the runs:
-StartDay    = 8.          # TODO later via kaart/forcing inlezen?
-DOYEM       = 25.         # Day of Emergence (transplanting in this case, actually). 
+#CropStart    = 8.          # TODO later via kaart/forcing inlezen?
+#DOYEM       = 25.         # Day of Emergence (transplanting in this case, actually). 
 LAT         = 3.16        # the latitude of Bah Lias, North Sumatra, for now.
 DELT        = 1	          # Time step = 1 day.
 TSUMI       = 362.        # TSUM at transplanting, kind of crop specific, actually.
 TINY        = 1e-6
+
+#iDOY_wflow             = int(starttime.strftime('%j'))
 
 # This needs to be set according to the geographic extent (map dimensions) of your study area/catchment:
 np_Zero     = numpy.zeros((219,286))
@@ -376,6 +384,10 @@ class WflowModel(DynamicModel):
       :return: List of modelparameters
       """
       modelparameters = []
+      
+      self.BMI_RUN = configget(self.config, "model", "BMI_RUN", "True")
+      self.WATERLIMITED = (configget(self.config, "model", "WATERLIMITED", "True"))
+      self.CropStart = int(configget(self.config, "model", "CropStart", "True"))
 
       #Static model parameters
       #e.g.: modelparameters.append(self.ParamType(name="RunoffGeneratingGWPerc",stack="intbl/RunoffGeneratingGWPerc.tbl",type="static",default=0.1)) 
@@ -411,8 +423,12 @@ class WflowModel(DynamicModel):
       
       """
       #states = ['Test', 'LAI', 'WLVG', 'WLVD', 'WST', 'WSO', 'WRT', 'ROOTD', 'WDRT', 'TSUM', 'DAY', 'DVS', 'WA']
+      
       states = ['Test', 'LAI', 'WLVG', 'WLVD', 'WST', 'WSO', 'WRT', 'ROOTD', 'ROOTD_mm', 'WDRT', 'TSUM', 'DAY', 'DVS']
-	  
+      if self.BMI_RUN == "False": 
+        states.append('WA')
+        states.pop(-6)
+        
       return states
       
       
@@ -516,7 +532,7 @@ class WflowModel(DynamicModel):
      output should also be saved here.
      """
      self.wf_updateparameters() # read the temperature map for each step (see parameters())
-	 
+     
 	# Create numpy array from states (make pointers): 
      np_Day                = pcr_as_numpy(self.DAY)
      np_DVS                = pcr_as_numpy(self.DVS)
@@ -539,10 +555,14 @@ class WflowModel(DynamicModel):
      np_WCWET              = WCWET * np_One[:]
      np_WCST               = WCST  * np_One[:]
 
-	 
+#     runinfoFile           = "runinfo.xml"
+#     runinfoFile_Lintul    = os.path.join(os.path.abspath("wflow_lintul"), "inmaps", runinfoFile)
+#     starttime             = getStartTimefromRuninfo(runinfoFile_Lintul)
+#     DOY_wflow             = starttime.strftime('%j')
+     
 	# Implement forcing data, coefficients and some handy numbers spatially, as numpy arrays:
-     np_StartDay           = StartDay * np_One[:]
-     np_StartNow           = np.equal(np_Day[:], np_StartDay[:] - np_One[:])    
+     np_CropStart           = self.CropStart * np_One[:]
+     np_StartNow           = np.equal(np_Day[:], np_CropStart[:] - np_One[:])    
      np_TMIN               = pcr_as_numpy(self.TMIN)
      np_TMAX               = pcr_as_numpy(self.TMAX)
      np_T                  = pcr_as_numpy(self.T)
@@ -575,11 +595,11 @@ class WflowModel(DynamicModel):
      #np_CanGrowDownward    = np.less_equal(np_ROOTD[:], ROOTDM * np_One[:])
      
 	# Check when certain important decision moments are reached, in chronological order: 
-     SimStart              = self.DAY == 0.
+     SimStart              = self.DAY == 0. #todo: do we need ROOTDI before emergence?
      np_Simstart           = pcr_as_numpy(SimStart)
-     Just_Before_Start     = self.DAY == StartDay - 3.
+     Just_Before_Start     = self.DAY == self.CropStart - 3.
      np_Just_Before_Start  = pcr_as_numpy(Just_Before_Start)
-     DevStarted            = self.DAY >= StartDay - 1. # a bit mysterious, but the '-1.' keeps things in perfect sync with the FST version.
+     DevStarted            = self.DAY >= self.CropStart - 1. # a bit mysterious, but the '-1.' keeps things in perfect sync with the FST version.
      np_DevStarted         = pcr_as_numpy(DevStarted)  
      BeforeAnthesis        = self.TSUM < TSUMAN
      np_BeforeAnthesis     = pcr_as_numpy(BeforeAnthesis)
@@ -616,7 +636,8 @@ class WflowModel(DynamicModel):
      
 	# Calculate daylength, based on latitude and day of year:
 	# Daylength assumed similar throughout the catchment area -> scalar, no array - SdV	 
-     DAYL                  = astro2(np_Day.item((1,1)), LAT) 	 
+     DOY = self.wf_supplyStartTimeDOY() + self.currentTimeStep() - 1
+     DAYL                  = astro2(DOY, LAT) 	 
      
      Interpol_FRTTB        = Afgen2(FRTTB)
      Interpol_FLVTB        = Afgen2(FLVTB)
@@ -681,63 +702,23 @@ class WflowModel(DynamicModel):
      self.ROOTD_mm         = self.ROOTD * 1000.
      np_EXPLOR             = 1000. * np_RROOTD[:] * np_WCFC[:] 
 
-	# Subroutine EVAPTR
-    # np_WC                 = 0.001 * np_WA[:]/ NOTNUL(np_ROOTD[:])
-    # np_WAAD               = 1000. * np_WCAD[:] * np_ROOTD[:]
-    # np_WAFC               = 1000. * np_WCFC[:] * np_ROOTD[:]
-    # 
-    # np_RelWatAvail4Evap   = (np_WC[:] - np_WCAD[:])/(np_WCFC[:] - np_WCAD[:])
-    # np_EVAP               = PEVAP[:] * np.clip(np_RelWatAvail4Evap[:], np_Zero[:], np_One[:])
-	# 
-    # np_RelWatAvail4Tran   = (PTRAN[:]/(PTRAN[:] + TRANCO * np_One[:])) * (np_WCFC[:] - np_WCWP[:])
-    # np_WCCR               = np_WCWP[:] + np.maximum(0.01, np_RelWatAvail4Tran)
-    # 
-    # WC_Above_WCCR         = np.greater(np_WC[:], np_WCCR[:])
-    # WC_At_or_Below_WCCR   = np.less_equal(np_WC[:], np_WCCR[:])
-
-    # np_RelMoist1          = (np_WCST[:] - np_WC[:])   / (np_WCST[:] - np_WCWET[:])
-    # np_RelMoist2	       = (np_WC[:]   - np_WCWP[:]) / (np_WCCR[:] - np_WCWP[:])
-    # FR                    = WC_Above_WCCR[:]       * np.clip(np_RelMoist1, np_Zero[:], np_One[:]) + \
-    #                         WC_At_or_Below_WCCR[:] * np.clip(np_RelMoist2, np_Zero[:], np_One[:])
-    # np_TRAN               = PTRAN[:] * FR[:]
-    # np_EVAPOTRAN          = np_EVAP[:] + np_TRAN[:]
-	# 
-    # np_RelMoist3          = ((np_WA[:] - np_WAAD[:])/DELT) / (NOTNUL(np_EVAPOTRAN[:]))
-    # np_AVAILF             = np.minimum(np_One[:], np_RelMoist3[:])
-    # np_EVAP[:]           *= np_AVAILF[:]
-    # np_TRAN[:]           *= np_AVAILF[:]
-     
-     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! this enables the original FST water balance:
-    # TRANRF                = np_TRAN[:] / NOTNUL(PTRAN[:])
-    # TRANRF      = np_One[:]
-	
-	
-	
-	
-	
-	
-	
-     #BMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMI
+	   
 	 #############################################################################################################
-	 # Voor BMI nodig om eerst self.Transpiration, self.PotTrans om te zetten naar numpy.
-	 # Niet zeker of "self." nodig is bij variabelen die worden uitgewisseld via de BMI.
 	 
-     np_Transpiration = pcr_as_numpy(self.Transpiration) 	 
-     np_PotTrans      = pcr_as_numpy(self.PotTrans)
-     #TRANRF           = np_Transpiration[:] / NOTNUL(np_PotTrans[:])
-     TRANRF           = np_One[:]
+     if self.BMI_RUN == "True" and self.WATERLIMITED == "True": 
+        np_Transpiration = pcr_as_numpy(self.Transpiration) 	 
+        np_PotTrans      = pcr_as_numpy(self.PotTrans)
+        TRANRF           = np_Transpiration[:] / NOTNUL(np_PotTrans[:])
+        print "BMI run with water limitation"
+     elif self.BMI_RUN == "True" and self.WATERLIMITED == "False": 
+        TRANRF           = np_One[:]
+        print "BMI run w/o water limitation"
+     else:
+        print "BMI not engaged => no water reduction" 
+        TRANRF           = np_One[:]
 	 
 	 #############################################################################################################
-	##BMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMIBMI
-    
-	
-	
-	
-	
-	
-	 
-	 
-    # Water Limitation: effects on partitioning 
+     # Water Limitation: effects on partitioning 
      FRTMOD                = np_One[:] #np.maximum(np_One[:], np_One[:]/(TRANRF[:]+ 0.5 * np_One[:]))
      FRTMOD                = np.maximum(np_One[:], np_One[:]/(TRANRF[:]+ 0.5 * np_One[:]))
      #FRT                   = FRTMOD[:] #FRTWET[:] * FRTMOD[:]
@@ -830,25 +811,18 @@ class WflowModel(DynamicModel):
     
 	#----------------------------------------------------------------------
      
-     self.Test            = numpy2pcr(Scalar, np_PotTrans[:], -99)
-     #self.Test             = self.ROOTD
+     self.Test            = self.Altitude #numpy2pcr(Scalar, np_PotTrans[:], -99)
+     bla                  = self.timestepsecs/self.basetimestep
 
      self.DAY              += 1. 
-	 
+     #DOY = self.wf_supplyStartTimeDOY() + self.currentTimeStep() - 1
+
      np_ROOTD_mm = pcr_as_numpy(self.ROOTD_mm)
+     
 	 
-     print "********************************************"
-     print "LAI      via Lintul",  "\n"
-     print np_LAI[:] , "\n"
-     print "ROOTD    via Lintul",  "\n"
-     #print cellvalue(self.ROOTD, 1), "\n"
-     print np_ROOTD_mm[:], "\n"
-     print "PotTrans   via Lintul",  "\n"
-     print np_PotTrans[0,:5],  "\n"
-     #print "np_EMERG via Lintul"
-     #print cellvalue(EMERG, 1)#[1,1], np_Day[1,1]
-     print "WA       via Lintul",  "\n"
-     print np_WA, "\n"
+     #print "********************************************"
+     print self.currentTimeStep(), DOY, np_Day[1,1]
+     #print self.BMI_RUN, self.WATERLIMITED, "TRANRF", TRANRF[:1]
 	 
     #----------------------------------------------------------------------
   
@@ -864,13 +838,16 @@ def main(argv=None):
     The user can set the caseName, the runDir, the timestep and the configfile.
     """      
     global multpars
-    caseName = "default"
+    caseName = "default_lintul"
     runId = "run_default"
-    configfile="wflow_sceleton.ini"
+    configfile="wflow_lintul.ini"
     _lastTimeStep = 150
     _firstTimeStep = 1
+    fewsrun = False
+    runinfoFile = "runinfo.xml"
     timestepsecs=86400
     wflow_cloneMap = 'wflow_subcatch.map'
+    loglevel = logging.DEBUG
     
     # This allows us to use the model both on the command line and to call 
     # the model usinge main function from another python script.
@@ -880,23 +857,45 @@ def main(argv=None):
         if len(argv) == 0:
             usage()
             return     
-
-    opts, args = getopt.getopt(argv, 'C:S:T:c:s:R:')
+    ########################################################################
+    ## Process command-line options                                        #
+    ########################################################################
+    try:
+        opts, args = getopt.getopt(argv, 'F:C:S:T:c:s:R:l')
+    except getopt.error, msg:
+        pcrut.usage(msg)
     
     for o, a in opts:
+        if o == '-F':
+            runinfoFile = a
+            fewsrun = True
         if o == '-C': caseName = a
         if o == '-R': runId = a
         if o == '-c': configfile = a
         if o == '-s': timestepsecs = int(a)
         if o == '-T': _lastTimeStep=int(a)
         if o == '-S': _firstTimeStep=int(a)
+        if o == '-l': exec "loglevel = logging." + a
         
     if (len(opts) <=1):
         usage()
+    
+    if fewsrun:
+        ts = getTimeStepsfromRuninfo(runinfoFile, timestepsecs)
+        starttime = getStartTimefromRuninfo(runinfoFile)
+        if (ts):
+            _lastTimeStep = ts
+            _firstTimeStep = 1
+        else:
+            print "Failed to get timesteps from runinfo file: " + runinfoFile
+            exit(2)
+    else:
+        starttime = dt.datetime(1990,01,01)
+
         
     myModel = WflowModel(wflow_cloneMap, caseName,runId,configfile)
-    dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep,firstTimestep=_firstTimeStep)
-    dynModelFw.createRunId(NoOverWrite=False,level=logging.DEBUG)    
+    dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep,firstTimestep=_firstTimeStep,datetimestart=starttime)
+    dynModelFw.createRunId(NoOverWrite=False,level=loglevel)    
     dynModelFw._runInitial()
     dynModelFw._runResume()
     dynModelFw._runDynamic(_firstTimeStep,_lastTimeStep)
