@@ -12,7 +12,7 @@ supported tagets:
 """
 
 target = 'deltashell'
-target ='normal'
+#target ='openda'
 
 from cx_Freeze import setup, Executable, hooks
 
@@ -130,6 +130,10 @@ thename = "Wflow"+MVERSION+'-'+target+'-'+sys.platform+'-'+nrbits
 packages = ["osgeo"]
 
 if target == 'openda':
+    import thrift.protocol.TBinaryProtocol as TBinaryProtocol
+    import thrift.transport.THttpClient as THttpClient
+    import thrift.protocol.TBinaryProtocol as TBinaryProtocol
+    import thrift.transport.THttpClient as THttpClient
     includes = ['wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined']
     packages.append('openda_bmi')
 elif target == 'deltashell':
@@ -156,7 +160,7 @@ if target == 'openda':
     executables = [
         Executable('Scripts/pcr2netcdf.py', base=base),
         Executable('Scripts/bmi2runner.py', base=base),
-        Executable('openda_bmi/thrift_bmi_raster_server.py', base=base),
+        Executable('openda_bmi/opendapy.py', base=base),
         Executable('Scripts/wflow_prepare_step2.py', base=base),
         Executable('Scripts/wflow_prepare_step1.py', base=base),
         Executable('Scripts/wflow_sbm_rtc.py', base=base),
