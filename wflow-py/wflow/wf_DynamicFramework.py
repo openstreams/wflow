@@ -230,7 +230,7 @@ class wf_online_stats():
         self.filename = {}
         self.statvarname = {}
 
-    def addstat (self, name, mode='mean', points=30, filename=None):
+    def addstat(self, name, mode='mean', points=30, filename=None):
         """
 
         :param name:
@@ -505,7 +505,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     self.logger.error("Variable change string (apply_timestep) could not be executed: " + execstr)
 
         if self._userModel()._inInitial():
-
             for cmdd in self.modelparameters_changes_once:
                 execstr = cmdd + " = " + self.modelparameters_changes_once[cmdd]
                 try:
@@ -1097,6 +1096,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 raise ValueError
             pts = int(self._userModel().config.get("rollingmean", thisvar))
             self.onlinestat.addstat(thisvarnoself,points=pts)
+
+        # and set the var names
+        for key in self.onlinestat.statvarname:
+            setattr(self._userModel(), self.onlinestat.statvarname[key], self.TheClone * 0.0)
 
         # Fill the summary (stat) list from the ini file
         self.statslst = []

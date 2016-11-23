@@ -2,15 +2,14 @@ __all__ = ["wflow_funcs","wflow_adapt","wflow_lib","pcrut","wf_DynamicFramework"
 __version__="1.0.master"
 __release__="1.0.master.1"
 __versionnr__="1.0.1"
-__build__="2016-11-22 13:23:54.540000"
+__build__="2016-11-22 13:55:48.455000"
 import osgeo.gdal as gdal
-import os, sys
 
+import os, sys
 if hasattr(sys, "frozen"):
     _ROOT = os.path.abspath(os.path.dirname(__file__)).split("library.zip")[0]
     os.environ['GDAL_DATA'] = os.path.join(_ROOT,'gdal-data')
 else:
     _ROOT = os.path.abspath(os.path.dirname(__file__))
-
 def get_data(path):
     return os.path.join(_ROOT, 'data', path)
