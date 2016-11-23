@@ -454,6 +454,8 @@ class WflowModel(DynamicModel):
 
         self.ZeroMap = 0.0 * scalar(subcatch)  # map with only zero's
 
+        self.wf_multparameters()
+
 
         # For in memory override:
         self.P = self.ZeroMap
@@ -814,7 +816,7 @@ def main(argv=None):
             usage()
             return
 
-    opts, args = getopt.getopt(argv, 'C:S:T:Ic:s:R:F:fl:L:')
+    opts, args = getopt.getopt(argv, 'C:S:T:Ic:s:R:F:fl:L:P:p:')
 
     for o, a in opts:
         if o == '-F': 
@@ -858,7 +860,33 @@ def main(argv=None):
     dynModelFw.createRunId(NoOverWrite=False, level=logging.DEBUG)
 
     for o, a in opts:
+        if o == '-P':
+            left = a.split('=')[0]
+            right = a.split('=')[1]
+            configset(myModel.config,'variable_change_once',left,right,overwrite=True)
+        if o == '-p':
+            left = a.split('=')[0]
+            right = a.split('=')[1]
+            configset(myModel.config,'variable_change_timestep',left,right,overwrite=True)
+        if o == '-X': configset(myModel.config, 'model', 'OverWriteInit', '1', overwrite=True)
         if o == '-I': configset(myModel.config, 'model', 'reinit', '1', overwrite=True)
+        if o == '-i': configset(myModel.config, 'model', 'intbl', a, overwrite=True)
+        if o == '-s': configset(myModel.config, 'model', 'timestepsecs', a, overwrite=True)
+        if o == '-x': configset(myModel.config, 'model', 'sCatch', a, overwrite=True)
+        if o == '-c': configset(myModel.config, 'model', 'configfile', a, overwrite=True)
+        if o == '-M': configset(myModel.config, 'model', 'MassWasting', "0", overwrite=True)
+        if o == '-Q': configset(myModel.config, 'model', 'ExternalQbase', '1', overwrite=True)
+        if o == '-U':
+            configset(myModel.config, 'model', 'updateFile', a, overwrite=True)
+            configset(myModel.config, 'model', 'updating', "1", overwrite=True)
+        if o == '-u':
+            zz = []
+            exec "zz =" + a
+            updateCols = zz
+        if o == '-E': configset(myModel.config, 'model', 'reInfilt', '1', overwrite=True)
+        if o == '-R': runId = a
+        if o == '-W': configset(myModel.config, 'model', 'waterdem', '1', overwrite=True)
+
 
     dynModelFw._runInitial()
     dynModelFw._runResume()
