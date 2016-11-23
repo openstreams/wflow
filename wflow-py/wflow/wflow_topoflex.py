@@ -1,14 +1,14 @@
 #!/usr/bin/python
 
 """
-Definition of the wflow_sceleton model.
+Definition of the wflow_topoflex model.
 ---------------------------------------
 
 This simple model calculates soil temperature using
 air temperature as a forcing.
 
 Usage:
-wflow_sceleton  -C case -R Runid -c inifile
+wflow_topoflex  -C case -R Runid -c inifile
 
     -C: set the name  of the case (directory) to run
     
@@ -16,9 +16,7 @@ wflow_sceleton  -C case -R Runid -c inifile
     
     -c name of the config file (in the case directory)
     
-$Author: schelle $
-$Id: wflow_sceleton.py 898 2014-01-09 14:47:06Z schelle $
-$Rev: 898 $
+
 """
 
 import wflow.reservoir_Si as reservoir_Si
@@ -852,12 +850,8 @@ def main(argv=None):
  
     myModel = WflowModel(wflow_cloneMap, caseName,runId,configfile)
     dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep,firstTimestep=_firstTimeStep,datetimestart=starttime)
-    dynModelFw.createRunId(NoOverWrite=NoOverWrite,logfname=LogFileName,level=loglevel,doSetupFramework=False)
-    print str(dynModelFw.DT)
+    dynModelFw.createRunId(NoOverWrite=NoOverWrite,logfname=LogFileName,level=loglevel,model='wflow_topoflex',doSetupFramework=False)
 
-    myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile)
-    dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep, firstTimestep=_firstTimeStep)
-    dynModelFw.createRunId(NoOverWrite=False, level=logging.DEBUG)
 
     for o, a in opts:
         if o == '-P':
@@ -887,7 +881,7 @@ def main(argv=None):
         if o == '-R': runId = a
         if o == '-W': configset(myModel.config, 'model', 'waterdem', '1', overwrite=True)
 
-
+    dynModelFw.setupFramework()
     dynModelFw._runInitial()
     dynModelFw._runResume()
     dynModelFw._runDynamic(_firstTimeStep, _lastTimeStep)
