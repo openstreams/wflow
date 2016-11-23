@@ -2072,7 +2072,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self.DT.update(currentTimeStep=self.DT.currentTimeStep, mode=self.runlengthdetermination)
         self.logger.debug(self.DT.currentDateTime)
         while step <= self._userModel().nrTimeSteps():
-            self.logger.debug("before:" + str(self.DT.currentDateTime))
             self._incrementIndentLevel()
             self._atStartOfTimeStep(step)
             # TODO: Check why the timestep setting doesn't  work.....
@@ -2105,7 +2104,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self.DT.update(currentTimeStep=self.DT.currentTimeStep+1, mode=self.runlengthdetermination)
             self._userModel().currentdatetime = self.DT.currentDateTime
             self.logger.debug("timestep: " + str(self.DT.currentTimeStep-1) + "/" + str(self.DT.runTimeSteps) +  " (" + str(self.DT.currentDateTime) + ")")
-            self.logger.debug("after:" + str(self.DT.currentDateTime))
+
 
             self._timeStepFinished()
             self._decrementIndentLevel()
