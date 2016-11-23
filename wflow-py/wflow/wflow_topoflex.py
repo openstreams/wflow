@@ -403,6 +403,7 @@ class WflowModel(DynamicModel):
         for i in self.Classes:
             self.percent.append(readmap(os.path.join(self.Dir, wflow_percent[i])))
 
+        self.wf_updateparameters()
         # MODEL PARAMETERS - VALUES PER CLASS
         self.D = eval(str(configget(self.config, "model", "D", "[0]")))
         self.Tf = eval(str(configget(self.config, "model", "Tf", "[0]")))

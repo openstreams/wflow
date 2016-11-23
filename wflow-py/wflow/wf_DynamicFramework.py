@@ -926,6 +926,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         :return:
         """
+        from dateutil import parser
+
         st = configget(self._userModel().config, 'run', 'starttime', "None")
 
         self.skipfirsttimestep =  int(configget(self._userModel().config, 'run', 'skipfirst', "0"))
@@ -951,12 +953,12 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 self.DT.update(currentTimeStep=self.DT.currentTimeStep, mode=self.runlengthdetermination)
                 self._update_time_from_DT()
             else:
+                self.DT.update(datetimestart=parser.parse('1990-01-01 00:00:00 GMT'), mode=self.runlengthdetermination)
                 self.logger.info(
                     "Not enough information in the [run] section. Need start and end time or a runinfo.xml file.... Reverting to default date/time")
         else:
-            from dateutil import parser
-
             self.DT.update(datetimestart=parser.parse(st), mode=self.runlengthdetermination)
+            self.DT.update(currentTimeStep=self.DT.currentTimeStep, mode=self.runlengthdetermination)
             #if self.skipfirsttimestep:
             #    self.logger.debug("Skipping first timestep...")
             #    self.DT.skiptime()
