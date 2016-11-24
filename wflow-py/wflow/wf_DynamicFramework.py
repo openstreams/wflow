@@ -449,6 +449,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self._addMethodToClass(self.readtblLayersDefault)
         self._addMethodToClass(self.wf_supplyVariableNamesAndRoles)
         self._addMethodToClass(self.wf_updateparameters)
+        self._addMethodToClass(self.wf_savesummarymaps)
         self._addMethodToClass(self.wf_supplyStartTimeDOY)
         self._addAttributeToClass("ParamType", self.ParamType)
         self._addAttributeToClass("timestepsecs", self.DT.timeStepSecs)
@@ -1231,7 +1232,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     for z in savevar:
                         fname = os.path.join(directory, var + "_" + str(a)).replace("\\", "/") + ".map"
                         # report(z,fname)
-                        self.reportState(z, fname, style=1, gzipit=False, longname=fname)
+                        self.reportState(cover(z), fname, style=1, gzipit=False, longname=fname)
                         a = a + 1
                 except:
                     # execstr = "report(self._userModel()." + var +",\"" + fname + "\")"
@@ -1280,7 +1281,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         for a in toprint:
             b = a.replace('self.', '')
             try:
-                pcrmap = getattr(self._userModel(), b)
+                exec 'pcrmap = self._userModel().' +  b
                 # report( pcrmap , os.path.join(self._userModel().Dir, self._userModel().runId, "outsum", self._userModel().config.get("summary",a)) )
                 self.reportStatic(pcrmap, os.path.join(self._userModel().Dir, self._userModel().runId, "outsum",
                                                        self._userModel().config.get("summary", a)), style=1)
