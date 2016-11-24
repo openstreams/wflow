@@ -185,7 +185,8 @@ class WflowModel(DynamicModel):
     """
 
         self.logger.info("Saving initial conditions...")
-        
+        #self.wf_suspend(os.path.join(self.SaveDir,"outstatemm"))
+        self.wf_savesummarymaps()
         if self.fewsrun:
             self.logger.info("Saving initial conditions for FEWS...")
 #            self.wf_suspend(os.path.join(self.Dir, "outstate"))

@@ -238,7 +238,7 @@ def downscale_evaporation(self,k):
     
     #teller = numpy.nanmax(pcr2numpy(self.thestep,nan))
     teller = pcr2numpy(self.thestep,nan)[0,0]
-    x = teller - floor(teller/24) * 24 * scalar(self.TopoId)
+    x = teller - floor(teller/24) * 24 * scalar(self.catchArea)
     DL = self.DE - self.DS + 1
     P = 2 * pi / (2 * DL)                              # period
     SH = DL - 12                                        #horizontal shift of new signal
@@ -261,7 +261,7 @@ def downscale_evaporation_snow(self,k):
     """
     
     teller = pcr2numpy(self.thestep,nan)[0,0]
-    x = teller - floor(teller/24) * 24 * scalar(self.TopoId)
+    x = teller - floor(teller/24) * 24 * scalar(self.catchArea)
     DL = self.DE - self.DS + 1
     P = 2 * pi / (2 * DL)                              # period
     SH = DL - 12                                         #horizontal shift of new signal  
