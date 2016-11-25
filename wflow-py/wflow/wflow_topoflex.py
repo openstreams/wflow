@@ -816,7 +816,12 @@ def main(argv=None):
             usage()
             return
 
-    opts, args = getopt.getopt(argv, 'C:S:T:Ic:s:R:F:fl:L:P:p:')
+    try:
+        opts, args = getopt.getopt(argv, 'C:S:T:Ic:s:R:F:fl:L:P:p:i:') #'XF:L:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:')
+    except getopt.error, msg:
+        pcrut.usage(msg)
+
+    # opts, args = getopt.getopt(argv, 'C:S:T:Ic:s:R:F:fl:L:P:p:')
 
     for o, a in opts:
         if o == '-F': 
@@ -865,7 +870,7 @@ def main(argv=None):
             right = a.split('=')[1]
             configset(myModel.config,'variable_change_timestep',left,right,overwrite=True)
         if o == '-X': configset(myModel.config, 'model', 'OverWriteInit', '1', overwrite=True)
-        if o == '-I': configset(myModel.config, 'model', 'reinit', '1', overwrite=True)
+        if o == '-I': configset(myModel.config, 'run', 'reinit', '1', overwrite=True)
         if o == '-i': configset(myModel.config, 'model', 'intbl', a, overwrite=True)
         if o == '-s': configset(myModel.config, 'model', 'timestepsecs', a, overwrite=True)
         if o == '-x': configset(myModel.config, 'model', 'sCatch', a, overwrite=True)
