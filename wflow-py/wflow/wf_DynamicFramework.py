@@ -48,6 +48,9 @@ logging.getLogger('foo').addHandler(logging.NullHandler())
 
 class runDateTimeInfo():
     """
+    class to maintain and retrieve date/time info of the model run.  IN order to support
+    difefrent views on date/time the class supports both a step (each input time is timestep) and
+    an interval base method (each model timestep is the interval between two input timesteps)
 
     """
     def __init__(self, datetimestart=dt.datetime(1990, 01, 01),datetimeend=dt.datetime(1990, 01, 05),
