@@ -821,7 +821,6 @@ def main(argv=None):
     except getopt.error, msg:
         pcrut.usage(msg)
 
-    # opts, args = getopt.getopt(argv, 'C:S:T:Ic:s:R:F:fl:L:P:p:')
 
     for o, a in opts:
         if o == '-F': 
