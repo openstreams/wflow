@@ -903,6 +903,16 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         logging = self.logger
 
         self._userModel().config = self.iniFileSetUp(caseName, runId, configfile)
+        modelnamefromobject = self._userModel().__module__.split('.')[1]
+        self.modelname = configget(self._userModel().config, 'model', 'modeltype', 'not set')
+
+        if self.modelname == 'not set':
+            self.logger.warn('Ini file does not contain model name, assuming ' + modelnamefromobject)
+            self.modelname = modelnamefromobject
+
+        if modelnamefromobject != self.modelname:
+            self.logger.error("Ini file made for " + self.modelname + " but found " + modelnamefromobject + " in code.")
+
         self.runlengthdetermination = configget(self._userModel().config, 'run', 'runlengthdetermination', "steps")
         self.DT.update(timestepsecs=int(configget(self._userModel().config, 'run', 'timestepsecs', "86400")),
                        mode=self.runlengthdetermination,runTimeSteps=self.DT.runTimeSteps)

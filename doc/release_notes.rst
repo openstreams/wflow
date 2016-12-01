@@ -18,6 +18,8 @@ Release notes
 + [model]reinit moved to [run]reinit (same for fewsrun) in all models
 + added [rollingmean] section in framework
 + updates to topoflex
++ updates to BMI framework
++ updates to netcdf reader. [model] modeltype= can be specified
 
 
 2016.03

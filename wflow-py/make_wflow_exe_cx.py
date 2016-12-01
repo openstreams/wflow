@@ -12,7 +12,7 @@ supported tagets:
 """
 
 target = 'deltashell'
-target ='openda'
+#target ='openda'
 
 from cx_Freeze import setup, Executable, hooks
 
