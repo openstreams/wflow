@@ -433,6 +433,7 @@ class WflowModel(DynamicModel):
         self.Tt = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/Tt" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,1) for i in self.Classes]
         self.Tm = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/Tm" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,2) for i in self.Classes]
         self.Fm = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/Fm" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.2) for i in self.Classes]
+        self.ECORR= self.readtblDefault2(self.Dir + "/" + self.intbl + "/ECORR.tbl",self.LandUse,subcatch,self.Soil, 1.0)
         
         # Jarvis stressfunctions
         self.lamda = eval(str(configget(self.config, "model", "lamda", "[0]")))
@@ -639,8 +640,8 @@ class WflowModel(DynamicModel):
             self.Precipitation = ifthenelse(self.Temperature >= self.Tt[0], self.PrecipTotal,0)
             self.PrecipitationSnow = ifthenelse(self.Temperature < self.Tt[0], self.PrecipTotal,0)
 
-        self.EpDay2 = self.EpDay
-        self.EpDaySnow2 = self.EpDaySnow
+        self.EpDay2 = self.EpDay * self.ECORR
+        self.EpDaySnow2 = self.EpDaySnow * self.ECORR
         
         #if self.thestep >= 45:
         	#pdb.set_trace()
