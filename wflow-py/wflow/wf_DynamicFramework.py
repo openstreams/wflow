@@ -48,6 +48,9 @@ logging.getLogger('foo').addHandler(logging.NullHandler())
 
 class runDateTimeInfo():
     """
+    class to maintain and retrieve date/time info of the model run.  IN order to support
+    difefrent views on date/time the class supports both a step (each input time is timestep) and
+    an interval base method (each model timestep is the interval between two input timesteps)
 
     """
     def __init__(self, datetimestart=dt.datetime(1990, 01, 01),datetimeend=dt.datetime(1990, 01, 05),
@@ -446,6 +449,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self._addMethodToClass(self.readtblLayersDefault)
         self._addMethodToClass(self.wf_supplyVariableNamesAndRoles)
         self._addMethodToClass(self.wf_updateparameters)
+        self._addMethodToClass(self.wf_savesummarymaps)
         self._addMethodToClass(self.wf_supplyStartTimeDOY)
         self._addAttributeToClass("ParamType", self.ParamType)
         self._addAttributeToClass("timestepsecs", self.DT.timeStepSecs)
@@ -926,6 +930,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         :return:
         """
+        from dateutil import parser
+
         st = configget(self._userModel().config, 'run', 'starttime', "None")
 
         self.skipfirsttimestep =  int(configget(self._userModel().config, 'run', 'skipfirst', "0"))
@@ -951,12 +957,12 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 self.DT.update(currentTimeStep=self.DT.currentTimeStep, mode=self.runlengthdetermination)
                 self._update_time_from_DT()
             else:
+                self.DT.update(datetimestart=parser.parse('1990-01-01 00:00:00 GMT'), mode=self.runlengthdetermination)
                 self.logger.info(
                     "Not enough information in the [run] section. Need start and end time or a runinfo.xml file.... Reverting to default date/time")
         else:
-            from dateutil import parser
-
             self.DT.update(datetimestart=parser.parse(st), mode=self.runlengthdetermination)
+            self.DT.update(currentTimeStep=self.DT.currentTimeStep, mode=self.runlengthdetermination)
             #if self.skipfirsttimestep:
             #    self.logger.debug("Skipping first timestep...")
             #    self.DT.skiptime()
@@ -1226,7 +1232,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     for z in savevar:
                         fname = os.path.join(directory, var + "_" + str(a)).replace("\\", "/") + ".map"
                         # report(z,fname)
-                        self.reportState(z, fname, style=1, gzipit=False, longname=fname)
+                        self.reportState(cover(z), fname, style=1, gzipit=False, longname=fname)
                         a = a + 1
                 except:
                     # execstr = "report(self._userModel()." + var +",\"" + fname + "\")"
@@ -1275,7 +1281,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         for a in toprint:
             b = a.replace('self.', '')
             try:
-                pcrmap = getattr(self._userModel(), b)
+                exec 'pcrmap = self._userModel().' +  b
                 # report( pcrmap , os.path.join(self._userModel().Dir, self._userModel().runId, "outsum", self._userModel().config.get("summary",a)) )
                 self.reportStatic(pcrmap, os.path.join(self._userModel().Dir, self._userModel().runId, "outsum",
                                                        self._userModel().config.get("summary", a)), style=1)
@@ -2072,7 +2078,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self.DT.update(currentTimeStep=self.DT.currentTimeStep, mode=self.runlengthdetermination)
         self.logger.debug(self.DT.currentDateTime)
         while step <= self._userModel().nrTimeSteps():
-            self.logger.debug("before:" + str(self.DT.currentDateTime))
             self._incrementIndentLevel()
             self._atStartOfTimeStep(step)
             # TODO: Check why the timestep setting doesn't  work.....
@@ -2105,7 +2110,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self.DT.update(currentTimeStep=self.DT.currentTimeStep+1, mode=self.runlengthdetermination)
             self._userModel().currentdatetime = self.DT.currentDateTime
             self.logger.debug("timestep: " + str(self.DT.currentTimeStep-1) + "/" + str(self.DT.runTimeSteps) +  " (" + str(self.DT.currentDateTime) + ")")
-            self.logger.debug("after:" + str(self.DT.currentDateTime))
+
 
             self._timeStepFinished()
             self._decrementIndentLevel()

@@ -1,14 +1,14 @@
 #!/usr/bin/python
 
 """
-Definition of the wflow_sceleton model.
+Definition of the wflow_topoflex model.
 ---------------------------------------
 
 This simple model calculates soil temperature using
 air temperature as a forcing.
 
 Usage:
-wflow_sceleton  -C case -R Runid -c inifile
+wflow_topoflex  -C case -R Runid -c inifile
 
     -C: set the name  of the case (directory) to run
     
@@ -16,9 +16,7 @@ wflow_sceleton  -C case -R Runid -c inifile
     
     -c name of the config file (in the case directory)
     
-$Author: schelle $
-$Id: wflow_sceleton.py 898 2014-01-09 14:47:06Z schelle $
-$Rev: 898 $
+
 """
 
 import wflow.reservoir_Si as reservoir_Si
@@ -187,7 +185,8 @@ class WflowModel(DynamicModel):
     """
 
         self.logger.info("Saving initial conditions...")
-        
+        #self.wf_suspend(os.path.join(self.SaveDir,"outstatemm"))
+        self.wf_savesummarymaps()
         if self.fewsrun:
             self.logger.info("Saving initial conditions for FEWS...")
 #            self.wf_suspend(os.path.join(self.Dir, "outstate"))
@@ -405,6 +404,7 @@ class WflowModel(DynamicModel):
         for i in self.Classes:
             self.percent.append(readmap(os.path.join(self.Dir, wflow_percent[i])))
 
+        self.wf_updateparameters()
         # MODEL PARAMETERS - VALUES PER CLASS
         self.D = eval(str(configget(self.config, "model", "D", "[0]")))
         self.Tf = eval(str(configget(self.config, "model", "Tf", "[0]")))
@@ -816,7 +816,11 @@ def main(argv=None):
             usage()
             return
 
-    opts, args = getopt.getopt(argv, 'C:S:T:Ic:s:R:F:fl:L:P:p:')
+    try:
+        opts, args = getopt.getopt(argv, 'C:S:T:Ic:s:R:F:fl:L:P:p:i:') #'XF:L:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:')
+    except getopt.error, msg:
+        pcrut.usage(msg)
+
 
     for o, a in opts:
         if o == '-F': 
@@ -852,12 +856,8 @@ def main(argv=None):
  
     myModel = WflowModel(wflow_cloneMap, caseName,runId,configfile)
     dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep,firstTimestep=_firstTimeStep,datetimestart=starttime)
-    dynModelFw.createRunId(NoOverWrite=NoOverWrite,logfname=LogFileName,level=loglevel,doSetupFramework=False)
-    print str(dynModelFw.DT)
+    dynModelFw.createRunId(NoOverWrite=NoOverWrite,logfname=LogFileName,level=loglevel,model='wflow_topoflex',doSetupFramework=False)
 
-    myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile)
-    dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep, firstTimestep=_firstTimeStep)
-    dynModelFw.createRunId(NoOverWrite=False, level=logging.DEBUG)
 
     for o, a in opts:
         if o == '-P':
@@ -869,7 +869,7 @@ def main(argv=None):
             right = a.split('=')[1]
             configset(myModel.config,'variable_change_timestep',left,right,overwrite=True)
         if o == '-X': configset(myModel.config, 'model', 'OverWriteInit', '1', overwrite=True)
-        if o == '-I': configset(myModel.config, 'model', 'reinit', '1', overwrite=True)
+        if o == '-I': configset(myModel.config, 'run', 'reinit', '1', overwrite=True)
         if o == '-i': configset(myModel.config, 'model', 'intbl', a, overwrite=True)
         if o == '-s': configset(myModel.config, 'model', 'timestepsecs', a, overwrite=True)
         if o == '-x': configset(myModel.config, 'model', 'sCatch', a, overwrite=True)
@@ -887,7 +887,7 @@ def main(argv=None):
         if o == '-R': runId = a
         if o == '-W': configset(myModel.config, 'model', 'waterdem', '1', overwrite=True)
 
-
+    dynModelFw.setupFramework()
     dynModelFw._runInitial()
     dynModelFw._runResume()
     dynModelFw._runDynamic(_firstTimeStep, _lastTimeStep)
