@@ -10,6 +10,98 @@ import wflow_lib
 import numpy as np
 from wflow.pcrut import setlogger
 from pcraster import *
+import ConfigParser
+
+
+def iniFileSetUp(configfile):
+    """
+    Reads .ini file and returns a config object.
+
+
+    """
+    config = ConfigParser.SafeConfigParser()
+    config.optionxform = str
+    config.read(configfile)
+    return config
+
+
+def configsection(config,section):
+    """
+    gets the list of lesy in a section
+
+    Input:
+        - config
+        - section
+
+    Output:
+        - list of keys in the section
+    """
+    try:
+        ret = config.options(section)
+    except:
+        ret = []
+
+    return ret
+
+
+def configget(config, section, var, default):
+    """
+
+    Gets a string from a config file (.ini) and returns a default value if
+    the key is not found. If the key is not found it also sets the value
+    with the default in the config-file
+
+    Input:
+        - config - python ConfigParser object
+        - section - section in the file
+        - var - variable (key) to get
+        - default - default string
+
+    Returns:
+        - string - either the value from the config file or the default value
+
+
+    """
+    Def = False
+    try:
+        ret = config.get(section, var)
+    except:
+        Def = True
+        ret = default
+        configset(config, section, var, default, overwrite=False)
+
+    default = Def
+    return ret, Def
+
+
+def configset(config, section, var, value, overwrite=False):
+    """
+    Sets a string in the in memory representation of the config object
+    Deos NOT overwrite existing values if overwrite is set to False (default)
+
+    Input:
+        - config - python ConfigParser object
+        - section - section in the file
+        - var - variable (key) to set
+        - value - the value to set
+        - overwrite (optional, default is False)
+
+    Returns:
+        - nothing
+
+    """
+
+    if not config.has_section(section):
+        config.add_section(section)
+        config.set(section, var, value)
+    else:
+        if not config.has_option(section, var):
+            config.set(section, var, value)
+        else:
+            if overwrite:
+                config.set(section, var, value)
+
+
 
 class wflowbmi_light(object):
     """
@@ -58,21 +150,29 @@ class wflowbmi_light(object):
         # set to 10000 for now
         # .. todo::
         #       Get name of module from ini file name
+        fullpathname = os.path.abspath(configfile)
+        self.config = iniFileSetUp(fullpathname)
+
+        self.name, useddef = configget(self.config,'model','modeltype',os.path.splitext(os.path.basename(configfile))[0])
+        if useddef:
+            self.bmilogger.warn("Please specify modeltype in the model section of file: " + configfile)
+            self.bmilogger.warn("Assuming " + self.name + " as model type.")
 
         maxNrSteps = 10000
-        if "wflow" in configfile and "sbm" in configfile and ".ini" in configfile:
-            import wflow_sbm as wf
-            self.name = "wflow_sbm"
-        elif "wflow" in configfile and "hbv" in configfile and ".ini" in configfile:
-            import wflow_hbv as wf
-            self.name = "wflow_hbv"
-        elif "wflow" in configfile and "routing" in configfile and ".ini" in configfile:
-            import wflow_routing as wf
-            self.name = "wflow_routing"
-        else:
-            modname = os.path.splitext(os.path.basename(configfile))[0]
-            exec "import wflow." + modname + " as wf"
-            self.name = modname
+        try:
+            exec "import wflow." + self.name + " as wf"
+        except:
+            if "wflow" in configfile and "sbm" in configfile and ".ini" in configfile:
+                import wflow_sbm as wf
+                self.name = "wflow_sbm"
+            elif "wflow" in configfile and "hbv" in configfile and ".ini" in configfile:
+                import wflow_hbv as wf
+                self.name = "wflow_hbv"
+            elif "wflow" in configfile and "routing" in configfile and ".ini" in configfile:
+                import wflow_routing as wf
+                self.name = "wflow_routing"
+
+
 
         self.bmilogger.info("initialize: Initialising wflow bmi with ini: " + configfile)
         myModel = wf.WflowModel(wflow_cloneMap, datadir, runid, inifile)
@@ -437,24 +537,33 @@ class wflowbmi_csdms(bmi.Bmi):
         # set to 10000 for now
         #
         maxNrSteps = 10000
+        fullpathname = os.path.abspath(filename)
+        self.config = iniFileSetUp(fullpathname)
 
+        self.name, useddef = configget(self.config,'model','modeltype',os.path.splitext(os.path.basename(filename))[0])
+        if useddef:
+            self.bmilogger.warn("Please specify modeltype in the model section of file: " + fullpathname)
+            self.bmilogger.warn("Assuming " + self.name + " as model type.")
 
-        if "wflow_sbm" in inifile:
-            import wflow.wflow_sbm as wf
-            self.name = "wflow_sbm"
-        elif "wflow_hbv" in inifile:
-            import wflow.wflow_hbv as wf
-            self.name = "wflow_hbv"
-        elif "wflow_routing" in inifile:
-            import wflow.wflow_routing as wf
-            self.name = "wflow_routing"
-        elif "wflow_floodmap" in inifile:
-            import wflow.wflow_floodmap as wf
-            self.name = "wflow_floodmap"
-        else:
-            modname = os.path.splitext(os.path.basename(filename))[0]
-            exec "import wflow." + modname + " as wf"
-            self.name = modname
+        try:
+            exec "import wflow." + self.name + " as wf"
+        except: # old method, shoudl not be used
+            if "wflow_sbm" in inifile:
+                import wflow.wflow_sbm as wf
+                self.name = "wflow_sbm"
+            elif "wflow_hbv" in inifile:
+                import wflow.wflow_hbv as wf
+                self.name = "wflow_hbv"
+            elif "wflow_routing" in inifile:
+                import wflow.wflow_routing as wf
+                self.name = "wflow_routing"
+            elif "wflow_floodmap" in inifile:
+                import wflow.wflow_floodmap as wf
+                self.name = "wflow_floodmap"
+            else:
+                modname = os.path.splitext(os.path.basename(filename))[0]
+                exec "import wflow." + modname + " as wf"
+                self.name = modname
 
         self.bmilogger.info("initialize_config: Initialising wflow bmi with ini: " + filename + " Component name: " + self.name)
         self.myModel = wf.WflowModel(wflow_cloneMap, self.datadir, runid, inifile)
