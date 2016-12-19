@@ -760,8 +760,8 @@ class WflowModel(DynamicModel):
     self.SoilMoisture=self.SoilMoisture+self.CapFlux
 
     if not self.SetKquickFlow:
-        self.QuickFlow = max(0,self.KQuickFlow*(self.UpperZoneStorage**(1.0+self.AlphaNL)))
-        self.QuickFlow = min(self.QuickFlow,self.UpperZoneStorage)
+        QuickFlow_temp = max(0,self.KQuickFlow*(self.UpperZoneStorage**(1.0+self.AlphaNL)))
+        self.QuickFlow = min(QuickFlow_temp,self.UpperZoneStorage)
         self.RealQuickFlow = self.ZeroMap
     else:
         self.QuickFlow = self.KQuickFlow*self.UpperZoneStorage
