@@ -761,6 +761,7 @@ class WflowModel(DynamicModel):
 
     if not self.SetKquickFlow:
         self.QuickFlow = max(0,self.KQuickFlow*(self.UpperZoneStorage**(1.0+self.AlphaNL)))
+        self.QuickFlow = min(self.QuickFlow,self.UpperZoneStorage)
         self.RealQuickFlow = self.ZeroMap
     else:
         self.QuickFlow = self.KQuickFlow*self.UpperZoneStorage
