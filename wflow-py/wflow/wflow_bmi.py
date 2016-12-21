@@ -126,7 +126,7 @@ class wflowbmi_light(object):
         if logstr in 'DEBUG':
             self.loggingmode = logging.DEBUG
 
-        """ If set to True all set and get grids are writtesn to disk for debugging """
+        """ If set to True all set and get grids are written to disk for debugging """
         self.wrtodisk = False
 
         self.bmilogger = setlogger('wflow_bmi.log','wflow_bmi_logging',thelevel=self.loggingmode)
@@ -211,7 +211,7 @@ class wflowbmi_light(object):
         """
         self.dynModel._runSuspend()
         self.dynModel._wf_shutdown()
-        self.bmilogger.debug("finalize: shutting down bmi")
+        self.bmilogger.debug("finalize: shutting down bmi finished.")
 
 
     def update(self, dt):

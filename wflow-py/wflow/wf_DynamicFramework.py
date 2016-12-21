@@ -719,7 +719,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             resttotal = pcr2numpy(maptotal(scalar(defined(rest))), 0)
 
             if resttotal[0, 0] < totalzeromap[0, 0]:
-                self.logger.warn("Not all catchment cells have a value for [" + pathtotbl + "] : " + str(
+                self.logger.error("Not all catchment cells have a value for [" + pathtotbl + "] : " + str(
                     resttotal[0, 0]) + "!=" + str(totalzeromap[0, 0]))
 
         # Apply multiplication table if present
@@ -903,7 +903,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         logging = self.logger
 
         self._userModel().config = self.iniFileSetUp(caseName, runId, configfile)
-        modelnamefromobject = self._userModel().__module__.split('.')[1]
+        modelnamefromobject = self._userModel().__module__
         self.modelname = configget(self._userModel().config, 'model', 'modeltype', 'not set')
 
         if self.modelname == 'not set':
@@ -1270,11 +1270,11 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 exec "tmpvar = " + self.varnamecsv[a]
             except:
                 found = 0
-                self.logger.warn("Cannot find: " + self.varnamecsv[a] + " variable not in model.")
+                self.logger.fatal("Cannot find: " + self.varnamecsv[a] + " variable not in model.")
+                exit(1)
 
 
-            if found:
-                self.oscv[self.samplenamecsv[a]].writestep(tmpvar, a, timestep=self.DT.currentTimeStep)
+            self.oscv[self.samplenamecsv[a]].writestep(tmpvar, a, timestep=self.DT.currentTimeStep)
 
 
     def wf_savesummarymaps(self):

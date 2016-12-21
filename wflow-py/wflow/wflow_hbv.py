@@ -255,7 +255,7 @@ class WflowModel(DynamicModel):
     *If SetKquickFlow is set to 1*
  
     :var KQuickFlow.tbl: (0.09880)
-    :var SUZ.tbl: Level over wich K0 is used (100.0) 
+    :var SUZ.tbl: Level over which K0 is used (100.0)
     :var K0.tbl: (0.3)
     
     *If SetKquickFlow is set to 0*

@@ -1469,7 +1469,7 @@ class WflowModel(DynamicModel):
         ##########################################################################
 
         self.QCatchmentMM = self.SurfaceRunoff * self.QMMConvUp
-        self.RunoffCoeff = self.QCatchmentMM/catchmenttotal(self.PrecipitationPlusMelt, self.TopoLdd)/catchmenttotal(cover(1.0), self.TopoLdd)
+        self.RunoffCoeff = cover(self.QCatchmentMM/catchmenttotal(self.PrecipitationPlusMelt, self.TopoLdd),self.ZeroMap)
         #self.AA = catchmenttotal(self.PrecipitationPlusMelt, self.TopoLdd)
         #self.BB = catchmenttotal(cover(1.0), self.TopoLdd)
         # Single cell based water budget. snow not included yet.
