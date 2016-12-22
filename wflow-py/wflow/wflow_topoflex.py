@@ -407,6 +407,7 @@ class WflowModel(DynamicModel):
         self.wf_updateparameters()
         # MODEL PARAMETERS - VALUES PER CLASS
         self.D = eval(str(configget(self.config, "model", "D", "[0]")))
+        # self.D = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/D" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.2) for i in self.Classes]
         self.Tf = eval(str(configget(self.config, "model", "Tf", "[0]")))
         self.Tfa = eval(str(configget(self.config, "model", "Tfa", "[0]")))
         
@@ -419,8 +420,8 @@ class WflowModel(DynamicModel):
         self.betaA = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/betaA" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.2) for i in self.Classes]        
         self.Kf = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/Kf" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.005) for i in self.Classes]
         self.Kfa = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/Kfa" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.05) for i in self.Classes]
-        self.perc = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/perc" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.0035) for i in self.Classes]
-        self.cap = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/cap" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.028) for i in self.Classes]
+        self.perc = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/perc" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.0) for i in self.Classes]
+        self.cap = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/cap" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.0) for i in self.Classes]
         self.LP = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/LP" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.15) for i in self.Classes]
         self.Ks = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/Ks" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.0004) for i in self.Classes]
         self.Fmax = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/Fmax" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,1) for i in self.Classes]
@@ -635,7 +636,7 @@ class WflowModel(DynamicModel):
             self.Precipitation = areatotal(self.Precipitation * self.percentArea, nominal(self.TopoId))
             self.Temperature = areaaverage(self.Temperature * self.percentArea, nominal(self.TopoId))
         
-        self.PrecipTotal = self.Precipitation
+        self.PrecipTotal = self.Precipitation # NB: self.PrecipTotal is the precipitation as in the inmaps and self.Precipitation is in fact self.Rainfall !!!!
         if self.selectSw[0] > 0:
             self.Precipitation = ifthenelse(self.Temperature >= self.Tt[0], self.PrecipTotal,0)
             self.PrecipitationSnow = ifthenelse(self.Temperature < self.Tt[0], self.PrecipTotal,0)
