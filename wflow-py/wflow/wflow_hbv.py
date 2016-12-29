@@ -639,6 +639,7 @@ class WflowModel(DynamicModel):
     :var self.SnowWater: water content of the snow [mm]
     :var self.LowerZoneStorage: water content of the lower zone [mm]
     :var self.UpperZoneStorage: water content of the Upper zone [mm]
+    :var self.InUpperZone: water inflow into Upper zone [mm]
     :var self.BaseFlow: Specific runoff (baseflow part) per cell [mm]
     :var self.Percolation: actual percolation to the lower zone [mm]
     :var self.SoilMoisture: actual soil moisture [mm]
@@ -746,12 +747,12 @@ class WflowModel(DynamicModel):
     Backtosoil=min(self.FieldCapacity-self.SoilMoisture,DirectRunoff) 		#correction for extremely wet periods: soil is filled to capacity
     DirectRunoff=DirectRunoff-Backtosoil
     self.SoilMoisture=self.SoilMoisture+Backtosoil     
-    InUpperZone=DirectRunoff+HBVSeepage                         		# total water available for runoff
+    self.InUpperZone=DirectRunoff+HBVSeepage                         		# total water available for runoff
 	
     # Steps is always 1 at the moment
     # calculations for Upper zone
-    self.UpperZoneStorage=self.UpperZoneStorage+InUpperZone                 		#incoming water from soil 
-    self.Percolation=min(self.PERC,self.UpperZoneStorage)                        		#Percolation
+    self.UpperZoneStorage=self.UpperZoneStorage+self.InUpperZone                 		#incoming water from soil 
+    self.Percolation=min(self.PERC,self.UpperZoneStorage-self.InUpperZone/2)                        		#Percolation
     self.UpperZoneStorage=self.UpperZoneStorage-self.Percolation                  
     self.CapFlux=self.Cflux*(((self.FieldCapacity-self.SoilMoisture)/self.FieldCapacity))   #: Capillary flux flowing back to soil
     self.CapFlux=min(self.UpperZoneStorage,self.CapFlux)
@@ -760,15 +761,17 @@ class WflowModel(DynamicModel):
     self.SoilMoisture=self.SoilMoisture+self.CapFlux
 
     if not self.SetKquickFlow:
-        QuickFlow_temp = max(0,self.KQuickFlow*(self.UpperZoneStorage**(1.0+self.AlphaNL)))
-        self.QuickFlow = min(QuickFlow_temp,self.UpperZoneStorage)
+    	self.QuickFlow=min(ifthenelse(self.Percolation<self.PERC,0,self.KQuickFlow*((self.UpperZoneStorage+self.Percolation-(self.InUpperZone/2))**(1.0+self.AlphaNL))),self.UpperZoneStorage)
+    	self.UpperZoneStorage=max(ifthenelse(self.Percolation<self.PERC,self.UpperZoneStorage,self.UpperZoneStorage-self.QuickFlow),0)   		
+        #QuickFlow_temp = max(0,self.KQuickFlow*(self.UpperZoneStorage**(1.0+self.AlphaNL)))
+        #self.QuickFlow = min(QuickFlow_temp,self.UpperZoneStorage)
         self.RealQuickFlow = self.ZeroMap
     else:
         self.QuickFlow = self.KQuickFlow*self.UpperZoneStorage
         self.RealQuickFlow = max(0,self.K0*(self.UpperZoneStorage - self.SUZ))
-    
+	self.UpperZoneStorage=self.UpperZoneStorage-self.QuickFlow-self.RealQuickFlow    
     """Quickflow volume in mm/timestep"""
-    self.UpperZoneStorage=self.UpperZoneStorage-self.QuickFlow-self.RealQuickFlow
+    #self.UpperZoneStorage=self.UpperZoneStorage-self.QuickFlow-self.RealQuickFlow
  			      
     # calculations for Lower zone
     self.LowerZoneStorage=self.LowerZoneStorage+self.Percolation			
