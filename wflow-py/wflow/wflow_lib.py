@@ -112,8 +112,8 @@ def simplereservoir(storage, inflow, maxstorage, target_perc_full, maximum_Q, de
     percfull = ((storage + oldstorage) * 0.5) / maxstorage
     # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
     fac = sCurve(percfull, a=minimum_full_perc, c=30.0)
-    demandRelease = fac * demand * timestepsecs
-    storage = storage - demandRelease
+    demandRelease = min(fac * demand * timestepsecs, storage)
+    storage =storage - demandRelease
 
     # Re-determine percfull
     percfull = ((storage + oldstorage) * 0.5) / maxstorage
