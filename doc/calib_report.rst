@@ -44,11 +44,9 @@ Gauge data from CHR
 Calibration procedure
 ---------------------
 
-
-
-Calibration was performed in two steps. First an initial gues of all parameters
+Calibration was performed in two steps. First an initial guess of all parameters
 was made based on land-use type. Secondly  a full matrix search of a number of parameters 
-was performed and best perfroming sets have been chosen per subcatchment (based on NS and bias).
+was performed and best performing sets have been chosen per subcatchment (based on NS and bias).
 
 The plots below show the calibration results for the period 1985 -- 1995 for the
 following stations::

@@ -7,15 +7,15 @@ Anaconda on windows 64 bit and ubuntu xenial 64 bit
 supported tagets:
 - normal
 - openda - includes thrift connection to openda, Make sure you have thrift installed first
-- deltashell - includes bmi/mmi link top deltashell. Windows only. Make sure you have zmq, bmi and mmi
+- deltashell - includes bmi/mmi link to deltashell. Windows only. Make sure you have zmq, bmi and mmi
   installed. bmi and mmi can be downloaded from the openearth github repository
 """
 
-target = 'deltashell'
+#target = 'deltashell'
 #target ='openda'
+target = 'normal'
 
 from cx_Freeze import setup, Executable, hooks
-
 
 from _version import *
 import ctypes,glob,os,shutil

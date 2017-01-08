@@ -238,17 +238,8 @@ wflow modules and libraries
    wflow_delwaq
 
 
-Examples and tests
-==================
-.. toctree::
-   :maxdepth: 2
-
-   testrunner_wflowhbv
-   calib_report
-
-
-BMI Basic modeling interface
-============================
+BMI: Basic modeling interface
+=============================
 .. toctree::
    :maxdepth: 2
 
@@ -256,8 +247,8 @@ BMI Basic modeling interface
    wflow_bmi_combined
    bmi2runner
 
-Adding a new model using the framework
-======================================
+Adding a new model yourself using the framework
+===============================================
 .. toctree::
    :maxdepth: 2
 
