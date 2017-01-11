@@ -209,22 +209,30 @@ htmlhelp_basename = 'wflowdoc'
 
 # -- Options for LaTeX output --------------------------------------------------
 
+
 latex_elements = {
-# The paper size ('letterpaper' or 'a4paper').
-'papersize': 'a4paper',
-
-# The font size ('10pt', '11pt' or '12pt').
-'pointsize': '11pt',
-
-# Additional stuff for the LaTeX preamble.
-#'preamble': '',
+    'papersize': 'a4paper',
+    'fontpkg': '',
+    'maketitle': '\maketitle',
+    'fncychap': '',
+    'pointsize': '10pt',
+    'preamble': '',
+    'releasename': "",
+    'babel': '\usepackage[english]{babel}',
+    'printindex': '',
+    'fontenc': '',
+    'docclass': '',
+    'inputenc': '',
+    'classoptions': '',
+    'utf8extra': '',
 }
+
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'wflow.tex', u'wflow Documentation',
-   u'Jaap Schellekens', 'manual'),
+   u'Jaap Schellekens', 'report'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -233,19 +241,19 @@ latex_logo = '_static/logo.png'
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
-#latex_use_parts = False
+latex_use_parts = False
 
 # If true, show page references after internal links.
-#latex_show_pagerefs = False
+latex_show_pagerefs = False
 
 # If true, show URL addresses after external links.
-#latex_show_urls = False
+latex_show_urls = False
 
 # Documents to append as an appendix to all manuals.
 #latex_appendices = []
 
 # If false, no module index is generated.
-#latex_domain_indices = True
+latex_domain_indices = False
 
 
 # -- Options for manual page output --------------------------------------------
