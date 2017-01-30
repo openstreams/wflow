@@ -423,24 +423,26 @@ class WflowModel(DynamicModel):
 
     self.wf_updateparameters()
 
+    self.ReserVoirLocs = self.ZeroMap
     if hasattr(self,'ReserVoirSimpleLocs'):
         # Check if we have simple and or complex reservoirs
         tt_simple = pcr2numpy(self.ReserVoirSimpleLocs, 0.0)
         self.nrresSimple = tt_simple.max()
+        self.ReserVoirLocs = self.ReserVoirLocs + cover(scalar(self.ReserVoirSimpleLocs))
     else:
         self.nrresSimple = 0
-        self.ReserVoirSimpleLocs = self.ZeroMap
 
 
     if hasattr(self, 'ReserVoirComplexLocs'):
         tt_complex = pcr2numpy(self.ReserVoirComplexLocs, 0.0)
         self.nrresComplex = tt_complex.max()
+        self.ReserVoirLocs = self.ReserVoirLocs + cover(scalar(self.ReserVoirComplexLocs))
     else:
         self.nrresComplex = 0
-        self.ReserVoirComplexLocs = self.ZeroMap
+
 
     if (self.nrresSimple + self.nrresComplex)  > 0:
-        self.ReserVoirLocs =ordinal(cover(scalar(self.ReserVoirSimpleLocs)) + cover(scalar(self.ReserVoirComplexLocs)))
+        self.ReserVoirLocs =ordinal(self.ReserVoirLocs)
         self.logger.info("A total of " + str(self.nrresSimple) + " simple reservoirs and " + str(self.nrresComplex) + " complex reservoirs found.")
         self.ReserVoirDownstreamLocs = downstream(self.TopoLdd, self.ReserVoirLocs)
         self.TopoLddOrg = self.TopoLdd
