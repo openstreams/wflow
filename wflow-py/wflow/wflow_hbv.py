@@ -679,10 +679,12 @@ class WflowModel(DynamicModel):
     :var self.LowerZoneStorage: water content of the lower zone [mm]
     :var self.UpperZoneStorage: water content of the Upper zone [mm]
     :var self.InUpperZone: water inflow into Upper zone [mm]
+    :var self.HBVSeepage: recharge to Upper zone [mm]
+    :var self.DirectRunoff: direct runoff to Upper Zone [mm]
     :var self.BaseFlow: Specific runoff (baseflow part) per cell [mm]
     :var self.Percolation: actual percolation to the lower zone [mm]
     :var self.SoilMoisture: actual soil moisture [mm]
-    :var self.QuickFlow: specific runoff (quickflow part) [mm]
+    :var se lf.QuickFlow: specific runoff (quickflow part) [mm]
     :var self.RealQuickFlow: specific runoff (quickflow), If K upper zone is precalculated [mm]
     :var self.CapFlux: capilary rise [mm]
     :var self.SurfaceRunoffMM: SurfaceRunoff in mm
@@ -721,6 +723,10 @@ class WflowModel(DynamicModel):
     RainFrac=ifthenelse(1.0*self.TTI == 0.0,ifthenelse(self.Temperature <= self.TT,scalar(0.0),scalar(1.0)),min((self.Temperature-(self.TT-self.TTI/2.0))/self.TTI,scalar(1.0)))
     RainFrac=max(RainFrac,scalar(0.0))               #fraction of precipitation which falls as rain
     SnowFrac=1.0-RainFrac                    #fraction of self.Precipitation which falls as snow
+    Interception=min(self.Precipitation,self.ICF-self.InterceptionStorage)#: Interception in mm/timestep
+    self.InterceptionStorage=self.InterceptionStorage+Interception #: Current interception storage
+    self.Precipitation=self.Precipitation-Interception
+ 
     self.Precipitation=self.SFCF*SnowFrac*self.Precipitation+self.RFCF*RainFrac*self.Precipitation # different correction for rainfall and snowfall
 
     self.PotEvaporation=exp(-self.EPF*self.Precipitation)*self.ECORR * self.PotEvaporation  # correction for potential evaporation on wet days
@@ -745,9 +751,10 @@ class WflowModel(DynamicModel):
     self.NrCell= areatotal(self.SnowCover,self.TopoId)
 
     #first part of precipitation is intercepted
-    Interception=min(InSoil,self.ICF-self.InterceptionStorage)#: Interception in mm/timestep
-    self.InterceptionStorage=self.InterceptionStorage+Interception #: Current interception storage
-    NetInSoil=InSoil-Interception
+    #Interception=min(InSoil,self.ICF-self.InterceptionStorage)#: Interception in mm/timestep
+    #self.InterceptionStorage=self.InterceptionStorage+Interception #: Current interception storage
+    #NetInSoil=InSoil-Interception
+    NetInSoil=InSoil
 
     self.SoilMoisture=self.SoilMoisture+NetInSoil
     DirectRunoff=max(self.SoilMoisture-self.FieldCapacity,0.0)    	#if soil is filled to capacity: abundant water runs of directly
@@ -780,13 +787,13 @@ class WflowModel(DynamicModel):
 
 
     ActEvap=IntEvap+SoilEvap           #: Sum of evaporation components (IntEvap+SoilEvap)
-    HBVSeepage=((self.SoilMoisture/self.FieldCapacity)**self.BetaSeepage)*NetInSoil		#runoff water from soil
-    self.SoilMoisture=self.SoilMoisture-HBVSeepage
+    self.HBVSeepage=((min(self.SoilMoisture/self.FieldCapacity,1))**self.BetaSeepage)*NetInSoil		#runoff water from soil
+    self.SoilMoisture=self.SoilMoisture-self.HBVSeepage        
 
     Backtosoil=min(self.FieldCapacity-self.SoilMoisture,DirectRunoff) 		#correction for extremely wet periods: soil is filled to capacity
-    DirectRunoff=DirectRunoff-Backtosoil
+    self.DirectRunoff=DirectRunoff-Backtosoil
     self.SoilMoisture=self.SoilMoisture+Backtosoil
-    self.InUpperZone=DirectRunoff+HBVSeepage                         		# total water available for runoff
+    self.InUpperZone=self.DirectRunoff+self.HBVSeepage                         		# total water available for runoff
 
     # Steps is always 1 at the moment
     # calculations for Upper zone
