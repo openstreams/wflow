@@ -170,8 +170,11 @@ class WflowModel(DynamicModel):
                  'WaterLevel',
                  'DrySnow']
 
-      if hasattr(self,'ReserVoirLocs'):
+      if hasattr(self,'ReserVoirSimpleLocs'):
           states.append('ReservoirVolume')
+
+      if hasattr(self,'ReserVoirComplexLocs'):
+          states.append('ReservoirWaterLevel')
 
       return states
 
@@ -420,17 +423,29 @@ class WflowModel(DynamicModel):
 
     self.wf_updateparameters()
 
-    if hasattr(self,'ReserVoirLocs'):
-        # Check if we have reservoirs
-        tt = pcr2numpy(self.ReserVoirLocs, 0.0)
-        self.nrres = tt.max()
-        if self.nrres > 0:
-            self.logger.info("A total of " + str(self.nrres) + " reservoirs found.")
-            self.ReserVoirDownstreamLocs = downstream(self.TopoLdd, self.ReserVoirLocs)
-            self.TopoLddOrg = self.TopoLdd
-            self.TopoLdd = lddrepair(cover(ifthen(boolean(self.ReserVoirLocs), ldd(5)), self.TopoLdd))
+    if hasattr(self,'ReserVoirSimpleLocs'):
+        # Check if we have simple and or complex reservoirs
+        tt_simple = pcr2numpy(self.ReserVoirSimpleLocs, 0.0)
+        self.nrresSimple = tt_simple.max()
     else:
-        self.nrres = 0
+        self.nrresSimple = 0
+        self.ReserVoirSimpleLocs = self.ZeroMap
+
+
+    if hasattr(self, 'ReserVoirComplexLocs'):
+        tt_complex = pcr2numpy(self.ReserVoirComplexLocs, 0.0)
+        self.nrresComplex = tt_complex.max()
+    else:
+        self.nrresComplex = 0
+        self.ReserVoirComplexLocs = self.ZeroMap
+
+    if (self.nrresSimple + self.nrresComplex)  > 0:
+        self.ReserVoirLocs =ordinal(cover(scalar(self.ReserVoirSimpleLocs)) + cover(scalar(self.ReserVoirComplexLocs)))
+        self.logger.info("A total of " + str(self.nrresSimple) + " simple reservoirs and " + str(self.nrresComplex) + " complex reservoirs found.")
+        self.ReserVoirDownstreamLocs = downstream(self.TopoLdd, self.ReserVoirLocs)
+        self.TopoLddOrg = self.TopoLdd
+        self.TopoLdd = lddrepair(cover(ifthen(boolean(self.ReserVoirLocs), ldd(5)), self.TopoLdd))
+
 
 
     #HBV Soil params
@@ -624,8 +639,10 @@ class WflowModel(DynamicModel):
         self.SurfaceRunoff = cover(0.0) #: Discharge in kinimatic wave (state variable [m^3/s])
         self.WaterLevel = cover(0.0) #: Water level in kinimatic wave (state variable [m])
         self.DrySnow=cover(0.0) #: Snow amount (state variable [mm])
-        if hasattr(self, 'ReserVoirLocs'):
+        if hasattr(self, 'ReserVoirSimpleLocs'):
             self.ReservoirVolume = self.ResMaxVolume * self.ResTargetFullFrac
+        if hasattr(self, 'ReserVoirComplexLocs'):
+            self.ReservoirWaterLevel = cover(0.0)
     else:
         self.wf_resume(os.path.join(self.Dir, "instate"))
 
@@ -812,13 +829,26 @@ class WflowModel(DynamicModel):
     self.Inwater=self.InwaterMM * self.ToCubic
 
     #only run the reservoir module if needed
-    if self.nrres > 0:
-        self.ReservoirVolume, self.Outflow, self.ResPercFull,\
-        self.DemandRelease = simplereservoir(self.ReservoirVolume, self.SurfaceRunoff,\
-                                             self.ResMaxVolume, self.ResTargetFullFrac,
-                                             self.ResMaxRelease, self.ResDemand,
-                                             self.ResTargetMinFrac, self.ReserVoirLocs,
-                                             timestepsecs=self.timestepsecs)
+
+    if self.nrresSimple > 0:
+            self.ReservoirVolume, self.Outflow, self.ResPercFull,\
+            self.DemandRelease = simplereservoir(self.ReservoirVolume, self.SurfaceRunoff,\
+                                                 self.ResMaxVolume, self.ResTargetFullFrac,
+                                                 self.ResMaxRelease, self.ResDemand,
+                                                 self.ResTargetMinFrac, self.ReserVoirSimpleLocs,
+                                                 timestepsecs=self.timestepsecs)
+            self.OutflowDwn = upstream(self.TopoLddOrg,cover(self.Outflow,scalar(0.0)))
+            self.Inflow = self.OutflowDwn + cover(self.Inflow,self.ZeroMap)
+    #else:
+    #    self.Inflow= cover(self.Inflow,self.ZeroMap)
+
+    elif self.nrresComplex > 0:
+        self.ReservoirWaterLevel, self.Outflow, self.ReservoirPrecipitation, self.ReservoirEvaporation,\
+        self.ReservoirVolume  = complexreservoir(self.ReservoirWaterLevel, self.ReserVoirComplexLocs, self.ResArea,\
+                                                    self.ResThreshold, self.ResStorFunc, self.ResOutflowFunc, self.Res_b,
+                                                    self.Res_e, self.SurfaceRunoff, self.Dir + "/" + self.intbl + "//",
+                                                    self.Precipitation, self.PotEvaporation, self.ReservoirComplexAreas,
+                                                    timestepsecs=self.timestepsecs)
         self.OutflowDwn = upstream(self.TopoLddOrg,cover(self.Outflow,scalar(0.0)))
         self.Inflow = self.OutflowDwn + cover(self.Inflow,self.ZeroMap)
     else:
@@ -828,7 +858,8 @@ class WflowModel(DynamicModel):
     self.BaseFlowCubic = self.BaseFlow * self.ToCubic
 
     self.SurfaceWaterSupply = ifthenelse (self.Inflow < 0.0 , max(-1.0 * self.Inwater,self.SurfaceRunoff), self.ZeroMap)
-    self.Inwater = ifthenelse(self.SurfaceRunoff + self.Inwater < 0.0, -1.0 * self.SurfaceRunoff, self.Inwater)
+    self.Inwater = self.Inwater + ifthenelse(self.SurfaceWaterSupply> 0, -1.0 * self.SurfaceWaterSupply,self.Inflow)
+
 
     ##########################################################################
     # Runoff calculation via Kinematic wave ##################################
