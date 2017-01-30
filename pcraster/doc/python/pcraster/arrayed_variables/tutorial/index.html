@@ -1,0 +1,279 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Tutorial &mdash; VariableCollection 1.1.2 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="VariableCollection 1.1.2 documentation" href="../index.html" />
+    <link rel="next" title="Examples" href="../examples/index.html" />
+    <link rel="prev" title="Welcome to VariableCollection’s documentation!" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../examples/index.html" title="Examples"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../index.html" title="Welcome to VariableCollection’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">VariableCollection 1.1.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="tutorial">
+<span id="id1"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
+<p>The tutorial gives a short introduction into the usage of the arrayed variables in Python.</p>
+<div class="section" id="importing-the-module">
+<h2>Importing the module<a class="headerlink" href="#importing-the-module" title="Permalink to this headline">¶</a></h2>
+<p>To use the arrayed variables in your Python script use:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">PCRaster.Collection</span> <span class="kn">import</span> <span class="o">*</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="creating-collection-index-types">
+<h2>Creating collection index types<a class="headerlink" href="#creating-collection-index-types" title="Permalink to this headline">¶</a></h2>
+<p>In oldcalc, index types are created as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># oldcalc</span>
+<span class="n">PlantSpecies</span> <span class="o">=</span> <span class="p">[</span>
+      <span class="n">Species1</span><span class="p">,</span>
+      <span class="n">Species2</span><span class="p">,</span>
+      <span class="n">Species3</span><span class="p">];</span>
+</pre></div>
+</div>
+<p>In Python, an index type is created as:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Python</span>
+<span class="n">PlantSpecies</span> <span class="o">=</span> <span class="n">Index</span><span class="p">([</span><span class="s">&quot;Species1&quot;</span><span class="p">,</span> <span class="s">&quot;Species2&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>The indices are given as a list of names.</p>
+</div>
+<div class="section" id="creating-variable-collections">
+<h2>Creating variable collections<a class="headerlink" href="#creating-variable-collections" title="Permalink to this headline">¶</a></h2>
+<p>In oldcalc, arrayed variables are created as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># oldcalc</span>
+<span class="n">Variable1</span><span class="p">[</span><span class="n">Species1</span><span class="p">]</span> <span class="o">=</span> <span class="o">...</span><span class="p">;</span>
+<span class="n">Variable1</span><span class="p">[</span><span class="n">Species2</span><span class="p">]</span> <span class="o">=</span> <span class="o">...</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>In Python, you create a variable collection object by using the index types:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Python</span>
+<span class="n">PlantSpecies</span> <span class="o">=</span> <span class="n">Index</span><span class="p">([</span><span class="s">&quot;Species1&quot;</span><span class="p">,</span> <span class="s">&quot;Species2&quot;</span><span class="p">])</span>
+<span class="n">Variable1</span> <span class="o">=</span> <span class="n">VariableCollection</span><span class="p">([</span><span class="n">PlantSpecies</span><span class="p">],</span> <span class="n">value</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This will initialise the indices with the default value <tt class="docutils literal"><span class="pre">None</span></tt>. Afterwards, you can assign values as:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Variable1</span><span class="p">[</span><span class="n">PlantSpecies</span><span class="o">.</span><span class="n">Species1</span><span class="p">]</span> <span class="o">=</span> <span class="o">...</span>
+<span class="n">Variable1</span><span class="p">[</span><span class="n">PlantSpecies</span><span class="o">.</span><span class="n">Species2</span><span class="p">]</span> <span class="o">=</span> <span class="o">...</span>
+</pre></div>
+</div>
+<p>As an alternative, you can use an external parameter file to initialise the values (collection values not specified in the external file will be set to the default value <tt class="docutils literal"><span class="pre">None</span></tt>) like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Python</span>
+<span class="n">Variable1</span> <span class="o">=</span> <span class="n">VariableCollection</span><span class="p">([</span><span class="n">PlantSpecies</span><span class="p">],</span> <span class="n">value</span><span class="o">=</span><span class="n">ValueFromParameterTable</span><span class="p">(</span><span class="s">&quot;Variable1&quot;</span><span class="p">,</span> <span class="s">&quot;values.tbl&quot;</span><span class="p">,</span> <span class="n">dataType</span><span class="o">=</span><span class="n">Scalar</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>where <tt class="docutils literal"><span class="pre">Variable1</span></tt> is the name of the collection variable referred to in the external file, <tt class="docutils literal"><span class="pre">values.tbl</span></tt> the filename of the external file and <tt class="docutils literal"><span class="pre">Scalar</span></tt> the PCRaster data type of the collection. In case of initialising collection indices with PCRaster field objects, i.e. reading maps from disk, set the <tt class="docutils literal"><span class="pre">dataType</span></tt> argument to <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+<div class="section" id="creating-multidimensional-collections">
+<h3>Creating multidimensional collections<a class="headerlink" href="#creating-multidimensional-collections" title="Permalink to this headline">¶</a></h3>
+<p>Multidimensional collections are created in a similar way as one-dimensional arrays:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Python</span>
+<span class="n">PlantSpecies</span> <span class="o">=</span> <span class="n">Index</span><span class="p">([</span><span class="s">&quot;Plant1&quot;</span><span class="p">,</span> <span class="s">&quot;Plant2&quot;</span><span class="p">])</span>
+<span class="n">Herbivores</span> <span class="o">=</span> <span class="n">Index</span><span class="p">([</span><span class="s">&quot;Species1&quot;</span><span class="p">,</span> <span class="s">&quot;Species2&quot;</span><span class="p">,</span> <span class="s">&quot;Species3&quot;</span><span class="p">])</span>
+
+<span class="n">Interaction</span> <span class="o">=</span> <span class="n">VariableCollection</span><span class="p">([</span><span class="n">Herbivores</span><span class="p">,</span> <span class="n">PlantSpecies</span><span class="p">],</span> <span class="n">value</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This will create a variable <tt class="docutils literal"><span class="pre">Interaction</span></tt> holding a 2-dimensional collection. You can set values like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Interaction</span><span class="p">[</span><span class="n">Herbivores</span><span class="o">.</span><span class="n">Species1</span><span class="p">,</span> <span class="n">PlantSpecies</span><span class="o">.</span><span class="n">Plant1</span><span class="p">]</span> <span class="o">=</span> <span class="n">scalar</span><span class="p">(</span><span class="mf">2.5</span><span class="p">)</span>
+<span class="c"># repeat initialisation for the remaining Herbivore-PlantSpecies combinations</span>
+</pre></div>
+</div>
+<p>Again, the variable can be initialised from a parameter file insetead:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Interaction</span> <span class="o">=</span> <span class="n">VariableCollection</span><span class="p">([</span><span class="n">Herbivores</span><span class="p">,</span> <span class="n">PlantSpecies</span><span class="p">],</span> <span class="n">value</span><span class="o">=</span><span class="n">ValueFromParameterTable</span><span class="p">(</span><span class="s">&quot;Interaction&quot;</span><span class="p">,</span> <span class="s">&quot;interaction.tbl&quot;</span><span class="p">,</span> <span class="n">dataType</span><span class="o">=</span><span class="n">Scalar</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The parameter file looks similar to:</p>
+<div class="highlight-python"><pre>#interaction.tbl
+Interaction  Species1 Plant1 0.2
+Interaction  Species1 Plant2 0.35
+Interaction  Species2 Plant1 0.33
+Interaction  Species2 Plant2 0.35
+Interaction  Species3 Plant1 0.4
+Interaction  Species3 Plant2 0.5</pre>
+</div>
+</div>
+</div>
+<div class="section" id="iterating-over-the-collection">
+<h2>Iterating over the collection<a class="headerlink" href="#iterating-over-the-collection" title="Permalink to this headline">¶</a></h2>
+<p>While in oldcalc a <tt class="docutils literal"><span class="pre">foreach</span></tt> construct iterates over the array:</p>
+<div class="highlight-python"><pre># oldcalc
+foreach species in PlantSpecies {
+  Variable1[species] = ...;
+  Variable2[species] = ...;
+}</pre>
+</div>
+<p>In Python there are two options to iterate over the collection. First, you can use the <tt class="docutils literal"><span class="pre">for</span> <span class="pre">in</span></tt> construct and iterate over the index types:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">species</span> <span class="ow">in</span> <span class="n">PlantSpecies</span><span class="p">:</span>
+  <span class="n">Variable1</span><span class="p">[</span><span class="n">species</span><span class="p">]</span> <span class="o">=</span> <span class="o">...</span>
+  <span class="n">Variable2</span><span class="p">[</span><span class="n">species</span><span class="p">]</span> <span class="o">=</span> <span class="o">...</span>
+</pre></div>
+</div>
+<p>Iterating over multidimensional collections can be done with nested <tt class="docutils literal"><span class="pre">for</span> <span class="pre">in</span></tt> statements:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">herb</span> <span class="ow">in</span> <span class="n">Herbivores</span><span class="p">:</span>
+  <span class="k">for</span> <span class="n">plant</span> <span class="ow">in</span> <span class="n">Plants</span><span class="p">:</span>
+    <span class="n">Interaction</span><span class="p">[</span><span class="n">herb</span><span class="p">,</span> <span class="n">plant</span><span class="p">]</span> <span class="o">=</span> <span class="o">...</span>
+</pre></div>
+</div>
+<p>As a second option you can iterate over the collection:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">herb</span><span class="p">,</span> <span class="n">plant</span> <span class="ow">in</span> <span class="n">Interaction</span><span class="p">:</span>
+  <span class="n">Interaction</span><span class="p">[</span><span class="n">herb</span><span class="p">,</span> <span class="n">plant</span><span class="p">]</span> <span class="o">=</span> <span class="o">...</span>
+</pre></div>
+</div>
+<div class="section" id="using-none-values-in-a-collection">
+<h3>Using <tt class="docutils literal"><span class="pre">None</span></tt> values in a collection<a class="headerlink" href="#using-none-values-in-a-collection" title="Permalink to this headline">¶</a></h3>
+<p>Not necessarily all values in a collection need to be specified. E.g. in our Herbivore-PlantSpecies interaction example, some interactions between species do not appear. If so, you can assign <tt class="docutils literal"><span class="pre">None</span></tt> to that variable:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Interaction</span><span class="p">[</span><span class="n">Herbivores</span><span class="o">.</span><span class="n">Species3</span><span class="p">,</span> <span class="n">PlantSpecies</span><span class="o">.</span><span class="n">Plant2</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
+</pre></div>
+</div>
+<p>When iterating over index types, it is now required to test if values are set:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">herb</span> <span class="ow">in</span> <span class="n">Herbivores</span><span class="p">:</span>
+  <span class="k">for</span> <span class="n">plant</span> <span class="ow">in</span> <span class="n">Plants</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">Interaction</span><span class="p">[</span><span class="n">herb</span><span class="p">,</span> <span class="n">plant</span><span class="p">]</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+      <span class="n">Interaction</span><span class="p">[</span><span class="n">herb</span><span class="p">,</span> <span class="n">plant</span><span class="p">]</span> <span class="o">=</span> <span class="o">...</span>
+</pre></div>
+</div>
+<p>The collection iterator only operates on values being not <tt class="docutils literal"><span class="pre">None</span></tt>, therefore it is not necessary to change the code:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">herb</span><span class="p">,</span> <span class="n">plant</span> <span class="ow">in</span> <span class="n">Interaction</span><span class="p">:</span>
+  <span class="n">Interaction</span><span class="p">[</span><span class="n">herb</span><span class="p">,</span> <span class="n">plant</span><span class="p">]</span> <span class="o">=</span> <span class="o">...</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="reporting-timeseries">
+<h2>Reporting timeseries<a class="headerlink" href="#reporting-timeseries" title="Permalink to this headline">¶</a></h2>
+<p>To report timeseries for each collection index the variable collection class needs to be initialised with the <tt class="docutils literal"><span class="pre">ValueTimeoutputTimeseries</span></tt> class:</p>
+<div class="highlight-python"><pre>InteractionTss = VariableCollection([Herbivores, PlantSpecies], value=ValueTimeoutputTimeseries("Interaction", self, idMap="locations.map", noHeader=False)))</pre>
+</div>
+<p>Afterwards you can sample values for each collection index:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">herb</span><span class="p">,</span> <span class="n">plant</span> <span class="ow">in</span> <span class="n">Interaction</span><span class="p">:</span>
+  <span class="n">InteractionTss</span><span class="p">[</span><span class="n">herb</span><span class="p">,</span> <span class="n">plant</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">Interaction</span><span class="p">[</span><span class="n">herb</span><span class="p">,</span> <span class="n">plant</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>The resulting output files will be named like <tt class="docutils literal"><span class="pre">Interaction-Species3-Plant2.tss</span></tt>.</p>
+</div>
+<div class="section" id="linking-variable-names-to-external-names">
+<h2>Linking variable names to external names<a class="headerlink" href="#linking-variable-names-to-external-names" title="Permalink to this headline">¶</a></h2>
+<p>In the case you want to use variable names in your model script different from the ones in the parameter files you can link those external names to variable names while you initialise the <tt class="docutils literal"><span class="pre">Index</span></tt> class:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Herbs</span> <span class="o">=</span> <span class="n">Index</span><span class="p">([</span><span class="s">&quot;ES=EvergreenShrub&quot;</span><span class="p">,</span> <span class="s">&quot;SPG=ShortPerennialGrass&quot;</span><span class="p">,</span> <span class="s">&quot;Cal=Calluna&quot;</span><span class="p">])</span>
+<span class="n">GrowthFactor</span> <span class="o">=</span> <span class="n">VariableCollection</span><span class="p">([</span><span class="n">Herbs</span><span class="p">],</span> <span class="n">value</span><span class="o">=</span><span class="n">ValueFromParameterTable</span><span class="p">(</span><span class="s">&quot;GrowthFactor&quot;</span><span class="p">,</span> <span class="s">&quot;parameterFile.tbl&quot;</span><span class="p">,</span> <span class="n">Scalar</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>To assign external names use the format <tt class="docutils literal"><span class="pre">Modelname</span> <span class="pre">=</span> <span class="pre">Externalname</span></tt>. Here, you create in your model script a collection variable <tt class="docutils literal"><span class="pre">GrowthFactor</span></tt> with the three indices <tt class="docutils literal"><span class="pre">Herbs.ES</span></tt>, <tt class="docutils literal"><span class="pre">Herbs.SPG</span></tt> and <tt class="docutils literal"><span class="pre">Herbs.Cal</span></tt>. In the parameter file you can refer to the external names <tt class="docutils literal"><span class="pre">EvergreenShrub</span></tt>, <tt class="docutils literal"><span class="pre">ShortPerennialGrass</span></tt> and <tt class="docutils literal"><span class="pre">Calluna</span></tt>:</p>
+<div class="highlight-python"><pre>GrowthFactor  EvergreenShrub       0.3
+GrowthFactor  ShortPerennialGrass  0.37
+GrowthFactor  Calluna              0.29</pre>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#importing-the-module">Importing the module</a></li>
+<li><a class="reference internal" href="#creating-collection-index-types">Creating collection index types</a></li>
+<li><a class="reference internal" href="#creating-variable-collections">Creating variable collections</a><ul>
+<li><a class="reference internal" href="#creating-multidimensional-collections">Creating multidimensional collections</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#iterating-over-the-collection">Iterating over the collection</a><ul>
+<li><a class="reference internal" href="#using-none-values-in-a-collection">Using <tt class="docutils literal"><span class="pre">None</span></tt> values in a collection</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#reporting-timeseries">Reporting timeseries</a></li>
+<li><a class="reference internal" href="#linking-variable-names-to-external-names">Linking variable names to external names</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../index.html"
+                        title="previous chapter">Welcome to VariableCollection&#8217;s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../examples/index.html"
+                        title="next chapter">Examples</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../examples/index.html" title="Examples"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../index.html" title="Welcome to VariableCollection’s documentation!"
+             >previous</a> |</li>
+        <li><a href="../index.html">VariableCollection 1.1.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2009-2015, PCRaster R&amp;D Team.
+      Last updated on Apr 16, 2015.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

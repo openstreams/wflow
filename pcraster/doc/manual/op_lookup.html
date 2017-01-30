@@ -1,0 +1,530 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lookup &mdash; PCRaster 4.0.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="PCRaster 4.0.3 documentation" href="index.html" />
+    <link rel="up" title="pcrcalc and Python operations" href="operations.html" />
+    <link rel="next" title="lookuplinear" href="op_lookuplinear.html" />
+    <link rel="prev" title="log10" href="op_log10.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="op_lookuplinear.html" title="lookuplinear"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="op_log10.html" title="log10"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PCRaster 4.0.3 documentation</a> &raquo;</li>
+          <li><a href="operations.html" accesskey="U">pcrcalc and Python operations</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="index-0"></span><span class="target" id="index-1"></span><span class="target" id="index-2"></span><span class="target" id="index-3"></span><span class="target" id="index-4"></span><span class="target" id="index-5"></span><div class="section" id="lookup">
+<span id="index-6"></span><span id="id1"></span><h1>lookup<a class="headerlink" href="#lookup" title="Permalink to this headline">¶</a></h1>
+<div class="topic">
+<p class="topic-title first">lookup</p>
+<p>Compares cell value(s) of one or more expression(s) with the search key in a table</p>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Result</span> <span class="o">=</span> <span class="n">lookupboolean</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">expression1</span><span class="p">,</span> <span class="n">expression2</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">expressionN</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Result</span> <span class="o">=</span> <span class="n">lookupnominal</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">expression1</span><span class="p">,</span> <span class="n">expression2</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">expressionN</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Result</span> <span class="o">=</span> <span class="n">lookupordinal</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">expression1</span><span class="p">,</span> <span class="n">expression2</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">expressionN</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Result</span> <span class="o">=</span> <span class="n">lookupscalar</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">expression1</span><span class="p">,</span> <span class="n">expression2</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">expressionN</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Result</span> <span class="o">=</span> <span class="n">lookupdirectional</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">expression1</span><span class="p">,</span> <span class="n">expression2</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">expressionN</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Result</span> <span class="o">=</span> <span class="n">lookupldd</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">expression1</span><span class="p">,</span> <span class="n">expression2</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">expressionN</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>expression</dt>
+<dd>spatial
+boolean, nominal, ordinal, scalar, directional, ldd</dd>
+<dt>table</dt>
+<dd>ascii text table</dd>
+<dt>Result</dt>
+<dd>spatial; non spatial if all expressions 1-N are non spatial
+type is specified by the sort of command: lookupboolean results in a boolean Result, lookupnominal results in a nominal Result etc.</dd>
+</dl>
+<div class="section" id="options">
+<h2>Options<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
+<p><tt class="docutils literal"><span class="pre">--columntable</span></tt> or <tt class="docutils literal"><span class="pre">--matrixtable</span></tt></p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">--columntable</span></tt></dt>
+<dd>a column table is read always (default)</dd>
+<dt><tt class="docutils literal"><span class="pre">--matrixtable</span></tt></dt>
+<dd>if two expressions expression1, expression2,. . .expressionN are specified as arguments a matrix table is read instead of a column table.</dd>
+</dl>
+<p><tt class="docutils literal"><span class="pre">--degrees</span></tt> or <tt class="docutils literal"><span class="pre">--radians</span></tt></p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">--degrees</span></tt></dt>
+<dd>directional values in table are interpreted as degrees (default)</dd>
+<dt><tt class="docutils literal"><span class="pre">--radians</span></tt></dt>
+<dd>directional values in table are interpreted as radians</dd>
+</dl>
+</div>
+<div class="section" id="operation">
+<h2>Operation<a class="headerlink" href="#operation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="operation-with-a-column-table-with-global-option-columntable">
+<h3>operation with a column table (with global option <tt class="docutils literal"><span class="pre">--columntable</span></tt>)<a class="headerlink" href="#operation-with-a-column-table-with-global-option-columntable" title="Permalink to this headline">¶</a></h3>
+<p>In the table relations between the values of expression1, expression2,. . .expressionN are given. For each combination of values of expression1, expression2,. . .expressionN a new value can be specified.</p>
+<p>If the option <tt class="docutils literal"><span class="pre">--columntable</span></tt> is set, a column table is always used for table. The column table consists of a number of <em>N</em> +1 columns. The first <em>N</em> columns are key columns, where <em>N</em> is the number of the one or more expressions expression1, expression2,. . .expressionN. The key columns consist of key fields; each key field is one value or a ranges of values. The key fields in the first column will be linked to cell values on expression1, the key fields in the second column to values on expression2, and so on, where the key fields in the Nth column will be linked to values on expressionN. The last column (column number N+1) contains so called value fields; these are values which will be assigned to Result. Each row in the table is called a tuple. Of course, it consists of N key fields and one value field. An example of a column table is given in the table below.</p>
+<div class="highlight-python"><pre>&lt;2,&gt;  3    &lt;,12&gt;   1
+&lt;,2]  3    &lt;,12&gt;   3
+&lt;2,&gt;  14   &lt;,12&gt;   7
+&lt;,2]  14   &lt;,12&gt;   9
+&lt;2,&gt;  14     8     4
+&lt;,2]  14     8     8</pre>
+</div>
+<p>The column 1-3 give the values of expression1, expression2 and expression3; The 4th column contains the value fields.</p>
+<p>For each cell, the lookup operator reads the values in that cell on expression1,expression2,. . .expressionN and looks for a tuple whose key fields match these cell values, starting at the first row of the table. So, in a tuple the Ith key field (where I is 1 to N) is compared with the value on expressionI. It matches if the cell value on expressionI is equal to the value in the key field or if it is in the range of the key field, in case of a key field consisting of a range of values. If all key fields in a tuple match the cell values of the expressions belonging to them, the value in the value field of the tuple is sent to the corresponding cell on Result.</p>
+<p>The table is an ordinary ascii text file which can be made using any text editor program you wish. Alternatively you can make it with a spread sheet program or word processing program and export table as an ascii text file. You can have a squint at your table by typing the DOS command type followed by a space and the table name table.</p>
+<p>The precise format of the table is as follows. In a row (tuple), the number of key fields must equal the  number of expressions expression1,expression2,. . .expressionN. The key fields are followed by one value field. The fields must be separated by one or more spaces or tabs. The number of spaces or tabs doesn&#8217;t matter. A value field is one single value. A key field is a single value, or a range of values, where a range of values is typed as: &#8216;[&#8216; or &#8216;&lt;&#8217; symbol, minimum value, comma, maximum value, &#8216;]&#8217; or &#8216;&gt;&#8217; symbol. The minimum and maximum values are included in the range if square brackets (respectively &#8216;[&#8216; and &#8216;]&#8217;) are used, they are not included if &#8216;&lt;&#8217; or &#8216;&gt;&#8217; are used. Omitting a value in the range definition means infinity. Ranges can be used for nominal, ordinal, scalar and directional data types. Values in keys are typed as an ordinary number (for instance 24.453) or using <sub>10</sub> exponentials (for instance 32.45e3 means 32450). Examples of tuples are:</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">[,0.05&gt;     1</div>
+<div class="line-block">
+<div class="line">Assign a 1 to all expression cell values smaller than 0.05</div>
+<div class="line"><br /></div>
+</div>
+<div class="line">[-2e3,0&gt;    2</div>
+<div class="line-block">
+<div class="line">Assign a 2 to all expression cell values equal to -200 or between -200 and 0.</div>
+<div class="line"><br /></div>
+</div>
+<div class="line">[-1.42,-0.2&gt;    [,9&gt;    -2.2</div>
+<div class="line-block">
+<div class="line">Assign a -2.2 to all cells with: expression1 cell value equal to -1.42 or between</div>
+<div class="line-block">
+<div class="line">-1.42 and -0.2 and expression2 cell value smaller than 9.</div>
+<div class="line"><br /></div>
+</div>
+</div>
+</div>
+</div></blockquote>
+<p>In one table as many tuples as needed can be specified. Remember that for each cell the value field is assigned of the first tuple (from top to bottom) that matches the set of expression1, expression2,. . .expressionN values on the cell.</p>
+</div>
+<div class="section" id="operation-with-a-matrix-table-with-global-option-matrixtable">
+<h3>operation with a matrix table (with global option <tt class="docutils literal"><span class="pre">--matrixtable</span></tt>)<a class="headerlink" href="#operation-with-a-matrix-table-with-global-option-matrixtable" title="Permalink to this headline">¶</a></h3>
+<p>If two expressions expression1, expression2,. . .expressionN are specified in the command line, table will be interpreted as a matrix table instead of a column table. If a different number of expressions expression1, expression2,. . .expressionN is specified table will be read as a column table and the operation is performed as described above.</p>
+<p>If a matrix table is read, the table must have the following make-up; Table <a class="reference internal" href="#tmatrixtable"><em>Matrix table</em></a> gives an example. The first field in the top left corner of the matrix, is not considered during operation but is necessary to align the matrix; it is a dummy field and may have any value. The first row consists of this dummy field and the key fields which will be linked to expression1. The first column consists of the dummy field and the key fields which will be linked to expression2. The key fields may be a single value or may be a range, where ranges are specified in the same way as it is done in a  column table (see above). The remaining fields in the matrix are value fields and consist of the values which will be assigned to Result. In horizontal direction, fields must be separated by one or more spaces or tabs. All fields must be filled in.</p>
+<p>Here is an example of a matrix table.</p>
+<table border="1" class="docutils" id="tmatrixtable">
+<caption>Matrix table</caption>
+<colgroup>
+<col width="15%" />
+<col width="25%" />
+<col width="25%" />
+<col width="20%" />
+<col width="15%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>-99</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>4</td>
+</tr>
+<tr class="row-even"><td>12</td>
+<td>6.5</td>
+<td>6.5</td>
+<td>6</td>
+<td>6</td>
+</tr>
+<tr class="row-odd"><td>14</td>
+<td>-4</td>
+<td>-4</td>
+<td>-4</td>
+<td>-4</td>
+</tr>
+<tr class="row-even"><td>16</td>
+<td>-13</td>
+<td>-13</td>
+<td>-12</td>
+<td>-12</td>
+</tr>
+</tbody>
+</table>
+<p>The fields in the first row contain values of expression1; the fields in the first column contains values of expression2. The field in the topleft corner is a dummy field. The reaming fields are value fields.</p>
+<p>For each cell, the operator reads the expression1 value and the expression2 value. It searches in the matrix both the column with a key field value which matches the expression1 value and the row with a key field value which matches the expression2 value. The value field which is in this column and row is assigned to the corresponding cell on Result. If more than one combination of column key field and row key field match the cell values of expression1 and expression2, the value field is chosen which is firstly in the most left column and secondly in the most upper row.</p>
+</div>
+</div>
+<div class="section" id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<p>If a cell has expression1 and/or expression2 and/or. . .expressionN values that don&#8217;t match with a key field in the table, a missing value is assigned to the cell on Result.</p>
+<p>A cell with a missing value on any expression1, expression2,. . .expressionN is assigned a missing value on Result.</p>
+<p>Each value in the key fields must be in the domain of the (sub) data type
+of the expression to which it will be linked, else the operation will give an error.
+Also, the value fields must be in the domain of the data type of the Result map (specified by the type of command: lookupboolean, lookupnominal,.. etc.).</p>
+<p>Using lookupldd for generating a Result of data type ldd is quite risky: probably it will result in a ldd which is <a class="reference internal" href="secdatbase.html#formldd"><em>unsound</em></a>. If you do want to create a Result of data type ldd use the operator lddrepair afterwards. This operator will modify the ldd in such a way that it will be sound, see the operator <a class="reference internal" href="op_lddrepair.html#lddrepair"><em>lddrepair</em></a>.</p>
+</div>
+<div class="section" id="group">
+<h2>Group<a class="headerlink" href="#group" title="Permalink to this headline">¶</a></h2>
+<p>This operation belongs to the group of  Point operators; relations in tables</p>
+</div>
+<div class="section" id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="op_lddrepair.html#lddrepair"><em>lddrepair</em></a>,  <a class="reference internal" href="secdatbase.html#secdatbaselookform"><em>Table format</em></a>,  <a class="reference internal" href="secimport.html#secimportlookcrea"><em>Creating and editing tables</em></a></p>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><div class="first line-block">
+<div class="line">• pcrcalc</div>
+<div class="line-block">
+<div class="line">#! &#8211;matrixtable</div>
+<div class="line">binding</div>
+<div class="line-block">
+<div class="line">Result4 = Result4.map;</div>
+<div class="line">Table3 = Table3.txt;</div>
+<div class="line">Expr13 = Expr13.map;</div>
+<div class="line">Expr23 = Expr23.map;</div>
+</div>
+<div class="line">initial</div>
+<div class="line-block">
+<div class="line">report Result4 = lookupscalar(Table3,Expr13,Expr23);</div>
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="line">• python</div>
+<div class="line-block">
+<div class="line">setglobaloption(&#8220;matrixtable&#8221;)</div>
+<div class="line">Table3 = &#8220;Table3.txt&#8221;</div>
+<div class="line">Expr13 = readmap(&#8220;Expr13.map&#8221;)</div>
+<div class="line">Expr23 = readmap(&#8220;Expr23.map&#8221;)</div>
+<div class="line">Result4 = lookupscalar(Table3,Expr13,Expr23)</div>
+</div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="24%" />
+<col width="28%" />
+<col width="24%" />
+<col width="24%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Result4.map</td>
+<td>Table3.txt</td>
+<td>Expr13.map</td>
+<td>Expr23.map</td>
+</tr>
+<tr class="row-even"><td><img alt="_images/lookup_Result4.png" class="first last" src="_images/lookup_Result4.png" />
+</td>
+<td><div class="first last highlight-python"><pre>-9 0     1
+2  12.5 -12.5
+7  13.5 -6
+9  14   -2
+</pre>
+</div>
+</td>
+<td><img alt="_images/lookup_Expr13.png" class="first last" src="_images/lookup_Expr13.png" />
+</td>
+<td><img alt="_images/lookup_Expr23.png" class="first last" src="_images/lookup_Expr23.png" />
+</td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line">• pcrcalc</div>
+<div class="line-block">
+<div class="line">binding</div>
+<div class="line-block">
+<div class="line">Result1 = Result1.map;</div>
+<div class="line">Table = Table.txt;</div>
+<div class="line">Expr1 = Expr1.map;</div>
+</div>
+<div class="line">initial</div>
+<div class="line-block">
+<div class="line">report Result1 = lookupnominal(Table,Expr1);</div>
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="line">• python</div>
+<div class="line-block">
+<div class="line">Table = &#8220;Table.txt&#8221;</div>
+<div class="line">Expr1 = readmap(&#8220;Expr1.map&#8221;)</div>
+<div class="line">Result1 = lookupnominal(Table,Expr1)</div>
+</div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="32%" />
+<col width="37%" />
+<col width="31%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Result1.map</td>
+<td>Table.txt</td>
+<td>Expr1.map</td>
+</tr>
+<tr class="row-even"><td><img alt="_images/lookup_Result1.png" class="first last" src="_images/lookup_Result1.png" />
+</td>
+<td><div class="first last highlight-python"><pre>[, -2.5&gt;      1
+ -2.5         3
+&lt;-2.5, 0]     5
+&lt;0, 10&gt;       7
+[12.5, 17.75] 9
+&lt;17.75, 250&gt;  11
+&lt;0, 1&gt;        13
+</pre>
+</div>
+</td>
+<td><img alt="_images/lookup_Expr1.png" class="first last" src="_images/lookup_Expr1.png" />
+</td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line">• pcrcalc</div>
+<div class="line-block">
+<div class="line">binding</div>
+<div class="line-block">
+<div class="line">Result2 = Result2.map;</div>
+<div class="line">Table2 = Table2.txt;</div>
+<div class="line">Expr12 = Expr12.map;</div>
+<div class="line">Expr22 = Expr22.map;</div>
+<div class="line">Expr32 = Expr32.map;</div>
+</div>
+<div class="line">initial</div>
+<div class="line-block">
+<div class="line">report Result2 = lookupordinal(Table2,Expr12,Expr22,Expr32);</div>
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="line">• python</div>
+<div class="line-block">
+<div class="line">Table2 = &#8220;Table2.txt&#8221;</div>
+<div class="line">Expr12 = readmap(&#8220;Expr12.map&#8221;)</div>
+<div class="line">Expr22 = readmap(&#8220;Expr22.map&#8221;)</div>
+<div class="line">Expr32 = readmap(&#8220;Expr32.map&#8221;)</div>
+<div class="line">Result2 = lookupordinal(Table2,Expr12,Expr22,Expr32)</div>
+</div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="23%" />
+<col width="19%" />
+<col width="19%" />
+<col width="19%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Result2.map</td>
+<td>Table2.txt</td>
+<td>Expr12.map</td>
+<td>Expr22.map</td>
+<td>Expr32.map</td>
+</tr>
+<tr class="row-even"><td><img alt="_images/lookup_Result2.png" class="first last" src="_images/lookup_Result2.png" />
+</td>
+<td><div class="first last highlight-python"><pre>1   7    &lt;,&gt;   1
+1  &lt;7,&gt;  [0,&gt;  2
+1  &lt;7,&gt;  &lt;,0&gt;  3
+0   7    &lt;,&gt;   4
+0  &lt;7,&gt;  [0,&gt;  5
+0  &lt;7,&gt;  &lt;,0&gt;  6
+</pre>
+</div>
+</td>
+<td><img alt="_images/lookup_Expr12.png" class="first last" src="_images/lookup_Expr12.png" />
+</td>
+<td><img alt="_images/lookup_Expr22.png" class="first last" src="_images/lookup_Expr22.png" />
+</td>
+<td><img alt="_images/lookup_Expr32.png" class="first last" src="_images/lookup_Expr32.png" />
+</td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line">• pcrcalc</div>
+<div class="line-block">
+<div class="line">#! &#8211;matrixtable</div>
+<div class="line">binding</div>
+<div class="line-block">
+<div class="line">Result3 = Result3.map;</div>
+<div class="line">Table2 = Table2.txt;</div>
+<div class="line">Expr12 = Expr12.map;</div>
+<div class="line">Expr22 = Expr22.map;</div>
+<div class="line">Expr32 = Expr32.map;</div>
+</div>
+<div class="line">initial</div>
+<div class="line-block">
+<div class="line">report Result3 = lookupordinal(Table2,1,100,Expr32);</div>
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="line">• python</div>
+<div class="line-block">
+<div class="line">setglobaloption(&#8220;matrixtable&#8221;)</div>
+<div class="line">Table2 = &#8220;Table2.txt&#8221;</div>
+<div class="line">Expr12 = readmap(&#8220;Expr12.map&#8221;)</div>
+<div class="line">Expr22 = readmap(&#8220;Expr22.map&#8221;)</div>
+<div class="line">Expr32 = readmap(&#8220;Expr32.map&#8221;)</div>
+<div class="line">Result3 = lookupordinal(Table2,1,100,Expr32)</div>
+</div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="23%" />
+<col width="19%" />
+<col width="19%" />
+<col width="19%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Result3.map</td>
+<td>Table2.txt</td>
+<td>Expr12.map</td>
+<td>Expr22.map</td>
+<td>Expr32.map</td>
+</tr>
+<tr class="row-even"><td><img alt="_images/lookup_Result3.png" class="first last" src="_images/lookup_Result3.png" />
+</td>
+<td><div class="first last highlight-python"><pre>1   7    &lt;,&gt;   1
+1  &lt;7,&gt;  [0,&gt;  2
+1  &lt;7,&gt;  &lt;,0&gt;  3
+0   7    &lt;,&gt;   4
+0  &lt;7,&gt;  [0,&gt;  5
+0  &lt;7,&gt;  &lt;,0&gt;  6
+</pre>
+</div>
+</td>
+<td><img alt="_images/lookup_Expr12.png" class="first last" src="_images/lookup_Expr12.png" />
+</td>
+<td><img alt="_images/lookup_Expr22.png" class="first last" src="_images/lookup_Expr22.png" />
+</td>
+<td><img alt="_images/lookup_Expr32.png" class="first last" src="_images/lookup_Expr32.png" />
+</td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</li>
+</ol>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">lookup</a><ul>
+<li><a class="reference internal" href="#options">Options</a></li>
+<li><a class="reference internal" href="#operation">Operation</a><ul>
+<li><a class="reference internal" href="#operation-with-a-column-table-with-global-option-columntable">operation with a column table (with global option <tt class="docutils literal"><span class="pre">--columntable</span></tt>)</a></li>
+<li><a class="reference internal" href="#operation-with-a-matrix-table-with-global-option-matrixtable">operation with a matrix table (with global option <tt class="docutils literal"><span class="pre">--matrixtable</span></tt>)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#notes">Notes</a></li>
+<li><a class="reference internal" href="#group">Group</a></li>
+<li><a class="reference internal" href="#see-also">See Also</a></li>
+<li><a class="reference internal" href="#examples">Examples</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="op_log10.html"
+                        title="previous chapter">log10</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="op_lookuplinear.html"
+                        title="next chapter">lookuplinear</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="op_lookuplinear.html" title="lookuplinear"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="op_log10.html" title="log10"
+             >previous</a> |</li>
+        <li><a href="index.html">PCRaster 4.0.3 documentation</a> &raquo;</li>
+          <li><a href="operations.html" >pcrcalc and Python operations</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 1990-2015, PCRaster R&amp;D Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,262 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>kinematic &mdash; PCRaster 4.0.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="PCRaster 4.0.3 documentation" href="index.html" />
+    <link rel="up" title="pcrcalc and Python operations" href="operations.html" />
+    <link rel="next" title="kinwavestate, kinwaveflux" href="op_kinwave.html" />
+    <link rel="prev" title="inversedistance" href="op_inversedistance.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="op_kinwave.html" title="kinwavestate, kinwaveflux"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="op_inversedistance.html" title="inversedistance"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PCRaster 4.0.3 documentation</a> &raquo;</li>
+          <li><a href="operations.html" accesskey="U">pcrcalc and Python operations</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="kinematic">
+<span id="index-0"></span><span id="id1"></span><h1>kinematic<a class="headerlink" href="#kinematic" title="Permalink to this headline">¶</a></h1>
+<div class="topic">
+<p class="topic-title first">kinematic</p>
+<p>Kinematic Wave equation</p>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Qnew</span> <span class="o">=</span> <span class="n">kinematic</span><span class="p">(</span><span class="n">ldd</span><span class="p">,</span> <span class="n">Qold</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">nrTimeSlices</span><span class="p">,</span> <span class="n">dT</span><span class="p">,</span> <span class="n">dX</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>ldd</dt>
+<dd>spatial
+ldd</dd>
+<dt>Qold</dt>
+<dd>spatial, non spatial
+scalar</dd>
+<dt>q</dt>
+<dd>spatial, non spatial
+scalar</dd>
+<dt>alpha</dt>
+<dd>spatial, non spatial
+scalar</dd>
+<dt>beta</dt>
+<dd>spatial, non spatial
+scalar</dd>
+<dt>nrTimeSlices</dt>
+<dd>spatial, non spatial
+ordinal</dd>
+<dt>dT</dt>
+<dd>non spatial
+scalar</dd>
+<dt>dX</dt>
+<dd>spatial, non spatial
+scalar</dd>
+<dt>Qnew</dt>
+<dd>spatial
+scalar</dd>
+</dl>
+<div class="section" id="operation">
+<h2>Operation<a class="headerlink" href="#operation" title="Permalink to this headline">¶</a></h2>
+<p>The objective of this operator is to solve the kinematic wave.
+The kinematic wave equations are (from <a class="reference internal" href="bibliography.html#chow88"><em>Chow</em></a>):</p>
+<p>dQ/dX + dA/dT = q    and</p>
+<p>A = alpha * Q**beta</p>
+<p>combined into:  dQ/dX + alpha*beta*Q**(beta-1) * dQ/dT = q</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">Q  streamflow through channel (m3/sec)</div>
+<div class="line">dQ delta Q</div>
+<div class="line">q  inflow into the channel (m3/sec)</div>
+<div class="line">dT timestep used in the model (sec)</div>
+<div class="line">dX channel length through cell (m)</div>
+<div class="line">alpha coefficient</div>
+<div class="line">beta coefficient</div>
+<div class="line"><br /></div>
+</div>
+</div></blockquote>
+<p>The objective is to solve the equations for Qnew at each point in the map,
+given the channel parameters alpha and beta, the lateral inflow q and
+the initial conditions Qold.
+For each cell calculates the accumulated amount of material that flows out
+of the cell into its neighbouring downstream cell. This accumulated amount
+is the amount of material in the cell itself plus the amount of material in
+upstream cells of the cell.</p>
+<p>The total set of equations is solved in an iterative process for nrTimeSlices iterations. The nrTimeSlices argument can be defined per catchment. For each cachment the nrTimeSlices value used is defined at its pit position. nrTimeSlices values at non pit positions are discarded.</p>
+<p>Unlike the accuflux-family of functions this function allows for
+streamflow calculations in those situations where the average travel
+time through a cell is within the magnitude of the model time step.</p>
+</div>
+<div class="section" id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<p>This is an experimental implementation of the numerical solutions of the
+kinematic wave equations. The stability and accuracy of the equations
+can not be gauranteed under all circumstances.</p>
+<p>The kinematic-operations uses (unlike other pcraster commands) defined
+units for the calculations. Whereas other pcraster commands can operate
+with any consistent system of units, the kinematic-operation explicitly
+needs its input parameters in (cubic) meters and seconds, and the result
+is in qubic meters per second. This explains the explicit use of dX and
+dT in the interface of the operator.</p>
+<p>Additional sediment flux based on the channel flow calculated with this operator can be obtained by the code shown in example 1 below.</p>
+</div>
+<div class="section" id="group">
+<h2>Group<a class="headerlink" href="#group" title="Permalink to this headline">¶</a></h2>
+<p>This operation belongs to the group of  Neighbourhood operators; local drain directions</p>
+</div>
+<div class="section" id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="secstat.html#secstatneightr"><em>Transport of material over a ldd</em></a></p>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><div class="first line-block">
+<div class="line">• pcrcalc</div>
+<div class="line-block">
+<div class="line">binding</div>
+<div class="line-block">
+<div class="line">Qnew = Qnew.map;</div>
+<div class="line">Ldd = Ldd.map;</div>
+<div class="line">Material = Material.map;</div>
+</div>
+<div class="line">initial</div>
+<div class="line-block">
+<div class="line">report Qnew = kinematic(Ldd,Material,0,1.5,0.6,1,15,10);</div>
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="line">• python</div>
+<div class="line-block">
+<div class="line">Ldd = readmap(&#8220;Ldd.map&#8221;)</div>
+<div class="line">Material = readmap(&#8220;Material.map&#8221;)</div>
+<div class="line">Qnew = kinematic(Ldd,Material,0,1.5,0.6,1,15,10)</div>
+</div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="28%" />
+<col width="39%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Qnew.map</td>
+<td>Ldd.map</td>
+<td>Material.map</td>
+</tr>
+<tr class="row-even"><td><img alt="_images/kinematic_Qnew.png" class="first last" src="_images/kinematic_Qnew.png" />
+</td>
+<td><img alt="_images/accu_Ldd.png" class="first last" src="_images/accu_Ldd.png" />
+</td>
+<td><img alt="_images/accufraction_Material.png" class="first last" src="_images/accufraction_Material.png" />
+</td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</li>
+</ol>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">kinematic</a><ul>
+<li><a class="reference internal" href="#operation">Operation</a></li>
+<li><a class="reference internal" href="#notes">Notes</a></li>
+<li><a class="reference internal" href="#group">Group</a></li>
+<li><a class="reference internal" href="#see-also">See Also</a></li>
+<li><a class="reference internal" href="#examples">Examples</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="op_inversedistance.html"
+                        title="previous chapter">inversedistance</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="op_kinwave.html"
+                        title="next chapter">kinwavestate, kinwaveflux</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="op_kinwave.html" title="kinwavestate, kinwaveflux"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="op_inversedistance.html" title="inversedistance"
+             >previous</a> |</li>
+        <li><a href="index.html">PCRaster 4.0.3 documentation</a> &raquo;</li>
+          <li><a href="operations.html" >pcrcalc and Python operations</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 1990-2015, PCRaster R&amp;D Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

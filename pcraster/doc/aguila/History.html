@@ -1,0 +1,157 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>History &mdash; Aguila 1.3.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.3.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Aguila 1.3.3 documentation" href="index.html" />
+    <link rel="up" title="Manual" href="Manual.html" />
+    <link rel="next" title="License" href="License.html" />
+    <link rel="prev" title="Support" href="Support.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="License.html" title="License"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="Support.html" title="Support"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Aguila 1.3.3 documentation</a> &raquo;</li>
+          <li><a href="Manual.html" accesskey="U">Manual</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="history">
+<span id="id1"></span><h1>History<a class="headerlink" href="#history" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id2">
+<h2>1.3<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="id3">
+<h2>1.2<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first">X-axis of the probability graph view now scales when the cutoff values of the attribute values are adjusted. (<a class="reference external" href="http://sourceforge.net/tracker/?func=detail&amp;aid=2907978&amp;group_id=205121&amp;atid=992360">#2907978</a>)</p>
+</li>
+<li><p class="first">Time graph view now correctly shows probability values when appropriate. (<a class="reference external" href="http://sourceforge.net/tracker/?func=detail&amp;aid=2865535&amp;group_id=205121&amp;atid=992360">#2865535</a> and <a class="reference external" href="http://sourceforge.net/tracker/?func=detail&amp;aid=2865536&amp;group_id=205121&amp;atid=992360">#2865536</a>)</p>
+</li>
+<li><p class="first">Added support for starting Aguila with the probability graph view. Also added support for configuring the probability graph view in the Xml startup configuration file. (<a class="reference external" href="http://sourceforge.net/tracker/?func=detail&amp;aid=2796370&amp;group_id=205121&amp;atid=992360">#2796370</a>)</p>
+</li>
+<li><p class="first">Added support for visualizing <a class="reference internal" href="Data.html#vectordataformats"><em>vector data</em></a> (attributes with a direction and a magnitude).</p>
+</li>
+<li><p class="first">Added support for directories when naming attributes that are located somewhere else than the current directory:</p>
+<div class="highlight-python"><pre>$ aguila --timesteps [1,100] MyProject/MyData/Dem</pre>
+</div>
+</li>
+<li><p class="first">Improved panning when a 2D map is zoomed.</p>
+</li>
+<li><p class="first">Vector and Ldd attributes are not drawn when there are only a few pixels available per cell (large number of cells and/or zoomed out a lot). In that case a transparant cell is drawn to show the area of non-missing value cells. The vector and ldd directions are shown again when more pixels become available (when the map is zoomed into). This is done to keep Aguila responsive when large data sets are loaded. In such cases vector and ldd directions where not visible anyway.</p>
+</li>
+<li><p class="first">Re-added &#8216;zoom by rectangle&#8217;, by popular request. See section <a class="reference internal" href="Views.html#mapcontrols"><em>Map Controls</em></a>.</p>
+</li>
+<li><p class="first">For all data read using GDAL, the color interpretation is taken into account when determining the value scale of a raster attribute. For example, satellite imagery values stored in a byte geoTiff raster are treated as scalar data when the color interpretation stored in the raster is reported by GDal as being Gray. (<a class="reference external" href="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=2873963&amp;group_id=205121&amp;atid=992360">#2873963</a>)</p>
+</li>
+<li><p class="first">For all data read using GDAL, the PCRASTER_VALUESCALE meta data item is taken into account. If it is set, it overrides the color interpretation and type id that are otherwise used to determine the value scale, see section <a class="reference internal" href="Data.html#rasterdataformats"><em>Raster data formats</em></a>. (<a class="reference external" href="http://sourceforge.net/tracker/?func=detail&amp;aid=2873989&amp;group_id=205121&amp;atid=992360">#2873989</a>)</p>
+</li>
+<li><p class="first">...</p>
+</li>
+</ul>
+</div>
+<div class="section" id="id10">
+<h2>1.1<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Added support for visualizing feature data.</li>
+</ul>
+</div>
+<div class="section" id="id11">
+<h2>1.0<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h2>
+<p>First release in the 1-series. Since we are about to add some new features we first made an official release of the current version.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">History</a><ul>
+<li><a class="reference internal" href="#id2">1.3</a></li>
+<li><a class="reference internal" href="#id3">1.2</a></li>
+<li><a class="reference internal" href="#id10">1.1</a></li>
+<li><a class="reference internal" href="#id11">1.0</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="Support.html"
+                        title="previous chapter">Support</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="License.html"
+                        title="next chapter">License</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="License.html" title="License"
+             >next</a></li>
+        <li class="right" >
+          <a href="Support.html" title="Support"
+             >previous</a> |</li>
+        <li><a href="index.html">Aguila 1.3.3 documentation</a> &raquo;</li>
+          <li><a href="Manual.html" >Manual</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2009-2015, PCRaster R&amp;D team.
+      Last updated on Apr 16, 2015.
+    </div>
+  </body>
+</html>

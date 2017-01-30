@@ -12,8 +12,8 @@ supported tagets:
 """
 
 #target = 'deltashell'
-#target ='openda'
-target = 'normal'
+target ='openda'
+#target = 'normal'
 
 from cx_Freeze import setup, Executable, hooks
 

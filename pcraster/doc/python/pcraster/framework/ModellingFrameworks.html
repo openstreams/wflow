@@ -1,0 +1,1143 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Modelling frameworks &mdash; PCRaster Python Framework 1.1.2 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.1.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="PCRaster Python Framework 1.1.2 documentation" href="index.html" />
+    <link rel="up" title="Framework for Spatio-Temporal Modelling" href="Manual.html" />
+    <link rel="next" title="Bibliography" href="Bibliography.html" />
+    <link rel="prev" title="Introduction" href="Introduction.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="Bibliography.html" title="Bibliography"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="Introduction.html" title="Introduction"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PCRaster Python Framework 1.1.2 documentation</a> &raquo;</li>
+          <li><a href="Manual.html" accesskey="U">Framework for Spatio-Temporal Modelling</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="modelling-frameworks">
+<h1>Modelling frameworks<a class="headerlink" href="#modelling-frameworks" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="quickstart">
+<h2>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this headline">¶</a></h2>
+<p>In addition to spatial functions a support frame is required to build spatio-temporal models. This section introduces two frameworks that ease the development of static and dynamic models.</p>
+<p>The script <a class="reference internal" href="#runoff-py"><em>below</em></a> is the Python version of the hydrological runoff model shown in the demo of the PCRaster distribution. To run the script change to the demo directory (demo/deterministic) and execute</p>
+<div class="highlight-bash"><div class="highlight"><pre>python2.5 runoff.py
+</pre></div>
+</div>
+<div class="highlight-python" id="runoff-py"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50</pre></div></td><td class="code"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
+<span class="c"># -*- coding: utf-8 -*-</span>
+
+<span class="c"># model for simulation of runoff</span>
+<span class="c"># 24 timesteps of 6 hours =&gt; modelling time one week</span>
+
+<span class="kn">from</span> <span class="nn">pcraster</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">pcraster.framework</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="k">class</span> <span class="nc">RunoffModel</span><span class="p">(</span><span class="n">DynamicModel</span><span class="p">):</span>
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cloneMap</span><span class="p">):</span>
+    <span class="n">DynamicModel</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="n">setclone</span><span class="p">(</span><span class="n">cloneMap</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="c"># coverage of meteorological stations for the whole area</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">rainZones</span> <span class="o">=</span> <span class="n">spreadzone</span><span class="p">(</span><span class="s">&quot;rainstat.map&quot;</span><span class="p">,</span> <span class="n">scalar</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">scalar</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="c"># create an infiltration capacity map (mm/6 hours), based on the</span>
+    <span class="c"># soil map</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">infiltrationCapacity</span> <span class="o">=</span> <span class="n">lookupscalar</span><span class="p">(</span><span class="s">&quot;infilcap.tbl&quot;</span><span class="p">,</span> <span class="s">&quot;soil.map&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">infiltrationCapacity</span><span class="p">,</span> <span class="s">&quot;infilcap&quot;</span><span class="p">)</span>
+
+    <span class="c"># generate the local drain direction map on basis of the elevation map</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">ldd</span> <span class="o">=</span> <span class="n">lddcreate</span><span class="p">(</span><span class="s">&quot;dem.map&quot;</span><span class="p">,</span> <span class="mf">1e31</span><span class="p">,</span> <span class="mf">1e31</span><span class="p">,</span> <span class="mf">1e31</span><span class="p">,</span> <span class="mf">1e31</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ldd</span><span class="p">,</span> <span class="s">&quot;ldd&quot;</span><span class="p">)</span>
+
+    <span class="c"># initialise timeoutput</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">runoffTss</span> <span class="o">=</span> <span class="n">TimeoutputTimeseries</span><span class="p">(</span><span class="s">&quot;runoff&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="s">&quot;samples.map&quot;</span><span class="p">,</span> <span class="n">noHeader</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">dynamic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="c"># calculate and report maps with rainfall at each timestep (mm/6 hours)</span>
+    <span class="n">surfaceWater</span> <span class="o">=</span> <span class="n">timeinputscalar</span><span class="p">(</span><span class="s">&quot;rain.tss&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rainZones</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">surfaceWater</span><span class="p">,</span> <span class="s">&quot;rainfall&quot;</span><span class="p">)</span>
+
+    <span class="c"># compute both runoff and actual infiltration</span>
+    <span class="n">runoff</span> <span class="o">=</span> <span class="n">accuthresholdflux</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ldd</span><span class="p">,</span> <span class="n">surfaceWater</span><span class="p">,</span>\
+         <span class="bp">self</span><span class="o">.</span><span class="n">infiltrationCapacity</span><span class="p">)</span>
+    <span class="n">infiltration</span> <span class="o">=</span> <span class="n">accuthresholdstate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ldd</span><span class="p">,</span> <span class="n">surfaceWater</span><span class="p">,</span>\
+         <span class="bp">self</span><span class="o">.</span><span class="n">infiltrationCapacity</span><span class="p">)</span>
+
+    <span class="c"># output runoff, converted to m3/s, at each timestep</span>
+    <span class="n">logRunOff</span> <span class="o">=</span> <span class="n">runoff</span> <span class="o">/</span> <span class="n">scalar</span><span class="p">(</span><span class="mi">216000</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">logRunOff</span><span class="p">,</span> <span class="s">&quot;logrunof&quot;</span><span class="p">)</span>
+    <span class="c"># sampling timeseries for given locations</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">runoffTss</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">logRunOff</span><span class="p">)</span>
+
+<span class="n">myModel</span> <span class="o">=</span> <span class="n">RunoffModel</span><span class="p">(</span><span class="s">&quot;mask.map&quot;</span><span class="p">)</span>
+<span class="n">dynModelFw</span> <span class="o">=</span> <span class="n">DynamicFramework</span><span class="p">(</span><span class="n">myModel</span><span class="p">,</span> <span class="n">lastTimeStep</span><span class="o">=</span><span class="mi">28</span><span class="p">,</span> <span class="n">firstTimestep</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">dynModelFw</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="deterministic-modelling">
+<h2>Deterministic Modelling<a class="headerlink" href="#deterministic-modelling" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="static-modelling-framework">
+<h3>Static Modelling Framework<a class="headerlink" href="#static-modelling-framework" title="Permalink to this headline">¶</a></h3>
+<p>This section introduces to the usage of the static modelling framework. A static model is described by:</p>
+<div class="math">
+\[Z = f(Z, I, P)\]</div>
+<p>with <span class="math">\(Z\)</span>, the model state variables; <span class="math">\(I\)</span>, inputs; <span class="math">\(P\)</span>, parameter; and <span class="math">\(f\)</span> defining the model structure. The static model framework is used to build models without temporal dependencies, like calculating distances between a number of gauging stations.</p>
+<div class="section" id="static-model-template">
+<h4>Static model template<a class="headerlink" href="#static-model-template" title="Permalink to this headline">¶</a></h4>
+<p>The following script shows the minimal user class that fulfills the requirements for the static framework:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># userModel.py</span>
+<span class="kn">from</span> <span class="nn">PCRaster.Framework</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="k">class</span> <span class="nc">UserModel</span><span class="p">(</span><span class="n">StaticModel</span><span class="p">):</span>
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">StaticModel</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+<p>In the class of the user model the following method must be implemented:</p>
+<dl class="method">
+<dt id="initial">
+<tt class="descname">initial</tt><big>(</big><big>)</big><a class="headerlink" href="#initial" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method contains the static section of the user model.</p>
+</dd></dl>
+
+<p>The model class can be executed with the static framework as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># runScript.py</span>
+
+<span class="kn">import</span> <span class="nn">userModel</span>
+<span class="kn">from</span> <span class="nn">PCRaster.Framework</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">myModel</span> <span class="o">=</span> <span class="n">userModel</span><span class="o">.</span><span class="n">UserModel</span><span class="p">()</span>
+<span class="n">staticModel</span> <span class="o">=</span> <span class="n">StaticFramework</span><span class="p">(</span><span class="n">myModel</span><span class="p">)</span>
+<span class="n">staticModel</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>To run the model execute</p>
+<div class="highlight-bash"><div class="highlight"><pre>python2.5 runScript.py
+</pre></div>
+</div>
+<p>The script <cite>runScript.py</cite> creates an instance of the user model which is passed to the static framework afterwards. <cite>staticModel.run()</cite> executes the initial section of the user model.</p>
+</div>
+<div class="section" id="example">
+<h4>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h4>
+<p>The following example shows the static version of the demo script. PCRaster operations can be used in the same way as in scripts without the modelling framework:</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29</pre></div></td><td class="code"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
+<span class="c"># -*- coding: utf-8 -*-</span>
+
+<span class="c"># static model</span>
+
+<span class="kn">from</span> <span class="nn">pcraster</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">pcraster.framework</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="k">class</span> <span class="nc">RunoffModel</span><span class="p">(</span><span class="n">StaticModel</span><span class="p">):</span>
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cloneMap</span><span class="p">):</span>
+    <span class="n">StaticModel</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="n">setclone</span><span class="p">(</span><span class="n">cloneMap</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="c"># coverage of meteorological stations for the whole area</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">rainZones</span> <span class="o">=</span> <span class="n">spreadzone</span><span class="p">(</span><span class="s">&quot;rainstat.map&quot;</span><span class="p">,</span> <span class="n">scalar</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">scalar</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="c"># create an infiltration capacity map (mm/6 hours), based on the</span>
+    <span class="c"># soil map</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">infiltrationCapacity</span> <span class="o">=</span> <span class="n">lookupscalar</span><span class="p">(</span><span class="s">&quot;infilcap.tbl&quot;</span><span class="p">,</span> <span class="s">&quot;soil.map&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">infiltrationCapacity</span><span class="p">,</span> <span class="s">&quot;infilcap&quot;</span><span class="p">)</span>
+
+    <span class="c"># generate the local drain direction map on basis of the elevation map</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">ldd</span> <span class="o">=</span> <span class="n">lddcreate</span><span class="p">(</span><span class="s">&quot;dem.map&quot;</span><span class="p">,</span> <span class="mf">1e31</span><span class="p">,</span> <span class="mf">1e31</span><span class="p">,</span> <span class="mf">1e31</span><span class="p">,</span> <span class="mf">1e31</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ldd</span><span class="p">,</span> <span class="s">&quot;ldd&quot;</span><span class="p">)</span>
+
+<span class="n">myModel</span> <span class="o">=</span> <span class="n">RunoffModel</span><span class="p">(</span><span class="s">&quot;mask.map&quot;</span><span class="p">)</span>
+<span class="n">stModelFw</span> <span class="o">=</span> <span class="n">StaticFramework</span><span class="p">(</span><span class="n">myModel</span><span class="p">)</span>
+<span class="n">stModelFw</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</td></tr></table></div>
+<p>Setting the map attributes (e.g. number of rows and columns and cellsize) is done by using <cite>setclone</cite> in the constructor of the model class.</p>
+<p>PCRaster operations can have data from disk as input arguments, as is done in the <cite>spreadzone</cite> operation.</p>
+<p>Note that the framework provides an additional report operation (<cite>self.report</cite>) whose behavior is dependent on the method in which it is used. It writes the data to disk with a filename conforming to the PCRaster conventions generated from the second argument, i.e. appending a &#8221;.map&#8221; suffix for the static framework (the name of the local drain direction map will become &#8220;ldd.map&#8221;) and appending a time step when used in the dynamic framework. Storing data with a specific name or at a specific location is done using <cite>report</cite> instead of <cite>self.report</cite>.</p>
+</div>
+</div>
+<div class="section" id="dynamic-modelling-framework">
+<h3>Dynamic Modelling Framework<a class="headerlink" href="#dynamic-modelling-framework" title="Permalink to this headline">¶</a></h3>
+<p>This section describes the usage of the dynamic modelling framework. In addition to spatial processes dynamic models include a temporal component. Simulating dynamic behaviour is done by iterating a dynamic section over a set of timesteps.</p>
+<p>The state of a model variable at time <span class="math">\(t\)</span> is defined by its state at <span class="math">\(t-1\)</span> and a function <span class="math">\(f\)</span> (<a class="reference internal" href="Bibliography.html#karssenberg2005a"><em>Karssenberg2005a</em></a>):</p>
+<div class="math">
+\[Z_{1..m}(t) = f(Z_{1..m}(t-1), I_{1..n}(t), P_{1..l})\]</div>
+<p>The model state variables <span class="math">\(Z_{1..m}\)</span> belong to coupled processes and have feedback in time. <span class="math">\(I_{1..n}\)</span> denote the inputs to the model, <span class="math">\(P_{1..l}\)</span> are model parameters, and <span class="math">\(f\)</span> transfers the model state from time step <span class="math">\(t-1\)</span> to <span class="math">\(t\)</span>.</p>
+<p>The dynamic modelling framework executes <span class="math">\(f\)</span> using the following scheme (in pseudo code):</p>
+<div class="highlight-none"><div class="highlight"><pre>initial()
+
+for each timestep:
+  dynamic()
+</pre></div>
+</div>
+<div class="section" id="dynamic-model-template">
+<h4>Dynamic model template<a class="headerlink" href="#dynamic-model-template" title="Permalink to this headline">¶</a></h4>
+<p>The following script shows the minimal user class that fulfills the requirements for the dynamic framework:</p>
+<div class="highlight-python"><div class="highlight"><pre> <span class="c"># userModel.py</span>
+<span class="kn">from</span> <span class="nn">PCRaster.Framework</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="k">class</span> <span class="nc">UserModel</span><span class="p">(</span><span class="n">DynamicModel</span><span class="p">):</span>
+ <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+  <span class="n">DynamicModel</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+ <span class="k">def</span> <span class="nf">initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+  <span class="k">pass</span>
+
+ <span class="k">def</span> <span class="nf">dynamic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+  <span class="k">pass</span>
+</pre></div>
+</div>
+<p>In the class of the user model the following methods must be implemented:</p>
+<dl class="method">
+<dt>
+<tt class="descname">initial</tt><big>(</big><big>)</big></dt>
+<dd><p>This method contains the code to initialise variables used in the model.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dynamic">
+<tt class="descname">dynamic</tt><big>(</big><big>)</big><a class="headerlink" href="#dynamic" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method contains the implementation of the dynamic section of the user model.</p>
+</dd></dl>
+
+<p>Applying the model to the dynamic framework is done by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># runScript.py</span>
+
+<span class="kn">import</span> <span class="nn">userModel</span>
+<span class="kn">from</span> <span class="nn">PCRaster.Framework</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">myModel</span> <span class="o">=</span> <span class="n">userModel</span><span class="o">.</span><span class="n">UserModel</span><span class="p">()</span>
+<span class="n">dynModel</span> <span class="o">=</span> <span class="n">DynamicFramework</span><span class="p">(</span><span class="n">myModel</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+<span class="n">dynModel</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>To run the model execute</p>
+<div class="highlight-bash"><div class="highlight"><pre>python2.5 runScript.py
+</pre></div>
+</div>
+<p>The script <cite>runScript.py</cite> creates an instance of the user model which is passed to the dynamic framework. The number of time steps is given as second argument to the framework constructor.</p>
+</div>
+<div class="section" id="id1">
+<h4>Example<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<p>A script for a dynamic model is given in the <a class="reference internal" href="#runoff-py"><em>quick start section</em></a>. The model contains two main sections:</p>
+<p>The <cite>initial</cite> section contains operations to initialise the state of the model at time step 0. Operations included in this section are executed once.</p>
+<p>The <cite>dynamic</cite> section contains the operations that are executed consecutively each time step. Results of a previous time step can be used as input for the current time step. The dynamic section is executed a specified number of timesteps: 28 times in the demo script.</p>
+<p>The initial section of the demo script is the same as in the static version. The dynamic section holds the operations for in- and output with temporal dependencies and the model processes. For time series input data the <cite>timeinputscalar</cite> assigns precipitation data for each time step to the <cite>surfaceWater</cite> variable. In the case that <cite>rain0000.001</cite> to <cite>rain0000.028</cite> hold the rainfall for each timestep instead you can replace the <cite>timeinputscalar</cite> operation by <cite>surfaceWater = self.readmap(&#8220;rain&#8221;)</cite>.</p>
+<p>Output data is now reported as a stack of maps to disk. The function <cite>self.report</cite> will store the runoff with filenames <cite>logrunof.001</cite> up to <cite>logrunof.028</cite>.</p>
+<p>For additional operations that can be used for example in conditional expressions like <cite>self.currentTimestep</cite> we refer to the code reference for this topic.</p>
+</div>
+</div>
+</div>
+<div class="section" id="stochastic-modelling-and-data-assimilation">
+<h2>Stochastic Modelling and data assimilation<a class="headerlink" href="#stochastic-modelling-and-data-assimilation" title="Permalink to this headline">¶</a></h2>
+<p>In the case that a model includes probabilistic rules or inputs variables and parameters that are given as spatial probability distributions, the model becomes stochastic (<a class="reference internal" href="Bibliography.html#karssenberg2005b"><em>Karssenberg2005b</em></a>. The aim of stochastic modelling is to derive the probability distributions, which is done in the framework by Monte Carlo simulation.</p>
+<p>The framework provides three different methods to support stochastic modelling and data assimilation: Monte Carlo simulation (e.g. <a class="reference internal" href="Bibliography.html#doucet2000"><em>Doucet2000</em></a>, <a class="reference internal" href="Bibliography.html#doucet2001"><em>Doucet2001</em></a>), particle filter (e.g. <a class="reference internal" href="Bibliography.html#xiong2006"><em>Xiong2006</em></a>, <a class="reference internal" href="Bibliography.html#weerts2006"><em>Weerts2006</em></a>, <a class="reference internal" href="Bibliography.html#arulampalam2002"><em>Arulampalam2002</em></a>) and the Ensemble Kalman filter (e.g. <a class="reference internal" href="Bibliography.html#evensen1994"><em>Evensen1994</em></a>, <a class="reference internal" href="Bibliography.html#simon2006"><em>Simon2006</em></a>).</p>
+<div class="section" id="monte-carlo-simulations">
+<h3>Monte Carlo simulations<a class="headerlink" href="#monte-carlo-simulations" title="Permalink to this headline">¶</a></h3>
+<p>Monte Carlo simulations solve for a large number of samples the function <span class="math">\(f\)</span> and compute statistics on the ensemble results. The framework supports this scheme by executing the following methods (in pseudo code):</p>
+<div class="highlight-none"><div class="highlight"><pre>premcloop()
+
+for each sample:
+  initial()
+  if dynamic model:
+    for each timestep:
+      dynamic()
+
+postmcloop()
+</pre></div>
+</div>
+<p>The following additional methods must be implemented to use the framework in Monte Carlo mode:</p>
+<dl class="method">
+<dt id="premcloop">
+<tt class="descname">premcloop</tt><big>(</big><big>)</big><a class="headerlink" href="#premcloop" title="Permalink to this definition">¶</a></dt>
+<dd><p>The premcloop can be used to calculate input parameters or variables that are both constant and deterministic. It is executed once at the beginning of the model run, the calculate variables can be used in all samples and time steps.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="postmcloop">
+<tt class="descname">postmcloop</tt><big>(</big><big>)</big><a class="headerlink" href="#postmcloop" title="Permalink to this definition">¶</a></dt>
+<dd><p>The postmcloop is executed after the last sample run is finished. It is used to calculate statistics of the ensemble, like variance or quantiles.</p>
+</dd></dl>
+
+<p>The <cite>initial</cite> and <cite>dynamic</cite> sections (the latter in case of a dynamic model for each time step) are executed for each Monte Carlo sample.</p>
+<p>The framework generates samples directories named 1, 2, 3,..., N, with N the number of Monte Carlo samples. The methods <cite>self.readmap()</cite> and <cite>self.report()</cite> now read and store the data to and from the corresponding sample directory.</p>
+<div class="section" id="static-models">
+<h4>Static models<a class="headerlink" href="#static-models" title="Permalink to this headline">¶</a></h4>
+<p>The Python script <a class="reference internal" href="#montecarlo-py"><em>below</em></a> shows a static model which is executed within the Monte Carlo framework. The model simulates vegetation growth; 100 realisations are executed (<a class="reference internal" href="Bibliography.html#karssenberg2005b"><em>Karssenberg2005b</em></a>).</p>
+<span class="target" id="montecarlo-py"></span><div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33</pre></div></td><td class="code"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pcraster</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">pcraster.framework</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="k">class</span> <span class="nc">VegetationGrowthModel</span><span class="p">(</span><span class="n">StaticModel</span><span class="p">,</span> <span class="n">MonteCarloModel</span><span class="p">):</span>
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">StaticModel</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="n">MonteCarlo</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="n">setclone</span><span class="p">(</span><span class="s">&quot;clone.map&quot;</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">premcloop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+  <span class="k">def</span> <span class="nf">initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="c"># spreading time for peat (years)</span>
+    <span class="n">peatYears</span> <span class="o">=</span> <span class="mf">0.1</span> <span class="o">+</span> <span class="n">mapnormal</span><span class="p">()</span> <span class="o">*</span> <span class="mf">0.001</span>
+    <span class="c"># spreading time for other soil types (years)</span>
+    <span class="n">otherYears</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="n">mapnormal</span><span class="p">()</span> <span class="o">*</span> <span class="mf">0.02</span>
+    <span class="c"># number of years needed to move the vegetation front 1 m</span>
+    <span class="n">years</span> <span class="o">=</span> <span class="n">ifthenelse</span><span class="p">(</span><span class="s">&quot;peat.map&quot;</span><span class="p">,</span> <span class="n">peatYears</span><span class="p">,</span> <span class="n">otherYears</span><span class="p">)</span>
+    <span class="c"># time to colonization (yr)</span>
+    <span class="n">colTime</span> <span class="o">=</span> <span class="n">spread</span><span class="p">(</span><span class="s">&quot;distr.map&quot;</span><span class="p">,</span> <span class="n">years</span><span class="p">)</span>
+    <span class="c"># colonized after 50 years?</span>
+    <span class="n">col</span> <span class="o">=</span> <span class="n">ifthen</span><span class="p">(</span><span class="n">colTime</span> <span class="o">&lt;</span> <span class="mi">50</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="s">&quot;col&quot;</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">postmcloop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;col&quot;</span><span class="p">]</span>
+    <span class="n">mcaveragevariance</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">)</span>
+
+<span class="n">myModel</span> <span class="o">=</span> <span class="n">VegetationGrowthModel</span><span class="p">()</span>
+<span class="n">staticModel</span> <span class="o">=</span> <span class="n">StaticFramework</span><span class="p">(</span><span class="n">myModel</span><span class="p">)</span>
+<span class="n">mcModel</span> <span class="o">=</span> <span class="n">MonteCarloFramework</span><span class="p">(</span><span class="n">staticModel</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="n">mcModel</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</td></tr></table></div>
+<p>First, maps are created containing for each cell the time (years) needed for the plant to spread 1 m. The value and the error associated with this input parameter depend on the soil type. By using the function <cite>mapnormal</cite> each sample will generate an independent realisation of the input parameter <cite>peatYears</cite> and <cite>otherYears</cite>. The information is used to calculate a total spreading time map from the locations occupied with the plant on <cite>distr.map</cite>. Finally a Boolean map is generated containing all cells colonized within 50 years.</p>
+</div>
+<div class="section" id="dynamic-models">
+<h4>Dynamic models<a class="headerlink" href="#dynamic-models" title="Permalink to this headline">¶</a></h4>
+<p>The Python script <a class="reference internal" href="#montecarlodyn-py"><em>below</em></a> shows a dynamic model which is executed within the Monte Carlo framework. The model simulates snow thickness and discharge for 180 time steps (<a class="reference internal" href="Bibliography.html#karssenberg2009"><em>Karssenberg2009</em></a>). A number of 10 realisations is executed.</p>
+<span class="target" id="montecarlodyn-py"></span><div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52</pre></div></td><td class="code"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
+<span class="c"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">from</span> <span class="nn">pcraster</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">pcraster.framework</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="k">class</span> <span class="nc">SnowModel</span><span class="p">(</span><span class="n">DynamicModel</span><span class="p">,</span> <span class="n">MonteCarloModel</span><span class="p">):</span>
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">DynamicModel</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="n">MonteCarloModel</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="n">setclone</span><span class="p">(</span><span class="s">&quot;clone.map&quot;</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">premcloop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">dem</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readmap</span><span class="p">(</span><span class="s">&quot;dem&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">ldd</span> <span class="o">=</span> <span class="n">lddcreate</span><span class="p">(</span><span class="n">dem</span><span class="p">,</span> <span class="mf">1e31</span><span class="p">,</span> <span class="mf">1e31</span><span class="p">,</span> <span class="mf">1e31</span><span class="p">,</span> <span class="mf">1e31</span><span class="p">)</span>
+    <span class="n">elevationMeteoStation</span> <span class="o">=</span> <span class="n">scalar</span><span class="p">(</span><span class="mf">2058.1</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">elevationAboveMeteoStation</span> <span class="o">=</span> <span class="n">dem</span> <span class="o">-</span> <span class="n">elevationMeteoStation</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">degreeDayFactor</span> <span class="o">=</span> <span class="mf">0.01</span>
+
+  <span class="k">def</span> <span class="nf">initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">snow</span> <span class="o">=</span> <span class="n">scalar</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">temperatureLapseRate</span> <span class="o">=</span> <span class="mf">0.005</span> <span class="o">+</span> <span class="p">(</span><span class="n">mapnormal</span><span class="p">()</span> <span class="o">*</span> <span class="mf">0.001</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">temperatureLapseRate</span><span class="p">,</span> <span class="s">&quot;lapse&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">temperatureCorrection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">elevationAboveMeteoStation</span>\
+         <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">temperatureLapseRate</span>
+
+  <span class="k">def</span> <span class="nf">dynamic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">temperatureObserved</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readDeterministic</span><span class="p">(</span><span class="s">&quot;tavgo&quot;</span><span class="p">)</span>
+    <span class="n">precipitationObserved</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readDeterministic</span><span class="p">(</span><span class="s">&quot;pr&quot;</span><span class="p">)</span>
+    <span class="n">precipitation</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">precipitationObserved</span> <span class="o">*</span> <span class="p">(</span><span class="n">mapnormal</span><span class="p">()</span> <span class="o">*</span> <span class="mf">0.2</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">))</span>
+    <span class="n">temperature</span> <span class="o">=</span> <span class="n">temperatureObserved</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">temperatureCorrection</span>
+    <span class="n">snowFall</span> <span class="o">=</span> <span class="n">ifthenelse</span><span class="p">(</span><span class="n">temperature</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">precipitation</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">snow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">snow</span> <span class="o">+</span> <span class="n">snowFall</span>
+    <span class="n">potentialMelt</span> <span class="o">=</span> <span class="n">ifthenelse</span><span class="p">(</span><span class="n">temperature</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">temperature</span>\
+         <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">degreeDayFactor</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">actualMelt</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">snow</span><span class="p">,</span> <span class="n">potentialMelt</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">snow</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">snow</span> <span class="o">-</span> <span class="n">actualMelt</span><span class="p">)</span>
+    <span class="n">rain</span> <span class="o">=</span> <span class="n">ifthenelse</span><span class="p">(</span><span class="n">temperature</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">precipitation</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">discharge</span> <span class="o">=</span> <span class="n">accuflux</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ldd</span><span class="p">,</span> <span class="n">actualMelt</span> <span class="o">+</span> <span class="n">rain</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">snow</span><span class="p">,</span> <span class="s">&quot;s&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">discharge</span><span class="p">,</span> <span class="s">&quot;q&quot;</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">postmcloop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;s&quot;</span><span class="p">,</span> <span class="s">&quot;q&quot;</span><span class="p">]</span>
+    <span class="n">mcaveragevariance</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampleNumbers</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeSteps</span><span class="p">())</span>
+    <span class="n">percentiles</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">]</span>
+    <span class="n">mcpercentiles</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">percentiles</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampleNumbers</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeSteps</span><span class="p">())</span>
+
+<span class="n">myModel</span> <span class="o">=</span> <span class="n">SnowModel</span><span class="p">()</span>
+<span class="n">dynamicModel</span> <span class="o">=</span> <span class="n">DynamicFramework</span><span class="p">(</span><span class="n">myModel</span><span class="p">,</span> <span class="n">lastTimeStep</span><span class="o">=</span><span class="mi">180</span><span class="p">,</span> <span class="n">firstTimestep</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">mcModel</span> <span class="o">=</span> <span class="n">MonteCarloFramework</span><span class="p">(</span><span class="n">dynamicModel</span><span class="p">,</span> <span class="n">nrSamples</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">mcModel</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</td></tr></table></div>
+<p>To run the model execute</p>
+<div class="highlight-bash"><div class="highlight"><pre>python2.5 montecarlo.py
+</pre></div>
+</div>
+<p>In the <cite>premcloop</cite>, the local drain direction map is created from the digital elevation map <cite>dem.map</cite>. As the local drain direction map is used in the initial and dynamic section later on it is defined as a member variable of the snowModel class. If maps are reported in the <cite>premcloop</cite> they are written into the current working directory.</p>
+<p>The <cite>initial</cite> section initialises for each realisation the state variables snow with an original value of zero. Also a realisation of the lapse rate is made from a probability distribution <span class="math">\(0.005 + norm(0, 0.001)\)</span>. Each lapse rate is stored with <cite>self.report</cite> in the corresponding sample subdirectory.</p>
+<p>The <cite>dynamic</cite> section calculates the snow height and the discharge. The temperature and precipitation values are obtained from disk with the <cite>self.readDeterministic</cite> operation. Random noise is added to the deterministic precipitation values in order to create independent realisations. The precipitation is diminished by the potential snowfall, which builds up the snow depth. Runoff and snowmelt compose the discharge in the catchment.</p>
+<p>The <cite>postmcloop</cite> calculates statistics over all ensemble members. For snow and discharge, average and variance values are calculated. Furthermore the percentiles are calculated for both variables. The resulting maps of the <cite>postmcloop</cite> calculations are written to the current working directory.</p>
+</div>
+</div>
+<div class="section" id="particle-filter">
+<h3>Particle filter<a class="headerlink" href="#particle-filter" title="Permalink to this headline">¶</a></h3>
+<p>The particle filter is a method to improve the model predictions. Observed values are hereby used at specific time steps to determine the best performing samples. The prediction performance of the ensemble is improved by continuing better performing and omitting bad samples.</p>
+<p>The particle filter approximates the posterior probability density function from the weights of the Monte Carlo samples <a class="reference internal" href="Bibliography.html#karssenberg2009"><em>Karssenberg2009</em></a>:</p>
+<div class="math">
+\[p(x_t \mid Y_t) \approx \sum_{n=1}^N p_t^{(n)} \delta (x_t - x_t^{(n)})\]</div>
+<p>with <span class="math">\(\delta\)</span> the Dirac delta function, <span class="math">\(Y_t\)</span> the past and current observations at time <span class="math">\(t\)</span> and <span class="math">\(x_t\)</span> a vector of model components for which observation are available.</p>
+<p>For Gaussian measurement error the weights are proportional to <a class="reference internal" href="Bibliography.html#simon2006"><em>Simon2006</em></a>:</p>
+<div class="math" id="equation-gauss">
+<span class="eqno">(1)</span>\[a_t^{(n)} = exp(-[y_t - h_t(x_t^{(n)})]^T R_t^{-1} [y_t - h_t(x_t^{(n)})] / 2)\]</div>
+<p>with <span class="math">\(R_t\)</span> the covariance matrix of the measurement error and <span class="math">\(h_t\)</span> the measurement operator.</p>
+<p>The weight of a sample is calculated by a normalisation of <span class="math">\(a_t^{(n)}\)</span>:</p>
+<div class="math">
+\[p_t^{(n)} = a_t^{(n)} / \sum_{j=1}^N a_t^{(j)}\]</div>
+<p>The particle filter framework executes the following methods using the scheme:</p>
+<div class="highlight-none"><div class="highlight"><pre>premcloop()
+
+for each filter period:
+  for each sample:
+    if first period:
+      initial()
+    else:
+      resume()
+    for each timestep in filter period:
+      dynamic()
+    if not last filter period:
+      suspend()
+    updateWeight()
+
+postmcloop()
+</pre></div>
+</div>
+<p>The following additional methods must be implemented to use the framework:</p>
+<dl class="method">
+<dt id="suspend">
+<tt class="descname">suspend</tt><big>(</big><big>)</big><a class="headerlink" href="#suspend" title="Permalink to this definition">¶</a></dt>
+<dd><p>The suspend section is executed after the time step precedent to a a filter timestep and used to store the state variables. This can be achieved with the <cite>self.report()</cite> method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="resume">
+<tt class="descname">resume</tt><big>(</big><big>)</big><a class="headerlink" href="#resume" title="Permalink to this definition">¶</a></dt>
+<dd><p>The resume section is executed before the first time step of a filter period and intended to re-initialise the model after a filter time step. State variables can be obtained with the <cite>self.readmap()</cite> method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="updateWeight">
+<tt class="descname">updateWeight</tt><big>(</big><big>)</big><a class="headerlink" href="#updateWeight" title="Permalink to this definition">¶</a></dt>
+<dd><p>The updateWeight method is executed at the filter moment and used to retrieve the weight of each sample. The method must return a single floating point value (i.e. the <span class="math">\(a_t^{(n)}\)</span>).</p>
+</dd></dl>
+
+<p>Like in the Monte Carlo framework each sample output will be stored into a corresponding sample directory. Each sample directory contains a <cite>stateVar</cite> subdirectory that is used to store the state variables of the model. State variables not holding PCRaster data types must be stored into this directory by the user.</p>
+<p>Two different algorithms are implemented in the filter framework. Sequential Importance Resampling and Residual Resampling (see e.g. <a class="reference internal" href="Bibliography.html#weerts2006"><em>Weerts2006</em></a>) can be chosen as selection scheme by using the adequate framework class. In Sequential Importance Resampling, a cumulative distribution function is constructed from the sample weights <span class="math">\(p_t^{(n)}\)</span>. From this distribution N samples are drawn with replacement from a uniform distribution between 0 and 1.</p>
+<p>In Residual Resampling, in the first step samples are cloned a number of times equal to <span class="math">\(k_t^{(n)} = floor(p_t^{(n)}N)\)</span> with N number of samples and <span class="math">\(floor\)</span> an operation rounding the value to the nearest integer. In a second step, the residual weights <span class="math">\(r_t^{(n)}\)</span> are calculated according to:</p>
+<div class="math">
+\[r_t^{(n)} = {{p_t^{(n)}N - k_t^{(n)}} \over {N - \sum_{n=1}^N k_t^{(n)}}}\]</div>
+<p>and used to construct a cumulative distribution function. From this distribution a number of additional samples is drawn until a number of N samples is reached <a class="reference internal" href="Bibliography.html#karssenberg2009"><em>Karssenberg2009</em></a>.</p>
+<p>For each filter time step a comma separated file holding sample statistics is written to the current working directory. For each sample it contains its normalised weight, the cumulative weight up to that sample and the number of clones for that sample. A zero  indicates that the sample is not continued. Furthermore a <a class="reference external" href="http://www.graphviz.org">graphviz</a> input file holding the sample choice is generated.</p>
+<div class="section" id="id2">
+<h4>Example<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<p>The script <a class="reference internal" href="#particlefilter-py"><em>below</em></a> shows a dynamic model which is executed within the particle filter framework.  The overall runtime of the model still accounts to 180 time steps, 10 realisations are executed. As three filter moments are chosen at the timesteps 70, 100 and 150 four periods in total are executed: from timestep 1-70, 71-100, 101-150 and 151-180.</p>
+<span class="target" id="particlefilter-py"></span><div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75</pre></div></td><td class="code"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
+<span class="c"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">from</span> <span class="nn">pcraster</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">pcraster.framework</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="k">class</span> <span class="nc">SnowModel</span><span class="p">(</span><span class="n">DynamicModel</span><span class="p">,</span> <span class="n">MonteCarloModel</span><span class="p">,</span> <span class="n">ParticleFilterModel</span><span class="p">):</span>
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">DynamicModel</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="n">MonteCarloModel</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="n">ParticleFilterModel</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="n">setclone</span><span class="p">(</span><span class="s">&quot;clone.map&quot;</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">premcloop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">dem</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readmap</span><span class="p">(</span><span class="s">&quot;dem&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">ldd</span> <span class="o">=</span> <span class="n">lddcreate</span><span class="p">(</span><span class="n">dem</span><span class="p">,</span> <span class="mf">1e31</span><span class="p">,</span> <span class="mf">1e31</span><span class="p">,</span> <span class="mf">1e31</span><span class="p">,</span> <span class="mf">1e31</span><span class="p">)</span>
+    <span class="n">elevationMeteoStation</span> <span class="o">=</span> <span class="n">scalar</span><span class="p">(</span><span class="mf">2058.1</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">elevationAboveMeteoStation</span> <span class="o">=</span> <span class="n">dem</span> <span class="o">-</span> <span class="n">elevationMeteoStation</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">degreeDayFactor</span> <span class="o">=</span> <span class="mf">0.01</span>
+
+  <span class="k">def</span> <span class="nf">initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">snow</span> <span class="o">=</span> <span class="n">scalar</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">temperatureLapseRate</span> <span class="o">=</span> <span class="mf">0.005</span> <span class="o">+</span> <span class="p">(</span><span class="n">mapnormal</span><span class="p">()</span> <span class="o">*</span> <span class="mf">0.001</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">temperatureLapseRate</span><span class="p">,</span> <span class="s">&quot;lapse&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">temperatureCorrection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">elevationAboveMeteoStation</span>\
+         <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">temperatureLapseRate</span>
+
+  <span class="k">def</span> <span class="nf">dynamic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">temperatureObserved</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readDeterministic</span><span class="p">(</span><span class="s">&quot;tavgo&quot;</span><span class="p">)</span>
+    <span class="n">precipitationObserved</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readDeterministic</span><span class="p">(</span><span class="s">&quot;pr&quot;</span><span class="p">)</span>
+    <span class="n">precipitation</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">precipitationObserved</span> <span class="o">*</span> <span class="p">(</span><span class="n">mapnormal</span><span class="p">()</span> <span class="o">*</span> <span class="mf">0.2</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">))</span>
+    <span class="n">temperature</span> <span class="o">=</span> <span class="n">temperatureObserved</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">temperatureCorrection</span>
+    <span class="n">snowFall</span> <span class="o">=</span> <span class="n">ifthenelse</span><span class="p">(</span><span class="n">temperature</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">precipitation</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">snow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">snow</span> <span class="o">+</span> <span class="n">snowFall</span>
+    <span class="n">potentialMelt</span> <span class="o">=</span> <span class="n">ifthenelse</span><span class="p">(</span><span class="n">temperature</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">temperature</span>\
+         <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">degreeDayFactor</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">actualMelt</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">snow</span><span class="p">,</span> <span class="n">potentialMelt</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">snow</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">snow</span> <span class="o">-</span> <span class="n">actualMelt</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">snow</span><span class="p">,</span> <span class="s">&quot;s&quot;</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">postmcloop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;s&quot;</span><span class="p">]</span>
+    <span class="n">mcaveragevariance</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampleNumbers</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeSteps</span><span class="p">())</span>
+    <span class="n">percentiles</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">]</span>
+    <span class="n">mcpercentiles</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">percentiles</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampleNumbers</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeSteps</span><span class="p">())</span>
+
+  <span class="k">def</span> <span class="nf">updateWeight</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">modelledData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readmap</span><span class="p">(</span><span class="s">&quot;s&quot;</span><span class="p">)</span>
+    <span class="n">modelledAverageMap</span> <span class="o">=</span> <span class="n">areaaverage</span><span class="p">(</span><span class="n">modelledData</span><span class="p">,</span> <span class="s">&quot;zones.map&quot;</span><span class="p">)</span>
+    <span class="n">observedAverageMap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readDeterministic</span><span class="p">(</span><span class="s">&quot;obsAv&quot;</span><span class="p">)</span>
+    <span class="n">observedStdDevMap</span> <span class="o">=</span> <span class="n">ifthenelse</span><span class="p">(</span><span class="n">observedAverageMap</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">observedAverageMap</span>\
+         <span class="o">*</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)</span>
+    <span class="nb">sum</span> <span class="o">=</span> <span class="n">maptotal</span><span class="p">(((</span><span class="n">observedAverageMap</span> <span class="o">-</span> <span class="n">modelledAverageMap</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="o">-</span><span class="mf">2.0</span>\
+         <span class="o">*</span> <span class="p">(</span><span class="n">observedStdDevMap</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)))</span>
+    <span class="n">weight</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="nb">sum</span><span class="p">)</span>
+    <span class="n">weightFloatingPoint</span><span class="p">,</span> <span class="n">valid</span> <span class="o">=</span> <span class="n">cellvalue</span><span class="p">(</span><span class="n">weight</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">weightFloatingPoint</span>
+
+  <span class="k">def</span> <span class="nf">suspend</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">reportState</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">temperatureLapseRate</span><span class="p">,</span> <span class="s">&quot;lapse&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">reportState</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">snow</span><span class="p">,</span> <span class="s">&quot;s&quot;</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">resume</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">temperatureLapseRate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readState</span><span class="p">(</span><span class="s">&quot;lapse&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">temperatureCorrection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">elevationAboveMeteoStation</span>\
+         <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">temperatureLapseRate</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">snow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readState</span><span class="p">(</span><span class="s">&quot;s&quot;</span><span class="p">)</span>
+
+<span class="n">myModel</span> <span class="o">=</span> <span class="n">SnowModel</span><span class="p">()</span>
+<span class="n">dynamicModel</span> <span class="o">=</span> <span class="n">DynamicFramework</span><span class="p">(</span><span class="n">myModel</span><span class="p">,</span> <span class="n">lastTimeStep</span><span class="o">=</span><span class="mi">180</span><span class="p">,</span> <span class="n">firstTimestep</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">mcModel</span> <span class="o">=</span> <span class="n">MonteCarloFramework</span><span class="p">(</span><span class="n">dynamicModel</span><span class="p">,</span> <span class="n">nrSamples</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">pfModel</span> <span class="o">=</span> <span class="n">SequentialImportanceResamplingFramework</span><span class="p">(</span><span class="n">mcModel</span><span class="p">)</span>
+<span class="c">#pfModel = ResidualResamplingFramework(mcModel)</span>
+<span class="n">pfModel</span><span class="o">.</span><span class="n">setFilterTimesteps</span><span class="p">([</span><span class="mi">70</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">150</span><span class="p">])</span>
+<span class="n">pfModel</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</td></tr></table></div>
+<p>Compared to the script in <a class="reference internal" href="#montecarlo-py"><em>montecarlo.py</em></a> the three methods <cite>suspend</cite>, <cite>resume</cite> and <cite>updateWeight</cite> are added. The sections <cite>initial</cite>, <cite>dynamic</cite>, <cite>premcloop</cite> and <cite>postmcloop</cite> remain identical to the Monte Carlo version.</p>
+<p>The state variables of the model are the  snow height and the lapse rate. These variables are stored in the <cite>suspend()</cite> section with <cite>self.reportState()</cite> into the state variable directory. They are either cloned or replaced by the filter, or continued in the following filter period.</p>
+<p>In the <cite>resume()</cite> method the lapse rate will now be set to either the same value as before the filter moment or to a new value cloned from another sample. The same procedure applies to the snow state variable. As the value of <cite>self.temperatureCorrection</cite> is dependent on the lapse rate it has to be re-initialised too.</p>
+<p>To calculate the weigtht of a sample the model implements in <cite>updateWeight</cite> the equation <a href="#equation-gauss">(1)</a> (<a class="reference internal" href="Bibliography.html#karssenberg2009"><em>Karssenberg2009</em></a>).</p>
+<p>For five meteorological stations in different elevation zones the average snow height values are compared. For the modelled data the zonal values are calculated with <cite>areaaverage</cite>, the observation values are read from disk. As the <cite>observedAverageMap</cite> contains missing values except at the measurement locations the <cite>maptotal</cite> operation yields the sum over the five elevation zones for the exponent of the weight calculation. The sample weight is afterwards extracted as individual floating point value.</p>
+</div>
+</div>
+<div class="section" id="ensemble-kalman-filter">
+<h3>Ensemble Kalman filter<a class="headerlink" href="#ensemble-kalman-filter" title="Permalink to this headline">¶</a></h3>
+<p>The Ensemble Kalman Filter is a Monte Carlo approximation of the Kalman filter <a class="reference internal" href="Bibliography.html#evensen2003"><em>Evensen2003</em></a>. Contrary to the cloning of the particle filter the ensemble Kalman filter modifies the state variables according to:</p>
+<div class="math" id="equation-kalman">
+<span class="eqno">(2)</span>\[n_t^{(n),+} = n_t^{(n),0} + P_t^0 H^T (H_t P_t^0 H_t^T + R_t)^{-1} (y_t^{(n)} - H_t x_t^{(n),0})\]</div>
+<p>for each sample n, where <span class="math">\(x_t^{(n)}\)</span> is a vector containing a realisation n at update moment <span class="math">\(t\)</span> of model components for which observations are available. The superscript <span class="math">\(0\)</span> indicates the prior state vector and superscript <span class="math">\(+\)</span> indicates the posterior state vector calculated by the update. <span class="math">\(P_t^0\)</span> is the ensemble covariance matrix. <span class="math">\(y_t^{(n)}\)</span> is a realisation of the <span class="math">\(y_t\)</span> vector holding the observations. <span class="math">\(R_t\)</span> is the error covariance matrix and <span class="math">\(H_t\)</span> the measurement operator (<a class="reference internal" href="Bibliography.html#evensen2003"><em>Evensen2003</em></a>, <a class="reference internal" href="Bibliography.html#karssenberg2009"><em>Karssenberg2009</em></a>).</p>
+<p>The execution scheme is similar to the one of the particle filter:</p>
+<div class="highlight-none"><div class="highlight"><pre> premcloop()
+
+ for each filter period:
+   for each sample:
+     if first period:
+       initial()
+     else:
+       resume()
+     for each timestep in filter period:
+       dynamic()
+     setState()
+   setObservations()
+
+postmcloop()
+</pre></div>
+</div>
+<p>The user has to implement the <cite>setState</cite>, <cite>setObservations</cite> and the <cite>resume</cite> methods in the model class. As state variables (and eventually parameters) are modified the <cite>setState</cite> method now needs to return a vector (i.e. the <span class="math">\(x_t^{(n),0}\)</span> in equation <a href="#equation-kalman">(2)</a>) holding the values instead of an individual value. In the <cite>resume</cite> section the updated values (i.e. the <span class="math">\(x_t^{(n),+}\)</span> in equation <a href="#equation-kalman">(2)</a>) can be obtained with the <cite>getStateVector</cite> method.</p>
+<p>For each update moment the user needs to provide the observed values <span class="math">\(y_t\)</span> to the Ensemble Kalman framework with the <cite>setObservations</cite> method. The associated measurement error covariance matrix is set with <cite>setObservedMatrices</cite>. The measurement operator <span class="math">\(H_t\)</span> can be set with the <cite>setMeasurementOperator</cite> method.</p>
+<div class="section" id="id3">
+<h4>Example<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<p>The script <a class="reference internal" href="#kalmanfilter-py"><em>below</em></a> shows again the snow model which is now executed within the Ensemble Kalman filter framework.  The overall runtime of the model still accounts to 180 timesteps, 10 realisations are executed. Again three filter moments are chosen at the timesteps 70, 100 and 150.</p>
+<span class="target" id="kalmanfilter-py"></span><div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104
+105
+106
+107</pre></div></td><td class="code"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
+<span class="c"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">from</span> <span class="nn">pcraster</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">pcraster.framework</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="k">class</span> <span class="nc">SnowModel</span><span class="p">(</span><span class="n">DynamicModel</span><span class="p">,</span> <span class="n">MonteCarloModel</span><span class="p">,</span> <span class="n">EnKfModel</span><span class="p">):</span>
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">DynamicModel</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="n">MonteCarloModel</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="n">EnKfModel</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="n">setclone</span><span class="p">(</span><span class="s">&quot;clone.map&quot;</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">premcloop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">dem</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readmap</span><span class="p">(</span><span class="s">&quot;dem&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">ldd</span> <span class="o">=</span> <span class="n">lddcreate</span><span class="p">(</span><span class="n">dem</span><span class="p">,</span> <span class="mf">1e31</span><span class="p">,</span> <span class="mf">1e31</span><span class="p">,</span> <span class="mf">1e31</span><span class="p">,</span> <span class="mf">1e31</span><span class="p">)</span>
+    <span class="n">elevationMeteoStation</span> <span class="o">=</span> <span class="n">scalar</span><span class="p">(</span><span class="mf">2058.1</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">elevationAboveMeteoStation</span> <span class="o">=</span> <span class="n">dem</span> <span class="o">-</span> <span class="n">elevationMeteoStation</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">degreeDayFactor</span> <span class="o">=</span> <span class="mf">0.01</span>
+
+  <span class="k">def</span> <span class="nf">initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">snow</span> <span class="o">=</span> <span class="n">scalar</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">temperatureLapseRate</span> <span class="o">=</span> <span class="mf">0.005</span> <span class="o">+</span> <span class="p">(</span><span class="n">mapnormal</span><span class="p">()</span> <span class="o">*</span> <span class="mf">0.001</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">temperatureLapseRate</span><span class="p">,</span> <span class="s">&quot;lapse&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">temperatureCorrection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">elevationAboveMeteoStation</span>\
+         <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">temperatureLapseRate</span>
+
+  <span class="k">def</span> <span class="nf">dynamic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">temperatureObserved</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readDeterministic</span><span class="p">(</span><span class="s">&quot;tavgo&quot;</span><span class="p">)</span>
+    <span class="n">precipitationObserved</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readDeterministic</span><span class="p">(</span><span class="s">&quot;pr&quot;</span><span class="p">)</span>
+    <span class="n">precipitation</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">precipitationObserved</span> <span class="o">*</span> <span class="p">(</span><span class="n">mapnormal</span><span class="p">()</span> <span class="o">*</span> <span class="mf">0.2</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">))</span>
+    <span class="n">temperature</span> <span class="o">=</span> <span class="n">temperatureObserved</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">temperatureCorrection</span>
+    <span class="n">snowFall</span> <span class="o">=</span> <span class="n">ifthenelse</span><span class="p">(</span><span class="n">temperature</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">precipitation</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">snow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">snow</span> <span class="o">+</span> <span class="n">snowFall</span>
+    <span class="n">potentialMelt</span> <span class="o">=</span> <span class="n">ifthenelse</span><span class="p">(</span><span class="n">temperature</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">temperature</span>\
+         <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">degreeDayFactor</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">actualMelt</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">snow</span><span class="p">,</span> <span class="n">potentialMelt</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">snow</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">snow</span> <span class="o">-</span> <span class="n">actualMelt</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">snow</span><span class="p">,</span> <span class="s">&quot;s&quot;</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">postmcloop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;s&quot;</span><span class="p">]</span>
+    <span class="n">mcaveragevariance</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampleNumbers</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeSteps</span><span class="p">())</span>
+    <span class="n">percentiles</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span><span class="mf">0.4</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.6</span><span class="p">,</span><span class="mf">0.7</span><span class="p">,</span><span class="mf">0.8</span><span class="p">,</span><span class="mf">0.9</span><span class="p">]</span>
+    <span class="n">mcpercentiles</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">percentiles</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampleNumbers</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeSteps</span><span class="p">())</span>
+
+  <span class="k">def</span> <span class="nf">setState</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">modelledData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readmap</span><span class="p">(</span><span class="s">&quot;s&quot;</span><span class="p">)</span>
+    <span class="n">modelledAverageMap</span> <span class="o">=</span> <span class="n">areaaverage</span><span class="p">(</span><span class="n">modelledData</span><span class="p">,</span> <span class="s">&quot;zones.map&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">modelledAverageMap</span><span class="p">,</span> <span class="s">&quot;modAv&quot;</span><span class="p">)</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">cellvalue</span><span class="p">(</span><span class="n">modelledAverageMap</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">cellvalue</span><span class="p">(</span><span class="n">modelledAverageMap</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">14</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">values</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">cellvalue</span><span class="p">(</span><span class="n">modelledAverageMap</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">24</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">values</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">cellvalue</span><span class="p">(</span><span class="n">modelledAverageMap</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">12</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">values</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">cellvalue</span><span class="p">(</span><span class="n">modelledAverageMap</span><span class="p">,</span> <span class="mi">34</span><span class="p">,</span> <span class="mi">28</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">values</span>
+
+  <span class="k">def</span> <span class="nf">setObservations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">timestep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">currentTimeStep</span><span class="p">()</span>
+    <span class="n">observedData</span> <span class="o">=</span> <span class="n">readmap</span><span class="p">(</span><span class="n">generateNameT</span><span class="p">(</span><span class="s">&quot;obsAv&quot;</span><span class="p">,</span> <span class="n">timestep</span><span class="p">))</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">cellvalue</span><span class="p">(</span><span class="n">observedData</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">cellvalue</span><span class="p">(</span><span class="n">observedData</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">values</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">cellvalue</span><span class="p">(</span><span class="n">observedData</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">values</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">cellvalue</span><span class="p">(</span><span class="n">observedData</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">values</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">cellvalue</span><span class="p">(</span><span class="n">observedData</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">4</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c"># creating the observation matrix (nrObservations x nrSamples)</span>
+    <span class="c"># here without added noise</span>
+    <span class="n">observations</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">values</span><span class="p">,]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">nrSamples</span><span class="p">())</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+
+    <span class="c"># creating the covariance matrix (nrObservations x nrObservations)</span>
+    <span class="c"># here just random values</span>
+    <span class="n">covariance</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">setObservedMatrices</span><span class="p">(</span><span class="n">observations</span><span class="p">,</span> <span class="n">covariance</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">resume</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">vec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getStateVector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">currentSampleNumber</span><span class="p">())</span>
+    <span class="n">modelledAverageMap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readmap</span><span class="p">(</span><span class="s">&quot;modAv&quot;</span><span class="p">)</span>
+    <span class="n">modvalues</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">modvalues</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">cellvalue</span><span class="p">(</span><span class="n">modelledAverageMap</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">modvalues</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">cellvalue</span><span class="p">(</span><span class="n">modelledAverageMap</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">modvalues</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">cellvalue</span><span class="p">(</span><span class="n">modelledAverageMap</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">modvalues</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">cellvalue</span><span class="p">(</span><span class="n">modelledAverageMap</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">modvalues</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">cellvalue</span><span class="p">(</span><span class="n">modelledAverageMap</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">4</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">oldSnowMap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readmap</span><span class="p">(</span><span class="s">&quot;s&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">zones</span> <span class="o">=</span> <span class="n">readmap</span><span class="p">(</span><span class="s">&quot;zones.map&quot;</span><span class="p">)</span>
+    <span class="n">newSnowCells</span> <span class="o">=</span> <span class="n">scalar</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">):</span>
+      <span class="n">snowPerZone</span> <span class="o">=</span> <span class="n">ifthenelse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zones</span> <span class="o">==</span> <span class="n">nominal</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">oldSnowMap</span><span class="p">,</span> <span class="n">scalar</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+      <span class="n">snowCellsPerZone</span> <span class="o">=</span> <span class="n">ifthenelse</span><span class="p">(</span><span class="n">snowPerZone</span> <span class="o">&gt;</span> <span class="n">scalar</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">boolean</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>\
+         <span class="n">boolean</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+      <span class="n">corVal</span> <span class="o">=</span> <span class="n">vec</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">modvalues</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+      <span class="n">newSnowCells</span> <span class="o">=</span> <span class="n">ifthenelse</span><span class="p">(</span><span class="n">snowCellsPerZone</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">snowPerZone</span>\
+         <span class="o">+</span> <span class="n">scalar</span><span class="p">(</span><span class="n">corVal</span><span class="p">)),</span> <span class="n">newSnowCells</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">snow</span> <span class="o">=</span> <span class="n">newSnowCells</span>
+
+
+<span class="n">myModel</span> <span class="o">=</span> <span class="n">SnowModel</span><span class="p">()</span>
+<span class="n">dynamicModel</span> <span class="o">=</span> <span class="n">DynamicFramework</span><span class="p">(</span><span class="n">myModel</span><span class="p">,</span> <span class="n">lastTimeStep</span><span class="o">=</span><span class="mi">180</span><span class="p">,</span> <span class="n">firstTimestep</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">mcModel</span> <span class="o">=</span> <span class="n">MonteCarloFramework</span><span class="p">(</span><span class="n">dynamicModel</span><span class="p">,</span> <span class="n">nrSamples</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">ekfModel</span> <span class="o">=</span> <span class="n">EnsKalmanFilterFramework</span><span class="p">(</span><span class="n">mcModel</span><span class="p">)</span>
+<span class="n">ekfModel</span><span class="o">.</span><span class="n">setFilterTimesteps</span><span class="p">([</span><span class="mi">70</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">150</span><span class="p">])</span>
+<span class="n">ekfModel</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</td></tr></table></div>
+<p>In the <cite>setState</cite> section the average snow pack is calculated from the sample snow cover map. The map holding the average values is stored in the sample subdirectory in order to avoid recalculating the values in the <cite>resume</cite> section. The average value for each zone is extracted as an individual value and inserted into a numpy matrix. This matrix is returned to the framework.</p>
+<p>In the <cite>resume</cite> section the array returned by the <cite>getStateVector</cite> now holds the updated state variables. In the following the correction factor for the snow values is calculated as the difference between the modelled averaged snow heights and the average snow heights returned by the Ensemble Kalman filter. For each zone this correction factor is applied to the snow pack cell values in order to obtain the new snow pack map.</p>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Modelling frameworks</a><ul>
+<li><a class="reference internal" href="#quickstart">Quickstart</a></li>
+<li><a class="reference internal" href="#deterministic-modelling">Deterministic Modelling</a><ul>
+<li><a class="reference internal" href="#static-modelling-framework">Static Modelling Framework</a><ul>
+<li><a class="reference internal" href="#static-model-template">Static model template</a></li>
+<li><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dynamic-modelling-framework">Dynamic Modelling Framework</a><ul>
+<li><a class="reference internal" href="#dynamic-model-template">Dynamic model template</a></li>
+<li><a class="reference internal" href="#id1">Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#stochastic-modelling-and-data-assimilation">Stochastic Modelling and data assimilation</a><ul>
+<li><a class="reference internal" href="#monte-carlo-simulations">Monte Carlo simulations</a><ul>
+<li><a class="reference internal" href="#static-models">Static models</a></li>
+<li><a class="reference internal" href="#dynamic-models">Dynamic models</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#particle-filter">Particle filter</a><ul>
+<li><a class="reference internal" href="#id2">Example</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ensemble-kalman-filter">Ensemble Kalman filter</a><ul>
+<li><a class="reference internal" href="#id3">Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="Introduction.html"
+                        title="previous chapter">Introduction</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="Bibliography.html"
+                        title="next chapter">Bibliography</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/ModellingFrameworks.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="Bibliography.html" title="Bibliography"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="Introduction.html" title="Introduction"
+             >previous</a> |</li>
+        <li><a href="index.html">PCRaster Python Framework 1.1.2 documentation</a> &raquo;</li>
+          <li><a href="Manual.html" >Framework for Spatio-Temporal Modelling</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011-2015, PCRaster R&amp;D Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

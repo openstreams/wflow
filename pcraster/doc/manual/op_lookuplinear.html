@@ -1,0 +1,253 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lookuplinear &mdash; PCRaster 4.0.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="PCRaster 4.0.3 documentation" href="index.html" />
+    <link rel="up" title="pcrcalc and Python operations" href="operations.html" />
+    <link rel="next" title="lookupmapstack" href="op_lookupmapstack.html" />
+    <link rel="prev" title="lookup" href="op_lookup.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="op_lookupmapstack.html" title="lookupmapstack"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="op_lookup.html" title="lookup"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PCRaster 4.0.3 documentation</a> &raquo;</li>
+          <li><a href="operations.html" accesskey="U">pcrcalc and Python operations</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="lookuplinear">
+<span id="id1"></span><h1>lookuplinear<a class="headerlink" href="#lookuplinear" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="index-0"></span><div class="topic" id="index-1">
+<p class="topic-title first">lookuplinear</p>
+<p>Assigns table key values with possible interpolation between key values.</p>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Result</span> <span class="o">=</span> <span class="n">lookuplinear</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="n">expression</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>table</dt>
+<dd>ascii text table</dd>
+<dt>expression</dt>
+<dd>scalar, spatial, non-spatial</dd>
+<dt>Result</dt>
+<dd>scalar, spatial</dd>
+</dl>
+<div class="section" id="operation">
+<h2>Operation<a class="headerlink" href="#operation" title="Permalink to this headline">¶</a></h2>
+<p>The value of expression is compared to the values of the search key (first column) of the table and is assigned the value of the corresponding record (second column) on the same row if the expression matches the value of the search key. If the value of expression lies between two values of the search key of the table a linear interpolation is executed between the two corresponding records. The interpolation is executed according to the formula:</p>
+<p>Result = ((expression – lowerKey) / (upperKey – lowerKey)) * (lowerRecord – upperRecord) + lowerRecord</p>
+</div>
+<div class="section" id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<p>If the cell value of the expression lies outside the range of the search key a missing value is assigned.
+If a cell of the expression has a missing value a missing value is assigned to the result.
+The search key values of the table should be in ascending order or missing values are assigned to all cells of Result.</p>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><div class="first line-block">
+<div class="line">• pcrcalc</div>
+<div class="line-block">
+<div class="line">binding</div>
+<div class="line-block">
+<div class="line">Result1 = Result1.map;</div>
+<div class="line">Table = Table.txt;</div>
+<div class="line">Expr = Expr.map;</div>
+</div>
+<div class="line">initial</div>
+<div class="line-block">
+<div class="line">report Result1 = lookuplinear(Table,Expr);</div>
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="line">• python</div>
+<div class="line-block">
+<div class="line">Table = &#8220;Table.txt&#8221;</div>
+<div class="line">Expr = readmap(&#8220;Expr.map&#8221;)</div>
+<div class="line">Result1 = lookuplinear(Table,Expr)</div>
+</div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="37%" />
+<col width="31%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Result1.map</td>
+<td>Table.txt</td>
+<td>Expr.map</td>
+</tr>
+<tr class="row-even"><td><img alt="_images/lookuplinear_Result1.png" class="first last" src="_images/lookuplinear_Result1.png" />
+</td>
+<td><div class="first last highlight-python"><pre>0  0
+2  1
+5  1
+7  0
+</pre>
+</div>
+</td>
+<td><img alt="_images/lookuplinear_Expr.png" class="first last" src="_images/lookuplinear_Expr.png" />
+</td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line">• pcrcalc</div>
+<div class="line-block">
+<div class="line">binding</div>
+<div class="line-block">
+<div class="line">Result2 = Result2.map;</div>
+<div class="line">Table2 = Table2.txt;</div>
+<div class="line">Expr2 = Expr2.map;</div>
+</div>
+<div class="line">initial</div>
+<div class="line-block">
+<div class="line">report Result2 = lookuplinear(Table2,Expr2);</div>
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="line">• python</div>
+<div class="line-block">
+<div class="line">Table2 = &#8220;Table2.txt&#8221;</div>
+<div class="line">Expr2 = readmap(&#8220;Expr2.map&#8221;)</div>
+<div class="line">Result2 = lookuplinear(Table2,Expr2)</div>
+</div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="32%" />
+<col width="37%" />
+<col width="31%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Result2.map</td>
+<td>Table2.txt</td>
+<td>Expr2.map</td>
+</tr>
+<tr class="row-even"><td><img alt="_images/lookuplinear_Result2.png" class="first last" src="_images/lookuplinear_Result2.png" />
+</td>
+<td><div class="first last highlight-python"><pre>0    0
+2    1
+500  1
+</pre>
+</div>
+</td>
+<td><img alt="_images/lookuplinear_Expr2.png" class="first last" src="_images/lookuplinear_Expr2.png" />
+</td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</li>
+</ol>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">lookuplinear</a><ul>
+<li><a class="reference internal" href="#operation">Operation</a></li>
+<li><a class="reference internal" href="#notes">Notes</a></li>
+<li><a class="reference internal" href="#examples">Examples</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="op_lookup.html"
+                        title="previous chapter">lookup</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="op_lookupmapstack.html"
+                        title="next chapter">lookupmapstack</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="op_lookupmapstack.html" title="lookupmapstack"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="op_lookup.html" title="lookup"
+             >previous</a> |</li>
+        <li><a href="index.html">PCRaster 4.0.3 documentation</a> &raquo;</li>
+          <li><a href="operations.html" >pcrcalc and Python operations</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 1990-2015, PCRaster R&amp;D Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

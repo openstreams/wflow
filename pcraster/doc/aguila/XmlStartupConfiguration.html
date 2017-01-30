@@ -1,0 +1,510 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Xml Startup Configuration &mdash; Aguila 1.3.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.3.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Aguila 1.3.3 documentation" href="index.html" />
+    <link rel="up" title="Manual" href="Manual.html" />
+    <link rel="next" title="FAQ" href="Faq.html" />
+    <link rel="prev" title="Data" href="Data.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="Faq.html" title="FAQ"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="Data.html" title="Data"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Aguila 1.3.3 documentation</a> &raquo;</li>
+          <li><a href="Manual.html" accesskey="U">Manual</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="xml-startup-configuration">
+<span id="xmlstartupconfiguration"></span><h1>Xml Startup Configuration<a class="headerlink" href="#xml-startup-configuration" title="Permalink to this headline">¶</a></h1>
+<p>While configuration of Aguila is possible with the use of command line options and a configuration file, a more sophisticated scheme is possible by configuring Aguila with an XML start up file. The XML interface is unique in the following ways:</p>
+<ul class="simple">
+<li>Specify draw properties per data item.</li>
+<li>Specify real dates (e.g. 2005-02-10T18:15:00) and real time intervals (e.g. 24 hours).</li>
+<li>Map data with different time dimensions to a single time line.</li>
+</ul>
+<p>The XML interface is intended as an intermediate interface for other applications. For example, from a <a class="reference external" href="http://www.python.org">Python</a> script it is relatively easy to generate the XML file. To use the XML interface a basic understanding of XML is required.</p>
+<p>The XML Schema (<tt class="docutils literal"><span class="pre">Aguila.xsd</span></tt>) and samples of XML script files are distributed with a data set in the <tt class="docutils literal"><span class="pre">demos/xml</span></tt> distribution directory. References to <tt class="docutils literal"><span class="pre">.xml</span></tt> files in this chapter can be found in that directory. Note that the Aguila application does not require the file <tt class="docutils literal"><span class="pre">Aguila.xsd</span></tt> to be present. The correct version of <tt class="docutils literal"><span class="pre">Aguila.xsd</span></tt> is compiled into the Aguila application. For ease of reference, the schema is copied verbatim in section <a class="reference internal" href="#aguilaxsd"><em>Aguila.xsd</em></a></p>
+<div class="section" id="basic-structure">
+<h2>Basic structure<a class="headerlink" href="#basic-structure" title="Permalink to this headline">¶</a></h2>
+<p>In this section we only discuss the overall structure of the XML file. The detailed XML structure is documented in element specification within <tt class="docutils literal"><span class="pre">Aguila.xsd</span></tt>. Each Aguila XML file should have the following structure:</p>
+<div class="highlight-xml"><div class="highlight"><pre><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
+<span class="nt">&lt;aguila</span>
+   <span class="na">xmlns=</span><span class="s">&quot;http://www.pcraster.nl/pcrxml&quot;</span>
+   <span class="na">xmlns:xsi=</span><span class="s">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>
+   <span class="na">xsi:schemaLocation=</span><span class="s">&quot;http://www.pcraster.nl/pcrxml Aguila.xsd&quot;</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;visualisationGroup&gt;</span>
+   <span class="c">&lt;!-- contents consisting of elements:</span>
+<span class="c">        - cursorValueMonitorFile  0 or 1</span>
+<span class="c">        - searchSpace             0 or 1</span>
+<span class="c">        - data                    0 or more</span>
+<span class="c">        - view                    0 or more</span>
+<span class="c">     --&gt;</span>
+  <span class="nt">&lt;/visualisationGroup&gt;</span>
+<span class="nt">&lt;/aguila&gt;</span>
+</pre></div>
+</div>
+<p>The elements of the basic structure will be discussed in the reverse order of appearance.</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">view</span></tt></dt>
+<dd><p class="first">A number of views can be specified. All view contents is specified by the dataset name as an <tt class="docutils literal"><span class="pre">item</span></tt> element. That same name may optionally appear as a data element. <tt class="docutils literal"><span class="pre">Example1.xml</span></tt> illustrates a number of points on the view specification:</p>
+<ul class="last simple">
+<li>The first appearance yields the position in the cursor and values matrix. Use a <tt class="docutils literal"><span class="pre">valueOnly</span></tt> element to obtain the preferred order (<tt class="docutils literal"><span class="pre">dem.map</span></tt>).</li>
+<li>Time series file and cursor value graphs can be combined. See <tt class="docutils literal"><span class="pre">runoff</span></tt> and <tt class="docutils literal"><span class="pre">runoff.tss</span></tt> combined in a view in <tt class="docutils literal"><span class="pre">example1.xml</span></tt>.</li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">data</span></tt></dt>
+<dd>A <tt class="docutils literal"><span class="pre">data</span></tt> element is used to tag a dataset name used in a <tt class="docutils literal"><span class="pre">view</span></tt> element with additional specifications: its draw properties and <tt class="docutils literal"><span class="pre">dataSpace</span></tt>. For example, in <tt class="docutils literal"><span class="pre">example1.xml</span></tt> the colour assignment of <tt class="docutils literal"><span class="pre">upstreamArea.map</span></tt> is set to <tt class="docutils literal"><span class="pre">shifted</span> <span class="pre">logarithmic</span></tt>.</dd>
+<dt><tt class="docutils literal"><span class="pre">searchSpace</span></tt></dt>
+<dd>With the <tt class="docutils literal"><span class="pre">searchSpace</span></tt> element one can describe the dimensions in which all data should be found if the data itself has no <tt class="docutils literal"><span class="pre">dataSpace</span></tt> sub element. In <tt class="docutils literal"><span class="pre">example1.xml</span></tt> the 28 model steps are set in the <tt class="docutils literal"><span class="pre">searchSpace</span></tt> and the timesteps are mapped to a real calendar date with a 6 hour time increment.</dd>
+<dt><tt class="docutils literal"><span class="pre">cursorValueMonitorFile</span></tt></dt>
+<dd>See the section called <a class="reference internal" href="QuickStart.html#programoptions"><em>Program options</em></a>.</dd>
+<dt><tt class="docutils literal"><span class="pre">fileToGetCursorValue</span></tt></dt>
+<dd>This element defines what file is read to set the applications cursor at each time <tt class="docutils literal"><span class="pre">Get</span></tt> is pressed in the <tt class="docutils literal"><span class="pre">Cursor</span> <span class="pre">Value</span> <span class="pre">Window</span></tt>. Currently only the x and y (space dimensions) are read. The file should be an XML file with the <tt class="docutils literal"><span class="pre">aguilaCursor</span></tt> element as root. See <tt class="docutils literal"><span class="pre">get.xml</span></tt> set in <tt class="docutils literal"><span class="pre">example1.xml</span></tt>.</dd>
+</dl>
+</div>
+<div class="section" id="aguila-xsd">
+<span id="aguilaxsd"></span><h2>Aguila.xsd<a class="headerlink" href="#aguila-xsd" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-xml"><div class="highlight"><pre><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
+<span class="c">&lt;!--</span>
+<span class="c">    Style Guide:</span>
+<span class="c">    See PCRaster.xsd</span>
+<span class="c">--&gt;</span>
+
+<span class="nt">&lt;xs:schema</span> <span class="na">xmlns:xs=</span><span class="s">&quot;http://www.w3.org/2001/XMLSchema&quot;</span>
+           <span class="na">xmlns:pcr=</span><span class="s">&quot;http://www.pcraster.nl/pcrxml&quot;</span>
+           <span class="na">elementFormDefault=</span><span class="s">&quot;qualified&quot;</span>
+           <span class="na">targetNamespace=</span><span class="s">&quot;http://www.pcraster.nl/pcrxml&quot;</span><span class="nt">&gt;</span>
+
+<span class="nt">&lt;xs:include</span> <span class="na">schemaLocation=</span><span class="s">&quot;commonTypes.xsd&quot;</span><span class="nt">/&gt;</span>
+
+<span class="c">&lt;!-- document (root) elements --&gt;</span>
+<span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;aguila&quot;</span>              <span class="na">type=</span><span class="s">&quot;pcr:Aguila&quot;</span><span class="nt">&gt;</span>
+ <span class="nt">&lt;xs:annotation&gt;</span>
+   <span class="nt">&lt;xs:documentation&gt;</span>Aguila configuration/startup file<span class="nt">&lt;/xs:documentation&gt;</span>
+ <span class="nt">&lt;/xs:annotation&gt;</span>
+<span class="nt">&lt;/xs:element&gt;</span>
+<span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;aguilaCursorValues&quot;</span>  <span class="na">type=</span><span class="s">&quot;pcr:AguilaCursorValues&quot;</span><span class="nt">&gt;</span>
+ <span class="nt">&lt;xs:annotation&gt;</span>
+   <span class="nt">&lt;xs:documentation&gt;</span>contents of what is created when starting Aguila
+                     with the cursorValueMonitorFile option
+   <span class="nt">&lt;/xs:documentation&gt;</span>
+ <span class="nt">&lt;/xs:annotation&gt;</span>
+<span class="nt">&lt;/xs:element&gt;</span>
+<span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;aguilaCursor&quot;</span>        <span class="na">type=</span><span class="s">&quot;pcr:Cursor&quot;</span><span class="nt">&gt;</span>
+ <span class="nt">&lt;xs:annotation&gt;</span>
+   <span class="nt">&lt;xs:documentation&gt;</span>contents expected for fileToGetCursorValue,
+                     connected to Get-button in Cursor Value Window
+   <span class="nt">&lt;/xs:documentation&gt;</span>
+ <span class="nt">&lt;/xs:annotation&gt;</span>
+<span class="nt">&lt;/xs:element&gt;</span>
+
+<span class="c">&lt;!--type definitions--&gt;</span>
+<span class="nt">&lt;xs:complexType</span> <span class="na">name=</span><span class="s">&quot;Aguila&quot;</span><span class="nt">&gt;</span>
+ <span class="nt">&lt;xs:annotation&gt;</span>
+   <span class="nt">&lt;xs:documentation&gt;</span>Aguila configuration/startup file<span class="nt">&lt;/xs:documentation&gt;</span>
+ <span class="nt">&lt;/xs:annotation&gt;</span>
+ <span class="nt">&lt;xs:sequence&gt;</span>
+  <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;multiView&quot;</span>     <span class="na">type=</span><span class="s">&quot;pcr:NrRowsNrCols&quot;</span>
+                                  <span class="na">minOccurs=</span><span class="s">&quot;0&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;1&quot;</span><span class="nt">&gt;</span>
+   <span class="nt">&lt;xs:annotation&gt;</span>
+    <span class="nt">&lt;xs:documentation&gt;</span>Only used to translate a command line option.
+    <span class="nt">&lt;/xs:documentation&gt;</span>
+   <span class="nt">&lt;/xs:annotation&gt;</span>
+  <span class="nt">&lt;/xs:element&gt;</span>
+  <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;visualisationGroup&quot;</span>     <span class="na">type=</span><span class="s">&quot;pcr:VisualisationGroup&quot;</span>
+                                  <span class="na">minOccurs=</span><span class="s">&quot;1&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;1&quot;</span><span class="nt">/&gt;</span>
+ <span class="nt">&lt;/xs:sequence&gt;</span>
+<span class="nt">&lt;/xs:complexType&gt;</span>
+
+<span class="nt">&lt;xs:complexType</span> <span class="na">name=</span><span class="s">&quot;VisualisationGroup&quot;</span><span class="nt">&gt;</span>
+ <span class="nt">&lt;xs:sequence&gt;</span>
+  <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;cursorValueMonitorFile&quot;</span> <span class="na">type=</span><span class="s">&quot;xs:string&quot;</span>
+                                   <span class="na">minOccurs=</span><span class="s">&quot;0&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;1&quot;</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;fileToGetCursorValue&quot;</span>   <span class="na">type=</span><span class="s">&quot;xs:string&quot;</span>
+                                   <span class="na">minOccurs=</span><span class="s">&quot;0&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;1&quot;</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;searchSpace&quot;</span>   <span class="na">type=</span><span class="s">&quot;pcr:DataSpace&quot;</span>
+                                   <span class="na">minOccurs=</span><span class="s">&quot;0&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;1&quot;</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;data&quot;</span>          <span class="na">type=</span><span class="s">&quot;pcr:AguilaData&quot;</span>
+                                   <span class="na">minOccurs=</span><span class="s">&quot;0&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;unbounded&quot;</span><span class="nt">&gt;</span>
+   <span class="nt">&lt;xs:annotation&gt;</span>
+     <span class="nt">&lt;xs:documentation&gt;</span>Explictly defined data sources
+     <span class="nt">&lt;/xs:documentation&gt;</span>
+   <span class="nt">&lt;/xs:annotation&gt;</span>
+  <span class="nt">&lt;/xs:element&gt;</span>
+  <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;view&quot;</span>   <span class="na">type=</span><span class="s">&quot;pcr:AguilaView&quot;</span>
+                            <span class="na">minOccurs=</span><span class="s">&quot;0&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;unbounded&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;xs:annotation&gt;</span>
+      <span class="nt">&lt;xs:documentation&gt;</span>
+       Order of elements will define the order in the Cursor Value Dialog.
+      <span class="nt">&lt;/xs:documentation&gt;</span>
+    <span class="nt">&lt;/xs:annotation&gt;</span>
+  <span class="nt">&lt;/xs:element&gt;</span>
+  <span class="c">&lt;!--</span>
+<span class="c">  &lt;xs:element name=&quot;initialCursor&quot; type=&quot;pcr:Cursor&quot;</span>
+<span class="c">                                   minOccurs=&quot;0&quot; maxOccurs=&quot;1&quot;&gt;</span>
+<span class="c">   &lt;xs:annotation&gt;</span>
+<span class="c">     &lt;xs:documentation&gt;Define initial cursor&lt;/xs:documentation&gt;</span>
+<span class="c">   &lt;/xs:annotation&gt;</span>
+<span class="c">  &lt;/xs:element&gt;</span>
+<span class="c">  &lt;xs:element name=&quot;namedCursors&quot; type=&quot;pcr:NamedCursors&quot;</span>
+<span class="c">                                   minOccurs=&quot;0&quot; maxOccurs=&quot;unbounded&quot;/&gt;</span>
+<span class="c">   --&gt;</span>
+ <span class="nt">&lt;/xs:sequence&gt;</span>
+<span class="nt">&lt;/xs:complexType&gt;</span>
+
+<span class="nt">&lt;xs:complexType</span> <span class="na">name=</span><span class="s">&quot;DataSpace&quot;</span><span class="nt">&gt;</span>
+   <span class="nt">&lt;xs:annotation&gt;</span>
+     <span class="nt">&lt;xs:documentation&gt;</span>
+      Note that in practice only the scenarios element can
+      occur more then once. All other maxOccurs value different
+      from 1 are only for internal Aguila reasons (converting command
+          line options to XML internally).
+     <span class="nt">&lt;/xs:documentation&gt;</span>
+   <span class="nt">&lt;/xs:annotation&gt;</span>
+ <span class="nt">&lt;xs:sequence&gt;</span>
+   <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;scenarios&quot;</span> <span class="na">type=</span><span class="s">&quot;pcr:StringSet&quot;</span>
+                          <span class="na">minOccurs=</span><span class="s">&quot;0&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;unbounded&quot;</span><span class="nt">/&gt;</span>
+   <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;quantiles&quot;</span> <span class="na">type=</span><span class="s">&quot;pcr:FloatRangeOrSet&quot;</span>
+                          <span class="na">minOccurs=</span><span class="s">&quot;0&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;unbounded&quot;</span><span class="nt">/&gt;</span>
+  <span class="c">&lt;!-- Not yet</span>
+<span class="c">   &lt;xs:element name=&quot;samples&quot; type=&quot;pcr:OneBasedIntegerRange&quot;</span>
+<span class="c">                          minOccurs=&quot;0&quot; maxOccurs=&quot;unbounded&quot;/&gt;</span>
+<span class="c">    --&gt;</span>
+   <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;timesteps&quot;</span> <span class="na">type=</span><span class="s">&quot;pcr:Timesteps&quot;</span>
+                          <span class="na">minOccurs=</span><span class="s">&quot;0&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;unbounded&quot;</span><span class="nt">/&gt;</span>
+ <span class="nt">&lt;/xs:sequence&gt;</span>
+<span class="nt">&lt;/xs:complexType&gt;</span>
+
+
+<span class="nt">&lt;xs:complexType</span> <span class="na">name=</span><span class="s">&quot;Timesteps&quot;</span><span class="nt">&gt;</span>
+ <span class="nt">&lt;xs:complexContent&gt;</span>
+  <span class="nt">&lt;xs:extension</span> <span class="na">base=</span><span class="s">&quot;pcr:OneBasedIntegerRangeOrSet&quot;</span><span class="nt">&gt;</span>
+   <span class="nt">&lt;xs:sequence&gt;</span>
+    <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;dateMapper&quot;</span> <span class="na">type=</span><span class="s">&quot;pcr:DateMapper&quot;</span>
+                          <span class="na">minOccurs=</span><span class="s">&quot;0&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;1&quot;</span><span class="nt">/&gt;</span>
+    <span class="c">&lt;!-- TODO allow dal::StepMapper like here to,</span>
+<span class="c">              choice between dateMapper and stepMapper</span>
+<span class="c">     --&gt;</span>
+   <span class="nt">&lt;/xs:sequence&gt;</span>
+  <span class="nt">&lt;/xs:extension&gt;</span>
+ <span class="nt">&lt;/xs:complexContent&gt;</span>
+<span class="nt">&lt;/xs:complexType&gt;</span>
+
+<span class="nt">&lt;xs:complexType</span> <span class="na">name=</span><span class="s">&quot;DateMapper&quot;</span><span class="nt">&gt;</span>
+ <span class="nt">&lt;xs:sequence&gt;</span>
+    <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;index&quot;</span> <span class="na">type=</span><span class="s">&quot;xs:unsignedInt&quot;</span><span class="nt">&gt;</span>
+     <span class="nt">&lt;xs:annotation&gt;</span>
+       <span class="nt">&lt;xs:documentation&gt;</span>&quot;epoch&quot; of the index range
+                         typically 1 or 0.
+       <span class="nt">&lt;/xs:documentation&gt;</span>
+     <span class="nt">&lt;/xs:annotation&gt;</span>
+    <span class="nt">&lt;/xs:element&gt;</span>
+    <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;timeOfIndex&quot;</span> <span class="na">type=</span><span class="s">&quot;xs:dateTime&quot;</span><span class="nt">&gt;</span>
+     <span class="nt">&lt;xs:annotation&gt;</span>
+       <span class="nt">&lt;xs:documentation&gt;</span>full calendar date of the index sibling element
+                         Note that timezone information is not supported
+       <span class="nt">&lt;/xs:documentation&gt;</span>
+     <span class="nt">&lt;/xs:annotation&gt;</span>
+    <span class="nt">&lt;/xs:element&gt;</span>
+    <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;duration&quot;</span> <span class="na">type=</span><span class="s">&quot;pcr:TimeDuration&quot;</span><span class="nt">&gt;</span>
+     <span class="nt">&lt;xs:annotation&gt;</span>
+       <span class="nt">&lt;xs:documentation&gt;</span>duration of a timestep
+       <span class="nt">&lt;/xs:documentation&gt;</span>
+     <span class="nt">&lt;/xs:annotation&gt;</span>
+    <span class="nt">&lt;/xs:element&gt;</span>
+ <span class="nt">&lt;/xs:sequence&gt;</span>
+<span class="nt">&lt;/xs:complexType&gt;</span>
+
+
+<span class="nt">&lt;xs:complexType</span> <span class="na">name=</span><span class="s">&quot;AguilaView&quot;</span><span class="nt">&gt;</span>
+ <span class="nt">&lt;xs:choice</span> <span class="na">maxOccurs=</span><span class="s">&quot;1&quot;</span> <span class="na">minOccurs=</span><span class="s">&quot;1&quot;</span><span class="nt">&gt;</span>
+   <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;map&quot;</span>       <span class="na">type=</span><span class="s">&quot;pcr:StringSet&quot;</span><span class="nt">/&gt;</span>
+   <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;drape&quot;</span>     <span class="na">type=</span><span class="s">&quot;pcr:StringSet&quot;</span><span class="nt">/&gt;</span>
+   <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;timeGraph&quot;</span> <span class="na">type=</span><span class="s">&quot;pcr:StringSet&quot;</span><span class="nt">/&gt;</span>
+   <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;probabilityGraph&quot;</span> <span class="na">type=</span><span class="s">&quot;pcr:StringSet&quot;</span><span class="nt">/&gt;</span>
+   <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;valueOnly&quot;</span> <span class="na">type=</span><span class="s">&quot;pcr:StringSet&quot;</span><span class="nt">/&gt;</span>
+   <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;default&quot;</span>   <span class="na">type=</span><span class="s">&quot;pcr:StringSet&quot;</span><span class="nt">/&gt;</span>
+   <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;test&quot;</span>      <span class="na">type=</span><span class="s">&quot;pcr:StringSet&quot;</span><span class="nt">/&gt;</span>
+ <span class="nt">&lt;/xs:choice&gt;</span>
+<span class="nt">&lt;/xs:complexType&gt;</span>
+
+<span class="nt">&lt;xs:complexType</span> <span class="na">name=</span><span class="s">&quot;AguilaData&quot;</span><span class="nt">&gt;</span>
+     <span class="nt">&lt;xs:annotation&gt;</span>
+      <span class="nt">&lt;xs:documentation&gt;</span>
+            TODO name is unique, addressing different datasets
+            with same &quot;name&quot; but yielding different datasets by
+            having a different DataSpace is done by setting another
+            path.
+       <span class="nt">&lt;/xs:documentation&gt;</span>
+      <span class="nt">&lt;/xs:annotation&gt;</span>
+ <span class="nt">&lt;xs:sequence&gt;</span>
+   <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;name&quot;</span>           <span class="na">type=</span><span class="s">&quot;xs:string&quot;</span><span class="nt">/&gt;</span>
+   <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;dataSpace&quot;</span>      <span class="na">type=</span><span class="s">&quot;pcr:DataSpace&quot;</span>
+                          <span class="na">minOccurs=</span><span class="s">&quot;0&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;1&quot;</span><span class="nt">/&gt;</span>
+   <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;drawProperties&quot;</span> <span class="na">type=</span><span class="s">&quot;pcr:DrawProperties&quot;</span>
+                          <span class="na">minOccurs=</span><span class="s">&quot;0&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;1&quot;</span><span class="nt">/&gt;</span>
+ <span class="nt">&lt;/xs:sequence&gt;</span>
+<span class="nt">&lt;/xs:complexType&gt;</span>
+
+<span class="nt">&lt;xs:complexType</span> <span class="na">name=</span><span class="s">&quot;DrawProperties&quot;</span><span class="nt">&gt;</span>
+ <span class="nt">&lt;xs:sequence&gt;</span>
+   <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;legendBorderValuesType&quot;</span> <span class="na">type=</span><span class="s">&quot;pcr:LegendBorderValuesType&quot;</span>
+                          <span class="na">minOccurs=</span><span class="s">&quot;0&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;1&quot;</span><span class="nt">/&gt;</span>
+   <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;minimumCutOff&quot;</span> <span class="na">type=</span><span class="s">&quot;xs:double&quot;</span>
+                          <span class="na">minOccurs=</span><span class="s">&quot;0&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;1&quot;</span><span class="nt">/&gt;</span>
+   <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;maximumCutOff&quot;</span> <span class="na">type=</span><span class="s">&quot;xs:double&quot;</span>
+                          <span class="na">minOccurs=</span><span class="s">&quot;0&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;1&quot;</span><span class="nt">/&gt;</span>
+   <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;numberOfColours&quot;</span> <span class="na">type=</span><span class="s">&quot;pcr:Non0UnsignedInt&quot;</span>
+                          <span class="na">minOccurs=</span><span class="s">&quot;0&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;1&quot;</span><span class="nt">/&gt;</span>
+   <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;colourAssignment&quot;</span> <span class="na">type=</span><span class="s">&quot;pcr:ColourAssignment&quot;</span>
+                          <span class="na">minOccurs=</span><span class="s">&quot;0&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;1&quot;</span><span class="nt">/&gt;</span>
+   <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;drawMode&quot;</span> <span class="na">type=</span><span class="s">&quot;pcr:DrawMode&quot;</span>
+                          <span class="na">minOccurs=</span><span class="s">&quot;0&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;1&quot;</span><span class="nt">/&gt;</span>
+   <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;palette&quot;</span> <span class="na">type=</span><span class="s">&quot;pcr:Palette&quot;</span>
+                          <span class="na">minOccurs=</span><span class="s">&quot;0&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;1&quot;</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;/xs:sequence&gt;</span>
+<span class="nt">&lt;/xs:complexType&gt;</span>
+
+<span class="nt">&lt;xs:complexType</span> <span class="na">name=</span><span class="s">&quot;Palette&quot;</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;xs:sequence&gt;</span>
+ <span class="c">&lt;!-- choice</span>
+<span class="c">   &lt;xs:element name=&quot;default&quot; type=&quot;pcr:DefaultPaletteNames&quot;/&gt;</span>
+<span class="c">  --&gt;</span>
+   <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;rgb&quot;</span> <span class="na">type=</span><span class="s">&quot;pcr:Rgb&quot;</span> <span class="na">minOccurs=</span><span class="s">&quot;1&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;unbounded&quot;</span><span class="nt">&gt;</span>
+   <span class="nt">&lt;xs:annotation&gt;</span>
+    <span class="nt">&lt;xs:documentation&gt;</span>
+     * For nominal,ordinal,boolean data the element number (0-based) is mapped to the
+       value. Values outside of [0,nr-of-rgb-elements&gt; are mapped to element number:
+       abs(value modulo nr-of-rgb-elements).
+     * for scalar and directional data a colour ramp is created.
+    <span class="nt">&lt;/xs:documentation&gt;</span>
+   <span class="nt">&lt;/xs:annotation&gt;</span>
+  <span class="nt">&lt;/xs:element&gt;</span>
+  <span class="nt">&lt;/xs:sequence&gt;</span>
+<span class="nt">&lt;/xs:complexType&gt;</span>
+
+<span class="nt">&lt;xs:complexType</span> <span class="na">name=</span><span class="s">&quot;Rgb&quot;</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;xs:sequence&gt;</span>
+   <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;r&quot;</span> <span class="na">type=</span><span class="s">&quot;xs:unsignedByte&quot;</span> <span class="na">minOccurs=</span><span class="s">&quot;1&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;1&quot;</span><span class="nt">/&gt;</span>
+   <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;g&quot;</span> <span class="na">type=</span><span class="s">&quot;xs:unsignedByte&quot;</span> <span class="na">minOccurs=</span><span class="s">&quot;1&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;1&quot;</span><span class="nt">/&gt;</span>
+   <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;b&quot;</span> <span class="na">type=</span><span class="s">&quot;xs:unsignedByte&quot;</span> <span class="na">minOccurs=</span><span class="s">&quot;1&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;1&quot;</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;/xs:sequence&gt;</span>
+<span class="nt">&lt;/xs:complexType&gt;</span>
+
+<span class="c">&lt;!-- TODO the knows palettes </span>
+<span class="c">&lt;xs:simpleType name=&quot;DefaultPaletteNames&quot;&gt;</span>
+<span class="c">  &lt;xs:restriction base=&quot;xs:string&quot;&gt;</span>
+<span class="c">   &lt;xs:enumeration value=&quot;netscape&quot;/&gt;</span>
+<span class="c">   &lt;xs:enumeration value=&quot;greydirectional&quot;/&gt;</span>
+<span class="c">   &lt;xs:enumeration value=&quot;etc&quot;/&gt;</span>
+<span class="c">  &lt;/xs:restriction&gt;</span>
+<span class="c">&lt;/xs:simpleType&gt;</span>
+<span class="c">--&gt;</span>
+
+<span class="nt">&lt;xs:complexType</span> <span class="na">name=</span><span class="s">&quot;LegendBorderValuesType&quot;</span><span class="nt">&gt;</span>
+ <span class="nt">&lt;xs:choice&gt;</span>
+  <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;rounded&quot;</span> <span class="na">type=</span><span class="s">&quot;pcr:EmptyElement&quot;</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;exact&quot;</span>   <span class="na">type=</span><span class="s">&quot;pcr:EmptyElement&quot;</span><span class="nt">/&gt;</span>
+ <span class="nt">&lt;/xs:choice&gt;</span>
+<span class="nt">&lt;/xs:complexType&gt;</span>
+
+<span class="nt">&lt;xs:complexType</span> <span class="na">name=</span><span class="s">&quot;ColourAssignment&quot;</span><span class="nt">&gt;</span>
+ <span class="nt">&lt;xs:choice&gt;</span>
+  <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;linear&quot;</span>               <span class="na">type=</span><span class="s">&quot;pcr:EmptyElement&quot;</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;trueLogarithmic&quot;</span>      <span class="na">type=</span><span class="s">&quot;pcr:EmptyElement&quot;</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;shiftedLogarithmic&quot;</span>   <span class="na">type=</span><span class="s">&quot;pcr:EmptyElement&quot;</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;confidenceLevel&quot;</span>      <span class="na">type=</span><span class="s">&quot;pcr:ConfidenceLevel&quot;</span><span class="nt">/&gt;</span>
+ <span class="nt">&lt;/xs:choice&gt;</span>
+<span class="nt">&lt;/xs:complexType&gt;</span>
+
+<span class="nt">&lt;xs:complexType</span> <span class="na">name=</span><span class="s">&quot;ConfidenceLevel&quot;</span><span class="nt">&gt;</span>
+ <span class="nt">&lt;xs:sequence&gt;</span>
+  <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;value&quot;</span> <span class="na">type=</span><span class="s">&quot;xs:double&quot;</span><span class="nt">&gt;</span>
+   <span class="nt">&lt;xs:annotation&gt;</span>
+    <span class="nt">&lt;xs:documentation&gt;</span>
+        (1 - alpha)
+        TODO: range [0,1]
+   <span class="nt">&lt;/xs:documentation&gt;</span>
+  <span class="nt">&lt;/xs:annotation&gt;</span>
+  <span class="nt">&lt;/xs:element&gt;</span>
+ <span class="nt">&lt;/xs:sequence&gt;</span>
+<span class="nt">&lt;/xs:complexType&gt;</span>
+
+<span class="nt">&lt;xs:complexType</span> <span class="na">name=</span><span class="s">&quot;DrawMode&quot;</span><span class="nt">&gt;</span>
+ <span class="nt">&lt;xs:choice&gt;</span>
+  <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;fill&quot;</span>         <span class="na">type=</span><span class="s">&quot;pcr:EmptyElement&quot;</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;contour&quot;</span>      <span class="na">type=</span><span class="s">&quot;pcr:EmptyElement&quot;</span><span class="nt">/&gt;</span>
+ <span class="nt">&lt;/xs:choice&gt;</span>
+<span class="nt">&lt;/xs:complexType&gt;</span>
+
+<span class="nt">&lt;xs:complexType</span> <span class="na">name=</span><span class="s">&quot;AguilaCursorValues&quot;</span><span class="nt">&gt;</span>
+ <span class="nt">&lt;xs:annotation&gt;</span>
+   <span class="nt">&lt;xs:documentation&gt;</span>Contents Aguila cursor dump file<span class="nt">&lt;/xs:documentation&gt;</span>
+ <span class="nt">&lt;/xs:annotation&gt;</span>
+ <span class="nt">&lt;xs:sequence&gt;</span>
+  <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;aguilaCursorValue&quot;</span>  <span class="na">type=</span><span class="s">&quot;pcr:AguilaCursorValue&quot;</span>
+                          <span class="na">minOccurs=</span><span class="s">&quot;0&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;unbounded&quot;</span><span class="nt">/&gt;</span>
+ <span class="nt">&lt;/xs:sequence&gt;</span>
+<span class="nt">&lt;/xs:complexType&gt;</span>
+
+<span class="nt">&lt;xs:complexType</span> <span class="na">name=</span><span class="s">&quot;AguilaCursorValue&quot;</span><span class="nt">&gt;</span>
+ <span class="nt">&lt;xs:annotation&gt;</span>
+   <span class="nt">&lt;xs:documentation&gt;</span>Aguila current cursor dump<span class="nt">&lt;/xs:documentation&gt;</span>
+ <span class="nt">&lt;/xs:annotation&gt;</span>
+ <span class="nt">&lt;xs:sequence&gt;</span>
+  <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;cursor&quot;</span>     <span class="na">type=</span><span class="s">&quot;pcr:Cursor&quot;</span>
+                          <span class="na">minOccurs=</span><span class="s">&quot;0&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;1&quot;</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;dataValue&quot;</span>  <span class="na">type=</span><span class="s">&quot;pcr:DataValue&quot;</span>
+                          <span class="na">minOccurs=</span><span class="s">&quot;0&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;unbounded&quot;</span><span class="nt">&gt;</span>
+     <span class="nt">&lt;xs:annotation&gt;</span>
+       <span class="nt">&lt;xs:documentation&gt;</span>y coordinate
+       <span class="nt">&lt;/xs:documentation&gt;</span>
+     <span class="nt">&lt;/xs:annotation&gt;</span>
+  <span class="nt">&lt;/xs:element&gt;</span>
+ <span class="nt">&lt;/xs:sequence&gt;</span>
+<span class="nt">&lt;/xs:complexType&gt;</span>
+
+<span class="nt">&lt;xs:complexType</span> <span class="na">name=</span><span class="s">&quot;Cursor&quot;</span><span class="nt">&gt;</span>
+ <span class="nt">&lt;xs:annotation&gt;</span>
+   <span class="nt">&lt;xs:documentation&gt;</span>Current cursor position in the dimensions
+   <span class="nt">&lt;/xs:documentation&gt;</span>
+ <span class="nt">&lt;/xs:annotation&gt;</span>
+ <span class="nt">&lt;xs:sequence&gt;</span>
+  <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;time&quot;</span> <span class="na">type=</span><span class="s">&quot;xs:unsignedInt&quot;</span>
+                          <span class="na">minOccurs=</span><span class="s">&quot;0&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;1&quot;</span><span class="nt">&gt;</span>
+   <span class="nt">&lt;xs:annotation&gt;</span>
+     <span class="nt">&lt;xs:documentation&gt;</span>integer timestep
+     <span class="nt">&lt;/xs:documentation&gt;</span>
+   <span class="nt">&lt;/xs:annotation&gt;</span>
+  <span class="nt">&lt;/xs:element&gt;</span>
+  <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;date&quot;</span> <span class="na">type=</span><span class="s">&quot;xs:dateTime&quot;</span>
+                          <span class="na">minOccurs=</span><span class="s">&quot;0&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;1&quot;</span><span class="nt">&gt;</span>
+   <span class="nt">&lt;xs:annotation&gt;</span>
+     <span class="nt">&lt;xs:documentation&gt;</span>real calendar date
+                       Note that timezone information is not supported
+     <span class="nt">&lt;/xs:documentation&gt;</span>
+   <span class="nt">&lt;/xs:annotation&gt;</span>
+  <span class="nt">&lt;/xs:element&gt;</span>
+  <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;x&quot;</span>    <span class="na">type=</span><span class="s">&quot;xs:double&quot;</span>
+                          <span class="na">minOccurs=</span><span class="s">&quot;0&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;1&quot;</span><span class="nt">&gt;</span>
+   <span class="nt">&lt;xs:annotation&gt;</span>
+     <span class="nt">&lt;xs:documentation&gt;</span>x coordinate
+     <span class="nt">&lt;/xs:documentation&gt;</span>
+   <span class="nt">&lt;/xs:annotation&gt;</span>
+  <span class="nt">&lt;/xs:element&gt;</span>
+  <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;y&quot;</span>    <span class="na">type=</span><span class="s">&quot;xs:double&quot;</span>
+                          <span class="na">minOccurs=</span><span class="s">&quot;0&quot;</span> <span class="na">maxOccurs=</span><span class="s">&quot;1&quot;</span><span class="nt">&gt;</span>
+   <span class="nt">&lt;xs:annotation&gt;</span>
+     <span class="nt">&lt;xs:documentation&gt;</span>y coordinate
+     <span class="nt">&lt;/xs:documentation&gt;</span>
+   <span class="nt">&lt;/xs:annotation&gt;</span>
+  <span class="nt">&lt;/xs:element&gt;</span>
+ <span class="nt">&lt;/xs:sequence&gt;</span>
+<span class="nt">&lt;/xs:complexType&gt;</span>
+
+<span class="nt">&lt;xs:complexType</span> <span class="na">name=</span><span class="s">&quot;DataValue&quot;</span><span class="nt">&gt;</span>
+ <span class="nt">&lt;xs:sequence&gt;</span>
+  <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;name&quot;</span>  <span class="na">type=</span><span class="s">&quot;xs:string&quot;</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;value&quot;</span> <span class="na">type=</span><span class="s">&quot;xs:string&quot;</span><span class="nt">/&gt;</span>
+ <span class="nt">&lt;/xs:sequence&gt;</span>
+<span class="nt">&lt;/xs:complexType&gt;</span>
+
+<span class="nt">&lt;/xs:schema&gt;</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Xml Startup Configuration</a><ul>
+<li><a class="reference internal" href="#basic-structure">Basic structure</a></li>
+<li><a class="reference internal" href="#aguila-xsd">Aguila.xsd</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="Data.html"
+                        title="previous chapter">Data</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="Faq.html"
+                        title="next chapter">FAQ</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="Faq.html" title="FAQ"
+             >next</a></li>
+        <li class="right" >
+          <a href="Data.html" title="Data"
+             >previous</a> |</li>
+        <li><a href="index.html">Aguila 1.3.3 documentation</a> &raquo;</li>
+          <li><a href="Manual.html" >Manual</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2009-2015, PCRaster R&amp;D team.
+      Last updated on Apr 16, 2015.
+    </div>
+  </body>
+</html>

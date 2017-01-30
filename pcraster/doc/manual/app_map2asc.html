@@ -1,0 +1,193 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>map2asc &mdash; PCRaster 4.0.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="PCRaster 4.0.3 documentation" href="index.html" />
+    <link rel="up" title="Applications" href="applications.html" />
+    <link rel="next" title="map2col" href="app_map2col.html" />
+    <link rel="prev" title="legend" href="app_legend.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="app_map2col.html" title="map2col"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="app_legend.html" title="legend"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PCRaster 4.0.3 documentation</a> &raquo;</li>
+          <li><a href="applications.html" accesskey="U">Applications</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="map2asc">
+<span id="id1"></span><h1>map2asc<a class="headerlink" href="#map2asc" title="Permalink to this headline">¶</a></h1>
+<div class="topic" id="index-0">
+<p class="topic-title first">map2asc</p>
+<p>Converts from PCRaster maps format to ascii file format</p>
+</div>
+<div class="highlight-python"><pre>map2asc [options] PCRmap asciifile</pre>
+</div>
+<dl class="docutils">
+<dt>PCRmap</dt>
+<dd>spatial
+boolean, nominal, ordinal, scalar, directional, ldd</dd>
+<dt>asciifile</dt>
+<dd>formatted asciifile
+None</dd>
+</dl>
+<div class="section" id="options">
+<h2>Options<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
+<p>Options can be given for assigning a special layout to asciifile. These options are described in the operation section. Other options are:</p>
+<p>-m <em>nodatavalue</em></p>
+<blockquote>
+<div><em>nodatavalue</em> may be one ascii character (letters, figures, symbols) or a string of ascii charaters. For instance: -m -999, -m ? or -m 8kf.f. The missing values on the map will be assigned the <em>nondatavalue</em> on the asciifile</div></blockquote>
+<p>-s <em>seperator</em></p>
+<blockquote>
+<div><em>separator</em> may be one ascii character (letters, figures, symbols, space, tab) or a string of ascii characters. A space or tab is specified using &#8220;&#8221; &#8220;&#8221;, for instance: -s &#8220;&#8221; &#8220;&#8221; is a space as separator. The cell values which are on one row on PCRmap will be separated by <em>separator</em> on asciifile. Default, if -s is not set, map2asc prints one space <em>before</em> each cell value field. Note that if you want to convert the asciifile back to PCRaster map format with the asc2map operator, it should contain whitespace characters only or whitespace characters with only <em>one</em> non whitespace character as separator.</div></blockquote>
+<p>-f C <em>-typeformat</em></p>
+<blockquote>
+<div>This option is used to specify the sort of format which is assigned to thencell values in asciifile. See the discussion of -f in map2col.</div></blockquote>
+</div>
+<div class="section" id="operation">
+<h2>Operation<a class="headerlink" href="#operation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="simple-conversion">
+<h3>simple conversion<a class="headerlink" href="#simple-conversion" title="Permalink to this headline">¶</a></h3>
+<p>The data in PCRaster map format on PCRmap are converted to ascii format and saved as asciifile. Default a simple conversion is performed. This is a rowwise conversion to an asciifile without header. The rows on PCRmap are scanned from left to right, starting with the top row and ending with the bottom row. Each time a value is scanned it is added to asciifile, starting with a new line on asciifile if a new row on PCRmap is scanned. The values in one row on PCRmap will be on one line on asciifile, with a separator defined by the option - s (default one or more spaces, see above). The lines on asciifile always end in a cell value.</p>
+</div>
+<div class="section" id="conversion-to-arc-info-input-format">
+<h3>conversion to ARC/INFO input format<a class="headerlink" href="#conversion-to-arc-info-input-format" title="Permalink to this headline">¶</a></h3>
+<p>In ARC/INFO ascii data with a special lay-out containing a header with location attributes and the <em>nodatavalue</em> can be imported using the ARC/INFO command asciigrid. An asciifile with the lay-out needed for this command can be created with map2asc specifying the option -a. Additionally only the option -m can be specified.</p>
+</div>
+<div class="section" id="conversion-to-other-ascii-file-lay-outs">
+<h3>conversion to other ascii file lay-outs<a class="headerlink" href="#conversion-to-other-ascii-file-lay-outs" title="Permalink to this headline">¶</a></h3>
+<p>Two options can be set to specify asciifiles with other lay-outs:</p>
+<table class="docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group">
+<kbd><span class="option">-c</span></kbd></td>
+<td>Default a rowwise output is performed: lines on asciifile correspond with rows on PCRmap. If this option is set the output will be columnwise: the first column on PCRmap (from top to bottom) is printed as the first line (from left to right) on asciifile, the second column as the second line etc. The number of columns on PCRmap will correspond with the number of rows on asciifile.</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-n</span></kbd></td>
+<td><em>numberofcellsonline</em> must be a whole value larger or equal to 1. Default, each row of cell values on PCRmap is saved as one line in asciifile. This option can be used to print a different number of cell values (the value of <em>numberofcellsonline</em>) on one line in asciifile.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="group">
+<h2>Group<a class="headerlink" href="#group" title="Permalink to this headline">¶</a></h2>
+<p>This operation belongs to the group of  Data export from PCRaster map</p>
+</div>
+<div class="section" id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="app_map2col.html#map2col"><em>map2col</em></a></p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">map2asc</a><ul>
+<li><a class="reference internal" href="#options">Options</a></li>
+<li><a class="reference internal" href="#operation">Operation</a><ul>
+<li><a class="reference internal" href="#simple-conversion">simple conversion</a></li>
+<li><a class="reference internal" href="#conversion-to-arc-info-input-format">conversion to ARC/INFO input format</a></li>
+<li><a class="reference internal" href="#conversion-to-other-ascii-file-lay-outs">conversion to other ascii file lay-outs</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#notes">Notes</a></li>
+<li><a class="reference internal" href="#group">Group</a></li>
+<li><a class="reference internal" href="#see-also">See Also</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="app_legend.html"
+                        title="previous chapter">legend</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="app_map2col.html"
+                        title="next chapter">map2col</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="app_map2col.html" title="map2col"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="app_legend.html" title="legend"
+             >previous</a> |</li>
+        <li><a href="index.html">PCRaster 4.0.3 documentation</a> &raquo;</li>
+          <li><a href="applications.html" >Applications</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 1990-2015, PCRaster R&amp;D Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

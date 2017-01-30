@@ -1,0 +1,281 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>mapattr &mdash; PCRaster 4.0.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="PCRaster 4.0.3 documentation" href="index.html" />
+    <link rel="up" title="Applications" href="applications.html" />
+    <link rel="next" title="pcrcalc" href="app_pcrcalc.html" />
+    <link rel="prev" title="map2col" href="app_map2col.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="app_pcrcalc.html" title="pcrcalc"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="app_map2col.html" title="map2col"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PCRaster 4.0.3 documentation</a> &raquo;</li>
+          <li><a href="applications.html" accesskey="U">Applications</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="mapattr">
+<span id="id1"></span><h1>mapattr<a class="headerlink" href="#mapattr" title="Permalink to this headline">¶</a></h1>
+<div class="topic" id="index-0">
+<p class="topic-title first">mapattr</p>
+<p>Create a new PCRaster map, change or display location attributes of existing PCRaster map</p>
+</div>
+<div class="highlight-python"><pre>mapattr [options] PCRmap1 PCRmap2....PCRmapN</pre>
+</div>
+<dl class="docutils">
+<dt>PCRmap</dt>
+<dd>boolean, nominal, ordinal, scalar, directional, ldd
+spatial</dd>
+</dl>
+<div class="section" id="options">
+<h2>Options<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="options-that-apply-to-all-modes-of-operations">
+<h3>Options that apply to all modes of operations<a class="headerlink" href="#options-that-apply-to-all-modes-of-operations" title="Permalink to this headline">¶</a></h3>
+<p>Set default attribute values with existing map</p>
+<table class="docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group">
+<kbd><span class="option">--clone</span></kbd></td>
+<td><tt class="docutils literal"><span class="pre">--clone</span> <span class="pre">PCRclone</span></tt>. <em>PCRclone</em> is taken as clone map. This option can be set in the command line or as a <a class="reference internal" href="secimport.html#goclone"><em>global option</em></a>. If a map attribute is not specified by the user (in the menu or with options) the attribute value of <em>PCRclone</em> is assigned to the map that is generated. If  <em>clone</em> is not set the following defaults are used: data type: boolean; cell representation: small integer; projection: y increases from bottom to top, upper left corner (<em>xUL</em>, <em>yUL</em>): (0,0), cell length 1 and angle 0.</td></tr>
+</tbody>
+</table>
+<p>Print information for all maps</p>
+<table class="docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group">
+<kbd><span class="option">-p</span></kbd></td>
+<td>gives information for all maps PCRmap1, PCRmap2,...PCRmapn (from top to bottom): n number of rows, number of columns, cell length, data type, cell representation, projection, angle in degrees, upper left corner (<em>xUL</em>, <em>yUL</em>), minimum value, maximum value, PCRaster version number, file_id (i.e. the number of the file, used internally by PCRaster), native/not native (specifies whether the byte order of the file is native (&#8216;y&#8217; is printed) or not native (&#8216;n&#8217; is printed): big endian or little endian), attribute table (specifies whether the file contains additional attributes (&#8216;y&#8217; is printed) like for example a legend or a colour palette or not (&#8216;n&#8217;).</td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="options-that-apply-to-operation-with-the-menu">
+<h3>Options that apply to operation with the menu<a class="headerlink" href="#options-that-apply-to-operation-with-the-menu" title="Permalink to this headline">¶</a></h3>
+<p>Change location attributes of an existing map</p>
+<table class="docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group">
+<kbd><span class="option">-e</span></kbd></td>
+<td>starts the menu allowing to change the location attributes projection, upper left corner (<em>xUL</em>, <em>yUL</em>), cell length and angle of the existing map PCRmap1. The other map attributes are fixed. Only one map (PCRmap1) can be specified. Do not use -e in combination with other options.</td></tr>
+</tbody>
+</table>
+<p>Copy location attributes of a map to other maps</p>
+<table class="docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group">
+<kbd><span class="option">-c</span></kbd></td>
+<td>when using this option two or more PCRmap1, PCRmap2,...PCRmapn must be specified. These maps must have corresponding number of rows and corresponding number of columns. The location attributes cell length, projection, angle, upper left corner (<em>xUL</em>, <em>yUL</em>), of the first map PCRmap1 are copied to the other map(s) PCRmap2,...PCRmapn. The other map attributes are not changed. Do not use -c in combination with other options.</td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="options-that-result-in-operation-without-the-menu">
+<h3>Options that result in operation without the menu<a class="headerlink" href="#options-that-result-in-operation-without-the-menu" title="Permalink to this headline">¶</a></h3>
+<p>It is possible to use mapattr without invoking the menu by setting the <cite>-s</cite> option.
+If you do not invoke the menu you must define all attributes with the following options else the default values (or the values of <em>PCRclone</em>, see the  <a class="reference internal" href="secimport.html#goclone"><em>global clone option</em></a>) are assigned.</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">-s</span></tt></dt>
+<dd>set attributes or create map without menu</dd>
+</dl>
+<p>-R <em>NumberOfRows</em></p>
+<blockquote>
+<div>Specifies the number of rows in the map that is generated. <em>NumberOfRows</em> must be a whole positive value.</div></blockquote>
+<p>-C <em>NumberOfColumns</em></p>
+<blockquote>
+<div>Specifies the number of columns in the map that is generated. <em>NumberOfColumns</em> must be a whole positive value.</div></blockquote>
+<p>-B,-N,-O,-S,-D or -L</p>
+<blockquote>
+<div><blockquote>
+<div>Specifies the data type of the map that is generated (respectively boolean, nominal, ordinal, scalar, directional, ldd). Default: boolean,nor if <tt class="docutils literal"><span class="pre">--clone</span></tt> is set, the data type of the clone map PCRclone.</div></blockquote>
+<p class="attribution">&mdash;small or &#8211;large</p>
+</div></blockquote>
+<blockquote>
+<div><blockquote>
+<div><p>In most case, the default cell representation will be sufficient. If you want, you can specify the cell representations:</p>
+<p>Nominal and ordinal data types</p>
+</div></blockquote>
+</div></blockquote>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">--small</span></tt></dt>
+<dd>cell values are represented by small integer cell representation (default)</dd>
+<dt><tt class="docutils literal"><span class="pre">--large</span></tt></dt>
+<dd>cell values are represented by large integer cell representation</dd>
+</dl>
+<p>-P yb2t (or -P yt2b)</p>
+<blockquote>
+<div>Specifies the projection: n-P yb2t, y increases from bottom to top (or -P yt2b, y increases from top to bottom). Default: yb2t or if <tt class="docutils literal"><span class="pre">--clone</span></tt> is set the projection of <em>PCRclone</em>. This option is an historical error, it should always be the default.</div></blockquote>
+<p>-x <em>XCorULC</em></p>
+<blockquote>
+<div>Specifies the x-coordinate of the upper left corner of the map that is generated. <em>XCorULC</em> is a real value. Default: 0.0 or if <tt class="docutils literal"><span class="pre">--clone</span></tt> is set, the value of the clone map <em>PCRclone</em>.</div></blockquote>
+<p>-y <em>YCorULC</em></p>
+<blockquote>
+<div>Specifies the y-coordinate of the upper left corner of the map that is generated. <em>YCorULC</em> is a real value. Default: 0.0 or if <tt class="docutils literal"><span class="pre">--clone</span></tt> is set, the value of the clone map <em>PCRclone</em>.</div></blockquote>
+<p>-l <em>CellLength</em></p>
+<blockquote>
+<div>Specifies the celllength of the map that is generated. <em>CellLength</em> is a real value. Default: 1 or if <tt class="docutils literal"><span class="pre">--clone</span></tt> is set, the value of the clone map <em>PCRclone</em>.</div></blockquote>
+<p>-a <em>Angle</em></p>
+<blockquote>
+<div>Specifies the angle of the map that is generated. <em>Angle</em> is the angle in degrees between -90 and 90 degrees. Default: 0.0 or if <tt class="docutils literal"><span class="pre">--clone</span></tt> is set, the value of the clone map <em>PCRclone</em>.</div></blockquote>
+</div>
+</div>
+<div class="section" id="operation">
+<h2>Operation<a class="headerlink" href="#operation" title="Permalink to this headline">¶</a></h2>
+<p>The mapattr application generates a new PCRaster map with map attributes specified by the user, changes the <a class="reference internal" href="secdatbase.html#secdatbasemaphead"><em>location</em></a> attributes of an existing map or prints map attribute information.</p>
+<div class="section" id="operation-with-the-menu">
+<h3>Operation with the menu<a class="headerlink" href="#operation-with-the-menu" title="Permalink to this headline">¶</a></h3>
+<p>A new map is generated by specifying one input file PCRmap1 and not setting options. The application invokes a menu. In the menu the location attributes can be entered of the new map PCRmap1 that is created. You can scroll through the menu with the arrow up or arrow down keys or the keys listed at the bottom of the menu. An menu item is entered by pressing &lt;Enter&gt; and typing the value followed by &lt;Enter&gt;. The menu items &#8216;data type&#8217; and &#8216;projection&#8217;  are filled in by selecting one of the options with the arrow left or arrow right keys (or one of the keys listed at the bottom of the menu) instead of typing the entry. Quit the menu by pressing &#8216;q&#8217;. The program asks you whether the map must be created. You can answer by pressing &#8216;Y&#8217; (Yes, create the map), &#8216;N&#8217; (No, do not create the map and leave the menu) or by pressing &lt;Escape which effects that you can resume editing.</p>
+<p>Location attributes of one map can be changed by specifying one existing
+map PCRmap1 and the option -e. Note that this is not meant for cutting or resampling the map which is done with the application resample. See also the section on <a class="reference internal" href="secimport.html#secimportmaptype"><em>the import map type</em></a>.</p>
+<p>Location attributes of the first, existing, PCRmap1 are copied to the existing PCRmap2,...PCRmapn with the option -c.</p>
+<p>Map attribute information of multiple PCRmap1-n is printed with the option -p.</p>
+</div>
+<div class="section" id="operation-without-the-menu">
+<h3>Operation without the menu<a class="headerlink" href="#operation-without-the-menu" title="Permalink to this headline">¶</a></h3>
+<p>The map attributes can also be entered without the menu, by setting the -s options.
+All modes of operation possible with the menu can also be executed in this command line/no menu mode. So you can also use the options -e or -c for changing map attributes of an existing map and copying map attributes from one map to other maps respectively.</p>
+<p>If one of the map attributes is not specified with an option in the
+command line, mapattr assigns the default value or, if a clone map is specified with the option <tt class="docutils literal"><span class="pre">--clone</span></tt>, the value of the <em>PCRclone</em>. See also the <tt class="docutils literal"><span class="pre">--clone</span></tt> option in the option list at the top of the mapattr description.</p>
+</div>
+</div>
+<div class="section" id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="app_resample.html#resample"><em>resample</em></a></p>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<p>Generation of a new map that is stored under the filename
+&#8216;mask.map&#8217;; invokes the menu:</p>
+<div class="highlight-python"><pre>mapattr mask.map</pre>
+</div>
+<p>Changing the location attributes of an existing map <em>clone.map</em>; invokes the menu:</p>
+<div class="highlight-python"><pre>mapattr -e clone.map</pre>
+</div>
+<p>Copying the location attributes of clone1.map to dem.map and ldd.map; does not invoke the menu:</p>
+<div class="highlight-python"><pre>mapattr -c clone1.map dem.map ldd.map</pre>
+</div>
+<p>Printing (on the screen) the map info for clone1.map, dem.map and ldd.map:</p>
+<div class="highlight-python"><pre>mapattr -p clone1.map dem.map ldd.map</pre>
+</div>
+<p>Generation of a new map that is stored under the filename mask2.map; does not invoke the menu (here, the option -a is not set so the angle of the map is assigned the default value 0):</p>
+<div class="highlight-python"><pre>mapattr -s -R 19 -C 68 -B -P yb2t -x 12 -y -14.02 -l 0.8 mask2.map</pre>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">mapattr</a><ul>
+<li><a class="reference internal" href="#options">Options</a><ul>
+<li><a class="reference internal" href="#options-that-apply-to-all-modes-of-operations">Options that apply to all modes of operations</a></li>
+<li><a class="reference internal" href="#options-that-apply-to-operation-with-the-menu">Options that apply to operation with the menu</a></li>
+<li><a class="reference internal" href="#options-that-result-in-operation-without-the-menu">Options that result in operation without the menu</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#operation">Operation</a><ul>
+<li><a class="reference internal" href="#operation-with-the-menu">Operation with the menu</a></li>
+<li><a class="reference internal" href="#operation-without-the-menu">Operation without the menu</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#see-also">See Also</a></li>
+<li><a class="reference internal" href="#examples">Examples</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="app_map2col.html"
+                        title="previous chapter">map2col</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="app_pcrcalc.html"
+                        title="next chapter">pcrcalc</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="app_pcrcalc.html" title="pcrcalc"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="app_map2col.html" title="map2col"
+             >previous</a> |</li>
+        <li><a href="index.html">PCRaster 4.0.3 documentation</a> &raquo;</li>
+          <li><a href="applications.html" >Applications</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 1990-2015, PCRaster R&amp;D Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

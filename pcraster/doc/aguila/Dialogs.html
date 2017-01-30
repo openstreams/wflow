@@ -1,0 +1,154 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Dialogs &mdash; Aguila 1.3.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.3.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Aguila 1.3.3 documentation" href="index.html" />
+    <link rel="up" title="Manual" href="Manual.html" />
+    <link rel="next" title="Data" href="Data.html" />
+    <link rel="prev" title="Views" href="Views.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="Data.html" title="Data"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="Views.html" title="Views"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Aguila 1.3.3 documentation</a> &raquo;</li>
+          <li><a href="Manual.html" accesskey="U">Manual</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="dialogs">
+<span id="id1"></span><h1>Dialogs<a class="headerlink" href="#dialogs" title="Permalink to this headline">¶</a></h1>
+<p>In this section the various Aguila dialogs are described.</p>
+<div class="section" id="animation-dialog">
+<span id="animationdialog"></span><h2>Animation Dialog<a class="headerlink" href="#animation-dialog" title="Permalink to this headline">¶</a></h2>
+<p>If you loaded a temporal attribute, than you can start an animation by selecting the <tt class="docutils literal"><span class="pre">Animate</span></tt> menu item from the <tt class="docutils literal"><span class="pre">View</span></tt> menu, or by pressing the <tt class="docutils literal"><span class="pre">Animate</span></tt> toolbutton from the toolbar. A dialog will be shown from which you can control the animation. This will trigger an update of all views that show temporal attributes.</p>
+<img alt="_images/AnimationDialog.png" src="_images/AnimationDialog.png" />
+</div>
+<div class="section" id="draw-properties-dialog">
+<span id="drawpropertiesdialog"></span><h2>Draw Properties Dialog<a class="headerlink" href="#draw-properties-dialog" title="Permalink to this headline">¶</a></h2>
+<p>What properties are show in the properties dialog depends on the attribute type, not all properties are applicable for all types of data.</p>
+<dl class="docutils">
+<dt>Palette</dt>
+<dd>The colours used in the view</dd>
+<dt>Exact legend borders</dt>
+<dd>Should the minimum and maximum value of the legend, exactly match the data minimum and maximum. The values are rounded otherwise</dd>
+<dt>Number of colours</dt>
+<dd>Numbers of colours sampled from the colour palette.</dd>
+<dt>Maximum cutoff</dt>
+<dd>This value will set the upper range used in the colour assignment. Data values above this value are drawn using the same colour as the one used for the maximum cutoff value. <tt class="docutils literal"><span class="pre">Reset</span></tt> will set this back to the default case of the data maximum.</dd>
+<dt>Minimum cutoff</dt>
+<dd>This value will set the lower range used in the colour assignment. Data values below this value are drawn using the same colour as the one used for the mimimum cutoff value. <tt class="docutils literal"><span class="pre">Reset</span></tt> will set this back to the default case of the data minimum.</dd>
+<dt>Colour assignment</dt>
+<dd>Mode of how colours are assigned by dividing the data range in <tt class="docutils literal"><span class="pre">Number</span> <span class="pre">of</span> <span class="pre">colours</span></tt> intervals. The per colour interval size can be fixed (linear) or increasing from small to large (logarithmic).</dd>
+<dt>Draw mode</dt>
+<dd><dl class="first last docutils">
+<dt><tt class="docutils literal"><span class="pre">Fill</span></tt></dt>
+<dd>Show values as solid filled pixels.</dd>
+<dt><tt class="docutils literal"><span class="pre">Contour</span></tt></dt>
+<dd>Draw as contours.</dd>
+</dl>
+</dd>
+</dl>
+<p>For an uncertain attribute, the folowing options are also available:</p>
+<dl class="docutils">
+<dt>Colour assignment</dt>
+<dd>If a value is selected in the probability graph, an additional colour assignment mode is available: <tt class="docutils literal"><span class="pre">Confidence</span> <span class="pre">interval</span></tt>.</dd>
+<dt>Confidence level (1 - alpha)</dt>
+<dd>If the <tt class="docutils literal"><span class="pre">Confidence</span> <span class="pre">interval</span></tt> colour assignment mode is selected, this option can be used to configure the confidence level.</dd>
+<dt>Exceedance probabilities</dt>
+<dd>When this option is selected, exceedance probabilities will be shown, instead of cumulative probabilities.</dd>
+</dl>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Dialogs</a><ul>
+<li><a class="reference internal" href="#animation-dialog">Animation Dialog</a></li>
+<li><a class="reference internal" href="#draw-properties-dialog">Draw Properties Dialog</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="Views.html"
+                        title="previous chapter">Views</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="Data.html"
+                        title="next chapter">Data</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="Data.html" title="Data"
+             >next</a></li>
+        <li class="right" >
+          <a href="Views.html" title="Views"
+             >previous</a> |</li>
+        <li><a href="index.html">Aguila 1.3.3 documentation</a> &raquo;</li>
+          <li><a href="Manual.html" >Manual</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2009-2015, PCRaster R&amp;D team.
+      Last updated on Apr 16, 2015.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,189 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>legend &mdash; PCRaster 4.0.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="PCRaster 4.0.3 documentation" href="index.html" />
+    <link rel="up" title="Applications" href="applications.html" />
+    <link rel="next" title="map2asc" href="app_map2asc.html" />
+    <link rel="prev" title="col2map" href="app_col2map.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="app_map2asc.html" title="map2asc"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="app_col2map.html" title="col2map"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PCRaster 4.0.3 documentation</a> &raquo;</li>
+          <li><a href="applications.html" accesskey="U">Applications</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="legend">
+<span id="id1"></span><h1>legend<a class="headerlink" href="#legend" title="Permalink to this headline">¶</a></h1>
+<div class="topic" id="index-0">
+<p class="topic-title first">legend</p>
+<p>Attaches a legend to or changes the legend of one or more maps.</p>
+</div>
+<div class="highlight-python"><pre>legend [options] PCRmap1 PCRmap2.....PCRmapN</pre>
+</div>
+<dl class="docutils">
+<dt>PCRmap1-N</dt>
+<dd>boolean, nominal, ordinal; they must have the same data type</dd>
+</dl>
+<div class="section" id="options">
+<h2>Options<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
+<p>By default, legend starts a menu. Options that apply to this default menu mode are -l and -h.</p>
+<p>enter also labels for cell values with a smaller value than which occurs on PCRmap11....PCRmapN</p>
+<dl class="docutils">
+<dt>-l <em>minvalues</em></dt>
+<dd>the menu will allow you to fill in labels for wholencell values equal to or between the (whole) value <em>minvalue</em> and the maximum value on the PCRmap1,PCRmap2,...PCRmapN.</dd>
+</dl>
+<p>enter also labels for cell values with a higher value than which occurs on PCRmap1....PCRmapN</p>
+<dl class="docutils">
+<dt>-h <em>maxvalues</em></dt>
+<dd>the menu will allow you to fill in labels for wholencell values equal to or between the minimum value on thenPCRmap1,PCRmap2,...PCRmapn and the (whole) number <em>maxvalue</em>.</dd>
+</dl>
+<p>The operator can also be used in a mode without the menu. The options
+that invoke this mode are described in the second part of the operation
+section.</p>
+</div>
+<div class="section" id="operation">
+<h2>Operation<a class="headerlink" href="#operation" title="Permalink to this headline">¶</a></h2>
+<p>The one or more maps PCRmap1,PCRmap2,...PCRmapn must have the same data type (boolean,nominal or ordinal), the location attributes do not need to correspond. The PCRmap1,PCRmap2,...PCRmapn may have (corresponding or different) legends attached or may not have legends attached. The legend operator will overwrite or assign in both cases the same legend to all PCRmap1,PCRmap2,...PCRmapn.</p>
+<div class="section" id="operation-with-the-menu">
+<h3>Operation with the menu<a class="headerlink" href="#operation-with-the-menu" title="Permalink to this headline">¶</a></h3>
+<p>This is the default action when no options or the options -l or -h are set. The operator invokes a menu which is used to change or enter the legend labels for the cell values that are found on one or more PCRmap1,PCRmap2,...PCRmapn. In addition the title of the legend can be assigned. The keys that are supported by the menu are given at the bottom of the menu.</p>
+</div>
+<div class="section" id="operation-without-the-menu">
+<h3>Operation without the menu<a class="headerlink" href="#operation-without-the-menu" title="Permalink to this headline">¶</a></h3>
+<p>The operator can also be used without the menu. This is done by setting one of the following options.</p>
+<dl class="docutils">
+<dt>copy the legend of the first map to the other maps</dt>
+<dd>-c: More than one PCRmap1,PCRmap2,...PCRmapN are specified. The legend of the first map PCRmap1 is copied to the other maps PCRmap2,...PCRmapN.</dd>
+<dt>store the legend labels in an ascii formatted legend file</dt>
+<dd>-w <em>outputlegendfile</em>: One or more PCRmap1,PCRmap2,...PCRmapN may be specifed. The cell values of these maps with the labels are stored in the ascii formatted <em>outputlegendfile</em>. For each cell value, the label is stored of the PCRmapI (I is 1...N) with the lowest I that contains the cell value under consideration. The layout of the legend file <em>outputlegendfile</em> is given below.</dd>
+<dt>read the legend labels for the maps from an ascii formatted legend file</dt>
+<dd>-f <em>inputlegendfile</em>: One or more PCRmap1,PCRmap2,...PCRmapN may be specified. The labels given in the <em>inputlegendfile</em> are assigned to the legend of these maps. A cell value on an input map that does not occur in the <em>inputlegendfile</em> is assigned a label. The layout of the legend file <em>inputlegendfile</em> is given below.</dd>
+</dl>
+<p>The general layout of a legend file is as follows. The ascii formatted
+file constists of two columns, separated by one or more whitespace
+characters (space(s), tab(s)). The cell values are in the first column,
+the labels are in the second column. The first row contains in the first
+column the field -0 and in the second column the title of the legend.
+The following rows contain in the first column the cell value and in the
+second column the label for that cell value.</p>
+<p>When the legend file is the output from the legend operator, the title row (if a title occurs in one or more of the input maps) is the first row. The cell values with the labels are written in rising order from top to bottom, starting with row two.</p>
+<p>When the legend file is used as input file, the row with the title may
+be omitted. If it is given it <em>must</em> be the first row of the file. The following rows contain the cell values with the labels. The order of these rows does not matter.</p>
+<p>An example of an input legend file is:</p>
+<div class="highlight-python"><pre>-0  landuse
+ 4  arable land
+ 1  woodland
+ 3  buildings
+ 2  lake
+ 2  river</pre>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">legend</a><ul>
+<li><a class="reference internal" href="#options">Options</a></li>
+<li><a class="reference internal" href="#operation">Operation</a><ul>
+<li><a class="reference internal" href="#operation-with-the-menu">Operation with the menu</a></li>
+<li><a class="reference internal" href="#operation-without-the-menu">Operation without the menu</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="app_col2map.html"
+                        title="previous chapter">col2map</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="app_map2asc.html"
+                        title="next chapter">map2asc</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="app_map2asc.html" title="map2asc"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="app_col2map.html" title="col2map"
+             >previous</a> |</li>
+        <li><a href="index.html">PCRaster 4.0.3 documentation</a> &raquo;</li>
+          <li><a href="applications.html" >Applications</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 1990-2015, PCRaster R&amp;D Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

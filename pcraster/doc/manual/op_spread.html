@@ -1,0 +1,280 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>spread &mdash; PCRaster 4.0.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="PCRaster 4.0.3 documentation" href="index.html" />
+    <link rel="up" title="pcrcalc and Python operations" href="operations.html" />
+    <link rel="next" title="spreadldd" href="op_spreadldd.html" />
+    <link rel="prev" title="spatial" href="op_spatial.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="op_spreadldd.html" title="spreadldd"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="op_spatial.html" title="spatial"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PCRaster 4.0.3 documentation</a> &raquo;</li>
+          <li><a href="operations.html" accesskey="U">pcrcalc and Python operations</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="spread">
+<span id="index-0"></span><span id="id1"></span><h1>spread<a class="headerlink" href="#spread" title="Permalink to this headline">¶</a></h1>
+<div class="topic">
+<p class="topic-title first">spread</p>
+<p>Total friction of the shortest accumulated friction path over a  map with friction values from source cell to cell under consideration</p>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Result</span> <span class="o">=</span> <span class="n">spread</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">initialfrictiondist</span><span class="p">,</span> <span class="n">friction</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>points</dt>
+<dd>spatial
+boolean, nominal, ordinal</dd>
+<dt>initialfrictiondist</dt>
+<dd>spatial, non spatial
+scalar</dd>
+<dt>friction</dt>
+<dd>spatial, non spatial
+scalar</dd>
+<dt>Result</dt>
+<dd>spatial
+scalar</dd>
+</dl>
+<div class="section" id="options">
+<h2>Options<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
+<p><tt class="docutils literal"><span class="pre">--unittrue</span></tt> or <tt class="docutils literal"><span class="pre">--unitcell</span></tt></p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">--unittrue</span></tt></dt>
+<dd>distance is measured in true distance (default)</dd>
+<dt><tt class="docutils literal"><span class="pre">--unitcell</span></tt></dt>
+<dd>distance is measured in number of cell lengths</dd>
+</dl>
+</div>
+<div class="section" id="operation">
+<h2>Operation<a class="headerlink" href="#operation" title="Permalink to this headline">¶</a></h2>
+<p>The expression points identifies those cells from which the shortest accumulated friction path to every cell centre is calculated. The spreading for determination of these friction-distances starts at the centre of cells which have a non zero value on points. The initial friction-distance (at the start of the spreading) is taken from the values at these point cells on initialfrictiondist. During spreading a path is followed over the consecutive neighbouring cells. While following this path the friction-distance increases. The increase of friction-distance per unit distance is specified by the cell values on friction. Using these values, increase when travelling from one cell to its neighbouring cell is calculated as follows: Let friction(sourcecell) and friction(destinationcell) be the friction values at the cell where is moved from and where is moved to, respectively. While moving from the source cell to the destination cell the increase of friction- distance is:</p>
+<p>distance x
+{(friction(sourcecell)+friction(destinationcell)}/2</p>
+<p>where distance is the distance between the sourcecell and the destination
+cell. This distance equals the cell length if the source cell and the
+destination cell are neighbours in horizontal or vertical directions; it equals
+sqrt(2) multiplied by the cell length if the cells are neighbours in
+diagonal directions.</p>
+<p>During operation of the command, the spreading is executed from all non
+zero cells on points, over all possible paths. For determination of the accumulated friction-distance cell values on Result, for each cell the path from a non zero cell on points is chosen with the shortest friction-distance. So during the execution of the spread operation, for each cell, the friction-distance for each possible path from the non zero cells on points to the cell under consideration is calculated and then the path with the shortest friction-distance is chosen. On Result each cell has a value which is the friction-distance covered when moving over this shortest path from a non zero cell on points.</p>
+</div>
+<div class="section" id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<p>The values on friction must be larger than zero.</p>
+<p>Missing value cells on points, initialfrictiondist and friction are assigned a missing value on Result. Potential shortest paths that cross missing value cells on points, initialfrictiondist or friction are ignored.</p>
+<p>If no path is found for a cell (for instance if the cell is surrounded by missing values), a
+missing value is assigned to that cell on Result.</p>
+</div>
+<div class="section" id="group">
+<h2>Group<a class="headerlink" href="#group" title="Permalink to this headline">¶</a></h2>
+<p>This operation belongs to the group of  Neighbourhood operators; spread operators</p>
+</div>
+<div class="section" id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="secstat.html#secstatneighfr"><em>Friction paths</em></a>, <a class="reference internal" href="op_ldddist.html#ldddist"><em>ldddist</em></a>, <a class="reference internal" href="op_slopelength.html#slopelength"><em>slopelength</em></a></p>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><div class="first line-block">
+<div class="line">• pcrcalc</div>
+<div class="line-block">
+<div class="line">binding</div>
+<div class="line-block">
+<div class="line">Result2 = Result2.map;</div>
+<div class="line">Points2 = Points2.map;</div>
+<div class="line">Initial2 = Initial2.map;</div>
+<div class="line">FrictMat2 = FrictMat2.map;</div>
+</div>
+<div class="line">initial</div>
+<div class="line-block">
+<div class="line">report Result2 = spread(Points2,Initial2,FrictMat2);</div>
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="line">• python</div>
+<div class="line-block">
+<div class="line">Points2 = readmap(&#8220;Points2.map&#8221;)</div>
+<div class="line">Initial2 = readmap(&#8220;Initial2.map&#8221;)</div>
+<div class="line">FrictMat2 = readmap(&#8220;FrictMat2.map&#8221;)</div>
+<div class="line">Result2 = spread(Points2,Initial2,FrictMat2)</div>
+</div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+<col width="26%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Result2.map</td>
+<td>Points2.map</td>
+<td>Initial2.map</td>
+<td>FrictMat2.map</td>
+</tr>
+<tr class="row-even"><td><img alt="_images/spread_Result2.png" class="first last" src="_images/spread_Result2.png" />
+</td>
+<td><img alt="_images/spread_Points2.png" class="first last" src="_images/spread_Points2.png" />
+</td>
+<td><img alt="_images/spread_Initial2.png" class="first last" src="_images/spread_Initial2.png" />
+</td>
+<td><img alt="_images/spread_FrictMat2.png" class="first last" src="_images/spread_FrictMat2.png" />
+</td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line">• pcrcalc</div>
+<div class="line-block">
+<div class="line">binding</div>
+<div class="line-block">
+<div class="line">Result1 = Result1.map;</div>
+<div class="line">Points = Points.map;</div>
+</div>
+<div class="line">initial</div>
+<div class="line-block">
+<div class="line">report Result1 = spread(Points,0,1);</div>
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="line">• python</div>
+<div class="line-block">
+<div class="line">Points = readmap(&#8220;Points.map&#8221;)</div>
+<div class="line">Result1 = spread(Points,0,1)</div>
+</div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="51%" />
+<col width="49%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Result1.map</td>
+<td>Points.map</td>
+</tr>
+<tr class="row-even"><td><img alt="_images/spread_Result1.png" class="first last" src="_images/spread_Result1.png" />
+</td>
+<td><img alt="_images/spread_Points.png" class="first last" src="_images/spread_Points.png" />
+</td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</li>
+</ol>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">spread</a><ul>
+<li><a class="reference internal" href="#options">Options</a></li>
+<li><a class="reference internal" href="#operation">Operation</a></li>
+<li><a class="reference internal" href="#notes">Notes</a></li>
+<li><a class="reference internal" href="#group">Group</a></li>
+<li><a class="reference internal" href="#see-also">See Also</a></li>
+<li><a class="reference internal" href="#examples">Examples</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="op_spatial.html"
+                        title="previous chapter">spatial</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="op_spreadldd.html"
+                        title="next chapter">spreadldd</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="op_spreadldd.html" title="spreadldd"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="op_spatial.html" title="spatial"
+             >previous</a> |</li>
+        <li><a href="index.html">PCRaster 4.0.3 documentation</a> &raquo;</li>
+          <li><a href="operations.html" >pcrcalc and Python operations</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 1990-2015, PCRaster R&amp;D Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

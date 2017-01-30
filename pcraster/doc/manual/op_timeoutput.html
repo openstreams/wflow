@@ -1,0 +1,170 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>timeoutput &mdash; PCRaster 4.0.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="PCRaster 4.0.3 documentation" href="index.html" />
+    <link rel="up" title="pcrcalc and Python operations" href="operations.html" />
+    <link rel="next" title="timeslice" href="op_timeslice.html" />
+    <link rel="prev" title="timeinputsparse" href="op_timeinputsparse.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="op_timeslice.html" title="timeslice"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="op_timeinputsparse.html" title="timeinputsparse"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PCRaster 4.0.3 documentation</a> &raquo;</li>
+          <li><a href="operations.html" accesskey="U">pcrcalc and Python operations</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="timeoutput">
+<span id="index-0"></span><span id="id1"></span><h1>timeoutput<a class="headerlink" href="#timeoutput" title="Permalink to this headline">¶</a></h1>
+<div class="topic">
+<p class="topic-title first">timeoutput</p>
+<p>Expression value of an uniquely identified cell or cells written to a time series per timestep</p>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ResultTimeSeries</span> <span class="o">=</span> <span class="n">timeoutput</span><span class="p">(</span><span class="n">idexpression</span><span class="p">,</span> <span class="n">expression</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>idexpression</dt>
+<dd>spatial
+boolean, nominal, ordinal</dd>
+<dt>expression</dt>
+<dd>spatial
+boolean, nominal, ordinal, scalar, directional, ldd</dd>
+</dl>
+<p>ResultTimeSeries</p>
+<blockquote>
+<div>time series</div></blockquote>
+<div class="section" id="operation">
+<h2>Operation<a class="headerlink" href="#operation" title="Permalink to this headline">¶</a></h2>
+<p>This operation is used in the iterative sections (dynamic, storage and transport sections) of
+a dynamic model script only. The keyword report precedes the operation. The
+idexpression is an expression that contains one identified cell or several uniquely identified cells. For each timestep the value of expression at the identified cell or cells is written to ResultTimeSeries, which is an ascii formatted time series file.  After a model run, the time series contains for each identified cell a list of expression cell values per timestep.</p>
+<p>The idexpression must contain one or more uniquely identified cells, which are numbered with consecutive whole values, starting with 1. The remaining cells must have a value 0. For instance, if you want to write the expression values from three different cells to ResultTimeSeries, these cells must have the values 1, 2 and 3 on idexpression respectively, the remaining cells must have a value 0.</p>
+<p>The ResultTimeSeries is an ascii formatted time series with header. It has the following lay out:</p>
+<p>line 1: header, description: expression map name</p>
+<p>line 2: header, number of columns in the file</p>
+<p>line 3: header, time column description: model time</p>
+<p>line 4 up to and including line N+ 3: header, the numbers of the N uniquely
+identified cells: 1,2,3,...N.</p>
+<p>subsequent lines: data formatted in rows and columns. Each row represents one timestep
+I at time t(I) in the model from which the time series is the result; the first
+row contains data for timestep I = 1, the second row for timestep I =2, etc. The
+first column contains the time t at the timesteps. At the first row which contains data
+for the first time step (I = 1) it is always the starttime t(1).</p>
+<p>The remaining columns (column number 2 up to and including <em>n</em> + 1, where <em>n</em> is the number of uniquely identified cells as above said) contain values that are taken from expression: column number <em>n</em> + 1 contains data of the cell that has a value <em>n</em>.</p>
+</div>
+<div class="section" id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<p>In principle, each unique identifier is represented by one cell on idexpression. This is the basic use: to sample certain locations. Alternatively, more than one cell on idexpression may have the same unique identifier value. In that case ResultTimeSeries contains for the id under consideration an aggregate expression value of the set of cells with that id. If expression is of data type scalar or directional the average expression value of cells with the id under consideration on idexpression is written to ResultTimeSeries. If the data type is directional cells without a direction (cellvalue -1) are discarded in the calculation of the average value. If all cells with the id under consideration have no direction, a -1 value is written to ResultTimeSeries. If expression is of data type boolean, nominal or ordinal the highest score (most ocurring cell value) of the cells with the id under consideration is written to the time series. If several values all have the highest score, the highest value is assigned.</p>
+</div>
+<div class="section" id="group">
+<h2>Group<a class="headerlink" href="#group" title="Permalink to this headline">¶</a></h2>
+<p>This operation belongs to the group of  Time operators</p>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">timeoutput</a><ul>
+<li><a class="reference internal" href="#operation">Operation</a></li>
+<li><a class="reference internal" href="#notes">Notes</a></li>
+<li><a class="reference internal" href="#group">Group</a></li>
+<li><a class="reference internal" href="#examples">Examples</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="op_timeinputsparse.html"
+                        title="previous chapter">timeinputsparse</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="op_timeslice.html"
+                        title="next chapter">timeslice</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="op_timeslice.html" title="timeslice"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="op_timeinputsparse.html" title="timeinputsparse"
+             >previous</a> |</li>
+        <li><a href="index.html">PCRaster 4.0.3 documentation</a> &raquo;</li>
+          <li><a href="operations.html" >pcrcalc and Python operations</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 1990-2015, PCRaster R&amp;D Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

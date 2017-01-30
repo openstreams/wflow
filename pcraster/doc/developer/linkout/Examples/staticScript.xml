@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<script xmlns="http://www.pcraster.nl/pcrxml"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.pcraster.nl/pcrxml PCRaster.xsd">
+<!--
+    Example of a static script with multiple outputs (y.out) and intermediates
+    (q_tmp, r_tmp) that are not written.
+
+    This example is derived from the Univariaat, Multivariaat, Klassen,
+    Gebroken lineair functions of the WL Habitat product.
+
+     PCRaster test source: test/clientinterface/Case1.xml 
+ -->
+<executionOptions>
+  <outputMapFormat>
+   <bandMapFormat/>
+  </outputMapFormat>
+</executionOptions>
+<definition name="x">
+  <scriptInput><external>inp10_Univariaat.bil</external></scriptInput>
+</definition>
+<definition name="y">
+  <scriptOutput><external>res1_y.bil</external></scriptOutput>
+</definition>
+<definition name="z">
+  <scriptInput><external>inp10_Univariaat.bil</external></scriptInput>
+</definition>
+<definition name="out">
+  <scriptOutput><external>res1_out.bil</external></scriptOutput>
+</definition>
+<definition name="klassenRelation">
+ <relation>
+  <lookupTable>
+  <!--
+      0 -> 0
+      1 -> 2
+      2 -> 5
+  -->
+     <lookupRow><lookupColumn>0</lookupColumn> <lookupColumn>0</lookupColumn></lookupRow>
+     <lookupRow><lookupColumn>1</lookupColumn> <lookupColumn>2</lookupColumn></lookupRow>
+     <lookupRow><lookupColumn>2</lookupColumn> <lookupColumn>5</lookupColumn></lookupRow>
+  </lookupTable>
+ </relation>
+</definition>
+<definition name="lookupLinearRelation">
+ <relation>
+  <lookupTable>
+  <!--
+      0.0 -> 1
+      0.3 -> 0
+      1.0 -> 1
+      2.0 -> 1
+  -->
+     <lookupRow><lookupColumn>0.0</lookupColumn> <lookupColumn>1</lookupColumn>   </lookupRow>
+     <lookupRow><lookupColumn>0.3</lookupColumn> <lookupColumn>0</lookupColumn>   </lookupRow>
+     <lookupRow><lookupColumn>1.0</lookupColumn> <lookupColumn>1</lookupColumn>   </lookupRow>
+     <lookupRow><lookupColumn>2.0</lookupColumn> <lookupColumn>1</lookupColumn>   </lookupRow>
+  </lookupTable>
+ </relation>
+</definition>
+<model>
+ <textModel>
+   # UnivarFunc:
+   y = x+1;
+   # MultivarFunc:
+   q_tmp = y+z;
+   # Klassen:
+   r_tmp = lookupscalar(klassenRelation,q_tmp);
+   # GebrokenLineair:
+   out = lookuplinear(lookupLinearRelation,r_tmp);
+ </textModel>
+</model>
+</script>

@@ -1,0 +1,441 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Data &mdash; Aguila 1.3.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.3.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Aguila 1.3.3 documentation" href="index.html" />
+    <link rel="up" title="Manual" href="Manual.html" />
+    <link rel="next" title="Xml Startup Configuration" href="XmlStartupConfiguration.html" />
+    <link rel="prev" title="Dialogs" href="Dialogs.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="XmlStartupConfiguration.html" title="Xml Startup Configuration"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="Dialogs.html" title="Dialogs"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Aguila 1.3.3 documentation</a> &raquo;</li>
+          <li><a href="Manual.html" accesskey="U">Manual</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="data">
+<span id="id1"></span><h1>Data<a class="headerlink" href="#data" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="data-sets">
+<span id="datasets"></span><h2>Data sets<a class="headerlink" href="#data-sets" title="Permalink to this headline">¶</a></h2>
+<p>Attributes are stored in data sets. Depending on the data set formats, data sets are stored in a single file in the local or in a remote filesystem, or in multiple files, or in tables in a database, or are part of a single file containing multiple data sets, for example. Whatever is needed to store the values of a <em>single</em> attribute comprises the data set.</p>
+<p>Attribute values in a data set describe the variation of a single attribute (e.g.: height, concentration, temperature). Dimensions are used to structure data set values (see section <a class="reference internal" href="#dimensions"><em>Dimensions</em></a>). Unique combinations of such dimensions give rise to different data set types (see section <a class="reference internal" href="#datasettypes"><em>Data set types</em></a>). And various data formats are used to store data set values (see section <a class="reference internal" href="#dataformats"><em>Data formats</em></a>).</p>
+</div>
+<div class="section" id="dimensions">
+<span id="id2"></span><h2>Dimensions<a class="headerlink" href="#dimensions" title="Permalink to this headline">¶</a></h2>
+<p>Dimensions structure data set values. Attribute values (potentially) vary along dimensions. For example, a raster contains spatially varying attribute values. Similar, a time series contains temporally varying attribute values.</p>
+<p>A data set lacking attribute values for a certain dimension is taken to be constant along that dimension. For example, a single raster contains values that vary in space, but not in time. Its values are constant in time because the data set contains no information about the temporal variation.</p>
+<p>The next sections describe the dimension that are supported by Aguila.</p>
+<div class="section" id="space">
+<span id="id3"></span><h3>Space<a class="headerlink" href="#space" title="Permalink to this headline">¶</a></h3>
+<p>Aguila supports visualisation of both raster and feature data. Spatial raster data supported by Aguila is formatted as a raster with cells of equal width and height.</p>
+<p>Aguila offers 2D and 2.5D views for rasters and 2D views for features.</p>
+</div>
+<div class="section" id="time">
+<span id="id4"></span><h3>Time<a class="headerlink" href="#time" title="Permalink to this headline">¶</a></h3>
+<p>Temporal data supported is data which is defined at discrete integer time steps. Sophisticated schemes to link these discrete time steps to real time are only possible by using the XML interface described in section <a class="reference internal" href="XmlStartupConfiguration.html#xmlstartupconfiguration"><em>Xml Startup Configuration</em></a>.</p>
+<p>Aguila offers time series views for temporal data. Additionally, it adds support for iteration through time (animation) to every view which is able to visualise temporal data, for example the 2D map view.</p>
+</div>
+<div class="section" id="uncertainty">
+<span id="id5"></span><h3>Uncertainty<a class="headerlink" href="#uncertainty" title="Permalink to this headline">¶</a></h3>
+<p>If, instead of fixed variables, the available data are random variables (e.g. resulting from a Monte Carlo analysis or statistical modelling), Aguila can view them when they are encoded as (cumulative) probability distribution functions. The encoding is done by supplying maps that have for each location (and optionally for each time step) the attribute value corresponding to a fixed cumulative probability level, a value in <tt class="docutils literal"><span class="pre">[0,1]</span></tt>. The simplest example would be if all variables followed a uniform distribution, in which case we only need to specify the map with the minimum (distribution value <tt class="docutils literal"><span class="pre">0</span></tt>) and maximum (distribution value <tt class="docutils literal"><span class="pre">1</span></tt>); Aguila uses linear interpolation for values in between. More complex distributions functions can be specified with maps for a set of distribution values. E.g. for a normal distribution one could specify the maps corresponding to probability distribution values <tt class="docutils literal"><span class="pre">0.01</span></tt>, <tt class="docutils literal"><span class="pre">0.05</span></tt>, <tt class="docutils literal"><span class="pre">0.1</span></tt>, <tt class="docutils literal"><span class="pre">0.25</span></tt>, <tt class="docutils literal"><span class="pre">0.5</span></tt>, <tt class="docutils literal"><span class="pre">0.75</span></tt>, <tt class="docutils literal"><span class="pre">0.9</span></tt>, <tt class="docutils literal"><span class="pre">0.95</span></tt> and <tt class="docutils literal"><span class="pre">0.99</span></tt>. Aguila assumes then straight lines in between these values.</p>
+<p>Distribution values do not need to be symmetric; if much emphasis is put on the upper tail, the lower tail may be discretized by very few values (like, say, <tt class="docutils literal"><span class="pre">0.01</span></tt>, <tt class="docutils literal"><span class="pre">0.5</span></tt>, <tt class="docutils literal"><span class="pre">0.9</span></tt>, <tt class="docutils literal"><span class="pre">0.91</span></tt>, <tt class="docutils literal"><span class="pre">0.92</span></tt>, <tt class="docutils literal"><span class="pre">0.93</span></tt>, ...).</p>
+<p>The interface of Aguila assumes that all distribution values provided are part of a regular sequence. Both examples above are subsets of the sequence <tt class="docutils literal"><span class="pre">0.01</span></tt>, <tt class="docutils literal"><span class="pre">0.02</span></tt>, <tt class="docutils literal"><span class="pre">0.03</span></tt>, ..., <tt class="docutils literal"><span class="pre">0.99</span></tt>. Minimum, maximum, and step size need to be specified for a sequence. Aguila will read those values present, and will linearly interpolate inbetween them.</p>
+</div>
+<div class="section" id="scenarios">
+<span id="id6"></span><h3>Scenarios<a class="headerlink" href="#scenarios" title="Permalink to this headline">¶</a></h3>
+<p>Different scenarios contain data values for the same attributes which should be visualised at the same time, and with identical topological constraints. When data is loaded from different scenarios, Aguila will create views for each scenario. Scenarios are explicitly supported by the <a class="reference internal" href="Views.html#dmultimapview"><em>2D Multimap View</em></a>. This view shows spatial attributes from different scenarios in a single window.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">When scenarios are used, we still speak of a single attribute.</p>
+</div>
+</div>
+</div>
+<div class="section" id="data-set-types">
+<span id="datasettypes"></span><h2>Data set types<a class="headerlink" href="#data-set-types" title="Permalink to this headline">¶</a></h2>
+<p>As described above, Aguila supports data sets with various kinds of dimensions. Every unique combination of dimensions gives rise to a data set type.</p>
+<p>For some types of data sets, there are convenient data formats available, for example raster formats. For other data set types, we had to come up with some conventions to be able to store the values. There is, for example, no convenient data format availabe for storing uncertain spatio-temporal values.</p>
+<p>This section describes the various types of data sets, and the next section describes the formats for storing the attribute values and some naming conventions used. The grey nodes in the figure below show data set types are not implemented. They are drawn and mentioned in the text for completeness.</p>
+<p class="graphviz">
+<img src="_images/graphviz-03584fb0c4ecf80c4f2b310a7c1e73bee4110f1f.png" alt="digraph DataSetTypes {
+  constantValues[
+         label=&quot;Constant values&quot;,
+         color=&quot;grey55&quot;,
+         fontcolor=&quot;grey55&quot;]
+  uncertainValues[
+         label=&quot;Uncertain values&quot;,
+         color=&quot;grey55&quot;,
+         fontcolor=&quot;grey55&quot;]
+  uncertainTemporalValues[
+         label=&quot;Uncertain temporal values&quot;,
+         color=&quot;grey55&quot;,
+         fontcolor=&quot;grey55&quot;]
+  spatialValues[
+         label=&quot;Spatial values&quot;]
+  temporalValues[
+         label=&quot;Temporal values&quot;]
+  spatioTemporalValues[
+         label=&quot;Spatio-temporal values&quot;]
+  uncertainSpatialValues[
+         label=&quot;Uncertain spatial values&quot;]
+  uncertainSpatioTemporalValues[
+         label=&quot;Uncertain spatio-temporal values&quot;]
+
+  constantValues -&gt; spatialValues[
+         label=&quot;+space&quot;];
+  constantValues -&gt; temporalValues[
+         label=&quot;+time&quot;];
+  constantValues -&gt; uncertainValues[
+         label=&quot;+uncertainty&quot;,
+         color=&quot;grey55&quot;,
+         fontcolor=&quot;grey55&quot;];
+  spatialValues -&gt; spatioTemporalValues[
+         label=&quot;+time&quot;];
+  spatialValues -&gt; uncertainSpatialValues[
+         label=&quot;+uncertainty&quot;];
+  spatioTemporalValues -&gt; uncertainSpatioTemporalValues[
+         label=&quot;+uncertainty&quot;];
+  temporalValues -&gt; uncertainTemporalValues[
+         label=&quot;+uncertainty&quot;,
+         color=&quot;grey55&quot;,
+         fontcolor=&quot;grey55&quot;];
+  temporalValues -&gt; spatioTemporalValues[
+         label=&quot;+space&quot;];
+}" />
+</p>
+<ul class="simple">
+<li><a class="reference internal" href="#constant-values">Constant values</a></li>
+<li><a class="reference internal" href="#uncertain-values">Uncertain values</a></li>
+<li><a class="reference internal" href="#temporal-values">Temporal values</a></li>
+<li><a class="reference internal" href="#uncertain-temporal-values">Uncertain temporal values</a></li>
+<li><a class="reference internal" href="#spatial-values">Spatial values</a></li>
+<li><a class="reference internal" href="#uncertain-spatial-values">Uncertain spatial values</a></li>
+<li><a class="reference internal" href="#spatio-temporal-values">Spatio-temporal values</a></li>
+<li><a class="reference internal" href="#uncertain-spatio-temporal-values">Uncertain spatio-temporal values</a></li>
+<li><a class="reference internal" href="#scenario-values">Scenario values</a></li>
+</ul>
+<div class="section" id="constant-values">
+<span id="constantvalues"></span><h3>Constant values<a class="headerlink" href="#constant-values" title="Permalink to this headline">¶</a></h3>
+<p>The simplest data set type is the constant. A constant is just a single value, its value does not vary along one of the data dimensions.</p>
+<p>Examples:</p>
+<ul class="simple">
+<li>An empirical constant.</li>
+<li>A boundary value, not to be exceeded.</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</div>
+<div class="section" id="uncertain-values">
+<span id="uncertainvalues"></span><h3>Uncertain values<a class="headerlink" href="#uncertain-values" title="Permalink to this headline">¶</a></h3>
+<p>Uncertainty adds information about the probability distribution of values that may represent the attribute. Note that there is no spatial or temporal variation in this case.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</div>
+<div class="section" id="temporal-values">
+<span id="temporalvalues"></span><h3>Temporal values<a class="headerlink" href="#temporal-values" title="Permalink to this headline">¶</a></h3>
+<p>Temporal values vary in time, but they have no spatial variation or even spatial reference.</p>
+<p>Examples:</p>
+<ul class="simple">
+<li>Rainfall for a relatively small area and assumed te be constant for the whole area</li>
+</ul>
+<p>Aguila has support for reading temporal values from many <a class="reference internal" href="#table-data-formats">table data formats</a>.</p>
+</div>
+<div class="section" id="uncertain-temporal-values">
+<span id="uncertaintemporalvalues"></span><h3>Uncertain temporal values<a class="headerlink" href="#uncertain-temporal-values" title="Permalink to this headline">¶</a></h3>
+<p>TODO</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not implemented.</p>
+</div>
+</div>
+<div class="section" id="spatial-values">
+<span id="spatialvalues"></span><h3>Spatial values<a class="headerlink" href="#spatial-values" title="Permalink to this headline">¶</a></h3>
+<p>Spatial values vary in space, but not in time.</p>
+<p>Examples:</p>
+<ul class="simple">
+<li>Raster with elevation values.</li>
+<li>Feature layer with population density per administrative area.</li>
+</ul>
+<p>Raster, feature and vector data sets contain spatial values. An exception to this rule is that Aguila can also visualise only the geometry of a feature layer.</p>
+<p>Vector attributes are attributes with a direction and a magnitude. They are currently raster based, meaning that two rasters with magnitudes in x- and y-directins are used to store the values.</p>
+<p>Aguila has support for reading spatial data from many <a class="reference internal" href="#raster-data-formats">raster data formats</a>, <a class="reference internal" href="#feature-layer-formats">feature layer formats</a> and <cite>vector data formats</cite>.</p>
+</div>
+<div class="section" id="uncertain-spatial-values">
+<span id="uncertainspatialvalues"></span><h3>Uncertain spatial values<a class="headerlink" href="#uncertain-spatial-values" title="Permalink to this headline">¶</a></h3>
+<p>Uncertain spatial values are <a class="reference internal" href="#spatial-values">spatial values</a> for which the probability distribution is known.</p>
+<p>Currently, Aguila supports reading quantiles of spatial values, for example a range of the <tt class="docutils literal"><span class="pre">0.01</span></tt>, <tt class="docutils literal"><span class="pre">0.05</span></tt>, <tt class="docutils literal"><span class="pre">0.10</span></tt>, <tt class="docutils literal"><span class="pre">0.25</span></tt>, <tt class="docutils literal"><span class="pre">0.50</span></tt>, <tt class="docutils literal"><span class="pre">0.75</span></tt>, <tt class="docutils literal"><span class="pre">0.90</span></tt>, <tt class="docutils literal"><span class="pre">0.95</span></tt>, <tt class="docutils literal"><span class="pre">0.99</span></tt> quantile levels.</p>
+</div>
+<div class="section" id="spatio-temporal-values">
+<span id="spatiotemporalvalues"></span><h3>Spatio-temporal values<a class="headerlink" href="#spatio-temporal-values" title="Permalink to this headline">¶</a></h3>
+<p>Spatio-temporal values are <a class="reference internal" href="#spatial-values">spatial values</a> which also vary in time.</p>
+<p>Currently, Aguila supports reading time steps of spatial values, for example a range of the steps 1 through 1000.</p>
+</div>
+<div class="section" id="uncertain-spatio-temporal-values">
+<span id="uncertainspatiotemporalvalues"></span><h3>Uncertain spatio-temporal values<a class="headerlink" href="#uncertain-spatio-temporal-values" title="Permalink to this headline">¶</a></h3>
+<p>Uncertain spatio-temporal values are <a class="reference internal" href="#spatio-temporal-values">spatio-temporal values</a> for which the probability distribution is known.</p>
+<p>Currently, Aguila supports reading quantiles of spatial values, for example a range of the <tt class="docutils literal"><span class="pre">0.01</span></tt>, <tt class="docutils literal"><span class="pre">0.05</span></tt>, <tt class="docutils literal"><span class="pre">0.10</span></tt>, <tt class="docutils literal"><span class="pre">0.25</span></tt>, <tt class="docutils literal"><span class="pre">0.50</span></tt>, <tt class="docutils literal"><span class="pre">0.75</span></tt>, <tt class="docutils literal"><span class="pre">0.90</span></tt>, <tt class="docutils literal"><span class="pre">0.95</span></tt>, <tt class="docutils literal"><span class="pre">0.99</span></tt> quantile levels.</p>
+</div>
+<div class="section" id="scenario-values">
+<span id="scenariovalues"></span><h3>Scenario values<a class="headerlink" href="#scenario-values" title="Permalink to this headline">¶</a></h3>
+<p>TODO</p>
+</div>
+</div>
+<div class="section" id="data-formats">
+<span id="dataformats"></span><h2>Data formats<a class="headerlink" href="#data-formats" title="Permalink to this headline">¶</a></h2>
+<p>Exactly which data formats Aguila supports depends on how Aguila is compiled. Potentially, Aguila can support many formats. The distributed Aguila supports about 50 raster formats (eg: PCRaster raster format, Hdf4, GeoTIFF, GML, ESRI&#8217;s binary grid), a dozen feature formats (eg: ESRI&#8217;s Shapefile) and a few table formats (eg: text, ODBC, Sqlite). Exactly which formats are supported can be deduced by looking at the <a class="reference external" href="http://pcraster.svn.sourceforge.net/viewvc/pcraster/devenv/trunk/scripts/buildPcrTeamExtern.sh?view=markup">script</a> used to build the support libraries <a class="footnote-reference" href="#id9" id="id7">[1]</a>.</p>
+<p>The data format used to store the data set determines the way the database must be configured. A data format might support data with some dimensions, like raster data with two spatial dimensions, but lack support for other dimensions, like the time dimension. Support for missing dimensions can be added to formats using naming conventions for file names, or by storing this information in an attribute table, for example. Most raster formats do not support more dimensions than the two space dimensions, but using naming conventions, information about the time dimension can be added easily. This results, for example, in a name like dem_1.map for the first time step. If a raster format supports the time dimension, such a naming convention is not needed and the application can read the information about this dimension from the data source.</p>
+<table class="docutils footnote" frame="void" id="id9" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id7">[1]</a></td><td>Eventually Aguila will be able to list the formats built in.</td></tr>
+</tbody>
+</table>
+<div class="section" id="raster-data-formats">
+<span id="rasterdataformats"></span><h3>Raster data formats<a class="headerlink" href="#raster-data-formats" title="Permalink to this headline">¶</a></h3>
+<p>The raster formats supported are PCRasters CSF 2.0 raster file format and the formats supported by the <a class="reference external" href="http://www.gdal.org">Geospatial Data Abstraction Library</a> (GDAL). Information about these formats, including free (conversion) software and manuals can be found at the PCRaster website and the GDAL website.</p>
+<p>For formats with default file name extensions there is no need to supply an extension.</p>
+<p>Aguila uses the value scale property to decide how to visualise an attribute. In the CSF raster file format this value scale is stored in the data set. In data sets read using GDAL, this information may or may not be available. If a meta data item named <tt class="docutils literal"><span class="pre">PCRASTER_VALUESCALE</span></tt> is available, it is used to determine the value scale. If it is not available, the <a class="reference external" href="http://www.gdal.org/gdal_datamodel.html">color interpretation</a> of the data set is used to determine the value scale. Lastly, the type of the attribute values is used to determine the value scale. Integral types result in a nominal value scale and floating point types result in a scalar value scale to be used.</p>
+<p>The folowing values for the <tt class="docutils literal"><span class="pre">PCRASTER_VALUESCALE</span></tt> meta data item are recognized:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">VS_BOOLEAN</span></tt>: boolean attribute</li>
+<li><tt class="docutils literal"><span class="pre">VS_NOMINAL</span></tt>: nominal attribute</li>
+<li><tt class="docutils literal"><span class="pre">VS_ORDINAL</span></tt>: ordinal attribute</li>
+<li><tt class="docutils literal"><span class="pre">VS_SCALAR</span></tt>: scalar attribute</li>
+<li><tt class="docutils literal"><span class="pre">VS_DIRECTION</span></tt>: directional attribute</li>
+<li><tt class="docutils literal"><span class="pre">VS_LDD</span></tt>: ldd attribute</li>
+</ul>
+<p>The folowing color interpretation values are recognized:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">GCI_GrayIndex</span></tt>: scalar attribute</li>
+</ul>
+<div class="section" id="naming-conventions">
+<span id="rasterdataformatsnamingconventions"></span><h4>Naming conventions<a class="headerlink" href="#naming-conventions" title="Permalink to this headline">¶</a></h4>
+<p>Raster formats store spatial data in seperate files. Each file contains spatial attribute values for one map. To add information about other dimensions Aguila supports the folowing naming conventions:</p>
+<table border="1" class="docutils">
+<caption>Raster file format conventions</caption>
+<colgroup>
+<col width="32%" />
+<col width="68%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Dimension</th>
+<th class="head">Convention</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Scenarios</td>
+<td>Data for different scenarios must be stored in sub
+directories. When a scenarios dimension
+is configured Aguila searches its data in
+directories named after the scenarios.</td>
+</tr>
+<tr class="row-odd"><td>Cumulative probabilities</td>
+<td>The different quantile levels are reflected in the
+filename. The filenaming rule is
+<tt class="docutils literal"><span class="pre">name_&lt;level&gt;{.extension}</span></tt>. The quantile level
+must be a floating point value between <tt class="docutils literal"><span class="pre">0</span></tt> and
+<tt class="docutils literal"><span class="pre">1.0</span></tt>. The file name extension is optional.</td>
+</tr>
+<tr class="row-even"><td>Time</td>
+<td>Time steps are reflected in the filename. The
+filenaming rule is <tt class="docutils literal"><span class="pre">name_&lt;step&gt;{.extension}</span></tt>. The
+time step must be a positive integral value
+greater than <tt class="docutils literal"><span class="pre">0</span></tt>. The file name extension is
+optional.</td>
+</tr>
+</tbody>
+</table>
+<p>This means that, for example, a raster data source with scenarios <tt class="docutils literal"><span class="pre">simple</span></tt> and <tt class="docutils literal"><span class="pre">complex</span></tt>, and temporal quantile levels has rasters named <tt class="docutils literal"><span class="pre">simple/co2_1_0.001.map</span></tt> and <tt class="docutils literal"><span class="pre">complex/co2_100_0.5.map</span></tt>.</p>
+<p>The PCRaster convention for naming spatio-temporal raster data is also supported. PCRaster uses the 8.3 DOS convention where each member of a stack is named by its name, possibly 0&#8217;s and a time step number. So, a PCRaster model might output <tt class="docutils literal"><span class="pre">dem00000.001</span></tt>, <tt class="docutils literal"><span class="pre">dem00000.002</span></tt>, etc. When the time dimension is set up right, the name (<tt class="docutils literal"><span class="pre">dem</span></tt> in this case) can be used to name such a stack. Also supported is the (depricated) convention of naming a stack by the first member, folowed by a <tt class="docutils literal"><span class="pre">+</span></tt>-sign and the last time step of the stack, <tt class="docutils literal"><span class="pre">dem00000.001+1000</span></tt> for example.</p>
+</div>
+</div>
+<div class="section" id="feature-layer-formats">
+<span id="featurelayerformats"></span><h3>Feature layer formats<a class="headerlink" href="#feature-layer-formats" title="Permalink to this headline">¶</a></h3>
+<p>The feature layer formats supported are the formats supported by the <a class="reference external" href="http://www.gdal.org/ogr">OGR Simple Feature Library</a> (OGR). Information about these formats, including free (conversion) software and manuals can be found at the OGR website.</p>
+<div class="section" id="id13">
+<h4>Naming conventions<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h4>
+<p>Aguila visualises attributes, not whole data sources. Feature data sources contain one or more feature layers and each layer contains zero or more attributes. The folowing naming rule must be used to tell Aguila which attribute to visualize:</p>
+<div class="highlight-python"><pre>datasource/layer{/attribute}</pre>
+</div>
+<p>When the attribute is not provided, Aguila will show the geometry of the layer. For example, given a ESRI Shapefile with information about countries, the folowing command will draw the country borders:</p>
+<div class="highlight-python"><pre>aguila countries.shp/countries</pre>
+</div>
+<p>And the folowing command will draw each country&#8217;s population:</p>
+<div class="highlight-python"><pre>aguila countries.shp/countries/population</pre>
+</div>
+<p>Known file name extensions are optional and can be left out.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">In the case of the Shapefile feature format, directories can be used as data sources too. In that case the names of the individual shape files (without extension) must be used as layer names.</p>
+</div>
+<p>Each feature layer attribute contains information about the spatial variation of the attribute. To add information about other dimensions, Aguila supports the use of an external attribute table in a database. The attribute table must be named after the feature layer and contain a field called <tt class="docutils literal"><span class="pre">fid</span></tt> (which is short for feature id). Aguila will join the internal attribute table of the feature layer data source to the external table using the feature id fields present in both tables.</p>
+<p>See <a class="reference internal" href="#tabledataformats"><em>Table data formats</em></a> for more information about setting up the external attribute table.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Currently, only SQLite databases have been used for storing external attribute tables for feature layers. In principle, all other table formats should also be supported. Also, since the name of the database and table are the same as the datasource and feature layer, it is not possible to pass server name and/or user credentials.</p>
+</div>
+</div>
+</div>
+<div class="section" id="vector-data-formats">
+<span id="vectordataformats"></span><h3>Vector data formats<a class="headerlink" href="#vector-data-formats" title="Permalink to this headline">¶</a></h3>
+<p>Two raster datasets are used to hold the magnitude values for the x- and y-direction of a vector attribute. Because of this, all formats described in section <a class="reference internal" href="#rasterdataformats"><em>Raster data formats</em></a> can be used to store vector magnitude values.</p>
+<div class="section" id="id14">
+<h4>Naming conventions<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h4>
+<p>There is a simple naming scheme for vector datasets:</p>
+<div class="highlight-python"><pre>name_(x|y){.extension}</pre>
+</div>
+<p>So, the values for a vector attribute called <tt class="docutils literal"><span class="pre">flow</span></tt> are stored in two raster datasets called <tt class="docutils literal"><span class="pre">flow_x</span></tt> and <tt class="docutils literal"><span class="pre">flow_y</span></tt>. Default extensions are optional.</p>
+<p>Naming conventions for vector datasets with more dimensions are the same as those described in section <a class="reference internal" href="#rasterdataformatsnamingconventions"><em>Naming conventions</em></a>.</p>
+</div>
+</div>
+<div class="section" id="table-data-formats">
+<span id="tabledataformats"></span><h3>Table data formats<a class="headerlink" href="#table-data-formats" title="Permalink to this headline">¶</a></h3>
+<p>Table file formats supported are the text and geoEAS formatted files and formats supported by the <a class="reference external" href="http://doc.trolltech.com/qtsql.html">QtSql module</a>.</p>
+<div class="section" id="id16">
+<h4>Naming conventions<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h4>
+<p>Naming a table data set depends on the format used to store the table in. For file formats the name of the data set is the name of the file it is stored in. For tables served by database management systems different conventions apply: <tt class="docutils literal"><span class="pre">myname(mypasswd)&#64;myserver:mydatabase/mytable</span></tt>. Some of the elements of this naming conventions might be optional, depending on the configuration of your database server. The server might, for example, grant read access to everybody, which means the account information in the name is redundant: <tt class="docutils literal"><span class="pre">myserver:mydatabase/mytable</span></tt>. The database server might be your production machine, which means the server name is redundant: <tt class="docutils literal"><span class="pre">mydatabase/mytable</span></tt>.</p>
+<p>The table must contain a field named after the attribute. The values of this field will be visualized.</p>
+<p>Attribute variation for one or more dimensions must be stored using a primary key consisting of one or more of the folowing field names: <tt class="docutils literal"><span class="pre">scenario</span></tt>, <tt class="docutils literal"><span class="pre">date</span></tt>, <tt class="docutils literal"><span class="pre">quantile</span></tt>. For each unique combination of these, an attribute value can be stored in the table.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">In case the table is used as an external attribute table for a feature layer, the primary key must also include the feature id field (<tt class="docutils literal"><span class="pre">fid</span></tt>).</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Data</a><ul>
+<li><a class="reference internal" href="#data-sets">Data sets</a></li>
+<li><a class="reference internal" href="#dimensions">Dimensions</a><ul>
+<li><a class="reference internal" href="#space">Space</a></li>
+<li><a class="reference internal" href="#time">Time</a></li>
+<li><a class="reference internal" href="#uncertainty">Uncertainty</a></li>
+<li><a class="reference internal" href="#scenarios">Scenarios</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#data-set-types">Data set types</a><ul>
+<li><a class="reference internal" href="#constant-values">Constant values</a></li>
+<li><a class="reference internal" href="#uncertain-values">Uncertain values</a></li>
+<li><a class="reference internal" href="#temporal-values">Temporal values</a></li>
+<li><a class="reference internal" href="#uncertain-temporal-values">Uncertain temporal values</a></li>
+<li><a class="reference internal" href="#spatial-values">Spatial values</a></li>
+<li><a class="reference internal" href="#uncertain-spatial-values">Uncertain spatial values</a></li>
+<li><a class="reference internal" href="#spatio-temporal-values">Spatio-temporal values</a></li>
+<li><a class="reference internal" href="#uncertain-spatio-temporal-values">Uncertain spatio-temporal values</a></li>
+<li><a class="reference internal" href="#scenario-values">Scenario values</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#data-formats">Data formats</a><ul>
+<li><a class="reference internal" href="#raster-data-formats">Raster data formats</a><ul>
+<li><a class="reference internal" href="#naming-conventions">Naming conventions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#feature-layer-formats">Feature layer formats</a><ul>
+<li><a class="reference internal" href="#id13">Naming conventions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#vector-data-formats">Vector data formats</a><ul>
+<li><a class="reference internal" href="#id14">Naming conventions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#table-data-formats">Table data formats</a><ul>
+<li><a class="reference internal" href="#id16">Naming conventions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="Dialogs.html"
+                        title="previous chapter">Dialogs</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="XmlStartupConfiguration.html"
+                        title="next chapter">Xml Startup Configuration</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="XmlStartupConfiguration.html" title="Xml Startup Configuration"
+             >next</a></li>
+        <li class="right" >
+          <a href="Dialogs.html" title="Dialogs"
+             >previous</a> |</li>
+        <li><a href="index.html">Aguila 1.3.3 documentation</a> &raquo;</li>
+          <li><a href="Manual.html" >Manual</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2009-2015, PCRaster R&amp;D team.
+      Last updated on Apr 16, 2015.
+    </div>
+  </body>
+</html>

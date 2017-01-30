@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<script xmlns="http://www.pcraster.nl/pcrxml"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.pcraster.nl/pcrxml PCRaster.xsd">
+<!-- Add 2 maps in memory
+     The C# unit test (ScriptTest.cs) will test this one
+     /home/cees/pcrtree/template/xml/PCRaster.xsd
+  -->
+<!-- use nondiagonal
+  -->
+<executionOptions>
+ <diagonal>false</diagonal>
+</executionOptions>
+<areaMap>
+  <nrRows>2</nrRows>
+  <nrCols>2</nrCols>
+</areaMap>
+<definition name="memInput">
+  <field>
+   <dataType><boolean/></dataType>
+   <spatialType>Spatial</spatialType>
+  </field>
+  <scriptInput><memoryExchange>0</memoryExchange></scriptInput>
+</definition>
+<definition name="memOutput">
+  <scriptOutput><memoryExchange>1</memoryExchange></scriptOutput>
+</definition>
+<model>
+ <textModel>memOutput = clump(memInput);</textModel>
+</model>
+</script>

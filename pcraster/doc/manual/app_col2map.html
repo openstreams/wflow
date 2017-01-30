@@ -1,0 +1,323 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>col2map &mdash; PCRaster 4.0.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="PCRaster 4.0.3 documentation" href="index.html" />
+    <link rel="up" title="Applications" href="applications.html" />
+    <link rel="next" title="legend" href="app_legend.html" />
+    <link rel="prev" title="asc2map" href="app_asc2map.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="app_legend.html" title="legend"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="app_asc2map.html" title="asc2map"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PCRaster 4.0.3 documentation</a> &raquo;</li>
+          <li><a href="applications.html" accesskey="U">Applications</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="col2map">
+<span id="index-0"></span><span id="id1"></span><h1>col2map<a class="headerlink" href="#col2map" title="Permalink to this headline">¶</a></h1>
+<div class="topic">
+<p class="topic-title first">col2map</p>
+<p>Converts from column file format to PCRaster map format</p>
+</div>
+<div class="highlight-python"><pre>col2map [options] columnfile PCRresult</pre>
+</div>
+<dl class="docutils">
+<dt>columnfile</dt>
+<dd>asciifile</dd>
+<dt>PCRresult</dt>
+<dd>spatial
+specified by data type option; if data type option is not set: data type of <em>PCRclone</em></dd>
+</dl>
+<div class="section" id="options">
+<h2>Options<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">--clone</span></tt><em>PCRclone</em></dt>
+<dd><em>PCRclone</em> is taken as clonemap. If you have set a global clonemap as <a class="reference internal" href="secimport.html#goclone"><em>global option</em></a>, you don&#8217;t need to set clone in the command line: the clonemap you have set as global option is taken as clonemap. If you have not set a global clonemap or if you want to use a different clonemap than the global clonemap, you must specify the clonemap in the command line with the clone option.</dd>
+</dl>
+<p><tt class="docutils literal"><span class="pre">--unittrue</span></tt> or <tt class="docutils literal"><span class="pre">--unitcell</span></tt></p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">--unittrue</span></tt></dt>
+<dd>coordinates in columnfile are interpreted as real distance (default)</dd>
+<dt><tt class="docutils literal"><span class="pre">--unitcell</span></tt></dt>
+<dd>coordinates in columnfile are interpreted as distance in number of cell lengths</dd>
+</dl>
+<p>-B, -N, -O, -S, -D and -L</p>
+<blockquote>
+<div>This data type option specifies the type options which is assigned to PCRresult (respectively boolean, nominal, ordinal, scalar, directional, ldd). If the option is not set, PCRresult is assigned the data type of <em>PCRclone</em> or the global clone. The data in columnfile must be in the domain of the data type which is assigned to PCRresult. For description of these domains see the description of the different <a class="reference internal" href="secdatbase.html#secdatbasemaptype"><em>data types</em></a>.</div></blockquote>
+<p>if option -D is set; &#8211;degrees of &#8211;radians</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">--degrees</span></tt></dt>
+<dd>values on columnfile are interpreted as degrees (default)</dd>
+<dt><tt class="docutils literal"><span class="pre">--radians</span></tt></dt>
+<dd>values on columnfile are interpreted as radians</dd>
+</dl>
+<p>-m <em>nodatavalue</em></p>
+<blockquote>
+<div><em>nodatavalue</em> is the value in <em>columnfile</em> which is converted to a missing value on PCRresult. It can be one ascii character (letters, figures, symbols) or a string of ascii characters. For instance: -m -99.89 or -m j5w. Default, if this option is not set, 1e31 is recognized as a missing value.</div></blockquote>
+<p>-s <em>separator</em></p>
+<blockquote>
+<div>By default, whitespace (one or more tabs, spaces) is recognized as separator between the values of a row in the columnfile. If the values are separated by a different separator, you can specify it with the option. The <em>separator</em> can be one of the ascii characters (always one). In that case, col2map recognizes the specified separator with or without whitespace as separator. For instance, if the values in columnfile are separated by a ; character followed by 5 spaces, specify -s ; in the command line (you do not need to specify the whitespace characters).</div></blockquote>
+<p>columnnumbers</p>
+<dl class="docutils">
+<dt>-x <em>columnnumberx</em></dt>
+<dd>is the column number of the x coordinate in columnfile (default 1)</dd>
+<dt>-y <em>columnnumbery</em></dt>
+<dd><em>columnnumbery</em> is the column number of the y coordinate in columnfile (default 2)</dd>
+<dt>-v <em>columnnumberv</em></dt>
+<dd><em>columnnumberv</em> is the column number of the cell values in columnfile (default 3)</dd>
+</dl>
+<p>Each cell on PCRresult is assigned the cell value on columnfile which has x,y coordinates that define a point in that cell&#8221;;&#8221; for assignment of values in columnfile which have x,y coordinates at the edges of cells on PCRresult, the following options are used:</p>
+<p><tt class="docutils literal"><span class="pre">--coorcentre</span></tt>, <tt class="docutils literal"><span class="pre">--coorul</span></tt> or <tt class="docutils literal"><span class="pre">--coorlr</span></tt></p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">--coorcentre</span></tt> (default) or <tt class="docutils literal"><span class="pre">--coorul</span></tt></dt>
+<dd>values in columnfile that have x,y coordinates at the upper and left margins of a cell come into that cell, values at the bottom and right margins come into neighbouring cells. So, cell values with x, y coordinates at vertexes of cells come into the cell at the lower right side of the vertex.</dd>
+<dt><tt class="docutils literal"><span class="pre">--coorlr</span></tt></dt>
+<dd>values in columnfile that have x, y coordinates at the bottom and right margins of a cell come into that cell, values at the upper and left margins come into neighbouring cells. So, cell values with x, y coordinates at vertexes of cells come into the cell at the upper left side of the vertex.</dd>
+</dl>
+<p>Options to specify which value is assigned if two or more values in
+columnfile are found which all come into the same cell on PCRresult:</p>
+<p>-a, -h, -l, -H, -M, -t</p>
+<table class="docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group">
+<kbd><span class="option">-a</span></kbd></td>
+<td>average value of the values found within the cell is assigned (default for scalar and directional data; for directional data and assignment of records without a direction, see notes)</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-h</span></kbd></td>
+<td>highest score: most occuring value found for the cell is assigned; if two values are found the same (largest) number of times, the highest value of these values is assigned, this is called a majority conflict (default for boolean, nominal, ordinal and ldd data)</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-l</span></kbd></td>
+<td>lowest score: least occurring value found for the cell is assigned (option for nominal, ordinal, boolean, ldd data); if two values are found the same (smallest) number of times, the smallest value of these values is assigned, this is called a minority conflict.</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-H</span></kbd></td>
+<td>highest value found for the cell is assigned (option for scalar or ordinal data)</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-M</span></kbd></td>
+<td>lowest value found for the cell is assigned (option for scalar or ordinal data)</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-t</span></kbd></td>
+<td>total (sum) of the columnfile values is assigned (option for scalar data)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="operation">
+<h2>Operation<a class="headerlink" href="#operation" title="Permalink to this headline">¶</a></h2>
+<p>The columnfile is converted to PCRresult, which is an expression in PCRaster map format with the location attributes of <em>PCRclone</em>. The columnfile must be in the format described in <a class="reference internal" href="secdatbase.html#secdatbasepointform"><em>Point data column file format</em></a>.</p>
+<p>For each cell on PCRresult the operator searches in columnfile for records that have x,y co-ordinates that come into that cell on PCRresult. If one single record is found, the value of this record is assigned to the cell, if several records are found, the value which is assigned is specified by the option (-a, -h, -l, -H or -M). A cell on PCRresult without a value on columnfile that falls into the cell is assigned a missing value on PCRresult.</p>
+</div>
+<div class="section" id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<p>Directional data: If the option -a (average, default) is set, and both records
+without a direction (value -1) and records with a direction come into a cell
+(a so called direction conflict), the records without a direction are
+discarded and the cell value is computed from the records containing a
+direction only. Thus a cell is assigned a no direction value (value -1) only
+if all records for that cell don&#8217;t have a direction.
+Using col2map for generating a PCRresult of data type ldd is quite risky: probably it will result in a ldd which is unsound. If you do want to create a PCRresult of data type ldd use the operator lddrepair afterwards. This operator will modify the ldd in such a way that it will be sound, see the operator lddrepair.</p>
+</div>
+<div class="section" id="group">
+<h2>Group<a class="headerlink" href="#group" title="Permalink to this headline">¶</a></h2>
+<p>This operation belongs to the group of  Creation of PCRaster maps</p>
+</div>
+<div class="section" id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="app_asc2map.html#asc2map"><em>asc2map</em></a></p>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><div class="first highlight-python"><pre>col2map --clone mapclone.map -S -m mv -v 4 ColFile1.txt Result1.map</pre>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="37%" />
+<col width="31%" />
+<col width="32%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><cite>ColFile1.txt</cite></td>
+<td><cite>Result1.map</cite></td>
+<td><cite>mapclone.map</cite></td>
+</tr>
+<tr class="row-even"><td><div class="first last highlight-python"><pre>field data
+5
+xcoord
+ycoord
+pH1
+pH2
+code
+25  25  mv   3.4  123
+25  35  7.1  3.8  132
+25  45  7.5  mv   123
+35  25  7.4  3.1  123
+35  35  7.7  3.0  321
+35  45  7.8  3.9  123
+45  25  7.1  3.4  321
+45  35  7.4  3.1  213
+45  45  7.8  3.7  321
+55  25  7.4  3.2  314
+55  35  7.1  3.2  141
+55  45  7.9  3.7  132
+mv  mv  7.4  3.2  111
+mv  mv  7.6  3.1  111
+</pre>
+</div>
+</td>
+<td><img alt="_images/col2map_Result1.png" class="first last" src="_images/col2map_Result1.png" />
+</td>
+<td><img alt="_images/mapattr_mapclone.png" class="first last" src="_images/mapattr_mapclone.png" />
+</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><div class="first highlight-python"><pre>col2map --clone mapclone.map -O -m mv -x 2 -y 3 -v 6 --coorlr -H ColFile2.txt Result2.map</pre>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="37%" />
+<col width="31%" />
+<col width="32%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><cite>ColFile2.txt</cite></td>
+<td><cite>Result2.map</cite></td>
+<td><cite>mapclone.map</cite></td>
+</tr>
+<tr class="row-even"><td><div class="first last highlight-python"><pre>1  30   20   7.1  3.5  1    1
+2  30   30   5.3  3.8  8    0
+3  30   40   8.7  3.5  7    1
+4  40   20   9.8  3.2  6    0
+5  40   30   8.5  3.2  5    1
+6  40   40   9.4  3.1  5    0
+7  50   20   7.7  3.2  2    0
+8  50   30   6.2  2.9  4    0
+9  50   40   7.4  3.1  10   1
+10 60   20   5.3  3.3  3    1
+11 60   30   5.4  3.5  11   1
+12 60   40   3.4  3.9  mv   0
+13 1200 345  3.4  2.1  121  1
+14 45.3 25.8 5.3  3.2  125  1
+15 46.2 23.7 5.3  3.2  124  0
+</pre>
+</div>
+</td>
+<td><img alt="_images/col2map_Result2.png" class="first last" src="_images/col2map_Result2.png" />
+</td>
+<td><img alt="_images/mapattr_mapclone.png" class="first last" src="_images/mapattr_mapclone.png" />
+</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ol>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">col2map</a><ul>
+<li><a class="reference internal" href="#options">Options</a></li>
+<li><a class="reference internal" href="#operation">Operation</a></li>
+<li><a class="reference internal" href="#notes">Notes</a></li>
+<li><a class="reference internal" href="#group">Group</a></li>
+<li><a class="reference internal" href="#see-also">See Also</a></li>
+<li><a class="reference internal" href="#examples">Examples</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="app_asc2map.html"
+                        title="previous chapter">asc2map</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="app_legend.html"
+                        title="next chapter">legend</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="app_legend.html" title="legend"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="app_asc2map.html" title="asc2map"
+             >previous</a> |</li>
+        <li><a href="index.html">PCRaster 4.0.3 documentation</a> &raquo;</li>
+          <li><a href="applications.html" >Applications</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 1990-2015, PCRaster R&amp;D Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

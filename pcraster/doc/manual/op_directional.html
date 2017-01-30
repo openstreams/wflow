@@ -1,0 +1,253 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>directional &mdash; PCRaster 4.0.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="PCRaster 4.0.3 documentation" href="index.html" />
+    <link rel="up" title="pcrcalc and Python operations" href="operations.html" />
+    <link rel="next" title="downstream" href="op_downstream.html" />
+    <link rel="prev" title="defined" href="op_defined.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="op_downstream.html" title="downstream"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="op_defined.html" title="defined"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PCRaster 4.0.3 documentation</a> &raquo;</li>
+          <li><a href="operations.html" accesskey="U">pcrcalc and Python operations</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="directional">
+<span id="index-0"></span><span id="id1"></span><h1>directional<a class="headerlink" href="#directional" title="Permalink to this headline">¶</a></h1>
+<div class="topic">
+<p class="topic-title first">directional</p>
+<p>Data conversion to the directional data type</p>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Result</span> <span class="o">=</span> <span class="n">directional</span><span class="p">(</span><span class="n">expression</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>expression</dt>
+<dd>spatial, non spatial
+boolean, nominal, ordinal, scalar, ldd</dd>
+<dt>Result</dt>
+<dd>dimension of expression
+directional</dd>
+</dl>
+<div class="section" id="options">
+<h2>Options<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
+<p><tt class="docutils literal"><span class="pre">--degrees</span></tt> or <tt class="docutils literal"><span class="pre">--radians</span></tt></p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">--degrees</span></tt></dt>
+<dd>values on expression are interpreted as degrees (default)</dd>
+<dt><tt class="docutils literal"><span class="pre">--radians</span></tt></dt>
+<dd>values on expression are interpreted as radians</dd>
+</dl>
+</div>
+<div class="section" id="operation">
+<h2>Operation<a class="headerlink" href="#operation" title="Permalink to this headline">¶</a></h2>
+<p>If expression is a PCRaster map or an calculation resulting in a PCRaster map, it is converted: if expression is of one of the data types boolean, nominal, ordinal, scalar the cell values on expression are converted to the circular scale of Result, on a cell-by-cell basis. If expression is of the data type ldd, the codes on expression representing local drain directions are converted to real directions of drainage and saved as Result. The directions are converted to the circular scale of Result clockwise, assigning 0 degrees (or radians if the option <tt class="docutils literal"><span class="pre">--radians</span></tt> is set) to cells with a local drainage towards the top of the map (ldd code 8). A flat cell (cell value 5 on expression) is assigned a -1 on Result. The command can also generate a map of directional data type with one constant value.</p>
+<p>If expression has no PCRaster data type, a Result with data type directional is generated. This is the case if expression is a number or a calculation with numbers. The value of expression must be in the domain of the directional data type, i.e. if the option <tt class="docutils literal"><span class="pre">--degrees</span></tt> is set: equal to 0 or between 0 and 360; if the option radians is set equal to 0 or between 0 and 2pi. Result will be a map with the same location attributes as the <a class="reference internal" href="secimport.html#goclone"><em>global clone map</em></a>; all cells will have the value of expression.</p>
+</div>
+<div class="section" id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<p>A cell with missing value on expression is assigned a missing value on Result.</p>
+</div>
+<div class="section" id="group">
+<h2>Group<a class="headerlink" href="#group" title="Permalink to this headline">¶</a></h2>
+<p>This operation belongs to the group of  Conversion and assignment</p>
+</div>
+<div class="section" id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="secdatbase.html#secdatbasemaptype"><em>Data types</em></a>, <a class="reference internal" href="secdatbase.html#formdirectional"><em>Directional data type</em></a>, <a class="reference internal" href="secstat.html#datatytonumb"><em>Numbers and data types</em></a></p>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><div class="first line-block">
+<div class="line">• pcrcalc</div>
+<div class="line-block">
+<div class="line">#! &#8211;degrees</div>
+<div class="line">binding</div>
+<div class="line-block">
+<div class="line">Result2 = Result2.map;</div>
+<div class="line">Expr = Expr.map;</div>
+</div>
+<div class="line">initial</div>
+<div class="line-block">
+<div class="line">report Result2 = directional(Expr);</div>
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="line">• python</div>
+<div class="line-block">
+<div class="line">setglobaloption(&#8220;degrees&#8221;)</div>
+<div class="line">Expr = readmap(&#8220;Expr.map&#8221;)</div>
+<div class="line">Result2 = directional(Expr)</div>
+</div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="54%" />
+<col width="46%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Result2.map</td>
+<td>Expr.map</td>
+</tr>
+<tr class="row-even"><td><img alt="_images/directional_Result2.png" class="first last" src="_images/directional_Result2.png" />
+</td>
+<td><img alt="_images/boolean_Expr.png" class="first last" src="_images/boolean_Expr.png" />
+</td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line">• pcrcalc</div>
+<div class="line-block">
+<div class="line">binding</div>
+<div class="line-block">
+<div class="line">Result1 = Result1.map;</div>
+<div class="line">Expr = Expr.map;</div>
+</div>
+<div class="line">initial</div>
+<div class="line-block">
+<div class="line">report Result1 = directional(Expr);</div>
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="line">• python</div>
+<div class="line-block">
+<div class="line">Expr = readmap(&#8220;Expr.map&#8221;)</div>
+<div class="line">Result1 = directional(Expr)</div>
+</div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="52%" />
+<col width="48%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Result1.map</td>
+<td>Expr.map</td>
+</tr>
+<tr class="row-even"><td><img alt="_images/directional_Result1.png" class="first last" src="_images/directional_Result1.png" />
+</td>
+<td><img alt="_images/directional_Expr.png" class="first last" src="_images/directional_Expr.png" />
+</td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</li>
+</ol>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">directional</a><ul>
+<li><a class="reference internal" href="#options">Options</a></li>
+<li><a class="reference internal" href="#operation">Operation</a></li>
+<li><a class="reference internal" href="#notes">Notes</a></li>
+<li><a class="reference internal" href="#group">Group</a></li>
+<li><a class="reference internal" href="#see-also">See Also</a></li>
+<li><a class="reference internal" href="#examples">Examples</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="op_defined.html"
+                        title="previous chapter">defined</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="op_downstream.html"
+                        title="next chapter">downstream</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="op_downstream.html" title="downstream"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="op_defined.html" title="defined"
+             >previous</a> |</li>
+        <li><a href="index.html">PCRaster 4.0.3 documentation</a> &raquo;</li>
+          <li><a href="operations.html" >pcrcalc and Python operations</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 1990-2015, PCRaster R&amp;D Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

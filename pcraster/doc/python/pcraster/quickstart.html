@@ -1,0 +1,314 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PCRaster Python &mdash; PCRasterPython 4.0.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="PCRasterPython 4.0.3 documentation" href="index.html" />
+    <link rel="next" title="Differences between PCRcalc and PCRaster Python" href="differences.html" />
+    <link rel="prev" title="Introduction" href="introduction.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="differences.html" title="Differences between PCRcalc and PCRaster Python"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="Introduction"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PCRasterPython 4.0.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pcraster-python">
+<h1>PCRaster Python<a class="headerlink" href="#pcraster-python" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="quickstart">
+<h2>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this headline">¶</a></h2>
+<p>The Python example below is included in the workspace/Demo directory of the PCRaster distribution and shows the general usage of PCRaster functions within a Python script. To run the script change to the demo directory and execute <tt class="docutils literal"><span class="pre">python</span> <span class="pre">example.py</span></tt>. The syntax of the PCRaster Python functions equates the syntax of the PCRaster functions. The results of the functions are written to disk with the <tt class="docutils literal"><span class="pre">report</span></tt> function.</p>
+<p>The following sections give a detailed introduction about how to build environmental models in the Python scripting language.</p>
+<p><em>Python script example.py demonstrating the use of PCRaster functions.</em></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pcraster</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">setclone</span><span class="p">(</span><span class="s">&quot;dem.map&quot;</span><span class="p">)</span>
+
+<span class="c"># calculate a map with the distances to the nearest rainstation</span>
+<span class="n">raindist</span> <span class="o">=</span> <span class="n">spread</span><span class="p">(</span><span class="s">&quot;rainstat.map&quot;</span><span class="p">,</span> <span class="n">scalar</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">scalar</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+<span class="c"># writing map &#39;raindist&#39; with filename &#39;raindist.map&#39; to disk</span>
+<span class="n">report</span><span class="p">(</span><span class="n">raindist</span><span class="p">,</span> <span class="s">&quot;raindist.map&quot;</span><span class="p">)</span>
+
+<span class="c"># Calculate the infiltration capacity map by crossing the soil map</span>
+<span class="c"># and the infilcap.tbl</span>
+<span class="n">infilcap</span> <span class="o">=</span> <span class="n">lookupscalar</span><span class="p">(</span><span class="s">&quot;infilcap.tbl&quot;</span><span class="p">,</span> <span class="s">&quot;soil.map&quot;</span><span class="p">)</span>
+<span class="n">report</span><span class="p">(</span><span class="n">infilcap</span><span class="p">,</span> <span class="s">&quot;infilcap.map&quot;</span><span class="p">)</span>
+
+<span class="c"># Generate a local drain direction map on basis of the digital</span>
+<span class="c"># elevation map.</span>
+<span class="n">ldd</span> <span class="o">=</span> <span class="n">lddcreate</span><span class="p">(</span><span class="s">&quot;dem.map&quot;</span><span class="p">,</span> <span class="mf">1e31</span><span class="p">,</span> <span class="mf">1e31</span><span class="p">,</span> <span class="mf">1e31</span><span class="p">,</span> <span class="mf">1e31</span><span class="p">)</span>
+<span class="n">report</span><span class="p">(</span><span class="n">ldd</span><span class="p">,</span> <span class="s">&quot;ldd.map&quot;</span><span class="p">)</span>
+
+
+<span class="c"># Generating a map with a random value taken from a normal distribution</span>
+<span class="n">randomField</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">scalar</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">scalar</span><span class="p">(</span><span class="mf">0.005</span><span class="p">)</span> <span class="o">+</span> <span class="n">mapnormal</span><span class="p">()</span> <span class="o">/</span> <span class="n">scalar</span><span class="p">(</span><span class="mi">1000</span><span class="p">))</span>
+<span class="n">report</span><span class="p">(</span><span class="n">randomField</span><span class="p">,</span> <span class="s">&quot;randomField.map&quot;</span><span class="p">)</span>
+
+<span class="c"># Execute the accuthreshold operator with simulated rainfall</span>
+<span class="n">runoff</span> <span class="o">=</span> <span class="n">accuthresholdflux</span><span class="p">(</span><span class="s">&quot;ldd.map&quot;</span><span class="p">,</span> <span class="n">randomField</span><span class="p">,</span> <span class="s">&quot;infilcap.map&quot;</span><span class="p">)</span>
+<span class="n">report</span><span class="p">(</span><span class="n">runoff</span><span class="p">,</span> <span class="s">&quot;runoff.map&quot;</span><span class="p">)</span>
+
+<span class="c"># Generating a map holding elevation values above 95m</span>
+<span class="n">uplandArea</span> <span class="o">=</span> <span class="n">ifthen</span><span class="p">(</span><span class="s">&quot;dem.map&quot;</span> <span class="o">&gt;</span> <span class="n">scalar</span><span class="p">(</span><span class="mi">95</span><span class="p">),</span> <span class="s">&quot;dem.map&quot;</span><span class="p">)</span>
+<span class="n">report</span><span class="p">(</span><span class="n">uplandArea</span><span class="p">,</span> <span class="s">&quot;upland.map&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>You can start using PCRaster Python by importing the main module in your Python script:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Python</span>
+<span class="kn">import</span> <span class="nn">pcraster</span>
+</pre></div>
+</div>
+<p>This will put all PCRaster functions into the pcraster namespace. Here is an example of how you can use the <tt class="docutils literal"><span class="pre">slope</span></tt> function to calculate the slope of a digital elevation model:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Python</span>
+<span class="kn">import</span> <span class="nn">pcraster</span>
+
+<span class="n">gradient</span> <span class="o">=</span> <span class="n">pcraster</span><span class="o">.</span><span class="n">slope</span><span class="p">(</span><span class="s">&quot;dem.map&quot;</span><span class="p">)</span>
+<span class="n">pcraster</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">gradient</span><span class="p">,</span> <span class="s">&quot;gradient.map&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This is equivalent to the PCRcalc script</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="cp"># PCRcalc</span>
+<span class="n">report</span> <span class="n">gradient</span><span class="p">.</span><span class="n">map</span> <span class="o">=</span> <span class="n">slope</span><span class="p">(</span><span class="n">dem</span><span class="p">.</span><span class="n">map</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>After importing the <tt class="docutils literal"><span class="pre">pcraster</span></tt> module the <tt class="docutils literal"><span class="pre">slope</span></tt> function is called with a filename as its argument. The function will open the raster file, read its values and calculate the slope. The resulting raster is returned and assigned to the variable <tt class="docutils literal"><span class="pre">gradient</span></tt>.</p>
+<p>Both, PCRcalc and PCRaster Python operations use exactly the same algorithm. If you compare the Python and the PCRcalc code you will see a minimal difference. For information about <tt class="docutils literal"><span class="pre">slope</span></tt> function or any of the other functions of PCRaster you can look them up in the PCRaster reference manual.</p>
+<p>The resulting gradient calculated above can be used as input to another function like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Python</span>
+<span class="kn">import</span> <span class="nn">pcraster</span>
+
+<span class="n">gradient</span> <span class="o">=</span> <span class="n">pcraster</span><span class="o">.</span><span class="n">slope</span><span class="p">(</span><span class="s">&quot;dem.map&quot;</span><span class="p">)</span>
+<span class="n">smoothGradient</span> <span class="o">=</span> <span class="n">pcraster</span><span class="o">.</span><span class="n">windowaverage</span><span class="p">(</span><span class="n">gradient</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">pcraster</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">smoothGradient</span><span class="p">,</span> <span class="s">&quot;smoothGradient.map&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>By combining functions like this environmental models can be created.</p>
+<p>In the examples given so far we had to explicitly state the module which the PCRaster functions are part of (<tt class="docutils literal"><span class="pre">pcraster</span></tt>). We can do better by importing all symbols from the <tt class="docutils literal"><span class="pre">pcraster</span></tt> module into the current scope. This way our script will become shorter and easier to read:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Python</span>
+<span class="kn">from</span> <span class="nn">pcraster</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">gradient</span> <span class="o">=</span> <span class="n">slope</span><span class="p">(</span><span class="s">&quot;dem.map&quot;</span><span class="p">)</span>
+<span class="n">smoothGradient</span> <span class="o">=</span> <span class="n">windowaverage</span><span class="p">(</span><span class="n">gradient</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">report</span><span class="p">(</span><span class="n">smoothGradient</span><span class="p">,</span> <span class="s">&quot;smoothGradient.map&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">From now on the <tt class="docutils literal"><span class="pre">import</span></tt> statement will be discarded from the examples.</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">By importing all symbols from a module there is an increasing chance that symbols with the same name end op in the same namespace. Keep this in mind when, for example, the abs function seems to work but gives an unexpected result: which function got called, math.abs() or pcraster.abs()?</p>
+</div>
+</div>
+<div class="section" id="operators">
+<span id="id1"></span><h2>Operators<a class="headerlink" href="#operators" title="Permalink to this headline">¶</a></h2>
+<p>Besides functions operators can be used in expressions. Most boolean, comparison and arithmetic operators of PCRcalc have corresponding operators defined in PCRaster Python. Here&#8217;s an example of the use of an operator:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Python</span>
+<span class="n">gradient</span> <span class="o">=</span> <span class="n">slope</span><span class="p">(</span><span class="s">&quot;dem.map&quot;</span><span class="p">)</span>
+<span class="n">steepSlopes</span> <span class="o">=</span> <span class="n">gradient</span> <span class="o">&gt;</span> <span class="mi">20</span>
+</pre></div>
+</div>
+<p>Below is a table of all operators defined in PCRaster Python and their their equivalents in PCRcalc. For more information about operators see the PCRaster manual pages and the Python operator module.</p>
+<p><em>List of PCRaster Python Operators</em></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="36%" />
+<col width="36%" />
+<col width="28%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">PCRaster Python operators</th>
+<th class="head">PCRaster Python functions</th>
+<th class="head">PCRcalc equivalents</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>a &amp; b</td>
+<td>&nbsp;</td>
+<td>a and b</td>
+</tr>
+<tr class="row-odd"><td>a | b</td>
+<td>&nbsp;</td>
+<td>a or b</td>
+</tr>
+<tr class="row-even"><td>a ^ b</td>
+<td>&nbsp;</td>
+<td>a xor b</td>
+</tr>
+<tr class="row-odd"><td>~a</td>
+<td>&nbsp;</td>
+<td>not a</td>
+</tr>
+<tr class="row-even"><td>a != b</td>
+<td>ne(a, b)</td>
+<td>a ne b, a != b</td>
+</tr>
+<tr class="row-odd"><td>a == b</td>
+<td>eq(a, b)</td>
+<td>a eq b, a == b</td>
+</tr>
+<tr class="row-even"><td>a &gt; b</td>
+<td>gt(a, b)</td>
+<td>a gt b, a &gt; b</td>
+</tr>
+<tr class="row-odd"><td>a &gt;= b</td>
+<td>ge(a, b)</td>
+<td>a ge b, a &gt;= b</td>
+</tr>
+<tr class="row-even"><td>a &lt; b</td>
+<td>lt(a, b)</td>
+<td>a lt b, a &lt; b</td>
+</tr>
+<tr class="row-odd"><td>a &lt;= b</td>
+<td>le(a, b)</td>
+<td>a le b, a &lt;= b</td>
+</tr>
+<tr class="row-even"><td>a * b</td>
+<td>mul(a, b)</td>
+<td>a * b</td>
+</tr>
+<tr class="row-odd"><td>a / b</td>
+<td>div(a, b)</td>
+<td>a / b, a div b</td>
+</tr>
+<tr class="row-even"><td>a // b</td>
+<td>floordiv(a, b)</td>
+<td>a idiv b</td>
+</tr>
+<tr class="row-odd"><td>a ** b</td>
+<td>pow(a, b)</td>
+<td>a ** b</td>
+</tr>
+<tr class="row-even"><td>a % b</td>
+<td>mod(a, b)</td>
+<td>a mod b</td>
+</tr>
+<tr class="row-odd"><td>a + b</td>
+<td>add(a, b)</td>
+<td>a + b</td>
+</tr>
+<tr class="row-even"><td>a - b</td>
+<td>sub(a, b)</td>
+<td>a - b</td>
+</tr>
+<tr class="row-odd"><td>-a</td>
+<td>&nbsp;</td>
+<td>-a</td>
+</tr>
+<tr class="row-even"><td>+a</td>
+<td>&nbsp;</td>
+<td>+a</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">PCRaster Python</a><ul>
+<li><a class="reference internal" href="#quickstart">Quickstart</a></li>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#operators">Operators</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="introduction.html"
+                        title="previous chapter">Introduction</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="differences.html"
+                        title="next chapter">Differences between PCRcalc and PCRaster Python</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/quickstart.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="differences.html" title="Differences between PCRcalc and PCRaster Python"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="Introduction"
+             >previous</a> |</li>
+        <li><a href="index.html">PCRasterPython 4.0.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2000-2015, PCRaster R&amp;D team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

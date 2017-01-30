@@ -1,0 +1,614 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Functional list of applications and operations &mdash; PCRaster 4.0.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="PCRaster 4.0.3 documentation" href="index.html" />
+    <link rel="next" title="Applications" href="applications.html" />
+    <link rel="prev" title="Bibliography" href="bibliography.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="applications.html" title="Applications"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="bibliography.html" title="Bibliography"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PCRaster 4.0.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="functional-list-of-applications-and-operations">
+<span id="secfunclist"></span><h1>Functional list of applications and operations<a class="headerlink" href="#functional-list-of-applications-and-operations" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="point-operators">
+<span id="secpointop"></span><h2>Point operators<a class="headerlink" href="#point-operators" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="boolean-operators">
+<span id="groupbool"></span><h3>Boolean operators<a class="headerlink" href="#boolean-operators" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><a class="reference internal" href="op_and.html#and"><em>and, &amp;, pcrand</em></a></dt>
+<dd>Performs a Boolean-and operation on two expressions, on a cell-by-cell basis.</dd>
+<dt><a class="reference internal" href="op_not.html#not"><em>not, ~, pcrnot</em></a></dt>
+<dd>Performs a Boolean-not operation on two expressions, on a cell-by-cell basis.</dd>
+<dt><a class="reference internal" href="op_or.html#or"><em>or, |, pcror</em></a></dt>
+<dd>Performs a Boolean-or operation on two expressions, on a cell-by-cell basis.</dd>
+<dt><a class="reference internal" href="op_xor.html#xor"><em>xor, ^, pcrxor</em></a></dt>
+<dd>Performs a Boolean-xor operation on two expressions, on a cell-by-cell basis.</dd>
+</dl>
+</div>
+<div class="section" id="comparison-operators">
+<span id="groupcomp"></span><h3>Comparison operators<a class="headerlink" href="#comparison-operators" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><a class="reference internal" href="op_eq.html#eq"><em>eq or ==</em></a></dt>
+<dd>Performs a relational-equal-to operation on two expressions, on a cell-by-cell basis.</dd>
+<dt><a class="reference internal" href="op_ge.html#ge"><em>ge or &gt;=</em></a></dt>
+<dd>Performs a relational-greater-than-or-equal-to operation on two expressions, on a cell-by-cell basis.</dd>
+<dt><a class="reference internal" href="op_gt.html#gt"><em>gt or &gt;</em></a></dt>
+<dd>Performs a relational-greater-than operation on two expressions, on a cell-by-cell basis.</dd>
+<dt><a class="reference internal" href="op_le.html#le"><em>le or &lt;=</em></a></dt>
+<dd>Performs a relational-less-than-or-equal-to operation on two expressions, on a cell-by-cell basis.</dd>
+<dt><a class="reference internal" href="op_lt.html#lt"><em>lt or &lt;</em></a></dt>
+<dd>Performs a relational-less-than operation on two expressions, on a cell-by-cell basis.</dd>
+<dt><a class="reference internal" href="op_ne.html#ne"><em>ne or !=</em></a></dt>
+<dd>Performs a relational-not-equal-to operation on two expressions, on a cell-by-cell basis.</dd>
+</dl>
+</div>
+<div class="section" id="conditional-statements">
+<span id="groupcond"></span><h3>Conditional statements<a class="headerlink" href="#conditional-statements" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><a class="reference internal" href="op_ifthenelse.html#ifthenelse"><em>if then else</em></a></dt>
+<dd>For each cell a Boolean expression determines whether the value of the first expression or the value of a second expression is assigned to the result</dd>
+<dt><a class="reference internal" href="op_ifthen.html#ifthen"><em>if then</em></a></dt>
+<dd>Return missing values if condition is not met.</dd>
+<dt><a class="reference internal" href="secpcrcalcscriptfeatures.html#secrepeatuntil"><em>repeat { ...} until</em></a> (pcrcalc)</dt>
+<dd>Conditional iteration in pcrcalc.</dd>
+</dl>
+</div>
+<div class="section" id="missing-value-creation-detection-alteration">
+<span id="groupmissvalue"></span><h3>Missing value creation, detection, alteration<a class="headerlink" href="#missing-value-creation-detection-alteration" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><a class="reference internal" href="op_cover.html#cover"><em>cover</em></a></dt>
+<dd>Substitutes missing values on an expression for values selected from one or more different expression(s), on a cell-by-cell basis.</dd>
+<dt><a class="reference internal" href="op_defined.html#defined"><em>defined</em></a></dt>
+<dd>Assigns a Boolean TRUE for non missing values on the input expression and FALSE for missing values, on a cell-by-cell basis.</dd>
+<dt><a class="reference internal" href="op_lddmask.html#lddmask"><em>lddmask</em></a></dt>
+<dd>Cuts a local drain direction map resulting in a (smaller) sound local drain direction map.</dd>
+<dt><a class="reference internal" href="op_nodirection.html#nodirection"><em>nodirection</em></a></dt>
+<dd>For an expression of directional data type, returns TRUE for cells without a direction and FALSE otherwise for cells with a direction.</dd>
+<dt><a class="reference internal" href="op_ifthen.html#ifthen"><em>if then</em></a></dt>
+<dd>Return missing values if condition is not met.</dd>
+<dt><a class="reference internal" href="op_inversedistance.html#inversedistance"><em>inversedistance</em></a></dt>
+<dd>Interpolate values</dd>
+</dl>
+</div>
+<div class="section" id="relations-in-tables">
+<span id="groupreltab"></span><h3>Relations in tables<a class="headerlink" href="#relations-in-tables" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><a class="reference internal" href="op_lookup.html#lookup"><em>lookup...</em></a></dt>
+<dd>For each cell, compares the cell value(s) of one or more expression(s) with the search key in a table and assigns a new value linked to that record in the key which matches the value(s) of the input expression</dd>
+<dt><a class="reference internal" href="op_lookuplinear.html#lookuplinear"><em>lookuplinear</em></a></dt>
+<dd>Assigns table key values with possible interpolation between key values.</dd>
+<dt><a class="reference internal" href="app_table.html#table"><em>table</em></a></dt>
+<dd>Creates on basis of one or more maps a table with a score for each key in the table. The score is the total area of the cells that match the key in the table.</dd>
+</dl>
+</div>
+<div class="section" id="order">
+<span id="grouporder"></span><h3>Order<a class="headerlink" href="#order" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><a class="reference internal" href="op_order.html#order"><em>order</em></a></dt>
+<dd>Returns ordinal numbers to cells in ascending order.</dd>
+<dt><a class="reference internal" href="op_markwhilesum.html#markwhilesum"><em>markwhilesumge, markwhilesumle</em></a></dt>
+<dd>Marks each cell in specified order until the sum reaches a specified limit.</dd>
+<dt><a class="reference internal" href="op_areaorder.html#areaorder"><em>areaorder</em></a></dt>
+<dd>Within each area ordinal numbers to cells in ascending order.</dd>
+<dt><a class="reference internal" href="op_argorder.html#argorder"><em>argorder,argorderwithid</em></a></dt>
+<dd>Identify highest value by argument order</dd>
+<dt><a class="reference internal" href="op_argorderarealimited.html#argorderarealimited"><em>argorderarealimited,argorderwithidarealimited</em></a></dt>
+<dd>Identify highest value by argument order with a limit per argument</dd>
+<dt><a class="reference internal" href="op_argorderaddarealimited.html#argorderaddarealimited"><em>argorderaddarealimited argorderwithidaddarealimited</em></a></dt>
+<dd>Variation on argorder</dd>
+<dt><a class="reference internal" href="op_pred.html#pred"><em>pred</em></a></dt>
+<dd>For each cell returns an ordinal number which is the ordinal number of the next lower ordinal class (predecessor) on the expression.</dd>
+<dt><a class="reference internal" href="op_succ.html#succ"><em>succ</em></a></dt>
+<dd>For each cell returns an ordinal number which is the ordinal number of the next higher ordinal class (predecessor) on the expression.</dd>
+</dl>
+</div>
+<div class="section" id="maximize-minimize">
+<span id="groupmaxmin"></span><h3>Maximize, minimize<a class="headerlink" href="#maximize-minimize" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><a class="reference internal" href="op_max.html#max"><em>max</em></a></dt>
+<dd>For each cell, determines the maximum value of multiple expressions and assigns it to the corresponding cell for the result.</dd>
+<dt><a class="reference internal" href="op_min.html#min"><em>min</em></a></dt>
+<dd>For each cell, determines the minimum value of multiple expressions and assigns it to the corresponding cell for the result.</dd>
+</dl>
+</div>
+<div class="section" id="arithmic-operators-trigonometric-exponential-logarithmic-functions">
+<span id="groupmath"></span><h3>Arithmic operators, trigonometric, exponential, logarithmic functions<a class="headerlink" href="#arithmic-operators-trigonometric-exponential-logarithmic-functions" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><a class="reference internal" href="op_ster.html#ster"><em>*</em></a></dt>
+<dd>Multiplies the values of two expressions and sends this product to the result, on a cel-by-cell basis.</dd>
+<dt><a class="reference internal" href="op_sterster.html#sterster"><em>**</em></a></dt>
+<dd>Calculates the Nth power of the first expression, where N is the value on a second expression and sends it to the result, on a cell-by-cell basis.</dd>
+<dt><a class="reference internal" href="op_minus.html#minus"><em>-</em></a></dt>
+<dd>Subtracts the value of the second expression from the value of the first expression and assigns it to the result, on a cell-by-cell basis.</dd>
+<dt><a class="reference internal" href="op_plus.html#plus"><em>+</em></a></dt>
+<dd>Adds the values of two expressions and assigns this sum to the result, on a cell-by-cell basis.</dd>
+<dt><a class="reference internal" href="op_slash.html#slash"><em>/ or div</em></a></dt>
+<dd>Divides the value of a first expressions by the value of a second expression and assigns this quotient to the result, on a cell-by-cell basis.</dd>
+<dt><a class="reference internal" href="op_abs.html#abs"><em>abs</em></a></dt>
+<dd>Calculates the absolute value of an expression, on a cell-by-cell basis.</dd>
+<dt><a class="reference internal" href="op_acos.html#acos"><em>acos</em></a></dt>
+<dd>Calculates the inverse cosine value of an expression, on a cell-by-cell basis.</dd>
+<dt><a class="reference internal" href="op_asin.html#asin"><em>asin</em></a></dt>
+<dd>Calculates the inverse sine value of an expression, on a cell-by-cell basis.</dd>
+<dt><a class="reference internal" href="op_atan.html#atan"><em>atan</em></a></dt>
+<dd>Calculates the inverse tangent value of an expression, on a cell-by-cell basis.</dd>
+<dt><a class="reference internal" href="op_cos.html#cos"><em>cos</em></a></dt>
+<dd>Calculates the cosine of an expression, on a cell-by-cell basis.</dd>
+<dt><a class="reference internal" href="op_exp.html#exp"><em>exp</em></a></dt>
+<dd>Calculates the base<sub>e</sub> exponential of an expression, on a cell-by-cell basis.</dd>
+<dt><a class="reference internal" href="op_fac.html#fac"><em>fac</em></a></dt>
+<dd>Faculty or factorial of a natural positive number</dd>
+<dt><a class="reference internal" href="op_idiv.html#idiv"><em>idiv, //</em></a></dt>
+<dd>Divides (integer division) the values on a first expression by the values on a second expression and assigns this quotient to the result, on a cell-by-cell basis.</dd>
+<dt><a class="reference internal" href="op_ln.html#ln"><em>ln</em></a></dt>
+<dd>Calculates the natural logarithm (base<sub>e</sub>) exponential of an expression, on a cell-by-cell basis.</dd>
+<dt><a class="reference internal" href="op_log10.html#log10"><em>log10</em></a></dt>
+<dd>Calculates the (base<sub>e</sub>) logarithm of an expression, on a cell-by-cell basis.</dd>
+<dt><a class="reference internal" href="op_mod.html#mod"><em>mod, %</em></a></dt>
+<dd>Divides (integer division) the values on a first expression by the values on a second expression and assigns the remainder to the result, on a cell-by-cell basis.</dd>
+<dt><a class="reference internal" href="op_sin.html#sin"><em>sin</em></a></dt>
+<dd>Calculates the sine of an expression, on a cell-by-cell basis.</dd>
+<dt><a class="reference internal" href="op_sqr.html#sqr"><em>sqr</em></a></dt>
+<dd>Calculates the square of an expression, on a cell-by-cell basis.</dd>
+<dt><a class="reference internal" href="op_sqrt.html#sqrt"><em>sqrt</em></a></dt>
+<dd>Calculates the square root of an expression, on a cell-by-cell basis.</dd>
+<dt><a class="reference internal" href="op_tan.html#tan"><em>tan</em></a></dt>
+<dd>Calculates the tangent of an expression, on a cell-by-cell basis.</dd>
+</dl>
+</div>
+<div class="section" id="rounding">
+<span id="groupround"></span><h3>Rounding<a class="headerlink" href="#rounding" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><a class="reference internal" href="op_roundup.html#roundup"><em>roundup</em></a></dt>
+<dd>For each cell, the value of an expression is rounded upwards. Values of the results will be whole numbers.</dd>
+<dt><a class="reference internal" href="op_rounddown.html#rounddown"><em>rounddown</em></a></dt>
+<dd>For each cell, the value of an expression is rounded downwards. Values of the results will be whole numbers.</dd>
+<dt><a class="reference internal" href="op_roundoff.html#roundoff"><em>roundoff</em></a></dt>
+<dd>For each cell, the value of an expression is rounded off. Values of the results will be whole numbers.</dd>
+</dl>
+</div>
+<div class="section" id="data-types-conversion-and-assignment">
+<span id="grouptypeconvers"></span><h3>Data types: Conversion and assignment<a class="headerlink" href="#data-types-conversion-and-assignment" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><a class="reference internal" href="op_boolean.html#boolean"><em>boolean</em></a></dt>
+<dd>Converts from nominal, ordinal, scalar, directional or ldd data type to a boolean data type or generates a map of boolean data type with one constant value.</dd>
+<dt><a class="reference internal" href="op_directional.html#directional"><em>directional</em></a></dt>
+<dd>Converts from boolean, nominal, ordinal, scalar or ldd data type to a directional data type or generates a map of directional data type with one constant value.</dd>
+<dt><a class="reference internal" href="op_ldd.html#ldd"><em>ldd</em></a></dt>
+<dd>Converts from boolean, nominal, ordinal, scalar or directional data type to a ldd data type or generates a map of ldd data type with one constant value.</dd>
+<dt><a class="reference internal" href="op_nominal.html#nominal"><em>nominal</em></a></dt>
+<dd>Converts from boolean, ordinal, scalar, directional or ldd data type to a nominal data type or generates a map of nominal data type with one constant value.</dd>
+<dt><a class="reference internal" href="op_ordinal.html#ordinal"><em>ordinal</em></a></dt>
+<dd>Converts from boolean, nominal, scalar, directional or ldd data type to a ordinal data type or generates a map of ordinal data type with one constant value.</dd>
+<dt><a class="reference internal" href="op_scalar.html#scalar"><em>scalar</em></a></dt>
+<dd>Converts from boolean, nominal, ordinal, directional or ldd data type to a scalar data type or generates a map of scalar data type with one constant value.</dd>
+<dt><a class="reference internal" href="op_spatial.html#spatial"><em>spatial</em></a></dt>
+<dd>Conversion of a non-spatial value to a spatial data type.</dd>
+</dl>
+</div>
+<div class="section" id="random-number-generation-cells">
+<span id="grouppointfield"></span><h3>Random number generation - cells<a class="headerlink" href="#random-number-generation-cells" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><a class="reference internal" href="op_normal.html#normal"><em>normal</em></a></dt>
+<dd>For each cell that is TRUE on a Boolean expression, assigns a value taken from a normal distribution with mean 0 and standard deviation 1.</dd>
+<dt><a class="reference internal" href="op_uniform.html#uniform"><em>uniform</em></a></dt>
+<dd>For each cell that is TRUE on a Boolean expression, assigns a value taken from a uniform distribution between 0 and 1.</dd>
+</dl>
+</div>
+<div class="section" id="coordinates-unique-id-s">
+<span id="groupcoord"></span><h3>Coordinates, unique ID&#8217;s<a class="headerlink" href="#coordinates-unique-id-s" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><a class="reference internal" href="op_uniqueid.html#uniqueid"><em>uniqueid</em></a></dt>
+<dd>For each cell that is TRUE on a Boolean expression, assigns a unique whole value</dd>
+<dt><a class="reference internal" href="op_xcoordinate.html#xcoordinate"><em>xcoordinate</em></a></dt>
+<dd>For each cell that is TRUE on a Boolean expression, assigns the xcoordinate of the cell</dd>
+<dt><a class="reference internal" href="op_ycoordinate.html#ycoordinate"><em>ycoordinate</em></a></dt>
+<dd>For each cell that is TRUE on a Boolean expression, assigns the ycoordinate of the cell</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="neighbourhood-operators">
+<span id="secneighop"></span><h2>Neighbourhood operators<a class="headerlink" href="#neighbourhood-operators" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="windows-operations">
+<span id="groupwind"></span><h3>Windows operations<a class="headerlink" href="#windows-operations" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><a class="reference internal" href="op_shift.html#shift"><em>shift, shift0</em></a></dt>
+<dd>Shifts the value of each cell a specified number of cells in the assigned direction.</dd>
+<dt><a class="reference internal" href="op_window4total.html#window4total"><em>window4total</em></a></dt>
+<dd>Sum the values of the four surrounding cells.</dd>
+<dt><a class="reference internal" href="op_windowaverage.html#windowaverage"><em>windowaverage</em></a></dt>
+<dd>For each cell, finds the average of cell values within a specified square neighbourhood and assigns it to the corresponding cell for the result</dd>
+<dt><a class="reference internal" href="op_windowdiversity.html#windowdiversity"><em>windowdiversity</em></a></dt>
+<dd>For each cell, finds the number of unique values within a specified square neighbourhood and assigns it to the corresponding cell for the result</dd>
+<dt><a class="reference internal" href="op_windowhighpass.html#windowhighpass"><em>windowhighpass</em></a></dt>
+<dd>Increases spatial frequency within a specified square neighbourhood. For each cell, it calculates the sum of cell values of an expression in a specified surrounding neighbourhood; this is subtracted from the cell values itself multiplied by twice the number of cells in the surrounding neighbourhood. The result of this calculation is assigned to the corresponding cell for the result.</dd>
+<dt><a class="reference internal" href="op_windowmajority.html#windowmajority"><em>windowmajority</em></a></dt>
+<dd>For each cell, finds the most often occurring cell values within a specified square neighbourhood and assigns it to the corresponding cell for the result</dd>
+<dt><a class="reference internal" href="op_windowmaximum.html#windowmaximum"><em>windowmaximum</em></a></dt>
+<dd>For each cell, finds the maximum cell value within a specified square neighbourhood and assigns it to the corresponding cell for the result</dd>
+<dt><a class="reference internal" href="op_windowminimum.html#windowminimum"><em>windowminimum</em></a></dt>
+<dd>For each cell, finds the minimum cell value within a specified square neighbourhood and assigns it to the corresponding cell for the result</dd>
+<dt><a class="reference internal" href="op_windowtotal.html#windowtotal"><em>windowtotal</em></a></dt>
+<dd>For each cell, finds the sum of cell values within a specified square neighbourhood and assigns it to the corresponding cell for the result</dd>
+</dl>
+</div>
+<div class="section" id="derivatives-of-elevation-maps">
+<span id="groupderelev"></span><h3>Derivatives of elevation maps<a class="headerlink" href="#derivatives-of-elevation-maps" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><a class="reference internal" href="op_aspect.html#aspect"><em>aspect</em></a></dt>
+<dd>For each cell, calculates the aspect using elevations from a digital elevation model.</dd>
+<dt><a class="reference internal" href="op_horizontan.html#horizontan"><em>horizontan</em></a></dt>
+<dd>Calculates the maximum tangent of the angles of neighbouring cells in the direction of the sun.</dd>
+<dt><a class="reference internal" href="op_lddcreate.html#lddcreate"><em>lddcreate</em></a></dt>
+<dd>Creates a local drain direction map expression using the 8 points pour algorithm with flow directions from each cell to its steepest downslope neighbour. Pits can be removed with pit removing threshold map(s).</dd>
+<dt><a class="reference internal" href="op_lddcreatedem.html#lddcreatedem"><em>lddcreatedem</em></a></dt>
+<dd>Creates a modified digital elevation model which fits the local drain direction map generated on the basis of the original digital elevation model (the elevation model is the input of the operation).</dd>
+<dt><a class="reference internal" href="op_plancurv.html#plancurv"><em>plancurv</em></a></dt>
+<dd>For each cell, calculates the planform curvature (i.e. curvature transverse to the slope) using elevations from a digital elevation model.</dd>
+<dt><a class="reference internal" href="op_profcurv.html#profcurv"><em>profcurv</em></a></dt>
+<dd>For each cell, calculates the profile curvature (i.e. curvature in the direction of the slope) using elevations from a digital elevation model.</dd>
+<dt><a class="reference internal" href="op_slope.html#slope"><em>slope</em></a></dt>
+<dd>For each cell, calculates the slope using elevations from a digital elevation model.</dd>
+</dl>
+</div>
+<div class="section" id="spread-operations">
+<span id="groupspread"></span><h3>Spread operations<a class="headerlink" href="#spread-operations" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><a class="reference internal" href="op_influencesimplegauss.html#influencesimplegauss"><em>influencesimplegauss</em></a></dt>
+<dd>Simple unweighted gaussian decrease of influence from sources.</dd>
+<dt><a class="reference internal" href="op_spread.html#spread"><em>spread</em></a></dt>
+<dd>For each cell, calculates the friction-distance of the shortest material-distance path over a map with friction material from an identified source cell or cells to the cell under consideration.</dd>
+<dt><a class="reference internal" href="op_spreadmax.html#spreadmax"><em>spreadmax</em></a></dt>
+<dd>Like spread but with a maximum distance argument.</dd>
+<dt><a class="reference internal" href="op_spreadldd.html#spreadldd"><em>spreadldd</em></a></dt>
+<dd>For each cell, calculates the friction-distance of the shortest material-distance path over a map with friction material from an identified source cell or cells to the cell under consideration, where only paths are considered in downstream direction from the source cells.</dd>
+<dt><a class="reference internal" href="op_spreadlddzone.html#spreadlddzone"><em>spreadlddzone</em></a></dt>
+<dd>For each cell, determines the shortest friction-distance path over a map with friction from an identified source cell or cells to the cell under consideration, where only paths are considered in downstream direction from the source cells. The value of the source cell at the start of this shortest material-distance path is assigned to the cell under consideration.</dd>
+<dt><a class="reference internal" href="op_spreadzone.html#spreadzone"><em>spreadzone</em></a></dt>
+<dd>Determines for each cell the shortest friction-distance path over a map with friction material from an identified source cell or cells to the cell under consideration. The value of the source cell at the start of this shortest friction-distance is assigned to the cell under consideration.</dd>
+</dl>
+</div>
+<div class="section" id="operations-with-local-drain-direction-maps">
+<span id="groupldd"></span><h3>Operations with local drain direction maps<a class="headerlink" href="#operations-with-local-drain-direction-maps" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><a class="reference internal" href="op_ldddist.html#ldddist"><em>ldddist</em></a></dt>
+<dd>Calculates for each cell the material-distance of the path over a map with friction from the cell under consideration to the downstream nearest TRUE cell.</dd>
+<dt><a class="reference internal" href="op_slopelength.html#slopelength"><em>slopelength</em></a></dt>
+<dd>For each cell assigns the accumulative-material-distance of the longest accumulative-material-path upstream over the local drain direction network to one of the cells against the divide of its catchment.</dd>
+</dl>
+<p><em>transport of material:</em></p>
+<dl class="docutils">
+<dt><a class="reference internal" href="op_accuflux.html#accuflux"><em>accuflux</em></a></dt>
+<dd>For each cell calculates the accumulated amount of material that flows out of the cell into its neighbouring downstream cell. This accumulated amount is the amount of material in the cell itself plus the amount of material in upstream cells of the cell.</dd>
+<dt><a class="reference internal" href="op_accucapacity.html#accucapacity"><em>accucapacityflux and accucapacitystate</em></a></dt>
+<dd>Transport input of material downstream over a local drain direction network; material is transported from one cell to its downstream cell when the transport capacity is exceeded, the remaining material is stored.</dd>
+<dt><a class="reference internal" href="op_accufraction.html#accufraction"><em>accufractionflux and accufractionstate</em></a></dt>
+<dd>Transport input of material downstream over a local drain direction network; a fraction of the material is transported to its downstream cell, the remaining material is stored.</dd>
+<dt><a class="reference internal" href="op_accuthreshold.html#accuthreshold"><em>accuthresholdflux and accuthresholdstate</em></a></dt>
+<dd>Transport material downstream over a local drain direction network when transport threshold is exceeded</dd>
+<dt><a class="reference internal" href="op_accutrigger.html#accutrigger"><em>accutriggerflux and accutriggerstate</em></a></dt>
+<dd>Transport input of material downstream over a local drain direction network; transport from one cell to its downstream cell only takes place if the amount of the material input to the cell exceeds the transport trigger of the cell: if the trigger is exceeded, all material is transported, else all material is stored.</dd>
+<dt><a class="reference internal" href="op_accutraveltime.html#accutraveltime"><em>accutraveltimestate, accutraveltimeflux</em></a></dt>
+<dd>Transports material downstream over a distance dependent on a given velocity.</dd>
+<dt><a class="reference internal" href="op_accutraveltimefraction.html#accutraveltimefraction"><em>accutraveltimefractionstate, accutraveltimefractionflux, accutraveltimefractionremoved</em></a></dt>
+<dd>Transports a fraction of material downstream over a distance dependent on a given velocity.</dd>
+<dt><a class="reference internal" href="op_dynamicwave.html#dynamicwave"><em>dynamicwaveq, dynamicwaveh</em></a></dt>
+<dd>Dynamic Wave equation</dd>
+<dt><a class="reference internal" href="op_dynwave.html#dynwave"><em>dynwavestate, dynwaveflux, lookuppotential, lookupstate</em></a></dt>
+<dd>Dynamic wave equation as state and flux.</dd>
+<dt><a class="reference internal" href="op_kinematic.html#kinematic"><em>kinematic</em></a></dt>
+<dd>Kinematic Wave equation</dd>
+<dt><a class="reference internal" href="op_kinwave.html#kinwave"><em>kinwavestate, kinwaveflux</em></a></dt>
+<dd>Kinematic Wave equation as state and flux</dd>
+</dl>
+<p><em>miscellaneous operations:</em></p>
+<dl class="docutils">
+<dt><a class="reference internal" href="op_catchment.html#catchment"><em>catchment</em></a></dt>
+<dd>Determines the catchment(s) (watershed, basin) of each one or more specified cells, subcatchments are not identified.</dd>
+<dt><a class="reference internal" href="op_catchmenttotal.html#catchmenttotal"><em>catchmenttotal</em></a></dt>
+<dd>Total catchment for the entire upstream area</dd>
+<dt><a class="reference internal" href="op_downstream.html#downstream"><em>downstream</em></a></dt>
+<dd>Returns the value of the neighbouring downstream cell.</dd>
+<dt><a class="reference internal" href="op_downstreamdist.html#downstreamdist"><em>downstreamdist</em></a></dt>
+<dd>Returns the distance to the first cell downstream.</dd>
+<dt><a class="reference internal" href="op_lddrepair.html#lddrepair"><em>lddrepair</em></a></dt>
+<dd>Repairs an unsound local drain direction map.</dd>
+<dt><a class="reference internal" href="op_path.html#path"><em>path</em></a></dt>
+<dd>Determines for each TRUE cell on a Boolean input expression the path over the local drain direction network downstream to its pit; on the result, each cell which is on a path is assigned a TRUE.</dd>
+<dt><a class="reference internal" href="op_pit.html#pit"><em>pit</em></a></dt>
+<dd>Assigns a Boolean TRUE to all pit cells on a local drain direction network.</dd>
+<dt><a class="reference internal" href="op_streamorder.html#streamorder"><em>streamorder</em></a></dt>
+<dd>Assigns the stream order index to all cells on a local drain direction network.</dd>
+<dt><a class="reference internal" href="op_subcatchment.html#subcatchment"><em>subcatchment</em></a></dt>
+<dd>Determines the (sub-)catchment(s) (watershed, basin) of each one or more specified cells, subcatchments are identified.</dd>
+<dt><a class="reference internal" href="op_transient.html#transient"><em>transient</em></a></dt>
+<dd>Simulates transient groundwater flow according to the implicit finite difference method.</dd>
+<dt><a class="reference internal" href="op_upstream.html#upstream"><em>upstream</em></a></dt>
+<dd>For each cell, assigns the sum of the cell values of its upstream cell(s).</dd>
+</dl>
+</div>
+<div class="section" id="operations-for-visibility-analysis">
+<span id="groupvisi"></span><h3>Operations for visibility analysis<a class="headerlink" href="#operations-for-visibility-analysis" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><a class="reference internal" href="op_extentofview.html#extentofview"><em>extentofview</em></a></dt>
+<dd>Determines the total length of the lines in a number of directions from the cell under consideration to the first cell with a different value.</dd>
+<dt><a class="reference internal" href="op_view.html#view"><em>view</em></a></dt>
+<dd>Assigns a TRUE or FALSE value for each cell on the result according to the visibility of that cell from one or more viewpoint cells in a 3D landscape defined by a digital elevation model.</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="area-operations">
+<span id="secareaop"></span><h2>Area operations<a class="headerlink" href="#area-operations" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="operations-over-areas">
+<span id="grouparea"></span><h3>Operations over areas<a class="headerlink" href="#operations-over-areas" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><a class="reference internal" href="op_areaarea.html#areaarea"><em>areaarea</em></a></dt>
+<dd>For each cell, assigns the area of the area to which the cell belongs. Areas are identified by cell values on a expression with classes.</dd>
+<dt><a class="reference internal" href="op_areaaverage.html#areaaverage"><em>areaaverage</em></a></dt>
+<dd>For each cell, assigns the average value of the cells that belong to the same area to the cell itself. Areas are identified by cell values on a expression with classes.</dd>
+<dt><a class="reference internal" href="op_areadiversity.html#areadiversity"><em>areadiversity</em></a></dt>
+<dd>For each cell, assigns the number of unique cell values that belong to the same area to the cell itself. Areas are identified by cell values on a expression with classes.</dd>
+<dt><a class="reference internal" href="op_areamajority.html#areamajority"><em>areamajority</em></a></dt>
+<dd>For each cell, assigns the most often occurring cell value of cells that belong to the same area to the cell itself. Areas are identified by cell values on a expression with classes.</dd>
+<dt><a class="reference internal" href="op_areamaximum.html#areamaximum"><em>areamaximum</em></a></dt>
+<dd>For each cell, assigns the maximum value of the cells that belong to the same area to the cell itself. Areas are identified by cell values on a expression with classes.</dd>
+<dt><a class="reference internal" href="op_areaminimum.html#areaminimum"><em>areaminimum</em></a></dt>
+<dd>For each cell, assigns the minimum value of the cells that belong to the same area to the cell itself. Areas are identified by cell values on a expression with classes.</dd>
+<dt><a class="reference internal" href="op_areatotal.html#areatotal"><em>areatotal</em></a></dt>
+<dd>For each cell, assigns the sum of cells of cells that belong to the same area to the cell itself. Areas are identified by cell values on a expression with classes.</dd>
+<dt><a class="reference internal" href="op_clump.html#clump"><em>clump</em></a></dt>
+<dd>Identifies all continuous groups of with the same value (&#8216;clumps&#8217;); cells belonging to one clump are assigned the same new unique value.</dd>
+</dl>
+</div>
+<div class="section" id="random-number-generation-areas">
+<span id="groupareafield"></span><h3>Random number generation - areas<a class="headerlink" href="#random-number-generation-areas" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><a class="reference internal" href="op_areanormal.html#areanormal"><em>areanormal</em></a></dt>
+<dd>Assigns to each area one value taken from a normal distribution with a mean 0 and a standard deviation 1.</dd>
+<dt><a class="reference internal" href="op_areauniform.html#areauniform"><em>areauniform</em></a></dt>
+<dd>Assigns to each area one value taken from a uniform distribution with a mean 0 and a standard deviation 1.</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="map-operations">
+<span id="secmapop"></span><h2>Map operations<a class="headerlink" href="#map-operations" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="operations-over-maps">
+<span id="groupmap"></span><h3>Operations over maps<a class="headerlink" href="#operations-over-maps" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><a class="reference internal" href="op_mapmaximum.html#mapmaximum"><em>mapmaximum</em></a></dt>
+<dd>Determines the maximum cell value of all cells values.</dd>
+<dt><a class="reference internal" href="op_mapminimum.html#mapminimum"><em>mapminimum</em></a></dt>
+<dd>Determines the minimum cell value of all cells values.</dd>
+<dt><a class="reference internal" href="op_maptotal.html#maptotal"><em>maptotal</em></a></dt>
+<dd>Sums all cell values</dd>
+<dt><a class="reference internal" href="op_maparea.html#maparea"><em>maparea</em></a></dt>
+<dd>Calculates the total area represented by the non missing value cells.</dd>
+<dt><a class="reference internal" href="op_cellarea.html#cellarea"><em>cellarea</em></a></dt>
+<dd>Assigns the area of one cell.</dd>
+<dt><a class="reference internal" href="op_celllength.html#celllength"><em>celllength</em></a></dt>
+<dd>Assigns the length which is identical in vertical and horizontal direction of one cell.</dd>
+</dl>
+</div>
+<div class="section" id="random-number-generation-map">
+<span id="groupmapfield"></span><h3>Random number generation - map<a class="headerlink" href="#random-number-generation-map" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><a class="reference internal" href="op_mapnormal.html#mapnormal"><em>mapnormal</em></a></dt>
+<dd>Assigns to all cells one non spatial value taken from a normal distribution with a mean 0 and a standard deviation 1.</dd>
+<dt><a class="reference internal" href="op_mapuniform.html#mapuniform"><em>mapuniform</em></a></dt>
+<dd>Assigns to all cells one non spatial value taken from a uniform distribution with a mean 0 and a standard deviation 1.</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="time-operations">
+<span id="sectimeop"></span><h2>Time operations<a class="headerlink" href="#time-operations" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="grouptime">
+<span id="id1"></span><h3>Time operations<a class="headerlink" href="#grouptime" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><a class="reference internal" href="op_time.html#time"><em>time</em></a></dt>
+<dd>Assigns for each time step the time at that time step.</dd>
+<dt><a class="reference internal" href="op_timeinput.html#timeinput"><em>timeinput</em></a></dt>
+<dd>Assigns for each time step one of a set of maps in the database. Each time step, the map is taken with the extension that refers to the time at the time step.</dd>
+<dt><a class="reference internal" href="op_timeinput....html#timeinput"><em>timeinput...</em></a></dt>
+<dd>For each time step assigns cell values read from a time series that is linked to a map with unique identifiers. Per time step, the time series gives for each unique identifier a cell value that is assigned to cells on the map with a corresponding unique identifier.</dd>
+<dt><a class="reference internal" href="op_timeinputsparse.html#timeinputsparse"><em>timeinputsparse</em></a></dt>
+<dd>Returns a map for each timestep where map-timesteps combinations can be missing.</dd>
+<dt><a class="reference internal" href="op_timeinputmodulo.html#timeinputmodulo"><em>timeinputmodulo</em></a></dt>
+<dd>Returns a map for each timestep using a modulo index into a shorter map stack.</dd>
+<dt><a class="reference internal" href="op_lookupmapstack.html#lookupmapstack"><em>lookupmapstack</em></a></dt>
+<dd>Reads a variable assigned map number from a map stack.</dd>
+<dt><a class="reference internal" href="op_timeoutput.html#timeoutput"><em>timeoutput</em></a></dt>
+<dd>For each cell writes the expression value of an uniquely identified cell or cells to a time series. After a model run, the time series contains for each identified cell a list of expression cell values per time step.</dd>
+<dt><a class="reference internal" href="op_timeslice.html#timeslice"><em>timeslice</em></a></dt>
+<dd>Assigns the timeslice.</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="data-management">
+<span id="secdatamanop"></span><h2>Data management<a class="headerlink" href="#data-management" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="map-creation-changing-attributes">
+<span id="groupcreaclone"></span><h3>map creation, changing attributes<a class="headerlink" href="#map-creation-changing-attributes" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><a class="reference internal" href="app_mapattr.html#mapattr"><em>mapattr</em></a></dt>
+<dd>Generates a new PCRaster map with attributes specified by the user or changes location attributes of an existing PCRaster map.</dd>
+</dl>
+</div>
+<div class="section" id="conversion-of-data">
+<span id="groupconvdata"></span><h3>Conversion of data<a class="headerlink" href="#conversion-of-data" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><a class="reference internal" href="app_asc2map.html#asc2map"><em>asc2map</em></a></dt>
+<dd>Converts from ascii file format (including ARC/INFO and GENAMAP ascii output) to PCRaster map format.</dd>
+<dt><a class="reference internal" href="app_col2map.html#col2map"><em>col2map</em></a></dt>
+<dd>Converts from column file format (including simplified Geo-EAS format used in the GSTAT module of PCRaster) to PCRaster map format.</dd>
+<dt><a class="reference internal" href="app_map2asc.html#map2asc"><em>map2asc</em></a></dt>
+<dd>Converts from PCRaster map format to ascii file format (including ascii input format for ARC/INFO.</dd>
+<dt><a class="reference internal" href="app_map2col.html#map2col"><em>map2col</em></a></dt>
+<dd>Converts from PCRaster map format to column file format (including simplified Geo-EAS format also used in the GSTAT module of PCRaster).</dd>
+</dl>
+</div>
+<div class="section" id="cutting-and-joining-together-pcraster-maps">
+<span id="groupcutjoin"></span><h3>Cutting and joining together PCRaster maps<a class="headerlink" href="#cutting-and-joining-together-pcraster-maps" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><a class="reference internal" href="app_resample.html#resample"><em>resample</em></a></dt>
+<dd>Cuts one PCRaster map or joins several PCRaster maps by resampling to the cells of the resulting PCRaster map.</dd>
+</dl>
+</div>
+<div class="section" id="generation-of-legends">
+<span id="groupleg"></span><h3>Generation of legends<a class="headerlink" href="#generation-of-legends" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><a class="reference internal" href="app_legend.html#legend"><em>legend</em></a></dt>
+<dd>Attaches a legend to or changes the legend of one or more maps.</dd>
+</dl>
+</div>
+<div class="section" id="screen-output">
+<span id="groupscreen"></span><h3>Screen output<a class="headerlink" href="#screen-output" title="Permalink to this headline">¶</a></h3>
+<p>Visualisation of maps and timeseries can be done with aguila</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Functional list of applications and operations</a><ul>
+<li><a class="reference internal" href="#point-operators">Point operators</a><ul>
+<li><a class="reference internal" href="#boolean-operators">Boolean operators</a></li>
+<li><a class="reference internal" href="#comparison-operators">Comparison operators</a></li>
+<li><a class="reference internal" href="#conditional-statements">Conditional statements</a></li>
+<li><a class="reference internal" href="#missing-value-creation-detection-alteration">Missing value creation, detection, alteration</a></li>
+<li><a class="reference internal" href="#relations-in-tables">Relations in tables</a></li>
+<li><a class="reference internal" href="#order">Order</a></li>
+<li><a class="reference internal" href="#maximize-minimize">Maximize, minimize</a></li>
+<li><a class="reference internal" href="#arithmic-operators-trigonometric-exponential-logarithmic-functions">Arithmic operators, trigonometric, exponential, logarithmic functions</a></li>
+<li><a class="reference internal" href="#rounding">Rounding</a></li>
+<li><a class="reference internal" href="#data-types-conversion-and-assignment">Data types: Conversion and assignment</a></li>
+<li><a class="reference internal" href="#random-number-generation-cells">Random number generation - cells</a></li>
+<li><a class="reference internal" href="#coordinates-unique-id-s">Coordinates, unique ID&#8217;s</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#neighbourhood-operators">Neighbourhood operators</a><ul>
+<li><a class="reference internal" href="#windows-operations">Windows operations</a></li>
+<li><a class="reference internal" href="#derivatives-of-elevation-maps">Derivatives of elevation maps</a></li>
+<li><a class="reference internal" href="#spread-operations">Spread operations</a></li>
+<li><a class="reference internal" href="#operations-with-local-drain-direction-maps">Operations with local drain direction maps</a></li>
+<li><a class="reference internal" href="#operations-for-visibility-analysis">Operations for visibility analysis</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#area-operations">Area operations</a><ul>
+<li><a class="reference internal" href="#operations-over-areas">Operations over areas</a></li>
+<li><a class="reference internal" href="#random-number-generation-areas">Random number generation - areas</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#map-operations">Map operations</a><ul>
+<li><a class="reference internal" href="#operations-over-maps">Operations over maps</a></li>
+<li><a class="reference internal" href="#random-number-generation-map">Random number generation - map</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#time-operations">Time operations</a><ul>
+<li><a class="reference internal" href="#grouptime">Time operations</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#data-management">Data management</a><ul>
+<li><a class="reference internal" href="#map-creation-changing-attributes">map creation, changing attributes</a></li>
+<li><a class="reference internal" href="#conversion-of-data">Conversion of data</a></li>
+<li><a class="reference internal" href="#cutting-and-joining-together-pcraster-maps">Cutting and joining together PCRaster maps</a></li>
+<li><a class="reference internal" href="#generation-of-legends">Generation of legends</a></li>
+<li><a class="reference internal" href="#screen-output">Screen output</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="bibliography.html"
+                        title="previous chapter">Bibliography</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="applications.html"
+                        title="next chapter">Applications</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="applications.html" title="Applications"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="bibliography.html" title="Bibliography"
+             >previous</a> |</li>
+        <li><a href="index.html">PCRaster 4.0.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 1990-2015, PCRaster R&amp;D Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

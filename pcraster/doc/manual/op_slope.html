@@ -1,0 +1,217 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>slope &mdash; PCRaster 4.0.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="PCRaster 4.0.3 documentation" href="index.html" />
+    <link rel="up" title="pcrcalc and Python operations" href="operations.html" />
+    <link rel="next" title="slopelength" href="op_slopelength.html" />
+    <link rel="prev" title="sin" href="op_sin.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="op_slopelength.html" title="slopelength"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="op_sin.html" title="sin"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PCRaster 4.0.3 documentation</a> &raquo;</li>
+          <li><a href="operations.html" accesskey="U">pcrcalc and Python operations</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="slope">
+<span id="index-0"></span><span id="id1"></span><h1>slope<a class="headerlink" href="#slope" title="Permalink to this headline">¶</a></h1>
+<div class="topic">
+<p class="topic-title first">slope</p>
+<p>Slope of cells using a digital elevation model</p>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Result</span> <span class="o">=</span> <span class="n">slope</span><span class="p">(</span><span class="n">dem</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>dem</dt>
+<dd>spatial
+scalar</dd>
+<dt>Result</dt>
+<dd>spatial
+scalar</dd>
+</dl>
+<div class="section" id="options">
+<h2>Options<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
+<p><tt class="docutils literal"><span class="pre">--unittrue</span></tt> or <tt class="docutils literal"><span class="pre">--unitcell</span></tt> (see also notes)</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">--unittrue</span></tt></dt>
+<dd>horizontal and vertical scale is measured in true distance; values on dem are interpreted as real heights (default).</dd>
+<dt><tt class="docutils literal"><span class="pre">--unitcell</span></tt></dt>
+<dd>horizontal and vertical scale is measured in number of cell lengths; values on dem are interpreted as number of cell lengths.</dd>
+</dl>
+</div>
+<div class="section" id="operation">
+<h2>Operation<a class="headerlink" href="#operation" title="Permalink to this headline">¶</a></h2>
+<p>For each cell, calculates the slope on basis of the elevation dem of its eight nearest neighbours in a 3 x 3 cell window. The third-order finite difference method is used, proposed by <a class="reference internal" href="bibliography.html#horn81"><em>Horn</em></a>, also used by <a class="reference internal" href="bibliography.html#skidmore89"><em>Skidmore</em></a>. The slope on Result is given in dZ/dX, which is the increase in height (vertical direction dZ) per distance in horizontal direction (dX). This result value is often reffered to as a percentage. Thus if slope returns a value of 0.12, one says a slope value of 12 %.</p>
+</div>
+<div class="section" id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<p>Always set the option <tt class="docutils literal"><span class="pre">--unittrue</span></tt>; the option <tt class="docutils literal"><span class="pre">--unitcell</span></tt> is only used in very very special cases. In addition, note that for a correct calculation of the slope the scales for the horizontal distance on your map and the vertical distance (height) on dem must be the same.  For instance, choose for both distances metres.</p>
+<p>If a cell has a missing value on dem, a missing value is assigned to Result, in any case.</p>
+<p>For each cell, the slope is calculated using its 8 neighbours in a 3 x 3 cells
+window. Elevation in all these cells must be known, else the finite
+difference method can not be performed. It may occur that one of these
+values is unknown: this is the case if a surrounding cell is a missing value
+or if the centre cell is at the edge of the map resulting in the absence of
+some surrounding cells. If this occurs the slope operator uses a built in neighbourhood interpolator to fill these missing values or absent cells in; this will make calculation of the slope for the centre cell still possible. For each missing value cell or absent cell, the elevation is determined by taking the average elevation of non missing value cells in a 3 x 3 cell window, with the missing value cell or absent cell in the centre of the window.</p>
+</div>
+<div class="section" id="group">
+<h2>Group<a class="headerlink" href="#group" title="Permalink to this headline">¶</a></h2>
+<p>This operation belongs to the group of  Derivatives of elevation maps</p>
+</div>
+<div class="section" id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="op_nodirection.html#nodirection"><em>nodirection</em></a>, <a class="reference internal" href="op_aspect.html#aspect"><em>aspect</em></a></p>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><div class="first line-block">
+<div class="line">• pcrcalc</div>
+<div class="line-block">
+<div class="line">binding</div>
+<div class="line-block">
+<div class="line">Result = Result.map;</div>
+<div class="line">Dem = Dem.map;</div>
+</div>
+<div class="line">initial</div>
+<div class="line-block">
+<div class="line">report Result = slope(Dem);</div>
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="line">• python</div>
+<div class="line-block">
+<div class="line">Dem = readmap(&#8220;Dem.map&#8221;)</div>
+<div class="line">Result = slope(Dem)</div>
+</div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="52%" />
+<col width="48%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Result.map</td>
+<td>Dem.map</td>
+</tr>
+<tr class="row-even"><td><img alt="_images/slope_Result.png" class="first last" src="_images/slope_Result.png" />
+</td>
+<td><img alt="_images/slope_Dem.png" class="first last" src="_images/slope_Dem.png" />
+</td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</li>
+</ol>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">slope</a><ul>
+<li><a class="reference internal" href="#options">Options</a></li>
+<li><a class="reference internal" href="#operation">Operation</a></li>
+<li><a class="reference internal" href="#notes">Notes</a></li>
+<li><a class="reference internal" href="#group">Group</a></li>
+<li><a class="reference internal" href="#see-also">See Also</a></li>
+<li><a class="reference internal" href="#examples">Examples</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="op_sin.html"
+                        title="previous chapter">sin</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="op_slopelength.html"
+                        title="next chapter">slopelength</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="op_slopelength.html" title="slopelength"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="op_sin.html" title="sin"
+             >previous</a> |</li>
+        <li><a href="index.html">PCRaster 4.0.3 documentation</a> &raquo;</li>
+          <li><a href="operations.html" >pcrcalc and Python operations</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 1990-2015, PCRaster R&amp;D Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

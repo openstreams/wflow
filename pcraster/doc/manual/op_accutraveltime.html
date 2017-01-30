@@ -1,0 +1,220 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>accutraveltimestate, accutraveltimeflux, accutraveltimeremoved &mdash; PCRaster 4.0.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="PCRaster 4.0.3 documentation" href="index.html" />
+    <link rel="up" title="pcrcalc and Python operations" href="operations.html" />
+    <link rel="next" title="accutraveltimefractionstate, accutraveltimefractionflux, accutraveltimefractionremoved" href="op_accutraveltimefraction.html" />
+    <link rel="prev" title="accutriggerflux, accutriggerstate" href="op_accutrigger.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="op_accutraveltimefraction.html" title="accutraveltimefractionstate, accutraveltimefractionflux, accutraveltimefractionremoved"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="op_accutrigger.html" title="accutriggerflux, accutriggerstate"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PCRaster 4.0.3 documentation</a> &raquo;</li>
+          <li><a href="operations.html" accesskey="U">pcrcalc and Python operations</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="accutraveltimestate-accutraveltimeflux-accutraveltimeremoved">
+<span id="accutraveltime"></span><h1>accutraveltimestate, accutraveltimeflux, accutraveltimeremoved<a class="headerlink" href="#accutraveltimestate-accutraveltimeflux-accutraveltimeremoved" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="index-0"></span><div class="topic" id="index-1">
+<p class="topic-title first">accutraveltimestate, accutraveltimeflux, accutraveltimeremoved</p>
+<p>Transports material downstream over a distance dependent on a given velocity.</p>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ResultFlux</span> <span class="o">=</span> <span class="n">accutraveltimeflux</span><span class="p">(</span><span class="n">ldd</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="n">velocity</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ResultState</span><span class="o">=</span> <span class="n">accutraveltimestate</span><span class="p">(</span><span class="n">ldd</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="n">velocity</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><pre>(pcrcalc) ResultFlux, ResultState = accutraveltimeflux, accutraveltimestate(ldd, material, velocity)</pre>
+</div>
+<dl class="docutils">
+<dt>ldd</dt>
+<dd>ldd, spatial</dd>
+<dt>material</dt>
+<dd>scalar, spatial, non-spatial</dd>
+<dt>velocity</dt>
+<dd>scalar, spatial, non-spatial</dd>
+<dt>ResultFlux</dt>
+<dd>scalar, spatial</dd>
+<dt>ResultState</dt>
+<dd>scalar, spatial</dd>
+</dl>
+<div class="section" id="operation">
+<h2>Operation<a class="headerlink" href="#operation" title="Permalink to this headline">¶</a></h2>
+<p>For each cell the function computes a travel time which is the time in timesteps it takes for material to cross the cell. This is calculated by dividing the distance from the centre of the cell to the centre of the next downstream cell on the ldd by the velocity which is given in distance per timestep. Then for each cell the material in the cell is transported downstream over the ldd while taking the sum of the travel times of the cells through which the material is routed. The transported material is then deposited in the cell for which the travel time reaches 1. When adding the travel time of the last cell the sum of travel times will usually be higher than exactly 1. This means that the material will not have reached the centre of the destination cell after 1 timestep but will be between the cell and the cell upstream. Depending on the value of the sum, the material will then be split over destination cell and the cell upstream of this according to the formula:</p>
+<p>material upstreamcell = (sum-1)/(travel time between cells) * material</p>
+<p>material destination cell = material - (material upstreamcell)</p>
+<p>The map ResultFlux gives the total amount of material which has flowed through the cell and the map ResultState gives the amount of material which is deposited in the cell.</p>
+</div>
+<div class="section" id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<p>For velocity the distance per timestep is in unit celllengths if &#8211;unitcell is used, or in physical distance if &#8211;unittrue is used. The default is &#8211;unittrue.</p>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><div class="first line-block">
+<div class="line">• pcrcalc</div>
+<div class="line-block">
+<div class="line">binding</div>
+<div class="line-block">
+<div class="line">State1 = State1.map;</div>
+<div class="line">Flux1 = Flux1.map;</div>
+<div class="line">Ldd = Ldd.map;</div>
+<div class="line">Material = Material.map;</div>
+<div class="line">Velocity = Velocity.map;</div>
+</div>
+<div class="line">initial</div>
+<div class="line-block">
+<div class="line">report State1, Flux1 = accutraveltimestate,accutraveltimeflux(Ldd,Material,Velocity);</div>
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="line">• python</div>
+<div class="line-block">
+<div class="line">Ldd = readmap(&#8220;Ldd.map&#8221;)</div>
+<div class="line">Material = readmap(&#8220;Material.map&#8221;)</div>
+<div class="line">Velocity = readmap(&#8220;Velocity.map&#8221;)</div>
+<div class="line"><br /></div>
+<div class="line">State1 = accutraveltimestate(Ldd,Material,Velocity)</div>
+<div class="line">Flux1 = accutraveltimeflux(Ldd,Material,Velocity)</div>
+</div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="20%" />
+<col width="19%" />
+<col width="21%" />
+<col width="21%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>State1.map</td>
+<td>Flux1.map</td>
+<td>Ldd.map</td>
+<td>Material.map</td>
+<td>Velocity.map</td>
+</tr>
+<tr class="row-even"><td><img alt="_images/accutraveltime_State1.png" class="first last" src="_images/accutraveltime_State1.png" />
+</td>
+<td><img alt="_images/accutraveltime_Flux1.png" class="first last" src="_images/accutraveltime_Flux1.png" />
+</td>
+<td><img alt="_images/accutraveltime_Ldd.png" class="first last" src="_images/accutraveltime_Ldd.png" />
+</td>
+<td><img alt="_images/accutraveltime_Material.png" class="first last" src="_images/accutraveltime_Material.png" />
+</td>
+<td><img alt="_images/accutraveltime_Velocity.png" class="first last" src="_images/accutraveltime_Velocity.png" />
+</td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</li>
+</ol>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">accutraveltimestate, accutraveltimeflux, accutraveltimeremoved</a><ul>
+<li><a class="reference internal" href="#operation">Operation</a></li>
+<li><a class="reference internal" href="#notes">Notes</a></li>
+<li><a class="reference internal" href="#examples">Examples</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="op_accutrigger.html"
+                        title="previous chapter">accutriggerflux, accutriggerstate</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="op_accutraveltimefraction.html"
+                        title="next chapter">accutraveltimefractionstate, accutraveltimefractionflux, accutraveltimefractionremoved</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="op_accutraveltimefraction.html" title="accutraveltimefractionstate, accutraveltimefractionflux, accutraveltimefractionremoved"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="op_accutrigger.html" title="accutriggerflux, accutriggerstate"
+             >previous</a> |</li>
+        <li><a href="index.html">PCRaster 4.0.3 documentation</a> &raquo;</li>
+          <li><a href="operations.html" >pcrcalc and Python operations</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 1990-2015, PCRaster R&amp;D Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<script xmlns="http://www.pcraster.nl/pcrxml"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.pcraster.nl/pcrxml PCRaster.xsd">
+<!--
+     ERROR expected: not conform schema
+ -->
+ <textModel>output = windowmaximum(input,3);
+ </textModel>
+</script>

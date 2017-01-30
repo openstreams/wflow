@@ -1,0 +1,427 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Differences between PCRcalc and PCRaster Python &mdash; PCRasterPython 4.0.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="PCRasterPython 4.0.3 documentation" href="index.html" />
+    <link rel="next" title="Known bugs" href="known_bugs.html" />
+    <link rel="prev" title="PCRaster Python" href="quickstart.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="known_bugs.html" title="Known bugs"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="quickstart.html" title="PCRaster Python"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PCRasterPython 4.0.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="differences-between-pcrcalc-and-pcraster-python">
+<h1>Differences between PCRcalc and PCRaster Python<a class="headerlink" href="#differences-between-pcrcalc-and-pcraster-python" title="Permalink to this headline">¶</a></h1>
+<p>The majority of PCRcalc operations can be easily adjusted to PCRaster Python operations. Nevertheless, both modelling languages differ in a few areas. The following sections explain these differences and give sample applications. The differences in the operators (e.g +,-,...) are already listed in <a class="reference internal" href="quickstart.html#operators"><em>Operators</em></a>.</p>
+<div class="section" id="setting-geographical-attributes-of-a-model">
+<h2>Setting geographical attributes of a model<a class="headerlink" href="#setting-geographical-attributes-of-a-model" title="Permalink to this headline">¶</a></h2>
+<p>To use the PCRaster operations you need to define the model area and resolution. While this is done in PCRcalc with the <tt class="docutils literal"><span class="pre">areamap</span></tt> section, PCRasterPython does not make use of sections. Apply the <tt class="docutils literal"><span class="pre">setclone</span></tt> operation instead:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">setclone</span><span class="p">(</span><span class="nb">map</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Sets the clone.</p>
+<dl class="docutils">
+<dt>map</dt>
+<dd>Filename of clone map.</dd>
+</dl>
+<p>Thus, the PCRcalc areamap section</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">areamap</span> <span class="n">clone</span><span class="p">.</span><span class="n">map</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>would become in a PCRaster Python script</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">setclone</span><span class="p">(</span><span class="s">&quot;clone.map&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>The first operation in a script must be the <tt class="docutils literal"><span class="pre">setclone</span></tt> operation.</p>
+<p class="last">Like in PCRcalc scripts it is not possible to mix maps with different extents, i.e. varying cellsize, number of rows or columns.</p>
+</div>
+</div>
+<div class="section" id="reading-input-maps">
+<h2>Reading input maps<a class="headerlink" href="#reading-input-maps" title="Permalink to this headline">¶</a></h2>
+<p>An input map is identified by a Python string containing the pathname to the disk dataset. The function <tt class="docutils literal"><span class="pre">readmap(pathname)</span></tt> reads a map.</p>
+<ul>
+<li><p class="first">PCRaster operations with a function syntax can accept the pathname.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Dem</span> <span class="o">=</span> <span class="n">readmap</span><span class="p">(</span><span class="s">&quot;dem.map&quot;</span><span class="p">)</span>
+<span class="n">Slope1</span> <span class="o">=</span> <span class="n">slope</span><span class="p">(</span><span class="n">Dem</span><span class="p">)</span>
+<span class="c"># or direct by pathname</span>
+<span class="n">Slope2</span> <span class="o">=</span> <span class="n">slope</span><span class="p">(</span><span class="s">&quot;dem.map&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">PCRaster operations with an operator syntax do not accept a pathname.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># will yield &quot;dem.mapdem.mapdem.map&quot;</span>
+<span class="n">stringTimes3</span> <span class="o">=</span> <span class="s">&quot;dem.map&quot;</span> <span class="o">*</span> <span class="mi">3</span>
+<span class="c"># will yield a Spatial object</span>
+<span class="n">DemTime3</span> <span class="o">=</span> <span class="n">readmap</span><span class="p">(</span><span class="s">&quot;dem.map&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="mi">3</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">When using the PCRaster Python Framework one usually uses the class method <tt class="docutils literal"><span class="pre">readmap(self,</span> <span class="pre">filename)</span></tt> instead of the function <tt class="docutils literal"><span class="pre">readmap(pathname)</span></tt>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># ... denotes removed fragments</span>
+<span class="o">...</span>
+<span class="k">class</span> <span class="nc">RunoffModel</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="o">...</span>
+  <span class="k">def</span> <span class="nf">initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="c"># read static data</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">dem</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readmap</span><span class="p">(</span><span class="s">&quot;dem.map&quot;</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">dynamic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="c"># reads rain0000.001, rain0000.002, etc.</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">rainFall</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readmap</span><span class="p">(</span><span class="s">&quot;rain&quot;</span><span class="p">)</span>
+
+<span class="n">dynModel</span> <span class="o">=</span> <span class="n">DynamicFramework</span><span class="p">(</span><span class="n">RunoffModel</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+<span class="n">dynModel</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</div>
+<div class="section" id="writing-output-maps">
+<h2>Writing output maps<a class="headerlink" href="#writing-output-maps" title="Permalink to this headline">¶</a></h2>
+<p>To store maps use:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">report</span><span class="p">(</span><span class="nb">map</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Writes a map to a file.</p>
+<dl class="docutils">
+<dt>map</dt>
+<dd>Map you want to write.</dd>
+<dt>filename</dt>
+<dd>Filename to use.</dd>
+</dl>
+<p>Note the differences between PCRcalc and Python.</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="cp"># PCRcalc script code</span>
+<span class="n">binding</span>
+    <span class="n">gradient</span> <span class="o">=</span> <span class="n">output</span><span class="p">.</span><span class="n">map</span><span class="p">;</span>
+    <span class="n">dem</span> <span class="o">=</span> <span class="n">dem</span><span class="p">.</span><span class="n">map</span><span class="p">;</span>
+<span class="n">initial</span>
+    <span class="n">report</span> <span class="n">gradient</span> <span class="o">=</span> <span class="n">slope</span><span class="p">(</span><span class="n">dem</span><span class="p">);</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Python code</span>
+<span class="n">gradient</span> <span class="o">=</span> <span class="n">slope</span><span class="p">(</span><span class="s">&quot;dem.map&quot;</span><span class="p">)</span>
+<span class="n">report</span><span class="p">(</span><span class="n">gradient</span><span class="p">,</span> <span class="s">&quot;gradient.map&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <tt class="docutils literal"><span class="pre">report</span></tt> operation only writes spatial data to disk. For writing non spatial data as timeseries in the DynamicFramework use the TimeoutTimeseries construct.</p>
+</div>
+<div class="section" id="accessing-cell-values-of-a-map">
+<h2>Accessing cell values of a map<a class="headerlink" href="#accessing-cell-values-of-a-map" title="Permalink to this headline">¶</a></h2>
+<p>With PCRaster Python you can query cell values from a map:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cellvalue</span><span class="p">(</span><span class="nb">map</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Returns a cell value from a map.</p>
+<dl class="docutils">
+<dt>map</dt>
+<dd>Map you want to query.</dd>
+<dt>row</dt>
+<dd>Row index of a cell in the map. Indices range from [1, number-of-rows].</dd>
+<dt>col</dt>
+<dd>Col index of a cell in the map. Indices range from [1, number-of-cols].</dd>
+</dl>
+<p>Returns a tuple with two elements: the first is the cell value, the second is a boolean value which shows whether the first element, is valid or not. If the second element is False, the cell contains a missing value.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cellvalue</span><span class="p">(</span><span class="nb">map</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Returns a cell value from a map.</p>
+<dl class="docutils">
+<dt>map</dt>
+<dd>Map you want to query.</dd>
+<dt>index</dt>
+<dd>Linear index of a cell in the map. Indices range from [1, number-of-cells].</dd>
+</dl>
+<p>Returns a tuple with two elements: the first is the cell value, the second is a boolean value which shows whether the first element, is valid or not. If the second element is False, the cell contains a missing value.</p>
+</div>
+<div class="section" id="global-options">
+<h2>Global options<a class="headerlink" href="#global-options" title="Permalink to this headline">¶</a></h2>
+<p>To set the global options of a script use</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">setglobaloption</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Sets the global option name. The option name must not contain the leading dashes as used on the command line of pcrcalc.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Python example:</span>
+<span class="n">setglobaloption</span><span class="p">(</span><span class="s">&quot;unitcell&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-c"><div class="highlight"><pre><span class="cp"># The pcrcalc equivalent:</span>
+<span class="n">pcrcalc</span> <span class="o">--</span><span class="n">unitcell</span> <span class="o">-</span><span class="n">f</span> <span class="n">model</span><span class="p">.</span><span class="n">mod</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="writing-time-series">
+<h2>Writing time series<a class="headerlink" href="#writing-time-series" title="Permalink to this headline">¶</a></h2>
+<p>PCRaster Python does not provide a <tt class="docutils literal"><span class="pre">timeoutput</span></tt> operation like PCRcalc does. Instead, a separate class in the modelling framework is handling the PCRcalc timeoutput style timeseries.</p>
+<p>Therefore, the PCRcalc</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">binding</span>
+    <span class="n">outlet</span><span class="o">=</span><span class="n">samples</span><span class="p">.</span><span class="n">map</span><span class="p">;</span>
+
+<span class="n">dynamic</span>
+    <span class="p">...</span>
+    <span class="n">Q</span> <span class="o">=</span> <span class="p">...</span>
+    <span class="n">report</span> <span class="n">runoff</span><span class="p">.</span><span class="n">tss</span> <span class="o">=</span> <span class="n">timeoutput</span><span class="p">(</span><span class="n">outlet</span> <span class="p">,</span> <span class="n">Q</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>will become in your Python model script</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pcraster.framework</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="k">class</span> <span class="nc">RunoffModel</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="o">...</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runoffTss</span><span class="o">=</span><span class="n">TimeoutputTimeseries</span><span class="p">(</span><span class="s">&quot;runoff&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="s">&quot;samples.map&quot;</span><span class="p">,</span>
+            <span class="n">noHeader</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">dynamic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="o">...</span>
+        <span class="n">runoff</span> <span class="o">=</span> <span class="o">...</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runoffTss</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">runoff</span><span class="p">)</span>
+
+<span class="n">myModel</span> <span class="o">=</span> <span class="n">RunoffModel</span><span class="p">(</span><span class="s">&quot;clone.map&quot;</span><span class="p">)</span>
+<span class="n">dynModelFw</span> <span class="o">=</span> <span class="n">DynamicFramework</span><span class="p">(</span><span class="n">myModel</span><span class="p">,</span> <span class="n">endTimeStep</span><span class="o">=</span><span class="mi">28</span><span class="p">,</span> <span class="n">firstTimestep</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">dynModelFw</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>In the <tt class="docutils literal"><span class="pre">initial</span></tt> section of the model class you create a member variable <tt class="docutils literal"><span class="pre">self.runoffTss</span></tt> holding the <tt class="docutils literal"><span class="pre">TimeoutputTimeseries</span></tt> object. The output is written to the file <tt class="docutils literal"><span class="pre">runoff.tss</span></tt> (for the DynamicFramework in the current working directory, for the MonteCarloFramework it will store the file into the corresponding sample subdirectories). <tt class="docutils literal"><span class="pre">samples.map</span></tt> is either a boolean, nominal or ordinal map holding the sample locations. By default the header section is written to the timeseries file.</p>
+<p>In the <tt class="docutils literal"><span class="pre">dynamic</span></tt> section <tt class="docutils literal"><span class="pre">self.runoffTss.sample(runOff)</span></tt> samples the values of the expression (here <tt class="docutils literal"><span class="pre">runoff</span></tt>) at the given locations for the current timestep. Note that for sequenced calls of <tt class="docutils literal"><span class="pre">sample()</span></tt> the values of the last call are sampled.</p>
+<p>See also the example script <tt class="docutils literal"><span class="pre">runoff.py</span></tt> in the deterministic subdirectory of the workspace/framework directory.</p>
+</div>
+<div class="section" id="converting-to-and-from-numpy-arrays">
+<h2>Converting to and from NumPy arrays<a class="headerlink" href="#converting-to-and-from-numpy-arrays" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The conversion functions are no longer provided by default by importing the PCRaster module, instead use: <tt class="docutils literal"><span class="pre">from</span> <span class="pre">pcraster.numpy</span> <span class="pre">import</span> <span class="pre">*</span></tt>.</p>
+</div>
+<p>You can convert PCRaster maps to NumPy arrays and vice versa with the following conversion functions:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">numpy2pcr</span><span class="p">(</span><span class="n">dataType</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">mv</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Converts entities from NumPy to PCRaster.</p>
+<dl class="docutils">
+<dt>dataType</dt>
+<dd>Either Boolean, Nominal, Ordinal, Scalar, Directional or Ldd.</dd>
+<dt>array</dt>
+<dd>Array you want to convert.</dd>
+<dt>mv</dt>
+<dd>Value that identifies a missing value in array.</dd>
+</dl>
+<p>Returns a map.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">pcr2numpy</span><span class="p">(</span><span class="nb">map</span><span class="p">,</span> <span class="n">mv</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Converts entities from PCRaster to NumPy.</p>
+<dl class="docutils">
+<dt>map</dt>
+<dd>Map you want to convert.</dd>
+<dt>mv</dt>
+<dd>Value to use in result array cells as a missing value.</dd>
+</dl>
+<p>Returns an array.</p>
+<p>The following example script demonstrates the usage of the conversion functions:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">from</span> <span class="nn">pcraster</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">pcraster.numpy</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">setclone</span><span class="p">(</span><span class="s">&quot;clone.map&quot;</span><span class="p">)</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">12</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">21</span><span class="p">],[</span><span class="mi">9</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">3</span><span class="p">],[</span><span class="mi">20</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="o">-</span><span class="mi">3</span><span class="p">]])</span>
+
+<span class="c"># conver a to a PCRaster Python map</span>
+<span class="c"># with the value 20 indicating a &#39;missing value&#39; cell</span>
+<span class="n">n2p</span> <span class="o">=</span> <span class="n">numpy2pcr</span><span class="p">(</span><span class="n">Nominal</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+<span class="k">print</span> <span class="s">&quot;cellvalue:&quot;</span><span class="p">,</span> <span class="n">cellvalue</span><span class="p">(</span><span class="n">n2p</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c"># write it to a PCRaster map</span>
+<span class="n">report</span><span class="p">(</span><span class="n">n2p</span><span class="p">,</span> <span class="s">&quot;n2p.map&quot;</span><span class="p">)</span>
+<span class="c"># read the PCRaster map back</span>
+<span class="n">p2n</span> <span class="o">=</span> <span class="n">readmap</span><span class="p">(</span><span class="s">&quot;n2p.map&quot;</span><span class="p">)</span>
+<span class="c"># print it as a numpy array</span>
+<span class="c"># missing value is replaced by 9999</span>
+<span class="k">print</span> <span class="n">pcr2numpy</span><span class="p">(</span><span class="n">p2n</span><span class="p">,</span> <span class="mi">9999</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Execution of the script will result in the following output:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cellvalue</span><span class="p">:</span> <span class="mi">3</span>
+<span class="p">[[</span>  <span class="mi">12</span>    <span class="mi">5</span>   <span class="mi">21</span><span class="p">]</span>
+ <span class="p">[</span>   <span class="mi">9</span>    <span class="mi">7</span>    <span class="mi">3</span><span class="p">]</span>
+ <span class="p">[</span><span class="mi">9999</span>    <span class="mi">8</span>    <span class="mi">2</span><span class="p">]</span>
+ <span class="p">[</span>   <span class="mi">5</span>    <span class="mi">6</span>   <span class="o">-</span><span class="mi">3</span><span class="p">]]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="pcrcalc-operations-returning-multiple-results">
+<h2>PCRcalc operations returning multiple results<a class="headerlink" href="#pcrcalc-operations-returning-multiple-results" title="Permalink to this headline">¶</a></h2>
+<p>In PCRcalc some operations can be combined and return two result values like:</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="cp"># PCRcalc</span>
+<span class="n">state</span><span class="p">,</span><span class="n">flux</span> <span class="o">=</span> <span class="n">accufractionstate</span><span class="p">,</span><span class="n">accufractionflux</span><span class="p">(</span><span class="n">ldd</span><span class="p">.</span><span class="n">map</span><span class="p">,</span><span class="n">material</span><span class="p">.</span><span class="n">map</span><span class="p">,</span><span class="mf">0.5</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>This syntax is not supported in PCRaster Python scripts. Use two separate operations instead, although this will double the execution time:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Python</span>
+<span class="n">state</span> <span class="o">=</span> <span class="n">accufractionstate</span><span class="p">(</span><span class="s">&quot;ldd.map&quot;</span><span class="p">,</span> <span class="s">&quot;material.map&quot;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+<span class="n">flux</span> <span class="o">=</span> <span class="n">accufractionflux</span><span class="p">(</span><span class="s">&quot;ldd.map&quot;</span><span class="p">,</span> <span class="s">&quot;material.map&quot;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="boolean-operations">
+<h2>Boolean operations<a class="headerlink" href="#boolean-operations" title="Permalink to this headline">¶</a></h2>
+<p>Do not use PCRaster objects in context of Python boolean operations.</p>
+<blockquote>
+<div><p>&#8220;In the context of Boolean operations, and also when expressions are used by control flow statements, the following values are interpreted as false: None, numeric zero of all types, empty sequences (strings, tuples and lists), and empty mappings (dictionaries). All other values are interpreted as true.&#8221;</p>
+<p class="attribution">&mdash;Python Reference Manual [<a class="reference external" href="http://docs.python.org/ref">http://docs.python.org/ref</a>].</p>
+</div></blockquote>
+<p>This means that PCRaster objects will always be interpreted as true when used in the above mentioned cases.</p>
+<p>When the PCRaster (field) objects are used in a Python boolean context you will recieve the error:</p>
+<div class="highlight-python"><pre>The truth value for PCRaster spatial data types is ambiguous.
+See the section Boolean operations in the PCRaster Python manual.</pre>
+</div>
+<p>Most likely you used one of the following Python constructs:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">booleanMap</span> <span class="o">=</span> <span class="n">readmap</span><span class="p">(</span><span class="s">&quot;dump.map&quot;</span><span class="p">)</span>
+<span class="n">booleanMap2</span> <span class="o">=</span> <span class="n">readmap</span><span class="p">(</span><span class="s">&quot;household.map&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">booleanMap</span><span class="p">:</span>
+  <span class="n">selection</span> <span class="o">=</span> <span class="n">map1</span>
+<span class="c"># instead use</span>
+<span class="n">selection</span> <span class="o">=</span> <span class="n">ifthen</span><span class="p">(</span><span class="n">booleanMap</span><span class="p">,</span> <span class="n">map1</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">booleanMap</span><span class="p">:</span>
+  <span class="n">something</span> <span class="o">=</span> <span class="n">map1</span>
+<span class="k">else</span><span class="p">:</span>
+  <span class="n">something</span> <span class="o">=</span> <span class="n">map2</span>
+<span class="c"># instead use</span>
+<span class="n">something</span> <span class="o">=</span> <span class="n">ifthenelse</span><span class="p">(</span><span class="n">booleanMap</span><span class="p">,</span> <span class="n">map1</span><span class="p">,</span> <span class="n">map2</span><span class="p">)</span>
+
+<span class="n">dumpAndHouseHold</span> <span class="o">=</span> <span class="n">booleanMap</span> <span class="ow">and</span> <span class="n">booleanMap2</span>
+<span class="c"># instead use</span>
+<span class="n">dumpAndHouseHold</span> <span class="o">=</span> <span class="n">booleanMap</span> <span class="o">&amp;</span> <span class="n">booleanMap2</span>
+
+<span class="n">dumpOrHouseHold</span> <span class="o">=</span> <span class="n">booleanMap</span> <span class="ow">or</span> <span class="n">booleanMap2</span>
+<span class="c"># instead use</span>
+<span class="n">dumpOrHouseHold</span> <span class="o">=</span> <span class="n">booleanMap</span> <span class="o">|</span> <span class="n">booleanMap2</span>
+
+<span class="n">dumpXorHouseHold</span> <span class="o">=</span> <span class="n">booleanMap</span> <span class="n">xor</span> <span class="n">booleanMap2</span>
+<span class="c"># instead use</span>
+<span class="n">dumpXorHouseHold</span> <span class="o">=</span> <span class="n">booleanMap</span> <span class="o">^</span> <span class="n">booleanMap2</span>
+
+<span class="n">notDump</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">booleanMap</span>
+<span class="c"># instead use</span>
+<span class="n">notDump</span> <span class="o">=</span> <span class="o">~</span> <span class="n">booleanMap</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Differences between PCRcalc and PCRaster Python</a><ul>
+<li><a class="reference internal" href="#setting-geographical-attributes-of-a-model">Setting geographical attributes of a model</a></li>
+<li><a class="reference internal" href="#reading-input-maps">Reading input maps</a></li>
+<li><a class="reference internal" href="#writing-output-maps">Writing output maps</a></li>
+<li><a class="reference internal" href="#accessing-cell-values-of-a-map">Accessing cell values of a map</a></li>
+<li><a class="reference internal" href="#global-options">Global options</a></li>
+<li><a class="reference internal" href="#writing-time-series">Writing time series</a></li>
+<li><a class="reference internal" href="#converting-to-and-from-numpy-arrays">Converting to and from NumPy arrays</a></li>
+<li><a class="reference internal" href="#pcrcalc-operations-returning-multiple-results">PCRcalc operations returning multiple results</a></li>
+<li><a class="reference internal" href="#boolean-operations">Boolean operations</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="quickstart.html"
+                        title="previous chapter">PCRaster Python</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="known_bugs.html"
+                        title="next chapter">Known bugs</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/differences.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="known_bugs.html" title="Known bugs"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="quickstart.html" title="PCRaster Python"
+             >previous</a> |</li>
+        <li><a href="index.html">PCRasterPython 4.0.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2000-2015, PCRaster R&amp;D team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

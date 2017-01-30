@@ -1,0 +1,362 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PCRaster documentation &mdash; PCRaster 4.0.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="PCRaster 4.0.3 documentation" href="#" />
+    <link rel="next" title="Introduction to the PCRaster Package: Concepts, Package Layout" href="secintro.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="secintro.html" title="Introduction to the PCRaster Package: Concepts, Package Layout"
+             accesskey="N">next</a> |</li>
+        <li><a href="#">PCRaster 4.0.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pcraster-documentation">
+<h1>PCRaster documentation<a class="headerlink" href="#pcraster-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="secintro.html">Introduction to the PCRaster Package: Concepts, Package Layout</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="secintro.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="secintro.html#gis-and-cartographic-modelling">GIS and Cartographic Modelling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="secintro.html#dynamic-modelling">Dynamic Modelling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="secintro.html#gstat-module-geostatistical-modelling">gstat module: Geostatistical Modelling</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="secdatbase.html">The Database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="secdatbase.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="secdatbase.html#concepts-kinds-of-data-used-in-the-database">Concepts, kinds of data used in the database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="secdatbase.html#pcraster-maps">PCRaster maps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="secdatbase.html#maps-and-nonspatials">Maps (and nonspatials)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="secdatbase.html#table-format">Table format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="secdatbase.html#time-series-format">Time series format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="secdatbase.html#point-data-column-file-format">Point data column file format</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="secimport.html">How to Import or Export Data, Display Maps, Global Options</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="secimport.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="secimport.html#pcraster-maps-database-management">PCRaster maps: database management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="secimport.html#tables-database-management">Tables: database management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="secimport.html#time-series-database-management">Time series: database management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="secimport.html#point-data-column-files-database-management">Point data column files: database management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="secimport.html#global-options">Global options</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="secstat.html">Cartographic Modelling</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="secstat.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="secstat.html#general-approach-to-cartographic-modelling">General approach to Cartographic Modelling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="secstat.html#point-operations">Point operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="secstat.html#neighbourhood-operations">Neighbourhood operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="secstat.html#area-operations">Area operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="secstat.html#map-operations">Map operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="secstat.html#command-syntax-and-script-files-for-cartographic-modelling">Command syntax and script files for cartographic modelling</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="secdyn.html">Dynamic modelling</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="secdyn.html#introduction">Introduction</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="secpcrcalcscriptfeatures.html">pcrcalc script features</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="secpcrcalcscriptfeatures.html#error-messages">error messages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="secpcrcalcscriptfeatures.html#repeat-until">repeat until</a></li>
+<li class="toctree-l2"><a class="reference internal" href="secpcrcalcscriptfeatures.html#selective-reports">selective reports</a></li>
+<li class="toctree-l2"><a class="reference internal" href="secpcrcalcscriptfeatures.html#substitution-of-arguments">substitution of arguments</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="secbestpractice.html">best practice guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="secbestpractice.html#if-then-else-pitfalls">if then (else) pitfalls</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="functional-list-of-applications-and-operations">
+<h1>Functional list of applications and operations<a class="headerlink" href="#functional-list-of-applications-and-operations" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="secfunclist.html">Functional list of applications and operations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="secfunclist.html#point-operators">Point operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="secfunclist.html#neighbourhood-operators">Neighbourhood operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="secfunclist.html#area-operations">Area operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="secfunclist.html#map-operations">Map operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="secfunclist.html#time-operations">Time operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="secfunclist.html#data-management">Data management</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="applications">
+<h1>Applications<a class="headerlink" href="#applications" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="applications.html">Applications</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="app_asc2map.html">asc2map</a></li>
+<li class="toctree-l2"><a class="reference internal" href="app_col2map.html">col2map</a></li>
+<li class="toctree-l2"><a class="reference internal" href="app_legend.html">legend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="app_map2asc.html">map2asc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="app_map2col.html">map2col</a></li>
+<li class="toctree-l2"><a class="reference internal" href="app_mapattr.html">mapattr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="app_pcrcalc.html">pcrcalc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="app_resample.html">resample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="app_table.html">table</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="operations">
+<h1>Operations<a class="headerlink" href="#operations" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="operations.html">pcrcalc and Python operations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="op_plus.html">+</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_minus.html">-</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_slash.html">/ or div</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_ster.html">*</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_sterster.html">**</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_abs.html">abs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_accucapacity.html">accucapacityflux, accucapacitystate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_accuflux.html">accuflux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_accufraction.html">accufractionflux, accufractionstate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_accuthreshold.html">accuthresholdflux, accuthresholdstate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_accutrigger.html">accutriggerflux, accutriggerstate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_accutraveltime.html">accutraveltimestate, accutraveltimeflux, accutraveltimeremoved</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_accutraveltimefraction.html">accutraveltimefractionstate, accutraveltimefractionflux, accutraveltimefractionremoved</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_acos.html">acos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_and.html">and, &amp;, pcrand</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_argorder.html">argorder,argorderwithid</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_argorderaddarealimited.html">argorderaddarealimited,argorderwithidaddarealimited</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_argorderarealimited.html">argorderarealimited,argorderwithidarealimited</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_areaarea.html">areaarea</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_areaaverage.html">areaaverage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_areadiversity.html">areadiversity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_areamajority.html">areamajority</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_areamaximum.html">areamaximum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_areaminimum.html">areaminimum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_areanormal.html">areanormal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_areaorder.html">areaorder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_areatotal.html">areatotal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_areauniform.html">areauniform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_asin.html">asin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_aspect.html">aspect</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_atan.html">atan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_boolean.html">boolean</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_catchment.html">catchment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_catchmenttotal.html">catchmenttotal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_cellarea.html">cellarea</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_celllength.html">celllength</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_clump.html">clump</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_cos.html">cos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_cover.html">cover</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_defined.html">defined</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_directional.html">directional</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_downstream.html">downstream</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_downstreamdist.html">downstreamdist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_dynwave.html">dynwavestate,dynwaveflux,lookuppotential,lookupstate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_dynamicwave.html">dynamicwave</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_eq.html">eq or ==</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_exp.html">exp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_extentofview.html">extentofview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_fac.html">fac</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_ge.html">ge or &gt;=</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_gt.html">gt or &gt;</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_horizontan.html">horizontan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_idiv.html">idiv, //</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_ifthen.html">if then</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_ifthenelse.html">if then else</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_influencesimplegauss.html">influencesimplegauss</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_inversedistance.html">inversedistance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_kinematic.html">kinematic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_kinwave.html">kinwavestate, kinwaveflux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_ldd.html">ldd</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_lddcreate.html">lddcreate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_lddcreatedem.html">lddcreatedem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_ldddist.html">ldddist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_lddmask.html">lddmask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_lddrepair.html">lddrepair</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_le.html">le or &lt;=</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_ln.html">ln</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_log10.html">log10</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_lookup.html">lookup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_lookuplinear.html">lookuplinear</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_lookupmapstack.html">lookupmapstack</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_lt.html">lt or &lt;</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_maparea.html">maparea</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_mapmaximum.html">mapmaximum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_mapminimum.html">mapminimum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_mapnormal.html">mapnormal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_maptotal.html">maptotal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_mapuniform.html">mapuniform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_markwhilesum.html">markwhilesumle,markwhilesumge</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_max.html">max</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_min.html">min</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_mod.html">mod, %</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_ne.html">ne or !=</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_nodirection.html">nodirection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_nominal.html">nominal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_normal.html">normal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_not.html">not, ~, pcrnot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_or.html">or, |, pcror</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_order.html">order</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_ordinal.html">ordinal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_path.html">path</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_pit.html">pit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_plancurv.html">plancurv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_pred.html">pred</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_profcurv.html">profcurv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_rounddown.html">rounddown</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_roundoff.html">roundoff</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_roundup.html">roundup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_scalar.html">scalar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_shift.html">shift,shift0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_sin.html">sin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_slope.html">slope</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_slopelength.html">slopelength</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_spatial.html">spatial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_spread.html">spread</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_spreadldd.html">spreadldd</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_spreadlddzone.html">spreadlddzone</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_spreadmax.html">spreadmax</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_spreadzone.html">spreadzone</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_sqr.html">sqr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_sqrt.html">sqrt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_streamorder.html">streamorder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_subcatchment.html">subcatchment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_succ.html">succ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_tan.html">tan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_time.html">time</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_timeinput....html">timeinput...</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_timeinput.html">timeinput</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_timeinputmodulo.html">timeinputmodulo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_timeinputsparse.html">timeinputsparse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_timeoutput.html">timeoutput</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_timeslice.html">timeslice</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_transient.html">transient</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_uniform.html">uniform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_uniqueid.html">uniqueid</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_upstream.html">upstream</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_view.html">view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_window4total.html">window4total</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_windowaverage.html">windowaverage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_windowdiversity.html">windowdiversity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_windowhighpass.html">windowhighpass</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_windowmajority.html">windowmajority</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_windowmaximum.html">windowmaximum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_windowminimum.html">windowminimum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_windowtotal.html">windowtotal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_xcoordinate.html">xcoordinate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_xor.html">xor, ^, pcrxor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="op_ycoordinate.html">ycoordinate</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="index-and-search">
+<h1>Index and search<a class="headerlink" href="#index-and-search" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">PCRaster documentation</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#functional-list-of-applications-and-operations">Functional list of applications and operations</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#applications">Applications</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#operations">Operations</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#index-and-search">Index and search</a></li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="secintro.html"
+                        title="next chapter">Introduction to the PCRaster Package: Concepts, Package Layout</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="secintro.html" title="Introduction to the PCRaster Package: Concepts, Package Layout"
+             >next</a> |</li>
+        <li><a href="#">PCRaster 4.0.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 1990-2015, PCRaster R&amp;D Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

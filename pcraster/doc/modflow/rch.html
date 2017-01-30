@@ -1,0 +1,135 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>RCH package &mdash; PCRasterModflow 4.0.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="PCRasterModflow 4.0.3 documentation" href="index.html" />
+    <link rel="up" title="Setting Modflow’s input data" href="mfin.html" />
+    <link rel="next" title="WEL package" href="wel.html" />
+    <link rel="prev" title="RIV package" href="riv.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="wel.html" title="WEL package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="riv.html" title="RIV package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PCRasterModflow 4.0.3 documentation</a> &raquo;</li>
+          <li><a href="usage.html" >Usage in PCRCalc</a> &raquo;</li>
+          <li><a href="mfin.html" accesskey="U">Setting Modflow&#8217;s input data</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="rch-package">
+<h1>RCH package<a class="headerlink" href="#rch-package" title="Permalink to this headline">¶</a></h1>
+<p>The RCH package specifies the areally distributed recharge. To enable the recharge package either use</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">res</span> <span class="o">=</span> <span class="n">mf</span><span class="o">::</span><span class="n">setRecharge</span><span class="p">(</span><span class="n">recharge</span><span class="p">,</span> <span class="n">NRCHOP</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>where</p>
+<dl class="docutils">
+<dt>recharge [<span class="math">\(LT^-1\)</span>]</dt>
+<dd>is the name of a spatial, scalar PCRaster map containing the recharge flux and</dd>
+<dt>NRCHOP [<span class="math">\(-\)</span>]</dt>
+<dd>is the recharge option code (1 - recharge is only to the top grid layer, 3 - recharge is applied to the highest active cell in each vertical column),</dd>
+</dl>
+<p>or to indicate the layer number where recharge is applied to use</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">res</span> <span class="o">=</span> <span class="n">mf</span><span class="o">::</span><span class="n">setIndicatedRecharge</span><span class="p">(</span><span class="n">recharge</span><span class="p">,</span> <span class="n">layer</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>where</p>
+<dl class="docutils">
+<dt>recharge [<span class="math">\(LT^-1\)</span>]</dt>
+<dd>is the name of a spatial, scalar PCRaster map containing the recharge flux and</dd>
+<dt>layer [<span class="math">\(-\)</span>]</dt>
+<dd>is the name of a spatial, nominal PCRaster map containing layer number variables defining the layer in each vertical column where recharge is applied.</dd>
+</dl>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="riv.html"
+                        title="previous chapter">RIV package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="wel.html"
+                        title="next chapter">WEL package</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="wel.html" title="WEL package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="riv.html" title="RIV package"
+             >previous</a> |</li>
+        <li><a href="index.html">PCRasterModflow 4.0.3 documentation</a> &raquo;</li>
+          <li><a href="usage.html" >Usage in PCRCalc</a> &raquo;</li>
+          <li><a href="mfin.html" >Setting Modflow&#8217;s input data</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2006-2015, PCRaster R&amp;D team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

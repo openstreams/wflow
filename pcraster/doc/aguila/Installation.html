@@ -1,0 +1,185 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installation &mdash; Aguila 1.3.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.3.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Aguila 1.3.3 documentation" href="index.html" />
+    <link rel="up" title="Manual" href="Manual.html" />
+    <link rel="next" title="Quick start" href="QuickStart.html" />
+    <link rel="prev" title="Introduction" href="Introduction.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="QuickStart.html" title="Quick start"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="Introduction.html" title="Introduction"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Aguila 1.3.3 documentation</a> &raquo;</li>
+          <li><a href="Manual.html" accesskey="U">Manual</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="installation">
+<span id="id1"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The information in this section is related to the stand-alone binary Aguila distribution and is not valid when Aguila is distributed as part of a PCRaster distribution. The source code and information about building Aguila can be obtained from the <a class="reference external" href="http://pcraster.sourceforge.net">PCRaster Open Source Tools project website</a> on SourceForge.</p>
+</div>
+<p>Aguila installation packages can be found at the <a class="reference external" href="http://sourceforge.net/projects/pcraster/files">files section</a> of the SourceForge project page.</p>
+<div class="section" id="microsoft-windows">
+<span id="microsoftwindows"></span><h2>Microsoft Windows<a class="headerlink" href="#microsoft-windows" title="Permalink to this headline">¶</a></h2>
+<p>The software is distributed as a Windows installer. Install Aguila by executing the installer. After installation there is an option to uninstall Aguila again.</p>
+<p>The following directories are created within the installation directory:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nb">bin</span>    <span class="c"># Contains the executable and the required shared libraries.</span>
+<span class="n">demos</span>  <span class="c"># Contains demo data.</span>
+<span class="n">doc</span>    <span class="c"># Contains this manual, in pdf format.</span>
+<span class="n">share</span>  <span class="c"># Contains support files.</span>
+</pre></div>
+</div>
+<p>When you install Aguila as a user with Administrator rights, the search path for executables is automatically updated to include the path to the Aguila binary. Otherwise, you need to update the search path yourself:</p>
+<ol class="arabic simple">
+<li>Right-click on <tt class="docutils literal"><span class="pre">My</span> <span class="pre">Computer</span></tt> and select <tt class="docutils literal"><span class="pre">Properties</span></tt>.</li>
+<li>Go to <tt class="docutils literal"><span class="pre">Advanced</span></tt> tab and select <tt class="docutils literal"><span class="pre">Environment</span> <span class="pre">Variables</span></tt>.</li>
+<li>Edit the <tt class="docutils literal"><span class="pre">PATH</span></tt> variable from the <tt class="docutils literal"><span class="pre">User</span> <span class="pre">variables</span> <span class="pre">for</span> <span class="pre">user</span></tt> list, or add it if it not already exists.</li>
+<li>Insert the path to the Aguila binary into the edit field (separate paths using a semicolon).</li>
+<li>Open a new command prompt which will have the new environment setting.</li>
+</ol>
+</div>
+<div class="section" id="gnu-linux">
+<span id="gnulinux"></span><h2>GNU Linux<a class="headerlink" href="#gnu-linux" title="Permalink to this headline">¶</a></h2>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p>The binary distribution of Aguila for Linux is created on the PCRaster development machines. This version of Aguila will run on systems with similar properties (currently <a class="reference external" href="http://www.debian.org">Debian</a> <a class="reference external" href="http://www.debian.org/releases/testing">testing</a> on <a class="reference external" href="http://en.wikipedia.org/wiki/Intel_P6">i686</a> and <a class="reference external" href="http://en.wikipedia.org/wiki/X86-64">x86_64</a>). On other machines this version may not run <a class="footnote-reference" href="#id9" id="id4">[1]</a>. Here is a list of Linux platforms for which Aguila is reported to run:</p>
+<ul class="last simple">
+<li>i686 / Debian testing</li>
+<li>i686 / Ubuntu 8.04</li>
+<li>i686 / Ubuntu 9.04</li>
+<li>x86_64 / Debian testing</li>
+<li>x86_64 / Ubuntu 8.04</li>
+</ul>
+</div>
+<table class="docutils footnote" frame="void" id="id9" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[1]</a></td><td>We are in the process of making Aguila <a class="reference external" href="http://www.linuxfoundation.org/en/LSB">LSB</a>-compliant.</td></tr>
+</tbody>
+</table>
+<p>The software is distributed as a compressed tar file which can be unzipped as follows:</p>
+<div class="highlight-python"><pre>tar zxf Aguila-&lt;architecture&gt;-&lt;version&gt;-Linux.tar.gz</pre>
+</div>
+<p>This will result in a directory with the following subdirectories:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nb">bin</span>    <span class="c"># Contains the executable.</span>
+<span class="n">demos</span>  <span class="c"># Contains demo data.</span>
+<span class="n">doc</span>    <span class="c"># Contains this manual, in pdf format.</span>
+<span class="n">lib</span>    <span class="c"># Contains the required shared libraries.</span>
+<span class="n">share</span>  <span class="c"># Contains support files.</span>
+</pre></div>
+</div>
+<p>To be able to use Aguila you need to add the path to the <tt class="docutils literal"><span class="pre">bin</span></tt> directory to the search path for executables (<tt class="docutils literal"><span class="pre">PATH</span></tt>).</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">It is not necessary anymore to add the <tt class="docutils literal"><span class="pre">lib</span></tt> directory to the search path for shared libraries (<tt class="docutils literal"><span class="pre">LD_LIBRARY_PATH</span></tt>).</p>
+</div>
+<div class="admonition tip">
+<p class="first admonition-title">Tip</p>
+<p>To debug issues when Aguila fails to start you can look at the output of the following command:</p>
+<div class="highlight-python"><pre>ldd path_to_aguila/aguila | less</pre>
+</div>
+<p class="last">This command will report whether certain required shared libraries cannot be found.</p>
+</div>
+</div>
+<div class="section" id="mac-os-x">
+<h2>Mac OS X<a class="headerlink" href="#mac-os-x" title="Permalink to this headline">¶</a></h2>
+<p>Aguila compiles on <a class="reference external" href="http://www.apple.com/macosx">Mac OS X</a> too, but since we currently do not have a development machine available with this operating system installed, we cannot provide binary packages, unfortunately.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Installation</a><ul>
+<li><a class="reference internal" href="#microsoft-windows">Microsoft Windows</a></li>
+<li><a class="reference internal" href="#gnu-linux">GNU Linux</a></li>
+<li><a class="reference internal" href="#mac-os-x">Mac OS X</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="Introduction.html"
+                        title="previous chapter">Introduction</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="QuickStart.html"
+                        title="next chapter">Quick start</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="QuickStart.html" title="Quick start"
+             >next</a></li>
+        <li class="right" >
+          <a href="Introduction.html" title="Introduction"
+             >previous</a> |</li>
+        <li><a href="index.html">Aguila 1.3.3 documentation</a> &raquo;</li>
+          <li><a href="Manual.html" >Manual</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2009-2015, PCRaster R&amp;D team.
+      Last updated on Apr 16, 2015.
+    </div>
+  </body>
+</html>

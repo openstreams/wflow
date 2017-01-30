@@ -1,0 +1,216 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Install PCRaster &mdash; PCRaster 4.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="PCRaster 4.1.0 documentation" href="index.html" />
+    <link rel="next" title="Build PCRaster" href="build.html" />
+    <link rel="prev" title="Welcome to PCRaster’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="build.html" title="Build PCRaster"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to PCRaster’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PCRaster 4.1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="install-pcraster">
+<h1>Install PCRaster<a class="headerlink" href="#install-pcraster" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p>The PCRaster Python package depends on Python and Numpy:</p>
+<ul class="simple">
+<li>Python: Version 2.7 is required (<a class="reference external" href="http://www.python.org/download/">http://www.python.org/download/</a>).</li>
+<li>Numpy: Version 1.6 or later is fine (<a class="reference external" href="https://sourceforge.net/projects/numpy/files/NumPy/">https://sourceforge.net/projects/numpy/files/NumPy/</a>).</li>
+</ul>
+</div>
+<div class="section" id="linux">
+<h2>Linux<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h2>
+<p>Installing PCRaster on Linux involves these steps:</p>
+<ul class="simple">
+<li>Unzip the zip file containing the software</li>
+<li>Update the <tt class="docutils literal"><span class="pre">PATH</span></tt> and <tt class="docutils literal"><span class="pre">PYTHONPATH</span></tt> environment variables.</li>
+</ul>
+<p>PCRaster can be installed anywhere you want. Typical locations are <tt class="docutils literal"><span class="pre">$HOME</span></tt>, <tt class="docutils literal"><span class="pre">/opt</span></tt> and <tt class="docutils literal"><span class="pre">/usr/local</span></tt>.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nb">cd</span>  /opt
+tar zxf /tmp/pcraster-lsbcc-4_x86-64.tar.gz
+</pre></div>
+</div>
+<p>In order for the PCRaster executables and the Python package to be found, the <tt class="docutils literal"><span class="pre">PATH</span></tt> and <tt class="docutils literal"><span class="pre">PYTHONPATH</span></tt> environment variables must be updated with the paths to the executables and Python package, respectively. Assuming the use of the bash shell:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nb">export </span><span class="nv">PATH</span><span class="o">=</span>/opt/pcraster-lsbcc-4_86-64/bin:<span class="nv">$PATH</span>
+<span class="nb">export </span><span class="nv">PYTHONPATH</span><span class="o">=</span>/opt/pcraster-lsbcc-4_86-64/python:<span class="nv">$PYTHONPATH</span>
+</pre></div>
+</div>
+<p>These lines can be put in $HOME/.bash_profile to have them executed each time you login.</p>
+<p>PCRaster is now installed and ready to be used.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">In case the software doesn&#8217;t work, verify that the Linux Standard Base (LSB) 4 package is installed.</p>
+</div>
+<p>PCRaster is known to work on the folowing distributions:</p>
+<ul class="simple">
+<li>Ubuntu 12.10</li>
+<li>Ubuntu 12.04</li>
+<li>bullx Linux, which is compatible with Red Hat Enterprise Linux</li>
+</ul>
+<p>PCRaster is known to work on the Dutch national supercomputer, <a class="reference external" href="https://www.surfsara.nl/systems/cartesius">Cartesius</a>.</p>
+</div>
+<div class="section" id="windows">
+<h2>Windows<a class="headerlink" href="#windows" title="Permalink to this headline">¶</a></h2>
+<p>Installing PCRaster on Windows involves these steps:</p>
+<ul class="simple">
+<li>Unzip the zip file containing the software</li>
+<li>Update the <tt class="docutils literal"><span class="pre">PATH</span></tt> and <tt class="docutils literal"><span class="pre">PYTHONPATH</span></tt> environment variables.</li>
+</ul>
+<p>PCRaster can be installed anywhere you want. Typical locations are <tt class="docutils literal"><span class="pre">%PROGRAMFILES%</span></tt>, <tt class="docutils literal"><span class="pre">%PROGRAMFILES(X86)%</span></tt> and <tt class="docutils literal"><span class="pre">C:\</span></tt>.</p>
+<p>In order for the PCRaster executables and the Python package to be found, the <tt class="docutils literal"><span class="pre">PATH</span></tt> and <tt class="docutils literal"><span class="pre">PYTHONPATH</span></tt> environment variables must be updated with the paths to the executables and Python package, respectively.</p>
+<p>On Windows XP environment variables can be changed like this (<a class="reference external" href="http://support.microsoft.com/kb/310519">http://support.microsoft.com/kb/310519</a>):</p>
+<ol class="arabic">
+<li><p class="first">Right-click My Computer, and then click Properties.</p>
+</li>
+<li><p class="first">Click the Advanced tab.</p>
+</li>
+<li><p class="first">Click Environment variables.</p>
+</li>
+<li><p class="first">Click one of the following options, for either a user or a system variable:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Click New to add a new variable name and value.</li>
+<li>Click an existing variable, and then click Edit to change its value.</li>
+</ul>
+</div></blockquote>
+</li>
+</ol>
+<p>On other versions of Windows a similar procedure must be folowed.</p>
+<p>An alternative is to create a batch script that can be run before using PCRaster:</p>
+<div class="highlight-bat"><div class="highlight"><pre><span class="c">rem Configure environment for use of Python.</span>
+<span class="k">set</span> <span class="nv">python_root</span><span class="o">=</span>C:\Python<span class="m">27</span>
+<span class="k">set</span> <span class="nv">PATH</span><span class="o">=</span><span class="nv">%python_root%</span>;<span class="nv">%PATH%</span>
+<span class="k">set</span> <span class="nv">python_root</span><span class="o">=</span>
+
+<span class="c">rem Configure environment for use of PCRaster.</span>
+<span class="c">rem This variable is different for each version of PCRaster.</span>
+<span class="k">set</span> <span class="nv">pcraster_version</span><span class="o">=</span>pcraster<span class="m">-4</span>.<span class="m">0</span>.<span class="m">0</span>-beta<span class="m">-20130917</span>_x<span class="m">86-32</span>_msvs<span class="m">-9</span>
+<span class="k">set</span> <span class="nv">pcraster_root</span><span class="o">=</span><span class="nv">%HOMEPATH%</span>\Desktop\<span class="nv">%pcraster_version%</span>
+<span class="k">set</span> <span class="nv">PATH</span><span class="o">=</span><span class="nv">%pcraster_root%</span>\bin;<span class="nv">%PATH%</span>
+<span class="k">set</span> <span class="nv">PYTHONPATH</span><span class="o">=</span><span class="nv">%pcraster_root%</span>\python;<span class="nv">%PYTHONPATH%</span>
+<span class="k">set</span> <span class="nv">pcraster_root</span><span class="o">=</span>
+<span class="k">set</span> <span class="nv">pcraster_version</span><span class="o">=</span>
+</pre></div>
+</div>
+<p>PCRaster is now installed and ready to be used.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>In case the software doesn&#8217;t work, verify that the Microsoft Visual C++ 2005 Redistributable Package is installed:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li><a class="reference external" href="http://www.microsoft.com/en-us/download/details.aspx?id=3387">Redistributable Package for PCRaster 4, 32-bit version</a></li>
+<li><a class="reference external" href="http://www.microsoft.com/en-us/download/details.aspx?id=21254">Redistributable Package for PCRaster 4, 64-bit version</a></li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="mac-os-x">
+<h2>Mac OS X<a class="headerlink" href="#mac-os-x" title="Permalink to this headline">¶</a></h2>
+<p>TODO</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Install PCRaster</a><ul>
+<li><a class="reference internal" href="#requirements">Requirements</a></li>
+<li><a class="reference internal" href="#linux">Linux</a></li>
+<li><a class="reference internal" href="#windows">Windows</a></li>
+<li><a class="reference internal" href="#mac-os-x">Mac OS X</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to PCRaster&#8217;s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="build.html"
+                        title="next chapter">Build PCRaster</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="build.html" title="Build PCRaster"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to PCRaster’s documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">PCRaster 4.1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012-2015, PCRaster R&amp;D Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,426 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Views &mdash; Aguila 1.3.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.3.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Aguila 1.3.3 documentation" href="index.html" />
+    <link rel="up" title="Manual" href="Manual.html" />
+    <link rel="next" title="Dialogs" href="Dialogs.html" />
+    <link rel="prev" title="Quick start" href="QuickStart.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="Dialogs.html" title="Dialogs"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="QuickStart.html" title="Quick start"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Aguila 1.3.3 documentation</a> &raquo;</li>
+          <li><a href="Manual.html" accesskey="U">Manual</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="views">
+<span id="id1"></span><h1>Views<a class="headerlink" href="#views" title="Permalink to this headline">¶</a></h1>
+<p>Views are attribute visualisations. Every type of attribute supported by Aguila has a default view type which will be shown when no view is explicitly selected when starting up Aguila. For example, a raster attribute will be shown in the map view and a time series in a time graph view.
+Some attribute types can be shown in multiple view types. A spatio-temporal raster attribute can be shown in a map view and a time graph view at the same time, for example.</p>
+<p>Aguila uses the notion of a cursor to enable the views to decide which part of an attribute data set to visualise. The cursor consists of a set of coordinates that the user can set, like the current time step and the current spatial x- and y-coordinates. The current time step determines which map of a spatio-temporal attribute is shown, for example. And the current spatial coordinate determines for which spatial location of a spatio-temporal attribute the time graph is shown.</p>
+<p>Views enable the user to change the cursor. For example, in a map view, the spatial coordinates of the cursor can be changed by clicking in the map. And in a time graph view, the time coordinate of the cursor can be changed by clicking in the graph. All views will respond to a change of the cursor. See section <a class="reference internal" href="#cursorandvaluesview"><em>Cursor And Values View</em></a> for a view for viewing and changing the current cursor coordinates.</p>
+<p>Apart from the cursor there are more global properties used by Aguila to maintain links between the views. Examples of those are the scale of a map and the pan position. Because of this, all map views will always show the same area.</p>
+<p>Attributes have draw properties, for example the palette used to select colours used to visualise the attribute. These properties are shared among the views, so each attribute always uses the same properties, no matter in how many views the attribute is shown. Changing the properties of the attribute in one view, also changes the properties of the attribute in the other view(s).</p>
+<p>All views have a similar layout. The largest part is taken up by the visualisation itself, and on the left there is a legend for each attribute visualised. Between the legend and the main visualisation there is a splitter which can be dragged to make the legend larger or smaller relative to the main visualisation. At the top there are a menu bar and a toolbar.</p>
+<p>Right-clicking the legend of an attribute brings up a context menu with actions specific for the selected attribute. Some actions are always available and some actions are available depending on the characteristics of the selected attribute. For example, the action to show an attribute in a time graph view is only available for a temporal attribute.</p>
+<p>Here is a list of common attribute context menu actions:</p>
+<table border="1" class="docutils">
+<caption>Attribute context menu actions</caption>
+<colgroup>
+<col width="31%" />
+<col width="69%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Menu item</th>
+<th class="head">Effect</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">Edit</span> <span class="pre">draw</span> <span class="pre">properties</span></tt></td>
+<td>Shows the <tt class="docutils literal"><span class="pre">Draw</span> <span class="pre">Properties</span></tt> dialog, see
+section <a class="reference internal" href="Dialogs.html#drawpropertiesdialog"><em>Draw Properties Dialog</em></a>.</td>
+</tr>
+</tbody>
+</table>
+<p>Double-clicking the attribute legend shows the draw properties dialog also.</p>
+<p>For spatio-temporal attributes, the attribute context menu has a <tt class="docutils literal"><span class="pre">Show</span> <span class="pre">Time</span> <span class="pre">Series</span></tt> action. This will show the attribute in a new, linked, time graph view.</p>
+<div class="section" id="cursor-and-values-view">
+<span id="cursorandvaluesview"></span><h2>Cursor And Values View<a class="headerlink" href="#cursor-and-values-view" title="Permalink to this headline">¶</a></h2>
+<p>All attributes shown by Aguila are put in the cursor and values view too. This view is normally not visible when the application starts (unless requested with the <tt class="docutils literal"><span class="pre">valueOnly</span></tt> program option (see section <a class="reference internal" href="QuickStart.html#programoptions"><em>Program options</em></a>).</p>
+<p>This view shows the current global cursor coordinates and the attribute values at the current cursor position.</p>
+<p>The view consists of an upper part with the current cursor coordinates and a lower part with the values of all attributes loaded. The cursor sliders allows navigating through the dimensions such as time and space (see section <a class="reference internal" href="Data.html#dimensions"><em>Dimensions</em></a>). Each slider has a knob for the current position.</p>
+<table border="1" class="docutils">
+<caption>Cursor slider actions</caption>
+<colgroup>
+<col width="43%" />
+<col width="57%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Change position</th>
+<th class="head">Slider action</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Set slider one position backwards</td>
+<td>Click on the slider part left from the
+knob</td>
+</tr>
+<tr class="row-odd"><td>Set slider one position forward</td>
+<td>Click on the slider part right from the
+knob</td>
+</tr>
+<tr class="row-even"><td>Set slider to specific position</td>
+<td>Drag knob to position</td>
+</tr>
+</tbody>
+</table>
+<p>In the value list at the bottom the data names and their values at the current cursor position are shown.</p>
+<p>If Aguila started with the <tt class="docutils literal"><span class="pre">cursorValueMonitorFile</span></tt> program option, the <tt class="docutils literal"><span class="pre">Save</span></tt> button is enabled to append the current data in that file.</p>
+<p>If Aguila started with the <tt class="docutils literal"><span class="pre">fileToGetCursorValue</span></tt> program option, the <tt class="docutils literal"><span class="pre">Get</span></tt> button is enabled to set the coordinate dimensions to that file contents.</p>
+<img alt="_images/CursorAndValuesView.png" src="_images/CursorAndValuesView.png" />
+</div>
+<div class="section" id="map-view">
+<span id="mapview"></span><h2>Map view<a class="headerlink" href="#map-view" title="Permalink to this headline">¶</a></h2>
+<p>A map view shows spatial attributes by a map. This map visualises the spatial variation of the attribute, given the current cursor position.</p>
+<div class="section" id="map-controls">
+<span id="mapcontrols"></span><h3>Map Controls<a class="headerlink" href="#map-controls" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<caption>Map controls.</caption>
+<colgroup>
+<col width="48%" />
+<col width="52%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Effect</th>
+<th class="head">Control</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>change spatial cursor</td>
+<td>left mouse click</td>
+</tr>
+<tr class="row-odd"><td>pan</td>
+<td>left mouse drag</td>
+</tr>
+<tr class="row-even"><td>continuously change
+spatial cursor (prevents
+panning)</td>
+<td>Ctrl+left mouse drag</td>
+</tr>
+<tr class="row-odd"><td>move map to the right</td>
+<td>h / left mouse drag right</td>
+</tr>
+<tr class="row-even"><td>move map to the left</td>
+<td>l / left mouse drag left</td>
+</tr>
+<tr class="row-odd"><td>move map to the bottom</td>
+<td>k / left mouse drag down</td>
+</tr>
+<tr class="row-even"><td>move map to the top</td>
+<td>j / left mouse drag up</td>
+</tr>
+<tr class="row-odd"><td>zoom in</td>
+<td>Ctrl+k / left mouse double click /
+scroll mouse</td>
+</tr>
+<tr class="row-even"><td>zoom out</td>
+<td>forward
+Ctrl+j / scroll mouse backward</td>
+</tr>
+<tr class="row-odd"><td>Zoom by rectangle</td>
+<td>Shift+left mouse drag</td>
+</tr>
+<tr class="row-even"><td>reset</td>
+<td>r</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="time-graph-view">
+<span id="timegraphview"></span><h2>Time Graph View<a class="headerlink" href="#time-graph-view" title="Permalink to this headline">¶</a></h2>
+<p>A time graph view shows temporal attributes by a single line. This line visualises the temporal variation of the attribute, given the current cursor position.
+The current time can be changed by clicking or dragging in the graph.</p>
+<p>The attribute context menu has a <tt class="docutils literal"><span class="pre">Save</span> <span class="pre">graph</span> <span class="pre">data</span> <span class="pre">as...</span></tt> action. This enables one to export the data of a single graph line.</p>
+</div>
+<div class="section" id="drape-view">
+<span id="drapeview"></span><h2>Drape View<a class="headerlink" href="#drape-view" title="Permalink to this headline">¶</a></h2>
+<p>The drape view shows a scalar spatial raster attribute as a surface (or sheet) which floats in space. Additional spatial raster attributes can be shown on top of this surface.</p>
+<p>You can change some properties of the drape view by right clicking your mouse in the map view (the one which shows the sheet) and selecting <tt class="docutils literal"><span class="pre">Properties</span></tt>. The properties dialogue for the map view will be shown.</p>
+<div class="section" id="drape-controls">
+<h3>Drape Controls<a class="headerlink" href="#drape-controls" title="Permalink to this headline">¶</a></h3>
+<p>There&#8217;s a difference between controlling the camera (&#8216;your head&#8217;) and the 3D scene. You can control the position and aim of the camera (see the table below). You can only control the orientation of the scene (see the second table below). Together these controls enable you to look at every part of the scene from everywhere.</p>
+<table border="1" class="docutils">
+<caption>Controls for changing the position and orientation of the camera.</caption>
+<colgroup>
+<col width="32%" />
+<col width="68%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Effect</th>
+<th class="head">Control</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>look left</td>
+<td>h / left mouse drag left / right mouse drag left</td>
+</tr>
+<tr class="row-odd"><td>look right</td>
+<td>l / left mouse drag right / right mouse drag right</td>
+</tr>
+<tr class="row-even"><td>look up</td>
+<td>k / right mouse drag forwards</td>
+</tr>
+<tr class="row-odd"><td>look down</td>
+<td>j / right mouse drag backwards</td>
+</tr>
+<tr class="row-even"><td>roll clockwise</td>
+<td>n</td>
+</tr>
+<tr class="row-odd"><td>roll counter-clockwise</td>
+<td>m</td>
+</tr>
+<tr class="row-even"><td>move left</td>
+<td>Shift+h / left-right mouse drag left</td>
+</tr>
+<tr class="row-odd"><td>move right</td>
+<td>Shift+l / left-right mouse drag left</td>
+</tr>
+<tr class="row-even"><td>move up</td>
+<td>Shift+k / left-right mouse drag forwards</td>
+</tr>
+<tr class="row-odd"><td>move down</td>
+<td>Shift+j / left-right mouse drag backwards</td>
+</tr>
+<tr class="row-even"><td>move forward</td>
+<td>Shift+Up / Ctrl+k / left mouse drag forwards</td>
+</tr>
+<tr class="row-odd"><td>move backwards</td>
+<td>Shift+Down / Ctrl+j / left mouse drag
+backwards</td>
+</tr>
+<tr class="row-even"><td>reset</td>
+<td>r</td>
+</tr>
+</tbody>
+</table>
+<table border="1" class="docutils">
+<caption>Controls for changing the orientation of the scene.</caption>
+<colgroup>
+<col width="84%" />
+<col width="16%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Effect</th>
+<th class="head">Control</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>rotate clockwise around z-axis</td>
+<td>Left</td>
+</tr>
+<tr class="row-odd"><td>rotate counter-clockwise around z-axis</td>
+<td>Right</td>
+</tr>
+<tr class="row-even"><td>rotate clockwise around x-axis</td>
+<td>Up</td>
+</tr>
+<tr class="row-odd"><td>rotate counter-clockwise around x-axis</td>
+<td>Down</td>
+</tr>
+<tr class="row-even"><td>reset</td>
+<td>r</td>
+</tr>
+</tbody>
+</table>
+<p>The camera and the scene have their own coordinate system which can be moved and rotated independently from each other. You should interpret the above controls relative to the direction of the coordinate system of the camera or the scene. For example, moving the camera forward means moving the camera in the direction of the camera. This might be in a direction away from the scene!</p>
+</div>
+<div class="section" id="camera-s">
+<h3>Camera&#8217;s<a class="headerlink" href="#camera-s" title="Permalink to this headline">¶</a></h3>
+<p>Apart from the camera whose position and orientation can be changed, there are 5 more camera&#8217;s in the scene. These static camera&#8217;s are positioned in such a way that it is possible to see the relative position of the scene and the mobile camera. The table below gives a list of camera&#8217;s you can choose from (note the correspondence between the shortcuts and the layout of the numeric keypad on your keyboard).</p>
+<table border="1" class="docutils">
+<caption>Camera&#8217;s.</caption>
+<colgroup>
+<col width="43%" />
+<col width="57%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Camera</th>
+<th class="head">Shortcut</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Top</td>
+<td>5</td>
+</tr>
+<tr class="row-odd"><td>Front</td>
+<td>2</td>
+</tr>
+<tr class="row-even"><td>Left</td>
+<td>4</td>
+</tr>
+<tr class="row-odd"><td>Back</td>
+<td>8</td>
+</tr>
+<tr class="row-even"><td>Right</td>
+<td>6</td>
+</tr>
+<tr class="row-odd"><td>Mobile</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="shortcuts">
+<h3>Shortcuts<a class="headerlink" href="#shortcuts" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<caption>Shortcuts.</caption>
+<colgroup>
+<col width="61%" />
+<col width="39%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Effect</th>
+<th class="head">Shortcut</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>exaggerate heights</td>
+<td>Plus (+)</td>
+</tr>
+<tr class="row-odd"><td>understate heights</td>
+<td>Minus (-)</td>
+</tr>
+<tr class="row-even"><td>enlarge quad length</td>
+<td>Shift+q</td>
+</tr>
+<tr class="row-odd"><td>decrease quad length</td>
+<td>q</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="d-multimap-view">
+<span id="dmultimapview"></span><h2>2D Multimap View<a class="headerlink" href="#d-multimap-view" title="Permalink to this headline">¶</a></h2>
+<p>2D Multimap mode can be enabled when multiple scenarios are provided, that need to be compared side by side. Without duplication of window borders, legends, etc., in this mode, multiple maps are organized in panels over a regular lattice, and shown in a single window. Zoom/pan/identify actions, as well as legend modifications are now reflected automatically over all panels.</p>
+<p>Aguila does not provide interactive setting of the panel layout; it needs to be set on the command line or in the configuration file specified on startup. If it is not specified, all maps (scenarios) will be shown in different windows, and e.g. legend changes will only reflect to the window at which it is applied.</p>
+</div>
+<div class="section" id="probability-graph-view">
+<span id="cumulativeprobabilitiesview"></span><h2>Probability Graph View<a class="headerlink" href="#probability-graph-view" title="Permalink to this headline">¶</a></h2>
+<p>Aguila can show probability distribution functions (cumulative probabilities and exceedance probabilities) for continuous random variables. The probability graph view is available only when the data are specified as a probability distribution, using a set of quantiles (see section <a class="reference internal" href="Data.html#datasettypes"><em>Data set types</em></a>).</p>
+<img alt="_images/krige_ProbabilityGraph.png" src="_images/krige_ProbabilityGraph.png" />
+<p>For uncertain attributes, the attribute context menu has a <tt class="docutils literal"><span class="pre">Show</span> <span class="pre">Probability</span> <span class="pre">Plot</span></tt> action. This will show the attribute in a new, linked, probability graph view. This view shows, for the current location and time step, the distribution function for the data, or the set of distribution functions for the set of scenarios.</p>
+<p>The view shows a horizontal line at distribution value <tt class="docutils literal"><span class="pre">0.5</span></tt>, indicating that the map currently shows the median value. The horizontal line can be dragged to show other quantile values in the map view or time plot.</p>
+<p>As an alternative view, the distribution function values for a given threshold value (one minus the exceedance probability) can be shown by pressing the tool button with the <tt class="docutils literal"><span class="pre">+</span></tt> symbol, or through menu items <tt class="docutils literal"><span class="pre">View</span> <span class="pre">|</span> <span class="pre">Toggle</span> <span class="pre">Marker</span></tt>. This will flip the horizontal line into vertical position, allowing modification of the threshold (attribute) value for which distribution function values (probabilities) will be shown.</p>
+<p>Pressing the <tt class="docutils literal"><span class="pre">+</span></tt> tool button again returns to quantile views.</p>
+<p>Dragging the line may, for larger data sets, be slower in vertical mode than in horizontal mode. The reason is that in vertical mode, besides a linear interpolation, a lookup needs to take place, because the function is specified for a known set of (constant) probability values, and not as probabilities for a known set of attribute (data) values.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Views</a><ul>
+<li><a class="reference internal" href="#cursor-and-values-view">Cursor And Values View</a></li>
+<li><a class="reference internal" href="#map-view">Map view</a><ul>
+<li><a class="reference internal" href="#map-controls">Map Controls</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#time-graph-view">Time Graph View</a></li>
+<li><a class="reference internal" href="#drape-view">Drape View</a><ul>
+<li><a class="reference internal" href="#drape-controls">Drape Controls</a></li>
+<li><a class="reference internal" href="#camera-s">Camera&#8217;s</a></li>
+<li><a class="reference internal" href="#shortcuts">Shortcuts</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#d-multimap-view">2D Multimap View</a></li>
+<li><a class="reference internal" href="#probability-graph-view">Probability Graph View</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="QuickStart.html"
+                        title="previous chapter">Quick start</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="Dialogs.html"
+                        title="next chapter">Dialogs</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="Dialogs.html" title="Dialogs"
+             >next</a></li>
+        <li class="right" >
+          <a href="QuickStart.html" title="Quick start"
+             >previous</a> |</li>
+        <li><a href="index.html">Aguila 1.3.3 documentation</a> &raquo;</li>
+          <li><a href="Manual.html" >Manual</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2009-2015, PCRaster R&amp;D team.
+      Last updated on Apr 16, 2015.
+    </div>
+  </body>
+</html>
