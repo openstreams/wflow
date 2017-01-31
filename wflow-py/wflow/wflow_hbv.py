@@ -438,7 +438,7 @@ class WflowModel(DynamicModel):
         tt_complex = pcr2numpy(self.ReserVoirComplexLocs, 0.0)
         self.nrresComplex = tt_complex.max()
         self.ReserVoirLocs = self.ReserVoirLocs + cover(scalar(self.ReserVoirComplexLocs))
-        res_area = cover(scalar(self.ReservoirComplexAreas))
+        res_area = cover(scalar(self.ReservoirComplexAreas),0.0)
         self.filter_P_PET = ifthenelse(res_area > 0, res_area*0.0, res_area*0.0 + 1.0)
     else:
         self.nrresComplex = 0
