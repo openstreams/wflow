@@ -4,7 +4,7 @@
 This script makes a stand-alone 'executable' of the wflow models. It is tested using
 Anaconda on windows 64 bit and ubuntu xenial 64 bit
 
-supported tagets:
+supported targets:
 - normal
 - openda - includes thrift connection to openda, Make sure you have thrift installed first
 - deltashell - includes bmi/mmi link to deltashell. Windows only. Make sure you have zmq, bmi and mmi

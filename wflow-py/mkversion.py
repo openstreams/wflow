@@ -2,7 +2,11 @@ import os
 import datetime
 
 import subprocess
-branch = subprocess.check_output('git rev-parse --abbrev-ref HEAD', shell=True).strip()
+
+try:
+    branch = subprocess.check_output('git rev-parse --abbrev-ref HEAD', shell=True).strip()
+except:
+    branch = 'master'
 
 vers='1'
 nrversion = '1.0'
