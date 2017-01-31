@@ -12,8 +12,8 @@ supported targets:
 """
 
 #target = 'deltashell'
-target ='openda'
-#target = 'normal'
+#arget ='openda'
+target = 'normal'
 
 from cx_Freeze import setup, Executable, hooks
 
