@@ -424,6 +424,7 @@ class WflowModel(DynamicModel):
     self.wf_updateparameters()
 
     self.ReserVoirLocs = self.ZeroMap
+
     if hasattr(self,'ReserVoirSimpleLocs'):
         # Check if we have simple and or complex reservoirs
         tt_simple = pcr2numpy(self.ReserVoirSimpleLocs, 0.0)
@@ -437,6 +438,8 @@ class WflowModel(DynamicModel):
         tt_complex = pcr2numpy(self.ReserVoirComplexLocs, 0.0)
         self.nrresComplex = tt_complex.max()
         self.ReserVoirLocs = self.ReserVoirLocs + cover(scalar(self.ReserVoirComplexLocs))
+        res_area = cover(scalar(self.ReservoirComplexAreas))
+        self.filter_P_PET = ifthenelse(res_area > 0, res_area*0.0, res_area*0.0 + 1.0)
     else:
         self.nrresComplex = 0
 
@@ -730,9 +733,20 @@ class WflowModel(DynamicModel):
     self.Precipitation=self.Precipitation-Interception
  
     self.Precipitation=self.SFCF*SnowFrac*self.Precipitation+self.RFCF*RainFrac*self.Precipitation # different correction for rainfall and snowfall
+    
+    
+
 
     self.PotEvaporation=exp(-self.EPF*self.Precipitation)*self.ECORR * self.PotEvaporation  # correction for potential evaporation on wet days
     self.PotEvaporation=self.CEVPF*self.PotEvaporation  # Correct per landuse
+    
+    if hasattr(self, 'ReserVoirComplexLocs'):
+        self.ReserVoirPotEvap = self.PotEvaporation
+        self.ReserVoirPrecip = self.Precipitation
+        
+        self.PotEvaporation = self.filter_P_PET * self.PotEvaporation
+        self.Precipitation = self.filter_P_PET * self.Precipitation
+
 
     SnowFall=SnowFrac*self.Precipitation  #: snowfall depth
     RainFall=RainFrac*self.Precipitation  #: rainfall depth
@@ -856,7 +870,7 @@ class WflowModel(DynamicModel):
         self.ReservoirVolume  = complexreservoir(self.ReservoirWaterLevel, self.ReserVoirComplexLocs, self.ResArea,\
                                                     self.ResThreshold, self.ResStorFunc, self.ResOutflowFunc, self.Res_b,
                                                     self.Res_e, self.SurfaceRunoff, self.Dir + "/" + self.intbl + "//",
-                                                    self.Precipitation, self.PotEvaporation, self.ReservoirComplexAreas,
+                                                    self.ReserVoirPrecip, self.ReserVoirPotEvap, self.ReservoirComplexAreas,
                                                     timestepsecs=self.timestepsecs)
         self.OutflowDwn = upstream(self.TopoLddOrg,cover(self.Outflow,scalar(0.0)))
         self.Inflow = self.OutflowDwn + cover(self.Inflow,self.ZeroMap)
