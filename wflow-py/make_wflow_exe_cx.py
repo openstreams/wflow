@@ -4,7 +4,7 @@
 This script makes a stand-alone 'executable' of the wflow models. It is tested using
 Anaconda on windows 64 bit and ubuntu xenial 64 bit
 
-supported tagets:
+supported targets:
 - normal
 - openda - includes thrift connection to openda, Make sure you have thrift installed first
 - deltashell - includes bmi/mmi link to deltashell. Windows only. Make sure you have zmq, bmi and mmi
@@ -12,8 +12,8 @@ supported tagets:
 """
 
 #target = 'deltashell'
-target ='openda'
-#target = 'normal'
+#arget ='openda'
+target = 'normal'
 
 from cx_Freeze import setup, Executable, hooks
 
@@ -119,6 +119,10 @@ if sys.platform == 'win32':
 
 # GDAL data files
 gdaldata = os.getenv("GDAL_DATA")
+
+if gdaldata == None:
+    gdaldata = "c:\Anaconda\Library\share\gdal"
+
 data_files.extend(mkdatatuples(glob.glob(gdaldata + "/*.*"),destdir='gdal-data'))
 
 
@@ -174,7 +178,6 @@ if target == 'openda':
         Executable('wflow/wflow_floodmap.py', base=base),
         Executable('wflow/wflow_hbv.py', base=base)
     ]
-
 elif target == 'deltashell':
     executables = [
         Executable('Scripts/pcr2netcdf.py', base=base),
