@@ -119,6 +119,10 @@ if sys.platform == 'win32':
 
 # GDAL data files
 gdaldata = os.getenv("GDAL_DATA")
+
+if gdaldata == None:
+    gdaldata = "c:\Anaconda\Library\share\gdal"
+
 data_files.extend(mkdatatuples(glob.glob(gdaldata + "/*.*"),destdir='gdal-data'))
 
 
