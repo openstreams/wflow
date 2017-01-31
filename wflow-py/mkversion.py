@@ -3,7 +3,8 @@ import datetime
 
 import subprocess
 
-branch = subprocess.check_output('git rev-parse --abbrev-ref HEAD', shell=True).strip()
+branch = None
+#branch = subprocess.check_output('git rev-parse --abbrev-ref HEAD', shell=True).strip()
 
 if branch == None:
     branch = 'unknown'
