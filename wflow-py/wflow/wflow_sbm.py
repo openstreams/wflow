@@ -1793,6 +1793,16 @@ class WflowModel(DynamicModel):
         # 1: average volumetric soil in total unsat store
         #self.SMVol = (cover(self.UStoreDepth/self.zi,0.0) + self.thetaR) * (self. thetaS - self.thetaR)
         #self.SMRootVol = (cover(self.UStoreDepth/min(self.ActRootingDepth,self.zi),0.0) + self.thetaR) * (self. thetaS - self.thetaR)
+        RootStore_sat = max(0.0,self.ActRootingDepth-self.zi)*self.thetaS
+        RootStore_unsat = self.ZeroMap
+
+        self.SumThickness = self.ZeroMap
+        for n in arange(len(self.UStoreLayerThickness)):
+            RootStore_unsat = RootStore_unsat + (max(0.0,(self.ActRootingDepth-self.SumThickness))/(self.UStoreLayerThickness[n]))*(cover(self.UStoreLayerDepth[n]+self.thetaR,0.0))
+            self.SumThickness = self.UStoreLayerThickness[n] + self.SumThickness
+
+        self.RootStore = RootStore_sat + RootStore_unsat
+
         # 2:
         ##########################################################################
         # water balance ###########################################
