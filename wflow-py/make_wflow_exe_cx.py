@@ -1,19 +1,14 @@
-
-
 """
 This script makes a stand-alone 'executable' of the wflow models. It is tested using
 Anaconda on windows 64 bit and ubuntu xenial 64 bit
 
 supported targets:
-- normal
-- openda - includes thrift connection to openda, Make sure you have thrift installed first
-- deltashell - includes bmi/mmi link to deltashell. Windows only. Make sure you have zmq, bmi and mmi
+--normal
+--openda - includes thrift connection to openda, Make sure you have thrift installed first
+--deltashell - includes bmi/mmi link to deltashell. Windows only. Make sure you have zmq, bmi and mmi
   installed. bmi and mmi can be downloaded from the openearth github repository
 """
 
-#target = 'deltashell'
-#arget ='openda'
-target = 'normal'
 
 from cx_Freeze import setup, Executable, hooks
 
@@ -23,6 +18,17 @@ import matplotlib
 import scipy
 import sys
 
+target = 'norma'
+# Filter out wflow specific options
+if "--openda" in sys.argv:
+    target = 'openda'
+    sys.argv.remove("--openda")
+if "--normal" in sys.argv:
+    target = 'normal'
+    sys.argv.remove("--normal")
+if "--deltashell" in sys.argv:
+    target = 'deltashell'
+    sys.argv.remove("--deltashell")
 
 
 pdir = os.path.dirname(sys.executable) + "/"
