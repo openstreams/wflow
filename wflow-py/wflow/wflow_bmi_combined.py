@@ -527,7 +527,8 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         for key, value in self.bmimodels.iteritems():
             st.append(self.bmimodels[key].get_current_time())
 
-        return st[-1]
+        #return st[-1]
+        return numpy.array(st).max()
 
     def get_end_time(self):
         """
