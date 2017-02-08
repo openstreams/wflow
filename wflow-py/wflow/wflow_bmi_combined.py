@@ -147,7 +147,7 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
                         ind = [[ind_temp[0]],[ind_temp[1]]]
                     else:
                         ind = [list(ind_temp[0]),list(ind_temp[1])]
-                self.indices_from.append(ind)
+                self.indices_to.append(ind)
             else:
                 self.indices_to.append([])
                 
