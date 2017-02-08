@@ -1608,12 +1608,12 @@ class WflowModel(DynamicModel):
 
         ponding_add = self.ZeroMap
         if self.nrpaddyirri > 0:
-            ponding_add = min(self.inund,self.h_p-self.PondingDepth)
+            ponding_add = cover(min(ifthen(self.h_p > 0,self.inund),self.h_p-self.PondingDepth),0.0)
             self.PondingDepth = self.PondingDepth + ponding_add
             irr_depth = ifthenelse(self.PondingDepth < self.h_min, self.h_max - self.PondingDepth, 0.0)
-            sqmarea = areatotal(self.reallength * self.reallength, nominal(self.IrrigationPaddyAreas))
+            sqmarea = areatotal(self.reallength * self.reallength, nominal(ifthen(irr_depth > 0,self.IrrigationPaddyAreas)))
             self.IrriDemandm3 = (irr_depth/1000.0)*sqmarea
-            IRDemand = idtoid(self.IrrigationPaddyAreas, self.IrrigationSurfaceIntakes, self.IrriDemandm3)  * (-1.0 / self.timestepsecs)
+            IRDemand = idtoid(ifthen(self.IrriDemandm3>0,self.IrrigationPaddyAreas), self.IrrigationSurfaceIntakes, self.IrriDemandm3)  * (-1.0 / self.timestepsecs)
             self.IRDemand= IRDemand
             self.Inflow = cover(IRDemand,self.Inflow)
 
@@ -1741,10 +1741,10 @@ class WflowModel(DynamicModel):
 
         if self.nrpaddyirri > 0:
             # loop over irrigation areas and spread-out the supply over the area
-            IRSupplymm = idtoid(self.IrrigationSurfaceIntakes, self.IrrigationPaddyAreas, self.SurfaceWaterSupply)
-            sqmarea = areatotal(self.reallength * self.reallength, nominal(self.IrrigationPaddyAreas))
+            IRSupplymm = idtoid(self.IrrigationSurfaceIntakes, ifthen(self.IrriDemandm3 > 0,self.IrrigationPaddyAreas), self.SurfaceWaterSupply)
+            sqmarea = areatotal(self.reallength * self.reallength, nominal(ifthen(self.IrriDemandm3 > 0,self.IrrigationPaddyAreas)))
 
-            self.IRSupplymm = cover(IRSupplymm/ (sqmarea / 1000.0 / self.timestepsecs),0.0)
+            self.IRSupplymm = cover(((IRSupplymm * self.timestepsecs * 1000) / sqmarea),0.0)    
 
 
         self.MassBalKinWave = (-self.KinWaveVolume + self.OldKinWaveVolume) / self.timestepsecs +\
@@ -1859,7 +1859,7 @@ def main(argv=None):
     caseName = "default_sbm"
     global multpars
     runId = "run_default"
-    configfile = "wflow_sbm2.ini"
+    configfile = "wflow_sbm.ini"
     _lastTimeStep = 1
     _firstTimeStep = 0
     LogFileName = "wflow.log"
@@ -1951,7 +1951,7 @@ def main(argv=None):
     dynModelFw.setupFramework()
     dynModelFw._runInitial()
     dynModelFw._runResume()
-    dynModelFw._runDynamic(_firstTimeStep, _lastTimeStep)
+    dynModelFw._runDynamic(0, 0)
     dynModelFw._runSuspend()
     dynModelFw._wf_shutdown()
 
