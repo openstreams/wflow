@@ -121,16 +121,16 @@ class WflowModel(DynamicModel):
       modelparameters.append(self.ParamType(name="percent_silt",stack="intbl/percent_silt.tbl",type="statictbl",default=0.1, verbose=False,lookupmaps=[]))
 
       # Sediment delivery ratio
-      modelparameters.append(self.ParamType(name="dratio",stack="intbl/dratio.tbl",type="statictbl",default=1.0, verbose=False))
-      modelparameters.append(self.ParamType(name="usle_k", stack="intbl/usle_k.tbl", type="statictbl", default=1.0, verbose=False))
-      modelparameters.append(self.ParamType(name="usle_c", stack="intbl/usle_c.tbl", type="statictbl", default=1.0, verbose=False))
-      modelparameters.append(self.ParamType(name="usle_p", stack="intbl/usle_p.tbl", type="statictbl", default=1.0, verbose=False))
+      modelparameters.append(self.ParamType(name="dratio",stack="intbl/dratio.tbl",type="statictbl",default=1.0, verbose=False,lookupmaps=[]))
+      modelparameters.append(self.ParamType(name="usle_k", stack="intbl/usle_k.tbl", type="statictbl", default=1.0, verbose=False,lookupmaps=[]))
+      modelparameters.append(self.ParamType(name="usle_c", stack="intbl/usle_c.tbl", type="statictbl", default=1.0, verbose=False,lookupmaps=[]))
+      modelparameters.append(self.ParamType(name="usle_p", stack="intbl/usle_p.tbl", type="statictbl", default=1.0, verbose=False,lookupmaps=[]))
 
       #Climatology
-      modelparameters.append(self.ParamType(name="LAI",stack="inmaps/climatology/LAI",type="monthlyclim",default=0.9, verbose=False))
+      modelparameters.append(self.ParamType(name="LAI",stack="inmaps/climatology/LAI",type="monthlyclim",default=0.9, verbose=False,lookupmaps=[]))
 
       # Meteo and other forcing
-      modelparameters.append(self.ParamType(name="Precipitation",stack="inmaps/P",type="timeseries",default=0.0,verbose=True))
+      modelparameters.append(self.ParamType(name="Precipitation",stack="inmaps/P",type="timeseries",default=0.0,verbose=True,lookupmaps=[]))
 
 
       return modelparameters
@@ -233,9 +233,9 @@ class WflowModel(DynamicModel):
     First determine m exponent based on Slope (https://www.researchgate.net/publication/226655635_Estimation_of_Soil_Erosion_for_a_Himalayan_Watershed_Using_GIS_Technique)
 
     """
-    self.m = ifthenelse(self.Slope <= 0.01, 0.2,
-                        ifthenelse(self.Slope <= 0.03, 0.03,
-                                   ifthenelse(self.Slope <= 0.045, 0.5, 0.5)))
+    self.m = ifthenelse(self.Slope <= scalar(0.01), scalar(0.2),
+                        ifthenelse(self.Slope <= 0.03, scalar(0.03),
+                                   ifthenelse(self.Slope <= 0.045, scalar(0.5), scalar(0.5))))
     # Sel Lambda equal to grid size
     self.Lambda = self.reallength
     self.usle_l = (self.Lambda/22.13)**self.m # The L factor
@@ -309,9 +309,9 @@ class WflowModel(DynamicModel):
 
     self.usle_r = self.Precipitation
 
-    self.SoilLoss = self.usle_l * self.usle_s * self.usle_k * self.usle_r * self.usle_p * self.usle_p
+    self.SoilLoss = self.usle_l * self.usle_s * self.usle_k * self.usle_r *self.usle_c * self.usle_p
 
-    self.SedRunoff = accuflux(self.TopoLdd,self.hhsedy)
+    #self.SedRunoff = accuflux(self.TopoLdd,self.hhsedy)
     # limit downstream flow by surface runoff erosion rate
 
     #self.SedStore = self.SedStore + self.hhsedy
@@ -338,7 +338,7 @@ def main(argv=None):
     global multpars
     caseName = "default"
     runId = "run_default"
-    configfile="wflow_musle.ini"
+    configfile="wflow_usle.ini"
     _lastTimeStep = 10
     _firstTimeStep = 1
     timestepsecs=86400
