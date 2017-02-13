@@ -512,7 +512,8 @@ class netcdfinput():
 
         for var in vars:
             try:
-                self.alldat[var] = self.dataset.variables[var][self.fstep:self.maxsteps]
+                #self.alldat[var] = self.dataset.variables[var][self.fstep:self.maxsteps]
+                self.alldat[var] = self.dataset.variables[var]
             except:
                 self.alldat.pop(var, None)
                 logging.warn("Variable " + var + " not found in netcdf file: " + netcdffile)
