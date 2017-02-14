@@ -122,7 +122,7 @@ class WflowModel(DynamicModel):
 
       # Sediment delivery ratio
       modelparameters.append(self.ParamType(name="dratio",stack="intbl/dratio.tbl",type="statictbl",default=1.0, verbose=False,lookupmaps=[]))
-      modelparameters.append(self.ParamType(name="usle_k", stack="intbl/usle_k.tbl", type="statictbl", default=1.0, verbose=False,lookupmaps=[]))
+      #modelparameters.append(self.ParamType(name="usle_k", stack="intbl/usle_k.tbl", type="statictbl", default=1.0, verbose=False,lookupmaps=[]))
       modelparameters.append(self.ParamType(name="usle_c", stack="intbl/usle_c.tbl", type="statictbl", default=1.0, verbose=False,lookupmaps=[]))
       modelparameters.append(self.ParamType(name="usle_p", stack="intbl/usle_p.tbl", type="statictbl", default=1.0, verbose=False,lookupmaps=[]))
 
@@ -306,8 +306,11 @@ class WflowModel(DynamicModel):
 
     # Weird assumption for now, shoudl be a lookuptabel of LAI and landuse type...
     self.canopy_cover = min(1.0,self.LAI)
+    # Determine erosivity from monthly rainfall and average yearly sum
+    self.usle_r = (125.92 * (self.Precipitation/self.Pmean)**0.603 + \
+        111.173 * (self.Precipitation/self.Pmean) ** 0.691 + \
+        68.73 * (self.Precipitation/self.Pmean)** 0.841) / 3.0
 
-    self.usle_r = self.Precipitation
 
     self.SoilLoss = self.usle_l * self.usle_s * self.usle_k * self.usle_r *self.usle_c * self.usle_p
 
