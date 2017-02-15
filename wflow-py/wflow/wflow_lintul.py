@@ -159,20 +159,15 @@ class Afgen2(object):
 
 ###############################################################################
 # Some general information for setting up the runs:
-#CropStart    = 8.          # TODO later via kaart/forcing inlezen?
-#DOYEM       = 25.         # Day of Emergence (transplanting in this case, actually). 
 LAT         = 3.16        # the latitude of Bah Lias, North Sumatra, for now.
 DELT        = 1	          # Time step = 1 day.
 TSUMI       = 362.        # TSUM at transplanting, kind of crop specific, actually.
 TINY        = 1e-6
 
-#iDOY_wflow             = int(starttime.strftime('%j'))
-
 # This needs to be set according to the geographic extent (map dimensions) of your study area/catchment:
 np_Zero     = numpy.zeros((219,286))
 np_One      = numpy.ones ((219,286))
 
-	 
 # Crop specific coefficients for rice:
 K           = 0.6         # light extinction coefficient
 LUE         = 3.          # Light use efficiency.
@@ -387,7 +382,8 @@ class WflowModel(DynamicModel):
       
       self.BMI_RUN = configget(self.config, "model", "BMI_RUN", "True")
       self.WATERLIMITED = (configget(self.config, "model", "WATERLIMITED", "True"))
-      self.CropStart = int(configget(self.config, "model", "CropStart", "True"))
+      self.CropStartDOY = int(configget(self.config, "model", "CropStartDOY", "0"))
+      self.HarvestDAP   = int(configget(self.config, "model", "HarvestDAP", "150"))
 
       #Static model parameters
       #e.g.: modelparameters.append(self.ParamType(name="RunoffGeneratingGWPerc",stack="intbl/RunoffGeneratingGWPerc.tbl",type="static",default=0.1)) 
@@ -408,6 +404,7 @@ class WflowModel(DynamicModel):
       modelparameters.append(self.ParamType(name="VAP",stack="inmaps/VAP",type="timeseries",default=10.0,verbose=False,lookupmaps=[])),
       modelparameters.append(self.ParamType(name="WIND",stack="inmaps/WIND",type="timeseries",default=2.0,verbose=False,lookupmaps=[])),
       modelparameters.append(self.ParamType(name="RAIN",stack="inmaps/RAIN",type="timeseries",default=2.0,verbose=False,lookupmaps=[])),  	  
+      modelparameters.append(self.ParamType(name="CRPSTART",stack="inmaps/CRPSTART",type="timeseries",default=11.0,verbose=False,lookupmaps=[])),  	  
       return modelparameters
 
   def stateVariables(self):
@@ -422,9 +419,8 @@ class WflowModel(DynamicModel):
       this function must return and empty array (states = [])
       
       """
-      #states = ['Test', 'LAI', 'WLVG', 'WLVD', 'WST', 'WSO', 'WRT', 'ROOTD', 'WDRT', 'TSUM', 'DAY', 'DVS', 'WA']
       
-      states = ['Test', 'LAI', 'WLVG', 'WLVD', 'WST', 'WSO', 'WRT', 'ROOTD', 'ROOTD_mm', 'WDRT', 'TSUM', 'DAY', 'DVS']
+      states = ['Test', 'LAI', 'WLVG', 'WLVD', 'WST', 'WSO', 'WRT', 'ROOTD', 'ROOTD_mm', 'WDRT', 'TSUM', 'STARTED', 'DVS']
       if self.BMI_RUN == "False": 
         states.append('WA')
         states.pop(-6)
@@ -533,8 +529,19 @@ class WflowModel(DynamicModel):
      """
      self.wf_updateparameters() # read the temperature map for each step (see parameters())
      
-	# Create numpy array from states (make pointers): 
-     np_Day                = pcr_as_numpy(self.DAY)
+     DOY = self.wf_supplyStartTimeDOY() + self.currentTimeStep()# - 1
+     
+     One                   = numpy2pcr(Scalar, np_One[:],   -99)
+     Zero                  = numpy2pcr(Scalar, np_Zero,     -99)
+     TSUM_not_Finished     = self.TSUM <= TTSUM
+     DVS_not_Finished      = self.DVS  <= 2.01
+     Not_Finished          = TSUM_not_Finished & DVS_not_Finished
+     np_Not_Finished       = pcr_as_numpy(Not_Finished)
+     np_STARTED            = pcr_as_numpy(self.STARTED)
+     
+	# Create numpy array from states: 
+     np_CRPSTART          = pcr_as_numpy(self.CRPSTART)
+     #np_Day                = pcr_as_numpy(self.DAY)
      np_DVS                = pcr_as_numpy(self.DVS)
      np_LAI                = pcr_as_numpy(self.LAI)
      np_WA                 = pcr_as_numpy(self.WA)
@@ -554,15 +561,63 @@ class WflowModel(DynamicModel):
      np_WCFC               = WCFC  * np_One[:]
      np_WCWET              = WCWET * np_One[:]
      np_WCST               = WCST  * np_One[:]
-
-#     runinfoFile           = "runinfo.xml"
-#     runinfoFile_Lintul    = os.path.join(os.path.abspath("wflow_lintul"), "inmaps", runinfoFile)
-#     starttime             = getStartTimefromRuninfo(runinfoFile_Lintul)
-#     DOY_wflow             = starttime.strftime('%j')
      
+    # INitializing crop harvest: 
+     if self.CropStartDOY      > 0 and self.HarvestDAP > 0:
+        np_CropHarvNow         = np.greater_equal(DOY, self.CropStartDOY + self.HarvestDAP) * np_One[:]
+        CropHarvNow            = numpy2pcr(Boolean, np_CropHarvNow, -99)
+        print "Warning: harvest date read from ini file, not from Crop Profile map..."
+     elif self.CropStartDOY    > 0 and self.HarvestDAP == 0:
+        np_CropHarvNow         = 1 - np_Not_Finished
+        CropHarvNow            = Not_Finished == False
+        print "Harvest date not specified; crop harvest at crop maturity"
+     elif self.CropStartDOY    == 0 and self.HarvestDAP > 0:
+        CropHarvNow            = self.STARTED -2 == self.HarvestDAP
+        np_CropHarvNow         = pcr_as_numpy(CropHarvNow)        
+     elif self.CropStartDOY    == 0 and self.HarvestDAP == 0:
+        started_gt_zero        = self.STARTED  >  0.
+        crpprfl_eq_zero        = self.CRPSTART == 0.
+        CropHarvNow            = pcrand(started_gt_zero, crpprfl_eq_zero)
+        np_CropHarvNow         = pcr_as_numpy(CropHarvNow)
+     else:
+        np_CropHarvNow         = np_Zero[:]
+        CropHarvNow            = numpy2pcr(Boolean, np_CropHarvNow, -99)
+        print "Crop harvest not initialized, found a strange values in ini file..."
+     
+    # Initializing crop growth, optionally from a single start day (CropStartDOY in the ini file), 
+    # but normally from a crop profile forcing variable. 
+     if self.CropStartDOY      > 0.:
+     
+        np_CropStartNow        = np.equal(DOY, self.CropStartDOY) * np_One[:]
+        CropStartNow           = numpy2pcr(Boolean, np_CropStartNow, -99)
+        np_CropStarted         = np.greater_equal(DOY, self.CropStartDOY) * np_One[:]
+        CropStarted            = numpy2pcr(Boolean, np_CropStarted, -99)
+        print "Warning: using start date from ini file, not read from Crop Profile..."
+        
+     elif self.CropStartDOY    == 0:
+    # Two auxilliary variables: 
+        np_crpstart_gt_0       = np.greater(np_CRPSTART[:], 0)    
+        np_crpstart_eq_started = np.equal(np_CRPSTART[:], np_STARTED[:])
+        np_CropStartNow        = np.logical_and(np_crpstart_gt_0[:], np_crpstart_eq_started[:])
+        CropStartNow           = numpy2pcr(Boolean, np_CropStartNow, -99)
+        CropStarted            = self.CRPSTART > 0
+        np_CropStarted         = pcr_as_numpy(self.CRPSTART)
+        
+     else:
+        np_CropStartNow        = np_Zero[:]
+        CropStartNow           = numpy2pcr(Boolean, np_CropStartNow, -99)
+        np_CropStarted         = np_Zero[:]
+        CropStarted            = numpy2pcr(Boolean, np_CropStarted, -99)
+        print "Crop growth not initializing, found a strange value of CropStartDOY in ini file..."
+
+        
 	# Implement forcing data, coefficients and some handy numbers spatially, as numpy arrays:
-     np_CropStart           = self.CropStart * np_One[:]
-     np_StartNow           = np.equal(np_Day[:], np_CropStart[:] - np_One[:])    
+     #self.STARTED         += self.CRPSTART * ifthenelse(CropHarvNow, Zero, 1.) - ifthenelse(CropHarvNow, self.STARTED, 0.)
+     self.STARTED         += self.CRPSTART 
+        
+        
+
+        
      np_TMIN               = pcr_as_numpy(self.TMIN)
      np_TMAX               = pcr_as_numpy(self.TMAX)
      np_T                  = pcr_as_numpy(self.T)
@@ -591,16 +646,9 @@ class WflowModel(DynamicModel):
      np_Enough_water       = np_One[:]
      Enough_water          = numpy2pcr(Boolean, np_Enough_water, -99)
      Leaves_Present        = self.LAI > 0.
-     #CanGrowDownward       = self.ROOTD <= ROOTDM 
-     #np_CanGrowDownward    = np.less_equal(np_ROOTD[:], ROOTDM * np_One[:])
+     np_Leaves_Present     = pcr_as_numpy(Leaves_Present)
      
-	# Check when certain important decision moments are reached, in chronological order: 
-     SimStart              = self.DAY == 0. #todo: do we need ROOTDI before emergence?
-     np_Simstart           = pcr_as_numpy(SimStart)
-     Just_Before_Start     = self.DAY == self.CropStart - 3.
-     np_Just_Before_Start  = pcr_as_numpy(Just_Before_Start)
-     DevStarted            = self.DAY >= self.CropStart - 1. # a bit mysterious, but the '-1.' keeps things in perfect sync with the FST version.
-     np_DevStarted         = pcr_as_numpy(DevStarted)  
+	# Check when certain important decision moments are reached, in chronological order:      
      BeforeAnthesis        = self.TSUM < TSUMAN
      np_BeforeAnthesis     = pcr_as_numpy(BeforeAnthesis)
      UntilAnthesis         = self.TSUM <= TSUMAN
@@ -610,8 +658,8 @@ class WflowModel(DynamicModel):
      Roots_Dying           = self.DVS >= DVSDR
      np_Roots_Dying        = pcr_as_numpy(Roots_Dying)
      
-     Vegetative            = DevStarted & UntilAnthesis
-     Generative            = DevStarted & AfterAnthesis
+     Vegetative            = CropStarted & UntilAnthesis
+     Generative            = CropStarted & AfterAnthesis
      EarlyStages           = self.DVS   <   0.2
      LaterStages           = self.DVS   >=  0.2
      SmallLeaves           = self.LAI   <   0.75
@@ -621,14 +669,8 @@ class WflowModel(DynamicModel):
      np_Juvenile           = pcr_as_numpy(Juvenile)
      np_Adult              = pcr_as_numpy(Adult)
 	 
-     TSUM_not_Finished     = self.TSUM <= TTSUM
-     DVS_not_Finished      = self.DVS  <= 2.01
-     Not_Finished          = TSUM_not_Finished & DVS_not_Finished
-     np_Not_Finished       = pcr_as_numpy(Not_Finished)
   
      TSUMINIT              = numpy2pcr(Scalar, np_TSUMI[:], -99)
-     One                   = numpy2pcr(Scalar, np_One[:],   -99)
-     Zero                  = numpy2pcr(Scalar, np_Zero,     -99)
 	 
     # Specific Leaf area(m2/g)
      Interpol_SLACF        = Afgen2(SLACF)       
@@ -636,7 +678,6 @@ class WflowModel(DynamicModel):
      
 	# Calculate daylength, based on latitude and day of year:
 	# Daylength assumed similar throughout the catchment area -> scalar, no array - SdV	 
-     DOY = self.wf_supplyStartTimeDOY() + self.currentTimeStep() - 1
      DAYL                  = astro2(DOY, LAT) 	 
      
      Interpol_FRTTB        = Afgen2(FRTTB)
@@ -653,20 +694,21 @@ class WflowModel(DynamicModel):
      RDRTMP                = Interpol_RDRTB(np_DVS[:]) 
      PHOTT                 = Interpol_PHOTTB(DAYL)     
 	
-     EMERG                 = DevStarted & Enough_water & Leaves_Present & Not_Finished
+     EMERG                 = CropStarted & Enough_water & Leaves_Present & Not_Finished
      np_EMERG              = pcr_as_numpy(EMERG)
      PHOTPF                = ifthenelse(BeforeAnthesis, PHOTT, One)
      RTSUMP                = DTEFF * PHOTPF
-     self.TSUM             = self.TSUM + ifthenelse(Just_Before_Start, TSUMINIT, 0.) + ifthenelse(EMERG, RTSUMP, 0.) 
+     self.TSUM             += ifthenelse(CropStartNow, TSUMINIT, 0.) + ifthenelse(EMERG, RTSUMP, 0.) * ifthenelse(CropHarvNow, Zero, 1.) - ifthenelse(CropHarvNow, self.TSUM ,0.)
      
-     TSUM_veg              = self.TSUM/TSUMAN
-     TSUM_gen              = 1. + (self.TSUM - TSUMAN)/TSUMMT
+     
+     TSUM_veg              = self.TSUM/TSUMAN * ifthenelse(CropHarvNow, Zero, 1.)
+     TSUM_gen              = (1. + (self.TSUM - TSUMAN)/TSUMMT) * ifthenelse(CropHarvNow, Zero, 1.)
      self.DVS              = ifthenelse(Vegetative, TSUM_veg, 0.) + ifthenelse(Generative, TSUM_gen, 0.)
 	 # In TSUM_gen, '1' in fact stands for TSUM/TSUMAN, at the moment that TSUM = TSUMAN
 	 
      np_IRRAD              = pcr_as_numpy(self.IRRAD) 
 
-# Computation of the old PENMAN EQUATION, for testing/comparison purposes (to be replaced with P-M soon). SdV 30-11-2015
+# Old PENMAN EQUATION, for testing/comparison purposes (to be replaced with P-M soon). SdV 30-11-2015
      #DTRJM2                = np_IRRAD[:] * 1000.
      #BOLTZM                = 5.668E-8
      #LHVAP                 = 2.4E6
@@ -691,23 +733,17 @@ class WflowModel(DynamicModel):
 	########################################################################################
     # Root depth growth:
 
-     #Roots_can_grow        = Enough_water & BeforeAnthesis & EMERG & CanGrowDownward
-     #RROOTD                = ifthenelse(Roots_can_grow, RRDMAX, Zero)
      np_CanGrowDownward    = np.less_equal(np_ROOTD[:], ROOTDM * np_One[:])
-	 
      np_RROOTD             = np_Enough_water[:] * np_BeforeAnthesis[:] * np_EMERG[:] * np_CanGrowDownward[:] * RRDMAX 
-     #np_ROOTD[:]           = np_Simstart[:] * ROOTDI + np_ROOTD[:] + RRDMAX * np_CanGrowDownward[:]
-     #self.ROOTD           += ifthenelse(SimStart, ROOTDI, Zero) + RROOTD
-     self.ROOTD            = self.ROOTD + ifthenelse(SimStart, ROOTDI, Zero) + numpy2pcr(Scalar, np_RROOTD[:], -99)
+     self.ROOTD           += ifthenelse(CropStartNow, ROOTDI, Zero) + numpy2pcr(Scalar, np_RROOTD[:], -99) * ifthenelse(CropHarvNow, Zero, 1.)- ifthenelse(CropHarvNow, self.ROOTD ,0.) 
      self.ROOTD_mm         = self.ROOTD * 1000.
      np_EXPLOR             = 1000. * np_RROOTD[:] * np_WCFC[:] 
 
-	   
 	 #############################################################################################################
 	 
      if self.BMI_RUN == "True" and self.WATERLIMITED == "True": 
         np_Transpiration = pcr_as_numpy(self.Transpiration) 	 
-        np_PotTrans      = pcr_as_numpy(self.PotTrans)
+        np_PotTrans      = pcr_as_numpy(self.PotTrans)        
         TRANRF           = np_Transpiration[:] / NOTNUL(np_PotTrans[:])
         print "BMI run with water limitation"
      elif self.BMI_RUN == "True" and self.WATERLIMITED == "False": 
@@ -716,7 +752,8 @@ class WflowModel(DynamicModel):
      else:
         print "BMI not engaged => no water reduction" 
         TRANRF           = np_One[:]
-	 
+        
+
 	 #############################################################################################################
      # Water Limitation: effects on partitioning 
      FRTMOD                = np_One[:] #np.maximum(np_One[:], np_One[:]/(TRANRF[:]+ 0.5 * np_One[:]))
@@ -729,27 +766,13 @@ class WflowModel(DynamicModel):
      FSO                   = FSOT[:] * FSHMOD	 
      PartitionCheck        = FLV[:] + FST[:] + FSO[:] + FRT[:]
 
-
-     
-	
-	# Subroutine DRUNIR:
-     #WC                    = 0.001 * WA/(self.ROOTD + TINY)
-     #np_WAFC               = 1000. * np_WCFC[:] * np_ROOTD[:]
-     #np_WAST               = 1000. * np_WCST[:] * np_ROOTD[:]
-     #np_DRAIN_tmp          = (np_WA[:] - np_WAFC[:])/DELT + (np_RAIN[:] - RNINTC[:] - np_EVAP[:] - np_TRAN[:])
-     #np_DRAIN              = np.clip(np_DRAIN_tmp, 0., DRATE)  
-	 
-     #np_RUNOFF_tmp         = (np_WA[:] - np_WAST[:])/DELT + (np_RAIN[:] - RNINTC[:] - np_EVAP[:] - np_TRAN[:] - np_DRAIN[:])
-     #np_RUNOFF             = np.maximum(np_Zero[:], np_RUNOFF_tmp)
-	 # 
-     # np_RWC                = np_RAIN[:] + np_EXPLOR[:] + IRRIG - RNINTC[:] - np_RUNOFF[:] - np_TRAN[:] - np_EVAP[:] - np_DRAIN[:]
-     
-     #np_WA[:]             += np_Simstart[:] * np_WAI[:] + np_RWC[:]
-     #np_WA[:]             += np_Simstart[:] * np_WAI[:] 
      
 	 
     # todo: incorporate effects of N stress - sdv 30-11-15
      PARINT                = 0.5 * np_IRRAD[:] * 0.001 * (1.- np.exp(-K * np_LAI[:])) * np_Not_Finished[:]
+    # pcr_PARINT            = 0.5 * self.IRRAD * 0.001 * (1.- exp(-K * self.LAI)) * scalar(Not_Finished)
+    # np_pcr_PARINT         = pcr_as_numpy(pcr_PARINT)
+    # check = np.equal(PARINT, np_pcr_PARINT)
      GTOTAL                = LUE * PARINT[:] * TRANRF[:]
     #FRT, FLV, FST, FSO    = dryMatterPartitioningFractions(self, NPART, TRANRF, NNI, FRTWET[:], FLVT[:], FSTT[:], FSOT[:])
 
@@ -764,12 +787,12 @@ class WflowModel(DynamicModel):
 	 
 	# (Abs.) impact of leaf dying on leaf weight - todo
      N_Limitation          = np.less(np_NNI[:], np_One[:])
-     DLVNS                 = np_DevStarted[:] * N_Limitation[:] * np_WLVG[:] * RDRNS * (1. - np_NNI[:])
+     DLVNS                 = np_CropStarted[:] * N_Limitation[:] * np_WLVG[:] * RDRNS * (1. - np_NNI[:])
      DLVS                  = np_WLVG[:]    * RDR[:]
      DLV                   = (DLVS[:]        + DLVNS[:]) * np_Not_Finished[:]
 	 
      RWLVG                 = GTOTAL[:] * FLV[:] - DLV[:]
-     np_WLVG[:]           += np_StartNow[:] * WLVGI + RWLVG[:] 
+     np_WLVG[:]           += np_CropStartNow[:] * WLVGI + RWLVG[:] * (1. - np_CropHarvNow[:]) - np_CropHarvNow[:] * np_WLVG[:] 
      np_WLVD[:]           += DLV[:]
 	 
     #----------------------------------------------------------------------
@@ -777,33 +800,33 @@ class WflowModel(DynamicModel):
      GLV                   = FLV[:] * GTOTAL[:]
      GLV_pcr               = numpy2pcr(Scalar, GLV, -99)
 	 
-     GLAI = np_Adult[:] * SLA[:] * GLV[:] + \
-            np_Juvenile[:]     * (np_LAI[:] * (np.exp(np_RGRL[:] * np_DTEFF[:] * np_DELT[:]) - np_One[:])/ np_DELT[:] )* TRANRF[:] * np.exp(-NLAI* (1.0 - NNI)) + \
-	        np.equal(np_LAI[:], np_Zero[:]) * np_Enough_water[:] * np_DevStarted[:] * LAII / DELT  
+     GLAI = np_Adult[:] * SLA[:] * GLV[:] * (1. - np_CropHarvNow[:]) + \
+            np_Juvenile[:]     * (np_LAI[:] * (np.exp(np_RGRL[:] * np_DTEFF[:] * np_DELT[:]) - np_One[:])/ np_DELT[:] )* TRANRF[:] * np.exp(-NLAI* (1.0 - NNI)) * (1. - np_CropHarvNow[:]) + \
+	        np.equal(np_LAI[:], np_Zero[:]) * np_Enough_water[:] * np_CropStartNow[:] * LAII / DELT  
      
 	# (Abs.) impact of leaf dying on LAI
 	# Death of leaves due to ageing and shading:
      DLAIS                 = np_LAI[:]     * RDR[:]
-     DLAINS                = np_DevStarted[:] * N_Limitation[:] * DLVNS[:] * SLA[:]
+     DLAINS                = np_CropStarted[:] * N_Limitation[:] * DLVNS[:] * SLA[:]
      DLAI                  = (DLAIS         + DLAINS) * np_Not_Finished[:]
-     np_LAI[:]            += GLAI[:] - DLAI[:] 
+     np_LAI[:]            += GLAI[:] - DLAI[:] - np_CropHarvNow[:] * np_LAI[:] 
      
 
 	#----------------------------------------------------------------------	 
 	#DRRT = np.greater_equal(np_DVS[:], np_DVSDR[:]) * np_WRT[:] * RDRRT
      DRRT                  = np_Roots_Dying[:] * np_WRT[:] * RDRRT
      RWRT                  = GTOTAL[:] * FRT[:] - DRRT[:] * np_Not_Finished[:]
-     np_WRT[:]            += np_StartNow[:] * WRTLI + RWRT[:] 	
+     np_WRT[:]            += np_CropStartNow[:] * WRTLI + RWRT[:] * (1. - np_CropHarvNow[:]) - np_CropHarvNow[:] * np_WRT[:] 	
      np_WDRT[:]           += DRRT[:]
 	 
     #----------------------------------------------------------------------
      RWSO                  = GTOTAL[:] * FSO[:] 
-     np_WSO[:]            += np_StartNow[:] * WSOI + RWSO[:]
+     np_WSO[:]            += np_CropStartNow[:] * WSOI + RWSO[:] * (1. - np_CropHarvNow[:]) - np_CropHarvNow[:] * np_WSO[:] 	
      np_WSOTHA             = np_WSO[:]/100.
 	 
     #----------------------------------------------------------------------
      RWST                  = GTOTAL[:] * FST[:] 
-     np_WST[:]            += np_StartNow[:] * WSTI + RWST[:]
+     np_WST[:]            += np_CropStartNow[:] * WSTI + RWST[:] * (1. - np_CropHarvNow[:]) - np_CropHarvNow[:] * np_WST[:]
  
     #----------------------------------------------------------------------
      np_WLV                = np_WLVG[:] + np_WLVD[:]
@@ -811,18 +834,19 @@ class WflowModel(DynamicModel):
     
 	#----------------------------------------------------------------------
      
-     self.Test            = self.Altitude #numpy2pcr(Scalar, np_PotTrans[:], -99)
+     self.Test            = self.CRPSTART
      bla                  = self.timestepsecs/self.basetimestep
+     np_Test = pcr_as_numpy(self.Test)
 
-     self.DAY              += 1. 
+#     self.DAY              += 1. 
      #DOY = self.wf_supplyStartTimeDOY() + self.currentTimeStep() - 1
 
      np_ROOTD_mm = pcr_as_numpy(self.ROOTD_mm)
      
 	 
      #print "********************************************"
-     print self.currentTimeStep(), DOY, np_Day[1,1]
-     #print self.BMI_RUN, self.WATERLIMITED, "TRANRF", TRANRF[:1]
+     print self.currentTimeStep(), DOY
+     print np_CRPSTART
 	 
     #----------------------------------------------------------------------
   
@@ -842,7 +866,7 @@ def main(argv=None):
     runId = "run_default"
     configfile="wflow_lintul.ini"
     _lastTimeStep = 150
-    _firstTimeStep = 1
+    _firstTimeStep = 0
     fewsrun = False
     runinfoFile = "runinfo.xml"
     timestepsecs=86400
@@ -898,7 +922,7 @@ def main(argv=None):
     dynModelFw.createRunId(NoOverWrite=False,level=loglevel)    
     dynModelFw._runInitial()
     dynModelFw._runResume()
-    dynModelFw._runDynamic(_firstTimeStep,_lastTimeStep)
+    dynModelFw._runDynamic(0,0)
     dynModelFw._runSuspend()
     dynModelFw._wf_shutdown()
     
