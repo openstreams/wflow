@@ -745,6 +745,7 @@ class wflowbmi_csdms(bmi.Bmi):
             self.bmilogger.debug('update_until: step ' + str(self.currenttimestep) + ' to ' + str(self.currenttimestep + nrsteps -1))
             self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps -1)
             self.currenttimestep = self.currenttimestep + nrsteps
+            self.bmilogger.debug("XX - Current time now: " + str(self.get_current_time()))
 
     def update_frac(self, time_frac):
         """

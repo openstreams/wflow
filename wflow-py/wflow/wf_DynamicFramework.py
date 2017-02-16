@@ -2091,7 +2091,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             laststep = self._d_lastTimestep
 
         self._userModel()._setNrTimeSteps(int(laststep))
+        self.logger.debug("1 - time = " + str(self.DT.currentDateTime))
         self.DT.update(currentTimeStep=self.DT.currentTimeStep, mode=self.runlengthdetermination)
+        self.logger.debug("2 - time = " + str(self.DT.currentDateTime))
         self.logger.debug(self.DT.currentDateTime)
         while step <= self._userModel().nrTimeSteps():
             self._incrementIndentLevel()
@@ -2122,11 +2124,11 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
             #self.currentdatetime = self.currentdatetime + dt.timedelta(seconds=self._userModel().timestepsecs)
 
-
+            self.logger.debug("3 - time = " + str(self.DT.currentDateTime))
             self.DT.update(currentTimeStep=self.DT.currentTimeStep+1, mode=self.runlengthdetermination)
             self._userModel().currentdatetime = self.DT.currentDateTime
             self.logger.debug("timestep: " + str(self.DT.currentTimeStep-1) + "/" + str(self.DT.runTimeSteps) +  " (" + str(self.DT.currentDateTime) + ")")
-
+            self.logger.debug("4 - time = " + str(self.DT.currentDateTime))
 
             self._timeStepFinished()
             self._decrementIndentLevel()
