@@ -23,7 +23,7 @@ class MyTest(unittest.TestCase):
 
     def testbmirunnetcdfw3ra(self):
         bmiobj = bmi.wflowbmi_csdms()
-        bmiobj.initialize_config('../../examples/openstreams_w3ra_usa/wflow_w3ra.ini',loglevel=logging.ERROR)
+        bmiobj.initialize_config('../../examples/openstreams_w3ra_usa/wflow_w3ra.ini',loglevel=logging.DEBUG)
         bmiobj.set_attribute_value('run:runlengthdetermination','intervals')
 
         stime= calendar.timegm(parser.parse("2014-05-13 00:00:00").utctimetuple())
