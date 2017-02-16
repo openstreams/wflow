@@ -18,7 +18,7 @@ import matplotlib
 import scipy
 import sys
 
-target = 'norma'
+target = 'normal'
 # Filter out wflow specific options
 if "--openda" in sys.argv:
     target = 'openda'
