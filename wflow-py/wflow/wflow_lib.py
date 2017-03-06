@@ -138,16 +138,17 @@ def lookupResFunc(ReserVoirLocs, values, ResFunc, func_int, pathtotbl, fileName,
     
     np_res_ids_u = np.unique(np_res_ids[np.nonzero(np_res_ids)])   
 
-    for item in np.nditer(np_res_ids_u):
-        HS = np.loadtxt(pathtotbl + fileName + str(item) + ".tbl")
-        value = npvalues[np.where(np_res_ids==item)]
+    if np.size(np_res_ids_u) > 0:
+        for item in np.nditer(np_res_ids_u):
+            HS = np.loadtxt(pathtotbl + fileName + str(item) + ".tbl")
+            value = npvalues[np.where(np_res_ids==item)]
        
-        if dirLookup == '0-1':
-            val = np.interp(value,HS[:,0],HS[:,1])
-        if dirLookup == '1-0':
-            val = np.interp(value,HS[:,1],HS[:,0])
+            if dirLookup == '0-1':
+                val = np.interp(value,HS[:,0],HS[:,1])
+            if dirLookup == '1-0':
+                val = np.interp(value,HS[:,1],HS[:,0])
         
-        npvalues[np.where(np_res_ids==item)] = val
+            npvalues[np.where(np_res_ids==item)] = val
         
         
     
