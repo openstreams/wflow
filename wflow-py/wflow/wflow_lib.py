@@ -129,6 +129,59 @@ def simplereservoir(storage, inflow, maxstorage, target_perc_full, maximum_Q, de
     return storage, outflow, percfull, demandRelease/timestepsecs
 
 
+def lookupResFunc(ReserVoirLocs, values, ResFunc, func_int, pathtotbl, fileName, dirLookup):
+    
+    res_ids = ifthen(ResFunc==func_int, ReserVoirLocs)
+    
+    np_res_ids = pcr2numpy(res_ids,0)
+    npvalues = pcr2numpy(values,0)  
+    
+    np_res_ids_u = np.unique(np_res_ids[np.nonzero(np_res_ids)])   
+
+    if np.size(np_res_ids_u) > 0:
+        for item in np.nditer(np_res_ids_u):
+            HS = np.loadtxt(pathtotbl + fileName + str(item) + ".tbl")
+            value = npvalues[np.where(np_res_ids==item)]
+       
+            if dirLookup == '0-1':
+                val = np.interp(value,HS[:,0],HS[:,1])
+            if dirLookup == '1-0':
+                val = np.interp(value,HS[:,1],HS[:,0])
+        
+            npvalues[np.where(np_res_ids==item)] = val
+        
+        
+    
+    return numpy2pcr(Scalar, npvalues, 0)
+    
+    
+
+def complexreservoir(waterlevel, ReserVoirLocs, ResArea, ResThreshold, ResStorFunc, ResOutflowFunc, res_b, res_e, inflow, pathtotbl, precip, pet, ReservoirComplexAreas, timestepsecs=86400):
+    
+    inflow = ifthen(boolean(ReserVoirLocs), inflow)
+    
+    prec_av = ifthen(boolean(ReserVoirLocs), areaaverage(precip, ReservoirComplexAreas))
+    pet_av = ifthen(boolean(ReserVoirLocs), areaaverage(pet, ReservoirComplexAreas))
+    
+    storage = ifthenelse(ResStorFunc==1, ResArea*waterlevel, lookupResFunc(ReserVoirLocs, waterlevel, ResStorFunc,2, pathtotbl, "Reservoir_SH_",'0-1'))
+    
+    oldstorage = storage
+    
+    storage = storage + (inflow * timestepsecs) + (prec_av/1000.0)*ResArea - (pet_av/1000.0)*ResArea
+
+    waterlevel = ifthenelse(ResStorFunc==1, waterlevel + (storage-oldstorage)/ResArea, lookupResFunc(ReserVoirLocs, storage, ResStorFunc, 2, pathtotbl,"Reservoir_SH_", '1-0'))     
+    
+        
+        
+    outflow = ifthenelse(ResOutflowFunc==1,lookupResFunc(ReserVoirLocs, waterlevel, ResOutflowFunc, 1, pathtotbl,"Reservoir_HQ_", '0-1'),max(res_b*(waterlevel-ResThreshold)**res_e,0))    
+
+    oldstorage = storage
+    storage = storage - (outflow * timestepsecs)
+        
+    waterlevel = ifthenelse(ResStorFunc==1, waterlevel + (storage-oldstorage)/ResArea, lookupResFunc(ReserVoirLocs, storage, ResStorFunc, 2, pathtotbl,"Reservoir_SH_", '1-0'))     
+    
+    
+    return waterlevel, outflow, prec_av, pet_av, storage
 Verbose=0
 
 def lddcreate_save(lddname, dem, force, corevolume=1E35, catchmentprecipitation=1E35, corearea=1E35, outflowdepth=1E35):

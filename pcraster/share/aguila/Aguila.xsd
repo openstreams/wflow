@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Style Guide:
+    See PCRaster.xsd
+-->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:pcr="http://www.pcraster.nl/pcrxml"
+           elementFormDefault="qualified"
+           targetNamespace="http://www.pcraster.nl/pcrxml">
+
+<xs:include schemaLocation="commonTypes.xsd"/>
+
+<!-- document (root) elements -->
+<xs:element name="aguila"              type="pcr:Aguila">
+ <xs:annotation>
+   <xs:documentation>Aguila configuration/startup file</xs:documentation>
+ </xs:annotation>
+</xs:element>
+<xs:element name="aguilaCursorValues"  type="pcr:AguilaCursorValues">
+ <xs:annotation>
+   <xs:documentation>contents of what is created when starting Aguila
+                     with the cursorValueMonitorFile option
+   </xs:documentation>
+ </xs:annotation>
+</xs:element>
+<xs:element name="aguilaCursor"        type="pcr:Cursor">
+ <xs:annotation>
+   <xs:documentation>contents expected for fileToGetCursorValue,
+                     connected to Get-button in Cursor Value Window
+   </xs:documentation>
+ </xs:annotation>
+</xs:element>
+
+<!--type definitions-->
+<xs:complexType name="Aguila">
+ <xs:annotation>
+   <xs:documentation>Aguila configuration/startup file</xs:documentation>
+ </xs:annotation>
+ <xs:sequence>
+  <xs:element name="multiView"     type="pcr:NrRowsNrCols"
+                                  minOccurs="0" maxOccurs="1">
+   <xs:annotation>
+    <xs:documentation>Only used to translate a command line option.
+    </xs:documentation>
+   </xs:annotation>
+  </xs:element>
+  <xs:element name="visualisationGroup"     type="pcr:VisualisationGroup"
+                                  minOccurs="1" maxOccurs="1"/>
+ </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="VisualisationGroup">
+ <xs:sequence>
+  <xs:element name="cursorValueMonitorFile" type="xs:string"
+                                   minOccurs="0" maxOccurs="1"/>
+  <xs:element name="fileToGetCursorValue"   type="xs:string"
+                                   minOccurs="0" maxOccurs="1"/>
+  <xs:element name="searchSpace"   type="pcr:DataSpace"
+                                   minOccurs="0" maxOccurs="1"/>
+  <xs:element name="data"          type="pcr:AguilaData"
+                                   minOccurs="0" maxOccurs="unbounded">
+   <xs:annotation>
+     <xs:documentation>Explictly defined data sources
+     </xs:documentation>
+   </xs:annotation>
+  </xs:element>
+  <xs:element name="view"   type="pcr:AguilaView"
+                            minOccurs="0" maxOccurs="unbounded">
+    <xs:annotation>
+      <xs:documentation>
+       Order of elements will define the order in the Cursor Value Dialog.
+      </xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <!--
+  <xs:element name="initialCursor" type="pcr:Cursor"
+                                   minOccurs="0" maxOccurs="1">
+   <xs:annotation>
+     <xs:documentation>Define initial cursor</xs:documentation>
+   </xs:annotation>
+  </xs:element>
+  <xs:element name="namedCursors" type="pcr:NamedCursors"
+                                   minOccurs="0" maxOccurs="unbounded"/>
+   -->
+ </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="DataSpace">
+   <xs:annotation>
+     <xs:documentation>
+      Note that in practice only the scenarios element can
+      occur more then once. All other maxOccurs value different
+      from 1 are only for internal Aguila reasons (converting command
+          line options to XML internally).
+     </xs:documentation>
+   </xs:annotation>
+ <xs:sequence>
+   <xs:element name="scenarios" type="pcr:StringSet"
+                          minOccurs="0" maxOccurs="unbounded"/>
+   <xs:element name="quantiles" type="pcr:FloatRangeOrSet"
+                          minOccurs="0" maxOccurs="unbounded"/>
+  <!-- Not yet
+   <xs:element name="samples" type="pcr:OneBasedIntegerRange"
+                          minOccurs="0" maxOccurs="unbounded"/>
+    -->
+   <xs:element name="timesteps" type="pcr:Timesteps"
+                          minOccurs="0" maxOccurs="unbounded"/>
+ </xs:sequence>
+</xs:complexType>
+
+
+<xs:complexType name="Timesteps">
+ <xs:complexContent>
+  <xs:extension base="pcr:OneBasedIntegerRangeOrSet">
+   <xs:sequence>
+    <xs:element name="dateMapper" type="pcr:DateMapper"
+                          minOccurs="0" maxOccurs="1"/>
+    <!-- TODO allow dal::StepMapper like here to,
+              choice between dateMapper and stepMapper
+     -->
+   </xs:sequence>
+  </xs:extension>
+ </xs:complexContent>
+</xs:complexType>
+
+<xs:complexType name="DateMapper">
+ <xs:sequence>
+    <xs:element name="index" type="xs:unsignedInt">
+     <xs:annotation>
+       <xs:documentation>"epoch" of the index range
+                         typically 1 or 0.
+       </xs:documentation>
+     </xs:annotation>
+    </xs:element>
+    <xs:element name="timeOfIndex" type="xs:dateTime">
+     <xs:annotation>
+       <xs:documentation>full calendar date of the index sibling element
+                         Note that timezone information is not supported
+       </xs:documentation>
+     </xs:annotation>
+    </xs:element>
+    <xs:element name="duration" type="pcr:TimeDuration">
+     <xs:annotation>
+       <xs:documentation>duration of a timestep
+       </xs:documentation>
+     </xs:annotation>
+    </xs:element>
+ </xs:sequence>
+</xs:complexType>
+
+
+<xs:complexType name="AguilaView">
+ <xs:choice maxOccurs="1" minOccurs="1">
+   <xs:element name="map"       type="pcr:StringSet"/>
+   <xs:element name="drape"     type="pcr:StringSet"/>
+   <xs:element name="timeGraph" type="pcr:StringSet"/>
+   <xs:element name="probabilityGraph" type="pcr:StringSet"/>
+   <xs:element name="valueOnly" type="pcr:StringSet"/>
+   <xs:element name="default"   type="pcr:StringSet"/>
+   <xs:element name="test"      type="pcr:StringSet"/>
+ </xs:choice>
+</xs:complexType>
+
+<xs:complexType name="AguilaData">
+     <xs:annotation>
+      <xs:documentation>
+            TODO name is unique, addressing different datasets
+            with same "name" but yielding different datasets by
+            having a different DataSpace is done by setting another
+            path.
+       </xs:documentation>
+      </xs:annotation>
+ <xs:sequence>
+   <xs:element name="name"           type="xs:string"/>
+   <xs:element name="dataSpace"      type="pcr:DataSpace"
+                          minOccurs="0" maxOccurs="1"/>
+   <xs:element name="drawProperties" type="pcr:DrawProperties"
+                          minOccurs="0" maxOccurs="1"/>
+ </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="DrawProperties">
+ <xs:sequence>
+   <xs:element name="legendBorderValuesType" type="pcr:LegendBorderValuesType"
+                          minOccurs="0" maxOccurs="1"/>
+   <xs:element name="minimumCutOff" type="xs:double"
+                          minOccurs="0" maxOccurs="1"/>
+   <xs:element name="maximumCutOff" type="xs:double"
+                          minOccurs="0" maxOccurs="1"/>
+   <xs:element name="numberOfColours" type="pcr:Non0UnsignedInt"
+                          minOccurs="0" maxOccurs="1"/>
+   <xs:element name="colourAssignment" type="pcr:ColourAssignment"
+                          minOccurs="0" maxOccurs="1"/>
+   <xs:element name="drawMode" type="pcr:DrawMode"
+                          minOccurs="0" maxOccurs="1"/>
+   <xs:element name="palette" type="pcr:Palette"
+                          minOccurs="0" maxOccurs="1"/>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="Palette">
+  <xs:sequence>
+ <!-- choice
+   <xs:element name="default" type="pcr:DefaultPaletteNames"/>
+  -->
+   <xs:element name="rgb" type="pcr:Rgb" minOccurs="1" maxOccurs="unbounded">
+   <xs:annotation>
+    <xs:documentation>
+     * For nominal,ordinal,boolean data the element number (0-based) is mapped to the
+       value. Values outside of [0,nr-of-rgb-elements> are mapped to element number:
+       abs(value modulo nr-of-rgb-elements).
+     * for scalar and directional data a colour ramp is created.
+    </xs:documentation>
+   </xs:annotation>
+  </xs:element>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="Rgb">
+  <xs:sequence>
+   <xs:element name="r" type="xs:unsignedByte" minOccurs="1" maxOccurs="1"/>
+   <xs:element name="g" type="xs:unsignedByte" minOccurs="1" maxOccurs="1"/>
+   <xs:element name="b" type="xs:unsignedByte" minOccurs="1" maxOccurs="1"/>
+  </xs:sequence>
+</xs:complexType>
+
+<!-- TODO the knows palettes 
+<xs:simpleType name="DefaultPaletteNames">
+  <xs:restriction base="xs:string">
+   <xs:enumeration value="netscape"/>
+   <xs:enumeration value="greydirectional"/>
+   <xs:enumeration value="etc"/>
+  </xs:restriction>
+</xs:simpleType>
+-->
+
+<xs:complexType name="LegendBorderValuesType">
+ <xs:choice>
+  <xs:element name="rounded" type="pcr:EmptyElement"/>
+  <xs:element name="exact"   type="pcr:EmptyElement"/>
+ </xs:choice>
+</xs:complexType>
+
+<xs:complexType name="ColourAssignment">
+ <xs:choice>
+  <xs:element name="linear"               type="pcr:EmptyElement"/>
+  <xs:element name="trueLogarithmic"      type="pcr:EmptyElement"/>
+  <xs:element name="shiftedLogarithmic"   type="pcr:EmptyElement"/>
+  <xs:element name="confidenceLevel"      type="pcr:ConfidenceLevel"/>
+ </xs:choice>
+</xs:complexType>
+
+<xs:complexType name="ConfidenceLevel">
+ <xs:sequence>
+  <xs:element name="value" type="xs:double">
+   <xs:annotation>
+    <xs:documentation>
+        (1 - alpha)
+        TODO: range [0,1]
+   </xs:documentation>
+  </xs:annotation>
+  </xs:element>
+ </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="DrawMode">
+ <xs:choice>
+  <xs:element name="fill"         type="pcr:EmptyElement"/>
+  <xs:element name="contour"      type="pcr:EmptyElement"/>
+ </xs:choice>
+</xs:complexType>
+
+<xs:complexType name="AguilaCursorValues">
+ <xs:annotation>
+   <xs:documentation>Contents Aguila cursor dump file</xs:documentation>
+ </xs:annotation>
+ <xs:sequence>
+  <xs:element name="aguilaCursorValue"  type="pcr:AguilaCursorValue"
+                          minOccurs="0" maxOccurs="unbounded"/>
+ </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="AguilaCursorValue">
+ <xs:annotation>
+   <xs:documentation>Aguila current cursor dump</xs:documentation>
+ </xs:annotation>
+ <xs:sequence>
+  <xs:element name="cursor"     type="pcr:Cursor"
+                          minOccurs="0" maxOccurs="1"/>
+  <xs:element name="dataValue"  type="pcr:DataValue"
+                          minOccurs="0" maxOccurs="unbounded">
+     <xs:annotation>
+       <xs:documentation>y coordinate
+       </xs:documentation>
+     </xs:annotation>
+  </xs:element>
+ </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="Cursor">
+ <xs:annotation>
+   <xs:documentation>Current cursor position in the dimensions
+   </xs:documentation>
+ </xs:annotation>
+ <xs:sequence>
+  <xs:element name="time" type="xs:unsignedInt"
+                          minOccurs="0" maxOccurs="1">
+   <xs:annotation>
+     <xs:documentation>integer timestep
+     </xs:documentation>
+   </xs:annotation>
+  </xs:element>
+  <xs:element name="date" type="xs:dateTime"
+                          minOccurs="0" maxOccurs="1">
+   <xs:annotation>
+     <xs:documentation>real calendar date
+                       Note that timezone information is not supported
+     </xs:documentation>
+   </xs:annotation>
+  </xs:element>
+  <xs:element name="x"    type="xs:double"
+                          minOccurs="0" maxOccurs="1">
+   <xs:annotation>
+     <xs:documentation>x coordinate
+     </xs:documentation>
+   </xs:annotation>
+  </xs:element>
+  <xs:element name="y"    type="xs:double"
+                          minOccurs="0" maxOccurs="1">
+   <xs:annotation>
+     <xs:documentation>y coordinate
+     </xs:documentation>
+   </xs:annotation>
+  </xs:element>
+ </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="DataValue">
+ <xs:sequence>
+  <xs:element name="name"  type="xs:string"/>
+  <xs:element name="value" type="xs:string"/>
+ </xs:sequence>
+</xs:complexType>
+
+</xs:schema>

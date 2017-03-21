@@ -500,19 +500,22 @@ class netcdfinput():
         if len(self.lonidx) != len(x):
             logging.error("error in determining X coordinates in netcdf...")
             logging.error("model expects: " + str(x.min()) + " to " + str(x.max()))
-            logging.error("got from  netcdf: " + str(self.x.min()) + " to " + str(self.x.max()))
+            logging.error("got coordinates  netcdf: " + str(self.x.min()) + " to " + str(self.x.max()))
+            logging.error("got len from  netcdf x: " + str(len(x)) + " expected " + str(len(self.lonidx)))
             raise ValueError("X coordinates in netcdf do not match model")
 
         if len(self.latidx) != len(y):
             logging.error("error in determining Y coordinates in netcdf...")
             logging.error("model expects: " + str(y.min()) + " to " + str(y.max()))
             logging.error("got from  netcdf: " + str(self.y.min()) + " to " + str(self.y.max()))
+            logging.error("got len from  netcdf y: " + str(len(y)) + " expected " + str(len(self.latidx)))
             raise ValueError("Y coordinates in netcdf do not match model")
 
 
         for var in vars:
             try:
-                self.alldat[var] = self.dataset.variables[var][self.fstep:self.maxsteps]
+                #self.alldat[var] = self.dataset.variables[var][self.fstep:self.maxsteps]
+                self.alldat[var] = self.dataset.variables[var]
             except:
                 self.alldat.pop(var, None)
                 logging.warn("Variable " + var + " not found in netcdf file: " + netcdffile)
