@@ -45,6 +45,13 @@ def snow_no_reservoir(self, k):
     !!!still needs a final check!!!    
     
     """
+    try:
+    	JarvisCoefficients.calcEpSnow(self,k)
+    except:
+    	JarvisCoefficients.calcEpSnowHour(self,k)
+    self.PotEvaporation = self.EpHour
+    self.PotEvaporation = cover(ifthenelse(self.EpHour > 0, self.EpHour, 0),0)
+    
     self.Qw_[k] = max(self.PrecipitationSnow, 0)
     self.Ew_[k] = 0.
     self.Sw[k] = 0.

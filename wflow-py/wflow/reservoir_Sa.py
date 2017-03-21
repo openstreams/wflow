@@ -305,7 +305,48 @@ def agriZone_Ep_Sa_beta(self,k):
     self.Ea_[k] = self.Ea
     self.Qa_[k] = self.Qa + self.Qaadd
     self.Fa_[k] = self.Fa
+
+def agriZone_hourlyEp_Sa_beta(self,k):
+    """
+    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Formula for evaporation based on LP
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is 
+    no longer taken into account for this correction
+    - Qa u is determined from overflow from Sa --> incorporation of beta function
+    - Fa is based on storage in Sa
+    - Code for ini-file:
+    """
+
+    #JarvisCoefficients.calcEp(self,k)
+    #self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0),0)
     
+    self.samax2 = self.samax[k] * scalar(self.catchArea)
+    self.Qaadd = max(self.Sa_t[k] + self.Pe - self.samax2,0)
+    
+    self.Sa[k] = self.Sa_t[k] + (self.Pe - self.Qaadd)
+    self.SaN = min(max(self.Sa[k] / self.samax2, 0), 1)
+    self.SuN = self.Su[k] / self.sumax[k]
+    
+    self.Ea1 = max((self.PotEvaporation - self.Ei),0) * min(self.Sa[k] / (self.samax2 * self.LP[k]),1)        
+    self.Qa1 = (self.Pe - self.Qaadd) * (1 - (1 - self.SaN) ** self.beta[k])
+    self.Fa1 = ifthenelse(self.SaN > 0,self.Fmin[k] + (self.Fmax[k] - self.Fmin[k]) * e ** (-self.decF[k] * (1 - self.SaN)),0)
+    self.Sa[k] = self.Sa_t[k] + (self.Pe - self.Qaadd) - self.Qa1 - self.Fa1 - self.Ea1
+
+    self.Sa_diff = ifthenelse(self.Sa[k] < 0, self.Sa[k], 0)
+    self.Qa = self.Qa1 + (self.Qa1/ifthenelse(self.Fa1 + self.Ea1 + self.Qa1 > 0 , self.Fa1 + self.Ea1 + self.Qa1 , 1)) * self.Sa_diff    
+    self.Fa = self.Fa1 + (self.Fa1/ifthenelse(self.Fa1 + self.Ea1 + self.Qa1 > 0 , self.Fa1 + self.Ea1 + self.Qa1 , 1)) * self.Sa_diff
+    self.Ea = self.Ea1 + (self.Ea1/ifthenelse(self.Fa1 + self.Ea1 + self.Qa1 > 0 , self.Fa1 + self.Ea1 + self.Qa1 , 1)) * self.Sa_diff
+    self.Sa[k] = self.Sa_t[k] + (self.Pe - self.Qaadd) - self.Ea - self.Fa - self.Qa
+    self.Sa[k] = ifthenelse(self.Sa[k] < 0, 0 , self.Sa[k])    
+    self.Sa_diff2 = ifthen(self.Sa[k] < 0, self.Sa[k]) 
+
+    self.wbSa_[k] = self.Pe - self.Ea - self.Qa - self.Qaadd - self.Fa - self.Sa[k] + self.Sa_t[k]
+    
+    self.Ea_[k] = self.Ea
+    self.Qa_[k] = self.Qa + self.Qaadd
+    self.Fa_[k] = self.Fa
+   
 def agriZone_Ep_Sa_beta_frost(self,k):
     """
     - Potential evaporation is decreased by energy used for interception evaporation    
