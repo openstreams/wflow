@@ -215,6 +215,7 @@ latex_elements = {
     'fontpkg': '',
     'maketitle': '\maketitle',
     'fncychap': '',
+    'fancyheadings': '',
     'pointsize': '10pt',
     'preamble': '',
     'releasename': "",
@@ -224,7 +225,7 @@ latex_elements = {
     'docclass': '',
     'inputenc': '',
     'classoptions': '',
-    'utf8extra': '',
+    'utf8extra': ''
 }
 
 
@@ -255,6 +256,7 @@ latex_show_urls = False
 # If false, no module index is generated.
 latex_domain_indices = False
 
+#latex_additional_files = ["mfgan-bw.sty", "mfgan.sty", "_static/cover.png"]
 
 # -- Options for manual page output --------------------------------------------
 
