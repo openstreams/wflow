@@ -295,14 +295,56 @@ References
 Papers/reports using wflow
 ==========================
 
-Jeuken, A., L. Bouaziz, G. Corzo, and L. Alfonso, 2016: Analyzing Needs for Climate Change Adaptation
-   in the Magdalena River Basin in Colombia. Climate Change Adaptation, Resilience and Hazards, W.L. Filho,
-   H. Musa, G. Cavan, P. O’Hare, and J. Seixas, Eds., Climate Change Management, Springer International Publishing,
-   329–344 http://link.springer.com/chapter/10.1007/978-3-319-39880-8_20 (Accessed September 26, 2016).
+Arnal, L., 2014. An intercomparison of flood forecasting models for the Meuse River basin (MSc Thesis). Vrije Universiteit,
+Amsterdam.
 
-Lopez Lopez, P., N. Wanders, J. Schellekens, L. J. Renzullo, E. H. Sutanudjaja, and M. F. P. Bierkens, 2015: Improved
- large-scale hydrological modelling through the assimilation of streamflow and downscaled satellite soil moisture
- observations. Hydrology and Earth System Sciences Discussions, 12, 10559–10601, doi:10.5194/hessd-12-10559-2015.
+Azadeh Karami Fard, 2015. Modeling runoff of an Ethiopian catchment with WFLOW (MSc thesis). Vrije Universiteit,
+Amsterdam.
+
+de Boer-Euser, T., Bouaziz, L., De Niel, J., Brauer, C., Dewals, B., Drogue, G., Fenicia, F., Grelier, B., Nossent, J.,
+Pereira, F., Savenije, H., Thirel, G., Willems, P., 2017. Looking beyond general metrics for model comparison – lessons
+from an international model intercomparison study. Hydrol. Earth Syst. Sci. 21, 423–440. doi:10.5194/hess-21-423-2017
+
+Emerton, R.E., Stephens, E.M., Pappenberger, F., Pagano, T.C., Weerts, A.H., Wood, A.W., Salamon, P., Brown, J.D.,
+Hjerdt, N., Donnelly, C., Baugh, C.A., Cloke, H.L., 2016. Continental and global scale flood forecasting systems. WIREs
+Water 3, 391–418. doi:10.1002/wat2.1137
+
+Hally, A., Caumont, O., Garrote, L., Richard, E., Weerts, A., Delogu, F., Fiori, E., Rebora, N., Parodi, A., Mihalović,
+A., Ivković, M., Dekić, L., van Verseveld, W., Nuissier, O., Ducrocq, V., D’Agostino, D., Galizia, A., Danovaro, E.,
+Clematis, A., 2015. Hydrometeorological multi-model ensemble simulations of the 4 November 2011 flash flood event in
+Genoa, Italy, in the framework of the DRIHM project. Nat. Hazards Earth Syst. Sci. 15, 537–555.
+doi:10.5194/nhess-15-537-2015
+
+Hassaballah, K., Mohamed, Y., Uhlenbrook, S., Biro, K., 2017. Analysis of streamflow response to land use land cover
+changes using satellite data and hydrological modelling: case study of Dinder and Rahad tributaries of the Blue Nile.
+Hydrol. Earth Syst. Sci. Discuss. 2017, 1–22. doi:10.5194/hess-2017-128
+
+Jeuken, A., Bouaziz, L., Corzo, G., Alfonso, L., 2016. Analyzing Needs for Climate Change Adaptation in the Magdalena
+River Basin in Colombia, in: Filho, W.L., Musa, H., Cavan, G., O’Hare, P., Seixas, J. (Eds.), Climate Change Adaptation,
+Resilience and Hazards, Climate Change Management. Springer International Publishing, pp. 329–344.
+
+López López, P., Wanders, N., Schellekens, J., Renzullo, L.J., Sutanudjaja, E.H., Bierkens, M.F.P., 2016. Improved
+large-scale hydrological modelling through the assimilation of streamflow and downscaled satellite soil moisture
+observations. Hydrol. Earth Syst. Sci. 20, 3059–3076. doi:10.5194/hess-20-3059-2016
+
+Maat, W.H., 2015. Simulating discharges and forecasting floods using a conceptual rainfall-runoff model for the Bolivian
+Mamoré basin (MSc thesis). University of Twente, Enschede.
+
+Research paper: HYDROLOGIC MODELING OF PRINCIPAL SUB-BASINS OF THE MAGDALENA-CAUCA LARGE BASIN USING WFLOW MODEL [WWW
+Document], n.d. . ResearchGate. URL
+https://www.researchgate.net/publication/280293861_HYDROLOGIC_MODELING_OF_PRINCIPAL_SUB-BASINS_OF_THE_MAGDALENA-CAUCA_LARGE_BASIN_USING_WFLOW_MODEL
+(accessed 4.4.17).
+
+Tangdamrongsub, N., Steele-Dunne, S.C., Gunter, B.C., Ditmar, P.G., Weerts, A.H., 2015. Data assimilation of GRACE
+terrestrial water storage estimates into a regional hydrological model of the Rhine River basin. Hydrol. Earth Syst.
+Sci. 19, 2079–2100. doi:10.5194/hess-19-2079-2015
+
+Tretjakova, D., 2015. Investigating the effect of using fully-distributed model and data assimilation on the performance
+of hydrological forecasting in the Karasu catchment, Turkey (MSc thesis). Wageningen University.
+
+Wang, X., Zhang, J., Babovic, V., 2016. Improving real-time forecasting of water quality indicators with combination of
+process-based models and data assimilation technique. Ecological Indicators 66, 428–439.
+doi:10.1016/j.ecolind.2016.02.016
 
 
 
