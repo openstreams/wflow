@@ -246,7 +246,7 @@ class WflowModel(DynamicModel):
 
     self.SN = 1 - self.percent_sand / 100
     self.usle_k = (0.2 + 0.3*exp(-0.0256*self.percent_sand * (1 - self.percent_silt/100))) \
-    * (self.percent_silt/(self.percent_clay+self.percent_silt))**0.3 \
+    * (self.percent_silt/(max(0.01,self.percent_clay+self.percent_silt)))**0.3 \
     * (1 - (0.25*self.percent_oc)/(self.percent_oc + exp(3.72 - 2.95*self.percent_oc))) \
     * (1 - (0.7*self.SN) / (self.SN + exp(-5.51 + 22.9*self.SN)))
 
