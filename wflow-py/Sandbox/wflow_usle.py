@@ -260,7 +260,7 @@ class WflowModel(DynamicModel):
         sqrt(catchmenttotal(self.reallength,self.TopoLdd))
 
     self.drainlength = detdrainlength(self.TopoLdd, self.xl, self.yl)
-    self.Ddn = self.drainlength/(self.usle_c * self.DUSlope)
+    self.Ddn = self.drainlength/(max(0.001,self.usle_c) * self.DUSlope)
     self.IC = log10(self.Dup/self.Ddn)
     self.SDRMax = 0.8 #  (Vigiak et al., 2012)
     self.IC0 = 0.5
@@ -312,7 +312,7 @@ class WflowModel(DynamicModel):
     output should also be saved here.
     """
 
-    self.logger.debug("Step: " + str(int(self.thestep + self._d_firstTimeStep)) + "/" + str(int(self._d_nrTimeSteps)))
+
     self.thestep = self.thestep + 1
 
     self.wf_updateparameters() # Read forcing and dynamic variables
