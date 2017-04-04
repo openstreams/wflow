@@ -22,6 +22,10 @@ Goto https://github.com/openstreams/wflow. There you can download the source or 
 you get the required third party models first (see below). The documentation can be found at
 http://wflow.readthedocs.org
 
+Which version to use
+====================
+The master branch can change rapidly (and break functionality without warning) so please use one of the releases if possible. If you want to adjust things in the model(s) we assume you should be confortable using the master branch.
+
 
 Binaries for windows
 ====================
