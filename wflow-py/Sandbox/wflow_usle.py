@@ -213,6 +213,11 @@ class WflowModel(DynamicModel):
     self.timestepsecs = int(configget(self.config,'run','timestepsecs','86400'))
     sizeinmetres = int(configget(self.config, "layout", "sizeinmetres", "0"))
     self.basetimestep=86400
+    # For SDR...
+    self.SDRMax = 0.8 #  (Vigiak et al., 2012)
+    self.IC0 = 0.5
+    self.k = 2.0
+
     # Reads all parameter from disk
     self.wf_updateparameters()
     self.ZeroMap = 0.0 * self.Altitude
@@ -265,9 +270,7 @@ class WflowModel(DynamicModel):
     self.drainlength = detdrainlength(self.TopoLdd, self.xl, self.yl)
     self.Ddn = self.drainlength/(max(0.001,max(0.001,self.usle_c)) * self.DUSlope)
     self.IC = log10(self.Dup/self.Ddn)
-    self.SDRMax = 0.8 #  (Vigiak et al., 2012)
-    self.IC0 = 0.5
-    self.k = 2.0
+
     expfact = exp((self.IC0 - self.IC)/self.k)
     self.SDR = self.SDRMax/(1 + expfact)
 
