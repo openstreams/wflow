@@ -256,11 +256,11 @@ class WflowModel(DynamicModel):
     http://data.naturalcapitalproject.org/nightly-build/invest-users-guide/html/sdr.html
     """
     self.unitareaupstr = catchmenttotal(1, self.TopoLdd)
-    self.Dup = catchmenttotal(self.usle_c,self.TopoLdd)/self.unitareaupstr * catchmenttotal(self.DUSlope,self.TopoLdd)/self.unitareaupstr *\
+    self.Dup = catchmenttotal(max(0.001,self.usle_c),self.TopoLdd)/self.unitareaupstr * catchmenttotal(self.DUSlope,self.TopoLdd)/self.unitareaupstr *\
         sqrt(catchmenttotal(self.reallength,self.TopoLdd))
 
     self.drainlength = detdrainlength(self.TopoLdd, self.xl, self.yl)
-    self.Ddn = self.drainlength/(max(0.001,self.usle_c) * self.DUSlope)
+    self.Ddn = self.drainlength/(max(0.001,max(0.001,self.usle_c)) * self.DUSlope)
     self.IC = log10(self.Dup/self.Ddn)
     self.SDRMax = 0.8 #  (Vigiak et al., 2012)
     self.IC0 = 0.5
@@ -333,7 +333,7 @@ class WflowModel(DynamicModel):
 
     self.SoilLoss = self.usle_l * self.usle_s * self.usle_k * self.usle_r *self.usle_c * self.usle_p
     self.SoilLossAvgUpstr = catchmenttotal(self.SoilLoss,self.TopoLdd)/catchmenttotal(1,self.TopoLdd)
-    self.SoilLossTotalUpstr = catchmenttotal(self.SoilLoss,self.TopoLdd)/catchmenttotal((self.reallength * self.reallength)/10000.0,self.TopoLdd)
+    self.SoilLossTotalUpstr = self.SoilLossAvgUpstr * catchmenttotal((self.reallength * self.reallength)/10000.0,self.TopoLdd)
     self.SedimentYieldUpstrAvg = self.SDR * self.SoilLossAvgUpstr # Average upstream of each pixel
     self.SedimentYieldUpstrTot = self.SDR * self.SoilLossTotalUpstr # Total upstream of each pixel
     self.SedimentYield = self.SDR * self.SoilLoss
