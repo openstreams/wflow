@@ -113,7 +113,9 @@ class WflowModel(DynamicModel):
       modelparameters.append(self.ParamType(name="percent_clay",stack="intbl/percent_clay.tbl",type="statictbl",default=0.1, verbose=False,lookupmaps=[]))
       modelparameters.append(self.ParamType(name="percent_silt",stack="intbl/percent_silt.tbl",type="statictbl",default=0.1, verbose=False,lookupmaps=[]))
       modelparameters.append(self.ParamType(name="percent_oc",stack="intbl/percent_oc.tbl",type="statictbl",default=0.01, verbose=False,lookupmaps=[]))
-
+      modelparameters.append(
+          self.ParamType(name="percent_sand", stack="intbl/percent_sand.tbl", type="statictbl", default=0.01, verbose=False,
+                         lookupmaps=[]))
       # Sediment delivery ratio
 #      modelparameters.append(self.ParamType(name="dratio",stack="intbl/dratio.tbl",type="statictbl",default=1.0, verbose=False,lookupmaps=[]))
       #modelparameters.append(self.ParamType(name="usle_k", stack="intbl/usle_k.tbl", type="statictbl", default=1.0, verbose=False,lookupmaps=[]))
@@ -238,7 +240,7 @@ class WflowModel(DynamicModel):
     # Now determime S using: S=(0.43+0.30s+0.043s^2)/6.613 # s = slope
     self.usle_s = (0.43+ 0.30*(self.Slope*100) + 0.043 * (self.Slope * 100)**2)/6.613
 
-    self.percent_sand = 100-self.percent_clay-self.percent_silt
+    #self.percent_sand = 100-self.percent_clay-self.percent_silt
     """
     Calculation of USLE K factor  based on:
     Maeda et al. (2010) - 'Potential impacts of agricultural expansion and climate change on soil erosion in the Eastern Arc Mountains of Kenya', doi:10.1016/j.geomorph.2010.07.019
@@ -256,6 +258,7 @@ class WflowModel(DynamicModel):
     http://data.naturalcapitalproject.org/nightly-build/invest-users-guide/html/sdr.html
     """
     self.unitareaupstr = catchmenttotal(1, self.TopoLdd)
+    self.ha_upstream = catchmenttotal(self.reallength / 100.0 * self.reallength / 100.0, self.TopoLdd)
     self.Dup = catchmenttotal(max(0.001,self.usle_c),self.TopoLdd)/self.unitareaupstr * catchmenttotal(self.DUSlope,self.TopoLdd)/self.unitareaupstr *\
         sqrt(catchmenttotal(self.reallength,self.TopoLdd))
 
@@ -331,11 +334,13 @@ class WflowModel(DynamicModel):
         68.73 * (self.Precipitation/self.Pmean)** 0.841) / 3.0
 
 
-    self.SoilLoss = self.usle_l * self.usle_s * self.usle_k * self.usle_r *self.usle_c * self.usle_p
-    self.SoilLossAvgUpstr = catchmenttotal(self.SoilLoss,self.TopoLdd)/catchmenttotal(1,self.TopoLdd)
-    self.SoilLossTotalUpstr = self.SoilLossAvgUpstr * catchmenttotal((self.reallength * self.reallength)/10000.0,self.TopoLdd)
-    self.SedimentYieldUpstrAvg = self.SDR * self.SoilLossAvgUpstr # Average upstream of each pixel
-    self.SedimentYieldUpstrTot = self.SDR * self.SoilLossTotalUpstr # Total upstream of each pixel
+    self.SoilLoss = self.usle_l * self.usle_s * self.usle_k * self.usle_r *self.usle_c * self.usle_p # Ton/ha/yr
+    # Ton per timestep per cell
+    self.SoilLossTon = self.SoilLoss * (self.reallength/100.0 * self.reallength/100.0) * self.timestepsecs/31557600.0 # 1/12
+    self.SoilLossTonUpstr = catchmenttotal(self.SoilLossTon, self.TopoLdd)
+    self.SoilLossUpstr = self.SoilLossTonUpstr/self.ha_upstream
+    self.SedimentYieldUpstr = self.SDR * self.SoilLossUpstr # Average upstream of each pixel
+    self.SedimentYieldTonUpstr = self.SDR * self.SoilLossTonUpstr # Total upstream of each pixel
     self.SedimentYield = self.SDR * self.SoilLoss
 
 
