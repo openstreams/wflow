@@ -169,6 +169,7 @@ if target == 'openda':
     import thrift
     executables = [
         Executable('Scripts/pcr2netcdf.py', base=base),
+        Executable('Scripts/pcr2netcdf.py', base=base),
         Executable('Scripts/bmi2runner.py', base=base),
         Executable('openda_bmi/opendapy.py', base=base),
         Executable('Scripts/wflow_prepare_step2.py', base=base),
