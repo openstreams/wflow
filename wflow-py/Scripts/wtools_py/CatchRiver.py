@@ -32,7 +32,8 @@ Driver = ogr.GetDriverByName("ESRI Shapefile")
 
 def Usage():
     print('')             
-    print('Usage: CatchRiver [-d dem (raster)] [-l burn_line (shape)] [-p burn_point (shape)] [-a burn_area (shape)]  [-R riverout (shape)] [-C catchmentout (shape)]  [-O min strahler order (integer)] -B -S -K')
+    print('Usage: CatchRiver [-d dem (raster)] [-l burn_line (shape)] [-p burn_point (shape)] [-a burn_area (shape)]\n '
+          '[-R riverout (shape)] [-C catchmentout (shape)]  [-O min strahler order (integer)] -B -S -K')
     print '-d   digital elevation model (GeoTiff)'
     print '-l   polylines (rivers) to be burned in the DEM (optional) (ESRI Shapefile)'
     print '-p   points (outlets) to be burned in the DEM (optional) (ESRI Shapefile)'
