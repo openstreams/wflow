@@ -144,18 +144,18 @@ if target == 'openda':
     import thrift.transport.THttpClient as THttpClient
     import thrift.protocol.TBinaryProtocol as TBinaryProtocol
     import thrift.transport.THttpClient as THttpClient
-    includes = ['wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined']
+    includes = ['wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined','lxml.etree', 'lxml._elementpath', 'gzip']
     packages.append('openda_bmi')
 elif target == 'deltashell':
     import zmq.libzmq
     data_files.extend([zmq.libzmq.__file__, ])
     includes = ["zmq.backend.cython","zmq.utils.garbage","requests","zmq.eventloop.zmqstream",
-                 'wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined']
+                 'wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined','lxml.etree', 'lxml._elementpath', 'gzip']
     packages.append('zmq.backend.cython')
     packages.append('bmi')
     packages.append('pkg_resources')
 else:
-    includes = ['wflow.wflow_bmi', 'wflow.wflow_w3ra', 'wflow.wflow_bmi_combined']
+    includes = ['wflow.wflow_bmi', 'wflow.wflow_w3ra', 'wflow.wflow_bmi_combined','lxml.etree', 'lxml._elementpath', 'gzip']
 
 #  "include_msvcr": True,
 options = {"includes": includes, "packages": packages,'include_files': data_files, "build_exe": thename,
@@ -189,6 +189,9 @@ if target == 'openda':
     ]
 elif target == 'deltashell':
     executables = [
+        Executable('Scripts/wtools_py/CatchRiver.py', base=base),
+        Executable('Scripts/wtools_py/CreateGrid.py', base=base),
+        Executable('Scripts/wtools_py/StaticMaps.py', base=base),
         Executable('Scripts/pcr2netcdf.py', base=base),
         Executable('Scripts/bmi2runner.py', base=base),
         Executable('Scripts/wfds_core.py', base=base),
@@ -207,6 +210,9 @@ elif target == 'deltashell':
     ]
 else:
     executables = [
+        Executable('Scripts/wtools_py/CatchRiver.py', base=base),
+        Executable('Scripts/wtools_py/CreateGrid.py', base=base),
+        Executable('Scripts/wtools_py/StaticMaps.py', base=base),
         Executable('Scripts/pcr2netcdf.py', base=base),
         Executable('Scripts/bmi2runner.py', base=base),
         Executable('Scripts/wflow_prepare_step2.py', base=base),
