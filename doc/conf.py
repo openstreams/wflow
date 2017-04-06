@@ -210,22 +210,6 @@ htmlhelp_basename = 'wflowdoc'
 # -- Options for LaTeX output --------------------------------------------------
 
 
-latex_elements = {
-    'papersize': 'a4paper',
-    'fontpkg': '',
-    'maketitle': '\maketitle',
-    'fncychap': '',
-    'pointsize': '10pt',
-    'preamble': '',
-    'releasename': "",
-    'babel': '\usepackage[english]{babel}',
-    'printindex': '',
-    'fontenc': '',
-    'docclass': '',
-    'inputenc': '',
-    'classoptions': '',
-    'utf8extra': '',
-}
 
 
 # Grouping the document tree into LaTeX files. List of tuples
