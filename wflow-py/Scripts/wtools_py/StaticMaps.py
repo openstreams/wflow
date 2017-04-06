@@ -24,8 +24,8 @@ except ImportError:
     import gdal
     from gdalconst import *
     
-import wflowtools_lib as wt
-import wflow_lib as tr
+import wflow.wflowtools_lib as wt
+import wflow.wflow_lib as tr
 
 Driver = ogr.GetDriverByName("ESRI Shapefile")    
 

@@ -168,7 +168,9 @@ base=None
 if target == 'openda':
     import thrift
     executables = [
-        Executable('Scripts/pcr2netcdf.py', base=base),
+        Executable('Scripts/wtools_py/CatchRiver.py', base=base),
+        Executable('Scripts/wtools_py/CreateGrid.py', base=base),
+        Executable('Scripts/wtools_py/StaticMaps.py', base=base),
         Executable('Scripts/pcr2netcdf.py', base=base),
         Executable('Scripts/bmi2runner.py', base=base),
         Executable('openda_bmi/opendapy.py', base=base),
