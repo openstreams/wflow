@@ -100,6 +100,14 @@ linked as part of larger modelling systems:
     models within OpenStreams.
 
 
+.. note::
+
+   As part of the eartH2Observe project global dataset of forcing data has been compiled that can also be used with the
+   wflow models. A set of tools is available that can work with wflow (the wflow_dem.map file) to extract data from the server and downscale
+   these for your wflow model. Check https://github.com/earth2observe/downscaling-tools for the tools. A description
+   of the project can be found at http://www.earth2observe.eu and the data server can be access via http://wci.earth2observe.eu
+
+
 The different wflow models share the same structure but are fairly
 different with respect to the conceptualisation. The shared software
 framework includes the basic maps (dem, landuse, soil etc) and the
@@ -120,7 +128,7 @@ As such, the structure of the model is
 transparent, can be changed by other modellers easily, and the system
 allows for rapid development. In order to run
 the model both PCRaster 4.* and Python 2.7 are needed. At the moment
-only 64 bit versions are actively supported.
+only 64 bit versions are  supported.
 
 
 
@@ -165,7 +173,7 @@ The wflow\_hbv model
 
 
 The wflow\_sbm model
-=====================
+====================
 .. toctree::
    :maxdepth: 2
 
