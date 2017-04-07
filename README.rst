@@ -14,7 +14,8 @@ Reference documentation at:
 
 + http://wflow.readthedocs.org/
 
-[![DOI](https://zenodo.org/badge/17738134.svg)](https://zenodo.org/badge/latestdoi/17738134)
+.. image:: https://zenodo.org/badge/17738134.svg
+   :target: https://zenodo.org/badge/latestdoi/17738134
 
 
 Obtaining wflow
