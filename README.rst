@@ -88,6 +88,9 @@ See doi of the release you use. If you use a snapshot of the development (withou
 Schellekens, J., Verseveld, W. van, Euser, T., Winsemius, H., Thiange, C., Bouaziz, L., Tollenaar, D., Tollenaar, D., Vries, S. de, YEAR. openstreams/wflow: unstable-master. https://github.com/openstreams/wflow, obtained: DATE_OF_DOWNLOAD
 
 
+Recent releases
+---------------
+
 .. image:: https://zenodo.org/badge/17738134.svg
    :target: https://zenodo.org/badge/latestdoi/17738134
    
