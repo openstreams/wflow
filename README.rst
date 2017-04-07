@@ -7,8 +7,7 @@ python framework. In wflow this framework is extended (the wf_DynamicFramework)
 so that models build using the framework can be controlled using the API. 
 Links to BMI, OpenMI and OpenDAP have been made.
 
-A link to the latest version can always be found at http://www.openstreams.nl or
-https://github.com/openstreams/wflow 
+A link to the latest version can always be found at https://github.com/openstreams/wflow 
 
 Reference documentation at:
 
@@ -79,3 +78,23 @@ Credits
 + GDAL is released under an X/MIT style Open Source license by the Open Source Geospatial Foundation (http://www.gdal.org).
 
 
+Citation
+========
+See doi of the release you use. If you use a snapshot of the development (without a DOI) cite as follows:
+
+Jaap Schellekens, Willem van Verseveld, Tanja Euser, Hessel Winsemius, Christophe Thiange, Laurene Bouaziz, Daniel Tollenaar, Sander de Vries, Albrecht Weerts, YEAR. openstreams/wflow: unstable-master. https://github.com/openstreams/wflow, obtained: DATE_OF_DOWNLOAD
+
+
+Recent releases
+---------------
+
+.. image:: https://zenodo.org/badge/17738134.svg
+   :target: https://zenodo.org/badge/latestdoi/17738134
+   
+Jaap Schellekens, Willem van Verseveld, Tanja Euser, Hessel Winsemius, Christophe Thiange, Laurene Bouaziz, Daniel Tollenaar, Sander de Vries, 2016. openstreams/wflow: 2016.04 Test release. doi:10.5281/zenodo.167057
+
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.155389.svg
+   :target: https://doi.org/10.5281/zenodo.155389
+   
+Jaap Schellekens, Willem van Verseveld, Tanja Euser, Hessel Winsemius, Christophe Thiange, Laurène Bouaziz, Daniel Tollenaar, Sander de Vries, 2016. openstreams/wflow: 2016.03. doi:10.5281/zenodo.155389
+   
