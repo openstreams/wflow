@@ -82,7 +82,7 @@ Citation
 ========
 See doi of the release you use. If you use a snapshot of the development (without a DOI) cite as follows:
 
-Jaap Schellekens, Willem van Verseveld, Tanja Euser, Hessel Winsemius, Christophe Thiange, Laurene Bouaziz, Daniel Tollenaar, Sander de Vries, YEAR. openstreams/wflow: unstable-master. https://github.com/openstreams/wflow, obtained: DATE_OF_DOWNLOAD
+Jaap Schellekens, Willem van Verseveld, Tanja Euser, Hessel Winsemius, Christophe Thiange, Laurene Bouaziz, Daniel Tollenaar, Sander de Vries, Albrecht Weerts, YEAR. openstreams/wflow: unstable-master. https://github.com/openstreams/wflow, obtained: DATE_OF_DOWNLOAD
 
 
 Recent releases
