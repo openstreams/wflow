@@ -99,5 +99,5 @@ Jaap Schellekens, Willem van Verseveld, Tanja Euser, Hessel Winsemius, Christoph
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.155389.svg
    :target: https://doi.org/10.5281/zenodo.155389
    
-Jaap Schellekens, Willem van Verseveld, Tanja Euser, Hessel Winsemius, Christophe Thiange, Laurène Bouaziz, Daniel Tollenaar, Daniel Tollenaar, Sander de Vries, 2016. openstreams/wflow: 2016.03. doi:10.5281/zenodo.155389
+Jaap Schellekens, Willem van Verseveld, Tanja Euser, Hessel Winsemius, Christophe Thiange, Laurène Bouaziz, Daniel Tollenaar, Sander de Vries, 2016. openstreams/wflow: 2016.03. doi:10.5281/zenodo.155389
    
