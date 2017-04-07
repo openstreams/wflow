@@ -2,6 +2,14 @@ Release notes
 =============
 
 
+2017.01
+-------
+
++ wflow\_sbm renamed to wflow_sbm\_old
++ wflow\_sbm2 renamed to wflow\_sbm
++ Changes to hbv (quickflow)
+
+
 2016.04
 -------
 .. note::

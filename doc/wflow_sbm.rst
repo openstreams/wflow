@@ -5,10 +5,13 @@ The wflow_sbm Model
 Introduction
 ------------
 
-The soil part of wflow\_sbm model follows the same concepts as the 
-topog\_sbm model. topog\_sbm is specifically designed to similate fast 
+The soil part of wflow\_sbm model has its roots in the
+topog\_sbm model but has had considerable chnages over time. topog\_sbm is specifically designed to similate fast
 runoff processes in small catchments while wflow\_sbm can be applied more
 widely. The main differences are:
+
+
++ The unsaturated zone can be split-up in defferent layers
 
 + The addition of evapotranspiration losses
 

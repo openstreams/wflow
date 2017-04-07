@@ -162,20 +162,22 @@ The wflow\_hbv model
 
    wflow_hbv
 
+
+
 The wflow\_sbm model
-====================
+=====================
 .. toctree::
    :maxdepth: 2
 
    wflow_sbm
 
-
-The wflow\_sbm2 model
-=====================
+The wflow\_sbm_old model
+========================
 .. toctree::
    :maxdepth: 2
 
-   wflow_sbm2
+   wflow_sbm_old
+
 
 The wflow\_gr4 model
 ====================
