@@ -7,8 +7,7 @@ python framework. In wflow this framework is extended (the wf_DynamicFramework)
 so that models build using the framework can be controlled using the API. 
 Links to BMI, OpenMI and OpenDAP have been made.
 
-A link to the latest version can always be found at http://www.openstreams.nl or
-https://github.com/openstreams/wflow 
+A link to the latest version can always be found at https://github.com/openstreams/wflow 
 
 Reference documentation at:
 
