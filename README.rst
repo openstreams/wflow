@@ -1,6 +1,3 @@
-.. image:: https://zenodo.org/badge/17738134.svg
-   :target: https://zenodo.org/badge/latestdoi/17738134
-   
 WFLOW
 =====
 
