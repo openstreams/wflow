@@ -81,7 +81,8 @@ linked as part of larger modelling systems:
     ModelX -> OpenMI;
     ModelY -> OpenMI;
     ModelY -> BMI;
-    WFLOWAPI -> OpenDA  [dir=both];
+    BMI -> OpenDA  [dir=both];
+    WFLOWAPI -> BMI  [dir=both];
     Calibration -> OpenDA;
     Assimilation -> OpenDA;
     WFLOWAPI [shape=square];

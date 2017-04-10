@@ -6,7 +6,7 @@ Introduction
 ------------
 
 The soil part of wflow\_sbm model has its roots in the
-topog\_sbm model but has had considerable chnages over time. topog\_sbm is specifically designed to simulate fast
+topog\_sbm model but has had considerable changes over time. topog\_sbm is specifically designed to simulate fast
 runoff processes in small catchments while wflow\_sbm can be applied more
 widely. The main differences are:
 
