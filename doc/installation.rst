@@ -77,5 +77,5 @@ and use the conda tool to install all requirements apart from pcraster which has
 
 OSX
 ---
-Unfortunately there is not pcraster build for osx yet. If anybody wants to pick this up please let
+Unfortunately there is no pcraster build for osx yet. If anybody wants to pick this up please let
 the guys at pcraster.eu know!

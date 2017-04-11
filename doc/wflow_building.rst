@@ -1,6 +1,12 @@
 Building a model
 ================
 
+
+.. note::
+
+    The information below is incomplete. Deltares is working on a tutorial.
+
+
 Data requirements
 -----------------
 
@@ -48,7 +54,7 @@ Setting-up a new model
 Setting-up a new model first starts with making a number of decisions and gathering the
 required data:
 
-#. Do I have the static input maps in pcraster fromat (DEM ,land-use map, soil map)?
+#. Do I have the static input maps in pcraster format (DEM ,land-use map, soil map)?
 #. What resolution do I want to run the model on?
 #. Do I need to define multiple sub-catchments to report totals/flows for seperately?
 #. What forcing data do I have available for the model (P, Temp, ET)?

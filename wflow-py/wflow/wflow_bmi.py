@@ -21,7 +21,7 @@ def iniFileSetUp(configfile):
     """
     config = ConfigParser.SafeConfigParser()
     config.optionxform = str
-    config.read(configfile)
+    ret = config.read(configfile)
     return config
 
 
@@ -739,13 +739,17 @@ class wflowbmi_csdms(bmi.Bmi):
                 raise ValueError("Time more than one timestep before current time.")
             self.dynModel.wf_QuickResume()
         else:
-            timespan = time - curtime
-            nrsteps = int(timespan/self.dynModel.DT.timeStepSecs)
+            smethod = configget(self.config,'run','runlengthdetermination','intervals')
+            if smethod == 'steps':
+                timespan = time - curtime + self.dynModel.DT.timeStepSecs
+            else:
+                timespan = time - curtime
+            nrsteps = int(timespan/self.dynModel.DT.timeStepSecs) + 1
             self.bmilogger.debug('update_until: update ' + str(nrsteps) + ' timesteps forward from ' + str(curtime) + ' to ' + str(curtime + timespan))
             self.bmilogger.debug('update_until: step ' + str(self.currenttimestep) + ' to ' + str(self.currenttimestep + nrsteps -1))
             self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps -1)
             self.currenttimestep = self.currenttimestep + nrsteps
-            self.bmilogger.debug("XX - Current time now: " + str(self.get_current_time()))
+
 
     def update_frac(self, time_frac):
         """

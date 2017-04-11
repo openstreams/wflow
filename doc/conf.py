@@ -210,23 +210,6 @@ htmlhelp_basename = 'wflowdoc'
 # -- Options for LaTeX output --------------------------------------------------
 
 
-latex_elements = {
-    'papersize': 'a4paper',
-    'fontpkg': '',
-    'maketitle': '\maketitle',
-    'fncychap': '',
-    'fancyheadings': '',
-    'pointsize': '10pt',
-    'preamble': '',
-    'releasename': "",
-    'babel': '\usepackage[english]{babel}',
-    'printindex': '',
-    'fontenc': '',
-    'docclass': '',
-    'inputenc': '',
-    'classoptions': '',
-    'utf8extra': ''
-}
 
 
 # Grouping the document tree into LaTeX files. List of tuples
@@ -256,7 +239,6 @@ latex_show_urls = False
 # If false, no module index is generated.
 latex_domain_indices = False
 
-#latex_additional_files = ["mfgan-bw.sty", "mfgan.sty", "_static/cover.png"]
 
 # -- Options for manual page output --------------------------------------------
 
