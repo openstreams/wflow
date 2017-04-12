@@ -103,11 +103,14 @@ class WflowModel(DynamicModel):
       modelparameters = []
 
       #Static map model parameters
-      modelparameters.append(self.ParamType(name="Altitude",stack="staticmaps/wflow_dem.map",type="staticmap",default=0.0,verbose=False,lookupmaps=[]))
-      modelparameters.append(self.ParamType(name="LandUse",stack="staticmaps/wflow_landuse.map",type="staticmap",default=1,verbose=False,lookupmaps=[]))
-      modelparameters.append(self.ParamType(name="Soil",stack="staticmaps/wflow_soil.map",type="staticmap",default=1,verbose=False,lookupmaps=[]))
-      modelparameters.append(self.ParamType(name="TopoId",stack="staticmaps/wflow_subcatch.map",type="staticmap",default=1,verbose=False,lookupmaps=[]))
-      modelparameters.append(self.ParamType(name="TopoLdd",stack="staticmaps/wflow_ldd.map",type="staticmap",default=1,verbose=False,lookupmaps=[]))
+      modelparameters.append(self.ParamType(name="Altitude",stack="staticmaps/wflow_dem.map",type="staticmap",default=0.0,verbose=True,lookupmaps=[]))
+      modelparameters.append(self.ParamType(name="LandUse",stack="staticmaps/wflow_landuse.map",type="staticmap",default=1,verbose=True,lookupmaps=[]))
+      modelparameters.append(self.ParamType(name="Soil",stack="staticmaps/wflow_soil.map",type="staticmap",default=1,verbose=True,lookupmaps=[]))
+      modelparameters.append(self.ParamType(name="TopoId",stack="staticmaps/wflow_subcatch.map",type="staticmap",default=1,verbose=True,lookupmaps=[]))
+      modelparameters.append(self.ParamType(name="TopoLdd",stack="staticmaps/wflow_ldd.map",type="staticmap",default=1,verbose=True,lookupmaps=[]))
+      modelparameters.append(
+          self.ParamType(name="River", stack="staticmaps/wflow_river.map", type="staticmap", default=0.0,
+                         verbose=True, lookupmaps=[]))
 
       # These should be linked to soil type
       modelparameters.append(self.ParamType(name="percent_clay",stack="intbl/percent_clay.tbl",type="statictbl",default=0.1, verbose=False,lookupmaps=[]))
@@ -228,9 +231,12 @@ class WflowModel(DynamicModel):
 
     # Calulate slope taking into account that x,y may be in lat,lon
     self.Slope = slope(self.Altitude)
-    self.Slope = max(0.00001, self.Slope * celllength() / self.reallength)
-    # limit slope
-    self.DUSlope = min(1.0,max(0.005,self.Slope))
+    self.Slope = min(1.0,max(0.005, self.Slope * celllength() / self.reallength))
+    # limit slope and make average over about 5km
+    avgwin = max(4,0.005/self.reallength)
+    self.DUSlope = slope(windowaverage(self.Altitude,avgwin))
+    self.DUSlope = min(1.0,max(0.005, self.DUSlope * celllength() / self.reallength))
+    self.DUSlope = ifthenelse(self.River,self.DUSlope,self.Slope)
 
     """
     First determine m exponent based on Slope (https://www.researchgate.net/publication/226655635_Estimation_of_Soil_Erosion_for_a_Himalayan_Watershed_Using_GIS_Technique)
@@ -332,16 +338,17 @@ class WflowModel(DynamicModel):
     # Soil erosion prediction in the Grande River Basin, Brazil using distributed modeling.
     # CATENA 79, 49–59. doi:10.1016/j.catena.2009.05.010
 
+    # R in MJmmha−1 h−1 month−1
     self.usle_r = (125.92 * (self.Precipitation/self.Pmean)**0.603 + \
         111.173 * (self.Precipitation/self.Pmean) ** 0.691 + \
         68.73 * (self.Precipitation/self.Pmean)** 0.841) / 3.0
 
 
-    self.SoilLoss = self.usle_l * self.usle_s * self.usle_k * self.usle_r *self.usle_c * self.usle_p # Ton/ha/yr
+    self.SoilLoss = self.usle_l * self.usle_s * self.usle_k * self.usle_r *self.usle_c * self.usle_p # Ton/ha/mnd
     # Ton per timestep per cell
-    self.SoilLossTon = self.SoilLoss * (self.reallength/100.0 * self.reallength/100.0) * self.timestepsecs/31557600.0 # 1/12
-    self.SoilLossTonUpstr = catchmenttotal(self.SoilLossTon, self.TopoLdd)
-    self.SoilLossUpstr = self.SoilLossTonUpstr/self.ha_upstream
+    self.SoilLossTon = self.SoilLoss * (self.reallength/100.0 * self.reallength/100.0)  # In ton per timestep (Month)
+    self.SoilLossTonUpstr = catchmenttotal(self.SoilLossTon, self.TopoLdd) # IN ton opsteam
+    self.SoilLossUpstr = self.SoilLossTonUpstr/self.ha_upstream # In ton/ha upstream
     self.SedimentYieldUpstr = self.SDR * self.SoilLossUpstr # Average upstream of each pixel
     self.SedimentYieldTonUpstr = self.SDR * self.SoilLossTonUpstr # Total upstream of each pixel
     self.SedimentYield = self.SDR * self.SoilLoss
