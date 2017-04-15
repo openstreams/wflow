@@ -215,11 +215,16 @@ class WflowModel(DynamicModel):
 
     self.timestepsecs = int(configget(self.config,'run','timestepsecs','86400'))
     sizeinmetres = int(configget(self.config, "layout", "sizeinmetres", "0"))
+    sdrsubcatch  = int(configget(self.config, "model", "SDRSubcatch", "0"))
+    self.Strahler = int(configget(self.config, "model", "Strahler", "8"))
     self.basetimestep=86400
     # For SDR...
     self.SDRMax = 0.8 #  (Vigiak et al., 2012)
     self.IC0 = 0.5
-    self.k = 2.0
+    self.k = 2.0# Higher K mean higer SDR
+    self.RivAvg= 0.15 # Window length to average the river DEM
+    self.MaxUpstream = 1000# Maximum number of upstream cell to take into accoutn in the SDR calculations
+
 
     # Reads all parameter from disk
     self.wf_updateparameters()
@@ -228,20 +233,24 @@ class WflowModel(DynamicModel):
 
     self.xl, self.yl, self.reallength = pcrut.detRealCellLength(self.ZeroMap, sizeinmetres)
 
-
+    self.logger.info("Determining slope etc.")
     # Calulate slope taking into account that x,y may be in lat,lon
     self.Slope = slope(self.Altitude)
-    self.Slope = min(1.0,max(0.005, self.Slope * celllength() / self.reallength))
+    self.Slope = min(1.0,max(0.000001, self.Slope * celllength() / self.reallength))
     # limit slope and make average over about 5km
-    avgwin = max(4,0.005/self.reallength)
-    self.DUSlope = slope(windowaverage(self.Altitude,avgwin))
-    self.DUSlope = min(1.0,max(0.005, self.DUSlope * celllength() / self.reallength))
-    self.DUSlope = ifthenelse(self.River,self.DUSlope,self.Slope)
+
+    self.RivDem = ifthen(self.River == 1,self.Altitude)
+    self.DUSlope = slope(windowaverage(self.RivDem,self.RivAvg))
+    self.DUSlope = min(1.0, max(0.005, self.DUSlope * celllength() / self.reallength))
+    self.DUSlope = ifthen(self.River == 1,self.DUSlope)
+    self.DUSlope =cover(self.DUSlope, self.Slope)
+
 
     """
     First determine m exponent based on Slope (https://www.researchgate.net/publication/226655635_Estimation_of_Soil_Erosion_for_a_Himalayan_Watershed_Using_GIS_Technique)
 
     """
+    self.logger.info("Determining USLE LS")
     self.m = ifthenelse(self.Slope <= scalar(0.01), scalar(0.2),
                         ifthenelse(self.Slope <= 0.03, scalar(0.03),
                                    ifthenelse(self.Slope <= 0.045, scalar(0.5), scalar(0.5))))
@@ -256,7 +265,7 @@ class WflowModel(DynamicModel):
     Calculation of USLE K factor  based on:
     Maeda et al. (2010) - 'Potential impacts of agricultural expansion and climate change on soil erosion in the Eastern Arc Mountains of Kenya', doi:10.1016/j.geomorph.2010.07.019
     """
-
+    self.logger.info("Determining K")
     self.SN = 1 - self.percent_sand / 100
     self.usle_k = (0.2 + 0.3*exp(-0.0256*self.percent_sand * (1 - self.percent_silt/100))) \
         * (self.percent_silt/(max(0.01,self.percent_clay+self.percent_silt)))**0.3 \
@@ -268,19 +277,32 @@ class WflowModel(DynamicModel):
     https://peerj.com/preprints/2227.pdf
     http://data.naturalcapitalproject.org/nightly-build/invest-users-guide/html/sdr.html
     """
-    self.unitareaupstr = catchmenttotal(1, self.TopoLdd)
-    self.ha_upstream = catchmenttotal(self.reallength / 100.0 * self.reallength / 100.0, self.TopoLdd)
-    self.Dup = catchmenttotal(max(0.001,self.usle_c),self.TopoLdd)/self.unitareaupstr * catchmenttotal(self.DUSlope,self.TopoLdd)/self.unitareaupstr *\
-        sqrt(catchmenttotal(self.reallength,self.TopoLdd))
 
-    self.drainlength = detdrainlength(self.TopoLdd, self.xl, self.yl)
+    self.SubCatchmentsSDR, dif, sldd = subcatch_order_b(self.TopoLdd, self.Strahler,fill=True,fillcomplete=True)
+
+    if sdrsubcatch:
+        self.SDRLDD = sldd
+    else:
+        self.SDRLDD = self.TopoLdd
+
+    self.logger.info("Determining SDR")
+    self.unitareaupstr = catchmenttotal(1, self.SDRLDD)
+    self.ha_upstream = catchmenttotal(self.reallength / 100.0 * self.reallength / 100.0, self.SDRLDD)
+    self.Dup = catchmenttotal(max(0.001,self.usle_c),self.SDRLDD)/self.unitareaupstr * catchmenttotal(self.DUSlope,self.SDRLDD)/self.unitareaupstr *\
+        sqrt(catchmenttotal(self.reallength,self.SDRLDD))
+
+    self.drainlength = detdrainlength(self.SDRLDD, self.xl, self.yl)
     self.Ddn = self.drainlength/(max(0.001,max(0.001,self.usle_c)) * self.DUSlope)
     self.IC = log10(self.Dup/self.Ddn)
 
     expfact = exp((self.IC0 - self.IC)/self.k)
     self.SDR = self.SDRMax/(1 + expfact)
+    # All everything above certain area as negative
+    #self.SDR = ifthenelse(self.unitareaupstr <= self.MaxUpstream, self.SDR,-10.0)
+    #self.uppoints = ifthenelse(downstream(self.TopoLdd,self.SDR) == -10,self.SDR,0.0)
+    #self.SDRrt = accuflux(self.TopoLdd,self.uppoints)
+    self.SDR_area = 0.472 * catchmenttotal(self.reallength/1000.0,self.SDRLDD)**(-0.125)
 
-    self.SDR_area = 0.472 * catchmenttotal(self.reallength/1000.0,self.TopoLdd)**(-0.125)
 
 
 

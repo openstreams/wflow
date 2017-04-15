@@ -1293,6 +1293,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         [summary_min] # min of maps over the model run
         """
 
+        self._userModel().logger.info("Saving summary maps to disk...")
         toprint = configsection(self._userModel().config, 'summary')
         for a in toprint:
             b = a.replace('self.', '')
