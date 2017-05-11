@@ -137,6 +137,7 @@ if target == 'openda':
         Executable('wflow/wflow_wave.py', base=base),
         Executable('wflow/wflow_gr4.py', base=base),
         Executable('wflow/wflow_floodmap.py', base=base),
+        Executable('wflow/wflow_routing.py', base=base),
         Executable('wflow/wflow_hbv.py', base=base)
     ]
 else:
@@ -149,6 +150,7 @@ else:
         Executable('wflow/wflow_topoflex.py', base=base),
         Executable('wflow/wflow_sbm.py', base=base),
         Executable('wflow/wflow_adapt.py', base=base),
+        Executable('wflow/wflow_routing.py', base=base),
         Executable('wflow/wflow_w3ra.py', base=base),
         Executable('wflow/wflow_delwaq.py', base=base),
         Executable('wflow/wflow_wave.py', base=base),
