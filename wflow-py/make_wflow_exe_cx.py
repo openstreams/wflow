@@ -185,6 +185,7 @@ if target == 'openda':
         Executable('wflow/wflow_wave.py', base=base),
         Executable('wflow/wflow_gr4.py', base=base),
         Executable('wflow/wflow_floodmap.py', base=base),
+        Executable('wflow/wflow_routing.py', base=base),
         Executable('wflow/wflow_hbv.py', base=base)
     ]
 elif target == 'deltashell':
@@ -199,6 +200,7 @@ elif target == 'deltashell':
         Executable('Scripts/wflow_prepare_step1.py', base=base),
         Executable('Scripts/wflow_sbm_rtc.py', base=base),
         Executable('wflow/wflow_topoflex.py', base=base),
+        Executable('wflow/wflow_routing.py', base=base),
         Executable('wflow/wflow_sbm.py', base=base),
         Executable('wflow/wflow_adapt.py', base=base),
         Executable('wflow/wflow_w3ra.py', base=base),
@@ -220,6 +222,7 @@ else:
         Executable('Scripts/wflow_sbm_rtc.py', base=base),
         Executable('wflow/wflow_topoflex.py', base=base),
         Executable('wflow/wflow_sbm.py', base=base),
+        Executable('wflow/wflow_routing.py', base=base),
         Executable('wflow/wflow_adapt.py', base=base),
         Executable('wflow/wflow_w3ra.py', base=base),
         Executable('wflow/wflow_delwaq.py', base=base),
