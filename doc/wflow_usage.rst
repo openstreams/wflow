@@ -101,23 +101,25 @@ wflow\_sbm.ini located in the myCase directory is read at startup.
 Command-line options
 ~~~~~~~~~~~~~~~~~~~~
 
-The command line options for wflow are summarized below, use  wflow 
--h to view them at the command line:
+The command line options for wflow\_sbm are summarized below, use  wflow\_sbm
+-h to view them at the command line (option for other models may be different,
+see their respective documentation to see the options):
 
 ::
 
     wflow_sbm [-h][-v level][-F runinfofile][-L logfile][-C casename][-R runId]
-          [-c configfile][-T last_step][-S first_step][-s seconds][-W][-E][-N][-U discharge]
-          [-P parameter multiplication][-X][-f][-I][-i tbl_dir][-x subcatchId][-u updatecols]
-          [-p inputparameter multiplication]
+          [-c configfile][-T last_step][-S first_step][-s seconds][-W][-E][-N]
+          [-U discharge][-P parameter multiplication][-X][-f][-I][-i tbl_dir]
+          [-x subcatchId][-u updatecols][-p inputparameter multiplication]
 
 ::
 
     -F: if set wflow is expected to be run by FEWS. It will determine
         the timesteps from the runinfo.xml file and save the output initial
-        conditions to an alternate location. The runinfo.xml file should be located
-        in the inmaps directory of the case.
-    -X: save state at the end of the run over the initial conditions at the start        
+        conditions to an alternate location. The runinfo.xml file should be
+        located in the inmaps directory of the case.
+    -X: save state at the end of the run over the initial conditions at
+        the start
     -f: Force overwrite of existing results    
     -T: Set last timestep
     -S: Set the start timestep (default = 1)
@@ -135,20 +137,21 @@ The command line options for wflow are summarized below, use  wflow
     -W: If set, this flag indicates that an ldd is created for the water level
         for each timestep. If not the water is assumed to flow according to the 
         DEM. Wflow will run a lot slower with this option. Most of the time
-        (shallow soil, steep topography) you do not need this option. Also, if you 
-        need it you migth actually need another model.
-    -U: The argument to this option should be a .tss file with measured discharge in
-        [m^3/s] which the program will use to update the internal state to match 
-        the measured flow. The number of columns in this file should match the 
-        number of gauges.
+        (shallow soil, steep topography) you do not need this option. Also,
+        if you need it you might actually need another model.
+    -U: The argument to this option should be a .tss file with measured
+        discharge in [m^3/s] which the program will use to update the internal
+        state to match the measured flow. The number of columns in this file
+        should match the number of gauges.
     -u: list of gauges/columns to use in update. Format:
         -u [1 , 4 ,13]
         The above example uses column 1, 4 and 13
         Note that this also sets the order in which the updating takes place! In
         general specify downstream gauges first.
-    -P: set parameter change string (e.g: -P 'self.FC = self.FC * 1.6') for non-dynamic variables
-    -p: set parameter change string (e.g: -P 'self.Precipitation = self.Precipitation * 1.11') for
-        dynamic variables
+    -P: set parameter change string (e.g: -P 'self.FC = self.FC * 1.6')
+        for non-dynamic variables
+    -p: set parameter change string (e.g: -P 'self.Precipitation =
+        self.Precipitation * 1.11') for dynamic variables
     -v: set verbosity level
 
 wflow\_sbm\|hbv.ini file
@@ -168,16 +171,6 @@ ModelSnow=0
     Set to 1 to model snow using a simple degree day model (in that case
     temperature data is needed)
 
-ScalarInput=0
-    If set to 0 input maps are needed for each timestep in the inpumaps
-    directory., If set to 1 the model will use input timeseries from the
-    inputtss directory and interpolate these to maps at run-time.
-
-InterpolationMethod=pol
-    Interpolation method when using scalar timeseries input. The method
-    can be ``pol`` (Thiessen polygons) or ``inv`` (Inverse Distance).
-    The same method is used for all parameters (P. PET, T).
-
 WIMaxScale=0.8
     Scaling for the topographical wetness vs soil depth method
 
@@ -189,19 +182,12 @@ UpdMaxDist=10000.0
     you force the model with measured discharge
 
 
-
 Specific options for  wflow\_sbm :
 
 RunoffGenSigmaFunction = 0
     Use subcell runoff generation based on fitting a Sigmoid function to
     percentile Dems. (wflow\_sbm only) 
 
-    
-
-    
-OverWriteInit = 0
-    If set to one the initial states will be overwritten
-    
 updating = 0
     Set to 1 to switch on Q updating. 
     

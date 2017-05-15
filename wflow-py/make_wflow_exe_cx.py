@@ -1,21 +1,16 @@
-
-
 """
 This script makes a stand-alone 'executable' of the wflow models. It is tested using
 Anaconda on windows 64 bit and ubuntu xenial 64 bit
 
-supported tagets:
-- normal
-- openda - includes thrift connection to openda, Make sure you have thrift installed first
-- deltashell - includes bmi/mmi link top deltashell. Windows only. Make sure you have zmq, bmi and mmi
+supported targets:
+--normal
+--openda - includes thrift connection to openda, Make sure you have thrift installed first
+--deltashell - includes bmi/mmi link to deltashell. Windows only. Make sure you have zmq, bmi and mmi
   installed. bmi and mmi can be downloaded from the openearth github repository
 """
 
-target = 'deltashell'
-target ='openda'
 
 from cx_Freeze import setup, Executable, hooks
-
 
 from _version import *
 import ctypes,glob,os,shutil
@@ -23,6 +18,17 @@ import matplotlib
 import scipy
 import sys
 
+target = 'normal'
+# Filter out wflow specific options
+if "--openda" in sys.argv:
+    target = 'openda'
+    sys.argv.remove("--openda")
+if "--normal" in sys.argv:
+    target = 'normal'
+    sys.argv.remove("--normal")
+if "--deltashell" in sys.argv:
+    target = 'deltashell'
+    sys.argv.remove("--deltashell")
 
 
 pdir = os.path.dirname(sys.executable) + "/"
@@ -119,6 +125,10 @@ if sys.platform == 'win32':
 
 # GDAL data files
 gdaldata = os.getenv("GDAL_DATA")
+
+if gdaldata == None:
+    gdaldata = "c:\Anaconda\Library\share\gdal"
+
 data_files.extend(mkdatatuples(glob.glob(gdaldata + "/*.*"),destdir='gdal-data'))
 
 
@@ -134,18 +144,18 @@ if target == 'openda':
     import thrift.transport.THttpClient as THttpClient
     import thrift.protocol.TBinaryProtocol as TBinaryProtocol
     import thrift.transport.THttpClient as THttpClient
-    includes = ['wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined']
+    includes = ['wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined','lxml.etree', 'lxml._elementpath', 'gzip']
     packages.append('openda_bmi')
 elif target == 'deltashell':
     import zmq.libzmq
     data_files.extend([zmq.libzmq.__file__, ])
     includes = ["zmq.backend.cython","zmq.utils.garbage","requests","zmq.eventloop.zmqstream",
-                 'wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined']
+                 'wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined','lxml.etree', 'lxml._elementpath', 'gzip']
     packages.append('zmq.backend.cython')
     packages.append('bmi')
     packages.append('pkg_resources')
 else:
-    includes = ['wflow.wflow_bmi', 'wflow.wflow_w3ra', 'wflow.wflow_bmi_combined']
+    includes = ['wflow.wflow_bmi', 'wflow.wflow_w3ra', 'wflow.wflow_bmi_combined','lxml.etree', 'lxml._elementpath', 'gzip']
 
 #  "include_msvcr": True,
 options = {"includes": includes, "packages": packages,'include_files': data_files, "build_exe": thename,
@@ -158,6 +168,9 @@ base=None
 if target == 'openda':
     import thrift
     executables = [
+        Executable('Scripts/wtools_py/CatchRiver.py', base=base),
+        Executable('Scripts/wtools_py/CreateGrid.py', base=base),
+        Executable('Scripts/wtools_py/StaticMaps.py', base=base),
         Executable('Scripts/pcr2netcdf.py', base=base),
         Executable('Scripts/bmi2runner.py', base=base),
         Executable('openda_bmi/opendapy.py', base=base),
@@ -172,10 +185,14 @@ if target == 'openda':
         Executable('wflow/wflow_wave.py', base=base),
         Executable('wflow/wflow_gr4.py', base=base),
         Executable('wflow/wflow_floodmap.py', base=base),
+        Executable('wflow/wflow_routing.py', base=base),
         Executable('wflow/wflow_hbv.py', base=base)
     ]
 elif target == 'deltashell':
     executables = [
+        Executable('Scripts/wtools_py/CatchRiver.py', base=base),
+        Executable('Scripts/wtools_py/CreateGrid.py', base=base),
+        Executable('Scripts/wtools_py/StaticMaps.py', base=base),
         Executable('Scripts/pcr2netcdf.py', base=base),
         Executable('Scripts/bmi2runner.py', base=base),
         Executable('Scripts/wfds_core.py', base=base),
@@ -183,6 +200,7 @@ elif target == 'deltashell':
         Executable('Scripts/wflow_prepare_step1.py', base=base),
         Executable('Scripts/wflow_sbm_rtc.py', base=base),
         Executable('wflow/wflow_topoflex.py', base=base),
+        Executable('wflow/wflow_routing.py', base=base),
         Executable('wflow/wflow_sbm.py', base=base),
         Executable('wflow/wflow_adapt.py', base=base),
         Executable('wflow/wflow_w3ra.py', base=base),
@@ -194,6 +212,9 @@ elif target == 'deltashell':
     ]
 else:
     executables = [
+        Executable('Scripts/wtools_py/CatchRiver.py', base=base),
+        Executable('Scripts/wtools_py/CreateGrid.py', base=base),
+        Executable('Scripts/wtools_py/StaticMaps.py', base=base),
         Executable('Scripts/pcr2netcdf.py', base=base),
         Executable('Scripts/bmi2runner.py', base=base),
         Executable('Scripts/wflow_prepare_step2.py', base=base),
@@ -201,6 +222,7 @@ else:
         Executable('Scripts/wflow_sbm_rtc.py', base=base),
         Executable('wflow/wflow_topoflex.py', base=base),
         Executable('wflow/wflow_sbm.py', base=base),
+        Executable('wflow/wflow_routing.py', base=base),
         Executable('wflow/wflow_adapt.py', base=base),
         Executable('wflow/wflow_w3ra.py', base=base),
         Executable('wflow/wflow_delwaq.py', base=base),

@@ -44,8 +44,8 @@ A basic sceleton of a model is given below:
 
 
 
-Anotated source code for the above
-----------------------------------
+Annotated source code for the above
+-----------------------------------
 
 .. include:: ../wflow-py/wflow/wflow_sceleton.py
 	:literal:

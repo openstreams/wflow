@@ -143,6 +143,7 @@ class MyTest(unittest.TestCase):
     def testbmirun(self):
         bmiobj = bmi.wflowbmi_csdms()
         bmiobj.initialize('wflow_sceleton/wflow_sceleton.ini',loglevel=logging.DEBUG)
+        bmiobj.set_attribute_value('run:runlengthdetermination', 'intervals')
         print(bmiobj.get_var_type("IF"))
         et = bmiobj.get_end_time()
         st = bmiobj.get_start_time()
@@ -155,6 +156,21 @@ class MyTest(unittest.TestCase):
         print et - bmiobj.get_current_time()
         self.assertEquals(et,bmiobj.get_current_time())
 
+    def testbmirun_hr(self):
+        bmiobj = bmi.wflowbmi_csdms()
+        bmiobj.initialize('wflow_sceleton/wflow_sceleton_hr.ini',loglevel=logging.DEBUG)
+
+        print(bmiobj.get_var_type("IF"))
+        et = bmiobj.get_end_time()
+        st = bmiobj.get_start_time()
+        ts = 3600
+        # Do timesteps and chak
+
+        bmiobj.update_until(et)
+        bmiobj.get_current_time()
+        bmiobj.finalize()
+        print et - bmiobj.get_current_time()
+        self.assertEquals(et,bmiobj.get_current_time())
 
 
     def testbmirun_l(self):
@@ -165,6 +181,17 @@ class MyTest(unittest.TestCase):
         st = bmiobj.get_start_time()
         bmiobj.update(et - st)
         bmiobj.finalize()
+
+
+    def testbmirun_space_in_name(self):
+        print 'Run with update(-1)'
+        bmiobj = bmi.wflowbmi_light()
+        bmiobj.initialize('wflow sceleton/wflow sceleton.ini',loglevel=logging.ERROR)
+        et = bmiobj.get_end_time()
+        st = bmiobj.get_start_time()
+        bmiobj.update(et - st)
+        bmiobj.finalize()
+
 
     def testbmirunnetcdf(self):
         bmiobj = bmi.wflowbmi_csdms()

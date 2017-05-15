@@ -16,12 +16,13 @@ the occurring subbasin), the terrain data is first normalised to a Height-Above-
 (HAND) map of the associated typically flooding rivers (to be provided by user through a catchment order)
 and flooding is estimated from this HAND map.
 
-A sequential flood mapping is performed starting from the user defined Strahler order basin scale to the highest
-Strahler orders. A HAND map is derived for each river order starting from the lowest order. These maps are then
-used sequentially to spread flood volumes over the high resolution terrain model starting from the lowest catchment
-order provided by the user (using the corresponding HAND map) to the highest stream order.
-Backwater effects from flooding of higher orders catchments to lower order catchments are taken into account by taking
-the maximum flood level of both.
+A sequential flood mapping is performed starting from the user defined Strahler order basin
+scale to the highest  Strahler orders. A HAND map is derived for each river order starting
+from the lowest order. These maps are then used  sequentially to spread flood
+volumes over the high resolution terrain model starting from the lowest catchment order
+provided by the user (using the corresponding HAND map) to the highest stream order.
+Backwater effects from flooding  of higher orders catchments to lower order catchments
+are taken into account by taking the maximum flood level of both.
 
 Preferrably a user should use from the outputs of a wflow\_routing model
 because then the user can use the floodplain water level only (usually saved 
@@ -51,13 +52,13 @@ The .ini file sections are treated below:
 ::
 
 	[HighResMaps]
-	dem_file = /p/1220657-afghanistan-disaster-risk/Processed DEMs/SRTM 90m merged/BEST90m_WGS_UTM42N.tif
-	ldd_file = /p/1220657-afghanistan-disaster-risk/Processed DEMs/SRTM 90m merged/LDD/ldd_SRTM0090m_WGS_UTM42N.map
-	stream_file = /p/1220657-afghanistan-disaster-risk/Processed DEMs/SRTM 90m merged/stream.map
+	dem_file =SRTM 90m merged/BEST90m_WGS_UTM42N.tif
+	ldd_file = SRTM 90m merged/LDD/ldd_SRTM0090m_WGS_UTM42N.map
+	stream_file = Processed DEMs/SRTM 90m merged/stream.map
 	[wflowResMaps]
-	riv_length_fact_file = /p/1220657-afghanistan-disaster-risk/floodhazardsimulations/Stepf_output/river_length_fact.map
-	riv_width_file = /p/1220657-afghanistan-disaster-risk/floodhazardsimulations/Stepf_output/wflow_floodplainwidth.map
-	ldd_wflow = /p/1220657-afghanistan-disaster-risk/floodhazardsimulations/Stepf_output/wflow_ldd.map
+	riv_length_fact_file = floodhazardsimulations/Stepf_output/river_length_fact.map
+	riv_width_file = floodhazardsimulations/Stepf_output/wflow_floodplainwidth.map
+	ldd_wflow = floodhazardsimulations/Stepf_output/wflow_ldd.map
 	[file_settings]
 	latlon = 0
 	file_format = 0
@@ -73,8 +74,8 @@ The stream\_file contains a stream order file (made with the PCRaster stream ord
 derived from the LDD in ldd\_file.
 
 riv\_length\_fact\_file and riv\_width\_file contain the dimensions of the channels within the WFLOW
-pixels (unit meters) and are therefore in the resolution of the WFLOW model. The riv\_length\_fact\_file is used
- to derive a riv_length by multiplying the LDD length from cell to cell within the LDD network with the
+pixels (unit meters) and are therefore in the resolution of the WFLOW model.
+The riv\_length\_fact\_file is used to derive a riv_length by multiplying the LDD length from cell to cell within the LDD network with the
 wflow\_riverlength_fact.map map, typically located in the staticmaps folder of the used WFLOW model.
 The width map is also in meters, and should contain the flood plain width in case the wflow_routing 
 model is used (typical name is wflow_floodplainwidth.map). If a HBV or SBM model is used, you should 
@@ -164,36 +165,48 @@ When wflow\_flood.py is run with the -h argument, you will receive the following
 	  -d DEST_PATH, --destination=DEST_PATH
 				Destination path
 	  -H HAND_FILE_PREFIX, --hand_file=HAND_FILE_PREFIX
-				optional HAND file prefix of already generated HAND maps for different Strahler orders
+				optional HAND file prefix of already generated HAND maps
+				for different Strahler orders
 	  -n neg_HAND, --negHAND=0
-	            optional functionality to allow HAND maps to become negative (if set to 1, default=0)
+	            optional functionality to allow HAND maps to become
+	            negative (if set to 1, default=0)
 
 
 Further explanation:
 
-    -i = the .ini file described in the previous section
+    -i
+        the .ini file described in the previous section
 
-    -f = The NetCDF output time series or a GeoTIFF containing the flood event to be downscaled. In case of NetCDF, this is a typical NetCDF output file from a WFLOW model. Alternatively, you can provide a GeoTIFF file that contains the exact flood depths for a given time step user defined statistic (for example the maximum value across all time steps)
+    -f
+        The NetCDF output time series or a GeoTIFF containing the flood event to be downscaled. In case of NetCDF, this is a typical NetCDF output file from a WFLOW model. Alternatively, you can provide a GeoTIFF file that contains the exact flood depths for a given time step user defined statistic (for example the maximum value across all time steps)
 
-    -v = Variable within the aforementioned file that contains the depth within the flood plain (typical levfp)
+    -v
+        Variable within the aforementioned file that contains the depth within the flood plain (typical levfp)
     
-    -b = Similar file as -f but providing the bank full water level. Can e provided in case you know that a certain water depth is blocked, or remains within banks. In cae a NetCDF is provided, the maximum values are used, alternatively, you can provide a GeoTIFF.
+    -b
+        Similar file as -f but providing the bank full water level. Can e provided in case you know that a certain water depth is blocked, or remains within banks. In cae a NetCDF is provided, the maximum values are used, alternatively, you can provide a GeoTIFF.
 
-    -c = starting point of catchment strahler order over which flood volumes are averaged, before spreading.
-         The Height-Above-Nearest-Drain maps are derived from this Strahler order on (until max Strahler order).
-         NB: This is the strahler order of the high resolution stream order map
+    -c
+        starting point of catchment strahler order over which flood
+        volumes are averaged, before spreading.
+        The Height-Above-Nearest-Drain maps are derived from this Strahler order on (until max Strahler order).
+        NB: This is the strahler order of the high resolution stream order map
     
-    -m = maximum strahler order over which flooding may occur (default value is the highest order in high res stream map)
+    -m
+        maximum strahler order over which flooding may occur (default value is the highest order in high res stream map)
     
-    -d = path where the file is stored
+    -d
+        path where the file is stored
     
-    -H = HAND file prefix. As interim product, the module produces HAND files. This is a very time consuming process and therefore the user can also supply previously generated HAND files here (GeoTIFF format)
+    -H
+        HAND file prefix. As interim product, the module produces HAND files. This is a very time consuming process and therefore the user can also supply previously generated HAND files here (GeoTIFF format)
         The names of the HAND files should be constructed as follows: hand_prefix_{:02d}.format{hand_strahler}, so for example hand_prefix_03 for HAND map with minimum Strahler order 3. (in this case -H hand_prefix should be given)
         Maps should be made for Strahler orders from -c to -m (or maximum strahler order in the stream map)
 
-    -n = allow for negative HAND maps - if this option is set to 1, the user allows the HAND maps to become negative. This can be useful when there are natural embankments which result in a lower elevation than the river bed.
+    -n
+        allow for negative HAND maps - if this option is set to 1, the user allows the HAND maps to become negative. This can be useful when there are natural embankments which result in a lower elevation than the river bed.
         However, this option leads to artifacts when the used SRTM is not corrected for elevation and when the river shapefile is not entirely correct (for example if the burned in river is following an old meander.
-         Therefore the user must be very confident about the used data sources (river shape file and digital elevation model corrected for vegetation) when this option is set to 1!
+        Therefore the user must be very confident about the used data sources (river shape file and digital elevation model corrected for vegetation) when this option is set to 1!
     
 Outputs
 -------
@@ -247,7 +260,8 @@ def main():
     parser.add_option('-q', '--quiet',
                       dest='verbose', default=True, action='store_false',
                       help='do not print status messages to stdout')
-    parser.add_option('-i', '--ini', dest='inifile',
+    pars
+    er.add_option('-i', '--ini', dest='inifile',
                       default='hand_contour_inun.ini', nargs=1,
                       help='ini configuration file')
     parser.add_option('-f', '--flood_map',

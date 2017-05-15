@@ -51,6 +51,22 @@ import netCDF4 as nc4
 import gzip, zipfile
 
 
+def pt_flow_in_river(ldd,river):
+    """
+    Returns all points (True) that flow into the mak river (boolean map with river set to True)
+
+    :param ldd: Drainage network
+    :param river: Map of river (True River, False non-river)
+    :return ifmap: map with infrlo points into the river (True)
+    :return ctach: catchment of each of the inflow points
+    """
+
+    dspts = downstream(ldd,cover(river,0))
+    dspts = ifthenelse(cover(river,0) == 1, 0, dspts)
+
+    catch = subcatchment(ldd,nominal(uniqueid(dspts)))
+
+    return dspts, catch
 
 def sum_list_cover(list_of_maps, covermap):
     """
@@ -112,8 +128,8 @@ def simplereservoir(storage, inflow, maxstorage, target_perc_full, maximum_Q, de
     percfull = ((storage + oldstorage) * 0.5) / maxstorage
     # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
     fac = sCurve(percfull, a=minimum_full_perc, c=30.0)
-    demandRelease = fac * demand * timestepsecs
-    storage = storage - demandRelease
+    demandRelease = min(fac * demand * timestepsecs, storage)
+    storage =storage - demandRelease
 
     # Re-determine percfull
     percfull = ((storage + oldstorage) * 0.5) / maxstorage
@@ -129,6 +145,59 @@ def simplereservoir(storage, inflow, maxstorage, target_perc_full, maximum_Q, de
     return storage, outflow, percfull, demandRelease/timestepsecs
 
 
+def lookupResFunc(ReserVoirLocs, values, ResFunc, func_int, pathtotbl, fileName, dirLookup):
+    
+    res_ids = ifthen(ResFunc==func_int, ReserVoirLocs)
+    
+    np_res_ids = pcr2numpy(res_ids,0)
+    npvalues = pcr2numpy(values,0)  
+    
+    np_res_ids_u = np.unique(np_res_ids[np.nonzero(np_res_ids)])   
+
+    if np.size(np_res_ids_u) > 0:
+        for item in np.nditer(np_res_ids_u):
+            HS = np.loadtxt(pathtotbl + fileName + str(item) + ".tbl")
+            value = npvalues[np.where(np_res_ids==item)]
+       
+            if dirLookup == '0-1':
+                val = np.interp(value,HS[:,0],HS[:,1])
+            if dirLookup == '1-0':
+                val = np.interp(value,HS[:,1],HS[:,0])
+        
+            npvalues[np.where(np_res_ids==item)] = val
+        
+        
+    
+    return numpy2pcr(Scalar, npvalues, 0)
+    
+    
+
+def complexreservoir(waterlevel, ReserVoirLocs, ResArea, ResThreshold, ResStorFunc, ResOutflowFunc, res_b, res_e, inflow, pathtotbl, precip, pet, ReservoirComplexAreas, timestepsecs=86400):
+    
+    inflow = ifthen(boolean(ReserVoirLocs), inflow)
+    
+    prec_av = ifthen(boolean(ReserVoirLocs), areaaverage(precip, ReservoirComplexAreas))
+    pet_av = ifthen(boolean(ReserVoirLocs), areaaverage(pet, ReservoirComplexAreas))
+    
+    storage = ifthenelse(ResStorFunc==1, ResArea*waterlevel, lookupResFunc(ReserVoirLocs, waterlevel, ResStorFunc,2, pathtotbl, "Reservoir_SH_",'0-1'))
+    
+    oldstorage = storage
+    
+    storage = storage + (inflow * timestepsecs) + (prec_av/1000.0)*ResArea - (pet_av/1000.0)*ResArea
+
+    waterlevel = ifthenelse(ResStorFunc==1, waterlevel + (storage-oldstorage)/ResArea, lookupResFunc(ReserVoirLocs, storage, ResStorFunc, 2, pathtotbl,"Reservoir_SH_", '1-0'))     
+    
+        
+        
+    outflow = ifthenelse(ResOutflowFunc==1,lookupResFunc(ReserVoirLocs, waterlevel, ResOutflowFunc, 1, pathtotbl,"Reservoir_HQ_", '0-1'),max(res_b*(waterlevel-ResThreshold)**res_e,0))    
+
+    oldstorage = storage
+    storage = storage - (outflow * timestepsecs)
+        
+    waterlevel = ifthenelse(ResStorFunc==1, waterlevel + (storage-oldstorage)/ResArea, lookupResFunc(ReserVoirLocs, storage, ResStorFunc, 2, pathtotbl,"Reservoir_SH_", '1-0'))     
+    
+    
+    return waterlevel, outflow, prec_av, pet_av, storage
 Verbose=0
 
 def lddcreate_save(lddname, dem, force, corevolume=1E35, catchmentprecipitation=1E35, corearea=1E35, outflowdepth=1E35):
@@ -523,7 +592,75 @@ def checkerboard(mapin,fcc):
     xy = ordinal(xc + yc)
     
     return xy
-   
+
+
+def subcatch_stream(ldd, threshold, min_strahler=-999, max_strahler=999, assign_edge=False, assign_existing=False,
+                    up_area=None):
+    """
+    (From Deltares Hydrotools)
+
+    Derive catchments based upon strahler threshold
+    Input:
+        ldd -- pcraster object direction, local drain directions
+        threshold -- integer, strahler threshold, subcatchments ge threshold 
+            are derived
+        min_strahler -- integer, minimum strahler threshold of river catchments 
+            to return
+        max_strahler -- integer, maximum strahler threshold of river catchments 
+            to return
+        assign_unique=False -- if set to True, unassigned connected areas at 
+            the edges of the domain are assigned a unique id as well. If set 
+            to False, edges are not assigned
+        assign_existing=False == if set to True, unassigned edges are assigned 
+            to existing basins with an upstream weighting. If set to False, 
+            edges are assigned to unique IDs, or not assigned
+    output:
+        stream_ge -- pcraster object, streams of strahler order ge threshold
+        subcatch -- pcraster object, subcatchments of strahler order ge threshold
+
+    """
+    # derive stream order
+
+    stream = streamorder(ldd)
+    stream_ge = ifthen(stream >= threshold, stream)
+    stream_up_sum = ordinal(upstream(ldd, cover(scalar(stream_ge), 0)))
+    # detect any transfer of strahler order, to a higher strahler order.
+    transition_strahler = ifthenelse(downstream(ldd, stream_ge) != stream_ge, boolean(1),
+                                         ifthenelse(nominal(ldd) == 5, boolean(1), ifthenelse(
+                                             downstream(ldd, scalar(stream_up_sum)) > scalar(stream_ge),
+                                             boolean(1),
+                                             boolean(0))))
+    # make unique ids (write to file)
+    transition_unique = ordinal(uniqueid(transition_strahler))
+
+    # derive upstream catchment areas (write to file)
+    subcatch = nominal(subcatchment(ldd, transition_unique))
+
+    if assign_edge:
+        # fill unclassified areas (in pcraster equal to zero) with a unique id, above the maximum id assigned so far
+        unique_edge = clump(ifthen(subcatch == 0, ordinal(0)))
+        subcatch = ifthenelse(subcatch == 0,
+                                  nominal(mapmaximum(scalar(subcatch)) + scalar(unique_edge)),
+                                  nominal(subcatch))
+    elif assign_existing:
+        # unaccounted areas are added to largest nearest draining basin
+        if up_area is None:
+            up_area = ifthen(boolean(cover(stream_ge, 0)), accuflux(ldd, 1))
+        riverid = ifthen(boolean(cover(stream_ge, 0)), subcatch)
+
+        friction = 1. / scalar(spreadzone(cover(ordinal(up_area), 0), 0, 0))  # *(scalar(ldd)*0+1)
+        delta = ifthen(scalar(ldd) >= 0,
+                           ifthen(cover(subcatch, 0) == 0, spreadzone(cover(riverid, 0), 0, friction)))
+        subcatch = ifthenelse(boolean(cover(subcatch, 0)),
+                                  subcatch,
+                                  delta)
+
+    # finally, only keep basins with minimum and maximum river order flowing through them
+    strahler_subcatch = areamaximum(stream, subcatch)
+    subcatch = ifthen(ordinal(strahler_subcatch) >= min_strahler,
+                          ifthen(ordinal(strahler_subcatch) <= max_strahler, subcatch))
+
+    return stream_ge, ordinal(subcatch)
 
 def subcatch_order_a(ldd,oorder):
     """
@@ -551,38 +688,65 @@ def subcatch_order_a(ldd,oorder):
     
     return sc, dif, stt
 
-def subcatch_order_b(ldd,oorder,Largest=False,sizelimit=0):
+def subcatch_order_b(ldd,oorder,sizelimit=0,fill=False,fillcomplete=False,stoporder=0):
     """
     Determines subcatchments using the catchment order
 
-    This version uses the bottommost cell of order
-    If Largest is true the analysis is only done for the largest basin
-    found in the ldd
-    
+    This version tries to keep the number op upstream/downstream catchment the
+    small by first dederivingatchment connected to the major river(the order) given, and fill
+    up from there.
+
     Input:
         - ldd
         - oorder - order to use
-        - largest - toggle, default = False
         - sizelimit - smallest catchments to include, default is all (sizelimit=0) in number of cells
+        - if fill is set to True the higer order catchment are filled also
+        - if fillcomplete is set to True the whole ldd is filled with catchments.
+
     
-    Output:
-        - map with catchment for the given streamorsder
+    :returns sc, dif, nldd; Subcatchment, Points, subcatchldd
     """
-    outl = find_outlet(ldd)
-    large = subcatchment(ldd,boolean(outl))   
+    #outl = find_outlet(ldd)
+    #large = subcatchment(ldd,boolean(outl))
+
+
+    if stoporder == 0:
+        stoporder = oorder
+
     stt = streamorder(ldd)
     sttd = downstream(ldd,stt)
     pts = ifthen((scalar(sttd) - scalar(stt)) > 0.0,sttd)
-    if Largest:
-        dif = ifthen(large,uniqueid(boolean(ifthen(stt == ordinal(oorder), pts))))
-    else:
-        dif = uniqueid(cover(boolean(pit(ldd)),boolean(ifthen(stt == ordinal(oorder), pts))))
-    
+    maxorder = getCellValue(mapmaximum(stt),1,1)
+    dif = uniqueid(boolean(ifthen(stt == ordinal(oorder), pts)))
+
+    if fill:
+        for order in range(oorder,maxorder):
+            m_pts = ifthen((scalar(sttd) - scalar(order)) > 0.0, sttd)
+            m_dif = uniqueid(boolean(ifthen(stt == ordinal(order), m_pts)))
+            dif = uniqueid(boolean(cover(m_dif, dif)))
+
+
+        for myorder in range(oorder - 1, stoporder, -1):
+            sc = subcatchment(ldd, nominal(dif))
+            m_pts = ifthen((scalar(sttd) - scalar(stt)) > 0.0, sttd)
+            m_dif = uniqueid(boolean(ifthen(stt == ordinal(myorder-1), m_pts)))
+            dif = uniqueid(boolean(cover(ifthen(scalar(sc) == 0,m_dif), dif)))
+
+        if fillcomplete:
+            sc = subcatchment(ldd, nominal(dif))
+            cs, m_dif, stt = subcatch_order_a(ldd, stoporder)
+            dif = uniqueid(boolean(cover(ifthen(scalar(sc) == 0, ordinal(m_dif)), ordinal(dif))))
+
+
+
     scsize = catchmenttotal(1,ldd)
-    dif = ordinal(uniqueid(boolean(ifthen(scsize >= sizelimit,dif))))
-    sc = subcatchment(ldd,dif)
+    dif = ordinal(uniqueid(boolean(ifthen(scsize >= sizelimit, dif))))
+    sc = subcatchment(ldd, dif)
+
+    #Make pit ldd
+    nldd = lddrepair(ifthenelse(cover(dif,0) > 0, 5,ldd))
     
-    return sc, dif, stt
+    return sc, dif, nldd
 
 
 def getRowColPoint(in_map,xcor,ycor):

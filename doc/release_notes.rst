@@ -2,6 +2,14 @@ Release notes
 =============
 
 
+2017.01
+-------
+
++ wflow\_sbm renamed to wflow_sbm\_old
++ wflow\_sbm2 renamed to wflow\_sbm
++ Changes to hbv (quickflow)
+
+
 2016.04
 -------
 .. note::
@@ -18,6 +26,9 @@ Release notes
 + [model]reinit moved to [run]reinit (same for fewsrun) in all models
 + added [rollingmean] section in framework
 + updates to topoflex
++ updates to BMI framework
++ updates to netcdf reader. [model] modeltype= can be specified
++ updated wflow_hbv to better resemble hbv-96 for the upper zone when kquickflow is determined (and not specified directly). This may break older calibrations
 
 
 2016.03

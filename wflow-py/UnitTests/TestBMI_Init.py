@@ -15,7 +15,7 @@ class MyTest(unittest.TestCase):
     def testbmiinitfuncs(self):
         bmiobj = bmi.wflowbmi_csdms()
 
-        bmiobj.initialize_config('wflow_sceleton/wflow_sceleton.ini',loglevel=logging.ERROR)
+        bmiobj.initialize_config('wflow_sceleton/wflow_sceleton_notime.ini',loglevel=logging.INFO)
         print("-------------- Time units: ")
         print(bmiobj.get_time_units())
         print("-------------- Default current time: ")
@@ -30,19 +30,21 @@ class MyTest(unittest.TestCase):
         bmiobj.set_end_time(10 * 86400)
 
         print("-------------- Updated start time: ")
-        print(datetime.datetime.utcfromtimestamp(bmiobj.get_start_time()))
+        stime = datetime.datetime.utcfromtimestamp(bmiobj.get_start_time())
         print("-------------- Updated end time: ")
-        print(datetime.datetime.utcfromtimestamp(bmiobj.get_end_time()))
+        etime = datetime.datetime.utcfromtimestamp(bmiobj.get_end_time())
 
 
         print("Init model...")
         bmiobj.initialize_model()
         print(bmiobj.dynModel._userModel().config.get("run",'starttime'))
-        print("-------------- Default start time: ")
-        print(datetime.datetime.utcfromtimestamp(bmiobj.get_start_time()))
-        print("-------------- Default end time: ")
-        print(datetime.datetime.utcfromtimestamp(bmiobj.get_end_time()))
 
+        nstime = datetime.datetime.utcfromtimestamp(bmiobj.get_start_time())
+
+        netime = datetime.datetime.utcfromtimestamp(bmiobj.get_end_time())
+
+        self.assertEquals(stime, nstime)
+        self.assertEquals(etime, netime)
         print("-------------- Set start time to 5: ")
         bmiobj.set_start_time(5 * 86400)
         print("-------------- Get current time: ")

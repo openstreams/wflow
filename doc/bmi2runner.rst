@@ -4,11 +4,13 @@ bmi2runner
 Introduction
 ------------
 
-bmi2runner.py is a simple script that runs two or more wflow modules connection via the BMI. A configfile
-is used to control the exchange of data between the models.
+bmi2runner.py is a simple script that runs two or more wflow modules connection via the BMI
+interface (the combined version). A configfile
+is used to control which models to start as well as the exchange of data between the models.
 
-The config file contains a list of models configured as the name of the wflow module and the ini file that is used
-by the model. Furthermore, in the exchanges section the data flows from model to model are configured.
+The config file contains a list of models configured with the name of the wflow modules to run
+and the ini file that is used by the model. Furthermore, in the exchanges section
+the data flows from model to model are configured.
 ::
 
     [models]
@@ -20,8 +22,10 @@ by the model. Furthermore, in the exchanges section the data flows from model to
     # From_model/var -> To_model/var
     wflow_sbm@InwaterMM=wflow_routing@IW
 
-To setup a combined model the you should first configure and setup the individual models. They can be setup in separate
-case directories or they can be merged in one case directory. Each model should have it's own config/ini file.
+To setup a combined model  you should first configure and setup the individual models. They can
+be setup in separate case directories or they can be merged in one case directory.
+Each model should have it's own config/ini file. The following principles apply
+when using the bmi2runner script:
 
 + the models are executed in the order they are listed in the models section
 + the variables are get/set in the order they appear in the exchanges section
@@ -30,7 +34,8 @@ case directories or they can be merged in one case directory. Each model should 
 Example
 -------
 
-In the examples directory the file bmirunner.ini is present. You can use this to run a combined wflow_sbm/wflow_routing
+In the examples directory the file bmirunner.ini is present.
+You can use this to run a combined wflow_sbm/wflow_routing
 model. Start this up using the following command (in the examples dir):
 
 ::
@@ -38,7 +43,8 @@ model. Start this up using the following command (in the examples dir):
     bmi2runner.py -c bmirunner.ini
 
 
-A second example runs wflow_sbm next wflow_routing followed by the wflow_floodmap module:
+A second example runs wflow_sbm next wflow_routing followed by
+the wflow_floodmap module:
 
 ::
 

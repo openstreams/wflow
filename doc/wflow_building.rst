@@ -1,6 +1,12 @@
 Building a model
 ================
 
+
+.. note::
+
+    The information below is incomplete. Deltares is working on a tutorial.
+
+
 Data requirements
 -----------------
 
@@ -48,11 +54,11 @@ Setting-up a new model
 Setting-up a new model first starts with making a number of decisions and gathering the
 required data:
 
-#. Do I have the static input maps in pcraster fromat (DEM ,land-use map, soil map)?
-#. what resolution do I want to run the model on?
-#. do i need to define multiple sub-catchments to report totals/flows for seperately?
-#. what forcing data do i have available for the model (P, Temp, ET)?
-#. do I have gridded forcing data or scalar time-series?
+#. Do I have the static input maps in pcraster format (DEM ,land-use map, soil map)?
+#. What resolution do I want to run the model on?
+#. Do I need to define multiple sub-catchments to report totals/flows for seperately?
+#. What forcing data do I have available for the model (P, Temp, ET)?
+#. Do I have gridded forcing data or scalar time-series?
 
 
 .. note::
@@ -74,7 +80,7 @@ procedure described below assumes you have the main maps available in pcraster
 format. If that is not the case free tools like Qgis (www.qgis.org) and gdal can be
 used to convert the maps to the required format. Qgis is also very handy
 to see if the results of the scripts match reality by overlaying it with
-a google maps or openstreetmaps layer using the qgis openlayers plugin.
+a google maps or OpenStreetMap layer using the qgis openlayers plugin.
 
 When all data is available setting up the model requires the following steps:
 
@@ -125,12 +131,12 @@ prepared.
    the DEM cutout). If no landuse map is found a uniform map will be
    created.
 
--  a soil map in pcraster format. If no soil map is found a unifrom map will be created.
+-  a soil map in pcraster format. If no soil map is found a uniform map will be created.
 
 -  a configuration file for the prepare scripts that defines how they operate
    (.ini format) file (see below)
    
--  an optional shape file with a river network
+-  an optional shape file with a river network (you can usually get one out of OpenStreetMap)
 
 -  an optional catchment mask file
 
@@ -169,7 +175,7 @@ the following tasks:
       the catchments derived in the second step will match the catchment
       derived from the high resolution DEM
 
--  wflow\_prepare\_step1.py
+-  wflow\_prepare\_step2.py
 
    #. Create a map with the extend and resolution defined in the
       configuration file and resample all maps from the first step to
@@ -264,7 +270,7 @@ Both scripts take the same command-line parameters:
         -W set the working directory, default is current dir
         -I name of the ini file with settings
 
-contents of the configuration file fro the preprocessing
+contents of the configuration file for the preprocessing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 An example can be found :download:`here. <_download/prep.ini>`
 ::
@@ -321,9 +327,10 @@ An example can be found :download:`here. <_download/prep.ini>`
     Xlr = 107.992
     cellsize = 0.009166666663
 
-    # tweak ldd creation. Default should be fine
+    # tweak ldd creation. Default should be fine most of the time
     lddoutflowdepth=1E35
     lddglobaloption=lddout
+    # use lddin to get rid of small catchments on the border of the dem
 
 
 Problems
@@ -334,15 +341,16 @@ in the first try. The most common problems are:
 
 #. The gauges do not coincide with a river and thus the subcatchment is not correct
 
-    - Move the gauges to a location on the rivers as determiend by the scripts. The
-      best way to do this is to load the wflow\_subcatch.map in qgis and use the cursor
-      to find the nearest river cell fro a gauge.
+    - Move the gauges to a location on the rivers as determined by the scripts. The
+      best way to do this is to load the wflow\_streamorder.map in qgis and use the cursor
+      to find the nearest river cell for a gauge.
 
-#. The delimited catchment is not correct even if the gauges is at the rigth location
+#. The delimited catchment is not correct even if the gauges is at the proper location
 
     - Get a better DEM or fix the current DEM. 
-    - Use a river shape file to fix the river location
+    - Use a river shape file to fix the river locations
     - Use a catchment mask to force the catchment delineated to use that. Or just clip the DEM with the catchment mask.
+      In the latter case use the lddin option to make sure you use the entire catchment.
 
 If you still run into problems you can adjust the scripts yourself to get better results.
 
@@ -389,17 +397,21 @@ Alternatively the lookup table can be replaced by a PCRaster map (in
 the staticmaps directory) with the same name as the tbl file (but with
 a .map extension).
 
-.. note::
-    The order in which the model look for the parameters is as follows:
+.. info::
+    The order in which the model looks for the parameters is as follows:
     - at first the staticmaps directory is checked for a map of the parameter
-    - next the intbl directory is checked fo a lookup table
+    - next the intbl directory is checked for a lookup table
     - if both options fail a default value is used
 
+    Bear in mind that each parameter can be redefined in the [modelparameters]
+    section that is read by the framework. See the wf_DynamicFramework
+    section for more information.
+
 .. note::
-    Note that the list model parameters is out of date. Getting the .tbl
+    Note that the list of model parameters is (always) out of date. Getting the .tbl
     files from the example models (default\_sbm and default\_hbv) is
     probably the best way to start. In any case wflow will use default
-    vaues for the tbl files that are missing. (shown in the log
+    values for the tbl files that are missing. (shown in the log
     messages).
 
 
@@ -419,9 +431,12 @@ but is different for each landuse type. See the pcraster documentation
     
     
 .. note::
-	please note that if the rules in the tble file do not cover
+	please note that if the rules in the tbl file do not cover
 	all cells used in the model you will get missing values in the
 	output. Check the maps in the runid/outsum directory to see if
-	this is the case.
+	this is the case. Also, the model will generate a error message in
+	the log file if this is the case so be sure to check the log file
+	if you encounter problems. The message will read something like:
+	"ERROR: Not all catchment cells have a value for..."
 
 
