@@ -77,7 +77,7 @@ def interception_overflow_Ep(self,k):
     - Code for ini-file: 3
     """
 
-    JarvisCoefficients.calcEp(self,k)
+    JarvisCoefficients.calcEp(self,k)     #this line indicates that hourly profiles are made out of daily pot evap data based on start day (DS.tss) and day end (DE)
     self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0),0)
     
     self.Pe = max(self.Precipitation - (self.imax[k] - self.Si_t[k]),0)
