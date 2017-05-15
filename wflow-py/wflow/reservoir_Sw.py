@@ -42,7 +42,10 @@ def snow_no_reservoir(self, k):
     Ew = 0.
     Storage in snow zone = 0.
 
-    !!!still needs a final check!!!    
+    !!!still needs a final check!!!
+
+    k is the class indication
+    self contains all the variables of the model
     
     """
     self.Qw_[k] = max(self.PrecipitationSnow, 0)

@@ -103,6 +103,18 @@ class WflowModel(DynamicModel):
 
         return modelparameters
 
+    def updateRunOff(self):
+        """
+        Updates the kinematic wave reservoir
+        """
+        self.WaterLevel=(self.Alpha*pow(self.Qstate,self.Beta))/self.Bw
+        # wetted perimeter (m)
+        P=self.Bw+(2*self.WaterLevel)
+        # Alpha
+        self.Alpha=self.AlpTerm*pow(P,self.AlpPow)
+        self.OldKinWaveVolume = self.KinWaveVolume
+        self.KinWaveVolume = self.WaterLevel * self.Bw * self.DCL
+
     def stateVariables(self):
         """
       *Required*
@@ -119,7 +131,7 @@ class WflowModel(DynamicModel):
       
       :var TSoil: Temperature of the soil [oC]
       """
-        states = ['Si', 'Su', 'Sf', 'Ss', 'Sw', 'Sa', 'Sfa', 'Qstate']
+        states = ['Si', 'Su', 'Sf', 'Ss', 'Sw', 'Sa', 'Sfa', 'Qstate', 'WaterLevel']
 
         return states
 
@@ -198,6 +210,7 @@ class WflowModel(DynamicModel):
             [report(self.Sw[i], self.Dir + "/outstate/Sw" + self.NamesClasses[i] + ".map") for i in self.Classes if self.selectSw[i]]
             report(self.Ss, self.Dir + "/outstate/Ss.map")
             report(self.Qstate, self.Dir + "/outstate/Qstate.map")
+            report(self.WaterLevel, self.Dir + "/outstate/WaterLevel.map")
         
         #: It is advised to use the wf_suspend() function
         #: here which will suspend the variables that are given by stateVariables
@@ -210,6 +223,7 @@ class WflowModel(DynamicModel):
         [report(self.Sw[i], self.SaveDir + "/outstate/Sw" + self.NamesClasses[i] + ".map") for i in self.Classes if self.selectSw[i]]
         report(self.Ss, self.SaveDir + "/outstate/Ss.map")
         report(self.Qstate, self.SaveDir + "/outstate/Qstate.map")
+        report(self.WaterLevel, self.SaveDir + "/outstate/WaterLevel.map")
 
         [report(self.percent[i], self.SaveDir + "/outmaps/percent" + self.NamesClasses[i] + ".map") for i in
          self.Classes]
@@ -269,14 +283,20 @@ class WflowModel(DynamicModel):
                                     configget(self.config, "model", "DSfile_2", ""))
         self.dayETss = os.path.join(self.Dir,
                                     configget(self.config, "model", "DEfile_2", ""))
+        self.SubCatchFlowOnly = int(configget(self.config, 'model', 'SubCatchFlowOnly', '0'))
+
+        sizeinmetres = int(configget(self.config,"layout","sizeinmetres","0"))
+        alf = float(configget(self.config,"model","Alpha","60"))
+        Qmax = float(configget(self.config,"model","AnnualDischarge","300"))
 
 
         self.logger.info(
             "running for " + str(self.nrTimeSteps()) + " timesteps")  # keeping track of number of timesteps
 
         self.fewsrun = int(configget(self.config,"model","fewsrun","0"))
-        
+
         # Set and get defaults from ConfigFile here ###################################
+        self.Tslice = int(configget(self.config,"model","Tslice","1"))
         self.timestepsecs = int(configget(self.config,
                                           "model", "timestepsecs", "3600"))  # number of seconds in a timestep
         self.scalarInput = int(configget(self.config,
@@ -374,6 +394,10 @@ class WflowModel(DynamicModel):
         wflow_percent = [configget(self.config,
                                    "model", "wflow_percent_" + str(self.Classes[i]),
                                    "staticmaps/wflow_percent" + str(self.Classes[i]) + ".map") for i in self.Classes]
+        wflow_river  = configget(self.config,"model","wflow_river","staticmaps/wflow_river.map")
+        wflow_riverlength  = configget(self.config,"model","wflow_riverlength","staticmaps/wflow_riverlength.map")
+        wflow_riverlength_fact  = configget(self.config,"model","wflow_riverlength_fact","staticmaps/wflow_riverlength_fact.map")
+        wflow_riverwidth = configget(self.config,"model","wflow_riverwidth","staticmaps/wflow_riverwidth.map")
         self.rst_laiTss = [configget(self.config,
                                      "model", "rst_lai_" + str(self.Classes[i]),
                                      "staticmaps/rst_lai_" + str(self.Classes[i]) + ".map") for i in self.Classes]
@@ -400,6 +424,11 @@ class WflowModel(DynamicModel):
         self.Transit = scalar(readmap(os.path.join(self.Dir, wflow_transit)))  #: Map with surface area per cell
         self.velocity = scalar(readmap(os.path.join(self.Dir, wflow_velocity)))  #: Map with surface area per cell
         self.gaugesR = nominal(readmap(os.path.join(self.Dir, wflow_gauges)))
+        self.RiverLength=self.wf_readmap(os.path.join(self.Dir, wflow_riverlength),0.0)
+        # Factor to multiply riverlength with (defaults to 1.0)
+        self.River=cover(boolean(self.wf_readmap(os.path.join(self.Dir, wflow_river),0.0,fail=True)),0) #: river network map. Fro those cell that belong to a river a specific width is used in the kinematic wave caulations
+        self.RiverLengthFac=self.wf_readmap(os.path.join(self.Dir, wflow_riverlength_fact),1.0)
+        self.RiverWidth=self.wf_readmap(os.path.join(self.Dir, wflow_riverwidth),0.0)
         self.percent = []
         for i in self.Classes:
             self.percent.append(readmap(os.path.join(self.Dir, wflow_percent[i])))
@@ -435,7 +464,15 @@ class WflowModel(DynamicModel):
         self.Tm = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/Tm" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,2) for i in self.Classes]
         self.Fm = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/Fm" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.2) for i in self.Classes]
         self.ECORR= self.readtblDefault2(self.Dir + "/" + self.intbl + "/ECORR.tbl",self.LandUse,subcatch,self.Soil, 1.0)
-        
+
+        #kinematic wave parameters
+        self.Beta = scalar(0.6) # For sheetflow
+        #self.M=lookupscalar(self.Dir + "/" + modelEnv['intbl'] + "/M.tbl" ,self.LandUse,subcatch,self.Soil) # Decay parameter in Topog_sbm
+        self.N=lookupscalar(self.Dir + "/" + self.intbl + "/N.tbl",self.LandUse,subcatch,self.Soil)  # Manning overland flow
+        """ *Parameter:* Manning's N for all non-river cells """
+        self.NRiver=lookupscalar(self.Dir + "/" + self.intbl + "/N_River.tbl",self.LandUse,subcatch,self.Soil)  # Manning river
+        """ Manning's N for all cells that are marked as a river """
+
         # Jarvis stressfunctions
         self.lamda = eval(str(configget(self.config, "model", "lamda", "[0]")))
         self.lamdaS = eval(str(configget(self.config, "model", "lamdaS", "[0]")))
@@ -456,7 +493,26 @@ class WflowModel(DynamicModel):
 
         self.ZeroMap = 0.0 * scalar(subcatch)  # map with only zero's
 
+        self.xl,self.yl,self.reallength = pcrut.detRealCellLength(self.ZeroMap,sizeinmetres)
+        self.Slope= slope(self.Altitude)
+        self.Slope=ifthen(boolean(self.TopoId),max(0.001,self.Slope*celllength()/self.reallength))
+        Terrain_angle=scalar(atan(self.Slope))
+        temp = catchmenttotal(cover(1.0), self.TopoLdd) * self.reallength * 0.001 * 0.001 *  self.reallength
+        self.QMMConvUp = cover(self.timestepsecs * 0.001)/temp
+
         self.wf_multparameters()
+
+        # Determine river width from DEM, upstream area and yearly average discharge
+        # Scale yearly average Q at outlet with upstream are to get Q over whole catchment
+        # Alf ranges from 5 to > 60. 5 for hardrock. large values for sediments
+        # "Noah J. Finnegan et al 2005 Controls on the channel width of rivers:
+        # Implications for modeling fluvial incision of bedrock"
+
+        upstr = catchmenttotal(1, self.TopoLdd)
+        Qscale = upstr/mapmaximum(upstr) * Qmax
+        W = (alf * (alf + 2.0)**(0.6666666667))**(0.375) * Qscale**(0.375) * (max(0.0001,windowaverage(self.Slope,celllength() * 4.0)))**(-0.1875) * self.N **(0.375)
+        # Use supplied riverwidth if possible, else calulate
+        self.RiverWidth = ifthenelse(self.RiverWidth <=0.0, W, self.RiverWidth)
 
 
         # For in memory override:
@@ -473,6 +529,21 @@ class WflowModel(DynamicModel):
         self.TopoLdd = lddmask(self.TopoLdd, boolean(self.TopoId))
         catchmentcells = maptotal(scalar(self.TopoId))
 
+        # Limit lateral flow per subcatchment (make pits at all subcatch boundaries)
+        # This is very handy for Ribasim etc...
+        if self.SubCatchFlowOnly > 0:
+            self.logger.info("Creating subcatchment-only drainage network (ldd)")
+            ds = downstream(self.TopoLdd,self.TopoId)
+            usid = ifthenelse(ds != self.TopoId,self.TopoId,0)
+            self.TopoLdd = lddrepair(ifthenelse(boolean(usid),ldd(5),self.TopoLdd))
+
+        # Used to seperate output per LandUse/management classes
+        #OutZones = self.LandUse
+        #report(self.reallength,"rl.map")
+        #report(catchmentcells,"kk.map")
+        self.QMMConv = self.timestepsecs/(self.reallength * self.reallength * 0.001) #m3/s --> mm
+        self.ToCubic = (self.reallength * self.reallength * 0.001) / self.timestepsecs # m3/s
+
         self.sumprecip = self.ZeroMap  # accumulated rainfall for water balance
         self.sumevap = self.ZeroMap  # accumulated evaporation for water balance
         self.sumrunoff = self.ZeroMap  # accumulated runoff for water balance (weigthted for upstream area)
@@ -481,8 +552,37 @@ class WflowModel(DynamicModel):
         self.Q = self.ZeroMap 
         self.sumwb = self.ZeroMap
 
+        self.KinWaveVolume=self.ZeroMap
+        self.OldKinWaveVolume=self.ZeroMap
+        self.Qvolume=self.ZeroMap
+
         # Define timeseries outputs There seems to be a bug and the .tss files are
         # saved in the current dir...
+
+        # Set DCL to riverlength if that is longer that the basic length calculated from grid
+        drainlength = detdrainlength(self.TopoLdd,self.xl,self.yl)
+
+        self.DCL=max(drainlength,self.RiverLength) # m
+        # Multiply with Factor (taken from upscaling operation, defaults to 1.0 if no map is supplied
+        self.DCL = self.DCL * max(1.0,self.RiverLengthFac)
+
+        # water depth (m)
+        # set width for kinematic wave to cell width for all cells
+        self.Bw=detdrainwidth(self.TopoLdd,self.xl,self.yl)
+        # However, in the main river we have real flow so set the width to the
+        # width of the river
+
+        self.Bw=ifthenelse(self.River, self.RiverWidth, self.Bw)
+
+        # term for Alpha
+        self.AlpTerm=pow((self.N/(sqrt(self.Slope))),self.Beta)
+        # power for Alpha
+        self.AlpPow=(2.0/3.0)*self.Beta
+        # initial approximation for Alpha
+
+        # calculate catchmentsize
+        self.upsize=catchmenttotal(self.xl * self.yl,self.TopoLdd)
+        self.csize=areamaximum(self.upsize,self.TopoId)
 
         self.SaveDir = os.path.join(self.Dir, self.runId)
         self.logger.info("Starting Dynamic run...")
@@ -509,11 +609,14 @@ class WflowModel(DynamicModel):
             self.Qstate = self.catchArea * 0  # for combined gw reservoir
             self.Qstate_t = self.catchArea * 0
 
+            self.WaterLevel = self.catchArea * 0 #cover(0.0) #: Water level in kinimatic wave (state variable [m])
+
             # set initial storage values
 #            pdb.set_trace()
             self.Sa = [0.05 * self.samax[i] * scalar(self.catchArea) for i in self.Classes]
-            self.Su = [self.sumax[i] * scalar(self.catchArea) for i in self.Classes]
-            self.Ss = self.Ss + 30 * scalar(self.catchArea)  # for combined gw reservoir
+            self.Su = [self.sumax[i] * scalar(self.catchArea) for i in self.Classes]   #catchArea is nu het hele stroomgebied
+            #TODO checken of catchArea aangepast moet worden naar TopoId
+            self.Ss = self.Ss + 30 * scalar(self.catchArea)  # for combined gw reservoir # 30 mm
 
         else:
 #            self.wf_resume(self.Dir + "/instate/")
@@ -556,6 +659,17 @@ class WflowModel(DynamicModel):
                     self.Sfa.append(self.ZeroMap)
             self.Ss = readmap(os.path.join(self.Dir, 'instate', 'Ss.map'))
             self.Qstate = readmap(os.path.join(self.Dir, 'instate', 'Qstate.map'))
+            self.WaterLevel = readmap(os.path.join(self.Dir, 'instate', 'WaterLevel.map'))
+
+        P=self.Bw+(2.0*self.WaterLevel)
+        self.Alpha=self.AlpTerm*pow(P,self.AlpPow)
+
+        self.OldSurfaceRunoff = self.Qstate
+
+        self.SurfaceRunoffMM=self.Qstate * self.QMMConv
+            # Determine initial kinematic wave volume
+        self.KinWaveVolume = self.WaterLevel * self.Bw * self.DCL
+        self.OldKinWaveVolume = self.KinWaveVolume
 
         self.wbSi_ = [self.ZeroMap] * len(self.Classes)
         self.wbSu_ = [self.ZeroMap] * len(self.Classes)
@@ -750,23 +864,25 @@ class WflowModel(DynamicModel):
         self.SwWB = areatotal(sum(multiply(self.Sw,self.percent)) / 1000 * self.surfaceArea,nominal(self.TopoId))
         self.Sw_WB = areatotal(sum(multiply(self.Sw_t,self.percent)) / 1000 * self.surfaceArea,nominal(self.TopoId))
         self.SsWB = areatotal(self.Ss / 1000 * self.surfaceArea,nominal(self.TopoId))
-        self.Ss_WB = areatotal(self.Ss_t / 1000 * self.surfaceArea,nominal(self.TopoId))    
+        self.Ss_WB = areatotal(self.Ss_t / 1000 * self.surfaceArea,nominal(self.TopoId))
         self.convQuWB = areatotal(sum(multiply([sum(self.convQu[i]) for i in self.Classes],self.percent)) / 1000 * self.surfaceArea,nominal(self.TopoId))
         self.convQu_WB = areatotal(sum(multiply([sum(self.convQu_t[i]) for i in self.Classes],self.percent)) / 1000 * self.surfaceArea,nominal(self.TopoId))
         self.convQaWB = areatotal(sum(multiply([sum(self.convQa[i]) for i in self.Classes],self.percent)) / 1000 * self.surfaceArea,nominal(self.TopoId))
         self.convQa_WB = areatotal(sum(multiply([sum(self.convQa_t[i]) for i in self.Classes],self.percent)) / 1000 * self.surfaceArea,nominal(self.TopoId))
         self.trackQWB = areatotal(sum(self.trackQ),nominal(self.TopoId))
-        self.trackQ_WB = areatotal(sum(self.trackQ_t),nominal(self.TopoId)) 
-        self.QstateWB = areatotal(sum(self.Qstate) * self.timestepsecs, nominal(self.TopoId))
+        self.trackQ_WB = areatotal(sum(self.trackQ_t),nominal(self.TopoId))
+        if self.selectRout == 'kinematic_wave_routing':
+            self.QstateWB = areatotal(sum(self.Qstate_new) * self.timestepsecs, nominal(self.TopoId))
+        else:
+            self.QstateWB = areatotal(sum(self.Qstate) * self.timestepsecs, nominal(self.TopoId)) # dit moet Qstate_new zijn ipv Qstate als je met de kin wave werkt en waterbalans wilt laten sluiten TODO aanpassen zodat het nog steeds werkt voor eerdere routing !!!
         self.Qstate_WB = areatotal(sum(self.Qstate_t) * self.timestepsecs, nominal(self.TopoId))
 #        self.QstateWB = areatotal(sum(self.Qstate) * 0.0405, nominal(self.TopoId))
 #        self.Qstate_WB = areatotal(sum(self.Qstate_t) * 0.0405, nominal(self.TopoId))
 #        self.QstateWB = areatotal(self.Qstate, nominal(self.TopoId))
 #        self.Qstate_WB = areatotal(self.Qstate_t, nominal(self.TopoId))
-#        
-        #WBtot in m3/s
-        self.WBtot = (self.P - self.Ei + self.EwiCorr - self.Ew - self.Ea - self.Eu - self.Qtot - self.SiWB + self.Si_WB - self.SuWB + self.Su_WB - self.SaWB + self.Sa_WB - self.SwWB + self.Sw_WB - self.SfWB + self.Sf_WB - self.SfaWB + self.Sfa_WB - self.SsWB + self.Ss_WB - self.convQuWB +self.convQu_WB - self.convQaWB +self.convQa_WB - self.trackQWB + self.trackQ_WB - self.QstateWB + self.Qstate_WB) / self.timestepsecs     
-
+#
+        #WBtot in m3/s   -- volgens mij moet dit m3/h zijn ??? TODO!
+        self.WBtot = (self.P - self.Ei + self.EwiCorr - self.Ew - self.Ea - self.Eu - self.Qtot - self.SiWB + self.Si_WB - self.SuWB + self.Su_WB - self.SaWB + self.Sa_WB - self.SwWB + self.Sw_WB - self.SfWB + self.Sf_WB - self.SfaWB + self.Sfa_WB - self.SsWB + self.Ss_WB - self.convQuWB +self.convQu_WB - self.convQaWB +self.convQa_WB - self.trackQWB + self.trackQ_WB - self.QstateWB + self.Qstate_WB) / self.timestepsecs
         # SUMMED FLUXES ======================================================================================
         self.sumprecip = self.sumprecip + self.Precipitation  # accumulated rainfall for water balance (m/h)
         self.sumevap = self.sumevap + sum(multiply(self.Ei_, self.percent)) + sum(
@@ -781,6 +897,8 @@ class WflowModel(DynamicModel):
         self.sumwb = self.sumwb + self.WB
 
         self.sumE = sum(multiply(self.Ei_, self.percent)) + sum(multiply(self.Eu_, self.percent))
+
+        self.QCatchmentMM = self.Qstate * self.QMMConvUp
 
 
 # The main function is used to run the program from the command line
