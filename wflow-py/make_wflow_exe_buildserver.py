@@ -74,7 +74,7 @@ if sys.platform == 'win32':
         pdir + "Library/bin/svml_dispmd.dll"]
 
 
-os.system("python mkversion.py")
+os.system("c:\Anaconda\python mkversion.py")
 
 
 
