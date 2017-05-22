@@ -153,7 +153,7 @@ elif target == 'deltashell':
                  'wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined','lxml.etree', 'lxml._elementpath', 'gzip']
     packages.append('zmq.backend.cython')
     packages.append('bmi')
-    packages.append('pkg_resources')
+    #packages.append('pkg_resources')
 else:
     includes = ['wflow.wflow_bmi', 'wflow.wflow_w3ra', 'wflow.wflow_bmi_combined','lxml.etree', 'lxml._elementpath', 'gzip']
 
