@@ -302,3 +302,29 @@ def routingQf_Qs_grid_mm(self):
     # water balance of flux routing
     self.dSdt = self.Qstate-self.Qstate_t
     self.WB_rout = (accuflux(self.TopoLdd, self.Qtotal - self.dSdt)-self.Qrout)/accuflux(self.TopoLdd, self.Qtotal)
+	
+def kinematic_wave_routing(self):
+    self.Qtot = self.Qftotal + self.Qs_  # total local discharge in mm/hour
+    self.Qtotal = self.Qtot / 1000 * self.surfaceArea / self.timestepsecs  # total local discharge in m3/s
+    # self.Qstate_t = self.Qstate
+
+    self.Qtotal = max(0, self.Qtotal) # no neg kin wave -- check ! TODO
+    q=self.Qtotal/self.DCL
+    self.OldSurfaceRunoff=self.Qstate
+
+    self.Qstate = kinematic(self.TopoLdd, self.Qstate,q,self.Alpha, self.Beta,self.Tslice,self.timestepsecs,self.DCL) # m3/s
+
+    self.SurfaceRunoffMM=self.Qstate*self.QMMConv # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
+
+    self.QLagTot = self.Qstate
+    self.Qtlag = self.Qstate
+
+    self.updateRunOff()
+    InflowKinWaveCell=upstream(self.TopoLdd,self.Qstate)
+    self.MassBalKinWave = (self.KinWaveVolume - self.OldKinWaveVolume)/self.timestepsecs  + InflowKinWaveCell + self.Qtotal - self.Qstate
+
+    self.Qstate_t = self.OldKinWaveVolume /self.timestepsecs
+    self.Qstate_new = self.KinWaveVolume / self.timestepsecs
+
+    Runoff=self.Qstate
+
