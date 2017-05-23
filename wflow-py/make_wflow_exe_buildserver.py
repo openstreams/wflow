@@ -105,7 +105,7 @@ def mkdatatuples(thelist,destdir="."):
     return ret
 
 data_files.append('packages.txt')
-os.system('conda list' + ">" + os.path.join('packages.txt'))
+os.system('c:\anaconda\scripts\conda list' + ">" + os.path.join('packages.txt'))
 # matplolib data files
 
 
@@ -120,7 +120,7 @@ if sys.platform == 'win32':
     # MKL files
     data_files.extend(mkdatatuples(MKL_files,destdir="."))
     # pcraster dll's
-    ddir = "c:/pcraster/lib/"
+    #ddir = "c:/pcraster/lib/"
     # for teamcity
     ddir = "D:/BuildAgent/work/wflow_exe/pcraster-4.1.0_x86-64"
     data_files.extend(mkdatatuples(glob.glob(ddir + "/*.dll"),destdir='.'))
@@ -137,7 +137,7 @@ data_files.extend(mkdatatuples(glob.glob(gdaldata + "/*.*"),destdir='gdal-data')
 nrbits = str(ctypes.sizeof(ctypes.c_voidp) * 8)
 #includes = ['wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined','bmi','bmi.wrapper',"pcraster","osgeo.ogr"]
 
-thename = "Wflow"+MVERSION+'-'+target+'-'+sys.platform+'-'+nrbits
+thename = "wflow-bin/Wflow"+MVERSION+'-'+target+'-'+sys.platform+'-'+nrbits
 
 packages = ["osgeo"]
 

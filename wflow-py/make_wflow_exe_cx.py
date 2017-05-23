@@ -137,7 +137,7 @@ data_files.extend(mkdatatuples(glob.glob(gdaldata + "/*.*"),destdir='gdal-data')
 nrbits = str(ctypes.sizeof(ctypes.c_voidp) * 8)
 #includes = ['wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined','bmi','bmi.wrapper',"pcraster","osgeo.ogr"]
 
-thename = "Wflow"+MVERSION+'-'+target+'-'+sys.platform+'-'+nrbits
+thename = "wflow-bin/Wflow"+MVERSION+'-'+target+'-'+sys.platform+'-'+nrbits
 
 packages = ["osgeo"]
 
