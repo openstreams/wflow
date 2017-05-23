@@ -11,7 +11,7 @@ except:
     branch = None
 
 if branch == None:
-    branch = 'unknown'
+    branch = 'master'
 
 vers='1'
 nrversion = '1.0'
