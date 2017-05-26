@@ -51,13 +51,18 @@ def groundWaterCombined3(self):
     self.Qsin = areatotal(self.QsinTemp * self.percentArea ,nominal(self.TopoId))  #areatotal is taken, according to area percentage of cell
  
     self.Qs = self.Ss * self.Ks[0]    
-    self.Ss = self.Ss * exp(-self.Ks[0]) + self.Qsin
+    # self.Ss = self.Ss * exp(-self.Ks[0]) + self.Qsin
+
+    # add a gain/lossterm based on constant value
+    self.Gain = ifthenelse(self.Closure < 0.0 , - min(self.Ss, -self.Closure) , self.Closure) # if negative, limited by storage in Ss
+    self.Ss = self.Ss * exp(-self.Ks[0]) + self.Qsin + self.Gain
     
-    self.wbSs = self.Qsin - self.Qs - self.Ss + self.Ss_t    
+    self.wbSs = self.Qsin - self.Qs - self.Ss + self.Ss_t + self.Gain
     
     self.Qs_ = self.Qs
     self.Recharge_ = self.Recharge
     self.QsinClass_ = self.QsinClass
     self.QsinTemp_ = self.QsinTemp
     self.Qsin_ = self.Qsin
+    self.Gain_ = self.Gain
     

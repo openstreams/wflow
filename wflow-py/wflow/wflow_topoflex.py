@@ -375,6 +375,8 @@ class WflowModel(DynamicModel):
                                    "model", "wflow_subcatch", "staticmaps/wflow_catchmentAreas.map")
         wflow_dem = configget(self.config,
                               "model", "wflow_dem", "staticmaps/wflow_dem.map")
+        wflow_maxSlope = configget(self.config,
+                              "model", "wflow_maxSlope", "staticmaps/wflow_maxSlope.map")
         wflow_ldd = configget(self.config,
                               "model", "wflow_ldd", "staticmaps/wflow_ldd.map")
         wflow_landuse  = configget(self.config,
@@ -409,6 +411,7 @@ class WflowModel(DynamicModel):
 
         self.Altitude = readmap(os.path.join(self.Dir, wflow_dem)) * scalar(
             defined(subcatch))  #: The digital elevation map (DEM)
+        self.maxSlope = self.wf_readmap(os.path.join(self.Dir, wflow_maxSlope),0.0)
         self.TopoLdd = readmap(os.path.join(self.Dir, wflow_ldd))  #: The local drinage definition map (ldd)
         self.TopoId = readmap(
             os.path.join(self.Dir, wflow_subcatch))  #: Map define the area over which the calculations are done (mask)
@@ -464,6 +467,7 @@ class WflowModel(DynamicModel):
         self.Tm = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/Tm" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,2) for i in self.Classes]
         self.Fm = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/Fm" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.2) for i in self.Classes]
         self.ECORR= self.readtblDefault2(self.Dir + "/" + self.intbl + "/ECORR.tbl",self.LandUse,subcatch,self.Soil, 1.0)
+        self.Closure = self.readtblDefault2(self.Dir + "/" + self.intbl + "/Closure.tbl",self.LandUse,subcatch,self.Soil, 0.0)
 
         #kinematic wave parameters
         self.Beta = scalar(0.6) # For sheetflow
@@ -478,7 +482,7 @@ class WflowModel(DynamicModel):
         self.lamdaS = eval(str(configget(self.config, "model", "lamdaS", "[0]")))
 
         # initialise list for routing
-        self.trackQ = [0 * scalar(self.catchArea)] * int(self.maxTransit)
+        self.trackQ = [0 * scalar(self.catchArea)] * int(self.maxTransit) # list * scalar ---> list wordt zoveel x gekopieerd als scalar.
 
         # initialise list for lag function
         self.convQu = [[0 * scalar(self.catchArea)] * self.Tf[i] for i in self.Classes]
@@ -496,6 +500,7 @@ class WflowModel(DynamicModel):
         self.xl,self.yl,self.reallength = pcrut.detRealCellLength(self.ZeroMap,sizeinmetres)
         self.Slope= slope(self.Altitude)
         self.Slope=ifthen(boolean(self.TopoId),max(0.001,self.Slope*celllength()/self.reallength))
+        self.Slope=ifthenelse(self.maxSlope>0.0, self.maxSlope, self.Slope)
         Terrain_angle=scalar(atan(self.Slope))
         temp = catchmenttotal(cover(1.0), self.TopoLdd) * self.reallength * 0.001 * 0.001 *  self.reallength
         self.QMMConvUp = cover(self.timestepsecs * 0.001)/temp
