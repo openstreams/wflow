@@ -7,10 +7,10 @@ import osgeo.gdal as gdal
 
 import os, sys
 if hasattr(sys, "frozen"):
-    print("Frozen exe, setting GDAl data path:")
     _ROOT = os.path.abspath(os.path.dirname(__file__)).split("library.zip")[0]
     os.environ['GDAL_DATA'] = os.path.join(_ROOT,'gdal-data')
 else:
     _ROOT = os.path.abspath(os.path.dirname(__file__))
+
 def get_data(path):
     return os.path.join(_ROOT, 'data', path)
