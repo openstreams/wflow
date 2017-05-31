@@ -186,7 +186,7 @@ class MyTest(unittest.TestCase):
     def testbmirun_space_in_name(self):
         print 'Run with update(-1)'
         bmiobj = bmi.wflowbmi_light()
-        bmiobj.initialize('wflow sceleton/wflow sceleton.ini',loglevel=logging.ERROR)
+        bmiobj.initialize('wflow sceleton/wflow_sceleton.ini',loglevel=logging.ERROR)
         et = bmiobj.get_end_time()
         st = bmiobj.get_start_time()
         bmiobj.update(et - st)
