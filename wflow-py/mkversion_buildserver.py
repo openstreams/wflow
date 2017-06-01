@@ -38,7 +38,7 @@ a.write("__version__=\"" + manualmainversion + "\"\n")
 a.write("__release__=\"" + manualversion + "\"\n")
 a.write("__versionnr__=\"" + version + "\"\n")
 a.write("__build__=\"" + str(build) + "\"\n")
-a.write("import osgeo.gdal as gdal\n\n")
+
 a.write("import os, sys\n")
 a.write("if hasattr(sys, \"frozen\"):\n")
 a.write("    print('Frozen...')\n")
@@ -48,7 +48,7 @@ a.write("    os.environ['PATH'] = _ROOT + ';' + os.environ['PATH']\n")
 a.write("    os.environ['PYTHONPATH'] = _ROOT + ';' + os.environ['PYTHONPATH']\n")
 a.write("else:\n")
 a.write("    _ROOT = os.path.abspath(os.path.dirname(__file__))\n\n")
-
+a.write("import osgeo.gdal as gdal\n\n")
 a.write("def get_data(path):\n")
 a.write("    return os.path.join(_ROOT, 'data', path)\n")
 
