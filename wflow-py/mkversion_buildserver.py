@@ -45,7 +45,7 @@ a.write("    print('Frozen...')\n")
 a.write("    _ROOT = os.path.abspath(os.path.dirname(__file__)).split(\"library.zip\")[0]\n")
 a.write("    os.environ['GDAL_DATA'] = os.path.join(_ROOT,'gdal-data')\n")
 a.write("    os.environ['PATH'] = _ROOT + ';' + os.environ['PATH']\n")
-a.write("    os.environ['PAYHTONPATH'] = _ROOT + ';' + os.environ['PYTHONPATH']\n")
+a.write("    os.environ['PYTHONPATH'] = _ROOT + ';' + os.environ['PYTHONPATH']\n")
 a.write("else:\n")
 a.write("    _ROOT = os.path.abspath(os.path.dirname(__file__))\n\n")
 
