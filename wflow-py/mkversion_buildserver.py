@@ -47,7 +47,7 @@ a.write("    os.environ['GDAL_DATA'] = os.path.join(_ROOT,'gdal-data')\n")
 a.write("    os.environ['PATH'] = _ROOT + ';' + os.environ['PATH']\n")
 a.write("    os.environ['PYTHONPATH'] = _ROOT + ';' + os.environ['PYTHONPATH']\n")
 a.write("    sys.path.insert(0,_ROOT)\n")
-a.write("    print(os.environ['PATH'])\n")
+
 a.write("    if _ROOT not in os.environ['PATH']:\n")
 a.write("        print('Root dir of binary not in system path. This may cause problems...')\n")
 a.write("else:\n")
