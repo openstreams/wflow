@@ -46,6 +46,7 @@ a.write("    _ROOT = os.path.abspath(os.path.dirname(__file__)).split(\"library.
 a.write("    os.environ['GDAL_DATA'] = os.path.join(_ROOT,'gdal-data')\n")
 a.write("    os.environ['PATH'] = _ROOT + ';' + os.environ['PATH']\n")
 a.write("    os.environ['PYTHONPATH'] = _ROOT + ';' + os.environ['PYTHONPATH']\n")
+a.write("    sys.path.insert(0,_ROOT)\n")
 a.write("else:\n")
 a.write("    _ROOT = os.path.abspath(os.path.dirname(__file__))\n\n")
 a.write("import osgeo.gdal as gdal\n\n")
