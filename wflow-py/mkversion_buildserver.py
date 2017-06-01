@@ -25,6 +25,7 @@ a = open("_version.py","w")
 
 build=datetime.datetime.now()
 
+a.write("# This file is made by mkversion.py, do not edit!")
 a.write("VERSION=\"" + manualversion +  "\"\n")
 a.write("MVERSION=\"" + manualmainversion +"\"\n")
 a.write("NVERSION=\"" + version +"\"\n")
@@ -45,7 +46,7 @@ a.write("    _ROOT = os.path.abspath(os.path.dirname(__file__)).split(\"library.
 a.write("    os.environ['GDAL_DATA'] = os.path.join(_ROOT,'gdal-data')\n")
 a.write("    os.environ['PATH'] = _ROOT + ';' + os.environ['PATH']\n")
 a.write("else:\n")
-a.write("    _ROOT = os.path.abspath(os.path.dirname(__file__))\n")
+a.write("    _ROOT = os.path.abspath(os.path.dirname(__file__))\n\n")
 
 a.write("def get_data(path):\n")
 a.write("    return os.path.join(_ROOT, 'data', path)\n")
