@@ -54,11 +54,11 @@ class MyTest(unittest.TestCase):
         my_data = wf.genfromtxt(os.path.join(caseName,runId,"watbal.csv"), delimiter=',')
 
         print("Checking  water budget ....")
-        self.assertAlmostEquals(-0.0006561279296875,my_data[:,2].sum(),places=4)
+        self.assertAlmostEquals(0.0011471913849163684,my_data[:,2].sum(),places=4)
 
         my_data = wf.genfromtxt(os.path.join(caseName,runId,"run.csv"), delimiter=',')
         print("Checking  discharge ....")
-        self.assertAlmostEquals(1073.2958811442056,my_data[:,2].mean(),places=4)
+        self.assertAlmostEquals(1837.7918265024821,my_data[:,2].mean(),places=4)
 
 
 

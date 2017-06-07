@@ -568,6 +568,7 @@ class WflowModel(DynamicModel):
     self.sumrunoff=self.ZeroMap                          #: accumulated runoff for water balance (weigthted for upstream area)
     self.sumlevel=self.ZeroMap                          #: accumulated level for water balance
     self.sumpotevap=self.ZeroMap                          #accumulated runoff for water balance
+    self.sumsoilevap=self.ZeroMap
     self.sumtemp=self.ZeroMap                          #accumulated runoff for water balance
     self.ForecQ_qmec=self.ZeroMap  # Extra inflow to kinematic wave reservoir for forcing in m^/sec
     self.KinWaveVolume=self.ZeroMap
@@ -728,18 +729,24 @@ class WflowModel(DynamicModel):
     RainFrac=ifthenelse(1.0*self.TTI == 0.0,ifthenelse(self.Temperature <= self.TT,scalar(0.0),scalar(1.0)),min((self.Temperature-(self.TT-self.TTI/2.0))/self.TTI,scalar(1.0)))
     RainFrac=max(RainFrac,scalar(0.0))               #fraction of precipitation which falls as rain
     SnowFrac=1.0-RainFrac                    #fraction of self.Precipitation which falls as snow
+
+    self.Precipitation = self.SFCF * SnowFrac * self.Precipitation + self.RFCF * RainFrac * self.Precipitation  # different correction for rainfall and snowfall
+
+    #Water onto the canopy
     Interception=min(self.Precipitation,self.ICF-self.InterceptionStorage)#: Interception in mm/timestep
     self.InterceptionStorage=self.InterceptionStorage+Interception #: Current interception storage
     self.Precipitation=self.Precipitation-Interception
- 
-    self.Precipitation=self.SFCF*SnowFrac*self.Precipitation+self.RFCF*RainFrac*self.Precipitation # different correction for rainfall and snowfall
-    
-    
 
 
     self.PotEvaporation=exp(-self.EPF*self.Precipitation)*self.ECORR * self.PotEvaporation  # correction for potential evaporation on wet days
     self.PotEvaporation=self.CEVPF*self.PotEvaporation  # Correct per landuse
-    
+
+    self.IntEvap=min(self.InterceptionStorage,self.PotEvaporation) 	 #: Evaporation from interception storage
+    self.InterceptionStorage=self.InterceptionStorage-self.IntEvap
+
+    # I nthe origal HBV code
+    RestEvap = max(0.0,self.PotEvaporation-self.IntEvap)
+
     if hasattr(self, 'ReserVoirComplexLocs'):
         self.ReserVoirPotEvap = self.PotEvaporation
         self.ReserVoirPrecip = self.Precipitation
@@ -790,19 +797,19 @@ class WflowModel(DynamicModel):
         MaxFlux= self.ZeroMap
 
 
-    IntEvap=min(self.InterceptionStorage,self.PotEvaporation) 	 #: Evaporation from interception storage
-    self.InterceptionStorage=self.InterceptionStorage-IntEvap
+    #IntEvap=min(self.InterceptionStorage,self.PotEvaporation) 	 #: Evaporation from interception storage
+    #self.InterceptionStorage=self.InterceptionStorage-IntEvap
 
     # I nthe origal HBV code
-    RestEvap = max(0.0,self.PotEvaporation-IntEvap)
+    #RestEvap = max(0.0,self.PotEvaporation-IntEvap)
 
-    SoilEvap=ifthenelse(self.SoilMoisture > self.Treshold,min(self.SoilMoisture,RestEvap),\
+    self.SoilEvap=ifthenelse(self.SoilMoisture > self.Treshold,min(self.SoilMoisture,RestEvap),\
                         min(self.SoilMoisture,min(RestEvap,self.PotEvaporation*(self.SoilMoisture/self.Treshold))))
     #: soil evapotranspiration
-    self.SoilMoisture=self.SoilMoisture-SoilEvap           #evaporation from soil moisture storage
+    self.SoilMoisture=self.SoilMoisture-self.SoilEvap           #evaporation from soil moisture storage
 
 
-    ActEvap=IntEvap+SoilEvap           #: Sum of evaporation components (IntEvap+SoilEvap)
+    self.ActEvap=self.IntEvap+self.SoilEvap           #: Sum of evaporation components (IntEvap+SoilEvap)
     self.HBVSeepage=((min(self.SoilMoisture/self.FieldCapacity,1))**self.BetaSeepage)*NetInSoil		#runoff water from soil
     self.SoilMoisture=self.SoilMoisture-self.HBVSeepage        
 
@@ -844,7 +851,7 @@ class WflowModel(DynamicModel):
         DirectRunoffStorage=self.QuickFlow+self.Seepage+self.RealQuickFlow
     else:
         DirectRunoffStorage=self.QuickFlow+self.BaseFlow+self.RealQuickFlow
-	self.ActEvap = ActEvap
+
 	self.InSoil = InSoil
 	self.RainAndSnowmelt = RainAndSnowmelt
 	self.NetInSoil = NetInSoil
@@ -943,14 +950,16 @@ class WflowModel(DynamicModel):
     #self.RunoffCoeff = self.QCatchmentMM/catchmenttotal(self.Precipitation, self.TopoLdd)/catchmenttotal(cover(1.0), self.TopoLdd)
 
     self.sumprecip=self.sumprecip  +  self.Precipitation                     #accumulated rainfall for water balance
-    self.sumevap=self.sumevap + ActEvap                           #accumulated evaporation for water balance
+    self.sumevap=self.sumevap + self.ActEvap                           #accumulated evaporation for water balance
+    self.sumsoilevap = self.sumsoilevap + self.SoilEvap
     self.sumpotevap=self.sumpotevap + self.PotEvaporation
     self.sumtemp=self.sumtemp + self.Temperature
     self.sumrunoff=self.sumrunoff  + self.InwaterMM          #accumulated Cell runoff for water balance
     self.sumlevel=self.sumlevel  + self.WaterLevel
     self.suminflow=self.suminflow  + self.Inflow
-    self.storage=self.FreeWater + self.DrySnow + self.SoilMoisture + self.UpperZoneStorage + self.LowerZoneStorage + self.InterceptionStorage
-    self.watbal=(self.initstorage - self.storage)+self.sumprecip-self.sumevap-self.sumrunoff
+    self.storage=self.FreeWater + self.DrySnow + self.SoilMoisture + self.UpperZoneStorage + self.LowerZoneStorage \
+                 #+ self.InterceptionStorage
+    self.watbal=(self.initstorage - self.storage)+self.sumprecip-self.sumsoilevap-self.sumrunoff
 
 
 
