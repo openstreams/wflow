@@ -11,14 +11,16 @@ Run wflow_hbv for 30 steps and checks if the outcome is approx that of the refer
 
 class MyTest(unittest.TestCase):
 
-    def testapirun(self):
+
+
+    def testapirunhr(self):
         startTime = 1
         stopTime = 30
         currentTime = 1
 
           # set runid, clonemap and casename. Also define the ini file
         runId = "unittest"
-        configfile="wflow_hbv.ini"
+        configfile="wflow_hbv_hr.ini"
         wflow_cloneMap = 'wflow_catchment.map'
         caseName="wflow_hbv"
         starttime = starttime = datetime.datetime(1990,01,01)
@@ -40,12 +42,14 @@ class MyTest(unittest.TestCase):
                 dynModelFw.wf_setValues('P', 0.0)
             elif ts <= 15:
                 dynModelFw.wf_setValues('P', 10.0)
+                sump = sump + 10.0
             else:
                 dynModelFw.wf_setValues('P', 0.0)
 
             dynModelFw.wf_setValues('PET', 2.0)
             dynModelFw.wf_setValues('TEMP', 10.0)
             dynModelFw._runDynamic(ts,ts) # runs for all timesteps
+            dynModelFw.logger.info("Doing step: " + str(ts))
         dynModelFw._runSuspend() # saves the state variables
         dynModelFw._wf_shutdown()
 
@@ -54,13 +58,15 @@ class MyTest(unittest.TestCase):
         my_data = wf.genfromtxt(os.path.join(caseName,runId,"watbal.csv"), delimiter=',')
 
         print("Checking  water budget ....")
-        self.assertAlmostEquals(-0.0006561279296875,my_data[:,2].sum(),places=4)
+        self.assertAlmostEquals( -284.99871826171875,my_data[:,2].sum(),places=4)
 
         my_data = wf.genfromtxt(os.path.join(caseName,runId,"run.csv"), delimiter=',')
         print("Checking  discharge ....")
-        self.assertAlmostEquals(1073.2958811442056,my_data[:,2].mean(),places=4)
+        self.assertAlmostEquals(1837.79182650248212 ,my_data[:,2].mean(),places=4)
 
-
+        print("Checking precip sum ....")
+        my_data = wf.genfromtxt(os.path.join(caseName,runId,"P.csv"), delimiter=',')
+        self.assertAlmostEquals(sump,my_data[:,2].sum())
 
 
 if __name__ == '__main__':

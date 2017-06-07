@@ -950,7 +950,7 @@ class WflowModel(DynamicModel):
     self.sumlevel=self.sumlevel  + self.WaterLevel
     self.suminflow=self.suminflow  + self.Inflow
     self.storage=self.FreeWater + self.DrySnow + self.SoilMoisture + self.UpperZoneStorage + self.LowerZoneStorage + self.InterceptionStorage
-    self.watbal=self.initstorage+self.sumprecip-self.sumevap-self.sumrunoff-self.storage
+    self.watbal=(self.initstorage - self.storage)+self.sumprecip-self.sumevap-self.sumrunoff
 
 
 

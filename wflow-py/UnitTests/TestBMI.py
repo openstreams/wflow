@@ -177,10 +177,17 @@ class MyTest(unittest.TestCase):
         print 'Run with update(-1)'
         bmiobj = bmi.wflowbmi_light()
         bmiobj.initialize('wflow_sceleton/wflow_sceleton.ini',loglevel=logging.ERROR)
+        print bmiobj.get_current_time()
         et = bmiobj.get_end_time()
         st = bmiobj.get_start_time()
+        print bmiobj.get_current_time()
         bmiobj.update(et - st)
+        print bmiobj.get_current_time()
         bmiobj.finalize()
+        print bmiobj.get_current_time()
+        print et
+        print st
+        self.assertEquals(et, bmiobj.get_current_time())
 
 
     def testbmirun_space_in_name(self):
@@ -191,6 +198,7 @@ class MyTest(unittest.TestCase):
         st = bmiobj.get_start_time()
         bmiobj.update(et - st)
         bmiobj.finalize()
+        self.assertEquals(et, bmiobj.get_current_time())
 
 
     def testbmirunnetcdf(self):
@@ -225,6 +233,7 @@ class MyTest(unittest.TestCase):
 
 
         bmiobj.finalize()
+        self.assertEquals(ett, bmiobj.get_current_time())
 
 
 if __name__ == '__main__':

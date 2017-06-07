@@ -220,7 +220,7 @@ class wflowbmi_light(object):
         Propagate the model dt  (in seconds)
         """
 
-        nrsteps = int(dt/self.dynModel.DT.timeStepSecs)
+        nrsteps = self.dynModel.DT.runTimeSteps
         self.bmilogger.debug("update: dt = " + str(dt))
         self.bmilogger.debug("update: update " + str(nrsteps) + " timesteps.")
         if nrsteps >= 1:
@@ -331,7 +331,7 @@ class wflowbmi_light(object):
         :return: start time in the units and epoch returned by the function get_time_units
         """
         st = self.dynModel.wf_supplyStartTime()
-        self.bmilogger.debug("get_start_time: " + str(st))
+        self.bmilogger.debug("get_start_time: " + str(st)+ " " + str(self.dynModel.DT.runStartTime.strftime("%Y-%m-%d %H:%M:%S")))
         return st
 
     def get_end_time(self):
@@ -341,7 +341,7 @@ class wflowbmi_light(object):
         :return: end time of simulation n the units and epoch returned by the function get_time_units
         """
         et = self.dynModel.wf_supplyEndTime()
-        self.bmilogger.debug("get_end_time: " + str(et))
+        self.bmilogger.debug("get_end_time: " + str(et)+ " " + str(self.dynModel.DT.runEndTime.strftime("%Y-%m-%d %H:%M:%S")))
         return et
 
     def get_current_time(self):
@@ -351,8 +351,11 @@ class wflowbmi_light(object):
         :return: current time of simulation n the units and epoch returned by the function get_time_units
         """
 
-        st = self.dynModel.wf_supplyCurrentTime() - self.dynModel.DT.timeStepSecs
-        self.bmilogger.debug("get_current_time: " + str(st))
+
+        st = self.dynModel.wf_supplyCurrentTime()
+        self.bmilogger.debug(
+            "get_current_time: " + str(st) + " " + str(self.dynModel.DT.currentDateTime.strftime("%Y-%m-%d %H:%M:%S")))
+
         return st
 
     def get_time_step(self):
