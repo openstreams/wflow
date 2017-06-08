@@ -1605,17 +1605,18 @@ class WflowModel(DynamicModel):
 
         self.inund = self.ExfiltWater + self.ExcessWater
 
-        ponding_add = self.ZeroMap
+        ponding_add = self.ZeroMap        
         if self.nrpaddyirri > 0:
             ponding_add = cover(min(ifthen(self.h_p > 0,self.inund),self.h_p-self.PondingDepth),0.0)
             self.PondingDepth = self.PondingDepth + ponding_add
-            irr_depth = ifthenelse(self.PondingDepth < self.h_min, self.h_max - self.PondingDepth, 0.0)
-            sqmarea = areatotal(self.reallength * self.reallength, nominal(ifthen(irr_depth > 0,self.IrrigationPaddyAreas)))
-            self.IrriDemandm3 = (irr_depth/1000.0)*sqmarea
-            IRDemand = idtoid(ifthen(self.IrriDemandm3>0,self.IrrigationPaddyAreas), self.IrrigationSurfaceIntakes, self.IrriDemandm3)  * (-1.0 / self.timestepsecs)
+            irr_depth = ifthenelse(self.PondingDepth < self.h_min, self.h_max - self.PondingDepth, 0.0) * self.CRPST
+            sqmarea = areatotal(self.reallength * self.reallength, self.IrrigationPaddyAreas)
+            self.IrriDemandm3 = cover((irr_depth/1000.0)*sqmarea,0)          
+            IRDemand = idtoid(self.IrrigationPaddyAreas, self.IrrigationSurfaceIntakes, self.IrriDemandm3)  * (-1.0 / self.timestepsecs)
+ 
             self.IRDemand= IRDemand
             self.Inflow = cover(IRDemand,self.Inflow)
-
+            self.irr_depth = irr_depth
 
 
         UStoreCapacity = self.SoilWaterCapacity - self.SatWaterDepth - sum_list_cover(self.UStoreLayerDepth,self.ZeroMap)

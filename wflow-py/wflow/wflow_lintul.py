@@ -404,7 +404,7 @@ class WflowModel(DynamicModel):
       modelparameters.append(self.ParamType(name="VAP",stack="inmaps/VAP",type="timeseries",default=10.0,verbose=False,lookupmaps=[])),
       modelparameters.append(self.ParamType(name="WIND",stack="inmaps/WIND",type="timeseries",default=2.0,verbose=False,lookupmaps=[])),
       modelparameters.append(self.ParamType(name="RAIN",stack="inmaps/RAIN",type="timeseries",default=2.0,verbose=False,lookupmaps=[])),  	  
-      modelparameters.append(self.ParamType(name="CRPSTART",stack="inmaps/CRPSTART",type="timeseries",default=11.0,verbose=False,lookupmaps=[])),  	  
+      modelparameters.append(self.ParamType(name="CRPST",stack="inmaps/CRPST",type="timeseries",default=11.0,verbose=False,lookupmaps=[])),  	  
       return modelparameters
 
   def stateVariables(self):
@@ -501,12 +501,20 @@ class WflowModel(DynamicModel):
     self.logger.info("Reading initial conditions...")
     #: It is advised to use the wf_resume() function 
     #: here which pick up the variable save by a call to wf_suspend()
-    try:
-        self.wf_resume(self.Dir + "/instate/")
-    except:
-        self.logger.warn("Cannot load initial states, setting to default")
+    if self.reinit == 1:
+        self.logger.info("Setting initial conditions to default")
         for s in self.stateVariables():
-            exec "self." + s + " = cover(1.0)"
+            exec "self." + s + " = cover(0.0)" 
+    else:
+        self.wf_resume(self.Dir + "/instate/")
+        
+    
+    #try:
+    #    self.wf_resume(self.Dir + "/instate/")
+    #except:
+    #    self.logger.warn("Cannot load initial states, setting to default")
+    #    for s in self.stateVariables():
+    #        exec "self." + s + " = cover(1.0)"
 
 
   def default_summarymaps(self):
@@ -540,7 +548,7 @@ class WflowModel(DynamicModel):
      np_STARTED            = pcr_as_numpy(self.STARTED)
      
 	# Create numpy array from states: 
-     np_CRPSTART          = pcr_as_numpy(self.CRPSTART)
+     np_CRPSTART          = pcr_as_numpy(self.CRPST)
      #np_Day                = pcr_as_numpy(self.DAY)
      np_DVS                = pcr_as_numpy(self.DVS)
      np_LAI                = pcr_as_numpy(self.LAI)
@@ -576,7 +584,7 @@ class WflowModel(DynamicModel):
         np_CropHarvNow         = pcr_as_numpy(CropHarvNow)        
      elif self.CropStartDOY    == 0 and self.HarvestDAP == 0:
         started_gt_zero        = self.STARTED  >  0.
-        crpprfl_eq_zero        = self.CRPSTART == 0.
+        crpprfl_eq_zero        = self.CRPST == 0.
         CropHarvNow            = pcrand(started_gt_zero, crpprfl_eq_zero)
         np_CropHarvNow         = pcr_as_numpy(CropHarvNow)
      else:
@@ -600,8 +608,8 @@ class WflowModel(DynamicModel):
         np_crpstart_eq_started = np.equal(np_CRPSTART[:], np_STARTED[:])
         np_CropStartNow        = np.logical_and(np_crpstart_gt_0[:], np_crpstart_eq_started[:])
         CropStartNow           = numpy2pcr(Boolean, np_CropStartNow, -99)
-        CropStarted            = self.CRPSTART > 0
-        np_CropStarted         = pcr_as_numpy(self.CRPSTART)
+        CropStarted            = self.CRPST > 0
+        np_CropStarted         = pcr_as_numpy(self.CRPST)
         
      else:
         np_CropStartNow        = np_Zero[:]
@@ -613,7 +621,7 @@ class WflowModel(DynamicModel):
         
 	# Implement forcing data, coefficients and some handy numbers spatially, as numpy arrays:
      #self.STARTED         += self.CRPSTART * ifthenelse(CropHarvNow, Zero, 1.) - ifthenelse(CropHarvNow, self.STARTED, 0.)
-     self.STARTED         += self.CRPSTART 
+     self.STARTED         += self.CRPST 
         
         
 
@@ -740,7 +748,6 @@ class WflowModel(DynamicModel):
      np_EXPLOR             = 1000. * np_RROOTD[:] * np_WCFC[:] 
 
 	 #############################################################################################################
-	 
      if self.BMI_RUN == "True" and self.WATERLIMITED == "True": 
         np_Transpiration = pcr_as_numpy(self.Transpiration) 	 
         np_PotTrans      = pcr_as_numpy(self.PotTrans)        
@@ -752,7 +759,6 @@ class WflowModel(DynamicModel):
      else:
         print "BMI not engaged => no water reduction" 
         TRANRF           = np_One[:]
-        
 
 	 #############################################################################################################
      # Water Limitation: effects on partitioning 
@@ -834,7 +840,7 @@ class WflowModel(DynamicModel):
     
 	#----------------------------------------------------------------------
      
-     self.Test            = self.CRPSTART
+     self.Test            = self.CRPST
      bla                  = self.timestepsecs/self.basetimestep
      np_Test = pcr_as_numpy(self.Test)
 
@@ -919,7 +925,9 @@ def main(argv=None):
         
     myModel = WflowModel(wflow_cloneMap, caseName,runId,configfile)
     dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep,firstTimestep=_firstTimeStep,datetimestart=starttime)
-    dynModelFw.createRunId(NoOverWrite=False,level=loglevel)    
+    dynModelFw.createRunId(NoOverWrite=False,level=loglevel)        
+    
+    dynModelFw.setupFramework()    
     dynModelFw._runInitial()
     dynModelFw._runResume()
     dynModelFw._runDynamic(0,0)

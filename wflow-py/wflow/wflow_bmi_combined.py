@@ -233,7 +233,25 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
 
         self.bmilogger.info(self.bmimodels)
 
+    def update_to_start_time(self, start_time):
 
+        """
+        Update the model until and including the start time in case start time of models differ.
+
+        - one or more timesteps foreward
+
+        :var  double time: time in the units and epoch returned by the function get_time_units.
+        """
+        for key, value in self.bmimodels.iteritems():
+
+            time = self.bmimodels[key].get_start_time()
+
+            if (start_time - time) > 0:
+                timespan = start_time - time
+                nrsteps = int(timespan / self.get_time_step())
+
+                for st in range(0, nrsteps):
+                    self.bmimodels[key].update(-1.0)
 
     def set_start_time(self, start_time):
         """
@@ -551,8 +569,8 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         for key, value in self.bmimodels.iteritems():
             st.append(self.bmimodels[key].get_current_time())
 
-        #return st[-1]
-        return numpy.array(st).max()
+        return st[-1]
+        #return numpy.array(st).max()
 
     def get_end_time(self):
         """
@@ -625,9 +643,12 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         cname = long_var_name.split(self.comp_sep)
 
         if self.bmimodels.has_key(cname[0]):
-            return self.bmimodels[cname[0]].get_value_at_indices(cname[1],inds)
-        else:
-            return None
+            tmp = self.bmimodels[cname[0]].get_value(cname[1])
+            if self.wrtodisk:
+                report(numpy2pcr(Scalar,tmp, -999),long_var_name + "_get_" + str(self.get_current_time()) + '.map')
+            return self.bmimodels[cname[0]].get_value_at_indices(cname[1],inds)                
+   
+        return None
 
 
     def set_value_at_indices(self, long_var_name, inds, src):
@@ -644,6 +665,10 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
 
         if self.bmimodels.has_key(cname[0]):
             self.bmimodels[cname[0]].set_value_at_indices(cname[1], inds,src)
+            if self.wrtodisk:
+                npmap = self.bmimodels[cname[0]].getnumpy(cname[1], inds,src)
+                report(self.bmimodels[cname[0]].get_value(cname[1]),long_var_name + "_set_" + str(self.get_current_time()) + '.map')
+  
 
 
     def get_grid_type(self, long_var_name):

@@ -1,5 +1,5 @@
 
-from wrapperExtended import BMIWrapperExtended
+from wflow.wrappers.rtc.wrapperExtended import BMIWrapperExtended
 
 
 

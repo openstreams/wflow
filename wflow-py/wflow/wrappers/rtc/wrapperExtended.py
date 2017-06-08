@@ -1,3 +1,4 @@
+import bmi
 import bmi.wrapper
 
 class BMIWrapperExtended(bmi.wrapper.BMIWrapper):
@@ -7,7 +8,7 @@ class BMIWrapperExtended(bmi.wrapper.BMIWrapper):
         
         t = self.get_current_time()
         tEnd = self.get_end_time()
-        while (t < tEnd):
+        while (t < time):
             self.update()
             t = self.get_current_time()
         
