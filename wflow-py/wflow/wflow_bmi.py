@@ -906,7 +906,8 @@ class wflowbmi_csdms(bmi.Bmi):
         :return: start time in the units and epoch returned by the function get_time_units
         """
         st = self.dynModel.wf_supplyStartTime()
-        self.bmilogger.debug("get_start_time: " + str(st))
+        self.bmilogger.debug(
+            "get_start_time: " + str(st) + " " + str(self.dynModel.DT.runStartTime.strftime("%Y-%m-%d %H:%M:%S")))
         return st
 
     def get_current_time(self):
@@ -927,7 +928,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :return: end time of simulation n the units and epoch returned by the function get_time_units
         """
         et = self.dynModel.wf_supplyEndTime()
-        self.bmilogger.debug("get_end_time: " + str(et))
+        self.bmilogger.debug("get_end_time: " + str(et)+ " " + str(self.dynModel.DT.runEndTime.strftime("%Y-%m-%d %H:%M:%S")))
         return et
 
     def get_time_step(self):

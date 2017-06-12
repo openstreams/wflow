@@ -32,18 +32,23 @@ class MyTest(unittest.TestCase):
 
         print("-------------- Grid spacing: ")
         print(bmiobj.get_grid_spacing('Altitude'))
+        self.assertAlmostEquals(sum([0.036666665, 0.036666665]), sum(bmiobj.get_grid_spacing('Altitude')), places=4)
 
         print("-------------- Grid X: ")
         print(bmiobj.get_grid_x('Altitude'))
+        self.assertAlmostEquals( 5.22716331, bmiobj.get_grid_x('Altitude')[0,0], places=4)
 
         print("-------------- Grid Y: ")
         print(bmiobj.get_grid_y('Altitude'))
+        self.assertAlmostEquals( 45.89426804, bmiobj.get_grid_y('Altitude')[0,0], places=4)
 
         print("-------------- Grid Z: ")
         print(bmiobj.get_grid_z('Altitude'))
+        self.assertAlmostEquals(218.44944763, bmiobj.get_grid_z('Altitude')[0, 0], places=4)
 
         print("-------------- Name: ")
         print(bmiobj.get_component_name())
+        self.assertEquals('wflow_sceleton',bmiobj.get_component_name())
 
         print("-------------- Input var names: ")
         print(bmiobj.get_input_var_names())
