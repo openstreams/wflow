@@ -196,6 +196,20 @@ class wf_exchnageVariables():
     def addvar(self, name, role, unit):
 
         if not self.varexists(name):
+            if unit == '0':
+                unit = 'mm/timestep'
+            elif unit == '1':
+                unit = 'm^3/sec'
+            elif unit == '2':
+                unit = 'ma'
+            elif unit == '3':
+                unit = 'degree Celcius'
+            elif unit == '4':
+                unit = 'mm'
+            elif unit == '5':
+                unit = '-'
+
+
             tvar = [name, role, unit]
             self.vars.append(tvar)
 
