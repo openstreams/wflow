@@ -4,9 +4,6 @@
 Definition of the wflow_topoflex model.
 ---------------------------------------
 
-This simple model calculates soil temperature using
-air temperature as a forcing.
-
 Usage:
 wflow_topoflex  -C case -R Runid -c inifile
 
