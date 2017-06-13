@@ -557,7 +557,6 @@ class netcdfinput():
             np_step = self.alldat[var][ncindex - self.fstep, self.latidx.min():self.latidx.max()+1,
                       self.lonidx.min():self.lonidx.max()+1]
 
-
             miss = float(self.dataset.variables[var]._FillValue)
             if self.flip:
                 return numpy2pcr(Scalar, flipud(np_step).copy(), miss), True
@@ -640,7 +639,7 @@ class netcdfinputstates():
             miss = float(self.dataset.variables[var]._FillValue)
             return numpy2pcr(Scalar, np_step, miss), True
         else:
-            logging.debug("Var (" + var + ") not found returning 0")
+            logging.debug("Var (" + var + ") not found returning map with 0.0")
             return cover(scalar(0.0)), False
 
 
@@ -698,5 +697,5 @@ class netcdfinputstatic():
             miss = float(self.dataset.variables[var]._FillValue)
             return numpy2pcr(Scalar, np_step, miss), True
         else:
-            logging.debug("Var (" + var + ") not found returning 0")
+            logging.debug("Var (" + var + ") not found returning map with 0.0")
             return cover(scalar(0.0)), False

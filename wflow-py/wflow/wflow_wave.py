@@ -85,10 +85,6 @@ wflow_wave  -C case -R Runid -c inifile -h
     
     -c name of the config file (in the case directory)
 
-    -F: if set wflow is expected to be run by FEWS. It will determine
-        the timesteps from the runinfo.xml file and save the output initial
-        conditions to an alternate location. The runinfo.xml file should be located
-        in the inmaps directory of the case. Also set fewsrun=1 in the .ini file!    
     
     -h displays help information
     
@@ -275,9 +271,6 @@ class WflowModel(DynamicModel):
     self.logger.info("Saving initial conditions...")
     self.wf_suspend(os.path.join(self.SaveDir,"outstate"))
 
-    if self.fewsrun:
-        self.logger.info("Saving initial conditions for FEWS...")
-        self.wf_suspend(os.path.join(self.Dir , "outstate"))
 
       
   def initial(self):
@@ -301,7 +294,6 @@ class WflowModel(DynamicModel):
     #: for a parameter but it can be overwritten by the uses in the ini file.
     self.timestepsecs = int(configget(self.config,'model','timestepsecs','86400'))
     self.reinit = int(configget(self.config,"run","reinit","0"))
-    self.fewsrun = int(configget(self.config,"run","fewsrun","0"))
     
     Qname=configget(self.config,"inputmapstacks","Q","run")
     Hname=configget(self.config,"inputmapstacks","H","lev")
@@ -439,7 +431,7 @@ def main(argv=None):
     _firstTimeStep = 1
     timestepsecs=86400
     wflow_cloneMap = 'wflow_subcatch.map'
-    fewsrun=False
+
     runinfoFile="runinfo.xml"
     loglevel = logging.DEBUG
     
@@ -452,12 +444,9 @@ def main(argv=None):
             usage()
             return     
 
-    opts, args = getopt.getopt(argv, 'C:S:T:c:s:R:fF:Is:hl:')
+    opts, args = getopt.getopt(argv, 'C:S:T:c:s:R:fIs:hl:')
     
     for o, a in opts:
-        if o == '-F': 
-            runinfoFile = a
-            fewsrun = True        
         if o == '-C': caseName = a
         if o == '-R': runId = a
         if o == '-c': configfile = a
@@ -475,14 +464,7 @@ def main(argv=None):
     if (len(opts) <=1):
         usage()
 
-    if fewsrun: 
-        ts = getTimeStepsfromRuninfo(runinfoFile,timestepsecs)
-        if (ts):
-            _lastTimeStep =  ts# * 86400/timestepsecs
-            _firstTimeStep = 1 
-        else:
-            print "Failed to get timesteps from runinfo file: " + runinfoFile
-            exit(2)
+
     
     if _lastTimeStep < _firstTimeStep:
         print "The starttimestep (" + str(_firstTimeStep) +") is smaller than the last timestep (" + str(_lastTimeStep) + ")"
