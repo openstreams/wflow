@@ -927,7 +927,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self.modelname = modelnamefromobject
 
         if modelnamefromobject != self.modelname:
-            self.logger.error("Ini file made for " + self.modelname + " but found " + modelnamefromobject + " in code.")
+            self.logger.warn("Ini file made for " + self.modelname + " but found " + modelnamefromobject + " in code.")
 
         self.runlengthdetermination = configget(self._userModel().config, 'run', 'runlengthdetermination', "steps")
         self.DT.update(timestepsecs=int(configget(self._userModel().config, 'run', 'timestepsecs', "86400")),
@@ -2113,7 +2113,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         while step <= self._userModel().nrTimeSteps():
             self._incrementIndentLevel()
             self._atStartOfTimeStep(step)
-            # TODO: Check why the timestep setting doesn't  work.....
             self._userModel()._setCurrentTimeStep(step)
 
             if hasattr(self._userModel(), 'dynamic'):
@@ -2424,7 +2423,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         if hasattr(self._userModel(), "_inDynamic"):
             if self._userModel()._inDynamic() or self._inUpdateWeight():
                 timestep = self._userModel().currentTimeStep()
-                newName = generateNameT(name, timestep)
+                if 'None' not in self.ncfile:
+                    newName = name
+                else:
+                    newName = generateNameT(name, timestep)
 
         if style == 1:  # Normal reading of mapstack from DISK per via or via netcdf
             path = os.path.join(directoryPrefix, newName)

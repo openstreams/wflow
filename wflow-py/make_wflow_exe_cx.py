@@ -121,8 +121,6 @@ if sys.platform == 'win32':
     data_files.extend(mkdatatuples(MKL_files,destdir="."))
     # pcraster dll's
     ddir = "c:/pcraster/lib/"
-    # for teamcity
-    ddir = "D:/BuildAgent/work/wflow_exe/pcraster-4.1.0_x86-64"
     data_files.extend(mkdatatuples(glob.glob(ddir + "/*.dll"),destdir='.'))
 
 # GDAL data files
