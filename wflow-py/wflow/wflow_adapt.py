@@ -573,14 +573,11 @@ def main():
         logger.info("Starting postadapter")
 
         # Step1: update the state xml files
-        # TODO: Remove fewsrun=1 stuff
         pixml_state_updateTime(inputStateFile,stateFile,getEndTimefromRuninfo(runinfofile))
-        
 
-        # Step 2: make XML files to go with the output mapstacks
+        # Step 2: make XML files to go with the output mapstacks if the output is not in netcdf
         # Get outputmapstacks from wflow ini
         mstacks  = config.options('outputmaps')
-
         # Create XML files for all mapstacks if not netcdf
         if not netcdfoutput:
             for a in mstacks:
@@ -589,7 +586,6 @@ def main():
                 mapstackxml(workdir + "/" + case +"/" + runId + "/outmaps/" + var +".xml",var + "?????.???",var,var,getStartTimefromRuninfo(runinfofile),getEndTimefromRuninfo(runinfofile),timestepsecs)
 
             # Back hack to work around the 0 based FEWS problem and create a double timestep zo that we have connection between subsequent runs in FEWS
-            #TODO: do the copy for all variable that wflow saves.This hack only works for variables that are saved as states
             try:
                 shutil.copy(workdir + "/" + case +"/instate/SurfaceRunoff.map",workdir +  "/" + case +"/" +runId + "/outmaps/run00000.000")
                 shutil.copy(workdir + "/" + case +"/instate/WaterLevel.map",workdir +  "/" + case +"/" +runId + "/outmaps/lev00000.000")
@@ -597,7 +593,7 @@ def main():
                 logger.warn("Cannot copy Surfacerunoff and/or level")
 
         # Step 3:
-        # now check for tss files and convert to XML
+        # now check for tss files in the ini file and convert to XML
         stop = 0
         secnr =0
         while  stop == 0:
