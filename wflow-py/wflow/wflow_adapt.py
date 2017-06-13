@@ -513,6 +513,7 @@ def main():
     xmldiagfname = "wflow_diag.xml"
     adaptxmldiagfname = "wflow_adapt_diag.xml"
     logfname = "wflow.log"
+    netcdfoutput = False
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "-M:-t:-s:-o:-r:-w:-C:-I:R:")
@@ -549,16 +550,17 @@ def main():
             mode = a    
         else:
             assert False, "unhandled option"
-         
-         
+
     # Try and read config file and set default options
     config = ConfigParser.SafeConfigParser()
     config.optionxform = str
     config.read(workdir + "/" + case + "/" + iniFile)
     
-    # get timestep from wflow ini use comand-line as default
+    # get timestep from wflow ini
     timestepsecs = int(wflow_lib.configget(config,"run","timestepsecs",str(timestepsecs)))
-    
+    netcdf = wflow_lib.configget(config, "framework", "netcdfoutput", 'None')
+    if netcdf != 'None':
+        netcdfoutput = True
 
     logger = setlogger(logfile,"wflow_adapt")    
     
@@ -579,22 +581,20 @@ def main():
         # Get outputmapstacks from wflow ini
         mstacks  = config.options('outputmaps')
 
-        #TODO: Add support for netcdf files
-        # Create XML files for all mapstacks
-        for a in mstacks:
-           var = config.get("outputmaps",a)           
-           logger.debug("Creating mapstack xml: " + workdir + "/" + case +"/" +runId + "/" + var + ".xml" )
-           mapstackxml(workdir + "/" + case +"/" + runId + "/outmaps/" + var +".xml",var + "?????.???",var,var,getStartTimefromRuninfo(runinfofile),getEndTimefromRuninfo(runinfofile),timestepsecs)
-           
-        
-        # Back hack to work around the 0 based FEWS problem and create a double timestep zo that we have connection between subsequent runs in FEWS
-        #TODO: do the copy for all variable that wflow saves.This hack only works for variables that are saved as states
-        #TODO: remove this hack!!! And switch to XML
-        try:
-            shutil.copy(workdir + "/" + case +"/instate/SurfaceRunoff.map",workdir +  "/" + case +"/" +runId + "/outmaps/run00000.000")
-            shutil.copy(workdir + "/" + case +"/instate/WaterLevel.map",workdir +  "/" + case +"/" +runId + "/outmaps/lev00000.000")
-        except:
-            logger.warn("Cannot copy Surfacerunoff and/or level")
+        # Create XML files for all mapstacks if not netcdf
+        if not netcdfoutput:
+            for a in mstacks:
+                var = config.get("outputmaps",a)
+                logger.debug("Creating mapstack xml: " + workdir + "/" + case +"/" +runId + "/" + var + ".xml" )
+                mapstackxml(workdir + "/" + case +"/" + runId + "/outmaps/" + var +".xml",var + "?????.???",var,var,getStartTimefromRuninfo(runinfofile),getEndTimefromRuninfo(runinfofile),timestepsecs)
+
+            # Back hack to work around the 0 based FEWS problem and create a double timestep zo that we have connection between subsequent runs in FEWS
+            #TODO: do the copy for all variable that wflow saves.This hack only works for variables that are saved as states
+            try:
+                shutil.copy(workdir + "/" + case +"/instate/SurfaceRunoff.map",workdir +  "/" + case +"/" +runId + "/outmaps/run00000.000")
+                shutil.copy(workdir + "/" + case +"/instate/WaterLevel.map",workdir +  "/" + case +"/" +runId + "/outmaps/lev00000.000")
+            except:
+                logger.warn("Cannot copy Surfacerunoff and/or level")
 
         # Step 3:
         # now check for tss files and convert to XML
