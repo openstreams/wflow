@@ -873,7 +873,6 @@ def main(argv=None):
     configfile="wflow_lintul.ini"
     _lastTimeStep = 150
     _firstTimeStep = 0
-    fewsrun = False
     runinfoFile = "runinfo.xml"
     timestepsecs=86400
     wflow_cloneMap = 'wflow_subcatch.map'
@@ -896,9 +895,6 @@ def main(argv=None):
         pcrut.usage(msg)
     
     for o, a in opts:
-        if o == '-F':
-            runinfoFile = a
-            fewsrun = True
         if o == '-C': caseName = a
         if o == '-R': runId = a
         if o == '-c': configfile = a
@@ -910,17 +906,8 @@ def main(argv=None):
     if (len(opts) <=1):
         usage()
     
-    if fewsrun:
-        ts = getTimeStepsfromRuninfo(runinfoFile, timestepsecs)
-        starttime = getStartTimefromRuninfo(runinfoFile)
-        if (ts):
-            _lastTimeStep = ts
-            _firstTimeStep = 1
-        else:
-            print "Failed to get timesteps from runinfo file: " + runinfoFile
-            exit(2)
-    else:
-        starttime = dt.datetime(1990,01,01)
+
+    starttime = dt.datetime(1990,01,01)
 
         
     myModel = WflowModel(wflow_cloneMap, caseName,runId,configfile)
