@@ -23,12 +23,12 @@ functionality for converting PI-XML files to .tss and back.
 
 *Usage pre adapter:*
 
-**wflow_adapt** -M Pre -t InputTimeseriesXml -I inifile -T timestepInSeconds
+**wflow_adapt** -M Pre -t InputTimeseriesXml -I inifile
 
 *Usage postadapter:*
     
 **wflow_adapt**-M Post -t InputTimeseriesXml -s inputStateFile -I inifile 
-              -o outputStateFile -r runinfofile -w workdir -C case -T timestepInSeconds [-R runId]
+              -o outputStateFile -r runinfofile -w workdir -C case [-R runId]
 
 Issues:
     
@@ -497,11 +497,10 @@ def pre_adapter(INxmlTimeSeries,logger):
         #writeNrTimesteps()
     
 def usage():
-    print "wflow_adapter -M Pre -t InputTimeseriesXml -I inifile" 
-    print "wflow_adapter -M run -I inifile -r runinfofile" 
+    print "wflow_adapter -M Pre -t InputTimeseriesXml -I inifile"
     print "wflow_adapter -M Post -t InputTimeseriesXml -s inputStateFile -I inifile"
     print "              -o outputStateFile -r runinfofile -w workdir -C case"
-    print " Options:     -T timestepInSeconds"
+
 
 
 def main():
@@ -516,7 +515,7 @@ def main():
     logfname = "wflow.log"
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "-T:-M:-t:-s:-o:-r:-w:-C:-I:R:")
+        opts, args = getopt.getopt(sys.argv[1:], "-M:-t:-s:-o:-r:-w:-C:-I:R:")
     except getopt.GetoptError, err:
         # print help information and exit:
         print str(err) 
@@ -532,8 +531,6 @@ def main():
             verbose = True
         elif o in ("-t"):
             xmlTimeSeries = a
-        elif o in ("-T"):
-            timestepsecs = int(a)
         elif o in ("-R"):
             runId = a            
         elif o in ("-o"):
@@ -560,7 +557,7 @@ def main():
     config.read(workdir + "/" + case + "/" + iniFile)
     
     # get timestep from wflow ini use comand-line as default
-    timestepsecs = int(wflow_lib.configget(config,"model","timestepsecs",str(timestepsecs)))
+    timestepsecs = int(wflow_lib.configget(config,"run","timestepsecs",str(timestepsecs)))
     
 
     logger = setlogger(logfile,"wflow_adapt")    
@@ -570,19 +567,20 @@ def main():
         pre_adapter(xmlTimeSeries,logger)
         logger.info("Ending preadapter")
         sys.exit(0)
-    elif mode == "Run":
-        logger.info("Run adapter not implemented...")    # Not implemented -> se pcraster adapter
-        sys.exit(1)
     elif mode == "Post":
-        
         logger.info("Starting postadapter")
+
+        # Step1: update the state xml files
+        # TODO: Remove fewsrun=1 stuff
         pixml_state_updateTime(inputStateFile,stateFile,getEndTimefromRuninfo(runinfofile))
         
-        
-        # Get outpumapstacks from wflow ini
+
+        # Step 2: make XML files to go with the output mapstacks
+        # Get outputmapstacks from wflow ini
         mstacks  = config.options('outputmaps')
-        
-        
+
+        #TODO: Add support for netcdf files
+        # Create XML files for all mapstacks
         for a in mstacks:
            var = config.get("outputmaps",a)           
            logger.debug("Creating mapstack xml: " + workdir + "/" + case +"/" +runId + "/" + var + ".xml" )
@@ -590,13 +588,15 @@ def main():
            
         
         # Back hack to work around the 0 based FEWS problem and create a double timestep zo that we have connection between subsequent runs in FEWS
-        #TODO: do the copy for all variable that wflow saves.This hack only works for variable that are saved as states
+        #TODO: do the copy for all variable that wflow saves.This hack only works for variables that are saved as states
+        #TODO: remove this hack!!! And switch to XML
         try:
             shutil.copy(workdir + "/" + case +"/instate/SurfaceRunoff.map",workdir +  "/" + case +"/" +runId + "/outmaps/run00000.000")
             shutil.copy(workdir + "/" + case +"/instate/WaterLevel.map",workdir +  "/" + case +"/" +runId + "/outmaps/lev00000.000")
         except:
             logger.warn("Cannot copy Surfacerunoff and/or level")
-            	    
+
+        # Step 3:
         # now check for tss files and convert to XML
         stop = 0
         secnr =0
@@ -614,7 +614,6 @@ def main():
                         tssFile = workdir + "/" + case + "/" + runId + "/" + config.get(thissection,aa)
                         logger.debug("Creating xml from tss: " + tssFile + "==> " + tssFile + ".xml")
                         tss_topixml(tssFile,tssFile + ".xml","wflow",config.get(thissection,aa),sDate,timestepsecs)
-
             except:
                 stop = 1
 
