@@ -427,8 +427,8 @@ def main(argv=None):
     caseName = "default"
     runId = "run_default"
     configfile="wflow_wave.ini"
-    _lastTimeStep = 10
-    _firstTimeStep = 1
+    _lastTimeStep = 0
+    _firstTimeStep = 0
     timestepsecs=86400
     wflow_cloneMap = 'wflow_subcatch.map'
 

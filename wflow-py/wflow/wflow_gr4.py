@@ -409,8 +409,8 @@ def main(argv=None):
     caseName = "default"
     runId = "run_default"
     configfile="wflow_gr4.ini"
-    _lastTimeStep = 10
-    _firstTimeStep = 1
+    _lastTimeStep = 0
+    _firstTimeStep = 0
     timestepsecs=3600
     wflow_cloneMap = 'wflow_subcatch.map'
     NoOverWrite=True
@@ -462,7 +462,8 @@ def main(argv=None):
 
     dynModelFw._runInitial()
     dynModelFw._runResume()
-    dynModelFw._runDynamic(0,0)
+    #dynModelFw._runDynamic(0,0)
+    dynModelFw._runDynamic(_firstTimeStep, _lastTimeStep)
     dynModelFw._runSuspend()
     dynModelFw._wf_shutdown()
     

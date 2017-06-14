@@ -871,7 +871,7 @@ def main(argv=None):
     caseName = "default_lintul"
     runId = "run_default"
     configfile="wflow_lintul.ini"
-    _lastTimeStep = 150
+    _lastTimeStep = 0
     _firstTimeStep = 0
     runinfoFile = "runinfo.xml"
     timestepsecs=86400
@@ -917,7 +917,8 @@ def main(argv=None):
     dynModelFw.setupFramework()    
     dynModelFw._runInitial()
     dynModelFw._runResume()
-    dynModelFw._runDynamic(0,0)
+    #dynModelFw._runDynamic(0,0)
+    dynModelFw._runDynamic(_firstTimeStep, _lastTimeStep)
     dynModelFw._runSuspend()
     dynModelFw._wf_shutdown()
     

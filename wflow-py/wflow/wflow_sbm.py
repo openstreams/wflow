@@ -1853,7 +1853,7 @@ def main(argv=None):
     global multpars
     runId = "run_default"
     configfile = "wflow_sbm.ini"
-    _lastTimeStep = 1
+    _lastTimeStep = 0
     _firstTimeStep = 0
     LogFileName = "wflow.log"
 
@@ -1932,7 +1932,8 @@ def main(argv=None):
     dynModelFw.setupFramework()
     dynModelFw._runInitial()
     dynModelFw._runResume()
-    dynModelFw._runDynamic(0, 0)
+    #dynModelFw._runDynamic(0, 0)
+    dynModelFw._runDynamic(_firstTimeStep, _lastTimeStep)
     dynModelFw._runSuspend()
     dynModelFw._wf_shutdown()
 

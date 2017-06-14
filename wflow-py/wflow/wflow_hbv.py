@@ -976,7 +976,7 @@ def main(argv=None):
     runId = "run_default"
     configfile="wflow_hbv.ini"
     LogFileName="wflow.log"
-    _lastTimeStep = 1
+    _lastTimeStep = 0
     _firstTimeStep = 0
     fewsrun=False
     runinfoFile="runinfo.xml"
@@ -1066,7 +1066,8 @@ def main(argv=None):
     dynModelFw._runInitial()
 
     dynModelFw._runResume()
-    dynModelFw._runDynamic(0,0)
+    #dynModelFw._runDynamic(0,0)
+    dynModelFw._runDynamic(_firstTimeStep, _lastTimeStep)
     dynModelFw._runSuspend()
     dynModelFw._wf_shutdown()
 

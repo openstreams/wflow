@@ -709,7 +709,7 @@ def main(argv=None):
     caseName = "../openstreams_w3ra" # "D:/trambaue/_Projects/GLOFFIS/201501/GLOFFIS_SA/Modules/openstreams_w3ra/"
     runId = "run_default"
     configfile="wflow_W3RA.ini"
-    _lastTimeStep = 15 
+    _lastTimeStep = 0
     _firstTimeStep = 0  
     timestepsecs=86400
 
@@ -772,7 +772,8 @@ def main(argv=None):
 
     dynModelFw._runInitial()
     dynModelFw._runResume()
-    dynModelFw._runDynamic(0,0)
+    #dynModelFw._runDynamic(0,0)
+    dynModelFw._runDynamic(_firstTimeStep, _lastTimeStep)
     dynModelFw._runSuspend()
     dynModelFw._wf_shutdown()
     
