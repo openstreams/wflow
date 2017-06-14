@@ -464,8 +464,6 @@ def main(argv=None):
     if (len(opts) <=1):
         usage()
 
-
-    
     if _lastTimeStep < _firstTimeStep:
         print "The starttimestep (" + str(_firstTimeStep) +") is smaller than the last timestep (" + str(_lastTimeStep) + ")"
         usage()
