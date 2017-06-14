@@ -921,7 +921,6 @@ def main(argv=None):
     LogFileName="wflow.log" 
     _lastTimeStep = 10
     _firstTimeStep = 1
-    fewsrun=False
     runinfoFile="runinfo.xml"
     timestepsecs = 86400
     wflow_cloneMap = 'wflow_subcatch.map'
@@ -939,15 +938,12 @@ def main(argv=None):
             return
 
     try:
-        opts, args = getopt.getopt(argv, 'C:S:T:Ic:s:R:F:fl:L:P:p:i:') #'XF:L:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:')
+        opts, args = getopt.getopt(argv, 'C:S:T:Ic:s:R:fl:L:P:p:i:') #'XF:L:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:')
     except getopt.error, msg:
         pcrut.usage(msg)
 
 
     for o, a in opts:
-        if o == '-F': 
-            runinfoFile = a
-            fewsrun = True
         if o == '-C': caseName = a
         if o == '-R': runId = a
         if o == '-c': configfile = a
@@ -960,17 +956,8 @@ def main(argv=None):
     if (len(opts) <= 1):
         usage()
         
-    if fewsrun: 
-        ts = getTimeStepsfromRuninfo(runinfoFile,timestepsecs)
-        starttime = getStartTimefromRuninfo(runinfoFile)
-        if (ts):
-            _lastTimeStep =  ts# * 86400/timestepsecs
-            _firstTimeStep = 1 
-        else:
-            print "Failed to get timesteps from runinfo file: " + runinfoFile
-            exit(2)
-    else:
-        starttime = dt.datetime(1990,01,01)
+
+    starttime = dt.datetime(1990,01,01)
        
     if _lastTimeStep < _firstTimeStep:
         print "The starttimestep (" + str(_firstTimeStep) +") is smaller than the last timestep (" + str(_lastTimeStep) + ")"
