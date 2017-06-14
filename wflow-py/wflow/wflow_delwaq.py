@@ -11,9 +11,7 @@ a delwaq model and feed it with forcing data.
 
 .. warning::
     
-    This is an experimental version. A complete redesign is needed as this 
-    version is unstable and very poorly structured!
-
+    This is an experimental version.
 
 
 the wflow run should have saved at least the folowing mapstacks::
