@@ -437,7 +437,7 @@ class netcdfinput():
             logging.error(os.path.abspath(netcdffile) + " not found!")
             exit(ValueError)
 
-        logging.info("Reading input from netCDF file: " + netcdffile + ": " + str(self.dataset).replace('\n', ' '))
+        logging.info("Reading input from netCDF file: " + netcdffile)
         self.alldat = {}
         a = pcr2numpy(cover(0.0), 0.0).flatten()
         # Determine steps to load in mem based on estimated memory usage
@@ -585,7 +585,7 @@ class netcdfinputstates():
             logging.error(os.path.abspath(netcdffile) + " not found!")
             exit(ValueError)
 
-        logging.info("Reading state input from netCDF file: " + netcdffile + ": " + str(self.dataset).replace('\n', ' '))
+        logging.info("Reading state input from netCDF file: " + netcdffile)
         self.alldat = {}
         a = pcr2numpy(cover(0.0), 0.0).flatten()
         # Determine steps to load in mem based on estimated memory usage
@@ -679,7 +679,7 @@ class netcdfinputstatic():
         (self.lonidx,) = logical_and(self.y >= x.min(), self.y < y.max()).nonzero()
 
 
-        logging.info("Reading static input from netCDF file: " + netcdffile + ": " + str(self.dataset).replace('\n', ' '))
+        logging.info("Reading static input from netCDF file: " + netcdffile)
 
 
 

@@ -10,6 +10,8 @@ import time
 from dateutil import parser
 import calendar
 import os
+import wflow.wflow_sceleton as wf
+import numpy as np
 
 """
 Simple test for wflow bmi framework
@@ -51,6 +53,15 @@ class MyTest(unittest.TestCase):
 
 
         bmiobj.finalize()
+        # Check the values in a state file as a refrence. This is what the baselien model gives
+        x, y, data, FillVal = wf.readMap('../../examples/openstreams_w3ra_usa/run_default/outstate/Sd2.map','PCRaster')
+        tmean = np.ma.masked_invalid(data.astype(np.float64)).mean()
+        tmax = np.ma.masked_invalid(data.astype(np.float64)).max()
+        tmin = np.ma.masked_invalid(data.astype(np.float64)).min()
+        self.assertAlmostEquals(266.17514038085937, tmax)
+        self.assertAlmostEquals(-7.8522729383405979e+37, tmean)
+        self.assertAlmostEquals(-3.4028234663852886e+38, tmin)
+
 
 
 if __name__ == '__main__':

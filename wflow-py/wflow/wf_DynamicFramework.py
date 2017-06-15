@@ -196,6 +196,20 @@ class wf_exchnageVariables():
     def addvar(self, name, role, unit):
 
         if not self.varexists(name):
+            if unit == '0':
+                unit = 'mm/timestep'
+            elif unit == '1':
+                unit = 'm^3/sec'
+            elif unit == '2':
+                unit = 'ma'
+            elif unit == '3':
+                unit = 'degree Celcius'
+            elif unit == '4':
+                unit = 'mm'
+            elif unit == '5':
+                unit = '-'
+
+
             tvar = [name, role, unit]
             self.vars.append(tvar)
 
@@ -913,7 +927,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self.modelname = modelnamefromobject
 
         if modelnamefromobject != self.modelname:
-            self.logger.error("Ini file made for " + self.modelname + " but found " + modelnamefromobject + " in code.")
+            self.logger.warn("Ini file made for " + self.modelname + " but found " + modelnamefromobject + " in code.")
 
         self.runlengthdetermination = configget(self._userModel().config, 'run', 'runlengthdetermination', "steps")
         self.DT.update(timestepsecs=int(configget(self._userModel().config, 'run', 'timestepsecs', "86400")),
@@ -2099,7 +2113,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         while step <= self._userModel().nrTimeSteps():
             self._incrementIndentLevel()
             self._atStartOfTimeStep(step)
-            # TODO: Check why the timestep setting doesn't  work.....
             self._userModel()._setCurrentTimeStep(step)
 
             if hasattr(self._userModel(), 'dynamic'):
@@ -2410,7 +2423,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         if hasattr(self._userModel(), "_inDynamic"):
             if self._userModel()._inDynamic() or self._inUpdateWeight():
                 timestep = self._userModel().currentTimeStep()
-                newName = generateNameT(name, timestep)
+                if 'None' not in self.ncfile:
+                    newName = name
+                else:
+                    newName = generateNameT(name, timestep)
 
         if style == 1:  # Normal reading of mapstack from DISK per via or via netcdf
             path = os.path.join(directoryPrefix, newName)

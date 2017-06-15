@@ -21,11 +21,12 @@ Example ini file:
     wflow_sbm@InwaterMM=wflow_routing@IW
 
 """
-
+import wflow
 import wflow.wflow_bmi_combined as wfbmi
 import getopt
 import sys
 import logging
+
 import wflow.wflow_bmi_combined as bmi
 import wflow.pcrut as pcrut
 import wflow.wflow_adapt as wfa
