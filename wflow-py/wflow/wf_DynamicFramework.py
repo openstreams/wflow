@@ -331,6 +331,7 @@ class wf_OutputTimeSeriesArea():
 
         area - an area-map to average from
         oformat  - format of the output file (csv, txt, tss, only csv and tss at the moment)
+        tformat - steps of datetime (format of the timsteps/stamp)
 
         Step 1: make average of variable using the areaverage function
         Step 2: Sample the values from the areas (remember the index so we can do it faster lateron)
