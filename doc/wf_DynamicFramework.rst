@@ -353,11 +353,11 @@ As such the state going into the model should be valid for the T0, see graph bel
     }
 
 Here the first column shows the model steps and the second column the timestamp of the input/output data for that timestep
-(a - means there is nothing for that step). The first empty-row is regarded as the timestamp of the initial conditions. The
-first forcing data is used to propagate the model from T0 (the state, 31 Dec 2015) to T1 (1 Jan 2016) whcih will also
-be the first output the model writes..
+(a empty box means there is nothing for that step). The first empty-row is regarded as the timestamp of the initial conditions. The
+first forcing data is used to propagate the model from T0 (the state, 31 Dec 2015) to T1 (1 Jan 2016) which will also
+be the first output the model writes.
 
-The above corresponds to the following date/time in rhe [run] section:
+The above corresponds to the following date/time in the [run] section:
 
 ::
 
@@ -376,8 +376,8 @@ The above corresponds to the following date/time in rhe [run] section:
 
 
 The above shows the default behaviour of the framework. For each data point in the input forcing a model steps is performed.
-The 'runlengthdetermination' variable in the run section can also be set to 'intervals'. In that case the the number
- of steps is determined from the number of intervals in the forcing data. Hence, the following run will be performed:
+The 'runlengthdetermination' variable in the run section can also be set to 'intervals'. In that case  the number
+of steps is determined from the number of intervals in the forcing data. Hence, the following run will be performed:
 
 
 .. graphviz::
