@@ -108,9 +108,6 @@ class WflowModel(DynamicModel):
     #: function.
     self.wf_suspend(self.SaveDir + "/outstate/")
 
-    if self.fewsrun:
-        self.logger.info("Saving initial conditions for FEWS...")
-        self.wf_suspend(self.Dir + "/outstate/")
       
   def initial(self):
       
@@ -163,7 +160,6 @@ class WflowModel(DynamicModel):
 
     self.Altitude=readmap(self.Dir + "/staticmaps/wflow_dem")
 
-    self.fewsrun = int(configget(self.config, "model", "fewsrun", "0"))
 
     self.latitude = ycoordinate(boolean(self.Altitude))
 
@@ -719,10 +715,10 @@ def main(argv=None):
     caseName = "../openstreams_w3ra" # "D:/trambaue/_Projects/GLOFFIS/201501/GLOFFIS_SA/Modules/openstreams_w3ra/"
     runId = "run_default"
     configfile="wflow_W3RA.ini"
-    _lastTimeStep = 15 
+    _lastTimeStep = 0
     _firstTimeStep = 0  
     timestepsecs=86400
-    fewsrun = False
+
     wflow_cloneMap = 'wflow_subcatch.map'
     runinfoFile = "runinfo.xml"
     _NoOverWrite=False
@@ -739,12 +735,9 @@ def main(argv=None):
             usage()
             return     
 
-    opts, args = getopt.getopt(argv, 'C:S:T:c:s:R:F:')
+    opts, args = getopt.getopt(argv, 'C:S:T:c:s:R:')
     
     for o, a in opts:
-        if o == '-F':
-            runinfoFile = a
-            fewsrun = True
         if o == '-C': caseName = a
         if o == '-R': runId = a
         if o == '-c': configfile = a
@@ -755,17 +748,8 @@ def main(argv=None):
     if (len(opts) <=1):
         usage()
 
-    if fewsrun:
-        ts = getTimeStepsfromRuninfo(runinfoFile, timestepsecs)
-        starttime = getStartTimefromRuninfo(runinfoFile)
-        if (ts):
-            _lastTimeStep = ts
-            _firstTimeStep = 1
-        else:
-            print "Failed to get timesteps from runinfo file: " + runinfoFile
-            exit(2)
-    else:
-        starttime = dt.datetime(1990,01,01)
+
+    starttime = dt.datetime(1990,01,01)
 
     if _lastTimeStep < _firstTimeStep:
         print "The starttimestep (" + str(_firstTimeStep) + ") is smaller than the last timestep (" + str(
@@ -794,7 +778,8 @@ def main(argv=None):
 
     dynModelFw._runInitial()
     dynModelFw._runResume()
-    dynModelFw._runDynamic(0,0)
+    #dynModelFw._runDynamic(0,0)
+    dynModelFw._runDynamic(_firstTimeStep, _lastTimeStep)
     dynModelFw._runSuspend()
     dynModelFw._wf_shutdown()
     

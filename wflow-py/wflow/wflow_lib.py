@@ -1146,7 +1146,7 @@ def writeMap(fileName, fileFormat, x, y, data, FillVal):
     driver1 = gdal.GetDriverByName('GTiff')
     driver2 = gdal.GetDriverByName(fileFormat)
 
-        # Processing
+    # Processing
     if verbose:
         print 'Writing to temporary file ' + fileName + '.tif'
     # Create Output filename from (FEWS) product name and data and open for writing
@@ -1155,6 +1155,7 @@ def writeMap(fileName, fileFormat, x, y, data, FillVal):
         TempDataset = driver1.Create(fileName + '.tif', data.shape[1], data.shape[0], 1, gdal.GDT_Int32)
     else:
         TempDataset = driver1.Create(fileName + '.tif',data.shape[1],data.shape[0],1,gdal.GDT_Float32)
+
     # Give georeferences
     xul = x[0]-(x[1]-x[0])/2
     yul = y[0]+(y[0]-y[1])/2

@@ -16,12 +16,6 @@ wflow_gr4  [-l loglevel][-c configfile][-f][-h] -C case -R Runid -
     
     -f: Force overwrite of existing results
 
-    -F: if set wflow is expected to be run by FEWS. It will determine
-        the timesteps from the runinfo.xml file and save the output initial
-        conditions to an alternate location. The runinfo.xml file should be located
-        in the inmaps directory of the case. Also set fewsrun=1 in the .ini file!    
-     
-    
     -h: print usage information
     
     -l: loglevel (most be one of DEBUG, WARNING, ERROR)
@@ -223,10 +217,6 @@ class WflowModel(DynamicModel):
         self.wf_suspend(os.path.join(self.SaveDir , "/instate"))
 
 
-    if self.fewsrun:
-        self.logger.info("Saving initial conditions for FEWS...")
-        self.wf_suspend(os.path.join(self.Dir , "outstate"))
-
       
   def initial(self):
       
@@ -259,7 +249,6 @@ class WflowModel(DynamicModel):
     self.timestepsecs = int(configget(self.config,'model','timestepsecs','3600'))    
     self.basetimestep=3600
     self.reinit = int(configget(self.config,"run","reinit","0"))
-    self.fewsrun = int(configget(self.config,"run","fewsrun","0"))
     self.OverWriteInit = int(configget(self.config,"model","OverWriteInit","0"))
     self.SaveMapDir = self.Dir + "/" + self.runId + "/outmaps"
     self.TEMP_mapstack=self.Dir + configget(self.config,"inputmapstacks","Temperature","/inmaps/TEMP") 
@@ -420,9 +409,8 @@ def main(argv=None):
     caseName = "default"
     runId = "run_default"
     configfile="wflow_gr4.ini"
-    _lastTimeStep = 10
-    _firstTimeStep = 1
-    fewsrun=False
+    _lastTimeStep = 0
+    _firstTimeStep = 0
     timestepsecs=3600
     wflow_cloneMap = 'wflow_subcatch.map'
     NoOverWrite=True
@@ -437,7 +425,7 @@ def main(argv=None):
             usage()
             return     
 
-    opts, args = getopt.getopt(argv, 'C:S:T:c:s:R:fhIXi:l:F:')
+    opts, args = getopt.getopt(argv, 'C:S:T:c:s:R:fhIXi:l:')
     
     for o, a in opts:
         if o == '-C': caseName = a
@@ -449,21 +437,11 @@ def main(argv=None):
         if o == '-f': NoOverWrite = 0
         if o == '-h': usage()
         if o == '-l': exec "loglevel = logging." + a
-        if o == '-F': 
-            runinfoFile = a
-            fewsrun = True
+
         
     if (len(opts) <=1):
         usage()
 
-    if fewsrun: 
-        ts = getTimeStepsfromRuninfo(runinfoFile,timestepsecs)
-        if (ts):
-            _lastTimeStep =  ts
-            _firstTimeStep = 1 
-        else:
-            print "Failed to get timesteps from runinfo file: " + runinfoFile
-            exit(2)
        
     if _lastTimeStep < _firstTimeStep:
         print "The starttimestep (" + str(_firstTimeStep) +") is smaller than the last timestep (" + str(_lastTimeStep) + ")"
@@ -484,7 +462,8 @@ def main(argv=None):
 
     dynModelFw._runInitial()
     dynModelFw._runResume()
-    dynModelFw._runDynamic(0,0)
+    #dynModelFw._runDynamic(0,0)
+    dynModelFw._runDynamic(_firstTimeStep, _lastTimeStep)
     dynModelFw._runSuspend()
     dynModelFw._wf_shutdown()
     

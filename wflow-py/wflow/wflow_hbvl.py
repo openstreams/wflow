@@ -27,10 +27,7 @@ wflow_hbv::
       [-h][-v level][-F runinfofile][-L logfile][-C casename][-R runId]
       [-c configfile][-T timesteps][-s seconds][-W][-E][-N][-U discharge]
       [-P parameter multiplication][-X][-l loglevel]
-      
--F: if set wflow is expected to be run by FEWS. It will determine
-    the timesteps from the runinfo.xml file and save the output initial
-    conditions to an alternate location. Also set fewsrun=1 in the .ini file!
+
     
 -f: Force overwrite of existing results    
 
@@ -201,10 +198,6 @@ class WflowModel(DynamicModel):
         self.logger.info("Saving initial conditions over start conditions...")
         self.wf_suspend(os.path.join(self.SaveDir,"instate"))
 
-
-    if self.fewsrun:
-        self.logger.info("Saving initial conditions for FEWS...")
-        self.wf_suspend(os.path.join(self.Dir, "outstate"))
         
 
   def initial(self):
@@ -267,7 +260,6 @@ class WflowModel(DynamicModel):
 
     self.interpolMethod = configget(self.config,"model","InterpolationMethod","inv")
     self.reinit = int(configget(self.config,"run","reinit","0"))
-    self.fewsrun = int(configget(self.config,"run","fewsrun","0"))
     self.OverWriteInit = int(configget(self.config,"model","OverWriteInit","0"))
 
     self.intbl = configget(self.config,"model","intbl","intbl")
@@ -528,7 +520,6 @@ def main(argv=None):
     LogFileName="wflow.log"    
     _lastTimeStep = 0
     _firstTimeStep = 1
-    fewsrun=False
     runinfoFile="runinfo.xml"
     timestepsecs=86400
     wflow_cloneMap = 'wflow_subcatch.map'
@@ -544,15 +535,11 @@ def main(argv=None):
     ## Main model starts here
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, 'c:QXS:F:hC:Ii:T:R:u:s:P:p:Xx:U:fl:L:')
+        opts, args = getopt.getopt(argv, 'c:QXS:hC:Ii:T:R:u:s:P:p:Xx:U:fl:L:')
     except getopt.error, msg:
         pcrut.usage(msg)
     
     for o, a in opts:
-        if o == '-F': 
-            runinfoFile = a
-            fewsrun = True
-
         if o == '-C': caseName = a
         if o == '-R': runId = a
         if o == '-L': LogFileName = a 
@@ -566,17 +553,8 @@ def main(argv=None):
         
 
      
-    if fewsrun: 
-        ts = getTimeStepsfromRuninfo(runinfoFile,timestepsecs)
-        starttime = getStartTimefromRuninfo(runinfoFile)
-        if (ts):
-            _lastTimeStep =  ts# * 86400/timestepsecs
-            _firstTimeStep = 1 
-        else:
-            print "Failed to get timesteps from runinfo file: " + runinfoFile
-            exit(2)
-    else:
-        starttime = dt.datetime(1990,01,01)
+
+    starttime = dt.datetime(1990,01,01)
        
     if _lastTimeStep < _firstTimeStep:
         print "The starttimestep (" + str(_firstTimeStep) +") is smaller than the last timestep (" + str(_lastTimeStep) + ")"

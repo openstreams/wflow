@@ -59,6 +59,7 @@ class runDateTimeInfo():
         self.runEndTime = datetimeend
         self.timeStepSecs = timestepsecs
         self.currentTimeStep = 0
+        self.lastTimeStep = 0
         self.startadjusted = 0
         self.startendadjusted = 0
         self.currentmode = mode
@@ -77,6 +78,7 @@ class runDateTimeInfo():
         self.currentYday = self.currentDateTime.timetuple().tm_yday
         self.currentHour = self.currentDateTime.hour
         self.nextDateTime = self.currentDateTime + datetime.timedelta(seconds=self.timeStepSecs)
+        self.lastTimeStep = self.runTimeSteps + self.currentTimeStep
 
     def __str__(self):
         a = self.__dict__
@@ -170,6 +172,7 @@ class runDateTimeInfo():
                                     calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs +1
 
         self.nextDateTime = self.currentDateTime + datetime.timedelta(seconds=self.timeStepSecs)
+        self.lastTimeStep = self.runTimeSteps
 
 
 
@@ -443,10 +446,21 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self._d_model = userModel
         self._testRequirements()
 
+
+
+
         dte = datetimestart + datetime.timedelta(seconds=(lastTimeStep - firstTimestep) * timestepsecs)
 
         self.DT = runDateTimeInfo(timestepsecs=timestepsecs, datetimestart=datetimestart,
                                   datetimeend=dte, mode='steps')
+
+        if lastTimeStep != 0:
+            if firstTimestep == 0:
+                firstTimestep = 1
+            self.DT.update(runTimeSteps=(lastTimeStep - firstTimestep))
+            self.DT.update(currentTimeStep=firstTimestep-1)
+            print self.DT
+
         self.setviaAPI = {}
         # Flag for each variable. If 1 it is set by the API before this timestep. Reset is done at the end of each timestep
 
@@ -454,6 +468,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         if firstTimestep > lastTimeStep:
             msg = "Cannot run dynamic framework: Start timestep smaller than end timestep"
             raise frameworkBase.FrameworkError(msg)
+
 
         # fttb
         self._addMethodToClass(self._readmapNew)
@@ -966,7 +981,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         # Assume that we have set this via BMI
         if self.DT.callstopupdate > 1:
-            self.logger.info("Not reading time from ini file, assuming it is set by BMI (calls = " + str(self.DT.callstopupdate) + ")")
+            self.logger.info("Not reading time from ini file, assuming it is set by BMI or otherwise (calls = " + str(self.DT.callstopupdate) + ")")
         else:
             if st == "None": # try from the runinfo file
                 rinfo_str = configget(self._userModel().config, 'run', 'runinfo', "None")
@@ -1002,9 +1017,14 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
                 self._userModel().currentdatetime = self.DT.currentDateTime
                 ed = configget(self._userModel().config, 'run', 'endtime', "None")
-                self.DT.update(datetimeend=parser.parse(ed), mode=self.runlengthdetermination)
-                self.DT.update(timestepsecs=int(configget(self._userModel().config, 'run', 'timestepsecs', "86400")), mode=self.runlengthdetermination)
-                self.DT.update(currentTimeStep=self.DT.currentTimeStep, mode=self.runlengthdetermination)
+                if ed != 'None':
+                    self.DT.update(datetimeend=parser.parse(ed), mode=self.runlengthdetermination)
+                    self.DT.update(timestepsecs=int(configget(self._userModel().config, 'run', 'timestepsecs', "86400")), mode=self.runlengthdetermination)
+                    self.DT.update(currentTimeStep=self.DT.currentTimeStep, mode=self.runlengthdetermination)
+                else:
+                    self.logger.error("No end time given with start time: [run] endtime = " + ed )
+                    exit(1)
+
                 self._update_time_from_DT()
 
 
@@ -2144,7 +2164,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
             self.DT.update(currentTimeStep=self.DT.currentTimeStep+1, mode=self.runlengthdetermination)
             self._userModel().currentdatetime = self.DT.currentDateTime
-            self.logger.debug("timestep: " + str(self.DT.currentTimeStep-1) + "/" + str(self.DT.runTimeSteps) +  " (" + str(self.DT.currentDateTime) + ")")
+            self.logger.debug("timestep: " + str(self._userModel().currentTimeStep()) + "/" + str(self.DT.lastTimeStep) +  " (" + str(self.DT.currentDateTime) + ")")
 
 
             self._timeStepFinished()
@@ -2426,6 +2446,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         if hasattr(self._userModel(), "_inDynamic"):
             if self._userModel()._inDynamic() or self._inUpdateWeight():
                 timestep = self._userModel().currentTimeStep()
+                #print timestep
                 if 'None' not in self.ncfile:
                     newName = name
                 else:

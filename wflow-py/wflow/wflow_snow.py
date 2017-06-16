@@ -33,10 +33,7 @@ usage:
 wflow_snow [-h][-v level][-F runinfofile][-L logfile][-C casename][-R runId]
       [-c configfile][-T timesteps][-s seconds][-W][-E][-N][-U discharge]
       [-P parameter multiplication]
--F: if set wflow is expected to be run by FEWS. It will determine
-    the timesteps from the runinfo.xml file and save the output initial
-    conditions to an alternate location. The runinfo.xml file should be located
-    in the inmaps directory of the case.
+
 -X: save state at the end of the run over the initial conditions at the start    
 -f: Force overwrite of existing results
 -T: Set last timestep
@@ -215,9 +212,7 @@ class WflowModel(DynamicModel):
         self.wf_suspend(self.SaveDir + "/instate/")
 
 
-    if self.fewsrun:
-        self.logger.info("Saving initial conditions for FEWS...")
-        self.wf_suspend(self.Dir + "/outstate/")
+
         
     report(self.sumprecip,self.SaveDir + "/outsum/sumprecip.map")
     report(self.sumtemp,self.SaveDir + "/outsum/sumtemp.map")
@@ -250,7 +245,6 @@ class WflowModel(DynamicModel):
     self.Tslice = int(configget(self.config,"model","Tslice","1"))
     self.interpolMethod = configget(self.config,"model","InterpolationMethod","inv")
     self.reinit = int(configget(self.config,"run","reinit","0"))
-    self.fewsrun = int(configget(self.config,"run","fewsrun","0"))
     self.OverWriteInit = int(configget(self.config,"model","OverWriteInit","0"))
     self.MassWasting = int(configget(self.config,"model","MassWasting","0"))
     self.sCatch = int(configget(self.config,"model","sCatch","0"))
@@ -468,7 +462,7 @@ def main():
     configfile="wflow_pack.ini"
     _lastTimeStep = 10
     _firstTimeStep = 1
-    fewsrun=False
+
     runinfoFile="runinfo.xml"
     timestepsecs=86400
     wflow_cloneMap = 'wflow_subcatch.map'
@@ -479,15 +473,12 @@ def main():
     ## Main model starts here
     ########################################################################
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'Mc:QXS:F:hC:Ii:T:NR:u:s:P:p:Xx:U:f')
+        opts, args = getopt.getopt(sys.argv[1:], 'Mc:QXS:hC:Ii:T:NR:u:s:P:p:Xx:U:f')
     except getopt.error, msg:
         pcrut.usage(msg)
     
     
     for o, a in opts:
-        if o == '-F': 
-            runinfoFile = a
-            fewsrun = True
         if o == '-P': 
             exec "multpars =" + a
             print "WARN: -P Does not work at the moment"
@@ -503,10 +494,7 @@ def main():
         if o == '-h': usage()
         if o == '-f': NoOverWrite = 1
     
-    
-    if fewsrun: 
-        _lastTimeStep =  wflow_adapt.getTimeStepsfromRuninfo(runinfoFile) * 86400/timestepsecs
-        _firstTimeStep = 1 
+
         
     myModel = WflowModel(wflow_cloneMap, caseName,runId,configfile)
     dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep,firstTimestep=_firstTimeStep)

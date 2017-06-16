@@ -30,9 +30,6 @@ usage
           [-P parameter multiplication][-X][-f][-I][-i tbl_dir][-x subcatchId][-u updatecols]
           [-p inputparameter multiplication][-l loglevel]
 
-    -F: if set wflow is expected to be run by FEWS. It will determine
-        the timesteps from the runinfo.xml file and save the output initial
-        conditions to an alternate location. Also set fewsrun=1 in the .ini file!
 
     -X: save state at the end of the run over the initial conditions at the start
 
@@ -373,9 +370,6 @@ class WflowModel(DynamicModel):
             self.logger.info("Saving initial conditions over start conditions...")
             self.wf_suspend(self.SaveDir + "/instate/")
 
-        if self.fewsrun:
-            self.logger.info("Saving initial conditions for FEWS...")
-            self.wf_suspend(self.Dir + "/outstate/")
 
 
     def parameters(self):
@@ -497,7 +491,6 @@ class WflowModel(DynamicModel):
 
         self.Tslice = int(configget(self.config, "model", "Tslice", "1"))
         self.reinit = int(configget(self.config, "run", "reinit", "0"))
-        self.fewsrun = int(configget(self.config, "run", "fewsrun", "0"))
         self.OverWriteInit = int(configget(self.config, "model", "OverWriteInit", "0"))
         self.updating = int(configget(self.config, "model", "updating", "0"))
         self.updateFile = configget(self.config, "model", "updateFile", "no_set")
@@ -1860,10 +1853,10 @@ def main(argv=None):
     global multpars
     runId = "run_default"
     configfile = "wflow_sbm.ini"
-    _lastTimeStep = 1
+    _lastTimeStep = 0
     _firstTimeStep = 0
     LogFileName = "wflow.log"
-    fewsrun = False
+
     runinfoFile = "runinfo.xml"
     timestepsecs = 86400
     wflow_cloneMap = 'wflow_subcatch.map'
@@ -1880,14 +1873,11 @@ def main(argv=None):
     ## Process command-line options                                        #
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, 'XF:L:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:')
+        opts, args = getopt.getopt(argv, 'XL:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:')
     except getopt.error, msg:
         pcrut.usage(msg)
 
     for o, a in opts:
-        if o == '-F':
-            runinfoFile = a
-            fewsrun = True
         if o == '-C': caseName = a
         if o == '-R': runId = a
         if o == '-c': configfile = a
@@ -1899,17 +1889,8 @@ def main(argv=None):
         if o == '-f': _NoOverWrite = 0
         if o == '-l': exec "loglevel = logging." + a
 
-    if fewsrun:
-        ts = getTimeStepsfromRuninfo(runinfoFile, timestepsecs)
-        starttime = getStartTimefromRuninfo(runinfoFile)
-        if (ts):
-            _lastTimeStep = ts
-            _firstTimeStep = 1
-        else:
-            print "Failed to get timesteps from runinfo file: " + runinfoFile
-            exit(2)
-    else:
-        starttime = dt.datetime(1990,01,01)
+
+    starttime = dt.datetime(1990,01,01)
 
     if _lastTimeStep < _firstTimeStep:
         print "The starttimestep (" + str(_firstTimeStep) + ") is smaller than the last timestep (" + str(
@@ -1951,7 +1932,8 @@ def main(argv=None):
     dynModelFw.setupFramework()
     dynModelFw._runInitial()
     dynModelFw._runResume()
-    dynModelFw._runDynamic(0, 0)
+    #dynModelFw._runDynamic(0, 0)
+    dynModelFw._runDynamic(_firstTimeStep, _lastTimeStep)
     dynModelFw._runSuspend()
     dynModelFw._wf_shutdown()
 
