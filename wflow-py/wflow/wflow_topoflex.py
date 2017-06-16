@@ -999,7 +999,7 @@ def main(argv=None):
     dynModelFw.setupFramework()
     dynModelFw._runInitial()
     dynModelFw._runResume()
-    dynModelFw._runDynamic(_firstTimeStep, _lastTimeStep)
+    dynModelFw._runDynamic(0, 0)
     dynModelFw._runSuspend()
     dynModelFw._wf_shutdown()
 

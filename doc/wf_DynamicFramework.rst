@@ -252,9 +252,10 @@ Settings in the outputtss/outputcsv sections
 [outputtss_0-n]
 
 Number of sections to define output timeseries in csv format. Each section
-should at lears contain one samplemap item and one or more variables to save.
+should at least contain one samplemap item and one or more variables to save.
 The samplemap is the map that determines how the timeseries are averaged/sampled. The function
 key specifies how the data is sample: average(default), minimum, maximum, total, majority.
+The timeformat key can either be steps or datetime.
 
 All other items are variable=filename pairs. The filename is given relative
 to the case directory.
@@ -268,6 +269,8 @@ Example:
     self.SurfaceRunoffMM=Qsubcatch_avg.csv
     function=average
     # average is the default
+    timeformat = datetime
+    # steps is the default
 
     [outputcsv_1]
     samplemap=staticmaps/wflow_gauges.map
@@ -313,10 +316,10 @@ how to initialize the model and how interpret the forcing data.
 Data and time and timesteps
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The original pcraster framework has no notion of date and time, only timesteps that are used to propagate a
-model forward. However, to be able to support the BMI and netcdf files dat and time functionality
+model forward. However, to be able to support the BMI and netcdf files date and time functionality
 has been inserted into the framework.
 
-As most of the forcing in hydrological modelling is an accumulation the dat/time of an input time series is
+As most of the forcing in hydrological modelling is an accumulation the date/time of an input time series is
 assumed to represent the total (or average) of that variable one timestep length back in time from the timestamp.
 
 For example, if the forcing data has the following four timestamps the model will run four timesteps. The first timesteps
