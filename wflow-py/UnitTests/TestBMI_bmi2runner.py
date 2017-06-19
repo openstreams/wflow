@@ -8,6 +8,7 @@ sys.path = ['../Scripts'] + sys.path
 import bmi2runner as bmirun
 import time
 import os
+import wflow_bmi_combined as bmi
 
 """
 Simple test for wflow bmi framework
@@ -16,9 +17,10 @@ Simple test for wflow bmi framework
 
 class MyTest(unittest.TestCase):
 
-    def testbmifuncs(self):
+    def testbmirunner(self):
 
         bmirun.main(['-c','combined/bmirunner.ini'])
+        self.assertTrue(os.path.exists('combined/run_default/wflow.log'))
 
 
 

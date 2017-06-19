@@ -104,10 +104,6 @@ class runDateTimeInfo():
         if timestepsecs and not runTimeSteps:
             self.timeStepSecs = timestepsecs
             self.runTimeSteps = (calendar.timegm(self.runEndTime.utctimetuple()) - calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs
-            if mode =='steps':
-                self.startadjusted = 0
-            else:
-                self.startadjusted = 1
 
             self.runStateTime = self.runStartTime - datetime.timedelta(seconds=self.timeStepSecs)
             self.outPutStartTime = self.runStateTime + datetime.timedelta(seconds=self.timeStepSecs)
@@ -117,7 +113,9 @@ class runDateTimeInfo():
 
         if datetimestart:
             self.currentTimeStep = 1
-            if self.currentmode =='steps':
+
+            #if self.startadjusted
+            if self.currentmode =='steps' or self.startadjusted:
                 self.runStartTime = datetimestart
                 self.startadjusted = 0
             else:
@@ -140,7 +138,7 @@ class runDateTimeInfo():
 
             self.currentTimeStep = 1
             self.currentDateTime = self.runStartTime
-            if self.currentmode =='steps':
+            if self.currentmode =='steps' or self.startadjusted:
                 self.runStartTime = datetimestart
                 self.startadjusted = 0
             else:
