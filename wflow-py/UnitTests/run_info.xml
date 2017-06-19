@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Run xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.wldelft.nl/fews/PI" xsi:schemaLocation="http://www.wldelft.nl/fews/PI http://fews.wldelft.nl/schemas/version1.0/pi-schemas/pi_run.xsd" version="1.8">
+    <logLevel>info</logLevel>
+    <timeZone>0.0</timeZone>
+    <startDateTime date="2017-06-01" time="00:00:00"/>
+    <endDateTime date="2017-06-02" time="00:00:00"/>
+    <time0 date="2017-06-02" time="00:00:00"/>
+    <lastObservationDateTime date="2017-06-02" time="00:00:00"/>
+    <workDir>d:\failed\new3\openda_bin</workDir>
+    <inputStateDescriptionFile>d:\failed\new3\OpenStreams\OpenStreams\states\states_in.xml</inputStateDescriptionFile>
+    <inputTimeSeriesFile>d:\failed\new3\OpenStreams\OpenStreams\openda_config\EU\Observations.xml</inputTimeSeriesFile>
+    <inputNetcdfFile>d:\failed\new3\OpenStreams\OpenStreams\combined_eu\Precipitationmapstack.nc</inputNetcdfFile>
+    <inputNetcdfFile>d:\failed\new3\OpenStreams\OpenStreams\openda_config\EU\Observations.nc</inputNetcdfFile>
+    <outputDiagnosticFile>d:\failed\new3\OpenStreams\OpenStreams\diagnostics.xml</outputDiagnosticFile>
+    <outputStateDescriptionFile>d:\failed\new3\OpenStreams\OpenStreams\states\states_out.xml</outputStateDescriptionFile>
+    <outputNetcdfFile>d:\failed\new3\OpenStreams\OpenStreams\work0\run_default\outmaps.nc</outputNetcdfFile>
+</Run>
