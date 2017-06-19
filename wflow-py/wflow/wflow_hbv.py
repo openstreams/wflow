@@ -874,10 +874,10 @@ class WflowModel(DynamicModel):
 
     elif self.nrresComplex > 0:
         self.ReservoirWaterLevel, self.Outflow, self.ReservoirPrecipitation, self.ReservoirEvaporation,\
-        self.ReservoirVolume  = complexreservoir(self.ReservoirWaterLevel, self.ReserVoirComplexLocs, self.ResArea,\
+        self.ReservoirVolume = complexreservoir(self.ReservoirWaterLevel, self.ReserVoirComplexLocs, self.LinkedReservoirLocs, self.ResArea,\
                                                     self.ResThreshold, self.ResStorFunc, self.ResOutflowFunc, self.Res_b,
                                                     self.Res_e, self.SurfaceRunoff, self.Dir + "/" + self.intbl + "//",
-                                                    self.ReserVoirPrecip, self.ReserVoirPotEvap, self.ReservoirComplexAreas,
+                                                    self.ReserVoirPrecip, self.ReserVoirPotEvap, self.ReservoirComplexAreas, self.wf_supplyJulianDOY(),
                                                     timestepsecs=self.timestepsecs)
         self.OutflowDwn = upstream(self.TopoLddOrg,cover(self.Outflow,scalar(0.0)))
         self.Inflow = self.OutflowDwn + cover(self.Inflow,self.ZeroMap)
