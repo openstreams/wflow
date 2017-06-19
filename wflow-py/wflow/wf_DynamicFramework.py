@@ -125,12 +125,16 @@ class runDateTimeInfo():
                 self.startadjusted = 1
 
             self.runStateTime = self.runStartTime - datetime.timedelta(seconds=self.timeStepSecs)
-            self.currentDateTime = self.runStartTime
+            self.currentDateTime = self.runStateTime
             self.outPutStartTime = self.currentDateTime + datetime.timedelta(seconds=self.timeStepSecs)
             self.runTimeSteps = (calendar.timegm(self.runEndTime.utctimetuple()) - calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs
             self.currentMonth = self.currentDateTime.month
             self.currentYday = self.currentDateTime.timetuple().tm_yday
             self.currentHour = self.currentDateTime.hour
+
+            if self.runTimeSteps < 1: # End time before start time
+                self.runTimeSteps = 1
+                self.runEndTime = self.runStateTime + datetime.timedelta(seconds=self.timeStepSecs * self.runTimeSteps)
 
         if datetimestart and runTimeSteps:
 
@@ -154,6 +158,9 @@ class runDateTimeInfo():
         if datetimeend:
             self.runEndTime = datetimeend
             self.runTimeSteps = (calendar.timegm(self.runEndTime.utctimetuple()) - calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs
+            if self.runTimeSteps < 1: # End time before start time
+                self.runTimeSteps = 1
+                self.runStartTime = self.runEndTime - datetime.timedelta(seconds=self.timeStepSecs * self.runTimeSteps)
 
         if currentTimeStep and currentTimeStep != self.currentTimeStep:
             self.currentTimeStep = currentTimeStep
