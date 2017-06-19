@@ -484,6 +484,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self._addMethodToClass(self.wf_updateparameters)
         self._addMethodToClass(self.wf_savesummarymaps)
         self._addMethodToClass(self.wf_supplyStartTimeDOY)
+        self._addMethodToClass(self.wf_supplyJulianDOY)
         self._addAttributeToClass("ParamType", self.ParamType)
         self._addAttributeToClass("timestepsecs", self.DT.timeStepSecs)
         self._addAttributeToClass("__version__", __version__)
@@ -670,6 +671,12 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         DOY = self.DT.runStartTime.utctimetuple().tm_yday
 
         return DOY
+
+    def wf_supplyJulianDOY(self):
+
+        JDOY =  self.DT.currentYday - (calendar.isleap(self.DT.currentDateTime.timetuple().tm_year) and self.DT.currentYday > 60)
+        
+        return JDOY
 
     def wf_timeinputscalar(self, tssfile, areamap, default):
         """
