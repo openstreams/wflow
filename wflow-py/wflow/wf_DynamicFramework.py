@@ -71,6 +71,7 @@ class runDateTimeInfo():
         else:
             self.runStateTime = self.runStartTime
 
+        self.setByBMI= False
         self.currentDateTime = self.runStateTime
         self.outPutStartTime = self.runStateTime + datetime.timedelta(seconds=self.timeStepSecs)
         self.runTimeSteps = (calendar.timegm(self.runEndTime.utctimetuple()) - calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs
@@ -86,7 +87,7 @@ class runDateTimeInfo():
         return str(a)
 
     def update(self, timestepsecs=None, datetimestart=None, datetimeend=None, currentTimeStep=None,
-               currentDatetime=None,runTimeSteps=None,mode='steps'):
+               currentDatetime=None,runTimeSteps=None,mode='steps',incrementStep=False,setByBMI=False):
         """
         Updates the content of the framework date/time object. Use only one input parameter per call. or runTimeSteps and datatimestart at the same time
         use the mode option to switch between steps and intervals ('steps' or 'intervals')
@@ -101,15 +102,15 @@ class runDateTimeInfo():
         self.currentmode = mode
         self.callstopupdate = self.callstopupdate + 1
 
+        if setByBMI:
+            self.setByBMI = True
         if timestepsecs and not runTimeSteps:
             self.timeStepSecs = timestepsecs
             self.runTimeSteps = (calendar.timegm(self.runEndTime.utctimetuple()) - calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs
-            if mode =='steps':
-                self.startadjusted = 0
-            else:
-                self.startadjusted = 1
 
-            self.runStateTime = self.runStartTime - datetime.timedelta(seconds=self.timeStepSecs)
+            if self.currentmode == 'steps':
+                self.runStateTime = self.runStartTime - datetime.timedelta(seconds=self.timeStepSecs)
+
             self.outPutStartTime = self.runStateTime + datetime.timedelta(seconds=self.timeStepSecs)
         elif timestepsecs and runTimeSteps:
             self.timeStepSecs = timestepsecs
@@ -117,20 +118,29 @@ class runDateTimeInfo():
 
         if datetimestart:
             self.currentTimeStep = 1
+
+            #if self.startadjusted
             if self.currentmode =='steps':
                 self.runStartTime = datetimestart
                 self.startadjusted = 0
+                self.runStateTime = self.runStartTime - datetime.timedelta(seconds=self.timeStepSecs)
             else:
-                self.runStartTime = datetimestart + datetime.timedelta(seconds=self.timeStepSecs)
+                #self.runStartTime = datetimestart + datetime.timedelta(seconds=self.timeStepSecs)
+                self.runStartTime = datetimestart # + datetime.timedelta(seconds=self.timeStepSecs)
                 self.startadjusted = 1
+                self.runStateTime = self.runStartTime# - datetime.timedelta(seconds=self.timeStepSecs)
 
-            self.runStateTime = self.runStartTime - datetime.timedelta(seconds=self.timeStepSecs)
-            self.currentDateTime = self.runStartTime
+
+            self.currentDateTime = self.runStateTime
             self.outPutStartTime = self.currentDateTime + datetime.timedelta(seconds=self.timeStepSecs)
             self.runTimeSteps = (calendar.timegm(self.runEndTime.utctimetuple()) - calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs
             self.currentMonth = self.currentDateTime.month
             self.currentYday = self.currentDateTime.timetuple().tm_yday
             self.currentHour = self.currentDateTime.hour
+
+            if self.runTimeSteps < 1: # End time before start time
+                self.runTimeSteps = 1
+                self.runEndTime = self.runStateTime + datetime.timedelta(seconds=self.timeStepSecs * self.runTimeSteps)
 
         if datetimestart and runTimeSteps:
 
@@ -139,11 +149,13 @@ class runDateTimeInfo():
             if self.currentmode =='steps':
                 self.runStartTime = datetimestart
                 self.startadjusted = 0
+                self.runStateTime = self.runStartTime - datetime.timedelta(seconds=self.timeStepSecs)
             else:
-                self.runStartTime = datetimestart + datetime.timedelta(seconds=self.timeStepSecs)
+                self.runStartTime = datetimestart# + datetime.timedelta(seconds=self.timeStepSecs)
                 self.startadjusted = 1
+                self.runStateTime = self.runStartTime
 
-            self.runStateTime = self.runStartTime - datetime.timedelta(seconds=self.timeStepSecs)
+
             self.outPutStartTime = self.runStateTime + datetime.timedelta(seconds=self.timeStepSecs)
             self.currentDateTime = self.runStartTime
             self.runEndTime = self.runStateTime + datetime.timedelta(seconds=self.timeStepSecs * runTimeSteps)
@@ -154,6 +166,9 @@ class runDateTimeInfo():
         if datetimeend:
             self.runEndTime = datetimeend
             self.runTimeSteps = (calendar.timegm(self.runEndTime.utctimetuple()) - calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs
+            if self.runTimeSteps < 1: # End time before start time
+                self.runTimeSteps = 1
+                self.runStartTime = self.runEndTime - datetime.timedelta(seconds=self.timeStepSecs * self.runTimeSteps)
 
         if currentTimeStep and currentTimeStep != self.currentTimeStep:
             self.currentTimeStep = currentTimeStep
@@ -162,6 +177,11 @@ class runDateTimeInfo():
             self.currentMonth = self.currentDateTime.month
             self.currentYday = self.currentDateTime.timetuple().tm_yday
             self.currentHour = self.currentDateTime.hour
+
+        if incrementStep:
+            self.currentTimeStep = self.currentTimeStep + 1
+            self.currentDateTime = self.currentDateTime + datetime.timedelta(seconds=self.timeStepSecs)
+
 
         if currentDatetime:
             self.currentDateTime = currentDatetime
@@ -459,7 +479,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 firstTimestep = 1
             self.DT.update(runTimeSteps=(lastTimeStep - firstTimestep))
             self.DT.update(currentTimeStep=firstTimestep-1)
-            print self.DT
 
         self.setviaAPI = {}
         # Flag for each variable. If 1 it is set by the API before this timestep. Reset is done at the end of each timestep
@@ -987,7 +1006,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self.skipfirsttimestep =  int(configget(self._userModel().config, 'run', 'skipfirst', "0"))
 
         # Assume that we have set this via BMI
-        if self.DT.callstopupdate > 1:
+        if self.DT.setByBMI:
             self.logger.info("Not reading time from ini file, assuming it is set by BMI or otherwise (calls = " + str(self.DT.callstopupdate) + ")")
         else:
             if st == "None": # try from the runinfo file
@@ -2139,7 +2158,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         self.DT.update(currentTimeStep=self.DT.currentTimeStep, mode=self.runlengthdetermination)
 
-        self.logger.debug(self.DT.currentDateTime)
+
         while step <= self._userModel().nrTimeSteps():
             self._incrementIndentLevel()
             self._atStartOfTimeStep(step)
@@ -2154,23 +2173,25 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 # Save state variables in memory
                 self.wf_QuickSuspend()
 
-                for a in range(0, len(self.statslst)):
-                    data = getattr(self._userModel(), self.statslst[a].varname)
-                    self.statslst[a].add_one(data)
+            for a in range(0, len(self.statslst)):
+                data = getattr(self._userModel(), self.statslst[a].varname)
+                self.statslst[a].add_one(data)
 
-                for key in self.onlinestat.statvarname:
-                    stvar = self.onlinestat.getstat(getattr(self._userModel(),key),key)
-                    #stvar = self.onlinestat.getstat(cover(self.DT.currentTimeStep * 1.0), key)
-                    setattr(self._userModel(),self.onlinestat.statvarname[key],stvar)
+            for key in self.onlinestat.statvarname:
+                stvar = self.onlinestat.getstat(getattr(self._userModel(),key),key)
+                #stvar = self.onlinestat.getstat(cover(self.DT.currentTimeStep * 1.0), key)
+                setattr(self._userModel(),self.onlinestat.statvarname[key],stvar)
 
-                self.wf_savedynMaps()
-                self.wf_saveTimeSeries()
+            self.DT.update(incrementStep=True, mode=self.runlengthdetermination)
+            self._userModel().currentdatetime = self.DT.currentDateTime
+
+            self.wf_savedynMaps()
+            self.wf_saveTimeSeries()
 
             #self.currentdatetime = self.currentdatetime + dt.timedelta(seconds=self._userModel().timestepsecs)
 
 
-            self.DT.update(currentTimeStep=self.DT.currentTimeStep+1, mode=self.runlengthdetermination)
-            self._userModel().currentdatetime = self.DT.currentDateTime
+
             self.logger.debug("timestep: " + str(self._userModel().currentTimeStep()) + "/" + str(self.DT.lastTimeStep) +  " (" + str(self.DT.currentDateTime) + ")")
 
 

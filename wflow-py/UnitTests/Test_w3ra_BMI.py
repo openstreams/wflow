@@ -38,7 +38,7 @@ class MyTest(unittest.TestCase):
         ts = bmiobj.get_time_step()
 
         bmiobj.initialize_model()
-        curtime = st
+        curtime = bmiobj.get_current_time()
         cnt = 0
         lastcurtime = bmiobj.get_current_time()
         while curtime < ett:
@@ -58,7 +58,7 @@ class MyTest(unittest.TestCase):
         tmean = np.ma.masked_invalid(data.astype(np.float64)).mean()
         tmax = np.ma.masked_invalid(data.astype(np.float64)).max()
         tmin = np.ma.masked_invalid(data.astype(np.float64)).min()
-        self.assertAlmostEquals(266.17514038085937, tmax)
+        self.assertAlmostEquals(266.18075561523438, tmax)
         self.assertAlmostEquals(-7.8522729383405979e+37, tmean)
         self.assertAlmostEquals(-3.4028234663852886e+38, tmin)
 

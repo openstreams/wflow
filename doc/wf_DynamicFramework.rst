@@ -407,7 +407,7 @@ of steps is determined from the number of intervals in the forcing data. Hence, 
 
         subgraph cluster_3 {
 	    	node [style=filled];
-		    " " -> "2 Jan 2016" -> "3 Jan 2016" -> "4 jan 2016";
+		    " " -> " 2 Jan 2016" -> " 3 Jan 2016" -> " 4 jan 2016";
 		    label = "Model output data";
 		    color=blue
 	    }

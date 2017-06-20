@@ -76,8 +76,8 @@ def main(argv=None):
     bmiobj.initialize_model()
     start = bmiobj.get_start_time()
     end = bmiobj.get_end_time()
-    bmiobj.set_start_time(start)
-    bmiobj.set_end_time(end)
+    #bmiobj.set_start_time(start)
+    #bmiobj.set_end_time(end)
     # Get time for the loop
 
     ts = bmiobj.get_time_step()
