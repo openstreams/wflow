@@ -81,6 +81,11 @@ def prepare_nc(trgFile, timeList, x, y, metadata, logger, EPSG="EPSG:4326", unit
 
     timeAR = linspace(startDayNr, endDayNr, num=len(timeList))
 
+    if os.path.exists(trgFile):
+            os.remove(trgFile)
+
+        #nc_trg = netCDF4.Dataset(trgFile, 'a', format=Format, zlib=zlib, complevel=complevel)
+
     nc_trg = netCDF4.Dataset(trgFile, 'w', format=Format, zlib=zlib, complevel=complevel)
 
     logger.info(
@@ -227,6 +232,8 @@ class netcdfoutput():
         prepare_nc(self.ncfile, timeList, x, y, globmetadata, logger, Format=self.Format, EPSG=EPSG,zlib=self.zlib,
                    least_significant_digit=self.least_significant_digit)
 
+        self.nc_trg = None
+
     def savetimestep(self, timestep, pcrdata, unit="mm", var='P', name="Precipitation",flushonly=False):
         """
         save a single timestep for a variable
@@ -240,8 +247,9 @@ class netcdfoutput():
         """
         # Open target netCDF file
         var = os.path.basename(var)
-        self.nc_trg = netCDF4.Dataset(self.ncfile, 'a', format=self.Format, zlib=self.zlib, complevel=9)
-        self.nc_trg.set_fill_off()
+        if not self.nc_trg:
+            self.nc_trg = netCDF4.Dataset(self.ncfile, 'a', format=self.Format, zlib=self.zlib, complevel=9)
+            self.nc_trg.set_fill_off()
         # read time axis and convert to time objects
         # TODO: use this to append time
         # time = self.nc_trg.variables['time']
@@ -289,6 +297,7 @@ class netcdfoutput():
             nc_var[spos:idx + 1, :, :] = self.bufflst[var][0:bufpos + 1, :, :]
             self.bufferdirty = False
             self.nc_trg.sync()
+
 
     def finish(self):
         """
