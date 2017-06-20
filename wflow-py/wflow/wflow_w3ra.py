@@ -26,6 +26,10 @@ wflow_W3RA  -C case -R Runid -c inifile
     -R: set the name runId within the current case
     
     -c name of the config file (in the case directory)
+
+    -T: Set end time of the run: yyyy-mm-dd hh:mm:ss
+
+    -S: Set start time of the run: yyyy-mm-dd hh:mm:ss
     
 $Author: schelle $
 $Id: wflow_sceleton.py 898 2014-01-09 14:47:06Z schelle $
@@ -742,8 +746,7 @@ def main(argv=None):
         if o == '-R': runId = a
         if o == '-c': configfile = a
         if o == '-s': timestepsecs = int(a)
-        if o == '-T': _lastTimeStep=int(a)
-        if o == '-S': _firstTimeStep=int(a)
+
         
     if (len(opts) <=1):
         usage()
@@ -773,6 +776,10 @@ def main(argv=None):
         if o == '-I': configset(myModel.config, 'model', 'reinit', '1', overwrite=True)
         if o == '-i': configset(myModel.config, 'model', 'intbl', a, overwrite=True)
         if o == '-s': configset(myModel.config, 'model', 'timestepsecs', a, overwrite=True)
+        if o == '-T':
+            configset(myModel.config, 'run', 'endtime', a, overwrite=True)
+        if o == '-S':
+            configset(myModel.config, 'run', 'starttime', a, overwrite=True)
 
     dynModelFw.setupFramework()
 

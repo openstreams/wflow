@@ -557,11 +557,17 @@ class netcdfinput():
 
         ncindex = ncindex + self.offset
 
+        if self.datetimelist.size < ncindex + 1:
+            ncindex = self.datetimelist.size -1
+
         if tsdatetime != None:
             if tsdatetime.replace(tzinfo=None) != self.datetimelist[ncindex].replace(tzinfo=None):
                 logging.warn("Date/time does not match. Wanted " + str(tsdatetime) + " got " + str(self.datetimelist[ncindex]))
                 import bisect
                 pos = bisect.bisect_left(self.datetimelist,tsdatetime.replace(tzinfo=None))
+                if pos >= self.datetimelist.size:
+                    pos = self.datetimelist.size -1
+                    logging.warn("No matching date/time found using last date/time again...")
                 self.offset = pos - ncindex
                 logging.warn("Adjusting to the date/time at index and setting offset: " + str(pos) + ":" + str(self.offset) + ":"  + str(self.datetimelist[pos]))
                 ncindex = pos

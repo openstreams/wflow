@@ -35,9 +35,9 @@ usage
 
     -f: Force overwrite of existing results
 
-    -T: Set last timestep
+    -T: Set end time of the run: yyyy-mm-dd hh:mm:ss
 
-    -S: Set the start timestep (default = 1)
+    -S: Set start time of the run: yyyy-mm-dd hh:mm:ss
 
     -s: Set the model timesteps in seconds
 
@@ -83,8 +83,6 @@ usage
     -l: loglevel (most be one of DEBUG, WARNING, ERROR)
 
 """
-
-#TODO: add Et reduction in unsat zone based on deficit
 
 import numpy
 #import pcrut
@@ -1883,8 +1881,6 @@ def main(argv=None):
         if o == '-c': configfile = a
         if o == '-L': LogFileName = a
         if o == '-s': timestepsecs = int(a)
-        if o == '-T': _lastTimeStep = int(a)
-        if o == '-S': _firstTimeStep = int(a)
         if o == '-h': usage()
         if o == '-f': _NoOverWrite = 0
         if o == '-l': exec "loglevel = logging." + a
@@ -1928,6 +1924,11 @@ def main(argv=None):
         if o == '-E': configset(myModel.config, 'model', 'reInfilt', '1', overwrite=True)
         if o == '-R': runId = a
         if o == '-W': configset(myModel.config, 'model', 'waterdem', '1', overwrite=True)
+        if o == '-T':
+            configset(myModel.config, 'run', 'endtime', a, overwrite=True)
+        if o == '-S':
+            configset(myModel.config, 'run', 'starttime', a, overwrite=True)
+
 
     dynModelFw.setupFramework()
     dynModelFw._runInitial()

@@ -31,9 +31,9 @@ usage
         
     -X: save state at the end of the run over the initial conditions at the start        
 
-    -T: Set last timestep
-    
-    -S: Set the start timestep (default = 1)
+    -T: Set end time of the run: yyyy-mm-dd hh:mm:ss
+
+    -S: Set start time of the run: yyyy-mm-dd hh:mm:ss
     
     -s: Set the model timesteps in seconds
     
@@ -736,8 +736,6 @@ def main(argv=None):
         if o == '-c': configfile = a
         if o == '-L': LogFileName = a
         if o == '-s': timestepsecs = int(a)
-        if o == '-T': _lastTimeStep = int(a)
-        if o == '-S': _firstTimeStep = int(a)
         if o == '-h': usage()
         if o == '-f': _NoOverWrite = 0
         if o == '-l': exec "loglevel = logging." + a
@@ -778,6 +776,10 @@ def main(argv=None):
             left = a.split('=')[0]
             right = a.split('=')[1]
             configset(myModel.config,'variable_change_timestep',left,right,overwrite=True)
+        if o == '-T':
+            configset(myModel.config, 'run', 'endtime', a, overwrite=True)
+        if o == '-S':
+            configset(myModel.config, 'run', 'starttime', a, overwrite=True)
 
     dynModelFw.setupFramework()
     dynModelFw._runInitial()
