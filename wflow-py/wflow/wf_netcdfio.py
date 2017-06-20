@@ -219,6 +219,7 @@ class netcdfoutput():
 
         timeList = date_range(starttime, end, timestepsecs)
         self.timestepbuffer = zeros((self.maxbuf, len(y), len(x)))
+        self.bufferdirty = True
         self.bufflst = {}
 
         globmetadata.update(metadata)
@@ -226,7 +227,7 @@ class netcdfoutput():
         prepare_nc(self.ncfile, timeList, x, y, globmetadata, logger, Format=self.Format, EPSG=EPSG,zlib=self.zlib,
                    least_significant_digit=self.least_significant_digit)
 
-    def savetimestep(self, timestep, pcrdata, unit="mm", var='P', name="Precipitation"):
+    def savetimestep(self, timestep, pcrdata, unit="mm", var='P', name="Precipitation",flushonly=False):
         """
         save a single timestep for a variable
 
@@ -279,12 +280,14 @@ class netcdfoutput():
             self.bufflst[var][bufpos, :, :] = data
 
         # Write out timestep buffer.....
+        self.bufferdirty = True
 
         if buffreset == 0 or idx == self.maxbuf - 1 or self.timesteps <= timestep:
             spos = idx - bufpos
             self.logger.debug(
                 "Writing buffer for " + var + " to file at: " + str(spos) + " " + str(int(bufpos) + 1) + " timesteps")
             nc_var[spos:idx + 1, :, :] = self.bufflst[var][0:bufpos + 1, :, :]
+            self.bufferdirty = False
             self.nc_trg.sync()
 
     def finish(self):
@@ -294,6 +297,8 @@ class netcdfoutput():
         :return: Nothing
         """
         if hasattr(self, "nc_trg"):
+            if self.bufferdirty:
+                self.logger.warn("Finishing before expected run-length exceeded. Buffer not flushed")
             self.nc_trg.sync()
             self.nc_trg.close()
 

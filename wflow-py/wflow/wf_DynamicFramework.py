@@ -71,6 +71,7 @@ class runDateTimeInfo():
         else:
             self.runStateTime = self.runStartTime
 
+        self.setByBMI= False
         self.currentDateTime = self.runStateTime
         self.outPutStartTime = self.runStateTime + datetime.timedelta(seconds=self.timeStepSecs)
         self.runTimeSteps = (calendar.timegm(self.runEndTime.utctimetuple()) - calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs
@@ -86,7 +87,7 @@ class runDateTimeInfo():
         return str(a)
 
     def update(self, timestepsecs=None, datetimestart=None, datetimeend=None, currentTimeStep=None,
-               currentDatetime=None,runTimeSteps=None,mode='steps',incrementStep=False):
+               currentDatetime=None,runTimeSteps=None,mode='steps',incrementStep=False,setByBMI=False):
         """
         Updates the content of the framework date/time object. Use only one input parameter per call. or runTimeSteps and datatimestart at the same time
         use the mode option to switch between steps and intervals ('steps' or 'intervals')
@@ -101,6 +102,8 @@ class runDateTimeInfo():
         self.currentmode = mode
         self.callstopupdate = self.callstopupdate + 1
 
+        if setByBMI:
+            self.setByBMI = True
         if timestepsecs and not runTimeSteps:
             self.timeStepSecs = timestepsecs
             self.runTimeSteps = (calendar.timegm(self.runEndTime.utctimetuple()) - calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs
@@ -476,7 +479,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 firstTimestep = 1
             self.DT.update(runTimeSteps=(lastTimeStep - firstTimestep))
             self.DT.update(currentTimeStep=firstTimestep-1)
-            print self.DT
 
         self.setviaAPI = {}
         # Flag for each variable. If 1 it is set by the API before this timestep. Reset is done at the end of each timestep
@@ -997,7 +999,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self.skipfirsttimestep =  int(configget(self._userModel().config, 'run', 'skipfirst', "0"))
 
         # Assume that we have set this via BMI
-        if self.DT.callstopupdate > 1:
+        if self.DT.setByBMI:
             self.logger.info("Not reading time from ini file, assuming it is set by BMI or otherwise (calls = " + str(self.DT.callstopupdate) + ")")
         else:
             if st == "None": # try from the runinfo file
@@ -2149,7 +2151,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         self.DT.update(currentTimeStep=self.DT.currentTimeStep, mode=self.runlengthdetermination)
 
-        self.logger.debug(self.DT.currentDateTime)
+
         while step <= self._userModel().nrTimeSteps():
             self._incrementIndentLevel()
             self._atStartOfTimeStep(step)
