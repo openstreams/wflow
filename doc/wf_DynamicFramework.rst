@@ -348,7 +348,7 @@ As such the state going into the model should be valid for the T0, see graph bel
 
         subgraph cluster_3 {
 	    	node [style=filled];
-		    "  " ->"1 Jan 2016" -> "2 Jan 2016" -> "3 Jan 2016" -> "4 jan 2016";
+		    "  " ->" 1 Jan 2016" -> " 2 Jan 2016" -> " 3 Jan 2016" -> " 4 jan 2016";
 		    label = "Model output data";
 		    color=blue
 	    }
