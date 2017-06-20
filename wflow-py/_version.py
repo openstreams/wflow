@@ -1,4 +1,4 @@
-# This file is made by mkversion.py, do not edit!VERSION="1.0.timestuff-rework.1"
-MVERSION="1.0.timestuff-rework"
+# This file is made by mkversion.py, do not edit!VERSION="1.0.master.1"
+MVERSION="1.0.master"
 NVERSION="1.0.1"
-BUILD="2017-06-20 09:19:37.264000"
+BUILD="2017-06-20 11:12:59.689000"
