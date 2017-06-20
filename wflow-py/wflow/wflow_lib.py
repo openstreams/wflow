@@ -244,7 +244,6 @@ def complexreservoir(waterlevel, ReserVoirLocs, LinkedReserVoirLocs, ResArea, Re
 
         np_outflow_nz = np_outflow*0.0
         np_outflow_nz[np_outflow>0] = np_outflow[np_outflow>0]
-
         _outflow.append(np_outflow_nz)
 
     outflow_av_temp = np.average(_outflow,0)
