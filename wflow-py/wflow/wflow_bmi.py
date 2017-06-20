@@ -624,7 +624,7 @@ class wflowbmi_csdms(bmi.Bmi):
         dateobj = datetime.datetime.utcfromtimestamp(start_time)
         datestrimestr = dateobj.strftime("%Y-%m-%d %H:%M:%S")
 
-        self.dynModel.DT.update(datetimestart=dateobj, mode=self.dynModel.runlengthdetermination)
+        self.dynModel.DT.update(datetimestart=dateobj, mode=self.dynModel.runlengthdetermination, setByBMI=True)
         self.dynModel._update_time_from_DT()
 
         #self.dynModel._userModel().config.set("run",'starttime',self.dynModel.DT.runStartTime.strftime("%Y-%m-%d %H:%M:%S"))
@@ -638,7 +638,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
         dateobj = datetime.datetime.utcfromtimestamp(end_time)
         datestrimestr = dateobj.strftime("%Y-%m-%d %H:%M:%S")
-        self.dynModel.DT.update(datetimeend=dateobj,mode=self.dynModel.runlengthdetermination)
+        self.dynModel.DT.update(datetimeend=dateobj,mode=self.dynModel.runlengthdetermination, setByBMI=True)
         self.dynModel._update_time_from_DT()
 
         self.bmilogger.debug(self.name +  ": set_end_time: " + str(end_time) + " " + str(self.dynModel.DT.runEndTime.strftime("%Y-%m-%d %H:%M:%S")))
