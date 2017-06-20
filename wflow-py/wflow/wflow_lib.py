@@ -211,7 +211,7 @@ def complexreservoir(waterlevel, ReserVoirLocs, LinkedReserVoirLocs, ResArea, Re
 
     _outflow = []
 
-    for n in range(0,int(timestepsecs/14400-1)):
+    for n in range(0,int(timestepsecs/14400)-1):
 
         np_waterlevel = pcr2numpy(waterlevel,np.nan)
         np_waterlevel_lower = np_waterlevel.copy()
@@ -230,15 +230,13 @@ def complexreservoir(waterlevel, ReserVoirLocs, LinkedReserVoirLocs, ResArea, Re
 
         storage_start = ifthenelse(ResStorFunc==1, ResArea*waterlevel, lookupResFunc(ReserVoirLocs, waterlevel, ResStorFunc,2, pathtotbl, "Reservoir_SH_",'0-1'))
 
-        outflow_t = ifthenelse(ResOutflowFunc==1,lookupResRegMatr(ReserVoirLocs, waterlevel, ResOutflowFunc, 1, pathtotbl,"Reservoir_HQ_", JDOY),ifthenelse(pcr_diff_wl >= 0, max(res_b*(waterlevel-ResThreshold)**res_e,0),min(-1*res_b*(pcr_wl_lower-ResThreshold)**res_e,0)))
+        outflow = ifthenelse(ResOutflowFunc==1,lookupResRegMatr(ReserVoirLocs, waterlevel, ResOutflowFunc, 1, pathtotbl,"Reservoir_HQ_", JDOY),ifthenelse(pcr_diff_wl >= 0, max(res_b*(waterlevel-ResThreshold)**res_e,0),min(-1*res_b*(pcr_wl_lower-ResThreshold)**res_e,0)))
 
-        np_outflow =  pcr2numpy(outflow_t,np.nan)
+        np_outflow =  pcr2numpy(outflow,np.nan)
         np_outflow_linked = np_reslocs * 0.0
 
         np_outflow_linked[np.in1d(np_reslocs, np_linkedreslocs[np_outflow < 0]).reshape(np_linkedreslocs.shape)] = np_outflow[np_outflow < 0]
         outflow_linked = numpy2pcr(Scalar, np_outflow_linked, 0.0)
-
-        outflow = ifthen(outflow_t>0, outflow_t)
 
         storage = storage_start + (inflow * timestepsecs/6) + (prec_av/6/1000.0)*ResArea - (pet_av/6/1000.0)*ResArea - (cover(outflow,0.0) * timestepsecs/6) + (cover(outflow_linked,0.0) * timestepsecs/6)
 
