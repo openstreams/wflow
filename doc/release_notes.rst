@@ -1,6 +1,9 @@
 Release notes
 =============
 
++ -T and -S options now use date/time strings to better support netcdf
++ date/time handling improved
++ fews adapter and support simplified
 
 2017.01
 -------
