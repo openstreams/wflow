@@ -453,7 +453,7 @@ class netcdfinput():
         self.maxsteps = minimum(maxmb * len(a) / floatspermb + 1,maxlentime - 1)
         self.fstep = 0
         self.lstep = self.fstep + self.maxsteps
-
+        self.offset = 0
         self.datetime = self.dataset.variables['time'][:]
         if hasattr(self.dataset.variables['time'],'units'):
             self.timeunits=self.dataset.variables['time'].units
@@ -545,10 +545,18 @@ class netcdfinput():
         else:
             ncindex = timestep - 1
 
+
+        ncindex = ncindex + self.offset
+
         if tsdatetime != None:
-            if tsdatetime != self.datetimelist[ncindex]:
+            if tsdatetime.replace(tzinfo=None) != self.datetimelist[ncindex].replace(tzinfo=None):
                 logging.warn("Date/time does not match. Wanted " + str(tsdatetime) + " got " + str(self.datetimelist[ncindex]))
-                logging.warn("Index: " + str(ncindex) + " Par: " + var)
+                import bisect
+                pos = bisect.bisect_left(self.datetimelist,tsdatetime.replace(tzinfo=None))
+                self.offset = pos - ncindex
+                logging.warn("Adjusting to the date/time at index and setting offset: " + str(pos) + ":" + str(self.offset) + ":"  + str(self.datetimelist[pos]))
+                ncindex = pos
+
 
         if self.alldat.has_key(var):
             if ncindex == self.lstep:  # Read new block of data in mem

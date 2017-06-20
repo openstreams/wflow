@@ -474,6 +474,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self.DT = runDateTimeInfo(timestepsecs=timestepsecs, datetimestart=datetimestart,
                                   datetimeend=dte, mode='steps')
 
+
         if lastTimeStep != 0:
             if firstTimestep == 0:
                 firstTimestep = 1
@@ -1003,7 +1004,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         st = configget(self._userModel().config, 'run', 'starttime', "None")
 
-        self.skipfirsttimestep =  int(configget(self._userModel().config, 'run', 'skipfirst', "0"))
+        #self.skipfirsttimestep =  int(configget(self._userModel().config, 'run', 'skipfirst', "0"))
 
         # Assume that we have set this via BMI
         if self.DT.setByBMI:
