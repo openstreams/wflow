@@ -231,7 +231,7 @@ The wflow\_floodmap model
    wflow_floodmap
 
 
-The framework and settings fro the framework
+The framework and settings for the framework
 ============================================
 .. toctree::
    :maxdepth: 2
