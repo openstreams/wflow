@@ -51,9 +51,6 @@ import netCDF4 as nc4
 import gzip, zipfile
 
 
-
-
-
 def pt_flow_in_river(ldd,river):
     """
     Returns all points (True) that flow into the mak river (boolean map with river set to True)
@@ -148,57 +145,49 @@ def simplereservoir(storage, inflow, maxstorage, target_perc_full, maximum_Q, de
     return storage, outflow, percfull, demandRelease/timestepsecs
 
 
-def lookupResRegMatr(ReserVoirLocs, values, ResFunc, func_int, pathtotbl, fileName, JDOY):
+def lookupResRegMatr(ReserVoirLocs, values, hq, JDOY):
 
-    res_ids = ifthen(ResFunc==func_int, ReserVoirLocs)
-
-    np_res_ids = pcr2numpy(res_ids,0)
+    np_res_ids = pcr2numpy(ReserVoirLocs,0)
     npvalues = pcr2numpy(values,0)
-
-    np_res_ids_u = np.unique(np_res_ids[np.nonzero(np_res_ids)])
-
-    if np.size(np_res_ids_u) > 0:
-        for item in np.nditer(np_res_ids_u):
-            HS = np.loadtxt(pathtotbl + fileName + str(item) + ".tbl", skiprows=3, usecols=(0,JDOY))
-            value = npvalues[np.where(np_res_ids==item)]
-
-            val = np.interp(value,HS[:,0],HS[:,1])
-
-            npvalues[np.where(np_res_ids==item)] = val
+    out = np.copy(npvalues) * 0.0
 
 
-    return numpy2pcr(Scalar, npvalues, 0)
+    if len(hq) > 0:
+        for key in hq:
+            value = npvalues[np.where(np_res_ids==key)]
+
+            val = np.interp(value,hq[key][:,0],hq[key][:,JDOY])
+
+            out[np.where(np_res_ids==key)] = val
+
+
+    return numpy2pcr(Scalar, out, 0)
 
 
 
-def lookupResFunc(ReserVoirLocs, values, ResFunc, func_int, pathtotbl, fileName, dirLookup):
+def lookupResFunc(ReserVoirLocs, values, sh, dirLookup):
 
-    res_ids = ifthen(ResFunc==func_int, ReserVoirLocs)
-
-    np_res_ids = pcr2numpy(res_ids,0)
+    np_res_ids = pcr2numpy(ReserVoirLocs,0)
     npvalues = pcr2numpy(values,0)
+    out = np.copy(npvalues) * 0.0
 
-    np_res_ids_u = np.unique(np_res_ids[np.nonzero(np_res_ids)])
 
-    if np.size(np_res_ids_u) > 0:
-        for item in np.nditer(np_res_ids_u):
-            HS = np.loadtxt(pathtotbl + fileName + str(item) + ".tbl")
-            value = npvalues[np.where(np_res_ids==item)]
+    if len(sh) > 0:
+        for key in sh:
+            value = npvalues[np.where(np_res_ids==key)]
 
             if dirLookup == '0-1':
-                val = np.interp(value,HS[:,0],HS[:,1])
+                val = np.interp(value,sh[key][:,0],sh[key][:,1])
             if dirLookup == '1-0':
-                val = np.interp(value,HS[:,1],HS[:,0])
+                val = np.interp(value,sh[key][:,1],sh[key][:,0])
 
-            npvalues[np.where(np_res_ids==item)] = val
+            out[np.where(np_res_ids==key)] = val
 
-
-
-    return numpy2pcr(Scalar, npvalues, 0)
+    return numpy2pcr(Scalar, out, 0)
 
 
 
-def complexreservoir(waterlevel, ReserVoirLocs, LinkedReserVoirLocs, ResArea, ResThreshold, ResStorFunc, ResOutflowFunc, res_b, res_e, inflow, pathtotbl, precip, pet, ReservoirComplexAreas, JDOY, timestepsecs=86400):
+def complexreservoir(waterlevel, ReserVoirLocs, LinkedReserVoirLocs, ResArea, ResThreshold, ResStorFunc, ResOutflowFunc, sh, hq, res_b, res_e, inflow, precip, pet, ReservoirComplexAreas, JDOY, timestepsecs=86400):
 
     mv = -999.0
 
@@ -213,9 +202,8 @@ def complexreservoir(waterlevel, ReserVoirLocs, LinkedReserVoirLocs, ResArea, Re
 
 
     _outflow = []
-
-    for n in range(0,int(timestepsecs/14400)-1):
-
+    nr_loop = np.max([int(timestepsecs/21600),1])
+    for n in range(0,nr_loop):
         np_waterlevel = pcr2numpy(waterlevel,np.nan)
         np_waterlevel_lower = np_waterlevel.copy()
 
@@ -231,9 +219,9 @@ def complexreservoir(waterlevel, ReserVoirLocs, LinkedReserVoirLocs, ResArea, Re
         pcr_diff_wl = numpy2pcr(Scalar, diff_wl, mv)
         pcr_wl_lower = numpy2pcr(Scalar, np_waterlevel_lower, mv)
 
-        storage_start = ifthenelse(ResStorFunc==1, ResArea*waterlevel, lookupResFunc(ReserVoirLocs, waterlevel, ResStorFunc,2, pathtotbl, "Reservoir_SH_",'0-1'))
+        storage_start = ifthenelse(ResStorFunc==1, ResArea*waterlevel, lookupResFunc(ReserVoirLocs, waterlevel, sh,'0-1'))
 
-        outflow = ifthenelse(ResOutflowFunc==1,lookupResRegMatr(ReserVoirLocs, waterlevel, ResOutflowFunc, 1, pathtotbl,"Reservoir_HQ_", JDOY),ifthenelse(pcr_diff_wl >= 0, max(res_b*(waterlevel-ResThreshold)**res_e,0),min(-1*res_b*(pcr_wl_lower-ResThreshold)**res_e,0)))
+        outflow = ifthenelse(ResOutflowFunc==1,lookupResRegMatr(ReserVoirLocs, waterlevel, hq, JDOY),ifthenelse(pcr_diff_wl >= 0, max(res_b*(waterlevel-ResThreshold)**res_e,0),min(-1*res_b*(pcr_wl_lower-ResThreshold)**res_e,0)))
 
         np_outflow =  pcr2numpy(outflow,np.nan)
         np_outflow_linked = np_reslocs * 0.0
@@ -241,9 +229,9 @@ def complexreservoir(waterlevel, ReserVoirLocs, LinkedReserVoirLocs, ResArea, Re
         np_outflow_linked[np.in1d(np_reslocs, np_linkedreslocs[np_outflow < 0]).reshape(np_linkedreslocs.shape)] = np_outflow[np_outflow < 0]
         outflow_linked = numpy2pcr(Scalar, np_outflow_linked, 0.0)
 
-        storage = storage_start + (inflow * timestepsecs/6) + (prec_av/6/1000.0)*ResArea - (pet_av/6/1000.0)*ResArea - (cover(outflow,0.0) * timestepsecs/6) + (cover(outflow_linked,0.0) * timestepsecs/6)
+        storage = storage_start + (inflow * timestepsecs/nr_loop) + (prec_av/nr_loop/1000.0)*ResArea - (pet_av/nr_loop/1000.0)*ResArea - (cover(outflow,0.0) * timestepsecs/nr_loop) + (cover(outflow_linked,0.0) * timestepsecs/nr_loop)
 
-        waterlevel = ifthenelse(ResStorFunc==1, waterlevel + (storage-storage_start)/ResArea, lookupResFunc(ReserVoirLocs, storage, ResStorFunc, 2, pathtotbl,"Reservoir_SH_", '1-0'))
+        waterlevel = ifthenelse(ResStorFunc==1, waterlevel + (storage-storage_start)/ResArea, lookupResFunc(ReserVoirLocs, storage, sh, '1-0'))
 
         np_outflow_nz = np_outflow*0.0
         np_outflow_nz[np_outflow>0] = np_outflow[np_outflow>0]
