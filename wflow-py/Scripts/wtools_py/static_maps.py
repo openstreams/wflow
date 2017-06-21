@@ -26,13 +26,11 @@ from optparse import OptionParser
 # import general packages
 import numpy as np
 from osgeo import osr, gdal, ogr, gdalconst
-from lxml import etree
-from osgeo import gdalconst
 
 # import specific packages
 from hydrotools import gis
 import pcraster as pcr
-import wtools_lib
+import wflow.wflowtools_lib as wt
 
 driver = ogr.GetDriverByName("ESRI Shapefile")
 
@@ -126,7 +124,7 @@ def main():
         sys.exit(1)
 
     # open a logger, dependent on verbose print to screen or not
-    logger, ch = wtools_lib.setlogger(logfilename, 'WTOOLS', options.verbose)
+    logger, ch = wt.setlogger(logfilename, 'WTOOLS', options.verbose)
 
     # create directories # TODO: check if workdir is still necessary, try to
     # keep in memory as much as possible
@@ -148,47 +146,47 @@ def main():
         pcr.setclone(clone_map)
         # get the extent from clone.tif
         xax, yax, clone, fill_value = gis.gdal_readmap(clone_map, 'GTiff')
-        trans = wtools_lib.get_geotransform(clone_map)
-        extent = wtools_lib.get_extent(clone_map)
+        trans = wt.get_geotransform(clone_map)
+        extent = wt.get_extent(clone_map)
         xmin, ymin, xmax, ymax = extent
         zeros = np.zeros(clone.shape)
         ones = pcr.numpy2pcr(pcr.Scalar, np.ones(clone.shape), -9999)
         # get the projection from clone.tif
-        srs = wtools_lib.get_projection(clone_map)
+        srs = wt.get_projection(clone_map)
         unit_clone = srs.GetAttrValue('UNIT').lower()
 
     # READ CONFIG FILE
     # open config-file
-    config = wtools_lib.OpenConf(options.inifile)
+    config = wt.OpenConf(options.inifile)
 
     # read settings
-    snapgaugestoriver = wtools_lib.configget(config, 'settings',
+    snapgaugestoriver = wt.configget(config, 'settings',
                                              'snapgaugestoriver',
                                              True, datatype='boolean')
-    burnalltouching = wtools_lib.configget(config, 'settings',
+    burnalltouching = wt.configget(config, 'settings',
                                            'burncatchalltouching',
                                            True, datatype='boolean')
-    burninorder = wtools_lib.configget(config, 'settings',
+    burninorder = wt.configget(config, 'settings',
                                        'burncatchalltouching',
                                        False, datatype='boolean')
-    verticetollerance = wtools_lib.configget(config, 'settings',
+    verticetollerance = wt.configget(config, 'settings',
                                              'vertice_tollerance',
                                              0.0001, datatype='float')
 
     ''' read parameters '''
-    burn_outlets = wtools_lib.configget(config, 'parameters',
+    burn_outlets = wt.configget(config, 'parameters',
                                         'burn_outlets', 10000,
                                         datatype='int')
-    burn_rivers = wtools_lib.configget(config, 'parameters',
+    burn_rivers = wt.configget(config, 'parameters',
                                        'burn_rivers', 200,
                                        datatype='int')
-    burn_connections = wtools_lib.configget(config, 'parameters',
+    burn_connections = wt.configget(config, 'parameters',
                                             'burn_connections', 100,
                                             datatype='int')
-    burn_gauges = wtools_lib.configget(config, 'parameters',
+    burn_gauges = wt.configget(config, 'parameters',
                                        'burn_gauges', 100,
                                        datatype='int')
-    minorder = wtools_lib.configget(config, 'parameters',
+    minorder = wt.configget(config, 'parameters',
                                     'riverorder_min', 3,
                                     datatype='int')
     percentiles = np.array(
@@ -197,11 +195,11 @@ def main():
 
     # read the parameters for generating a temporary very high resolution grid
     if unit_clone == 'degree':
-        cellsize_hr = wtools_lib.configget(config, 'parameters',
+        cellsize_hr = wt.configget(config, 'parameters',
                                            'highres_degree', 0.0005,
                                            datatype='float')
     elif (unit_clone == 'metre') or (unit_clone == 'meter'):
-        cellsize_hr = wtools_lib.configget(config, 'parameters',
+        cellsize_hr = wt.configget(config, 'parameters',
                                            'highres_metre', 50,
                                            datatype='float')
 
@@ -211,40 +209,40 @@ def main():
                 float(ymax), 0, -cellsize_hr)
     clone_hr = os.path.join(options.destination, 'clone_highres.tif')
     # make a highres clone as well!
-    wtools_lib.CreateTif(clone_hr, rows_hr, cols_hr, hr_trans, srs, 0)
+    wt.CreateTif(clone_hr, rows_hr, cols_hr, hr_trans, srs, 0)
 
     # read staticmap locations
-    catchment_map = wtools_lib.configget(config, 'staticmaps',
+    catchment_map = wt.configget(config, 'staticmaps',
                                          'catchment', 'wflow_catchment.map')
-    dem_map = wtools_lib.configget(config, 'staticmaps',
+    dem_map = wt.configget(config, 'staticmaps',
                                    'dem', 'wflow_dem.map')
-    demmax_map = wtools_lib.configget(config, 'staticmaps',
+    demmax_map = wt.configget(config, 'staticmaps',
                                       'demmax', 'wflow_demmax.map')
-    demmin_map = wtools_lib.configget(config, 'staticmaps',
+    demmin_map = wt.configget(config, 'staticmaps',
                                       'demmin', 'wflow_demmin.map')
-    gauges_map = wtools_lib.configget(config, 'staticmaps',
+    gauges_map = wt.configget(config, 'staticmaps',
                                       'gauges', 'wflow_gauges.map')
-    landuse_map = wtools_lib.configget(config, 'staticmaps',
+    landuse_map = wt.configget(config, 'staticmaps',
                                        'landuse', 'wflow_landuse.map')
-    ldd_map = wtools_lib.configget(config, 'staticmaps',
+    ldd_map = wt.configget(config, 'staticmaps',
                                    'ldd', 'wflow_ldd.map')
-    river_map = wtools_lib.configget(config, 'staticmaps',
+    river_map = wt.configget(config, 'staticmaps',
                                      'river', 'wflow_river.map')
-    outlet_map = wtools_lib.configget(config, 'staticmaps',
+    outlet_map = wt.configget(config, 'staticmaps',
                                       'outlet', 'wflow_outlet.map')
-    riverlength_fact_map = wtools_lib.configget(config, 'staticmaps',
+    riverlength_fact_map = wt.configget(config, 'staticmaps',
                                                 'riverlength_fact',
                                                 'wflow_riverlength_fact.map')
-    soil_map = wtools_lib.configget(config, 'staticmaps',
+    soil_map = wt.configget(config, 'staticmaps',
                                     'soil', 'wflow_soil.map')
-    streamorder_map = wtools_lib.configget(config, 'staticmaps',
+    streamorder_map = wt.configget(config, 'staticmaps',
                                            'streamorder',
                                            'wflow_streamorder.map')
-    subcatch_map = wtools_lib.configget(config, 'staticmaps',
+    subcatch_map = wt.configget(config, 'staticmaps',
                                         'subcatch', 'wflow_subcatch.map')
 
     # read mask location (optional)
-    masklayer = wtools_lib.configget(
+    masklayer = wt.configget(
         config, 'mask', 'masklayer', options.catchshp)
 
     # ???? empty = pcr.ifthen(ones == 0, pcr.scalar(0))
@@ -272,7 +270,7 @@ def main():
     # TODO: make windowstats applicable to source/target with different projections. This does not work yet.
     # retrieve srs from DEM
     try:
-        srs_dem = wtools_lib.get_projection(options.dem_in)
+        srs_dem = wt.get_projection(options.dem_in)
     except:
         logger.warning(
             'No projection found in DEM, assuming WGS 1984 lat long')
@@ -297,7 +295,7 @@ def main():
 
         percentile_dem = os.path.join(
             options.destination, 'wflow_dem_{:03d}.map'.format(int(percentile)))
-        stats = wtools_lib.windowstats(options.dem_in, len(yax), len(xax),
+        stats = wt.windowstats(options.dem_in, len(yax), len(xax),
                                        trans, srs, percentile_dem, percentile, transform=clone2dem_transform, logger=logger)
 #    else:
 #        logger.warning('Projections of DEM and clone are different. DEM statistics for different projections is not yet implemented')
@@ -390,7 +388,7 @@ def main():
     demburn_hr_file = os.path.join(options.destination, 'demburn_highres.map')
     riv_hr_file = os.path.join(options.destination, 'riv_highres.map')
     gis.gdal_warp(options.dem_in, clone_hr, dem_hr_file)
-    # wtools_lib.CreateTif(riv_hr, rows_hr, cols_hr, hr_trans, srs, 0)
+    # wt.CreateTif(riv_hr, rows_hr, cols_hr, hr_trans, srs, 0)
     file_att = os.path.splitext(os.path.basename(options.rivshp))[0]
     # open the shape layer
     ds = ogr.Open(options.rivshp)
@@ -418,7 +416,7 @@ def main():
     pcr.setclone(clone_map)
     logger.info('Computing river length')
     #riverlength = wt.windowstats(riv_hr,clone_rows,clone_columns,clone_trans,srs_clone,resultdir,'frac',clone2dem_transform)
-    riverlength = wtools_lib.windowstats(riv_hr_file, len(yax), len(xax),
+    riverlength = wt.windowstats(riv_hr_file, len(yax), len(xax),
                                          trans, srs, os.path.join(options.destination, riverlength_fact_map), stat='fact', logger=logger)
     # TODO: nothing happends with the river lengths yet. Need to decide how to
     # use these
@@ -507,11 +505,11 @@ def main():
                           gdal_type=gdalconst.GDT_Float32)
 
     if options.clean:
-        wtools_lib.DeleteList(glob.glob(os.path.join(options.destination, '*.xml')),
+        wt.DeleteList(glob.glob(os.path.join(options.destination, '*.xml')),
                               logger=logger)
-        wtools_lib.DeleteList(glob.glob(os.path.join(options.destination, 'clim', '*.xml')),
+        wt.DeleteList(glob.glob(os.path.join(options.destination, 'clim', '*.xml')),
                               logger=logger)
-        wtools_lib.DeleteList(glob.glob(os.path.join(options.destination, '*highres*')),
+        wt.DeleteList(glob.glob(os.path.join(options.destination, '*highres*')),
                               logger=logger)
 
 

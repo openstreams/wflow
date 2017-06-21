@@ -22,7 +22,7 @@ import wflow.wflowtools_lib as wt
 Driver = ogr.GetDriverByName("ESRI Shapefile")
 
 
-def Usage():
+def usage():
     print('')
     print('Usage: CatchRiver [-d dem (raster)] [-l burn_line (shape)] [-p burn_point (shape)] [-a burn_area (shape)]\n '
           '[-R riverout (shape)] [-C catchmentout (shape)]  [-O min strahler order (integer)] -B -S -K')
@@ -77,8 +77,8 @@ argv = sys.argv
 try:
     opts, args = getopt.getopt(argv[1:], 'd:l:p:F:a:R:C:O:B:SsKI')
 except getopt.error:
-    print 'fout'
-    Usage()
+    print 'error'
+    usage()
     sys.exit(1)
 
 dem_in = None
@@ -127,7 +127,7 @@ for o, a in opts:
 if dem_in == None:
     if not skipldd:
         print 'please provide dem'
-        Usage()
+        usage()
         sys.exit(1)
 else:
     if not os.path.exists(dem_in):

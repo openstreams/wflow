@@ -28,7 +28,7 @@ from osgeo import ogr
 from lxml import etree
 import pyproj
 # import specific packages
-import wtools_lib
+import wflow.wflowtools_lib as wt
 
 
 def main():
@@ -71,7 +71,7 @@ def main():
         sys.exit(1)
 
     # open a logger, dependent on verbose print to screen or not
-    logger, ch = wtools_lib.setlogger(logfilename, 'WTOOLS', options.verbose)
+    logger, ch = wt.setlogger(logfilename, 'WTOOLS', options.verbose)
 
     # delete old files
     if os.path.isdir(options.destination):
@@ -94,16 +94,16 @@ def main():
         else:
             # Read extent from a GDAL compatible file
             try:
-                extent_in = wtools_lib.get_extent(options.inputfile)
+                extent_in = wt.get_extent(options.inputfile)
             except:
                 msg = 'Input file {:s} not a shape or gdal file'.format(
                     options.inputfile)
-                wtools_lib.close_with_error(logger, ch, msg)
+                wt.close_with_error(logger, ch, msg)
                 sys.exit(1)
 
 #            # get spatial reference from grid file
             try:
-                srs = wtools_lib.get_projection(options.inputfile)
+                srs = wt.get_projection(options.inputfile)
             except:
                 logger.warning(
                     'No projection found, assuming WGS 1984 lat long')
@@ -137,7 +137,7 @@ def main():
             else:
                 msg = 'Projection "{:s}" is not a valid projection'.format(
                     options.projection)
-                wtools_lib.close_with_error(logger, ch, msg)
+                wt.close_with_error(logger, ch, msg)
         else:
             logger.warning('No projection found, assuming WGS 1984 lat long')
             srs.ImportFromEPSG(4326)
@@ -164,7 +164,7 @@ def main():
     if options.snap:
         logger.info('Snapping raster')
         snap = len(str(options.cellsize - np.floor(options.cellsize))) - 2
-        extent_out = wtools_lib.round_extent(extent_in, options.cellsize, snap)
+        extent_out = wt.round_extent(extent_in, options.cellsize, snap)
     else:
         extent_out = extent_in
     cols = int((extent_out[2] - extent_out[0]) / options.cellsize)  # +2)
@@ -241,7 +241,7 @@ def main():
     elif cells > 1000000:
         logger.warning(
             'With this amount of cells your model will run slow.\nConsider a larger cell-size. Fast models run with < 1,000,000 cells')
-    logger, ch = wtools_lib.closeLogger(logger, ch)
+    logger, ch = wt.closeLogger(logger, ch)
     del logger, ch
     sys.exit(1)
 

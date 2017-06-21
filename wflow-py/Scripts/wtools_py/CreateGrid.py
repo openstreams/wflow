@@ -9,16 +9,8 @@ import shutil
 from osgeo import osr
 from osgeo import ogr
 from lxml import etree
-try:
-    from osgeo import ogr
-except ImportError:
-    import ogr
-try:
-    from osgeo import gdal
-    from osgeo.gdalconst import *
-except ImportError:
-    import gdal
-    from gdalconst import *
+from osgeo import gdal
+from osgeo.gdalconst import *
 import wflow.wflowtools_lib as wt
 
 

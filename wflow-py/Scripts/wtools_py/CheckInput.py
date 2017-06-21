@@ -12,7 +12,7 @@ import shutil
 import sys
 
 
-def Usage():
+def usage():
     print('')
     print('Usage: CheckInput -h [-r river] ')
     print '-r   rivers to be checked for network (optional) (ESRI Shapefile)'
@@ -34,19 +34,19 @@ def main():
         opts, args = getopt.getopt(argv[1:], 'hr:')
     except getopt.error:
         print 'fout'
-        Usage()
+        usage()
         sys.exit(1)
 
     for o, a in opts:
         if o == '-h':
-            Usage()
+            usage()
             sys.exit()
         elif o == '-r':
             rivershp = a
 
     if rivershp == None:
         print 'input file or extent need to be specified'
-        Usage()
+        usage()
         sys.exit(1)
 
     shapes = wt.Reach2Nodes(rivershp, 4326, 0.0001, resultdir)
