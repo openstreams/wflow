@@ -183,7 +183,6 @@ def pixml_state_updateTime(inxml,outxml,DT):
             else:
                 ofile.write(aline)
 
-
         ofile.close()
     else:
         print inxml + " does not exists."

@@ -1110,7 +1110,25 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self.logger.debug("Found following input variables to get from netcdf file: " + str(varlst))
             self.NcInput = netcdfinput(os.path.join(caseName, self.ncfile), self.logger, varlst)
 
+        # Meta info for netcdf files
+        meta = {}
+        meta['caseName'] = caseName
+        meta['runId'] = runId
+        meta['wflow_version'] = __version__
+        meta['wflow_release'] = __release__
+        meta['wflow_build'] = __build__
+        meta['wflow_ini'] = self._userModel().configfile
+        if hasattr(sys, "frozen"):
+            meta['wflow_exe'] = "True"
+        else:
+            meta['wflow_exe'] = "False"
 
+        try:
+            metafrom_config = dict(self._userModel().config.items('netcdfmetadata'))
+        except:
+            metafrom_config = {}
+
+        meta.update(metafrom_config)
 
 
         if self.ncfilestates != "None":
@@ -1125,17 +1143,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         if self.ncoutfile != 'None':  # Ncoutput
             buffer = int(configget(self._userModel().config, 'framework', 'netcdfwritebuffer', "50"))
-            meta = {}
-            meta['caseName'] = caseName
-            meta['runId'] = runId
-            meta['wflow_version'] =__version__
-            meta['wflow_release'] =__release__
-            try:
-                metafrom_config = dict(self._userModel().config.items('netcdfmetadata'))
-            except:
-                metafrom_config = {}
 
-            meta.update(metafrom_config)
             self.NcOutput = netcdfoutput(os.path.join(caseName, runId, self.ncoutfile),
                                          self.logger, self.DT.outPutStartTime,
                                          self.DT.runTimeSteps,
@@ -1144,22 +1152,12 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                                          zlib=self.ncfilecompression,least_significant_digit=self.ncfiledigits)
 
         if self.ncoutfilestatic != 'None':  # Ncoutput
-            meta = {}
-            meta['caseName'] = caseName
-            meta['runId'] = runId
-            meta['wflow_version'] =__version__
-            meta['wflow_release'] =__release__
             self.NcOutputStatic = netcdfoutputstatic(os.path.join(caseName, runId, self.ncoutfilestatic),
                                                      self.logger, self.DT.runEndTime,1,timestepsecs=self.DT.timeStepSecs,
                                                      maxbuf=1, metadata=meta, EPSG=self.EPSG,Format=self.ncfileformat,
                                                      zlib=self.ncfilecompression,least_significant_digit=self.ncfiledigits)
 
         if self.ncoutfilestate != 'None':  # Ncoutput
-            meta = {}
-            meta['caseName'] = caseName
-            meta['runId'] = runId
-            meta['wflow_version'] =__version__
-            meta['wflow_release'] =__release__
             self.NcOutputState = netcdfoutputstatic(os.path.join(caseName, runId, self.ncoutfilestate),
                                                      self.logger, self.DT.runEndTime,1,timestepsecs=self.DT.timeStepSecs,
                                                      maxbuf=1, metadata=meta, EPSG=self.EPSG,Format=self.ncfileformat,
