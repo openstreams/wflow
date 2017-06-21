@@ -134,9 +134,7 @@ class runDateTimeInfo():
             self.currentDateTime = self.runStateTime
             self.outPutStartTime = self.currentDateTime + datetime.timedelta(seconds=self.timeStepSecs)
             self.runTimeSteps = (calendar.timegm(self.runEndTime.utctimetuple()) - calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs
-            self.currentMonth = self.currentDateTime.month
-            self.currentYday = self.currentDateTime.timetuple().tm_yday
-            self.currentHour = self.currentDateTime.hour
+
 
             if self.runTimeSteps < 1: # End time before start time
                 self.runTimeSteps = 1
@@ -159,9 +157,7 @@ class runDateTimeInfo():
             self.outPutStartTime = self.runStateTime + datetime.timedelta(seconds=self.timeStepSecs)
             self.currentDateTime = self.runStartTime
             self.runEndTime = self.runStateTime + datetime.timedelta(seconds=self.timeStepSecs * runTimeSteps)
-            self.currentMonth = self.currentDateTime.month
-            self.currentYday = self.currentDateTime.timetuple().tm_yday
-            self.currentHour = self.currentDateTime.hour
+
 
         if datetimeend:
             self.runEndTime = datetimeend
@@ -174,9 +170,6 @@ class runDateTimeInfo():
             self.currentTimeStep = currentTimeStep
             self.currentDateTime = self.runStateTime + datetime.timedelta(seconds=self.timeStepSecs * (self.currentTimeStep -1))
 
-            self.currentMonth = self.currentDateTime.month
-            self.currentYday = self.currentDateTime.timetuple().tm_yday
-            self.currentHour = self.currentDateTime.hour
 
         if incrementStep:
             self.currentTimeStep = self.currentTimeStep + 1
@@ -185,14 +178,14 @@ class runDateTimeInfo():
 
         if currentDatetime:
             self.currentDateTime = currentDatetime
-            self.currentMonth = self.currentDateTime.month
-            self.currentYday = self.currentDateTime.timetuple().tm_yday
-            self.currentHour = self.currentDateTime.hour
             self.currentTimeStep = (calendar.timegm(self.currentDateTime.utctimetuple()) -
                                     calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs +1
 
         self.nextDateTime = self.currentDateTime + datetime.timedelta(seconds=self.timeStepSecs)
         self.lastTimeStep = self.runTimeSteps
+        self.currentMonth = self.currentDateTime.month
+        self.currentYday = self.currentDateTime.timetuple().tm_yday
+        self.currentHour = self.currentDateTime.hour
 
 
 
