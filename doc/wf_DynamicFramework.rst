@@ -444,6 +444,17 @@ will be  02 Jan 2016 generated from the forcing marked as 2 Jan 2016.
 The same applies when the start and end time of the model run are supplied via the bmi interface.
 
 
+Settings in the netcdfmetadata section
+======================================
+
+All items in this section are copied as global attributes into the netcdf output file. Example:
+
+::
+
+    [netcdfmetadata]
+    license=https://opendatacommons.org/licenses/odbl/
+    note=Test runs, results are not final
+
 
 
 wf_DynamicFramework Module
