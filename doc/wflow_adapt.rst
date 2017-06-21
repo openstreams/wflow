@@ -22,9 +22,7 @@ To run the model from Delft-FEWS the following actions need to be
 performed:
 
 -  The runinfo.xml file should be specified in the [run]section of the ini file
-
--  The use of netcdf input and output shouls be switched on
-
+-  The use of netcdf input and output should be switched on
 -  The postadapter (wflow\_adapt.py) needs to be run after the wflow run
 
 
@@ -84,6 +82,16 @@ The wflow_adapt module can also be used by other programs to convert .tss files 
 pi-xml vv. Below the API documentation of the module is given.
 
 
+In the above example the state files belonging to the model should be configed as per  below in the General Adapter XML. In
+Fews the read and write locations are as viewed from the model's point of view:
+
+::
+
+        <stateLocation>
+            <readLocation>WaterLevel.map</readLocation>
+            <writeLocation>../run_default/outstate/WaterLevel.map</writeLocation>
+        </stateLocation>
+        # Repeat for all state variables
 
 
 Module function documentation
