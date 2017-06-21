@@ -1130,6 +1130,12 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             meta['runId'] = runId
             meta['wflow_version'] =__version__
             meta['wflow_release'] =__release__
+            try:
+                metafrom_config = dict(self._userModel().config.items('netcdfmetadata'))
+            except:
+                metafrom_config = {}
+
+            meta.update(metafrom_config)
             self.NcOutput = netcdfoutput(os.path.join(caseName, runId, self.ncoutfile),
                                          self.logger, self.DT.outPutStartTime,
                                          self.DT.runTimeSteps,
@@ -1337,7 +1343,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 exit(1)
 
 
-            self.oscv[self.samplenamecsv[a]].writestep(tmpvar, a, timestep=self.DT.currentTimeStep,dtobj=self.DT.currentDateTime)
+            self.oscv[self.samplenamecsv[a]].writestep(tmpvar, a, timestep=self.DT.currentTimeStep-1,dtobj=self.DT.currentDateTime)
 
 
     def wf_savesummarymaps(self):

@@ -180,8 +180,8 @@ def pixml_state_updateTime(inxml,outxml,DT):
             pos = aline.find('dateTime')
             if pos >= 0:
                 ofile.write("<dateTime date=\"" + datestr + "\" time=\"" + timestr + "\"/>\n")
-            #else:
-            #    ofile.write(aline.replace('instate','outstate').replace("input","output"))
+            else:
+                ofile.write(aline)
 
 
         ofile.close()
