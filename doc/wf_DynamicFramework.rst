@@ -313,7 +313,7 @@ how to initialize the model and how interpret the forcing data.
     # Default behaviour: steps
     runlengthdetermination=steps
 
-Data and time and timesteps
+Date and time and timesteps
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The original pcraster framework has no notion of date and time, only timesteps that are used to propagate a
 model forward. However, to be able to support the BMI and netcdf files date and time functionality
