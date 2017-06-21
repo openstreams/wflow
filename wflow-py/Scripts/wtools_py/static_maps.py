@@ -296,7 +296,7 @@ def main():
         percentile_dem = os.path.join(
             options.destination, 'wflow_dem_{:03d}.map'.format(int(percentile)))
         stats = wt.windowstats(options.dem_in, len(yax), len(xax),
-                                       trans, srs, percentile_dem, percentile, transform=clone2dem_transform, logger=logger)
+                               trans, srs, percentile_dem, percentile, transform=clone2dem_transform, logger=logger)
 #    else:
 #        logger.warning('Projections of DEM and clone are different. DEM statistics for different projections is not yet implemented')
 
@@ -417,7 +417,7 @@ def main():
     logger.info('Computing river length')
     #riverlength = wt.windowstats(riv_hr,clone_rows,clone_columns,clone_trans,srs_clone,resultdir,'frac',clone2dem_transform)
     riverlength = wt.windowstats(riv_hr_file, len(yax), len(xax),
-                                         trans, srs, os.path.join(options.destination, riverlength_fact_map), stat='fact', logger=logger)
+                                 trans, srs, os.path.join(options.destination, riverlength_fact_map), stat='fact', logger=logger)
     # TODO: nothing happends with the river lengths yet. Need to decide how to
     # use these
 
@@ -506,11 +506,11 @@ def main():
 
     if options.clean:
         wt.DeleteList(glob.glob(os.path.join(options.destination, '*.xml')),
-                              logger=logger)
+                      logger=logger)
         wt.DeleteList(glob.glob(os.path.join(options.destination, 'clim', '*.xml')),
-                              logger=logger)
+                      logger=logger)
         wt.DeleteList(glob.glob(os.path.join(options.destination, '*highres*')),
-                              logger=logger)
+                      logger=logger)
 
 
 if __name__ == "__main__":

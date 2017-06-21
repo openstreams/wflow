@@ -183,7 +183,8 @@ burn_connections = int(wt.configget(
     config, "parameters", "burn_connections", 100))
 burn_gauges = int(wt.configget(config, "parameters", "burn_gauges", 100))
 minorder = int(wt.configget(config, "parameters", "riverorder_min", 3))
-exec "percentile=tr.array(" + wt.configget(config, "parameters", "statisticmaps", [0, 100]) + ")"
+exec "percentile=tr.array(" + wt.configget(config,
+                                           "parameters", "statisticmaps", [0, 100]) + ")"
 if not unit_clone:
     print 'failed to read unit (meter or degree) from mask projection'
     unit_clone = str(wt.configget(config, "settings", "unit", 'meter'))
