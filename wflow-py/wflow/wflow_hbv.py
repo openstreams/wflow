@@ -442,6 +442,26 @@ class WflowModel(DynamicModel):
         self.ReserVoirLocs = self.ReserVoirLocs + cover(scalar(self.ReserVoirComplexLocs))
         res_area = cover(scalar(self.ReservoirComplexAreas),0.0)
         self.filter_P_PET = ifthenelse(res_area > 0, res_area*0.0, res_area*0.0 + 1.0)
+
+        #read files
+        self.sh = {}
+        res_ids = ifthen(self.ResStorFunc == 2, self.ReserVoirComplexLocs)
+        np_res_ids = pcr2numpy(res_ids,0)
+        np_res_ids_u = np.unique(np_res_ids[nonzero(np_res_ids)])
+        if np.size(np_res_ids_u) > 0:
+            for item in nditer(np_res_ids_u):
+                self.sh[int(item)] = loadtxt(self.Dir + "/" + self.intbl + "/Reservoir_SH_" + str(item) + ".tbl")
+        self.hq = {}
+        res_ids = ifthen(self.ResOutflowFunc == 1, self.ReserVoirComplexLocs)
+        np_res_ids = pcr2numpy(res_ids,0)
+        np_res_ids_u = np.unique(np_res_ids[nonzero(np_res_ids)])
+        if size(np_res_ids_u) > 0:
+            for item in nditer(np_res_ids_u):
+                self.hq[int(item)] = loadtxt(self.Dir + "/" + self.intbl + "/Reservoir_HQ_" + str(item) + ".tbl", skiprows=3)
+
+
+
+
     else:
         self.nrresComplex = 0
 
@@ -877,10 +897,9 @@ class WflowModel(DynamicModel):
     elif self.nrresComplex > 0:
         self.ReservoirWaterLevel, self.Outflow, self.ReservoirPrecipitation, self.ReservoirEvaporation,\
         self.ReservoirVolume = complexreservoir(self.ReservoirWaterLevel, self.ReserVoirComplexLocs, self.LinkedReservoirLocs, self.ResArea,\
-                                                    self.ResThreshold, self.ResStorFunc, self.ResOutflowFunc, self.Res_b,
-                                                    self.Res_e, self.SurfaceRunoff, self.Dir + "/" + self.intbl + "//",
-                                                    self.ReserVoirPrecip, self.ReserVoirPotEvap, self.ReservoirComplexAreas, self.wf_supplyJulianDOY(),
-                                                    timestepsecs=self.timestepsecs)
+                                                    self.ResThreshold, self.ResStorFunc, self.ResOutflowFunc, self.sh, self.hq, self.Res_b,
+                                                    self.Res_e, self.SurfaceRunoff,self.ReserVoirPrecip, self.ReserVoirPotEvap,
+                                                    self.ReservoirComplexAreas, self.wf_supplyJulianDOY(), timestepsecs=self.timestepsecs)
         self.OutflowDwn = upstream(self.TopoLddOrg,cover(self.Outflow,scalar(0.0)))
         self.Inflow = self.OutflowDwn + cover(self.Inflow,self.ZeroMap)
     else:
