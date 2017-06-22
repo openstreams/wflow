@@ -46,15 +46,31 @@ If netcdf files are used the name of the mapstack is used as the standardname in
     outputformat=1
 
     # netcdfoutput requires also outputformat = 1 (default) and additionally the name of the file
-    netcdfoutput = outmaps.nc
-    netcdfwritebuffer=100
+    # read the mapsstacks from a netcdf
     netcdfinput= inmaps.nc
+    #Write to netcdf:
+    netcdfoutput = outmaps.nc
+    # Write summary maps to netcdf
+    netcdfstaticoutput = staticoutmaps.nc
+    # Write states to netcdf
+    netcdfstatesoutput = states.nc
+    #Read states from netcdf
+    netcdfstatesinput = instates.nc
+    #netcdfwritebuffer=100
 
-    # Provide a lot of debug info
-    # debug=1
+
+As can be seen from the example above a number of input/ouput streams can be switch on to work with netcdf files.
+These are:
+
++ netcdfinput. Time dependant input. This does not work for climatology files at the moment
++ netcdfoutput. Time dependant output.
++ netcdfstaticoutput. Summary output at the end of a run, those that normally end up in the outsum directory
++ netcdfstatesoutput. The model's state variables at the end of a run.
++ netcdfstatesinput. The model's input state variables at the start of a run.
 
 
-
+To enhance performance when writing netcdf files a netcdfwritebuffer can be set. The number indicates the number
+of timesteps to keep in memory before flusing the buffer. Setting the buffer to a large value may induce memory problems.
 
 Settings in the API section
 ---------------------------
