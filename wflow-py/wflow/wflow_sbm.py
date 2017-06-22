@@ -349,8 +349,9 @@ class WflowModel(DynamicModel):
         if hasattr(self,'ReserVoirLocs'):
             states.append('ReservoirVolume')
 
-        if self.nrpaddyirri > 0:
-            states.append('PondingDepth')
+        if hasattr(self,'nrpaddyirri'):
+            if self.nrpaddyirri > 0:
+                states.append('PondingDepth')
         return states
 
     def supplyCurrentTime(self):

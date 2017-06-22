@@ -1065,10 +1065,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self.outputFormat = int(configget(self._userModel().config, 'framework', 'outputformat', '1'))
         self.APIDebug = int(configget(self._userModel().config, 'framework', 'debug', str(self.APIDebug)))
         self.ncfile = configget(self._userModel().config, 'framework', 'netcdfinput', "None")
-        self.ncfilestates = configget(self._userModel().config, 'framework', "netcdfstatesinput", "None")
+        self.ncinfilestates = configget(self._userModel().config, 'framework', "netcdfstatesinput", "None")
         self.ncoutfile = configget(self._userModel().config, 'framework', 'netcdfoutput', "None")
         self.ncoutfilestatic = configget(self._userModel().config, 'framework', 'netcdfstaticoutput', "None")
-        self.ncoutfilestate = configget(self._userModel().config, 'framework', 'netcdfstatesoutput', "None")
+        self.ncoutfilestates = configget(self._userModel().config, 'framework', 'netcdfstatesoutput', "None")
         self.ncfilestatic = configget(self._userModel().config, 'framework', 'netcdfstaticinput', "None")
         self.EPSG = configget(self._userModel().config, 'framework', 'EPSG', "EPSG:4326")
         self.ncfileformat = configget(self._userModel().config, 'framework', 'netcdf_format', "NETCDF4")
@@ -1131,11 +1131,11 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         meta.update(metafrom_config)
 
 
-        if self.ncfilestates != "None":
+        if self.ncinfilestates != "None":
             smaps = self._userModel().stateVariables()
             maps = [s + ".map" for s in smaps]
             self.logger.debug("Found following input states to get from netcdf file: " + str(maps))
-            self.NcInputStates = netcdfinputstates(os.path.join(caseName, self.ncfilestates), self.logger, maps)
+            self.NcInputStates = netcdfinputstates(os.path.join(caseName, self.ncinfilestates), self.logger, maps)
 
 
         if self.ncfilestatic != "None":
@@ -1157,8 +1157,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                                                      maxbuf=1, metadata=meta, EPSG=self.EPSG,Format=self.ncfileformat,
                                                      zlib=self.ncfilecompression,least_significant_digit=self.ncfiledigits)
 
-        if self.ncoutfilestate != 'None':  # Ncoutput
-            self.NcOutputState = netcdfoutputstatic(os.path.join(caseName, runId, self.ncoutfilestate),
+        if self.ncoutfilestates != 'None':  # Ncoutput
+            self.NcOutputState = netcdfoutputstatic(os.path.join(caseName, runId, self.ncoutfilestates),
                                                      self.logger, self.DT.runEndTime,1,timestepsecs=self.DT.timeStepSecs,
                                                      maxbuf=1, metadata=meta, EPSG=self.EPSG,Format=self.ncfileformat,
                                                      zlib=self.ncfilecompression,least_significant_digit=self.ncfiledigits)
@@ -1425,19 +1425,29 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             while stop == 0:
                 name = os.path.join(directory, var + "_" + str(nr) + ".map").replace("\\", "/")
 
-                if os.path.exists(name):
+                try:
+                    tvar = self.wf_readmap(name, 0.0, ncfilesource=self.ncinfilestates,fail=True,silent=True)
                     if nr == 0:
                         exec "self._userModel()." + var + "= []"
-                    execstr = "self._userModel()." + var + ".append(readmap(\"" + name + "\"))"
+                    execstr = "self._userModel()." + var + ".append(tvar)"
                     exec execstr
                     nr = nr + 1
-                else:
+                except:
                     stop = 1
+
+                #if os.path.exists(name):
+                #    if nr == 0:
+                #        exec "self._userModel()." + var + "= []"
+                #    execstr = "self._userModel()." + var + ".append(readmap(\"" + name + "\"))"
+                #    exec execstr
+                #    nr = nr + 1
+                #else:
+                #    stop = 1
             if nr == 0:
                 try:
                     mpath = os.path.join(directory, var + ".map").replace("\\", "/")
-                    tvar = self.wf_readmap(mpath,0.0,ncfilesource=self.ncfilestates)
-                    wf_readmtvar = self.wf_readmap(mpath,0.0,ncfilesource=self.ncfilestates,fail=True)
+                    tvar = self.wf_readmap(mpath, 0.0, ncfilesource=self.ncinfilestates)
+                    #wf_readmtvar = self.wf_readmap(mpath,0.0,ncfilesource=self.ncinfilestates,fail=True)
                     setattr(self._userModel(), var,tvar)
                 except:
                     self.logger.error(
@@ -2413,7 +2423,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
 
 
-    def wf_readmap(self, name, default, verbose=True,fail=False,ncfilesource="not set"):
+    def wf_readmap(self, name, default, verbose=True,fail=False,ncfilesource="not set",silent=False):
         """
           Adjusted version of readmapNew. the style variable is used to indicated
           how the data is read::
@@ -2500,7 +2510,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         self.logger.debug("Input data (" + os.path.abspath(path) + ") for timestep not present, returning " + str(default))
                     if fail:
                         self.logger.error("Required map: " + os.path.abspath(path) + " not found, exiting..")
-                        sys.exit(1)
+                        raise ValueError('Input map not found')
                     return cover(scalar(default))
 
             elif self._userModel()._inInitial():
@@ -2510,8 +2520,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         return retval
                     else:
                         if fail:
-                            self.logger.error("Required map: " + os.path.abspath(path) + " not found in " + self.ncfilestatic + "  exiting..")
-                            sys.exit(1)
+                            if not silent:
+                                self.logger.error("Required map: " + os.path.abspath(path) + " not found in " + self.ncfilestatic + "  exiting..")
+                            raise ValueError('Input static variable not found in netcdf')
                         else:
                             return self.TheClone + default
 
@@ -2522,16 +2533,22 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     if verbose:
                         self.logger.debug("Static input data (" + os.path.abspath(path) + ")  not present, returning " + str(default))
                     if fail:
-                        self.logger.error("Required map: " + os.path.abspath(path) + " not found, exiting..")
-                        sys.exit(1)
+                        if not silent:
+                            self.logger.error("Required map: " + os.path.abspath(path) + " not found, exiting..")
+                        raise ValueError('Input static variable not found')
                     return self.TheClone + default
 
             elif self._inResume():
-                if ncfilesource == self.ncfilestates and ncfilesource not in 'None':
-                    retval, succ = self.NcInputStates.gettimestep(1, self.logger, var=varname)
+                if ncfilesource == self.ncinfilestates and ncfilesource not in 'None':
+                    retval, succ = self.NcInputStates.gettimestep(1, self.logger, var=varname,tsdatetime=self.DT.runStateTime)
                     if succ:
                         return retval
                     else:
+                        if fail:
+                            if not silent:
+                                self.logger.error("Required map: " + os.path.abspath(path) + " not found, exiting..")
+                            raise ValueError('Input state variable not found')
+
                         return self.TheClone + default
 
                 if os.path.isfile(path):
@@ -2541,8 +2558,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     if verbose:
                         self.logger.debug("State input data (" + os.path.abspath(path) + ")  not present, returning " + str(default))
                     if fail:
-                        self.logger.error("Required map: " + os.path.abspath(path) + " not found, exiting..")
-                        sys.exit(1)
+                        if not silent:
+                            self.logger.error("Required map: " + os.path.abspath(path) + " not found, exiting..")
+                        raise ValueError('Input state variable not found')
                     return cover(scalar(default))
             else: # Assuming we are in pre-or post loop within the framwork
                 if "None" not in self.ncfilestatic:
@@ -2551,8 +2569,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         return retval
                     else:
                         if fail:
-                            self.logger.error("Required map: " + os.path.abspath(path) + " not found in " + self.ncfilestatic + "  exiting..")
-                            sys.exit(1)
+                            if not silent:
+                                self.logger.error("Required map: " + os.path.abspath(path) + " not found in " + self.ncfilestatic + "  exiting..")
+                            raise ValueError('Input variable not found in netcdf')
                         else:
                             return self.TheClone + default
 
@@ -2563,8 +2582,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     if verbose:
                         self.logger.debug("Static input data (" + os.path.abspath(path) + ")  not present, returning " + str(default))
                     if fail:
-                        self.logger.error("Required map: " + os.path.abspath(path) + " not found, exiting..")
-                        sys.exit(1)
+                        if not silent:
+                            self.logger.error("Required map: " + os.path.abspath(path) + " not found, exiting..")
+                        raise ValueError('Input variable not found')
                     return self.TheClone + default
 
 
