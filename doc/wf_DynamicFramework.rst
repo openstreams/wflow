@@ -20,7 +20,6 @@ to a Delft-FEWS runinfo.xml file can be given. An example is shown below.
     endtime= 1995-02-28 00:00:00
     # required, base timestep of the model
     timestepsecs = 86400
-    fewsrun=0
     #Indicates the model is running from Delft-FEWS or not
 
 
@@ -445,7 +444,6 @@ of steps is determined from the number of intervals in the forcing data. Hence, 
     timestepsecs = 86400
     #start model with cold state
     reinit=1
-    fewsrun=0
     # Default behaviour: steps
     runlengthdetermination=intervals
 

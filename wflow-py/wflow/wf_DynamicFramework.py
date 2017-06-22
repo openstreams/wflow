@@ -2181,27 +2181,25 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 # Save state variables in memory
                 self.wf_QuickSuspend()
 
+            # Make the summary variables
             for a in range(0, len(self.statslst)):
                 data = getattr(self._userModel(), self.statslst[a].varname)
                 self.statslst[a].add_one(data)
 
+            # Online statistics (rolling mean for now)
             for key in self.onlinestat.statvarname:
                 stvar = self.onlinestat.getstat(getattr(self._userModel(),key),key)
                 #stvar = self.onlinestat.getstat(cover(self.DT.currentTimeStep * 1.0), key)
                 setattr(self._userModel(),self.onlinestat.statvarname[key],stvar)
 
+            # Increment one timesteps
             self.DT.update(incrementStep=True, mode=self.runlengthdetermination)
             self._userModel().currentdatetime = self.DT.currentDateTime
 
             self.wf_savedynMaps()
             self.wf_saveTimeSeries()
 
-            #self.currentdatetime = self.currentdatetime + dt.timedelta(seconds=self._userModel().timestepsecs)
-
-
-
             self.logger.debug("timestep: " + str(self._userModel().currentTimeStep()) + "/" + str(self.DT.lastTimeStep) +  " (" + str(self.DT.currentDateTime) + ")")
-
 
             self._timeStepFinished()
             self._decrementIndentLevel()
