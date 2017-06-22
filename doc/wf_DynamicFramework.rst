@@ -73,7 +73,7 @@ To enhance performance when writing netcdf files a netcdfwritebuffer can be set.
 of timesteps to keep in memory before flusing the buffer. Setting the buffer to a large value may induce memory problems.
 
 Settings in the API section
----------------------------
+===========================
 
 In the ini file example below several variables are configured to be available via the
 API.  For most settings this only defines
@@ -134,7 +134,7 @@ example:
 
 
 Settings in the modelparameters section
----------------------------------------
+=======================================
 
 Most of the time this section is not needed as this will mostly be configured
 in the python code by the model developer. However, in some case this section can be used
@@ -193,7 +193,7 @@ Example::
 
 
 Settings in the variable_change_timestep/once section
------------------------------------------------------
+=====================================================
 In the two sections "variable_change_timestep" and "variable_change_once" you can set
 operations on parameters and variable that are executed at the start of each timestep or once in the initialisation
 of the model respectively. What you specify here should be valid python code and include variable that exists
@@ -213,7 +213,7 @@ See below for a configuration example. Some models may also support this via the
 
 
 Settings in the [rollingmean] section
--------------------------------------
+=====================================
 
 The rollingmean section allows you to define a rolling mean for each variable in the model. This variable can
 be used by other applications (e.g. data assimilation) or you can report it  as output. Example:
@@ -227,7 +227,7 @@ be used by other applications (e.g. data assimilation) or you can report it  as 
 The above will make a 12 timestep rollingmean and store this in the variable self.Surfacerunoff_mean_12
 
 Settings in the summary_* sections
-----------------------------------
+==================================
 
 By adding variable in one or several of these sectiosn the framework will save
 these variables to disk (using the value at the end, sum, min, max or avg) at the end of a run.
@@ -263,7 +263,7 @@ Example::
 
 
 Settings in the outputtss/outputcsv sections
---------------------------------------------
+============================================
 [outputcsv_0-n]
 [outputtss_0-n]
 
@@ -307,10 +307,10 @@ an average per landuse.
 
 
 [run] section: The use of date and time
----------------------------------------
+=======================================
 
 Available options in the [run] section
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------------------
 
 The run section can contain information about the model timesteps, the date/time range,
 how to initialize the model and how interpret the forcing data.
@@ -330,7 +330,7 @@ how to initialize the model and how interpret the forcing data.
     runlengthdetermination=steps
 
 Date and time and timesteps
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------
 The original pcraster framework has no notion of date and time, only timesteps that are used to propagate a
 model forward. However, to be able to support the BMI and netcdf files date and time functionality
 has been inserted into the framework.
