@@ -109,7 +109,7 @@ def prepare_nc(trgFile, timeList, x, y, metadata, logger, EPSG="EPSG:4326", unit
     res = srs.ImportFromEPSG(int(EPSG[5:]))
     if res != 0:
         logger.error("EPGS not converted correctly: " + EPSG + ". Is the GDAL_DATA environment variable set correctly?")
-        exit(1)
+        sys.exit(1)
 
     projStr = srs.ExportToProj4()
     proj_src = '+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +no_defs'
@@ -448,8 +448,9 @@ class netcdfinput():
         if os.path.exists(netcdffile):
             self.dataset = netCDF4.Dataset(netcdffile, mode='r')
         else:
-            logging.error(os.path.abspath(netcdffile) + " not found!")
-            exit(ValueError)
+            msg = os.path.abspath(netcdffile) + " not found!"
+            logging.error(msg)
+            raise ValueError(msg)
 
         logging.info("Reading input from netCDF file: " + netcdffile)
         self.alldat = {}
@@ -610,8 +611,9 @@ class netcdfinputstates():
         if os.path.exists(netcdffile):
             self.dataset = netCDF4.Dataset(netcdffile, mode='r')
         else:
-            logging.error(os.path.abspath(netcdffile) + " not found!")
-            exit(ValueError)
+            msg = os.path.abspath(netcdffile) + " not found!"
+            logging.error(msg)
+            raise ValueError(msg)
 
         logging.info("Reading state input from netCDF file: " + netcdffile)
         self.alldat = {}
@@ -731,8 +733,9 @@ class netcdfinputstatic():
         if os.path.exists(netcdffile):
             self.dataset = netCDF4.Dataset(netcdffile, mode='r')
         else:
-            logging.error(os.path.abspath(netcdffile) + " not found!")
-            exit(ValueError)
+            msg = os.path.abspath(netcdffile) + " not found!"
+            logging.error(msg)
+            raise ValueError(msg)
 
 
         try:

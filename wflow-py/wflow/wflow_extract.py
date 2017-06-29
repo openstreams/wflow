@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 # Wflow is Free software, see below:
-# 
+#
 # Copyright (c) J. Schellekens 2005-2011
 #
 # This program is free software: you can redistribute it and/or modify
@@ -29,7 +29,7 @@ Usage::
     -I skip input mapstacks if specified
     -f force overwrite an existing model
 
-The script uses the pcraster resample program to reduce the maps. 
+The script uses the pcraster resample program to reduce the maps.
 
 """
 
@@ -37,6 +37,7 @@ The script uses the pcraster resample program to reduce the maps.
 
 from  wflow.wflow_lib import *
 import  wflow.pcrut as pcrut
+import sys
 import os
 import os.path
 import glob
@@ -48,7 +49,7 @@ def usage(*args):
     for msg in args: print msg
     print __doc__
     sys.exit(0)
-    
+
 
 
 def main(argv=None):
@@ -58,7 +59,7 @@ def main(argv=None):
         argv = sys.argv[1:]
         if len(argv) == 0:
             usage()
-            return 
+            return
 
     opts, args = getopt.getopt(argv, 'fhC:N:Ir:c:')
 
@@ -69,8 +70,8 @@ def main(argv=None):
     force = False
     caseName = "rhineNew"
     caseNameNew = "rhineNew_resampaa"
-    cloneMap = "clone.map" 
- 
+    cloneMap = "clone.map"
+
 
 
     for o, a in opts:
@@ -81,12 +82,12 @@ def main(argv=None):
         if o == '-I': inmaps = False
         if o == '-h': usage()
         if o == '-f': force = True
-        
+
 
     dirs = ['/intbl/', '/inmaps/', '/staticmaps/', '/intss/', '/instate/', '/outstate/']
     if os.path.isdir(caseNameNew) and not force:
         print "Refusing to write into an existing directory:" + caseNameNew
-        exit()
+        sys.exit()
 
 
     if not os.path.isdir(caseNameNew):
@@ -94,7 +95,7 @@ def main(argv=None):
             os.makedirs(caseNameNew + ddir)
         for inifile in glob.glob(caseName + "/*.ini"):
             shutil.copy(inifile, inifile.replace(caseName,caseNameNew))
-        
+
     for ddir in dirs:
         for mfile in glob.glob(caseName + ddir + '/*.map'):
             mstr = "resample --clone " + cloneMap + ' ' + mfile + " " + mfile.replace(caseName,caseNameNew)
@@ -111,10 +112,10 @@ def main(argv=None):
         for mfile in glob.glob(caseName + ddir + '*.tbl'):
             shutil.copy(mfile, mfile.replace(caseName,caseNameNew))
         for mfile in glob.glob(caseName + ddir + '*.col'):
-            shutil.copy(mfile, mfile.replace(caseName,caseNameNew))        
+            shutil.copy(mfile, mfile.replace(caseName,caseNameNew))
         for mfile in glob.glob(caseName + ddir + '*.tss'):
-            shutil.copy(mfile, mfile.replace(caseName,caseNameNew))        
-        
+            shutil.copy(mfile, mfile.replace(caseName,caseNameNew))
+
     print "recreating static maps ..."
     # Create new ldd using old river network
     dem = readmap(caseNameNew + "/staticmaps/wflow_dem.map")

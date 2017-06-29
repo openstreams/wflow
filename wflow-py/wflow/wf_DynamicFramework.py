@@ -688,7 +688,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     def wf_supplyJulianDOY(self):
 
         JDOY =  self.DT.currentYday - (calendar.isleap(self.DT.currentDateTime.timetuple().tm_year) and self.DT.currentYday > 60)
-        
+
         return JDOY
 
     def wf_timeinputscalar(self, tssfile, areamap, default):
@@ -783,7 +783,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self.logger.info("Applying multiplication from table: " + multname)
 
         return rest
-    
+
     def readtblLayersDefault(self,pathtotbl, landuse, subcatch, soil, layer, default):
         """
         First check if a prepared  maps of the same name is present
@@ -840,7 +840,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             rest = rest * multfac
             self.logger.info("Applying multiplication from table: " + multname)
 
-        return rest        
+        return rest
 
     def readtblFlexDefault(self, pathtotbl, default, *args):
         """
@@ -937,7 +937,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             if os.path.exists(caseName + "/" + runId + "/run.tss"):
                 if NoOverWrite:
                     print "ERROR: refusing to overwrite an existing run: " + caseName + "/" + runId + "/run.tss"
-                    exit(1)
+                    sys.exit(1)
 
         for file in glob.glob(caseName + "/" + intbl + "/*.tbl"):
             shutil.copy(file, caseName + "/" + runId + "/" + intbl)
@@ -1043,7 +1043,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     self.DT.update(currentTimeStep=self.DT.currentTimeStep, mode=self.runlengthdetermination)
                 else:
                     self.logger.error("No end time given with start time: [run] endtime = " + ed )
-                    exit(1)
+                    sys.exit(1)
 
                 self._update_time_from_DT()
 
@@ -1338,7 +1338,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             except:
                 found = 0
                 self.logger.fatal("Cannot find: " + self.varnamecsv[a] + " variable not in model.")
-                exit(1)
+                sys.exit(1)
 
 
             self.oscv[self.samplenamecsv[a]].writestep(tmpvar, a, timestep=self.DT.currentTimeStep-1,dtobj=self.DT.currentDateTime)
@@ -1452,7 +1452,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 except:
                     self.logger.error(
                         "problem while reading state variable from disk: " + mpath + " Suggest to use the -I option to restart")
-                    exit(1)
+                    sys.exit(1)
 
         self._traceOut("resume")
         self._decrementIndentLevel()
@@ -1512,7 +1512,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             config.read(os.path.join(caseName,configfile))
         else:
             self.logger.error("Cannot open ini file: " + os.path.join(caseName,configfile))
-            exit(1)
+            sys.exit(1)
 
         return config
 

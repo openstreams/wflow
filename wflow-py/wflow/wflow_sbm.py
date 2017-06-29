@@ -86,6 +86,7 @@ usage
 
 import numpy
 #import pcrut
+import sys
 import os
 import os.path
 import shutil, glob
@@ -1579,15 +1580,15 @@ class WflowModel(DynamicModel):
 
         self.inund = self.ExfiltWater + self.ExcessWater
 
-        ponding_add = self.ZeroMap        
+        ponding_add = self.ZeroMap
         if self.nrpaddyirri > 0:
             ponding_add = cover(min(ifthen(self.h_p > 0,self.inund),self.h_p-self.PondingDepth),0.0)
             self.PondingDepth = self.PondingDepth + ponding_add
             irr_depth = ifthenelse(self.PondingDepth < self.h_min, self.h_max - self.PondingDepth, 0.0) * self.CRPST
             sqmarea = areatotal(self.reallength * self.reallength, self.IrrigationPaddyAreas)
-            self.IrriDemandm3 = cover((irr_depth/1000.0)*sqmarea,0)          
+            self.IrriDemandm3 = cover((irr_depth/1000.0)*sqmarea,0)
             IRDemand = idtoid(self.IrrigationPaddyAreas, self.IrrigationSurfaceIntakes, self.IrriDemandm3)  * (-1.0 / self.timestepsecs)
- 
+
             self.IRDemand= IRDemand
             self.Inflow = cover(IRDemand,self.Inflow)
             self.irr_depth = irr_depth
@@ -1721,7 +1722,7 @@ class WflowModel(DynamicModel):
             IRSupplymm = idtoid(self.IrrigationSurfaceIntakes, ifthen(self.IrriDemandm3 > 0,self.IrrigationPaddyAreas), self.SurfaceWaterSupply)
             sqmarea = areatotal(self.reallength * self.reallength, nominal(ifthen(self.IrriDemandm3 > 0,self.IrrigationPaddyAreas)))
 
-            self.IRSupplymm = cover(((IRSupplymm * self.timestepsecs * 1000) / sqmarea),0.0)    
+            self.IRSupplymm = cover(((IRSupplymm * self.timestepsecs * 1000) / sqmarea),0.0)
 
 
         self.MassBalKinWave = (-self.KinWaveVolume + self.OldKinWaveVolume) / self.timestepsecs +\

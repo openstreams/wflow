@@ -80,6 +80,7 @@ wflow_hbv::
 """
 
 import numpy
+import sys
 import os
 import os.path
 import shutil, glob
@@ -772,7 +773,7 @@ class WflowModel(DynamicModel):
     if hasattr(self, 'ReserVoirComplexLocs'):
         self.ReserVoirPotEvap = self.PotEvaporation
         self.ReserVoirPrecip = self.Precipitation
-        
+
         self.PotEvaporation = self.filter_P_PET * self.PotEvaporation
         self.Precipitation = self.filter_P_PET * self.Precipitation
 
@@ -833,7 +834,7 @@ class WflowModel(DynamicModel):
 
     self.ActEvap=self.IntEvap+self.SoilEvap           #: Sum of evaporation components (IntEvap+SoilEvap)
     self.HBVSeepage=((min(self.SoilMoisture/self.FieldCapacity,1))**self.BetaSeepage)*NetInSoil		#runoff water from soil
-    self.SoilMoisture=self.SoilMoisture-self.HBVSeepage        
+    self.SoilMoisture=self.SoilMoisture-self.HBVSeepage
 
     Backtosoil=min(self.FieldCapacity-self.SoilMoisture,DirectRunoff) 		#correction for extremely wet periods: soil is filled to capacity
     self.DirectRunoff=DirectRunoff-Backtosoil
@@ -1043,7 +1044,7 @@ def main(argv=None):
             _firstTimeStep = 1
         else:
             print "Failed to get timesteps from runinfo file: " + runinfoFile
-            exit(2)
+            sys.exit(2)
     else:
         starttime = dt.datetime(1990,01,01)
 
