@@ -88,7 +88,7 @@ import struct
 import shutil
 import __builtin__
 
-import wf_netcdfio
+from wflow import wf_netcdfio
 
 logger = ""
 volumeMapStack="vol"
