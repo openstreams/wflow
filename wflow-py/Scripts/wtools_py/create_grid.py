@@ -14,12 +14,17 @@ $Keywords: $
 """
 
 # import sys packages
-from hydrotools import gis
 import sys
 import os
 import shutil
+
 # import admin packages
 from optparse import OptionParser
+
+# if frozen to exe, import wflow is needed before hydrotools to run __init__
+# and set the PROJ_DIR environment variable to the right path
+import wflow
+from hydrotools import gis
 
 # import general packages
 import numpy as np

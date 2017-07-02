@@ -28,6 +28,9 @@ import numpy as np
 from osgeo import osr, gdal, ogr, gdalconst
 
 # import specific packages
+# if frozen to exe, import wflow is needed before hydrotools to run __init__
+# and set the PROJ_DIR environment variable to the right path
+import wflow
 from hydrotools import gis
 import pcraster as pcr
 import wflow.wflowtools_lib as wt
