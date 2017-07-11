@@ -38,7 +38,6 @@ class MyTest(unittest.TestCase):
         dynModelFw._wf_shutdown()
 
         my_data = wf.genfromtxt(os.path.join(caseName,runId,"tes.csv"), delimiter=',')
-
         self.assertAlmostEquals(14.885358393192291,my_data[:,2].sum())
         my_data_mean = wf.genfromtxt(os.path.join(caseName, runId, "tes_mean_5.csv"), delimiter=',')
         self.assertAlmostEquals( 20.727288454771042, my_data_mean[:, 2].sum())
