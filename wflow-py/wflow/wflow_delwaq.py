@@ -11,9 +11,7 @@ a delwaq model and feed it with forcing data.
 
 .. warning::
     
-    This is an experimental version. A complete redesign is needed as this 
-    version is unstable and very poorly structured!
-
+    This is an experimental version.
 
 
 the wflow run should have saved at least the folowing mapstacks::
@@ -51,10 +49,6 @@ Command line options::
         the kinematic wave function.
         Use multiple -S options to include multiple maps
     -s: Set the model timesteps in seconds (default 86400)
-    -F: if set the model is expected to be run by FEWS. It will determine
-        the timesteps from the runinfo.xml file and save the output initial
-        conditions to an alternate location. The runinfo.xml file should be located
-        in the inmaps directory of the case. 
     -c: Name of the wflow configuration file
     -n: Name of the wflow netCDF output file, expected in caseDir/runId/. If not
         present, mapstacks will be used.
@@ -80,9 +74,6 @@ Command line options::
         #. saturated store (horizontal and vertical flow)
     
 
-$Author: schelle $
-$Id: wflow_delwaq.py 813 2013-10-07 09:18:36Z schelle $
-$Rev: 813 $        
 """
 import  wflow.wflow_adapt as wflow_adapt
 from  wflow.wf_DynamicFramework import *
@@ -97,7 +88,7 @@ import struct
 import shutil
 import __builtin__
 
-import wf_netcdfio
+from wflow import wf_netcdfio
 
 logger = ""
 volumeMapStack="vol"
@@ -1172,23 +1163,19 @@ def main():
     timestepsecs = 86400
     configfile = "wflow_sbm.ini"
     sourcesMap = []
-    fewsrun = False
     WriteAscii=False
     Write_Dynamic= False
     Write_Structure = True
     T0 = datetime.strptime("2000-01-01 00:00:00",'%Y-%m-%d %H:%M:%S')
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'adD:C:R:S:hT:F:s:O:A:jc:n:')
+        opts, args = getopt.getopt(sys.argv[1:], 'adD:C:R:S:hT:s:O:A:jc:n:')
     except getopt.error, msg:
         pcrut.usage(msg)
 
     nc_outmap_file = None
     
     for o, a in opts:
-        if o == '-F': 
-            runinfoFile = a
-            fewsrun = True
         if o == '-C': caseId = a
         if o == '-R': runId = a
         if o == '-D': dwdir = a
@@ -1213,10 +1200,7 @@ def main():
     
     timestepsecs = int(configget(config,"model","timestepsecs",str(timestepsecs)))
     
-    if fewsrun: 
-        timeSteps =  wflow_adapt.getTimeStepsfromRuninfo(runinfoFile,timestepsecs)
-        T0 =  wflow_adapt.getStartTimefromRuninfo(runinfoFile)
-        print timeSteps
+
     
     #: we need one delwaq calculation timesteps less than hydrology
     # timeSteps = timeSteps # need one more hydrological timestep as dw timestep

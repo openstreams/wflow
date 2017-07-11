@@ -229,8 +229,8 @@ def main(argv=None):
     caseName = "default"
     runId = "run_default"
     configfile="wflow_sceleton.ini"
-    _lastTimeStep = 10
-    _firstTimeStep = 1
+    _lastTimeStep = 0
+    _firstTimeStep = 0
     timestepsecs=86400
     wflow_cloneMap = 'wflow_subcatch.map'
     
@@ -261,7 +261,8 @@ def main(argv=None):
     dynModelFw.createRunId(NoOverWrite=False,level=logging.DEBUG)    
     dynModelFw._runInitial()
     dynModelFw._runResume()
-    dynModelFw._runDynamic(0,0)
+    #dynModelFw._runDynamic(0,0)
+    dynModelFw._runDynamic(_firstTimeStep, _lastTimeStep)
     dynModelFw._runSuspend()
     dynModelFw._wf_shutdown()
     

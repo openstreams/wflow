@@ -1,91 +1,102 @@
 # -*- mode: python -*-
-adapt = Analysis(['wflow\\wflow_adapt.py'],
-             pathex=['d:\\repos\\Hydrology\\OpenStreams\\src\\wflow-py'],
-             hiddenimports=[],
-             hookspath=None,
-             runtime_hooks=None)
-			 
-wave = Analysis(['wflow\\wflow_wave.py'],
-             pathex=['d:\\repos\\Hydrology\\OpenStreams\\src\\wflow-py'],
-             hiddenimports=[],
-             hookspath=None,
-             runtime_hooks=None)
-sbm = Analysis(['wflow\\wflow_sbm.py'],
-             pathex=['d:\\repos\\Hydrology\\OpenStreams\\src\\wflow-py'],
-             hiddenimports=[],
-             hookspath=None,
-             runtime_hooks=None)
-hbv = Analysis(['wflow\\wflow_hbv.py'],
-             pathex=['d:\\repos\\Hydrology\\OpenStreams\\src\\wflow-py'],
-             hiddenimports=[],
-             hookspath=None,
-             runtime_hooks=None)
-gr4 = Analysis(['wflow\\wflow_gr4.py'],
-             pathex=['d:\\repos\\Hydrology\\OpenStreams\\src\\wflow-py'],
-             hiddenimports=[],
-             hookspath=None,
-             runtime_hooks=None)
-floodmap = Analysis(['wflow\\wflow_floodmap.py'],
-             pathex=['d:\\repos\\Hydrology\\OpenStreams\\src\\wflow-py'],
-             hiddenimports=[],
-             hookspath=None,
-             runtime_hooks=None)
-plottss = Analysis(['wflow\\plottss.py'],
-             pathex=['d:\\repos\\Hydrology\\OpenStreams\\src\\wflow-py'],
-             hiddenimports=[],
-             hookspath=None,
-             runtime_hooks=None)
 
-prep1 = Analysis(['Scripts\\wflow_prepare_step1.py'],
-             pathex=['d:\\repos\\Hydrology\\OpenStreams\\src\\wflow-py'],
-             hiddenimports=[],
-             hookspath=None,
-             runtime_hooks=None)
-prep2 = Analysis(['Scripts\\wflow_prepare_step2.py'],
-             pathex=['d:\\repos\\Hydrology\\OpenStreams\\src\\wflow-py'],
-             hiddenimports=[],
-             hookspath=None,
-             runtime_hooks=None)			 
+import os
+import shutil
+from distutils.dir_util import copy_tree, remove_tree
+from pyproj import pyproj_datadir
+from osgeo import gdal
 
-			 
-MERGE ((plottss,'plottss','plottss'),(adapt,'wflow_adapt','wflow_adapt'),(wave,'wflow_wave','wflow_wave'),(sbm,'wflow_sbm','wflow_sbm'),(hbv,'wflow_hbv','wflow_hbv'),(gr4,'wflow_gr4','wflow_gr4'),(floodmap,'wflow_floodmap','wflow_floodmap'),(prep1,'wflow_prepare_step1','wflow_prepare_step1'),(prep2,'wflow_prepare_step2','wflow_prepare_step2'))			 
+# work-around https://github.com/pyinstaller/pyinstaller/issues/2384
+# will be fixed in PyInstaller 3.3
+from PyInstaller.utils.hooks import is_module_satisfies
+import PyInstaller.compat
+PyInstaller.compat.is_module_satisfies = is_module_satisfies
+
+# list identical make_wflow_exe script with --normal
+# except for the wtools scripts
+scriptpaths = [
+    'Scripts/wtools_py/create_grid.py',
+    'Scripts/wtools_py/static_maps.py',
+    'Scripts/pcr2netcdf.py',
+    'Scripts/bmi2runner.py',
+    'Scripts/wflow_prepare_step2.py',
+    'Scripts/wflow_prepare_step1.py',
+    'Scripts/wflow_sbm_rtc.py',
+    'wflow/wflow_topoflex.py',
+    'wflow/wflow_sbm.py',
+    'wflow/wflow_routing.py',
+    'wflow/wflow_adapt.py',
+    'wflow/wflow_w3ra.py',
+    'wflow/wflow_delwaq.py',
+    'wflow/wflow_wave.py',
+    'wflow/wflow_gr4.py',
+    'wflow/wflow_floodmap.py',
+    'wflow/wflow_hbv.py'
+]
 
 
-adapt_pyz = PYZ(adapt.pure)
-wave_pyz = PYZ(wave.pure)
-sbm_pyz = PYZ(sbm.pure)
-hbv_pyz = PYZ(hbv.pure)
-gr4_pyz = PYZ(gr4.pure)
-floodmap_pyz = PYZ(floodmap.pure)
-plottss_pyz = PYZ(plottss.pure)
-prep1_pyz = PYZ(prep1.pure)
-prep2_pyz = PYZ(prep2.pure)
+def scriptname(scriptpath):
+    """Get 'wflow_hbv' from 'wflow/wflow_hbv.py'"""
+    return os.path.splitext(os.path.basename(scriptpath))[0]
 
 
-adapt_exe = EXE(adapt_pyz,  adapt.scripts, exclude_binaries=True, name='wflow_adapt.exe',debug=False,strip=None, upx=True, console=True )
-adapt_coll = COLLECT(adapt_exe, adapt.binaries,  adapt.zipfiles,    adapt.datas,   strip=None,  upx=True, name='wflow_adapt')
+def do_analysis(scriptpath):
+    """Run PyInstaller Analysis"""
+    # note that the datas locations have to be set again in __init__.py
+    # if they are to work in a bundled folder
+    return Analysis([scriptpath],
+                    binaries=[('c:/bin/pcraster/lib/', '.')],
+                    datas=[(gdal.GetConfigOption('GDAL_DATA'), 'gdal-data'),
+                           (pyproj_datadir, 'proj-data')],
+                    hiddenimports=['pywt._extensions._cwt'])
 
-wave_exe = EXE(wave_pyz,  wave.scripts, exclude_binaries=True, name='wflow_wave.exe',debug=False,strip=None, upx=True, console=True )
-wave_coll = COLLECT(wave_exe, wave.binaries,  wave.zipfiles,    wave.datas,   strip=None,  upx=True, name='wflow_wave')
 
-sbm_exe = EXE(sbm_pyz,  sbm.scripts, exclude_binaries=True, name='wflow_sbm.exe',debug=False,strip=None, upx=True, console=True )
-sbm_coll = COLLECT(sbm_exe, sbm.binaries,  sbm.zipfiles,    sbm.datas,   strip=None,  upx=True, name='wflow_sbm')
+def do_analysis_bare(scriptpath):
+    """Run PyInstaller Analysis without extra binaries or datas"""
+    # leave out the binaries and datas, only add for the first script
+    # no need to copy for every script since they are later merged
+    return Analysis([scriptpath])
 
-hbv_exe = EXE(hbv_pyz,  hbv.scripts, exclude_binaries=True, name='wflow_hbv.exe',debug=False,strip=None, upx=True, console=True )
-hbv_coll = COLLECT(hbv_exe, hbv.binaries,  hbv.zipfiles,    hbv.datas,   strip=None,  upx=True, name='wflow_hbv')
 
-gr4_exe = EXE(gr4_pyz,  gr4.scripts, exclude_binaries=True, name='wflow_gr4.exe',debug=False,strip=None, upx=True, console=True )
-gr4_coll = COLLECT(gr4_exe, gr4.binaries,  gr4.zipfiles,    a=gr4.datas,   strip=None,  upx=True, name='wflow_gr4')
+def do_pyz(a):
+    return PYZ(a.pure, a.zipped_data)
 
-floodmap_exe = EXE(floodmap_pyz,  floodmap.scripts, exclude_binaries=True, name='wflow_floodmap.exe',debug=False,strip=None, upx=True, console=True )
-floodmap_coll = COLLECT(floodmap_exe, floodmap.binaries,  floodmap.zipfiles,    floodmap.datas,   strip=None,  upx=True, name='wflow_floodmap')
 
-plottss_exe = EXE(plottss_pyz,  plottss.scripts, exclude_binaries=True, name='plottss.exe',debug=False,strip=None, upx=True, console=True )
-plottss_coll = COLLECT(plottss_exe, plottss.binaries,  plottss.zipfiles,    plottss.datas,   strip=None,  upx=True, name='plottss')
+def do_exe(apyz):
+    # unpack tuple created by zip
+    a, pyz = apyz
+    return EXE(pyz, a.scripts,
+               exclude_binaries=True,
+               name=scriptname(a.inputs[0]),
+               upx=True)
 
-prep1_exe = EXE(prep1_pyz,  prep1.scripts, exclude_binaries=True, name='wflow_prepare_step1.exe',debug=False,strip=None, upx=True, console=True )
-prep1_coll = COLLECT(prep1_exe, prep1.binaries,  prep1.zipfiles,    prep1.datas,   strip=None,  upx=True, name='prep1')
 
-prep2_exe = EXE(prep2_pyz,  prep2.scripts, exclude_binaries=True, name='wflow_prepare_step2.exe',debug=False,strip=None, upx=True, console=True )
-prep2_coll = COLLECT(prep2_exe, prep2.binaries,  prep2.zipfiles,    prep2.datas,   strip=None,  upx=True, name='prep2')
+def do_collect(aexe):
+    # unpack tuple created by zip
+    a, exe = aexe
+    return COLLECT(exe,
+                   a.binaries,
+                   a.zipfiles,
+                   a.datas,
+                   name=scriptname(a.inputs[0]),
+                   upx=True)
 
+
+if len(scriptpaths) == 1:
+    analist = [do_analysis(scriptpaths[0])]
+else:
+    analist = [do_analysis(scriptpaths[0])] + \
+        map(do_analysis_bare, scriptpaths[1:])
+
+pyzlist = map(do_pyz, analist)
+exelist = map(do_exe, zip(analist, pyzlist))
+collist = map(do_collect, zip(analist, exelist))
+
+# merge all individual folders in the parent 'dist' folder
+# Replace with MERGE when this issue is fixed
+# https://github.com/pyinstaller/pyinstaller/issues/1527
+for scriptpath in scriptpaths:
+    srcdir = os.path.join('dist', scriptname(scriptpath))
+    # only copy if new or newer
+    copy_tree(srcdir, 'dist', update=1)
+    remove_tree(srcdir)

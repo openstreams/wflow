@@ -81,6 +81,11 @@ def prepare_nc(trgFile, timeList, x, y, metadata, logger, EPSG="EPSG:4326", unit
 
     timeAR = linspace(startDayNr, endDayNr, num=len(timeList))
 
+    if os.path.exists(trgFile):
+            os.remove(trgFile)
+
+        #nc_trg = netCDF4.Dataset(trgFile, 'a', format=Format, zlib=zlib, complevel=complevel)
+
     nc_trg = netCDF4.Dataset(trgFile, 'w', format=Format, zlib=zlib, complevel=complevel)
 
     logger.info(
@@ -104,7 +109,7 @@ def prepare_nc(trgFile, timeList, x, y, metadata, logger, EPSG="EPSG:4326", unit
     res = srs.ImportFromEPSG(int(EPSG[5:]))
     if res != 0:
         logger.error("EPGS not converted correctly: " + EPSG + ". Is the GDAL_DATA environment variable set correctly?")
-        exit(1)
+        sys.exit(1)
 
     projStr = srs.ExportToProj4()
     proj_src = '+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +no_defs'
@@ -219,6 +224,7 @@ class netcdfoutput():
 
         timeList = date_range(starttime, end, timestepsecs)
         self.timestepbuffer = zeros((self.maxbuf, len(y), len(x)))
+        self.bufferdirty = True
         self.bufflst = {}
 
         globmetadata.update(metadata)
@@ -226,7 +232,9 @@ class netcdfoutput():
         prepare_nc(self.ncfile, timeList, x, y, globmetadata, logger, Format=self.Format, EPSG=EPSG,zlib=self.zlib,
                    least_significant_digit=self.least_significant_digit)
 
-    def savetimestep(self, timestep, pcrdata, unit="mm", var='P', name="Precipitation"):
+        self.nc_trg = None
+
+    def savetimestep(self, timestep, pcrdata, unit="mm", var='P', name="Precipitation",flushonly=False):
         """
         save a single timestep for a variable
 
@@ -239,8 +247,9 @@ class netcdfoutput():
         """
         # Open target netCDF file
         var = os.path.basename(var)
-        self.nc_trg = netCDF4.Dataset(self.ncfile, 'a', format=self.Format, zlib=self.zlib, complevel=9)
-        self.nc_trg.set_fill_off()
+        if not self.nc_trg:
+            self.nc_trg = netCDF4.Dataset(self.ncfile, 'a', format=self.Format, zlib=self.zlib, complevel=9)
+            self.nc_trg.set_fill_off()
         # read time axis and convert to time objects
         # TODO: use this to append time
         # time = self.nc_trg.variables['time']
@@ -279,13 +288,16 @@ class netcdfoutput():
             self.bufflst[var][bufpos, :, :] = data
 
         # Write out timestep buffer.....
+        self.bufferdirty = True
 
         if buffreset == 0 or idx == self.maxbuf - 1 or self.timesteps <= timestep:
             spos = idx - bufpos
             self.logger.debug(
                 "Writing buffer for " + var + " to file at: " + str(spos) + " " + str(int(bufpos) + 1) + " timesteps")
             nc_var[spos:idx + 1, :, :] = self.bufflst[var][0:bufpos + 1, :, :]
+            self.bufferdirty = False
             self.nc_trg.sync()
+
 
     def finish(self):
         """
@@ -294,6 +306,8 @@ class netcdfoutput():
         :return: Nothing
         """
         if hasattr(self, "nc_trg"):
+            if self.bufferdirty:
+                self.logger.warn("Finishing before expected run-length exceeded. Buffer not flushed")
             self.nc_trg.sync()
             self.nc_trg.close()
 
@@ -434,8 +448,9 @@ class netcdfinput():
         if os.path.exists(netcdffile):
             self.dataset = netCDF4.Dataset(netcdffile, mode='r')
         else:
-            logging.error(os.path.abspath(netcdffile) + " not found!")
-            exit(ValueError)
+            msg = os.path.abspath(netcdffile) + " not found!"
+            logging.error(msg)
+            raise ValueError(msg)
 
         logging.info("Reading input from netCDF file: " + netcdffile)
         self.alldat = {}
@@ -448,7 +463,7 @@ class netcdfinput():
         self.maxsteps = minimum(maxmb * len(a) / floatspermb + 1,maxlentime - 1)
         self.fstep = 0
         self.lstep = self.fstep + self.maxsteps
-
+        self.offset = 0
         self.datetime = self.dataset.variables['time'][:]
         if hasattr(self.dataset.variables['time'],'units'):
             self.timeunits=self.dataset.variables['time'].units
@@ -540,10 +555,24 @@ class netcdfinput():
         else:
             ncindex = timestep - 1
 
+
+        ncindex = ncindex + self.offset
+
+        if self.datetimelist.size < ncindex + 1:
+            ncindex = self.datetimelist.size -1
+
         if tsdatetime != None:
-            if tsdatetime != self.datetimelist[ncindex]:
+            if tsdatetime.replace(tzinfo=None) != self.datetimelist[ncindex].replace(tzinfo=None):
                 logging.warn("Date/time does not match. Wanted " + str(tsdatetime) + " got " + str(self.datetimelist[ncindex]))
-                logging.warn("Index: " + str(ncindex) + " Par: " + var)
+                import bisect
+                pos = bisect.bisect_left(self.datetimelist,tsdatetime.replace(tzinfo=None))
+                if pos >= self.datetimelist.size:
+                    pos = self.datetimelist.size -1
+                    logging.warn("No matching date/time found using last date/time again...")
+                self.offset = pos - ncindex
+                logging.warn("Adjusting to the date/time at index and setting offset: " + str(pos) + ":" + str(self.offset) + ":"  + str(self.datetimelist[pos]))
+                ncindex = pos
+
 
         if self.alldat.has_key(var):
             if ncindex == self.lstep:  # Read new block of data in mem
@@ -556,7 +585,6 @@ class netcdfinput():
 
             np_step = self.alldat[var][ncindex - self.fstep, self.latidx.min():self.latidx.max()+1,
                       self.lonidx.min():self.lonidx.max()+1]
-
 
             miss = float(self.dataset.variables[var]._FillValue)
             if self.flip:
@@ -579,11 +607,13 @@ class netcdfinputstates():
         vars: list of variables to get from file
         """
 
+        self.fname = netcdffile
         if os.path.exists(netcdffile):
             self.dataset = netCDF4.Dataset(netcdffile, mode='r')
         else:
-            logging.error(os.path.abspath(netcdffile) + " not found!")
-            exit(ValueError)
+            msg = os.path.abspath(netcdffile) + " not found!"
+            logging.error(msg)
+            raise ValueError(msg)
 
         logging.info("Reading state input from netCDF file: " + netcdffile)
         self.alldat = {}
@@ -595,22 +625,67 @@ class netcdfinputstates():
         self.fstep = 0
         self.lstep = self.fstep + self.maxsteps
 
+        self.datetime = self.dataset.variables['time'][:]
+        if hasattr(self.dataset.variables['time'],'units'):
+            self.timeunits=self.dataset.variables['time'].units
+        else:
+            self.timeunits ='Seconds since 1970-01-01 00:00:00'
+        if hasattr(self.dataset.variables['time'], 'calendar'):
+            self.calendar= self.dataset.variables['time'].calendar
+        else:
+            self.calendar ='gregorian'
+        self.datetimelist=netCDF4.num2date(self.datetime,self.timeunits, calendar=self.calendar)
+
         try:
             self.x = self.dataset.variables['x'][:]
         except:
             self.x = self.dataset.variables['lon'][:]
+
         # Now check Y values to see if we must flip the data
         try:
             self.y = self.dataset.variables['y'][:]
         except:
             self.y = self.dataset.variables['lat'][:]
 
+        # test if 1D or 2D array
+        if len(self.y.shape) == 1:
+            if self.y[0] > self.y[-1]:
+                self.flip = False
+            else:
+                self.flip = True
+        else: # not sure if this works
+            self.y = self.y[:][0]
+            if self.y[0] > self.y[-1]:
+                self.flip = False
+            else:
+                self.flip = True
+
 
         x = _pcrut.pcr2numpy(_pcrut.xcoordinate(_pcrut.boolean(_pcrut.cover(1.0))), NaN)[0, :]
         y = _pcrut.pcr2numpy(_pcrut.ycoordinate(_pcrut.boolean(_pcrut.cover(1.0))), NaN)[:, 0]
 
-        (self.latidx,) = logical_and(self.x >= x.min(), self.x < x.max()).nonzero()
-        (self.lonidx,) = logical_and(self.y >= x.min(), self.y < y.max()).nonzero()
+        #Get average cell size
+        acc = diff(x).mean() * 0.25 # non-exact match needed becuase of possible rounding problems
+        if self.flip:
+            (self.latidx,) = logical_and(self.y[::-1] +acc >= y.min(), self.y[::-1] <= y.max() + acc).nonzero()
+            (self.lonidx,) = logical_and(self.x + acc >= x.min(), self.x <= x.max() + acc).nonzero()
+        else:
+            (self.latidx,) = logical_and(self.y +acc >= y.min(), self.y <= y.max() + acc).nonzero()
+            (self.lonidx,) = logical_and(self.x +acc >= x.min(), self.x <= x.max() + acc).nonzero()
+
+        if len(self.lonidx) != len(x):
+            logging.error("error in determining X coordinates in netcdf...")
+            logging.error("model expects: " + str(x.min()) + " to " + str(x.max()))
+            logging.error("got coordinates  netcdf: " + str(self.x.min()) + " to " + str(self.x.max()))
+            logging.error("got len from  netcdf x: " + str(len(x)) + " expected " + str(len(self.lonidx)))
+            raise ValueError("X coordinates in netcdf do not match model")
+
+        if len(self.latidx) != len(y):
+            logging.error("error in determining Y coordinates in netcdf...")
+            logging.error("model expects: " + str(y.min()) + " to " + str(y.max()))
+            logging.error("got from  netcdf: " + str(self.y.min()) + " to " + str(self.y.max()))
+            logging.error("got len from  netcdf y: " + str(len(y)) + " expected " + str(len(self.latidx)))
+            raise ValueError("Y coordinates in netcdf do not match model")
 
         for var in vars:
             try:
@@ -619,7 +694,7 @@ class netcdfinputstates():
                 self.alldat.pop(var, None)
                 logging.warn("Variable " + var + " not found in netcdf file: " + netcdffile)
 
-    def gettimestep(self, timestep, logging, var='P'):
+    def gettimestep(self, timestep, logging, var='P', tsdatetime=None):
         """
         Gets a map for a single timestep. reads data in blocks assuming sequential access
 
@@ -628,19 +703,19 @@ class netcdfinputstates():
         var: variable to get from the file
         """
         ncindex = timestep - 1
-        if self.alldat.has_key(var):
-            if ncindex == self.lstep:  # Read new block of data in mem
-                logging.debug("reading new netcdf data block starting at: " + str(ncindex))
-                for vars in self.alldat:
-                    self.alldat[vars] = self.dataset.variables[vars][ncindex:ncindex + self.maxsteps]
-                self.fstep = ncindex
-                self.lstep = ncindex + self.maxsteps
-            np_step = self.alldat[var][ncindex - self.fstep, self.latidx.min():self.latidx.max() + 1,
-                      self.lonidx.min():self.lonidx.max() + 1]
+
+        if var in self.dataset.variables:
+            if tsdatetime != None:
+                if tsdatetime.replace(tzinfo=None) != self.datetimelist[ncindex].replace(tzinfo=None):
+                    logging.warn("Date/time of state (" + var + " in " + self.fname + ")does not match. Wanted " + str(tsdatetime) + " got " + str(self.datetimelist[ncindex]))
+
+            np_step = self.dataset.variables[var][ncindex, self.latidx.min():self.latidx.max() + 1,
+                          self.lonidx.min():self.lonidx.max() + 1]
+
             miss = float(self.dataset.variables[var]._FillValue)
             return numpy2pcr(Scalar, np_step, miss), True
         else:
-            logging.debug("Var (" + var + ") not found returning 0")
+            #logging.debug("Var (" + var + ") not found returning map with 0.0")
             return cover(scalar(0.0)), False
 
 
@@ -658,8 +733,9 @@ class netcdfinputstatic():
         if os.path.exists(netcdffile):
             self.dataset = netCDF4.Dataset(netcdffile, mode='r')
         else:
-            logging.error(os.path.abspath(netcdffile) + " not found!")
-            exit(ValueError)
+            msg = os.path.abspath(netcdffile) + " not found!"
+            logging.error(msg)
+            raise ValueError(msg)
 
 
         try:
@@ -698,5 +774,5 @@ class netcdfinputstatic():
             miss = float(self.dataset.variables[var]._FillValue)
             return numpy2pcr(Scalar, np_step, miss), True
         else:
-            logging.debug("Var (" + var + ") not found returning 0")
+            logging.debug("Var (" + var + ") not found returning map with 0.0")
             return cover(scalar(0.0)), False

@@ -22,10 +22,10 @@ class MyTest(unittest.TestCase):
 
         myModel = wf.WflowModel(wflow_cloneMap, caseName,runId,configfile)
          # initialise the framework
-        dynModelFw = wf.wf_DynamicFramework(myModel, stopTime,startTime)
+        dynModelFw = wf.wf_DynamicFramework(myModel, 0,0)
 
           # Load model config from files and check directory structure
-        dynModelFw.createRunId(NoOverWrite=False,level=wf.logging.ERROR)
+        dynModelFw.createRunId(NoOverWrite=False,level=wf.logging.DEBUG)
         # Run the initial part of the model (reads parameters and sets initial values)
         dynModelFw._runInitial() # Runs initial part
 
@@ -55,7 +55,7 @@ class MyTest(unittest.TestCase):
         self.assertAlmostEquals(3.574188167654313e-09,my_data[:,2].sum(),places=4)
         my_data = wf.genfromtxt(os.path.join(caseName,runId,"wbsoil.csv"), delimiter=',')
         print("Checking soil water budget ....")
-        self.assertAlmostEquals(0.0006305182757557759,my_data[:,2].sum(),places=4)
+        self.assertAlmostEquals(0.002721056049267645,my_data[:,2].sum(),places=4)
         print("Checking precip sum ....")
         my_data = wf.genfromtxt(os.path.join(caseName,runId,"P.csv"), delimiter=',')
         self.assertAlmostEquals(sump,my_data[:,2].sum())

@@ -40,7 +40,7 @@ import os
 import os.path
 import sys
 
-
+import ConfigParser
 import osgeo.gdal as gdal
 from osgeo.gdalconst import *
 from pcraster import *
@@ -145,74 +145,120 @@ def simplereservoir(storage, inflow, maxstorage, target_perc_full, maximum_Q, de
     return storage, outflow, percfull, demandRelease/timestepsecs
 
 
-def lookupResFunc(ReserVoirLocs, values, ResFunc, func_int, pathtotbl, fileName, dirLookup):
-    
-    res_ids = ifthen(ResFunc==func_int, ReserVoirLocs)
-    
-    np_res_ids = pcr2numpy(res_ids,0)
-    npvalues = pcr2numpy(values,0)  
-    
-    np_res_ids_u = np.unique(np_res_ids[np.nonzero(np_res_ids)])   
+def lookupResRegMatr(ReserVoirLocs, values, hq, JDOY):
 
-    if np.size(np_res_ids_u) > 0:
-        for item in np.nditer(np_res_ids_u):
-            HS = np.loadtxt(pathtotbl + fileName + str(item) + ".tbl")
-            value = npvalues[np.where(np_res_ids==item)]
-       
+    np_res_ids = pcr2numpy(ReserVoirLocs,0)
+    npvalues = pcr2numpy(values,0)
+    out = np.copy(npvalues) * 0.0
+
+
+    if len(hq) > 0:
+        for key in hq:
+            value = npvalues[np.where(np_res_ids==key)]
+
+            val = np.interp(value,hq[key][:,0],hq[key][:,JDOY])
+
+            out[np.where(np_res_ids==key)] = val
+
+
+    return numpy2pcr(Scalar, out, 0)
+
+
+
+def lookupResFunc(ReserVoirLocs, values, sh, dirLookup):
+
+    np_res_ids = pcr2numpy(ReserVoirLocs,0)
+    npvalues = pcr2numpy(values,0)
+    out = np.copy(npvalues) * 0.0
+
+
+    if len(sh) > 0:
+        for key in sh:
+            value = npvalues[np.where(np_res_ids==key)]
+
             if dirLookup == '0-1':
-                val = np.interp(value,HS[:,0],HS[:,1])
+                val = np.interp(value,sh[key][:,0],sh[key][:,1])
             if dirLookup == '1-0':
-                val = np.interp(value,HS[:,1],HS[:,0])
-        
-            npvalues[np.where(np_res_ids==item)] = val
-        
-        
-    
-    return numpy2pcr(Scalar, npvalues, 0)
-    
-    
+                val = np.interp(value,sh[key][:,1],sh[key][:,0])
 
-def complexreservoir(waterlevel, ReserVoirLocs, ResArea, ResThreshold, ResStorFunc, ResOutflowFunc, res_b, res_e, inflow, pathtotbl, precip, pet, ReservoirComplexAreas, timestepsecs=86400):
-    
+            out[np.where(np_res_ids==key)] = val
+
+    return numpy2pcr(Scalar, out, 0)
+
+
+
+def complexreservoir(waterlevel, ReserVoirLocs, LinkedReserVoirLocs, ResArea, ResThreshold, ResStorFunc, ResOutflowFunc, sh, hq, res_b, res_e, inflow, precip, pet, ReservoirComplexAreas, JDOY, timestepsecs=86400):
+
+    mv = -999.0
+
     inflow = ifthen(boolean(ReserVoirLocs), inflow)
-    
+
     prec_av = ifthen(boolean(ReserVoirLocs), areaaverage(precip, ReservoirComplexAreas))
     pet_av = ifthen(boolean(ReserVoirLocs), areaaverage(pet, ReservoirComplexAreas))
-    
-    storage = ifthenelse(ResStorFunc==1, ResArea*waterlevel, lookupResFunc(ReserVoirLocs, waterlevel, ResStorFunc,2, pathtotbl, "Reservoir_SH_",'0-1'))
-    
-    oldstorage = storage
-    
-    storage = storage + (inflow * timestepsecs) + (prec_av/1000.0)*ResArea - (pet_av/1000.0)*ResArea
 
-    waterlevel = ifthenelse(ResStorFunc==1, waterlevel + (storage-oldstorage)/ResArea, lookupResFunc(ReserVoirLocs, storage, ResStorFunc, 2, pathtotbl,"Reservoir_SH_", '1-0'))     
-    
-        
-        
-    outflow = ifthenelse(ResOutflowFunc==1,lookupResFunc(ReserVoirLocs, waterlevel, ResOutflowFunc, 1, pathtotbl,"Reservoir_HQ_", '0-1'),max(res_b*(waterlevel-ResThreshold)**res_e,0))    
+    np_reslocs = pcr2numpy(ReserVoirLocs,0.0)
+    np_linkedreslocs = pcr2numpy(LinkedReserVoirLocs,0.0)
 
-    oldstorage = storage
-    storage = storage - (outflow * timestepsecs)
-        
-    waterlevel = ifthenelse(ResStorFunc==1, waterlevel + (storage-oldstorage)/ResArea, lookupResFunc(ReserVoirLocs, storage, ResStorFunc, 2, pathtotbl,"Reservoir_SH_", '1-0'))     
-    
-    
-    return waterlevel, outflow, prec_av, pet_av, storage
+
+
+    _outflow = []
+    nr_loop = np.max([int(timestepsecs/21600),1])
+    for n in range(0,nr_loop):
+        np_waterlevel = pcr2numpy(waterlevel,np.nan)
+        np_waterlevel_lower = np_waterlevel.copy()
+
+        for val in np.unique(np_linkedreslocs):
+            if val > 0:
+                np_waterlevel_lower[np_linkedreslocs == val] = np_waterlevel[np.where(np_reslocs==val)]
+
+        diff_wl = np_waterlevel - np_waterlevel_lower
+        diff_wl[np.isnan(diff_wl)] = mv
+        np_waterlevel_lower[np.isnan(np_waterlevel_lower)] = mv
+
+
+        pcr_diff_wl = numpy2pcr(Scalar, diff_wl, mv)
+        pcr_wl_lower = numpy2pcr(Scalar, np_waterlevel_lower, mv)
+
+        storage_start = ifthenelse(ResStorFunc==1, ResArea*waterlevel, lookupResFunc(ReserVoirLocs, waterlevel, sh,'0-1'))
+
+        outflow = ifthenelse(ResOutflowFunc==1,lookupResRegMatr(ReserVoirLocs, waterlevel, hq, JDOY),ifthenelse(pcr_diff_wl >= 0, max(res_b*(waterlevel-ResThreshold)**res_e,0),min(-1*res_b*(pcr_wl_lower-ResThreshold)**res_e,0)))
+
+        np_outflow =  pcr2numpy(outflow,np.nan)
+        np_outflow_linked = np_reslocs * 0.0
+
+        np_outflow_linked[np.in1d(np_reslocs, np_linkedreslocs[np_outflow < 0]).reshape(np_linkedreslocs.shape)] = np_outflow[np_outflow < 0]
+        outflow_linked = numpy2pcr(Scalar, np_outflow_linked, 0.0)
+
+        storage = storage_start + (inflow * timestepsecs/nr_loop) + (prec_av/nr_loop/1000.0)*ResArea - (pet_av/nr_loop/1000.0)*ResArea - (cover(outflow,0.0) * timestepsecs/nr_loop) + (cover(outflow_linked,0.0) * timestepsecs/nr_loop)
+
+        waterlevel = ifthenelse(ResStorFunc==1, waterlevel + (storage-storage_start)/ResArea, lookupResFunc(ReserVoirLocs, storage, sh, '1-0'))
+
+        np_outflow_nz = np_outflow*0.0
+        np_outflow_nz[np_outflow>0] = np_outflow[np_outflow>0]
+        _outflow.append(np_outflow_nz)
+
+    outflow_av_temp = np.average(_outflow,0)
+    outflow_av_temp[np.isnan(outflow_av_temp)] = mv
+    outflow_av = numpy2pcr(Scalar,outflow_av_temp,mv)
+
+    return waterlevel, outflow_av, prec_av, pet_av, storage
+
 Verbose=0
+
 
 def lddcreate_save(lddname, dem, force, corevolume=1E35, catchmentprecipitation=1E35, corearea=1E35, outflowdepth=1E35):
     """
     Creates an ldd if a file does not exists or if the force flag is used
 
-    input: 
+    input:
         - lddname (name of the ldd to create)
         - dem (actual dem)
         - force (boolean to force recreation of the ldd)
         - outflowdepth (set to 10.0E35 normally but smaller if needed)
-        
+
     Output:
         - the LDD
-        
+
     """
     if os.path.exists(lddname) and not force:
         if Verbose:
@@ -225,24 +271,24 @@ def lddcreate_save(lddname, dem, force, corevolume=1E35, catchmentprecipitation=
             report(LDD, lddname)
             return LDD
 
-        
+
 def configget(config,section,var,default):
     """
-    
+
     Gets a string from a config file (.ini) and returns a default value if
-    the key is not found. If the key is not found it also sets the value 
+    the key is not found. If the key is not found it also sets the value
     with the default in the config-file
-    
+
     Input:
         - config - python ConfigParser object
         - section - section in the file
         - var - variable (key) to get
         - default - default string
-        
+
     Returns:
         - string - either the value from the config file or the default value
-        
-        
+
+
     """
     Def = False
     try:
@@ -251,47 +297,47 @@ def configget(config,section,var,default):
         Def = True
         ret = default
         configset(config,section,var,default, overwrite=False)
-    
+
     default = Def
-    return ret       
+    return ret
 
 
 def configset(config,section,var,value, overwrite=False):
-    """   
+    """
     Sets a string in the in memory representation of the config object
     Deos NOT overwrite existing values if overwrite is set to False (default)
-    
+
     Input:
         - config - python ConfigParser object
         - section - section in the file
         - var - variable (key) to set
         - value - the value to set
         - overwrite (optional, default is False)
-   
+
     Returns:
         - nothing
-        
+
     """
-    
+
     if not config.has_section(section):
         config.add_section(section)
         config.set(section,var,value)
-    else:     
+    else:
         if not config.has_option(section,var):
             config.set(section,var,value)
         else:
             if overwrite:
                 config.set(section,var,value)
-                
+
 
 def configsection(config,section):
     """
     gets the list of keys in a section
-    
+
     Input:
         - config
         - section
-        
+
     Output:
         - list of keys in the section
     """
@@ -299,44 +345,44 @@ def configsection(config,section):
         ret = config.options(section)
     except:
         ret = []
-        
+
     return ret
 
 
 def getrows():
     """
     returns the number of rows in the current map
-    
+
     Input:
         - -
-        
+
     Output:
         - nr of rows in the current clonemap as a scalar
     """
     a = pcr2numpy(celllength(),numpy.nan).shape[0]
-    
+
     return a
 
 def getcols():
     """
     returns the number of columns in the current map
-    
+
     Input:
         - -
-        
+
     Output:
         - nr of columns in the current clonemap as a scalar
     """
     a = pcr2numpy(celllength(),numpy.nan).shape[1]
-    
-    return a   
+
+    return a
 
 def getgridparams():
     """ return grid parameters in a python friendly way
-    
-    Output:    
+
+    Output:
         [ Xul, Yul, xsize, ysize, rows, cols]
-    
+
         - xul - x upper left centre
         - yul - y upper left centre
         - xsize - size of a cell in x direction
@@ -354,21 +400,21 @@ def getgridparams():
     yu = pcr2numpy(ycoordinate(1),numpy.nan)[0,0]
     ylr = pcr2numpy(ycoordinate(1),numpy.nan)[getrows()-1,getcols()-1]
     xlr = pcr2numpy(xcoordinate(1),numpy.nan)[getrows()-1,getcols()-1]
-    
+
     return [xu, yu, xy, xy, getrows(), getcols(),xlr,ylr]
-        
+
 
 def snaptomap(points,mmap):
     """
     Snap the points in _points_ to nearest non missing
     values in _mmap_. Can be used to move gauge locations
     to the nearest rivers.
-    
-    Input: 
+
+    Input:
         - points - map with points to move
         - mmap - map with points to move to
 
-    Return: 
+    Return:
         - map with shifted points
     """
     points = cover(points,0)
@@ -386,65 +432,65 @@ def snaptomap(points,mmap):
     ptcover = spreadzone(cover(points,0),0,1)
     # Now get the org point value in the pt map
     nptorg = ifthen(npt > 0, ptcover)
-    
-    
+
+
     return nptorg
 
 def riverlength(ldd,order):
     """
-    Determines the length of a river using the ldd. 
+    Determines the length of a river using the ldd.
     only determined for order and higher.
 
-    Input: 
+    Input:
         - ldd, order (streamorder)
-        
-    Returns: 
+
+    Returns:
         - totallength,lengthpercell, streamorder
-    """    
+    """
     strorder=streamorder(ldd)
     strorder=ifthen(strorder >= ordinal(order),strorder)
     dist=max(celllength(),ifthen(boolean(strorder),downstreamdist(ldd)))
-    
+
     return catchmenttotal(cover(dist,0),ldd), dist, strorder
-    
+
 
 def upscale_riverlength(ldd,order, factor):
     """
     Upscales the riverlength using 'factor'
     The resulting maps can be resampled (e.g. using resample.exe) by factor and should
-    include the accurate length as determined with the original higher 
-    resolution maps.  This function is **depricated**,  
+    include the accurate length as determined with the original higher
+    resolution maps.  This function is **depricated**,
     use are_riverlength instead as this version
     is very slow for large maps
-    
-    Input: 
-        - ldd 
+
+    Input:
+        - ldd
         - minimum streamorder to include
-        
-    Output: 
-        - distance per factor cells 
+
+    Output:
+        - distance per factor cells
     """
-    
+
     strorder=streamorder(ldd)
     strorder=ifthen(strorder >= order,strorder)
-    dist=cover(max(celllength(),ifthen(boolean(strorder),downstreamdist(ldd))),0)   
+    dist=cover(max(celllength(),ifthen(boolean(strorder),downstreamdist(ldd))),0)
     totdist=max(ifthen(boolean(strorder),windowtotal(ifthen(boolean(strorder),dist),celllength() * factor)),dist)
-    
+
     return totdist
 
 def area_riverlength_factor(ldd, Area, Clength):
     """
-    ceates correction factors for riverlength for 
+    ceates correction factors for riverlength for
     the largest streamorder in each area
-    
-    Input: 
+
+    Input:
         - ldd
         - Area
         - Clength (1d length of a cell (sqrt(Area))
-        
+
     Output:
         - distance per area
-    
+
     """
     strorder=streamorder(ldd)
     strordermax=areamaximum(strorder,Area)
@@ -454,101 +500,101 @@ def area_riverlength_factor(ldd, Area, Clength):
     #N = sqrt(areatotal(scalar(boolean(Area)),Area))
     N = Clength
     factor = nr/N
-    
-    
+
+
     return factor
 
 def area_river_burnin(ldd, dem, order,Area):
   """
-  Calculates the lowest values in as DEM for each erea in an area map for 
+  Calculates the lowest values in as DEM for each erea in an area map for
   river of order *order*
-  
-  Input: 
+
+  Input:
       - ldd
       - dem
       - order
       - Area map
-      
+
   Output:
-      - dem 
+      - dem
   """
   strorder = streamorder(ldd)
   strordermax=areamaximum(strorder,Area)
   maxordcell = ifthen(strordermax > order, strordermax)
   riverdem = areaminimum(dem,Area)
-  
+
   return ifthen(boolean(maxordcell),riverdem)
-  
+
 
 def area_percentile(inmap,area,n,order,percentile):
   """
   calculates percentile of inmap per area
-  n is the number of points in each area, 
+  n is the number of points in each area,
   order, the sorter order of inmap per area (output of
   areaorder(inmap,area))
   n is the output of areatotal(spatial(scalar(1.0)),area)
-  
+
   Input:
       - inmap
       - area map
       - n
       - order (riverorder)
-      - percentile 
-      
+      - percentile
+
   Output:
       - percentile map
-      
+
   """
   i = rounddown((n * percentile)/100.0 + 0.5) # index in order map
   perc = ifthen(i == order, inmap)
-  
+
   return areaaverage(perc,area)
 
-    
+
 def find_outlet(ldd):
     """
     Tries to find the outlet of the largest catchment in the Ldd
-    
-    Input: 
+
+    Input:
         - Ldd
-        
-    Output: 
+
+    Output:
         - outlet map (single point in the map)
     """
     largest = mapmaximum(catchmenttotal(spatial(scalar(1.0)),ldd))
     outlet = ifthen(catchmenttotal(1.0,ldd) == largest,spatial(scalar(1.0)))
-    
+
     return outlet
-    
+
 
 def subcatch(ldd,outlet):
     """
     Determines a subcatchment map using LDD and outlet(s). In the resulting
     subcatchment map the i's of the catchment are determiend by the id's of
     the outlets.
-    
+
     Input:
         - ldd
-        - Outlet - maps with points for each outlet. 
-        
+        - Outlet - maps with points for each outlet.
+
     Output:
         - map of subcatchments
     """
     subcatch=subcatchment(ldd, ordinal(outlet))
-    
+
     return subcatch
-    
+
 def areastat(Var,Area):
     """
     Calculate several statistics of *Var* for each unique id in *Area*
-    
-    Input: 
+
+    Input:
         - Var
         - Area
-        
-    Output: 
+
+    Output:
         - Standard_Deviation,Average,Max,Min
-    
+
     """
     Avg = areaaverage(Var,Area)
     Sq = (Var - Avg)**2
@@ -556,25 +602,25 @@ def areastat(Var,Area):
     Sd = (areatotal(Sq,Area)/N)**0.5
     Max = areamaximum(Var,Area)
     Min = areaminimum(Var,Area)
-    
+
     return Sd,Avg,Max,Min
-    
+
 
 
 
 def checkerboard(mapin,fcc):
     """
-    checkerboard create a checkerboard map with unique id's in a 
+    checkerboard create a checkerboard map with unique id's in a
     fcc*fcc cells area. The resulting map can be used
     to derive statistics for (later) upscaling of maps (using the fcc factor)
-    
+
     .. warning: use with unitcell to get most reliable results!
-    
-    Input: 
+
+    Input:
         - map (used to determine coordinates)
         - fcc (size of the areas in cells)
-        
-    Output: 
+
+    Output:
         - checkerboard type map
     """
     msker = defined(mapin)
@@ -586,11 +632,11 @@ def checkerboard(mapin,fcc):
     xc = (xcoordinate((msker)) - xmin)/celllength()
     xc = rounddown(xc/fcc)
     #xc = xc/fcc
-    
+
     yc = yc * (mapmaximum(xc) + 1.0)
-    
+
     xy = ordinal(xc + yc)
-    
+
     return xy
 
 
@@ -602,17 +648,17 @@ def subcatch_stream(ldd, threshold, min_strahler=-999, max_strahler=999, assign_
     Derive catchments based upon strahler threshold
     Input:
         ldd -- pcraster object direction, local drain directions
-        threshold -- integer, strahler threshold, subcatchments ge threshold 
+        threshold -- integer, strahler threshold, subcatchments ge threshold
             are derived
-        min_strahler -- integer, minimum strahler threshold of river catchments 
+        min_strahler -- integer, minimum strahler threshold of river catchments
             to return
-        max_strahler -- integer, maximum strahler threshold of river catchments 
+        max_strahler -- integer, maximum strahler threshold of river catchments
             to return
-        assign_unique=False -- if set to True, unassigned connected areas at 
-            the edges of the domain are assigned a unique id as well. If set 
+        assign_unique=False -- if set to True, unassigned connected areas at
+            the edges of the domain are assigned a unique id as well. If set
             to False, edges are not assigned
-        assign_existing=False == if set to True, unassigned edges are assigned 
-            to existing basins with an upstream weighting. If set to False, 
+        assign_existing=False == if set to True, unassigned edges are assigned
+            to existing basins with an upstream weighting. If set to False,
             edges are assigned to unique IDs, or not assigned
     output:
         stream_ge -- pcraster object, streams of strahler order ge threshold
@@ -665,19 +711,19 @@ def subcatch_stream(ldd, threshold, min_strahler=-999, max_strahler=999, assign_
 def subcatch_order_a(ldd,oorder):
     """
     Determines subcatchments using the catchment order
-    
+
     This version uses the last cell BELOW order to derive the
     catchments. In general you want the \_b version
-    
+
     Input:
         - ldd
         - order - order to use
-    
+
     Output:
         - map with catchment for the given streamorder
     """
     outl = find_outlet(ldd)
-    large = subcatchment(ldd,boolean(outl))   
+    large = subcatchment(ldd,boolean(outl))
     stt = streamorder(ldd)
     sttd = downstream(ldd,stt)
     pts = ifthen((scalar(sttd) - scalar(stt)) > 0.0,sttd)
@@ -685,7 +731,7 @@ def subcatch_order_a(ldd,oorder):
     dif = cover(scalar(outl),dif) # Add catchment outlet
     dif = ordinal(uniqueid(boolean(dif)))
     sc = subcatchment(ldd,dif)
-    
+
     return sc, dif, stt
 
 def subcatch_order_b(ldd,oorder,sizelimit=0,fill=False,fillcomplete=False,stoporder=0):
@@ -703,7 +749,7 @@ def subcatch_order_b(ldd,oorder,sizelimit=0,fill=False,fillcomplete=False,stopor
         - if fill is set to True the higer order catchment are filled also
         - if fillcomplete is set to True the whole ldd is filled with catchments.
 
-    
+
     :returns sc, dif, nldd; Subcatchment, Points, subcatchldd
     """
     #outl = find_outlet(ldd)
@@ -745,7 +791,7 @@ def subcatch_order_b(ldd,oorder,sizelimit=0,fill=False,fillcomplete=False,stopor
 
     #Make pit ldd
     nldd = lddrepair(ifthenelse(cover(dif,0) > 0, 5,ldd))
-    
+
     return sc, dif, nldd
 
 
@@ -753,12 +799,12 @@ def getRowColPoint(in_map,xcor,ycor):
     """
     returns the row and col in a map at the point given.
     Works but is rather slow.
-    
+
     Input:
         - in_map - map to determine coordinates from
         - xcor - x coordinate
         - ycor - y coordinate
-        
+
     Output:
         - row, column
     """
@@ -772,20 +818,20 @@ def getRowColPoint(in_map,xcor,ycor):
     col_ =  numpy.absolute(diffx) <= (XX[0,0] * tolerance)  # cellsize
     row_ =  numpy.absolute(diffy) <= (XX[0,0] * tolerance)# cellsize
     point = (col_ * row_)
-    
-    
+
+
     return point.argmax(0).max(), point.argmax(1).max()
 
 def getValAtPoint(in_map,xcor,ycor):
     """
     returns the value in a map at the point given.
     works but is rather slow.
-    
+
     Input:
         - in_map - map to determine coordinates from
         - xcor - x coordinate
         - ycor - y coordinate
-        
+
     Output:
         - value
     """
@@ -801,35 +847,35 @@ def getValAtPoint(in_map,xcor,ycor):
     row_ =  numpy.absolute(diffy) <= (XX[0,0] * tolerance)# cellsize
     point = (col_ * row_)
     pt = point.argmax()
-    
+
     return themap.ravel()[pt]
-   
+
 
 def points_to_map(in_map,xcor,ycor,tolerance):
     """
     Returns a map with non zero values at the points defined
-    in X, Y pairs. It's goal is to replace the pcraster col2map program. 
-    
+    in X, Y pairs. It's goal is to replace the pcraster col2map program.
+
     tolerance should be 0.5 to select single points
     Performance is not very good and scales linear with the number of points
-    
-    
+
+
     Input:
         - in_map - map to determine coordinates from
         - xcor - x coordinate (array or single value)
         - ycor - y coordinate (array or single value)
         - tolerance - tolerance in cell units. 0.5 selects a single cell\
         10 would select a 10x10 block of cells
-        
+
     Output:
         - Map with values burned in. 1 for first point, 2 for second and so on
     """
     point = in_map * 0.0
-    
+
     x = pcr2numpy(xcoordinate(defined(in_map)),numpy.nan)
     y = pcr2numpy(ycoordinate(defined(in_map)),numpy.nan)
     XX = pcr2numpy(celllength(),0.0)
-    
+
     # simple check to use both floats and numpy arrays
     try:
         c = xcor.ndim
@@ -842,27 +888,27 @@ def points_to_map(in_map,xcor,ycor,tolerance):
         if Verbose:
             print(n)
         diffx = x - xcor[n]
-        diffy = y - ycor[n]        
+        diffy = y - ycor[n]
         col_ =  numpy.absolute(diffx) <= (XX[0,0] * tolerance)  # cellsize
         row_ =  numpy.absolute(diffy) <= (XX[0,0] * tolerance)# cellsize
         point =  point + numpy2pcr(Scalar,((col_ * row_) * (n+1)),numpy.nan)
-    
+
     return ordinal(point)
 
 
 def detdrainlength(ldd,xl,yl):
     """
     Determines the drainaige length (DCL) for a non square grid
-    
+
     Input:
         - ldd - drainage network
         - xl - length of cells in x direction
         - yl - length of cells in y direction
-        
+
     Output:
         - DCL
     """
-    # take into account non-square cells    
+    # take into account non-square cells
     # if ldd is 8 or 2 use Ylength
     # if ldd is 4 or 6 use Xlength
     draindir = scalar(ldd)
@@ -872,22 +918,22 @@ def detdrainlength(ldd,xl,yl):
                                         ifthenelse(draindir == 4, xl,
                                                    ifthenelse(draindir == 6,xl,slantlength))))
 
-                                                           
-    return drainlength   
+
+    return drainlength
 
 def detdrainwidth(ldd,xl,yl):
     """
     Determines width of drainage over DEM for a non square grid
-    
+
     Input:
         - ldd - drainage network
         - xl - length of cells in x direction
         - yl - length of cells in y direction
-        
+
     Output:
         - DCL
     """
-    # take into account non-square cells    
+    # take into account non-square cells
     # if ldd is 8 or 2 use Xlength
     # if ldd is 4 or 6 use Ylength
     draindir = scalar(ldd)
@@ -921,11 +967,11 @@ def derive_HAND(dem, ldd, accuThreshold, rivers=None, basin=None):
         ldd -- pcraster object direction, local drain directions
         accuThreshold -- upstream amount of cells as threshold for river
             delineation
-        rivers=None -- you can provide a rivers layer here. Pixels that are 
+        rivers=None -- you can provide a rivers layer here. Pixels that are
                         identified as river should have a value > 0, other
                         pixels a value of zero.
         basin=None -- set a boolean pcraster map where areas with True are estimated using the nearest drain in ldd distance
-                        and areas with False by means of the nearest friction distance. Friction distance estimated using the 
+                        and areas with False by means of the nearest friction distance. Friction distance estimated using the
                         upstream area as weight (i.e. drains with a bigger upstream area have a lower friction)
                         the spreadzone operator is used in this case.
     Output:
@@ -938,7 +984,7 @@ def derive_HAND(dem, ldd, accuThreshold, rivers=None, basin=None):
                                 boolean(1), boolean(0))
     else:
         stream = boolean(cover(rivers, 0))
-    
+
     height_river = ifthenelse(stream, ordinal(dem*100), 0)
     if basin is None:
         up_elevation = scalar(subcatchment(ldd, height_river))
@@ -949,21 +995,21 @@ def derive_HAND(dem, ldd, accuThreshold, rivers=None, basin=None):
         # replace areas outside of basin by a spread zone calculation.
     hand = max(scalar(ordinal(dem*100))-up_elevation, 0)/100
     dist = ldddist(ldd, stream, 1)
-        
+
     return hand, dist
 
-    
+
 def sCurve(X,a=0.0,b=1.0,c=1.0):
     """
     sCurve function:
-        
+
     Input:
         - X input map
-        - C determines the steepness or "stepwiseness" of the curve. 
+        - C determines the steepness or "stepwiseness" of the curve.
           The higher C the sharper the function. A negative C reverses the function.
         - b determines the amplitude of the curve
         - a determines the centre level (default = 0)
-    
+
     Output:
         - result
     """
@@ -976,19 +1022,19 @@ def sCurve(X,a=0.0,b=1.0,c=1.0):
 def sCurveSlope(X,a=0.0,b=1.0,c=1.0):
     """
     First derivative of the sCurve defined by a,b,c at point X
-    
+
     Input:
         - X - value to calculate for
-        - a 
+        - a
         - b
         - c
-    
+
     Output:
         - first derivative (slope) of the curve at point X
     """
     sc = sCurve(X,a=a,b=b,c=c)
     slope = sc * (1 - sc)
-    return slope    
+    return slope
 
 
 def Gzip(fileName, storePath=False, chunkSize=1024*1024):

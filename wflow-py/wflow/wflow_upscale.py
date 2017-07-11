@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 # Wflow is Free software, see below:
-# 
+#
 # Copyright (c) J. Schellekens 2005-2011
 #
 # This program is free software: you can redistribute it and/or modify
@@ -32,7 +32,7 @@ Usage::
        maximum number of cpu's/cores to use (default = 4)
 
 The script uses the pcraster resample program to reduce the maps. The original
-river network is used to force the river network in the reduced version of the 
+river network is used to force the river network in the reduced version of the
 model. Nevertheless it may be needed to manually adjust the locations of
 the gauges in the gauges.col file.
 
@@ -45,7 +45,7 @@ run the wflow_prepare scripts twice to create the different models.
 from wflow.wflow_lib import *
 import wflow.pcrut as pcrut
 
-    
+
 import os, sys, shlex, time
 import os.path
 import glob
@@ -59,7 +59,7 @@ def usage(*args):
     for msg in args: print msg
     print __doc__
     sys.exit(0)
-    
+
 
 
 
@@ -105,7 +105,7 @@ def runCommands(commands, maxCpu):
 
 
 def main():
-    
+
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'fhC:N:Ir:M:')
     except getopt.error, msg:
@@ -132,7 +132,7 @@ def main():
     ext_to_copy = ['*.tss','*.tbl','*.col','*.xml']
     if os.path.isdir(caseNameNew) and not force:
         print "Refusing to write into an existing directory:" + caseNameNew
-        exit()
+        sys.exit()
 
     if not os.path.isdir(caseNameNew):
         for ddir in dirs:

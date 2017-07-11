@@ -1,16 +1,24 @@
-__all__ = ["wflow_funcs","wflow_adapt","wflow_lib","pcrut","wf_DynamicFramework","stats"]
-__version__="1.0.master"
-__release__="1.0.master.1"
-__versionnr__="1.0.1"
-__build__="2017-06-13 10:10:58.703000"
-import osgeo.gdal as gdal
+__all__ = ['wflow_funcs','wflow_adapt','wflow_lib','pcrut','wf_DynamicFramework','stats']
+__version__='1.0.master'
+__release__='1.0.master.1'
+__versionnr__='1.0.1'
+__build__='2017-06-20 11:12:59.689000'
 
 import os, sys
-if hasattr(sys, "frozen"):
-    _ROOT = os.path.abspath(os.path.dirname(__file__)).split("library.zip")[0]
-    os.environ['GDAL_DATA'] = os.path.join(_ROOT,'gdal-data')
-else:
-    _ROOT = os.path.abspath(os.path.dirname(__file__))
+import osgeo.gdal as gdal
 
-def get_data(path):
-    return os.path.join(_ROOT, 'data', path)
+if getattr(sys, 'frozen', False):
+    # running in a bundle
+    # sys._MEIPASS is set by PyInstaller
+    basedir = getattr(sys, '_MEIPASS', None)
+    # support also other bundlers
+    if not basedir:
+        basedir = os.path.dirname(sys.executable)
+
+    # use the included gdal-data
+    gdal_data_path = os.path.join(basedir, 'gdal-data')
+    gdal.SetConfigOption('GDAL_DATA', gdal_data_path)
+
+    # set environment variable instead of pyproj_datadir such
+    # that child processes will inherit it
+    os.environ['PROJ_DIR'] = os.path.join(basedir, 'proj-data')

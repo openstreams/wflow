@@ -58,7 +58,7 @@ class MyTest(unittest.TestCase):
 
         my_data = wf.genfromtxt(os.path.join(caseName,runId,"run.csv"), delimiter=',')
         print("Checking  discharge ....")
-        self.assertAlmostEquals(1837.7918265024821,my_data[:,2].mean(),places=4)
+        self.assertAlmostEquals(1092.849374135335,my_data[:,2].mean(),places=4)
 
 
 

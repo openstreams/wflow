@@ -20,7 +20,6 @@ to a Delft-FEWS runinfo.xml file can be given. An example is shown below.
     endtime= 1995-02-28 00:00:00
     # required, base timestep of the model
     timestepsecs = 86400
-    fewsrun=0
     #Indicates the model is running from Delft-FEWS or not
 
 
@@ -46,18 +45,34 @@ If netcdf files are used the name of the mapstack is used as the standardname in
     outputformat=1
 
     # netcdfoutput requires also outputformat = 1 (default) and additionally the name of the file
-    netcdfoutput = outmaps.nc
-    netcdfwritebuffer=100
+    # read the mapsstacks from a netcdf
     netcdfinput= inmaps.nc
+    #Write to netcdf:
+    netcdfoutput = outmaps.nc
+    # Write summary maps to netcdf
+    netcdfstaticoutput = staticoutmaps.nc
+    # Write states to netcdf
+    netcdfstatesoutput = states.nc
+    #Read states from netcdf
+    netcdfstatesinput = instates.nc
+    #netcdfwritebuffer=100
 
-    # Provide a lot of debug info
-    # debug=1
+
+As can be seen from the example above a number of input/ouput streams can be switch on to work with netcdf files.
+These are:
+
++ netcdfinput. Time dependant input. This does not work for climatology files at the moment
++ netcdfoutput. Time dependant output.
++ netcdfstaticoutput. Summary output at the end of a run, those that normally end up in the outsum directory
++ netcdfstatesoutput. The model's state variables at the end of a run.
++ netcdfstatesinput. The model's input state variables at the start of a run.
 
 
-
+To enhance performance when writing netcdf files a netcdfwritebuffer can be set. The number indicates the number
+of timesteps to keep in memory before flusing the buffer. Setting the buffer to a large value may induce memory problems.
 
 Settings in the API section
----------------------------
+===========================
 
 In the ini file example below several variables are configured to be available via the
 API.  For most settings this only defines
@@ -118,7 +133,7 @@ example:
 
 
 Settings in the modelparameters section
----------------------------------------
+=======================================
 
 Most of the time this section is not needed as this will mostly be configured
 in the python code by the model developer. However, in some case this section can be used
@@ -177,7 +192,7 @@ Example::
 
 
 Settings in the variable_change_timestep/once section
------------------------------------------------------
+=====================================================
 In the two sections "variable_change_timestep" and "variable_change_once" you can set
 operations on parameters and variable that are executed at the start of each timestep or once in the initialisation
 of the model respectively. What you specify here should be valid python code and include variable that exists
@@ -197,7 +212,7 @@ See below for a configuration example. Some models may also support this via the
 
 
 Settings in the [rollingmean] section
--------------------------------------
+=====================================
 
 The rollingmean section allows you to define a rolling mean for each variable in the model. This variable can
 be used by other applications (e.g. data assimilation) or you can report it  as output. Example:
@@ -211,7 +226,7 @@ be used by other applications (e.g. data assimilation) or you can report it  as 
 The above will make a 12 timestep rollingmean and store this in the variable self.Surfacerunoff_mean_12
 
 Settings in the summary_* sections
-----------------------------------
+==================================
 
 By adding variable in one or several of these sectiosn the framework will save
 these variables to disk (using the value at the end, sum, min, max or avg) at the end of a run.
@@ -247,14 +262,15 @@ Example::
 
 
 Settings in the outputtss/outputcsv sections
---------------------------------------------
+============================================
 [outputcsv_0-n]
 [outputtss_0-n]
 
 Number of sections to define output timeseries in csv format. Each section
-should at lears contain one samplemap item and one or more variables to save.
+should at least contain one samplemap item and one or more variables to save.
 The samplemap is the map that determines how the timeseries are averaged/sampled. The function
 key specifies how the data is sample: average(default), minimum, maximum, total, majority.
+The timeformat key can either be steps or datetime.
 
 All other items are variable=filename pairs. The filename is given relative
 to the case directory.
@@ -268,6 +284,8 @@ Example:
     self.SurfaceRunoffMM=Qsubcatch_avg.csv
     function=average
     # average is the default
+    timeformat = datetime
+    # steps is the default
 
     [outputcsv_1]
     samplemap=staticmaps/wflow_gauges.map
@@ -288,10 +306,10 @@ an average per landuse.
 
 
 [run] section: The use of date and time
----------------------------------------
+=======================================
 
 Available options in the [run] section
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------------------
 
 The run section can contain information about the model timesteps, the date/time range,
 how to initialize the model and how interpret the forcing data.
@@ -310,13 +328,13 @@ how to initialize the model and how interpret the forcing data.
     # Default behaviour: steps
     runlengthdetermination=steps
 
-Data and time and timesteps
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Date and time and timesteps
+---------------------------
 The original pcraster framework has no notion of date and time, only timesteps that are used to propagate a
-model forward. However, to be able to support the BMI and netcdf files dat and time functionality
+model forward. However, to be able to support the BMI and netcdf files date and time functionality
 has been inserted into the framework.
 
-As most of the forcing in hydrological modelling is an accumulation the dat/time of an input time series is
+As most of the forcing in hydrological modelling is an accumulation the date/time of an input time series is
 assumed to represent the total (or average) of that variable one timestep length back in time from the timestamp.
 
 For example, if the forcing data has the following four timestamps the model will run four timesteps. The first timesteps
@@ -343,6 +361,12 @@ As such the state going into the model should be valid for the T0, see graph bel
 		    color=blue
 	    }
 
+        subgraph cluster_3 {
+	    	node [style=filled];
+		    "  " ->" 1 Jan 2016" -> " 2 Jan 2016" -> " 3 Jan 2016" -> " 4 jan 2016";
+		    label = "Model output data";
+		    color=blue
+	    }
 
         "Model state: T0 31 Dec 2015";
 
@@ -350,11 +374,11 @@ As such the state going into the model should be valid for the T0, see graph bel
     }
 
 Here the first column shows the model steps and the second column the timestamp of the input/output data for that timestep
-(a - means there is nothing for that step). The first empty-row is regarded as the timestamp of the initial conditions. The
-first forcing data is used to propagate the model from T0 (the state, 31 Dec 2015) to T1 (1 Jan 2016) whcih will also
-be the first output the model writes..
+(a empty box means there is nothing for that step). The first empty-row is regarded as the timestamp of the initial conditions. The
+first forcing data is used to propagate the model from T0 (the state, 31 Dec 2015) to T1 (1 Jan 2016) which will also
+be the first output the model writes.
 
-The above corresponds to the following date/time in rhe [run] section:
+The above corresponds to the following date/time in the [run] section:
 
 ::
 
@@ -373,8 +397,8 @@ The above corresponds to the following date/time in rhe [run] section:
 
 
 The above shows the default behaviour of the framework. For each data point in the input forcing a model steps is performed.
-The 'runlengthdetermination' variable in the run section can also be set to 'intervals'. In that case the the number
- of steps is determined from the number of intervals in the forcing data. Hence, the following run will be performed:
+The 'runlengthdetermination' variable in the run section can also be set to 'intervals'. In that case  the number
+of steps is determined from the number of intervals in the forcing data. Hence, the following run will be performed:
 
 
 .. graphviz::
@@ -396,6 +420,12 @@ The 'runlengthdetermination' variable in the run section can also be set to 'int
 		    color=blue
 	    }
 
+        subgraph cluster_3 {
+	    	node [style=filled];
+		    " " -> " 2 Jan 2016" -> " 3 Jan 2016" -> " 4 jan 2016";
+		    label = "Model output data";
+		    color=blue
+	    }
 
         "Model state: T0 01 Jan 2016";
 
@@ -414,7 +444,6 @@ The 'runlengthdetermination' variable in the run section can also be set to 'int
     timestepsecs = 86400
     #start model with cold state
     reinit=1
-    fewsrun=0
     # Default behaviour: steps
     runlengthdetermination=intervals
 
@@ -428,6 +457,17 @@ will be  02 Jan 2016 generated from the forcing marked as 2 Jan 2016.
 
 The same applies when the start and end time of the model run are supplied via the bmi interface.
 
+
+Settings in the netcdfmetadata section
+======================================
+
+All items in this section are copied as global attributes into the netcdf output file. Example:
+
+::
+
+    [netcdfmetadata]
+    license=https://opendatacommons.org/licenses/odbl/
+    note=Test runs, results are not final
 
 
 

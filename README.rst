@@ -11,13 +11,13 @@ A link to the latest version can always be found at https://github.com/openstrea
 
 Reference documentation at:
 
-+ http://wflow.readthedocs.org/
++ https://wflow.readthedocs.org/
 
 
 Obtaining wflow
 ===============
 
-Goto https://github.com/openstreams/wflow. There you can download the source or a release. Also make sure
+Go to https://github.com/openstreams/wflow. There you can download the source or a release. Also make sure
 you get the required third party models first (see below). The documentation can be found at
 http://wflow.readthedocs.org
 
@@ -44,9 +44,9 @@ Download Anaconda for python 2.7 64 bit (Tested with anaconda2 2.5.0). From the 
 
 Once Anaconda is installed open a command window and install netCDF4, gdal and pyproj using the following commands:
 
-+ Conda install netCDF4
-+ Conda install gdal=1.11
-+ Conda install pyproj
++ conda install netCDF4
++ conda install gdal
++ conda install pyproj
 
 *Installing pcraster*
 
@@ -56,13 +56,13 @@ Once Anaconda is installed open a command window and install netCDF4, gdal and p
 
 *Installing wflow itself*
 
-Clone with git or Download the latest zip with the source code of wflow. Go to the wflow-py directory and run:
+Clone with git or download the latest zip with the source code of wflow. Go to the wflow-py directory and run:
 
 + python setup.py install
 
 To check it the install is successful, go to the examples directory and run the following command:
 
-+ Python c:\\Anaconda\\scripts\\wflow_sbm.py -C wflow_rhine_sbm -T 100 -R testing
++ python c:\\Anaconda\\Scripts\\wflow_sbm.py -C wflow_rhine_sbm -R testing
 
 This should run without errors
 

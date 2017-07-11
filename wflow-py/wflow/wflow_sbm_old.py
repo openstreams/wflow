@@ -29,11 +29,7 @@ usage
           [-c configfile][-T last_step][-S first_step][-s seconds][-W][-E][-N][-U discharge]
           [-P parameter multiplication][-X][-f][-I][-i tbl_dir][-x subcatchId][-u updatecols]
           [-p inputparameter multiplication][-l loglevel]
-          
-    -F: if set wflow is expected to be run by FEWS. It will determine
-        the timesteps from the runinfo.xml file and save the output initial
-        conditions to an alternate location. Also set fewsrun=1 in the .ini file!
-        
+
     -X: save state at the end of the run over the initial conditions at the start        
     
     -f: Force overwrite of existing results    
@@ -344,9 +340,6 @@ class WflowModel(DynamicModel):
             self.logger.info("Saving initial conditions over start conditions...")
             self.wf_suspend(self.SaveDir + "/instate/")
 
-        if self.fewsrun:
-            self.logger.info("Saving initial conditions for FEWS...")
-            self.wf_suspend(self.Dir + "/outstate/")
 
 
     def parameters(self):
@@ -450,7 +443,6 @@ class WflowModel(DynamicModel):
         # Set and get defaults from ConfigFile here ###################################
         self.Tslice = int(configget(self.config, "model", "Tslice", "1"))
         self.reinit = int(configget(self.config, "run", "reinit", "0"))
-        self.fewsrun = int(configget(self.config, "run", "fewsrun", "0"))
         self.OverWriteInit = int(configget(self.config, "model", "OverWriteInit", "0"))
         self.updating = int(configget(self.config, "model", "updating", "0"))
         self.updateFile = configget(self.config, "model", "updateFile", "no_set")
@@ -1526,7 +1518,6 @@ def main(argv=None):
     _lastTimeStep = 1
     _firstTimeStep = 0
     LogFileName = "wflow.log"
-    fewsrun = False
     runinfoFile = "runinfo.xml"
     timestepsecs = 86400
     wflow_cloneMap = 'wflow_subcatch.map'
@@ -1548,9 +1539,6 @@ def main(argv=None):
         pcrut.usage(msg)
 
     for o, a in opts:
-        if o == '-F':
-            runinfoFile = a
-            fewsrun = True
         if o == '-C': caseName = a
         if o == '-R': runId = a
         if o == '-c': configfile = a
@@ -1562,17 +1550,8 @@ def main(argv=None):
         if o == '-f': _NoOverWrite = 0
         if o == '-l': exec "loglevel = logging." + a
 
-    if fewsrun:
-        ts = getTimeStepsfromRuninfo(runinfoFile, timestepsecs)
-        starttime = getStartTimefromRuninfo(runinfoFile)
-        if (ts):
-            _lastTimeStep = ts
-            _firstTimeStep = 1
-        else:
-            print "Failed to get timesteps from runinfo file: " + runinfoFile
-            exit(2)
-    else:
-        starttime = dt.datetime(1990,01,01)
+
+    starttime = dt.datetime(1990,01,01)
         
     if _lastTimeStep < _firstTimeStep:
         print "The starttimestep (" + str(_firstTimeStep) + ") is smaller than the last timestep (" + str(

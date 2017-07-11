@@ -231,6 +231,13 @@ The wflow\_floodmap model
    wflow_floodmap
 
 
+The framework and settings for the framework
+============================================
+.. toctree::
+   :maxdepth: 2
+
+   wf_DynamicFramework
+
 The wflow Delft-FEWS adapter
 ============================
 .. toctree::
@@ -264,7 +271,8 @@ Adding a new model yourself using the framework
    :maxdepth: 2
 
    framework
-   wf_DynamicFramework
+
+
 
 
 Release notes

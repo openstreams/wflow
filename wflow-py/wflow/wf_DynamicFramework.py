@@ -59,6 +59,7 @@ class runDateTimeInfo():
         self.runEndTime = datetimeend
         self.timeStepSecs = timestepsecs
         self.currentTimeStep = 0
+        self.lastTimeStep = 0
         self.startadjusted = 0
         self.startendadjusted = 0
         self.currentmode = mode
@@ -70,6 +71,7 @@ class runDateTimeInfo():
         else:
             self.runStateTime = self.runStartTime
 
+        self.setByBMI= False
         self.currentDateTime = self.runStateTime
         self.outPutStartTime = self.runStateTime + datetime.timedelta(seconds=self.timeStepSecs)
         self.runTimeSteps = (calendar.timegm(self.runEndTime.utctimetuple()) - calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs
@@ -77,6 +79,7 @@ class runDateTimeInfo():
         self.currentYday = self.currentDateTime.timetuple().tm_yday
         self.currentHour = self.currentDateTime.hour
         self.nextDateTime = self.currentDateTime + datetime.timedelta(seconds=self.timeStepSecs)
+        self.lastTimeStep = self.runTimeSteps + self.currentTimeStep
 
     def __str__(self):
         a = self.__dict__
@@ -84,7 +87,7 @@ class runDateTimeInfo():
         return str(a)
 
     def update(self, timestepsecs=None, datetimestart=None, datetimeend=None, currentTimeStep=None,
-               currentDatetime=None,runTimeSteps=None,mode='steps'):
+               currentDatetime=None,runTimeSteps=None,mode='steps',incrementStep=False,setByBMI=False):
         """
         Updates the content of the framework date/time object. Use only one input parameter per call. or runTimeSteps and datatimestart at the same time
         use the mode option to switch between steps and intervals ('steps' or 'intervals')
@@ -99,15 +102,15 @@ class runDateTimeInfo():
         self.currentmode = mode
         self.callstopupdate = self.callstopupdate + 1
 
+        if setByBMI:
+            self.setByBMI = True
         if timestepsecs and not runTimeSteps:
             self.timeStepSecs = timestepsecs
             self.runTimeSteps = (calendar.timegm(self.runEndTime.utctimetuple()) - calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs
-            if mode =='steps':
-                self.startadjusted = 0
-            else:
-                self.startadjusted = 1
 
-            self.runStateTime = self.runStartTime - datetime.timedelta(seconds=self.timeStepSecs)
+            if self.currentmode == 'steps':
+                self.runStateTime = self.runStartTime - datetime.timedelta(seconds=self.timeStepSecs)
+
             self.outPutStartTime = self.runStateTime + datetime.timedelta(seconds=self.timeStepSecs)
         elif timestepsecs and runTimeSteps:
             self.timeStepSecs = timestepsecs
@@ -115,20 +118,27 @@ class runDateTimeInfo():
 
         if datetimestart:
             self.currentTimeStep = 1
+
+            #if self.startadjusted
             if self.currentmode =='steps':
                 self.runStartTime = datetimestart
                 self.startadjusted = 0
+                self.runStateTime = self.runStartTime - datetime.timedelta(seconds=self.timeStepSecs)
             else:
-                self.runStartTime = datetimestart + datetime.timedelta(seconds=self.timeStepSecs)
+                #self.runStartTime = datetimestart + datetime.timedelta(seconds=self.timeStepSecs)
+                self.runStartTime = datetimestart # + datetime.timedelta(seconds=self.timeStepSecs)
                 self.startadjusted = 1
+                self.runStateTime = self.runStartTime# - datetime.timedelta(seconds=self.timeStepSecs)
 
-            self.runStateTime = self.runStartTime - datetime.timedelta(seconds=self.timeStepSecs)
-            self.currentDateTime = self.runStartTime
+
+            self.currentDateTime = self.runStateTime
             self.outPutStartTime = self.currentDateTime + datetime.timedelta(seconds=self.timeStepSecs)
             self.runTimeSteps = (calendar.timegm(self.runEndTime.utctimetuple()) - calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs
-            self.currentMonth = self.currentDateTime.month
-            self.currentYday = self.currentDateTime.timetuple().tm_yday
-            self.currentHour = self.currentDateTime.hour
+
+
+            if self.runTimeSteps < 1: # End time before start time
+                self.runTimeSteps = 1
+                self.runEndTime = self.runStateTime + datetime.timedelta(seconds=self.timeStepSecs * self.runTimeSteps)
 
         if datetimestart and runTimeSteps:
 
@@ -137,39 +147,45 @@ class runDateTimeInfo():
             if self.currentmode =='steps':
                 self.runStartTime = datetimestart
                 self.startadjusted = 0
+                self.runStateTime = self.runStartTime - datetime.timedelta(seconds=self.timeStepSecs)
             else:
-                self.runStartTime = datetimestart + datetime.timedelta(seconds=self.timeStepSecs)
+                self.runStartTime = datetimestart# + datetime.timedelta(seconds=self.timeStepSecs)
                 self.startadjusted = 1
+                self.runStateTime = self.runStartTime
 
-            self.runStateTime = self.runStartTime - datetime.timedelta(seconds=self.timeStepSecs)
+
             self.outPutStartTime = self.runStateTime + datetime.timedelta(seconds=self.timeStepSecs)
             self.currentDateTime = self.runStartTime
             self.runEndTime = self.runStateTime + datetime.timedelta(seconds=self.timeStepSecs * runTimeSteps)
-            self.currentMonth = self.currentDateTime.month
-            self.currentYday = self.currentDateTime.timetuple().tm_yday
-            self.currentHour = self.currentDateTime.hour
+
 
         if datetimeend:
             self.runEndTime = datetimeend
             self.runTimeSteps = (calendar.timegm(self.runEndTime.utctimetuple()) - calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs
+            if self.runTimeSteps < 1: # End time before start time
+                self.runTimeSteps = 1
+                self.runStartTime = self.runEndTime - datetime.timedelta(seconds=self.timeStepSecs * self.runTimeSteps)
 
         if currentTimeStep and currentTimeStep != self.currentTimeStep:
             self.currentTimeStep = currentTimeStep
             self.currentDateTime = self.runStateTime + datetime.timedelta(seconds=self.timeStepSecs * (self.currentTimeStep -1))
 
-            self.currentMonth = self.currentDateTime.month
-            self.currentYday = self.currentDateTime.timetuple().tm_yday
-            self.currentHour = self.currentDateTime.hour
+
+        if incrementStep:
+            self.currentTimeStep = self.currentTimeStep + 1
+            self.currentDateTime = self.currentDateTime + datetime.timedelta(seconds=self.timeStepSecs)
+
 
         if currentDatetime:
             self.currentDateTime = currentDatetime
-            self.currentMonth = self.currentDateTime.month
-            self.currentYday = self.currentDateTime.timetuple().tm_yday
-            self.currentHour = self.currentDateTime.hour
             self.currentTimeStep = (calendar.timegm(self.currentDateTime.utctimetuple()) -
                                     calendar.timegm(self.runStateTime.utctimetuple()))/self.timeStepSecs +1
 
         self.nextDateTime = self.currentDateTime + datetime.timedelta(seconds=self.timeStepSecs)
+        self.lastTimeStep = self.runTimeSteps
+        self.currentMonth = self.currentDateTime.month
+        self.currentYday = self.currentDateTime.timetuple().tm_yday
+        self.currentHour = self.currentDateTime.hour
 
 
 
@@ -325,12 +341,13 @@ class wf_sumavg():
 
 
 class wf_OutputTimeSeriesArea():
-    def __init__(self, area, oformat='csv', areafunction='average'):
+    def __init__(self, area, oformat='csv', areafunction='average',tformat='steps'):
         """
         Replacement timeseries output function for the pcraster framework
 
         area - an area-map to average from
         oformat  - format of the output file (csv, txt, tss, only csv and tss at the moment)
+        tformat - steps of datetime (format of the timsteps/stamp)
 
         Step 1: make average of variable using the areaverage function
         Step 2: Sample the values from the areas (remember the index so we can do it faster lateron)
@@ -338,6 +355,7 @@ class wf_OutputTimeSeriesArea():
         """
 
         self.steps = 0
+        self.timeformat = tformat
         self.area = area
         self.areanp = pcr2numpy(area, 0).copy()
         self.oformat = oformat
@@ -410,7 +428,7 @@ class wf_OutputTimeSeriesArea():
         self.flatres = self.remap_np.flatten()[self.idx]
 
         thiswriter = self.fnamelist.index(fname)
-        if dtobj:
+        if dtobj and self.timeformat == 'datetime':
             self.writer[thiswriter].writerow([str(dtobj)] + self.flatres.tolist())
         elif timestep:
             self.writer[thiswriter].writerow([timestep] + self.flatres.tolist())
@@ -441,10 +459,21 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self._d_model = userModel
         self._testRequirements()
 
+
+
+
         dte = datetimestart + datetime.timedelta(seconds=(lastTimeStep - firstTimestep) * timestepsecs)
 
         self.DT = runDateTimeInfo(timestepsecs=timestepsecs, datetimestart=datetimestart,
                                   datetimeend=dte, mode='steps')
+
+
+        if lastTimeStep != 0:
+            if firstTimestep == 0:
+                firstTimestep = 1
+            self.DT.update(runTimeSteps=(lastTimeStep - firstTimestep))
+            self.DT.update(currentTimeStep=firstTimestep-1)
+
         self.setviaAPI = {}
         # Flag for each variable. If 1 it is set by the API before this timestep. Reset is done at the end of each timestep
 
@@ -452,6 +481,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         if firstTimestep > lastTimeStep:
             msg = "Cannot run dynamic framework: Start timestep smaller than end timestep"
             raise frameworkBase.FrameworkError(msg)
+
 
         # fttb
         self._addMethodToClass(self._readmapNew)
@@ -467,6 +497,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self._addMethodToClass(self.wf_updateparameters)
         self._addMethodToClass(self.wf_savesummarymaps)
         self._addMethodToClass(self.wf_supplyStartTimeDOY)
+        self._addMethodToClass(self.wf_supplyJulianDOY)
         self._addAttributeToClass("ParamType", self.ParamType)
         self._addAttributeToClass("timestepsecs", self.DT.timeStepSecs)
         self._addAttributeToClass("__version__", __version__)
@@ -654,6 +685,12 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         return DOY
 
+    def wf_supplyJulianDOY(self):
+
+        JDOY =  self.DT.currentYday - (calendar.isleap(self.DT.currentDateTime.timetuple().tm_year) and self.DT.currentYday > 60)
+
+        return JDOY
+
     def wf_timeinputscalar(self, tssfile, areamap, default):
         """
 
@@ -746,7 +783,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self.logger.info("Applying multiplication from table: " + multname)
 
         return rest
-    
+
     def readtblLayersDefault(self,pathtotbl, landuse, subcatch, soil, layer, default):
         """
         First check if a prepared  maps of the same name is present
@@ -803,7 +840,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             rest = rest * multfac
             self.logger.info("Applying multiplication from table: " + multname)
 
-        return rest        
+        return rest
 
     def readtblFlexDefault(self, pathtotbl, default, *args):
         """
@@ -900,7 +937,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             if os.path.exists(caseName + "/" + runId + "/run.tss"):
                 if NoOverWrite:
                     print "ERROR: refusing to overwrite an existing run: " + caseName + "/" + runId + "/run.tss"
-                    exit(1)
+                    sys.exit(1)
 
         for file in glob.glob(caseName + "/" + intbl + "/*.tbl"):
             shutil.copy(file, caseName + "/" + runId + "/" + intbl)
@@ -960,11 +997,11 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         st = configget(self._userModel().config, 'run', 'starttime', "None")
 
-        self.skipfirsttimestep =  int(configget(self._userModel().config, 'run', 'skipfirst', "0"))
+        #self.skipfirsttimestep =  int(configget(self._userModel().config, 'run', 'skipfirst', "0"))
 
         # Assume that we have set this via BMI
-        if self.DT.callstopupdate > 1:
-            self.logger.info("Not reading time from ini file, assuming it is set by BMI (calls = " + str(self.DT.callstopupdate) + ")")
+        if self.DT.setByBMI:
+            self.logger.info("Not reading time from ini file, assuming it is set by BMI or otherwise (calls = " + str(self.DT.callstopupdate) + ")")
         else:
             if st == "None": # try from the runinfo file
                 rinfo_str = configget(self._userModel().config, 'run', 'runinfo', "None")
@@ -1000,9 +1037,14 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
                 self._userModel().currentdatetime = self.DT.currentDateTime
                 ed = configget(self._userModel().config, 'run', 'endtime', "None")
-                self.DT.update(datetimeend=parser.parse(ed), mode=self.runlengthdetermination)
-                self.DT.update(timestepsecs=int(configget(self._userModel().config, 'run', 'timestepsecs', "86400")), mode=self.runlengthdetermination)
-                self.DT.update(currentTimeStep=self.DT.currentTimeStep, mode=self.runlengthdetermination)
+                if ed != 'None':
+                    self.DT.update(datetimeend=parser.parse(ed), mode=self.runlengthdetermination)
+                    self.DT.update(timestepsecs=int(configget(self._userModel().config, 'run', 'timestepsecs', "86400")), mode=self.runlengthdetermination)
+                    self.DT.update(currentTimeStep=self.DT.currentTimeStep, mode=self.runlengthdetermination)
+                else:
+                    self.logger.error("No end time given with start time: [run] endtime = " + ed )
+                    sys.exit(1)
+
                 self._update_time_from_DT()
 
 
@@ -1023,10 +1065,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self.outputFormat = int(configget(self._userModel().config, 'framework', 'outputformat', '1'))
         self.APIDebug = int(configget(self._userModel().config, 'framework', 'debug', str(self.APIDebug)))
         self.ncfile = configget(self._userModel().config, 'framework', 'netcdfinput', "None")
-        self.ncfilestates = configget(self._userModel().config, 'framework', "netcdfstatesinput", "None")
+        self.ncinfilestates = configget(self._userModel().config, 'framework', "netcdfstatesinput", "None")
         self.ncoutfile = configget(self._userModel().config, 'framework', 'netcdfoutput', "None")
         self.ncoutfilestatic = configget(self._userModel().config, 'framework', 'netcdfstaticoutput', "None")
-        self.ncoutfilestate = configget(self._userModel().config, 'framework', 'netcdfstatesoutput', "None")
+        self.ncoutfilestates = configget(self._userModel().config, 'framework', 'netcdfstatesoutput', "None")
         self.ncfilestatic = configget(self._userModel().config, 'framework', 'netcdfstaticinput', "None")
         self.EPSG = configget(self._userModel().config, 'framework', 'EPSG', "EPSG:4326")
         self.ncfileformat = configget(self._userModel().config, 'framework', 'netcdf_format', "NETCDF4")
@@ -1068,14 +1110,32 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self.logger.debug("Found following input variables to get from netcdf file: " + str(varlst))
             self.NcInput = netcdfinput(os.path.join(caseName, self.ncfile), self.logger, varlst)
 
+        # Meta info for netcdf files
+        meta = {}
+        meta['caseName'] = caseName
+        meta['runId'] = runId
+        meta['wflow_version'] = __version__
+        meta['wflow_release'] = __release__
+        meta['wflow_build'] = __build__
+        meta['wflow_ini'] = self._userModel().configfile
+        if hasattr(sys, "frozen"):
+            meta['wflow_exe'] = "True"
+        else:
+            meta['wflow_exe'] = "False"
+
+        try:
+            metafrom_config = dict(self._userModel().config.items('netcdfmetadata'))
+        except:
+            metafrom_config = {}
+
+        meta.update(metafrom_config)
 
 
-
-        if self.ncfilestates != "None":
+        if self.ncinfilestates != "None":
             smaps = self._userModel().stateVariables()
             maps = [s + ".map" for s in smaps]
             self.logger.debug("Found following input states to get from netcdf file: " + str(maps))
-            self.NcInputStates = netcdfinputstates(os.path.join(caseName, self.ncfilestates), self.logger, maps)
+            self.NcInputStates = netcdfinputstates(os.path.join(caseName, self.ncinfilestates), self.logger, maps)
 
 
         if self.ncfilestatic != "None":
@@ -1083,11 +1143,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         if self.ncoutfile != 'None':  # Ncoutput
             buffer = int(configget(self._userModel().config, 'framework', 'netcdfwritebuffer', "50"))
-            meta = {}
-            meta['caseName'] = caseName
-            meta['runId'] = runId
-            meta['wflow_version'] =__version__
-            meta['wflow_release'] =__release__
+
             self.NcOutput = netcdfoutput(os.path.join(caseName, runId, self.ncoutfile),
                                          self.logger, self.DT.outPutStartTime,
                                          self.DT.runTimeSteps,
@@ -1096,23 +1152,13 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                                          zlib=self.ncfilecompression,least_significant_digit=self.ncfiledigits)
 
         if self.ncoutfilestatic != 'None':  # Ncoutput
-            meta = {}
-            meta['caseName'] = caseName
-            meta['runId'] = runId
-            meta['wflow_version'] =__version__
-            meta['wflow_release'] =__release__
             self.NcOutputStatic = netcdfoutputstatic(os.path.join(caseName, runId, self.ncoutfilestatic),
                                                      self.logger, self.DT.runEndTime,1,timestepsecs=self.DT.timeStepSecs,
                                                      maxbuf=1, metadata=meta, EPSG=self.EPSG,Format=self.ncfileformat,
                                                      zlib=self.ncfilecompression,least_significant_digit=self.ncfiledigits)
 
-        if self.ncoutfilestate != 'None':  # Ncoutput
-            meta = {}
-            meta['caseName'] = caseName
-            meta['runId'] = runId
-            meta['wflow_version'] =__version__
-            meta['wflow_release'] =__release__
-            self.NcOutputState = netcdfoutputstatic(os.path.join(caseName, runId, self.ncoutfilestate),
+        if self.ncoutfilestates != 'None':  # Ncoutput
+            self.NcOutputState = netcdfoutputstatic(os.path.join(caseName, runId, self.ncoutfilestates),
                                                      self.logger, self.DT.runEndTime,1,timestepsecs=self.DT.timeStepSecs,
                                                      maxbuf=1, metadata=meta, EPSG=self.EPSG,Format=self.ncfileformat,
                                                      zlib=self.ncfilecompression,least_significant_digit=self.ncfiledigits)
@@ -1222,17 +1268,18 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 secnr = secnr + 1
                 samplemapname = os.path.join(caseName,configget(self._userModel().config, thissection, "samplemap", "None"))
                 areafunction = configget(self._userModel().config, thissection, "function", "average")
+                timeformat = configget(self._userModel().config, thissection, "timeformat", "steps")
                 if "None" not in samplemapname:
                     try:
                         self.samplemap = self.wf_readmap(samplemapname,0.0,fail=True)
                         idd = tsformat + ":" + samplemapname + ":" + areafunction
-                        self.oscv[idd] = wf_OutputTimeSeriesArea(self.samplemap, oformat=tsformat,areafunction=areafunction)
+                        self.oscv[idd] = wf_OutputTimeSeriesArea(self.samplemap, oformat=tsformat,areafunction=areafunction,tformat=timeformat)
                         self.logger.info("Adding " + tsformat + " output at " + samplemapname + " function: " + areafunction)
                     except:
                         self.logger.warn("Could not read sample id-map for timeseries: " + samplemapname)
                         self.logger.warn(sys.exc_info())
                     for a in toprint:
-                        if "samplemap" not in a and 'function' not in a:
+                        if "samplemap" not in a and 'function' not in a and 'timeformat' not in a:
                             b = a.replace('self', 'self._userModel()')
                             fn = os.path.join(caseName, runId, self._userModel().config.get(thissection, a))
                             self.samplenamecsv[fn] = idd
@@ -1291,10 +1338,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             except:
                 found = 0
                 self.logger.fatal("Cannot find: " + self.varnamecsv[a] + " variable not in model.")
-                exit(1)
+                sys.exit(1)
 
 
-            self.oscv[self.samplenamecsv[a]].writestep(tmpvar, a, timestep=self.DT.currentTimeStep)
+            self.oscv[self.samplenamecsv[a]].writestep(tmpvar, a, timestep=self.DT.currentTimeStep-1,dtobj=self.DT.currentDateTime)
 
 
     def wf_savesummarymaps(self):
@@ -1378,24 +1425,34 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             while stop == 0:
                 name = os.path.join(directory, var + "_" + str(nr) + ".map").replace("\\", "/")
 
-                if os.path.exists(name):
+                try:
+                    tvar = self.wf_readmap(name, 0.0, ncfilesource=self.ncinfilestates,fail=True,silent=True)
                     if nr == 0:
                         exec "self._userModel()." + var + "= []"
-                    execstr = "self._userModel()." + var + ".append(readmap(\"" + name + "\"))"
+                    execstr = "self._userModel()." + var + ".append(tvar)"
                     exec execstr
                     nr = nr + 1
-                else:
+                except:
                     stop = 1
+
+                #if os.path.exists(name):
+                #    if nr == 0:
+                #        exec "self._userModel()." + var + "= []"
+                #    execstr = "self._userModel()." + var + ".append(readmap(\"" + name + "\"))"
+                #    exec execstr
+                #    nr = nr + 1
+                #else:
+                #    stop = 1
             if nr == 0:
                 try:
                     mpath = os.path.join(directory, var + ".map").replace("\\", "/")
-                    tvar = self.wf_readmap(mpath,0.0,ncfilesource=self.ncfilestates)
-                    wf_readmtvar = self.wf_readmap(mpath,0.0,ncfilesource=self.ncfilestates,fail=True)
+                    tvar = self.wf_readmap(mpath, 0.0, ncfilesource=self.ncinfilestates)
+                    #wf_readmtvar = self.wf_readmap(mpath,0.0,ncfilesource=self.ncinfilestates,fail=True)
                     setattr(self._userModel(), var,tvar)
                 except:
                     self.logger.error(
                         "problem while reading state variable from disk: " + mpath + " Suggest to use the -I option to restart")
-                    exit(1)
+                    sys.exit(1)
 
         self._traceOut("resume")
         self._decrementIndentLevel()
@@ -1455,7 +1512,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             config.read(os.path.join(caseName,configfile))
         else:
             self.logger.error("Cannot open ini file: " + os.path.join(caseName,configfile))
-            exit(1)
+            sys.exit(1)
 
         return config
 
@@ -2109,7 +2166,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         self.DT.update(currentTimeStep=self.DT.currentTimeStep, mode=self.runlengthdetermination)
 
-        self.logger.debug(self.DT.currentDateTime)
+
         while step <= self._userModel().nrTimeSteps():
             self._incrementIndentLevel()
             self._atStartOfTimeStep(step)
@@ -2124,25 +2181,25 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 # Save state variables in memory
                 self.wf_QuickSuspend()
 
-                for a in range(0, len(self.statslst)):
-                    data = getattr(self._userModel(), self.statslst[a].varname)
-                    self.statslst[a].add_one(data)
+            # Make the summary variables
+            for a in range(0, len(self.statslst)):
+                data = getattr(self._userModel(), self.statslst[a].varname)
+                self.statslst[a].add_one(data)
 
-                for key in self.onlinestat.statvarname:
-                    stvar = self.onlinestat.getstat(getattr(self._userModel(),key),key)
-                    #stvar = self.onlinestat.getstat(cover(self.DT.currentTimeStep * 1.0), key)
-                    setattr(self._userModel(),self.onlinestat.statvarname[key],stvar)
+            # Online statistics (rolling mean for now)
+            for key in self.onlinestat.statvarname:
+                stvar = self.onlinestat.getstat(getattr(self._userModel(),key),key)
+                #stvar = self.onlinestat.getstat(cover(self.DT.currentTimeStep * 1.0), key)
+                setattr(self._userModel(),self.onlinestat.statvarname[key],stvar)
 
-                self.wf_savedynMaps()
-                self.wf_saveTimeSeries()
-
-            #self.currentdatetime = self.currentdatetime + dt.timedelta(seconds=self._userModel().timestepsecs)
-
-
-            self.DT.update(currentTimeStep=self.DT.currentTimeStep+1, mode=self.runlengthdetermination)
+            # Increment one timesteps
+            self.DT.update(incrementStep=True, mode=self.runlengthdetermination)
             self._userModel().currentdatetime = self.DT.currentDateTime
-            self.logger.debug("timestep: " + str(self.DT.currentTimeStep-1) + "/" + str(self.DT.runTimeSteps) +  " (" + str(self.DT.currentDateTime) + ")")
 
+            self.wf_savedynMaps()
+            self.wf_saveTimeSeries()
+
+            self.logger.debug("timestep: " + str(self._userModel().currentTimeStep()) + "/" + str(self.DT.lastTimeStep) +  " (" + str(self.DT.currentDateTime) + ")")
 
             self._timeStepFinished()
             self._decrementIndentLevel()
@@ -2364,7 +2421,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
 
 
-    def wf_readmap(self, name, default, verbose=True,fail=False,ncfilesource="not set"):
+    def wf_readmap(self, name, default, verbose=True,fail=False,ncfilesource="not set",silent=False):
         """
           Adjusted version of readmapNew. the style variable is used to indicated
           how the data is read::
@@ -2423,6 +2480,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         if hasattr(self._userModel(), "_inDynamic"):
             if self._userModel()._inDynamic() or self._inUpdateWeight():
                 timestep = self._userModel().currentTimeStep()
+                #print timestep
                 if 'None' not in self.ncfile:
                     newName = name
                 else:
@@ -2450,7 +2508,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         self.logger.debug("Input data (" + os.path.abspath(path) + ") for timestep not present, returning " + str(default))
                     if fail:
                         self.logger.error("Required map: " + os.path.abspath(path) + " not found, exiting..")
-                        sys.exit(1)
+                        raise ValueError('Input map not found')
                     return cover(scalar(default))
 
             elif self._userModel()._inInitial():
@@ -2460,8 +2518,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         return retval
                     else:
                         if fail:
-                            self.logger.error("Required map: " + os.path.abspath(path) + " not found in " + self.ncfilestatic + "  exiting..")
-                            sys.exit(1)
+                            if not silent:
+                                self.logger.error("Required map: " + os.path.abspath(path) + " not found in " + self.ncfilestatic + "  exiting..")
+                            raise ValueError('Input static variable not found in netcdf')
                         else:
                             return self.TheClone + default
 
@@ -2472,16 +2531,22 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     if verbose:
                         self.logger.debug("Static input data (" + os.path.abspath(path) + ")  not present, returning " + str(default))
                     if fail:
-                        self.logger.error("Required map: " + os.path.abspath(path) + " not found, exiting..")
-                        sys.exit(1)
+                        if not silent:
+                            self.logger.error("Required map: " + os.path.abspath(path) + " not found, exiting..")
+                        raise ValueError('Input static variable not found')
                     return self.TheClone + default
 
             elif self._inResume():
-                if ncfilesource == self.ncfilestates and ncfilesource not in 'None':
-                    retval, succ = self.NcInputStates.gettimestep(1, self.logger, var=varname)
+                if ncfilesource == self.ncinfilestates and ncfilesource not in 'None':
+                    retval, succ = self.NcInputStates.gettimestep(1, self.logger, var=varname,tsdatetime=self.DT.runStateTime)
                     if succ:
                         return retval
                     else:
+                        if fail:
+                            if not silent:
+                                self.logger.error("Required map: " + os.path.abspath(path) + " not found, exiting..")
+                            raise ValueError('Input state variable not found')
+
                         return self.TheClone + default
 
                 if os.path.isfile(path):
@@ -2491,8 +2556,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     if verbose:
                         self.logger.debug("State input data (" + os.path.abspath(path) + ")  not present, returning " + str(default))
                     if fail:
-                        self.logger.error("Required map: " + os.path.abspath(path) + " not found, exiting..")
-                        sys.exit(1)
+                        if not silent:
+                            self.logger.error("Required map: " + os.path.abspath(path) + " not found, exiting..")
+                        raise ValueError('Input state variable not found')
                     return cover(scalar(default))
             else: # Assuming we are in pre-or post loop within the framwork
                 if "None" not in self.ncfilestatic:
@@ -2501,8 +2567,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         return retval
                     else:
                         if fail:
-                            self.logger.error("Required map: " + os.path.abspath(path) + " not found in " + self.ncfilestatic + "  exiting..")
-                            sys.exit(1)
+                            if not silent:
+                                self.logger.error("Required map: " + os.path.abspath(path) + " not found in " + self.ncfilestatic + "  exiting..")
+                            raise ValueError('Input variable not found in netcdf')
                         else:
                             return self.TheClone + default
 
@@ -2513,8 +2580,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     if verbose:
                         self.logger.debug("Static input data (" + os.path.abspath(path) + ")  not present, returning " + str(default))
                     if fail:
-                        self.logger.error("Required map: " + os.path.abspath(path) + " not found, exiting..")
-                        sys.exit(1)
+                        if not silent:
+                            self.logger.error("Required map: " + os.path.abspath(path) + " not found, exiting..")
+                        raise ValueError('Input variable not found')
                     return self.TheClone + default
 
 

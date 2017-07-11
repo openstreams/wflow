@@ -209,11 +209,6 @@ class MyTest(unittest.TestCase):
     def testbmirunnetcdf(self):
         bmiobj = bmi.wflowbmi_csdms()
         bmiobj.initialize_config('wflow_sbm/wflow_sbm_nc.ini',loglevel=logging.ERROR)
-        #bmiobj.set_attribute_value('run:starttime','2014-05-01 01:00:00')
-        #bmiobj.set_attribute_value('run:endtime','2014-05-17 00:00:00')
-        #bmiobj.set_attribute_value('run:runlengthdetermination','steps')
-
-
         bmiobj.set_start_time(1399597200)
         bmiobj.set_end_time(1399597200 + (4 * 3600))
 
@@ -235,7 +230,6 @@ class MyTest(unittest.TestCase):
             curtime = bmiobj.get_current_time()
             print bmiobj.get_current_time() - lastcurtime
             lastcurtime = bmiobj.get_current_time()
-
 
         bmiobj.finalize()
         self.assertEquals(ett, bmiobj.get_current_time())

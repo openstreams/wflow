@@ -1,6 +1,15 @@
 Release notes
 =============
 
++ -T and -S options now use date/time strings to better support netcdf
++ date/time handling improved
++ fews adapter and support simplified.
+    + fewsrun removed
+    + adapter need less arguments
++ netcdf handling improved
+    + check for date/time in input and determines offset if there is a problem.
+    + netcdf states now work (checks for date/time)
+
 
 2017.01
 -------

@@ -30,17 +30,14 @@ usage
           [-P parameter multiplication][-X][-f][-I][-i tbl_dir][-x subcatchId][-u updatecols]
           [-p inputparameter multiplication][-l loglevel]
 
-    -F: if set wflow is expected to be run by FEWS. It will determine
-        the timesteps from the runinfo.xml file and save the output initial
-        conditions to an alternate location. Also set fewsrun=1 in the .ini file!
 
     -X: save state at the end of the run over the initial conditions at the start
 
     -f: Force overwrite of existing results
 
-    -T: Set last timestep
+    -T: Set end time of the run: yyyy-mm-dd hh:mm:ss
 
-    -S: Set the start timestep (default = 1)
+    -S: Set start time of the run: yyyy-mm-dd hh:mm:ss
 
     -s: Set the model timesteps in seconds
 
@@ -87,10 +84,9 @@ usage
 
 """
 
-#TODO: add Et reduction in unsat zone based on deficit
-
 import numpy
 #import pcrut
+import sys
 import os
 import os.path
 import shutil, glob
@@ -354,8 +350,9 @@ class WflowModel(DynamicModel):
         if hasattr(self,'ReserVoirLocs'):
             states.append('ReservoirVolume')
 
-        if self.nrpaddyirri > 0:
-            states.append('PondingDepth')
+        if hasattr(self,'nrpaddyirri'):
+            if self.nrpaddyirri > 0:
+                states.append('PondingDepth')
         return states
 
     def supplyCurrentTime(self):
@@ -373,9 +370,6 @@ class WflowModel(DynamicModel):
             self.logger.info("Saving initial conditions over start conditions...")
             self.wf_suspend(self.SaveDir + "/instate/")
 
-        if self.fewsrun:
-            self.logger.info("Saving initial conditions for FEWS...")
-            self.wf_suspend(self.Dir + "/outstate/")
 
 
     def parameters(self):
@@ -497,7 +491,6 @@ class WflowModel(DynamicModel):
 
         self.Tslice = int(configget(self.config, "model", "Tslice", "1"))
         self.reinit = int(configget(self.config, "run", "reinit", "0"))
-        self.fewsrun = int(configget(self.config, "run", "fewsrun", "0"))
         self.OverWriteInit = int(configget(self.config, "model", "OverWriteInit", "0"))
         self.updating = int(configget(self.config, "model", "updating", "0"))
         self.updateFile = configget(self.config, "model", "updateFile", "no_set")
@@ -1323,12 +1316,10 @@ class WflowModel(DynamicModel):
             self.z = ifthenelse(self.ZiLayer ==  n,  self.zi , self.SumThickness)
             self.storage.append(self.L*(self.thetaS-self.thetaR))
 
-
             # First layer is treated differently than layers below first layer
             if n == 0:
                 DownWard = InfiltSoilPath#MaxInfiltPath+MaxInfiltSoil
                 self.UStoreLayerDepth[n] = self.UStoreLayerDepth[n] + DownWard
-
                 self.soilevap = soilevap_SBM(self.CanopyGapFraction,self.RestEvap,self.SoilWaterCapacity,self.SatWaterDepth,self.UStoreLayerDepth,self.zi,self.thetaS,self.thetaR,self.UStoreLayerThickness)
                 #assume soil evaporation is from first soil layer
                 if self.nrpaddyirri > 0:
@@ -1336,39 +1327,25 @@ class WflowModel(DynamicModel):
                 else:
                     self.soilevap = min(self.soilevap, self.UStoreLayerDepth[n])
 
-
                 self.UStoreLayerDepth[n] = self.UStoreLayerDepth[n] - self.soilevap
-
                 self.PotTrans = self.PotTransSoil - self.soilevap - self.ActEvapOpenWater
-
                 self.RestPotEvap, self.SatWaterDepth, self.ActEvapSat = actEvap_sat_SBM(self.ActRootingDepth, self.zi, self.SatWaterDepth, self.PotTrans, self.rootdistpar)
-
                 self.UStoreLayerDepth[n], self.ActEvapUStore, self.RestPotEvap, self.ET =  actEvap_unsat_SBM(self.ActRootingDepth, self.zi, self.UStoreLayerDepth[n],
                                                                 self.ZiLayer,  self.UStoreLayerThickness[n],
                                                                 self.SumLayer, self.RestPotEvap, self.maskLayer[n], self.ZeroMap, self.ZeroMap+n, self.ActEvapUStore,self.UST)
 
 
                 if len(self.UStoreLayerThickness) > 1:
-
-
-                    st =   self.KsatVerFrac[n]*self.KsatVer * exp(-self.f*self.z) * min(((self.UStoreLayerDepth[n]/(self.L*(self.thetaS-self.thetaR)))**self.c),1.0)
-
+                    st =   self.KsatVerFrac[n]*self.KsatVer * exp(-self.f*self.z) * \
+                           min(((self.UStoreLayerDepth[n]/(self.L*(self.thetaS-self.thetaR)))**self.c),1.0)
                     self.T[n] = ifthenelse(self.SaturationDeficit <= 0.00001, 0.0, min(self.UStoreLayerDepth[n],st))
-
-
                     self.T[n] = ifthenelse(self.ZiLayer==n,self.maskLayer[n],self.T[n])
-
                     self.UStoreLayerDepth[n] = self.UStoreLayerDepth[n] - self.T[n]
-
-
             else:
                 self.UStoreLayerDepth[n] = ifthenelse(self.ZiLayer<n,self.maskLayer[n],self.UStoreLayerDepth[n] + self.T[n-1])
-
-
                 self.UStoreLayerDepth[n], self.ActEvapUStore, self.RestPotEvap,self.ET =  actEvap_unsat_SBM(self.ActRootingDepth, self.zi, self.UStoreLayerDepth[n],
                                                                 self.ZiLayer, self.UStoreLayerThickness[n],
                                                                 self.SumLayer, self.RestPotEvap, self.maskLayer[n], self.ZeroMap, self.ZeroMap+n, self.ActEvapUStore,self.UST)
-
                 st =  self.KsatVerFrac[n] * self.KsatVer * exp(-self.f*self.z) * min(((self.UStoreLayerDepth[n]/(self.L*(self.thetaS-self.thetaR)))**self.c),1.0)
 
                 # Transfer in layer with zi is not yet substracted from layer (set to zero)
@@ -1376,10 +1353,8 @@ class WflowModel(DynamicModel):
                 self.UStoreLayerDepth[n] = ifthenelse(self.ZiLayer<n,self.maskLayer[n],self.UStoreLayerDepth[n] - self.T[n])
 
 
-
         # Determine transpiration
         self.Transpiration = self.ActEvapUStore + self.ActEvapSat
-
         self.ActEvap = self.Transpiration + self.soilevap + self.ActEvapOpenWater + self.ActEvapPond
 
         # Run only if we have irrigation areas or an externally given demand, determine irrigation demand based on potrans and acttrans
@@ -1502,7 +1477,7 @@ class WflowModel(DynamicModel):
             #waterLdd = lddcreate(waterDem,1,1,1,1)
 
 
-        #TODO: We should make a couple ot itterations here...
+        #TODO: We should make a couple of itterations here...
 
         if self.waterdem:
             if self.LateralMethod == 1:
@@ -1605,27 +1580,29 @@ class WflowModel(DynamicModel):
 
         self.inund = self.ExfiltWater + self.ExcessWater
 
-        ponding_add = self.ZeroMap        
+        ponding_add = self.ZeroMap
         if self.nrpaddyirri > 0:
             ponding_add = cover(min(ifthen(self.h_p > 0,self.inund),self.h_p-self.PondingDepth),0.0)
             self.PondingDepth = self.PondingDepth + ponding_add
             irr_depth = ifthenelse(self.PondingDepth < self.h_min, self.h_max - self.PondingDepth, 0.0) * self.CRPST
             sqmarea = areatotal(self.reallength * self.reallength, self.IrrigationPaddyAreas)
-            self.IrriDemandm3 = cover((irr_depth/1000.0)*sqmarea,0)          
+            self.IrriDemandm3 = cover((irr_depth/1000.0)*sqmarea,0)
             IRDemand = idtoid(self.IrrigationPaddyAreas, self.IrrigationSurfaceIntakes, self.IrriDemandm3)  * (-1.0 / self.timestepsecs)
- 
+
             self.IRDemand= IRDemand
             self.Inflow = cover(IRDemand,self.Inflow)
             self.irr_depth = irr_depth
 
 
         UStoreCapacity = self.SoilWaterCapacity - self.SatWaterDepth - sum_list_cover(self.UStoreLayerDepth,self.ZeroMap)
+        self.UStoreDepth = sum_list_cover(self.UStoreLayerDepth,self.ZeroMap)
 
         Ksat = self.KsatVer * exp(-self.f*self.zi)
 
 
         SurfaceWater = self.WaterLevel/1000.0 # SurfaceWater (mm)
         self.CumSurfaceWater = self.CumSurfaceWater + SurfaceWater
+
 
         # Estimate water that may re-infiltrate
         # - Never more that 70% of the available water
@@ -1635,6 +1612,7 @@ class WflowModel(DynamicModel):
             self.reinfiltwater = min(self.MaxReinfilt,max(0, min(SurfaceWater * self.RiverWidth/self.reallength * 0.7,
                                                        min(self.InfiltCapSoil * (1.0 - self.PathFrac), UStoreCapacity))))
             self.CumReinfilt = self.CumReinfilt + self.reinfiltwater
+            # TODO: This still has to be reworked fro the differnt layers
             self.UStoreDepth = self.UStoreDepth + self.reinfiltwater
         else:
             self.reinfiltwater = self.ZeroMap
@@ -1744,7 +1722,7 @@ class WflowModel(DynamicModel):
             IRSupplymm = idtoid(self.IrrigationSurfaceIntakes, ifthen(self.IrriDemandm3 > 0,self.IrrigationPaddyAreas), self.SurfaceWaterSupply)
             sqmarea = areatotal(self.reallength * self.reallength, nominal(ifthen(self.IrriDemandm3 > 0,self.IrrigationPaddyAreas)))
 
-            self.IRSupplymm = cover(((IRSupplymm * self.timestepsecs * 1000) / sqmarea),0.0)    
+            self.IRSupplymm = cover(((IRSupplymm * self.timestepsecs * 1000) / sqmarea),0.0)
 
 
         self.MassBalKinWave = (-self.KinWaveVolume + self.OldKinWaveVolume) / self.timestepsecs +\
@@ -1860,10 +1838,10 @@ def main(argv=None):
     global multpars
     runId = "run_default"
     configfile = "wflow_sbm.ini"
-    _lastTimeStep = 1
+    _lastTimeStep = 0
     _firstTimeStep = 0
     LogFileName = "wflow.log"
-    fewsrun = False
+
     runinfoFile = "runinfo.xml"
     timestepsecs = 86400
     wflow_cloneMap = 'wflow_subcatch.map'
@@ -1880,36 +1858,22 @@ def main(argv=None):
     ## Process command-line options                                        #
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, 'XF:L:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:')
+        opts, args = getopt.getopt(argv, 'XL:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:')
     except getopt.error, msg:
         pcrut.usage(msg)
 
     for o, a in opts:
-        if o == '-F':
-            runinfoFile = a
-            fewsrun = True
         if o == '-C': caseName = a
         if o == '-R': runId = a
         if o == '-c': configfile = a
         if o == '-L': LogFileName = a
         if o == '-s': timestepsecs = int(a)
-        if o == '-T': _lastTimeStep = int(a)
-        if o == '-S': _firstTimeStep = int(a)
         if o == '-h': usage()
         if o == '-f': _NoOverWrite = 0
         if o == '-l': exec "loglevel = logging." + a
 
-    if fewsrun:
-        ts = getTimeStepsfromRuninfo(runinfoFile, timestepsecs)
-        starttime = getStartTimefromRuninfo(runinfoFile)
-        if (ts):
-            _lastTimeStep = ts
-            _firstTimeStep = 1
-        else:
-            print "Failed to get timesteps from runinfo file: " + runinfoFile
-            exit(2)
-    else:
-        starttime = dt.datetime(1990,01,01)
+
+    starttime = dt.datetime(1990,01,01)
 
     if _lastTimeStep < _firstTimeStep:
         print "The starttimestep (" + str(_firstTimeStep) + ") is smaller than the last timestep (" + str(
@@ -1947,11 +1911,17 @@ def main(argv=None):
         if o == '-E': configset(myModel.config, 'model', 'reInfilt', '1', overwrite=True)
         if o == '-R': runId = a
         if o == '-W': configset(myModel.config, 'model', 'waterdem', '1', overwrite=True)
+        if o == '-T':
+            configset(myModel.config, 'run', 'endtime', a, overwrite=True)
+        if o == '-S':
+            configset(myModel.config, 'run', 'starttime', a, overwrite=True)
+
 
     dynModelFw.setupFramework()
     dynModelFw._runInitial()
     dynModelFw._runResume()
-    dynModelFw._runDynamic(0, 0)
+    #dynModelFw._runDynamic(0, 0)
+    dynModelFw._runDynamic(_firstTimeStep, _lastTimeStep)
     dynModelFw._runSuspend()
     dynModelFw._wf_shutdown()
 

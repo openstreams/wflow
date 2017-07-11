@@ -28,56 +28,59 @@ wflow_hbv::
       [-c configfile][-T timesteps][-s seconds][-W][-E][-N][-U discharge]
       [-P parameter multiplication][-X][-l loglevel]
 
--F: if set wflow is expected to be run by FEWS. It will determine
-    the timesteps from the runinfo.xml file and save the output initial
-    conditions to an alternate location. Also set fewsrun=1 in the .ini file!
+    -F: if set wflow is expected to be run by FEWS. It will determine
+        the timesteps from the runinfo.xml file and save the output initial
+        conditions to an alternate location. Also set fewsrun=1 in the .ini file!
 
--f: Force overwrite of existing results
+    -f: Force overwrite of existing results
 
--T: Set the number of timesteps to run
+    -T: Set end time of the run: yyyy-mm-dd hh:mm:ss
 
--N: No lateral flow, use runoff response function to generate fast runoff
+    -S: Set start time of the run: yyyy-mm-dd hh:mm:ss
 
--s: Set the model timesteps in seconds
+    -N: No lateral flow, use runoff response function to generate fast runoff
 
--I: re-initialize the initial model conditions with default
+    -s: Set the model timesteps in seconds
 
--i: Set input table directory (default is intbl)
+    -I: re-initialize the initial model conditions with default
 
--x: run for subcatchment only (e.g. -x 1)
+    -i: Set input table directory (default is intbl)
 
--C: set the name  of the case (directory) to run
+    -x: run for subcatchment only (e.g. -x 1)
 
--R: set the name runId within the current case
+    -C: set the name  of the case (directory) to run
 
--L: set the logfile
+    -R: set the name runId within the current case
 
--c: name of wflow the configuration file (default: Casename/wflow_hbv.ini).
+    -L: set the logfile
 
--h: print usage information
+    -c: name of wflow the configuration file (default: Casename/wflow_hbv.ini).
 
--U: The argument to this option should be a .tss file with measured discharge in
-    [m^3/s] which the program will use to update the internal state to match
-    the measured flow. The number of columns in this file should match the
-    number of gauges in the wflow\_gauges.map file.
+    -h: print usage information
 
--u: list of gauges/columns to use in update. Format:
-    -u [1 , 4 ,13]
-    The above example uses column 1, 4 and 13
+    -U: The argument to this option should be a .tss file with measured discharge in
+        [m^3/s] which the program will use to update the internal state to match
+        the measured flow. The number of columns in this file should match the
+        number of gauges in the wflow\_gauges.map file.
 
--P: set parameter change string (e.g: -P "self.FC = self.FC * 1.6") for non-dynamic variables
+    -u: list of gauges/columns to use in update. Format:
+        -u [1 , 4 ,13]
+        The above example uses column 1, 4 and 13
 
--p: set parameter change string (e.g: -P "self.Precipitation = self.Precipitation * 1.11") for
-    dynamic variables
+    -P: set parameter change string (e.g: -P "self.FC = self.FC * 1.6") for non-dynamic variables
 
--l: loglevel (most be one of DEBUG, WARNING, ERROR)
+    -p: set parameter change string (e.g: -P "self.Precipitation = self.Precipitation * 1.11") for
+        dynamic variables
 
--X overwrites the initial values at the end of each timestep
+    -l: loglevel (most be one of DEBUG, WARNING, ERROR)
+
+    -X overwrites the initial values at the end of each timestep
 
 
 """
 
 import numpy
+import sys
 import os
 import os.path
 import shutil, glob
@@ -440,6 +443,26 @@ class WflowModel(DynamicModel):
         self.ReserVoirLocs = self.ReserVoirLocs + cover(scalar(self.ReserVoirComplexLocs))
         res_area = cover(scalar(self.ReservoirComplexAreas),0.0)
         self.filter_P_PET = ifthenelse(res_area > 0, res_area*0.0, res_area*0.0 + 1.0)
+
+        #read files
+        self.sh = {}
+        res_ids = ifthen(self.ResStorFunc == 2, self.ReserVoirComplexLocs)
+        np_res_ids = pcr2numpy(res_ids,0)
+        np_res_ids_u = np.unique(np_res_ids[nonzero(np_res_ids)])
+        if np.size(np_res_ids_u) > 0:
+            for item in nditer(np_res_ids_u):
+                self.sh[int(item)] = loadtxt(self.Dir + "/" + self.intbl + "/Reservoir_SH_" + str(item) + ".tbl")
+        self.hq = {}
+        res_ids = ifthen(self.ResOutflowFunc == 1, self.ReserVoirComplexLocs)
+        np_res_ids = pcr2numpy(res_ids,0)
+        np_res_ids_u = np.unique(np_res_ids[nonzero(np_res_ids)])
+        if size(np_res_ids_u) > 0:
+            for item in nditer(np_res_ids_u):
+                self.hq[int(item)] = loadtxt(self.Dir + "/" + self.intbl + "/Reservoir_HQ_" + str(item) + ".tbl", skiprows=3)
+
+
+
+
     else:
         self.nrresComplex = 0
 
@@ -750,7 +773,7 @@ class WflowModel(DynamicModel):
     if hasattr(self, 'ReserVoirComplexLocs'):
         self.ReserVoirPotEvap = self.PotEvaporation
         self.ReserVoirPrecip = self.Precipitation
-        
+
         self.PotEvaporation = self.filter_P_PET * self.PotEvaporation
         self.Precipitation = self.filter_P_PET * self.Precipitation
 
@@ -811,7 +834,7 @@ class WflowModel(DynamicModel):
 
     self.ActEvap=self.IntEvap+self.SoilEvap           #: Sum of evaporation components (IntEvap+SoilEvap)
     self.HBVSeepage=((min(self.SoilMoisture/self.FieldCapacity,1))**self.BetaSeepage)*NetInSoil		#runoff water from soil
-    self.SoilMoisture=self.SoilMoisture-self.HBVSeepage        
+    self.SoilMoisture=self.SoilMoisture-self.HBVSeepage
 
     Backtosoil=min(self.FieldCapacity-self.SoilMoisture,DirectRunoff) 		#correction for extremely wet periods: soil is filled to capacity
     self.DirectRunoff=DirectRunoff-Backtosoil
@@ -874,11 +897,10 @@ class WflowModel(DynamicModel):
 
     elif self.nrresComplex > 0:
         self.ReservoirWaterLevel, self.Outflow, self.ReservoirPrecipitation, self.ReservoirEvaporation,\
-        self.ReservoirVolume  = complexreservoir(self.ReservoirWaterLevel, self.ReserVoirComplexLocs, self.ResArea,\
-                                                    self.ResThreshold, self.ResStorFunc, self.ResOutflowFunc, self.Res_b,
-                                                    self.Res_e, self.SurfaceRunoff, self.Dir + "/" + self.intbl + "//",
-                                                    self.ReserVoirPrecip, self.ReserVoirPotEvap, self.ReservoirComplexAreas,
-                                                    timestepsecs=self.timestepsecs)
+        self.ReservoirVolume = complexreservoir(self.ReservoirWaterLevel, self.ReserVoirComplexLocs, self.LinkedReservoirLocs, self.ResArea,\
+                                                    self.ResThreshold, self.ResStorFunc, self.ResOutflowFunc, self.sh, self.hq, self.Res_b,
+                                                    self.Res_e, self.SurfaceRunoff,self.ReserVoirPrecip, self.ReserVoirPotEvap,
+                                                    self.ReservoirComplexAreas, self.wf_supplyJulianDOY(), timestepsecs=self.timestepsecs)
         self.OutflowDwn = upstream(self.TopoLddOrg,cover(self.Outflow,scalar(0.0)))
         self.Inflow = self.OutflowDwn + cover(self.Inflow,self.ZeroMap)
     else:
@@ -976,7 +998,7 @@ def main(argv=None):
     runId = "run_default"
     configfile="wflow_hbv.ini"
     LogFileName="wflow.log"
-    _lastTimeStep = 1
+    _lastTimeStep = 0
     _firstTimeStep = 0
     fewsrun=False
     runinfoFile="runinfo.xml"
@@ -1009,8 +1031,6 @@ def main(argv=None):
         if o == '-l': exec "loglevel = logging." + a
         if o == '-c': configfile = a
         if o == '-s': timestepsecs = int(a)
-        if o == '-T': _lastTimeStep=int(a)
-        if o == '-S': _firstTimeStep=int(a)
         if o == '-h': usage()
         if o == '-f': NoOverWrite = 0
 
@@ -1024,7 +1044,7 @@ def main(argv=None):
             _firstTimeStep = 1
         else:
             print "Failed to get timesteps from runinfo file: " + runinfoFile
-            exit(2)
+            sys.exit(2)
     else:
         starttime = dt.datetime(1990,01,01)
 
@@ -1060,13 +1080,18 @@ def main(argv=None):
         if o == '-u':
             exec "zz =" +  a
             updateCols = zz
+        if o == '-T':
+            configset(myModel.config, 'run', 'endtime', a, overwrite=True)
+        if o == '-S':
+            configset(myModel.config, 'run', 'starttime', a, overwrite=True)
 
     dynModelFw.setupFramework()
     dynModelFw.logger.info("Command line: " + str(argv))
     dynModelFw._runInitial()
 
     dynModelFw._runResume()
-    dynModelFw._runDynamic(0,0)
+    #dynModelFw._runDynamic(0,0)
+    dynModelFw._runDynamic(_firstTimeStep, _lastTimeStep)
     dynModelFw._runSuspend()
     dynModelFw._wf_shutdown()
 

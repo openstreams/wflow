@@ -14,12 +14,17 @@ $Keywords: $
 """
 
 # import sys packages
-from hydrotools import gis
 import sys
 import os
 import shutil
+
 # import admin packages
 from optparse import OptionParser
+
+# if frozen to exe, import wflow is needed before hydrotools to run __init__
+# and set the PROJ_DIR environment variable to the right path
+import wflow
+from hydrotools import gis
 
 # import general packages
 import numpy as np
@@ -28,8 +33,8 @@ from osgeo import ogr
 from lxml import etree
 import pyproj
 # import specific packages
-import wtools_lib
-# import pdb
+import wflow.wflowtools_lib as wt
+
 
 def main():
     ### Read input arguments #####
@@ -60,9 +65,9 @@ def main():
     parser.add_option('-d', '--destination',
                       dest='destination', default='wflow',
                       help='Destination folder (default=./wflow)')
-    
+
     (options, args) = parser.parse_args()
-    
+
     ##### Preprocessing #####
     # check if either a file or an extent is provided. If not, sys.exit
     if not np.logical_or(os.path.isfile(options.inputfile), options.extent is not None):
@@ -71,7 +76,7 @@ def main():
         sys.exit(1)
 
     # open a logger, dependent on verbose print to screen or not
-    logger, ch = wtools_lib.setlogger(logfilename, 'WTOOLS', options.verbose)
+    logger, ch = wt.setlogger(logfilename, 'WTOOLS', options.verbose)
 
     # delete old files
     if os.path.isdir(options.destination):
@@ -94,17 +99,19 @@ def main():
         else:
             # Read extent from a GDAL compatible file
             try:
-                extent_in = wtools_lib.get_extent(options.inputfile)
+                extent_in = wt.get_extent(options.inputfile)
             except:
-                msg = 'Input file {:s} not a shape or gdal file'.format(options.inputfile)
-                wtools_lib.close_with_error(logger, ch, msg)
+                msg = 'Input file {:s} not a shape or gdal file'.format(
+                    options.inputfile)
+                wt.close_with_error(logger, ch, msg)
                 sys.exit(1)
 
 #            # get spatial reference from grid file
             try:
-                srs = wtools_lib.get_projection(options.inputfile)                
+                srs = wt.get_projection(options.inputfile)
             except:
-                logger.warning('No projection found, assuming WGS 1984 lat long')
+                logger.warning(
+                    'No projection found, assuming WGS 1984 lat long')
                 srs = osr.SpatialReference()
                 srs.ImportFromEPSG(4326)
 
@@ -133,8 +140,9 @@ def main():
             elif options.projection.lower()[0:5] == '+proj':
                 srs.ImportFromProj4(options.projection)
             else:
-                msg = 'Projection "{:s}" is not a valid projection'.format(options.projection)
-                wtools_lib.close_with_error(logger, ch, msg)
+                msg = 'Projection "{:s}" is not a valid projection'.format(
+                    options.projection)
+                wt.close_with_error(logger, ch, msg)
         else:
             logger.warning('No projection found, assuming WGS 1984 lat long')
             srs.ImportFromEPSG(4326)
@@ -142,7 +150,8 @@ def main():
                                       pyproj.Proj(srs.ExportToProj4()), lonmin, latmin)
         xmax, ymax = pyproj.transform(pyproj.Proj(srs_4326.ExportToProj4()),
                                       pyproj.Proj(srs.ExportToProj4()), lonmax, latmax)
-        # project the extent parameters to selected projection and snap to selected resolution
+        # project the extent parameters to selected projection and snap to
+        # selected resolution
         extent_in = [xmin, ymin, xmax, ymax]
 
     # srs known, extent known, prepare UTM or WGS string for grid.xml
@@ -159,22 +168,24 @@ def main():
 
     if options.snap:
         logger.info('Snapping raster')
-        snap = len(str(options.cellsize-np.floor(options.cellsize)))-2
-        extent_out = wtools_lib.round_extent(extent_in, options.cellsize, snap)
+        snap = len(str(options.cellsize - np.floor(options.cellsize))) - 2
+        extent_out = wt.round_extent(extent_in, options.cellsize, snap)
     else:
         extent_out = extent_in
-    cols = int((extent_out[2]-extent_out[0])/options.cellsize)  # +2)
-    rows = int((extent_out[3]-extent_out[1])/options.cellsize)  # +2)
-    cells = rows*cols
+    cols = int((extent_out[2] - extent_out[0]) / options.cellsize)  # +2)
+    rows = int((extent_out[3] - extent_out[1]) / options.cellsize)  # +2)
+    cells = rows * cols
     xorg = extent_out[0]  # -options.cellsize
     yorg = extent_out[3]  # +options.cellsize
 
     # create clone raster
     print('rows: {0} cols: {1}'.format(rows, cols))
 
-    dummy_raster = np.zeros((rows, cols))-9999.
-    clone_file_map = os.path.abspath(os.path.join(options.destination, 'mask.map'))
-    clone_file_tif = os.path.abspath(os.path.join(options.destination, 'mask.tif'))
+    dummy_raster = np.zeros((rows, cols)) - 9999.
+    clone_file_map = os.path.abspath(
+        os.path.join(options.destination, 'mask.map'))
+    clone_file_tif = os.path.abspath(
+        os.path.join(options.destination, 'mask.tif'))
     logger.info('Writing PCRaster clone to {:s}'.format(clone_file_map))
     gis.gdal_writemap(clone_file_map, 'PCRaster',
                       xorg, yorg, dummy_raster,
@@ -192,8 +203,8 @@ def main():
     etree.SubElement(root, 'columns').text = str(cols)
     etree.SubElement(root, 'geoDatum').text = geodatum
     etree.SubElement(root, 'firstCellCenter')
-    etree.SubElement(root[3], 'x').text = str(xorg+0.5*options.cellsize)
-    etree.SubElement(root[3], 'y').text = str(yorg-0.5*options.cellsize)
+    etree.SubElement(root[3], 'x').text = str(xorg + 0.5 * options.cellsize)
+    etree.SubElement(root[3], 'y').text = str(yorg - 0.5 * options.cellsize)
     etree.SubElement(root, 'xCellSize').text = str(options.cellsize)
     etree.SubElement(root, 'yCellSize').text = str(options.cellsize)
     xml_file = os.path.abspath(os.path.join(options.destination, 'grid.xml'))
@@ -230,13 +241,15 @@ def main():
     shp.Destroy()
     logger.info('Model contains {:d} cells'.format(cells))
     if cells > 5000000:
-        logger.warning('With this amount of cells your model will run VERY slow.\nConsider a larger cell-size.\nFast models run with < 1,000,000 cells')
+        logger.warning(
+            'With this amount of cells your model will run VERY slow.\nConsider a larger cell-size.\nFast models run with < 1,000,000 cells')
     elif cells > 1000000:
-        logger.warning('With this amount of cells your model will run slow.\nConsider a larger cell-size. Fast models run with < 1,000,000 cells')
-    logger, ch = wtools_lib.closeLogger(logger, ch)
+        logger.warning(
+            'With this amount of cells your model will run slow.\nConsider a larger cell-size. Fast models run with < 1,000,000 cells')
+    logger, ch = wt.closeLogger(logger, ch)
     del logger, ch
     sys.exit(1)
 
+
 if __name__ == "__main__":
     main()
-
