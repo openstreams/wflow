@@ -755,7 +755,7 @@ def main(argv=None):
 
     for o, a in opts:
         if o == '-X': configset(myModel.config, 'model', 'OverWriteInit', '1', overwrite=True)
-        if o == '-I': configset(myModel.config, 'model', 'reinit', '1', overwrite=True)
+        if o == '-I': configset(myModel.config, 'run', 'reinit', '1', overwrite=True)
         if o == '-i': configset(myModel.config, 'model', 'intbl', a, overwrite=True)
         if o == '-s': configset(myModel.config, 'model', 'timestepsecs', a, overwrite=True)
         if o == '-x': configset(myModel.config, 'model', 'sCatch', a, overwrite=True)
