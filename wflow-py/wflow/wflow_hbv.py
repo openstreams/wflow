@@ -1067,7 +1067,7 @@ def main(argv=None):
             right = a.split('=')[1]
             configset(myModel.config,'variable_change_timestep',left,right,overwrite=True)
         if o == '-X': configset(myModel.config,'model','OverWriteInit','1',overwrite=True)
-        if o == '-I': configset(myModel.config,'model','reinit','1',overwrite=True)
+        if o == '-I': configset(myModel.config,'run','reinit','1',overwrite=True)
         if o == '-i': configset(myModel.config,'model','intbl',a,overwrite=True)
         if o == '-s': configset(myModel.config,'model','timestepsecs',a,overwrite=True)
         if o == '-x': configset(myModel.config,'model','sCatch',a,overwrite=True)
