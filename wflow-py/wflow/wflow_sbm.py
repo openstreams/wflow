@@ -1041,8 +1041,6 @@ class WflowModel(DynamicModel):
         self.GWScale = (self.DemMax - self.DrainageBase) / self.SoilThickness / self.RunoffGeneratingGWPerc
 
 
-
-    @profile
     def dynamic(self):
         """
         Stuf that is done for each timestep of the model

@@ -35,17 +35,19 @@ from hydrotools import gis
 import pcraster as pcr
 import wflow.wflowtools_lib as wt
 
+
+import fiona
+from rasterio import features
+import rasterio
+
 driver = ogr.GetDriverByName("ESRI Shapefile")
 
 
 def clip_catchment_by_cell(cell_geom, catchment_geom):
     return cell_geom.intersection(catchment_geom)
 
-
-def main():
-
-    ### Read input arguments #####
-    logfilename = 'wtools_static_maps.log'
+def parse_args():
+        ### Read input arguments #####
     parser = OptionParser()
     usage = "usage: %prog [options]"
     parser = OptionParser(usage=usage)
@@ -57,6 +59,9 @@ def main():
     parser.add_option('-s', '--source',
                       dest='source', default='wflow',
                       help='Source folder containing clone (default=./wflow)')
+    parser.add_option('-f', '--forceoutlet',
+                      dest='forceoutlet', default=False, action='store_true',
+                      help='Force the outlet to river cell closest to DEM-edge')
     parser.add_option('-d', '--destination',
                       dest='destination', default='staticmaps',
                       help='Destination folder (default=./staticmaps)')
@@ -90,20 +95,32 @@ def main():
     parser.add_option('-A', '--alltouch',
                       dest='alltouch', default=False, action='store_true',
                       help='option to burn catchments "all touching".\nUseful when catchment-size is small compared to cellsize')
+    parser.add_option('-l', '--logfile',
+                      dest='logfilename', default='wtools_static_maps.log',
+                      help='log file name')
+    
     (options, args) = parser.parse_args()
+    return options
+
+def main(source,destination,inifile,dem_in,rivshp,catchshp,gaugeshp=None,landuse=None,soil=None,lai=None,other_maps=None,logfilename='wtools_static_maps.log',verbose=True,clean=True,alltouch=False,forceoutlet=False):
     # parse other maps into an array
-    options.other_maps = options.other_maps.replace(
-        ' ', '').replace('[', '').replace(']', '').split(',')
+    if not other_maps == None:
+        if type(other_maps) == str:
+            print other_maps
+            other_maps = other_maps.replace(
+                ' ', '').replace('[', '').replace(']', '').split(',')
+    
+    
+    
+    source = os.path.abspath(source)
+    clone_map = os.path.join(source, 'mask.map')
+    clone_shp = os.path.join(source, 'mask.shp')
+    clone_prj = os.path.join(source, 'mask.prj')
 
-    options.source = os.path.abspath(options.source)
-    clone_map = os.path.join(options.source, 'mask.map')
-    clone_shp = os.path.join(options.source, 'mask.shp')
-    clone_prj = os.path.join(options.source, 'mask.prj')
-
-    if None in (options.inifile,
-                options.rivshp,
-                options.catchshp,
-                options.dem_in):
+    if None in (inifile,
+                rivshp,
+                catchshp,
+                dem_in):
         msg = """The following files are compulsory:
         - ini file
         - DEM (raster)
@@ -113,31 +130,31 @@ def main():
         print(msg)
         parser.print_help()
         sys.exit(1)
-    if not os.path.exists(options.inifile):
+    if not os.path.exists(inifile):
         print 'path to ini file cannot be found'
         sys.exit(1)
-    if not os.path.exists(options.rivshp):
+    if not os.path.exists(rivshp):
         print 'path to river shape cannot be found'
         sys.exit(1)
-    if not os.path.exists(options.catchshp):
+    if not os.path.exists(catchshp):
         print 'path to catchment shape cannot be found'
         sys.exit(1)
-    if not os.path.exists(options.dem_in):
+    if not os.path.exists(dem_in):
         print 'path to DEM cannot be found'
         sys.exit(1)
 
     # open a logger, dependent on verbose print to screen or not
-    logger, ch = wt.setlogger(logfilename, 'WTOOLS', options.verbose)
+    logger, ch = wt.setlogger(logfilename, 'WTOOLS', verbose)
 
     # create directories # TODO: check if workdir is still necessary, try to
     # keep in memory as much as possible
 
     # delete old files (when the source and destination folder are different)
-    if np.logical_and(os.path.isdir(options.destination),
-                      options.destination is not options.source):
-        shutil.rmtree(options.destination)
-    if options.destination is not options.source:
-        os.makedirs(options.destination)
+    if np.logical_and(os.path.isdir(destination),
+                      destination is not source):
+        shutil.rmtree(destination)
+    if destination is not source:
+        os.makedirs(destination)
 
     # Read mask
     if not(os.path.exists(clone_map)):
@@ -160,7 +177,7 @@ def main():
 
     # READ CONFIG FILE
     # open config-file
-    config = wt.OpenConf(options.inifile)
+    config = wt.OpenConf(inifile)
 
     # read settings
     snapgaugestoriver = wt.configget(config, 'settings',
@@ -192,10 +209,7 @@ def main():
     minorder = wt.configget(config, 'parameters',
                                     'riverorder_min', 3,
                                     datatype='int')
-    percentiles = np.array(
-        config.get('parameters', 'statisticmaps', '0, 100').replace(
-            ' ', '').split(','), dtype='float')
-
+    percentiles = np.array(config.get('parameters', 'statisticmaps', '0, 100').replace(' ', '').split(','), dtype='float')
     # read the parameters for generating a temporary very high resolution grid
     if unit_clone == 'degree':
         cellsize_hr = wt.configget(config, 'parameters',
@@ -210,7 +224,7 @@ def main():
     rows_hr = int((float(ymax) - float(ymin)) / cellsize_hr + 2)
     hr_trans = (float(xmin), cellsize_hr, float(0),
                 float(ymax), 0, -cellsize_hr)
-    clone_hr = os.path.join(options.destination, 'clone_highres.tif')
+    clone_hr = os.path.join(destination, 'clone_highres.tif')
     # make a highres clone as well!
     wt.CreateTif(clone_hr, rows_hr, cols_hr, hr_trans, srs, 0)
 
@@ -246,7 +260,7 @@ def main():
 
     # read mask location (optional)
     masklayer = wt.configget(
-        config, 'mask', 'masklayer', options.catchshp)
+        config, 'mask', 'masklayer', catchshp)
 
     # ???? empty = pcr.ifthen(ones == 0, pcr.scalar(0))
 
@@ -255,7 +269,7 @@ def main():
     # in old code)
 
     # first add a missing value to dem_in
-    ds = gdal.Open(options.dem_in, gdal.GA_Update)
+    ds = gdal.Open(dem_in, gdal.GA_Update)
     RasterBand = ds.GetRasterBand(1)
     fill_val = RasterBand.GetNoDataValue()
 
@@ -266,14 +280,14 @@ def main():
     # reproject to clone map: see http://stackoverflow.com/questions/10454316/how-to-project-and-resample-a-grid-to-match-another-grid-with-gdal-python
     # resample DEM
     logger.info('Resampling dem from {:s} to {:s}'.format(os.path.abspath(
-        options.dem_in), os.path.join(options.destination, dem_map)))
-    gis.gdal_warp(options.dem_in, clone_map, os.path.join(
-        options.destination, dem_map), format='PCRaster', gdal_interp=gdalconst.GRA_Average)
+        dem_in), os.path.join(destination, dem_map)))
+    gis.gdal_warp(dem_in, clone_map, os.path.join(
+        destination, dem_map), format='PCRaster', gdal_interp=gdalconst.GRA_Average)
     # retrieve amount of rows and columns from clone
     # TODO: make windowstats applicable to source/target with different projections. This does not work yet.
     # retrieve srs from DEM
     try:
-        srs_dem = wt.get_projection(options.dem_in)
+        srs_dem = wt.get_projection(dem_in)
     except:
         logger.warning(
             'No projection found in DEM, assuming WGS 1984 lat long')
@@ -281,120 +295,91 @@ def main():
         srs_dem.ImportFromEPSG(4326)
     clone2dem_transform = osr.CoordinateTransformation(srs, srs_dem)
     # if srs.ExportToProj4() == srs_dem.ExportToProj4():
-    for percentile in percentiles:
-        if percentile >= 100:
-            logger.info('computing window maximum')
-            percentile_dem = os.path.join(
-                options.destination, 'wflow_dem_max.map')
-        elif percentile <= 0:
-            logger.info('computing window minimum')
-            percentile_dem = os.path.join(
-                options.destination, 'wflow_dem_min.map')
-        else:
-            logger.info(
-                'computing window {:d} percentile'.format(int(percentile)))
-            percentile_dem = os.path.join(
-                options.destination, 'wflow_dem_{:03d}.map'.format(int(percentile)))
+     
+    wt.windowstats(dem_in, len(yax), len(xax),trans, srs,destination,percentiles, transform=clone2dem_transform, logger=logger) 
 
-        percentile_dem = os.path.join(
-            options.destination, 'wflow_dem_{:03d}.map'.format(int(percentile)))
-        stats = wt.windowstats(options.dem_in, len(yax), len(xax),
-                               trans, srs, percentile_dem, percentile, transform=clone2dem_transform, logger=logger)
-#    else:
-#        logger.warning('Projections of DEM and clone are different. DEM statistics for different projections is not yet implemented')
-
-    """
-
-    # burn in rivers
-    # first convert and clip the river shapefile
-    # retrieve river shape projection, if not available assume EPSG:4326
-    file_att = os.path.splitext(os.path.basename(options.rivshp))[0]
-    ds = ogr.Open(options.rivshp)
-    lyr = ds.GetLayerByName(file_att)
-    extent = lyr.GetExtent()
-    extent_in = [extent[0], extent[2], extent[1], extent[3]]
-    try:
-        # get spatial reference from shapefile
-        srs_rivshp = lyr.GetSpatialRef()
-        logger.info('Projection in river shapefile is {:s}'.format(srs_rivshp.ExportToProj4()))
-    except:
-        logger.warning('No projection found in {:s}, assuming WGS 1984 lat-lon'.format(options.rivshp))
-        srs_rivshp = osr.SpatialReference()
-        srs_rivshp.ImportFromEPSG(4326)
-    rivprojshp = os.path.join(options.destination, 'rivshp_proj.shp')
-    logger.info('Projecting and clipping {:s} to {:s}'.format(options.rivshp, rivprojshp))
-    # TODO: Line below takes a very long time to process, the bigger the shapefile, the more time. How do we deal with this?
-    call(('ogr2ogr','-s_srs', srs_rivshp.ExportToProj4(),'-t_srs', srs.ExportToProj4(), '-clipsrc', '{:f}'.format(xmin), '{:f}'.format(ymin), '{:f}'.format(xmax), '{:f}'.format(ymax), rivprojshp, options.rivshp))
-    """
-
-    # TODO: BURNING!!
-
-    # project catchment layer to projection of clone
-    file_att = os.path.splitext(os.path.basename(options.catchshp))[0]
-    print options.catchshp
-    ds = ogr.Open(options.catchshp)
-    lyr = ds.GetLayerByName(file_att)
-    extent = lyr.GetExtent()
-    extent_in = [extent[0], extent[2], extent[1], extent[3]]
-    try:
-        # get spatial reference from shapefile
-        srs_catchshp = lyr.GetSpatialRef()
-        logger.info('Projection in catchment shapefile is {:s}'.format(
-            srs_catchshp.ExportToProj4()))
-    except:
-        logger.warning(
-            'No projection found in {:s}, assuming WGS 1984 lat-lon'.format(options.catchshp))
-        srs_catchshp = osr.SpatialReference()
-        srs_catchshp.ImportFromEPSG(4326)
-    catchprojshp = os.path.join(options.destination, 'catchshp_proj.shp')
-    logger.info('Projecting {:s} to {:s}'.format(
-        options.catchshp, catchprojshp))
-    call(('ogr2ogr', '-s_srs', srs_catchshp.ExportToProj4(), '-t_srs', srs.ExportToProj4(), '-clipsrc',
-          '{:f}'.format(xmin), '{:f}'.format(ymin), '{:f}'.format(xmax), '{:f}'.format(ymax), catchprojshp, options.catchshp))
-
-    #
+    ## read catchment shape-file to create catchment map
+    src = rasterio.open(clone_map)
+    shapefile = fiona.open(catchshp,"r")
+    catchment_shapes = [feature["geometry"] for feature in shapefile]
+    image = features.rasterize(catchment_shapes,out_shape=src.shape,all_touched=True,transform=src.transform)
+    catchment_domain = pcr.numpy2pcr(pcr.Ordinal,image.copy(),0)
+    pcr.report(catchment_domain,catchment_map)
+    
+    ## read river shape-file and create burn layer
+    shapefile = fiona.open(rivshp,"r")
+    river_shapes = [feature["geometry"] for feature in shapefile]
+    image = features.rasterize(river_shapes,out_shape=src.shape,all_touched=False,transform=src.transform)
+    rivers = pcr.numpy2pcr(pcr.Nominal,image.copy(),0)
+    riverdem = pcr.scalar(rivers) * pcr.readmap(os.path.join(destination, dem_map))
+    pcr.setglobaloption("lddin")
+    riverldd = pcr.lddcreate(riverdem, 1e35, 1e35, 1e35, 1e35)
+    if forceoutlet:
+        riverorder = pcr.streamorder(riverldd)
+        riverorder = pcr.ifthen(pcr.pcrnot(riverorder == pcr.mapmaximum(riverorder)),pcr.nominal(1))
+        riverorder = pcr.cover(riverorder,pcr.ifthen(pcr.scalar(riverldd) == 5,pcr.nominal(1)))
+        riverclump = pcr.clump(riverorder)
+        riverpitsus = pcr.ifthen(pcr.downstream(riverldd,pcr.scalar(riverldd)) == 5, pcr.scalar(1))
+        outsidedem = pcr.ifthen(pcr.pcrnot(pcr.defined(pcr.readmap(os.path.join(destination, dem_map)))),pcr.boolean(1))
+        dist2outside = pcr.spread(pcr.cover(outsidedem,0),0,1)
+        mindistselec = pcr.ifthen(pcr.areaminimum(dist2outside,riverclump) == dist2outside,pcr.scalar(1))
+        pitsectionselec = pcr.ifthen(pcr.areamaximum(pcr.cover(riverpitsus,0),riverclump) ==1,pcr.scalar(1))
+        riveroutlet = pcr.cover(mindistselec * pitsectionselec * 1000,0)
+        riverldd = pcr.lddcreate(riverdem - riveroutlet, 1e35, 1e35, 1e35, 1e35)
+    else: riveroutlet = pcr.cover(pcr.ifthen(pcr.scalar(riverldd) == 5, pcr.scalar(1000)),0)
+    burn_layer = pcr.cover((pcr.scalar(pcr.ifthen(pcr.streamorder(riverldd) > 1, pcr.streamorder(riverldd) ))-1 )*1000 + riveroutlet,0)
+    
+    ## create ldd per catchment
     logger.info('Calculating ldd')
-    ldddem = pcr.readmap(os.path.join(options.destination, dem_map))
-    ldd_select = pcr.lddcreate(ldddem, 1e35, 1e35, 1e35, 1e35)
-    pcr.report(ldd_select, os.path.join(options.destination, 'wflow_ldd.map'))
+    wflow_ldd = pcr.ldd(clone_map)
+    for idx, shape in enumerate(catchment_shapes):
+        logger.info('Computing ldd for catchment ' + str(idx) + '/' + str(len(catchment_shapes)))
+        image = features.rasterize([shape],out_shape=src.shape,all_touched=True,transform=src.transform)
+        catchment = pcr.numpy2pcr(pcr.Scalar,image.copy(),0)
+        ldddem = (pcr.readmap(os.path.join(destination, dem_map)) * pcr.scalar(catchment_domain) * catchment) - burn_layer
+        ldd_select = pcr.lddcreate(ldddem, 1e35, 1e35, 1e35, 1e35)
+        wflow_ldd=pcr.cover(wflow_ldd,ldd_select)
+    
+    pcr.report(wflow_ldd, os.path.join(destination, 'wflow_ldd.map'))
+      
 
     # compute stream order, identify river cells
-    streamorder = pcr.ordinal(pcr.streamorder(ldd_select))
+    streamorder = pcr.ordinal(pcr.streamorder(wflow_ldd))
     river = pcr.ifthen(streamorder >= pcr.ordinal(minorder), pcr.boolean(1))
     # find the minimum value in the DEM and cover missing values with a river with this value. Effect is none!! so now left out!
-    # mindem = int(np.min(pcr.pcr2numpy(pcr.ordinal(os.path.join(options.destination, dem_map)),9999999)))
-    # dem_resample_map = pcr.cover(os.path.join(options.destination, dem_map), pcr.scalar(river)*0+mindem)
-    # pcr.report(dem_resample_map, os.path.join(options.destination, dem_map))
-    pcr.report(streamorder, os.path.join(options.destination, streamorder_map))
-    pcr.report(river, os.path.join(options.destination, river_map))
+    # mindem = int(np.min(pcr.pcr2numpy(pcr.ordinal(os.path.join(destination, dem_map)),9999999)))
+    # dem_resample_map = pcr.cover(os.path.join(destination, dem_map), pcr.scalar(river)*0+mindem)
+    # pcr.report(dem_resample_map, os.path.join(destination, dem_map))
+    pcr.report(streamorder, os.path.join(destination, streamorder_map))
+    pcr.report(river, os.path.join(destination, river_map))
 
     # deal with your catchments
-    if options.gaugeshp == None:
+    if gaugeshp == None:
         logger.info('No gauges defined, using outlets instead')
         gauges = pcr.ordinal(
             pcr.uniqueid(
                 pcr.boolean(
-                    pcr.ifthen(pcr.scalar(ldd_select) == 5,
+                    pcr.ifthen(pcr.scalar(wflow_ldd) == 5,
                                pcr.boolean(1)
                                )
                 )
             )
         )
-        pcr.report(gauges, os.path.join(options.destination, gauges_map))
+        pcr.report(gauges, os.path.join(destination, gauges_map))
     # TODO: Add the gauge shape code from StaticMaps.py (line 454-489)
     # TODO: add river length map (see SticMaps.py, line 492-499)
 
     # report river length
     # make a high resolution empty map
-    dem_hr_file = os.path.join(options.destination, 'dem_highres.tif')
-    burn_hr_file = os.path.join(options.destination, 'burn_highres.tif')
-    demburn_hr_file = os.path.join(options.destination, 'demburn_highres.map')
-    riv_hr_file = os.path.join(options.destination, 'riv_highres.map')
-    gis.gdal_warp(options.dem_in, clone_hr, dem_hr_file)
+    dem_hr_file = os.path.join(destination, 'dem_highres.tif')
+    burn_hr_file = os.path.join(destination, 'burn_highres.tif')
+    demburn_hr_file = os.path.join(destination, 'demburn_highres.map')
+    riv_hr_file = os.path.join(destination, 'riv_highres.map')
+    gis.gdal_warp(dem_in, clone_hr, dem_hr_file)
     # wt.CreateTif(riv_hr, rows_hr, cols_hr, hr_trans, srs, 0)
-    file_att = os.path.splitext(os.path.basename(options.rivshp))[0]
+    file_att = os.path.splitext(os.path.basename(rivshp))[0]
     # open the shape layer
-    ds = ogr.Open(options.rivshp)
+    ds = ogr.Open(rivshp)
     lyr = ds.GetLayerByName(file_att)
     gis.ogr_burn(lyr, clone_hr, -100, file_out=burn_hr_file,
                  format='GTiff', gdal_type=gdal.GDT_Float32, fill_value=0)
@@ -409,8 +394,10 @@ def main():
                       xax_hr, yax_hr, demburn_hr, -9999.)
     pcr.setclone(demburn_hr_file)
     demburn_hr = pcr.readmap(demburn_hr_file)
+    
+    logger.info('Calculating ldd to determine river length')
     ldd_hr = pcr.lddcreate(demburn_hr, 1e35, 1e35, 1e35, 1e35)
-    pcr.report(ldd_hr, os.path.join(options.destination, 'ldd_hr.map'))
+    pcr.report(ldd_hr, os.path.join(destination, 'ldd_hr.map'))
     pcr.setglobaloption('unitcell')
     riv_hr = pcr.scalar(pcr.streamorder(ldd_hr) >=
                         minorder) * pcr.downstreamdist(ldd_hr)
@@ -418,66 +405,65 @@ def main():
     pcr.setglobaloption('unittrue')
     pcr.setclone(clone_map)
     logger.info('Computing river length')
-    #riverlength = wt.windowstats(riv_hr,clone_rows,clone_columns,clone_trans,srs_clone,resultdir,'frac',clone2dem_transform)
-    riverlength = wt.windowstats(riv_hr_file, len(yax), len(xax),
-                                 trans, srs, os.path.join(options.destination, riverlength_fact_map), stat='fact', logger=logger)
+    wt.windowstats(riv_hr_file, len(yax), len(xax),trans, srs, destination, stat='fact', transform=clone2dem_transform, logger=logger)
+
     # TODO: nothing happends with the river lengths yet. Need to decide how to
     # use these
 
     # report outlet map
-    pcr.report(pcr.ifthen(pcr.ordinal(ldd_select) == 5, pcr.ordinal(1)),
-               os.path.join(options.destination, outlet_map))
+    pcr.report(pcr.ifthen(pcr.ordinal(wflow_ldd) == 5, pcr.ordinal(1)),
+               os.path.join(destination, outlet_map))
 
     # report subcatchment map
-    subcatchment = pcr.subcatchment(ldd_select, gauges)
+    subcatchment = pcr.subcatchment(wflow_ldd, gauges)
     pcr.report(pcr.ordinal(subcatchment), os.path.join(
-        options.destination, subcatch_map))
+        destination, subcatch_map))
 
     # Report land use map
-    if options.landuse == None:
+    if landuse == None:
         logger.info('No land use map used. Preparing {:s} with only ones.'.
-                    format(os.path.join(options.destination, landuse_map)))
+                    format(os.path.join(destination, landuse_map)))
         pcr.report(pcr.nominal(ones), os.path.join(
-            options.destination, landuse_map))
+            destination, landuse_map))
     else:
         logger.info('Resampling land use from {:s} to {:s}'.
-                    format(os.path.abspath(options.landuse),
-                           os.path.join(options.destination, os.path.abspath(landuse_map))))
-        gis.gdal_warp(options.landuse,
+                    format(os.path.abspath(landuse),
+                           os.path.join(destination, os.path.abspath(landuse_map))))
+        gis.gdal_warp(landuse,
                       clone_map,
-                      os.path.join(options.destination, landuse_map),
+                      os.path.join(destination, landuse_map),
                       format='PCRaster',
                       gdal_interp=gdalconst.GRA_Mode,
                       gdal_type=gdalconst.GDT_Int32)
 
     # report soil map
-    if options.soil == None:
+    if soil == None:
         logger.info('No soil map used. Preparing {:s} with only ones.'.
-                    format(os.path.join(options.destination, soil_map)))
+                    format(os.path.join(destination, soil_map)))
         pcr.report(pcr.nominal(ones), os.path.join(
-            options.destination, soil_map))
+            destination, soil_map))
     else:
         logger.info('Resampling soil from {:s} to {:s}'.
-                    format(os.path.abspath(options.soil),
-                           os.path.join(options.destination, os.path.abspath(soil_map))))
-        gis.gdal_warp(options.soil,
+                    format(os.path.abspath(soil),
+                           os.path.join(destination, os.path.abspath(soil_map))))
+        gis.gdal_warp(soil,
                       clone_map,
-                      os.path.join(options.destination, soil_map),
+                      os.path.join(destination, soil_map),
                       format='PCRaster',
                       gdal_interp=gdalconst.GRA_Mode,
                       gdal_type=gdalconst.GDT_Int32)
 
-    if options.lai == None:
+    if lai == None:
         logger.info('No vegetation LAI maps used. Preparing default maps {:s} with only ones.'.
-                    format(os.path.join(options.destination, soil_map)))
+                    format(os.path.join(destination, soil_map)))
         pcr.report(pcr.nominal(ones), os.path.join(
-            options.destination, soil_map))
+            destination, soil_map))
     else:
-        dest_lai = os.path.join(options.destination, 'clim')
+        dest_lai = os.path.join(destination, 'clim')
         os.makedirs(dest_lai)
         for month in range(12):
             lai_in = os.path.join(
-                options.lai, 'LAI00000.{:03d}'.format(month + 1))
+                lai, 'LAI00000.{:03d}'.format(month + 1))
             lai_out = os.path.join(
                 dest_lai, 'LAI00000.{:03d}'.format(month + 1))
             logger.info('Resampling vegetation LAI from {:s} to {:s}'.
@@ -489,32 +475,33 @@ def main():
                           format='PCRaster',
                           gdal_interp=gdalconst.GRA_Bilinear,
                           gdal_type=gdalconst.GDT_Float32)
-
-    # report soil map
-    if options.other_maps == None:
+#
+#    # report soil map
+    if other_maps == None:
         logger.info('No other maps used. Skipping other maps.')
     else:
         logger.info('Resampling list of other maps...')
-        for map_file in options.other_maps:
+        for map_file in other_maps:
             map_name = os.path.split(map_file)[1]
             logger.info('Resampling a map from {:s} to {:s}'.
                         format(os.path.abspath(map_file),
-                               os.path.join(options.destination, map_name)))
+                               os.path.join(destination, os.path.splitext(os.path.basename(map_file))[0]+'.map')))
             gis.gdal_warp(map_file,
                           clone_map,
-                          os.path.join(options.destination, map_name),
+                          os.path.join(destination,os.path.splitext(os.path.basename(map_file))[0]+'.map'),
                           format='PCRaster',
                           gdal_interp=gdalconst.GRA_Mode,
                           gdal_type=gdalconst.GDT_Float32)
 
-    if options.clean:
-        wt.DeleteList(glob.glob(os.path.join(options.destination, '*.xml')),
+    if clean:
+        wt.DeleteList(glob.glob(os.path.join(destination, '*.xml')),
                       logger=logger)
-        wt.DeleteList(glob.glob(os.path.join(options.destination, 'clim', '*.xml')),
+        wt.DeleteList(glob.glob(os.path.join(destination, 'clim', '*.xml')),
                       logger=logger)
-        wt.DeleteList(glob.glob(os.path.join(options.destination, '*highres*')),
+        wt.DeleteList(glob.glob(os.path.join(destination, '*highres*')),
                       logger=logger)
 
 
 if __name__ == "__main__":
-    main()
+    argdict = parse_args()
+    main(**vars(argdict))

@@ -36,20 +36,19 @@ import pyproj
 import wflow.wflowtools_lib as wt
 
 
-def main():
-    ### Read input arguments #####
-    logfilename = 'wtools_create_grid.log'
+def parse_args():
+        ### Read input arguments #####
     parser = OptionParser()
     usage = "usage: %prog [options]"
     parser = OptionParser(usage=usage)
     parser.add_option('-q', '--quiet',
                       dest='verbose', default=True, action='store_false',
                       help='do not print status messages to stdout')
-    parser.add_option('-f', '--file', dest='inputfile', nargs=1,
+    parser.add_option('-f', '--file', dest='inputfile',  nargs=1,
                       help='file of which extent will be read. Most logically the catchment layer\nformat: ESRI Shapefile or any gdal supported raster format (preferred GeoTiff)')
-    parser.add_option('-e', '--extent',
-                      nargs=4, dest='extent', type='float',
-                      help='extent in WGS 1984 lat-lon (xmin, ymin, xmax, ymax)')
+#    parser.add_option('-e', '--extent',
+#                      nargs=4, dest='extent', type='float',
+#                      help='extent in WGS 1984 lat-lon (xmin, ymin, xmax, ymax)')
     parser.add_option('-l', '--logfile',
                       dest='logfilename', default='wtools_create_grid.log',
                       help='log file name')
@@ -57,7 +56,7 @@ def main():
                       dest='projection', default='EPSG:4326',
                       help='Only used if no file is provided, either of type EPSG:<####> or +proj...')
     parser.add_option('-c', '--cellsize', type='float',
-                      nargs=1, dest='cellsize', default=0.005,
+                      nargs=1, dest='cellsize',
                       help='extent')
     parser.add_option('-s', '--snap',
                       dest='snap', default=False, action='store_true',
@@ -67,29 +66,50 @@ def main():
                       help='Destination folder (default=./wflow)')
 
     (options, args) = parser.parse_args()
-
-    ##### Preprocessing #####
+    
+    print options.__dict__.items()
+    
+   
+        ##### Preprocessing #####
     # check if either a file or an extent is provided. If not, sys.exit
-    if not np.logical_or(os.path.isfile(options.inputfile), options.extent is not None):
-        parser.error('No file or extent given')
+    
+    
+    if options.inputfile is None and options.extent is None:
+        parser.error('No input file (-f filename) or extent (-e (xmin, ymin, xmax, ymax)) given')
         parser.print_help()
         sys.exit(1)
+        
+    if not options.inputfile is None:
+        if not os.path.exists(options.inputfile):
+            parser.error('input file provided but not found, please check path')
+            parser.print_help()
+            sys.exit(1)
+    
+    if options.cellsize is None:
+        parser.error('no cell size (-c cellsize) provided')
+        parser.print_help()
+        sys.exit(1)
+    
+    
+    return options
+
+def main(logfilename,destination,inputfile,projection,cellsize,snap=False,verbose=True,locationid='wflow_mask'):
 
     # open a logger, dependent on verbose print to screen or not
-    logger, ch = wt.setlogger(logfilename, 'WTOOLS', options.verbose)
+    logger, ch = wt.setlogger(logfilename, 'WTOOLS', verbose)
 
     # delete old files
-    if os.path.isdir(options.destination):
-        shutil.rmtree(options.destination)
-    os.makedirs(options.destination)
+    if os.path.isdir(destination):
+        shutil.rmtree(destination)
+    os.makedirs(destination)
 
     ### Get information ####
-    if options.inputfile is not None:
+    if inputfile is not None:
         # retrieve extent from input file. Check if projection is provided
-        file_ext = os.path.splitext(os.path.basename(options.inputfile))[1]
+        file_ext = os.path.splitext(os.path.basename(inputfile))[1]
         if file_ext == '.shp':
-            file_att = os.path.splitext(os.path.basename(options.inputfile))[0]
-            ds = ogr.Open(options.inputfile)
+            file_att = os.path.splitext(os.path.basename(inputfile))[0]
+            ds = ogr.Open(inputfile)
             # read the extent of the shapefile
             lyr = ds.GetLayerByName(file_att)
             extent = lyr.GetExtent()
@@ -99,16 +119,16 @@ def main():
         else:
             # Read extent from a GDAL compatible file
             try:
-                extent_in = wt.get_extent(options.inputfile)
+                extent_in = wt.get_extent(inputfile)
             except:
                 msg = 'Input file {:s} not a shape or gdal file'.format(
-                    options.inputfile)
+                    inputfile)
                 wt.close_with_error(logger, ch, msg)
                 sys.exit(1)
 
 #            # get spatial reference from grid file
             try:
-                srs = wt.get_projection(options.inputfile)
+                srs = wt.get_projection(inputfile)
             except:
                 logger.warning(
                     'No projection found, assuming WGS 1984 lat long')
@@ -128,20 +148,20 @@ def main():
 #            srs = osr.SpatialReference()
 #            srs.ImportFromWkt(WktString)
     else:
-        lonmin, latmin, lonmax, latmax = options.extent
+        lonmin, latmin, lonmax, latmax = extent
         srs_4326 = osr.SpatialReference()
         srs_4326.ImportFromEPSG(4326)
         srs = osr.SpatialReference()
-        if options.projection is not None:
+        if projection is not None:
             # import projection as an srs object
-            if options.projection.lower()[0:4] == 'epsg':
+            if projection.lower()[0:4] == 'epsg':
                 # make a proj4 string
-                srs.ImportFromEPSG(int(options.projection[5:]))
-            elif options.projection.lower()[0:5] == '+proj':
-                srs.ImportFromProj4(options.projection)
+                srs.ImportFromEPSG(int(projection[5:]))
+            elif projection.lower()[0:5] == '+proj':
+                srs.ImportFromProj4(projection)
             else:
                 msg = 'Projection "{:s}" is not a valid projection'.format(
-                    options.projection)
+                    projection)
                 wt.close_with_error(logger, ch, msg)
         else:
             logger.warning('No projection found, assuming WGS 1984 lat long')
@@ -166,48 +186,48 @@ def main():
     else:
         geodatum = 'WGS 1984'
 
-    if options.snap:
+    if snap:
         logger.info('Snapping raster')
-        snap = len(str(options.cellsize - np.floor(options.cellsize))) - 2
-        extent_out = wt.round_extent(extent_in, options.cellsize, snap)
+        snap = len(str(cellsize - np.floor(cellsize))) - 2
+        extent_out = wt.round_extent(extent_in, cellsize, snap)
     else:
         extent_out = extent_in
-    cols = int((extent_out[2] - extent_out[0]) / options.cellsize)  # +2)
-    rows = int((extent_out[3] - extent_out[1]) / options.cellsize)  # +2)
+    cols = int((extent_out[2] - extent_out[0]) / cellsize)  # +2)
+    rows = int((extent_out[3] - extent_out[1]) / cellsize)  # +2)
     cells = rows * cols
-    xorg = extent_out[0]  # -options.cellsize
-    yorg = extent_out[3]  # +options.cellsize
+    xorg = extent_out[0]  # -cellsize
+    yorg = extent_out[3]  # +cellsize
 
     # create clone raster
     print('rows: {0} cols: {1}'.format(rows, cols))
 
     dummy_raster = np.zeros((rows, cols)) - 9999.
     clone_file_map = os.path.abspath(
-        os.path.join(options.destination, 'mask.map'))
+        os.path.join(destination, 'mask.map'))
     clone_file_tif = os.path.abspath(
-        os.path.join(options.destination, 'mask.tif'))
+        os.path.join(destination, 'mask.tif'))
     logger.info('Writing PCRaster clone to {:s}'.format(clone_file_map))
     gis.gdal_writemap(clone_file_map, 'PCRaster',
                       xorg, yorg, dummy_raster,
-                      -9999., resolution=options.cellsize,
+                      -9999., resolution=cellsize,
                       srs=srs)
     logger.info('Writing Geotiff clone to {:s}'.format(clone_file_tif))
     gis.gdal_writemap(clone_file_tif, 'GTiff',
                       xorg, yorg, dummy_raster,
-                      -9999., resolution=options.cellsize,
+                      -9999., resolution=cellsize,
                       zlib=True, srs=srs)
 
     # create grid.xml
-    root = etree.Element('regular', locationId='wflow_mask')
+    root = etree.Element('regular', locationId=locationid)
     etree.SubElement(root, 'rows').text = str(rows)
     etree.SubElement(root, 'columns').text = str(cols)
     etree.SubElement(root, 'geoDatum').text = geodatum
     etree.SubElement(root, 'firstCellCenter')
-    etree.SubElement(root[3], 'x').text = str(xorg + 0.5 * options.cellsize)
-    etree.SubElement(root[3], 'y').text = str(yorg - 0.5 * options.cellsize)
-    etree.SubElement(root, 'xCellSize').text = str(options.cellsize)
-    etree.SubElement(root, 'yCellSize').text = str(options.cellsize)
-    xml_file = os.path.abspath(os.path.join(options.destination, 'grid.xml'))
+    etree.SubElement(root[3], 'x').text = str(xorg + 0.5 * cellsize)
+    etree.SubElement(root[3], 'y').text = str(yorg - 0.5 * cellsize)
+    etree.SubElement(root, 'xCellSize').text = str(cellsize)
+    etree.SubElement(root, 'yCellSize').text = str(cellsize)
+    xml_file = os.path.abspath(os.path.join(destination, 'grid.xml'))
     logger.info('Writing FEWS grid definition to {:s}'.format(xml_file))
     gridxml = open(xml_file, 'w+')
     gridxml.write(etree.tostring(root, pretty_print=True))
@@ -215,7 +235,7 @@ def main():
 
     # create shape file
     Driver = ogr.GetDriverByName("ESRI Shapefile")
-    shp_file = os.path.abspath(os.path.join(options.destination, 'mask.shp'))
+    shp_file = os.path.abspath(os.path.join(destination, 'mask.shp'))
     logger.info('Writing shape of clone to {:s}'.format(shp_file))
     shp_att = os.path.splitext(os.path.basename(shp_file))[0]
     shp = Driver.CreateDataSource(shp_file)
@@ -225,11 +245,11 @@ def main():
     lyr.CreateField(fieldDef)
     ring = ogr.Geometry(ogr.wkbLinearRing)
     ring.AddPoint(xorg, yorg)
-    ring.AddPoint(xorg + cols * options.cellsize,
+    ring.AddPoint(xorg + cols * cellsize,
                   yorg)
-    ring.AddPoint(xorg + cols * options.cellsize,
-                  yorg - rows * options.cellsize)
-    ring.AddPoint(xorg, yorg - rows * options.cellsize)
+    ring.AddPoint(xorg + cols * cellsize,
+                  yorg - rows * cellsize)
+    ring.AddPoint(xorg, yorg - rows * cellsize)
     ring.AddPoint(xorg, yorg)
     ring.CloseRings
     polygon = ogr.Geometry(ogr.wkbPolygon)
@@ -248,8 +268,9 @@ def main():
             'With this amount of cells your model will run slow.\nConsider a larger cell-size. Fast models run with < 1,000,000 cells')
     logger, ch = wt.closeLogger(logger, ch)
     del logger, ch
-    sys.exit(1)
+    #sys.exit(1)
 
 
 if __name__ == "__main__":
-    main()
+    argdict = parse_args()
+    main(**vars(argdict))

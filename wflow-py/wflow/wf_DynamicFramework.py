@@ -564,7 +564,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     self.logger.error("Variable change string (apply_once) could not be executed: " + execstr)
 
 
-    @profile
     def wf_updateparameters(self):
         """
         Update the model Parameters (can be used in static and dynamic part of the model)
@@ -2421,7 +2420,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
 
 
-    @profile
+
     def wf_readmap(self, name, default, verbose=True,fail=False,ncfilesource="not set",silent=False):
         """
           Adjusted version of readmapNew. the style variable is used to indicated
