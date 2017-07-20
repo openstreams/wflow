@@ -169,8 +169,9 @@ if target == 'openda':
     import thrift
     executables = [
         Executable('Scripts/wtools_py/CatchRiver.py', base=base),
-        Executable('Scripts/wtools_py/CreateGrid.py', base=base),
-        Executable('Scripts/wtools_py/StaticMaps.py', base=base),
+        Executable('Scripts/wtools_py/create_grid.py', base=base),
+        Executable('Scripts/wtools_py/static_maps.py', base=base),
+        Executable('Scripts/wtools_py/wflow_fews.py', base=base),
         Executable('Scripts/pcr2netcdf.py', base=base),
         Executable('Scripts/bmi2runner.py', base=base),
         Executable('openda_bmi/opendapy.py', base=base),
@@ -191,8 +192,9 @@ if target == 'openda':
 elif target == 'deltashell':
     executables = [
         Executable('Scripts/wtools_py/CatchRiver.py', base=base),
-        Executable('Scripts/wtools_py/CreateGrid.py', base=base),
-        Executable('Scripts/wtools_py/StaticMaps.py', base=base),
+        Executable('Scripts/wtools_py/create_grid.py', base=base),
+        Executable('Scripts/wtools_py/static_maps.py', base=base),
+        Executable('Scripts/wtools_py/wflow_fews.py', base=base),
         Executable('Scripts/pcr2netcdf.py', base=base),
         Executable('Scripts/bmi2runner.py', base=base),
         Executable('Scripts/wfds_core.py', base=base),
@@ -213,8 +215,9 @@ elif target == 'deltashell':
 else:
     executables = [
         Executable('Scripts/wtools_py/CatchRiver.py', base=base),
-        Executable('Scripts/wtools_py/CreateGrid.py', base=base),
-        Executable('Scripts/wtools_py/StaticMaps.py', base=base),
+        Executable('Scripts/wtools_py/create_grid.py', base=base),
+        Executable('Scripts/wtools_py/static_maps.py', base=base),
+        Executable('Scripts/wtools_py/wflow_fews.py', base=base),
         Executable('Scripts/pcr2netcdf.py', base=base),
         Executable('Scripts/bmi2runner.py', base=base),
         Executable('Scripts/wflow_prepare_step2.py', base=base),

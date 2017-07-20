@@ -73,7 +73,8 @@ def agriZone_no_reservoir(self, k):
     self.Sa[k] = 0.
     self.Fa_[k] = max(self.Pe_[k], 0)
     self.wbSa_[k] = self.Pe_[k] - self.Ea_[k] - self.Qa_[k] - self.Fa_[k] - self.Sa[k] + self.Sa_t[k]
-      
+
+
 def agriZone_Jarvis(self,k):
     """
     - Potential evaporation is decreased by energy used for interception evaporation    

@@ -52,6 +52,7 @@ def fastAgriRunoff_no_reservoir(self, k):
     self.Sfa[k] = 0.
     self.wbSfa_[k] = self.Qfa_[k] - self.Qfa_[k] - self.Sfa[k] + self.Sfa_t[k] - sum(self.convQa[k]) + sum(self.convQa_t[k])
 
+@profile
 def fastRunoff_lag2(self, k):
     """
     - Lag is applied before inflow into the fast reservoir 

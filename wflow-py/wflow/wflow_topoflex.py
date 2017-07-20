@@ -234,6 +234,7 @@ class WflowModel(DynamicModel):
         report(self.sumrunoff, self.SaveDir + "/outsum/sumrunoff.map")
         report(self.sumwb, self.SaveDir + "/outsum/sumwb.map")
 
+
     def initial(self):
 
         """
@@ -719,6 +720,7 @@ class WflowModel(DynamicModel):
       """
         return ['self.Altitude']
 
+
     def dynamic(self):
         """
         *Required*
@@ -937,25 +939,31 @@ def main(argv=None):
             usage()
             return
 
+    
     try:
         opts, args = getopt.getopt(argv, 'C:S:T:Ic:s:R:fl:L:P:p:i:') #'XF:L:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:')
     except getopt.error, msg:
         pcrut.usage(msg)
 
 
+    print opts    
     for o, a in opts:
-        if o == '-C': caseName = a
+        if o == '-C': 
+        	caseName = a
         if o == '-R': runId = a
-        if o == '-c': configfile = a
+        if o == '-c': 
+        	configfile = a
+        	print configfile
         if o == '-s': timestepsecs = int(a)
         if o == '-T': _lastTimeStep = int(a)
         if o == '-S': _firstTimeStep = int(a)
         if o == '-f': NoOverWrite = 0
         if o == '-L': LogFileName = a 
         if o == '-l': exec "loglevel = logging." + a
-    if (len(opts) <= 1):
+  
+    if (len(argv) <= 1):
         usage()
-        
+	        
 
     starttime = dt.datetime(1990,01,01)
        

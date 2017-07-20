@@ -1042,7 +1042,7 @@ class WflowModel(DynamicModel):
 
 
 
-
+    @profile
     def dynamic(self):
         """
         Stuf that is done for each timestep of the model

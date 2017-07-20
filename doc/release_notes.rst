@@ -16,6 +16,10 @@ Release notes
 
 + wflow\_sbm renamed to wflow_sbm\_old
 + wflow\_sbm2 renamed to wflow\_sbm
+    + This breaks older models. You will need to regenerate initial conditions. In the new model the unsaturated part of
+      the soil can be split into several layers. With one layer the results should be the same but the name of the
+      state file is now UStoreLayerDepth_0.map for the first layer (or for the whole layer if only one layer is
+      defined). It used to be UStoreDepth.map
 + Changes to hbv (quickflow)
 
 
@@ -37,7 +41,8 @@ Release notes
 + updates to topoflex
 + updates to BMI framework
 + updates to netcdf reader. [model] modeltype= can be specified
-+ updated wflow_hbv to better resemble hbv-96 for the upper zone when kquickflow is determined (and not specified directly). This may break older calibrations
++ updated wflow_hbv to better resemble hbv-96 for the upper zone when kquickflow is determined
+  (and not specified directly). This may break older calibrations
 
 
 2016.03

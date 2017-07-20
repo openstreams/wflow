@@ -571,16 +571,13 @@ an sigmoid function as follows:
 
     WetRoots = 1.0/(1.0 + e^{-SharpNess (WaterTable - RootingDepth)})
 
-Here the sharpness parameter (by default a large negative value, -80000.0) parameter
-determines if there is a stepwise output or a more gradual output (default is stepwise). 
-WaterTable is the level of the Water table in the gridcell in mm below the 
-surface, RootingDepth is the maximum depth of the roots also in mm below the 
-surface. For all values of WaterTable smaller that RootingDepth a 
-value of 1 is returned if they are
-equal a value of 0.5 is returned if the WaterTable is larger than the RootingDepth 
-a value of 0 is returned. The returned WetRoots fraction is multiplied
-by the potential evaporation (and limited by the available water in saturated zone)
-to get the transpiration from the saturated part of the soil.
+Here the sharpness parameter (by default a large negative value, -80000.0) parameter determines if there is a
+stepwise output or a more gradual output (default is stepwise). WaterTable is the level of the Water table in the
+gridcell in mm below the surface, RootingDepth is the maximum depth of the roots also in mm below the surface. For
+all values of WaterTable smaller that RootingDepth a value of 1 is returned if they are equal a value of 0.5 is
+returned if the WaterTable is larger than the RootingDepth a value of 0 is returned. The returned WetRoots fraction
+is multiplied by the potential evaporation (and limited by the available water in saturated zone) to get the
+transpiration from the saturated part of the soil.
 
 Figure: Plot showing the fraction of wet roots for different values of c 
 for a RootingDepth of 275mm 
@@ -747,11 +744,9 @@ where:
 
     This is an poorly tested feature
 
-In the dynamic section of the model the absolute groundwater level is determined and 
-scaled before it is
-fed into the :math:`S` curve function. The result is a estimated saturated fraction within a
-the gridcell. The saturated fraction is used to generated Saturation Overland Flow (SOF)
-and generate ouflow from the groundwater reservoir:
+In the dynamic section of the model the absolute groundwater level is determined and scaled before it is fed into the
+:math:`S` curve function. The result is a estimated saturated fraction within a the gridcell. The saturated fraction is
+used to generated Saturation Overland Flow (SOF) and generate ouflow from the groundwater reservoir:
 
 1. The saturated conductivity for the average groundwaterlevel is determined
 2. The available water at the surface is multiplied by the saturated fraction and

@@ -6,6 +6,9 @@ from distutils.dir_util import copy_tree, remove_tree
 from pyproj import pyproj_datadir
 from osgeo import gdal
 
+# These for you installation
+
+pcrasterlib = 'c:/pcraster-4.1.0_x86-64/lib/'
 # work-around https://github.com/pyinstaller/pyinstaller/issues/2384
 # will be fixed in PyInstaller 3.3
 from PyInstaller.utils.hooks import is_module_satisfies
@@ -45,7 +48,7 @@ def do_analysis(scriptpath):
     # note that the datas locations have to be set again in __init__.py
     # if they are to work in a bundled folder
     return Analysis([scriptpath],
-                    binaries=[('c:/bin/pcraster/lib/', '.')],
+                    binaries=[(pcrasterlib, '.')],
                     datas=[(gdal.GetConfigOption('GDAL_DATA'), 'gdal-data'),
                            (pyproj_datadir, 'proj-data')],
                     hiddenimports=['pywt._extensions._cwt'])
