@@ -15,7 +15,7 @@ import logging
 import logging.handlers
 
 from osgeo import ogr
-from osgeo import gdal
+from osgeo import gdal,gdalconst
 from osgeo.gdalconst import *
 from osgeo import osr
 import os
@@ -175,16 +175,15 @@ def get_projection(filename):
     ds = None
     return srs
 
-
 def round_extent(extent, snap, prec):
     """Increases the extent until all sides lie on a coordinate
     divideable by 'snap'."""
     xmin, ymin, xmax, ymax = extent
     snap = float(snap)  # prevent integer division issues
-    xmin = round(np.ceil(xmin / snap) * snap, prec)
-    ymin = round(np.ceil(ymin / snap) * snap, prec)
-    xmax = round(np.floor(xmax / snap) * snap, prec)
-    ymax = round(np.floor(ymax / snap) * snap, prec)
+    xmin = round(np.floor(xmin / snap) * snap, prec)
+    ymin = round(np.floor(ymin / snap) * snap, prec)
+    xmax = round(np.ceil(xmax / snap) * snap, prec)
+    ymax = round(np.ceil(ymax / snap) * snap, prec)
     return xmin, ymin, xmax, ymax
 
 
@@ -468,9 +467,9 @@ def ReverseMap(MAP):
     return REV_MAP
 
 
-def DeleteList(itemlist):
+def DeleteList(itemlist, logger=logging):
     for item in itemlist:
-        print 'file deleted: ' + os.path.basename(item)
+        logger.info('Deleting file: ' + item)
         os.remove(item)
 
 
@@ -759,7 +758,7 @@ def windowstats(rasterin, t_rows, t_columns, t_geotransform, t_srs, resultdir, s
     counter = 0
     percentage = 0.
     for row in range(t_rows):
-        print 'doing row ' + str(row + 1) + '/' + str(t_rows)
+        #print 'doing row ' + str(row + 1) + '/' + str(t_rows)
         for col in range(t_columns):
             counter = counter + 1
             if (float(counter) / float(blocks)) * 100. > percentage:
@@ -788,7 +787,7 @@ def windowstats(rasterin, t_rows, t_columns, t_geotransform, t_srs, resultdir, s
             #data_block = data_block.astype(int)
             # print data_block
             for idx, perc in enumerate(stat):
-                if perc == 'frac':
+                if perc == 'fact':
                     array_out[row, col, idx] = np.max(
                         [(np.sum(data_block) * cellsize_in) / cellsize_out, 1])
                 elif perc == 'sum':
@@ -815,30 +814,36 @@ def windowstats(rasterin, t_rows, t_columns, t_geotransform, t_srs, resultdir, s
     array_out[np.isnan(array_out)] = nodata
     names = []
     # write rasters
+    logger.info('writing rasters')
     for idx, perc in enumerate(stat):
         if perc == 100:
             name = 'max'
             # print 'computing window maximum'
             name_map = os.path.join(
                 resultdir, 'wflow_dem{:s}.map'.format(name))
+            logger.info('wflow_dem{:s}.map'.format(name))
         elif perc == 0:
             name = 'min'
             # print 'computing window minimum'
             name_map = os.path.join(
                 resultdir, 'wflow_dem{:s}.map'.format(name))
-        elif perc == 'frac':
-            name = 'frac'
+            logger.info('wflow_dem{:s}.map'.format(name))
+        elif perc == 'fact':
+            name = 'fact'
             # print 'computing window fraction'
             name_map = os.path.join(resultdir, 'wflow_riverlength_fact.map')
+            logger.info('wflow_riverlength_fact.map')
         elif perc == 'sum':
             name = 'sum'
             # print 'computing window sum'
             name_map = os.path.join(resultdir, 'windowsum.map')
+            logger.info('wflow_dem{:s}.map'.format(name))
         else:
-            logger.info('computing window {:d} percentile'.format(int(perc)))
             name_map = os.path.join(
                 resultdir, 'wflow_dem{:02d}.map'.format(int(perc)))
+            logger.info('wflow_dem{:02d}.map'.format(int(perc)))
         names.append(name)
+            
         # name_tif = 'work\\dem_' + name + '.tif'
         ds_out = gdal.GetDriverByName('MEM').Create(
             '', t_columns, t_rows, 1, GDT_Float32)
@@ -853,8 +858,7 @@ def windowstats(rasterin, t_rows, t_columns, t_geotransform, t_srs, resultdir, s
         gdal.GetDriverByName('PCRaster').CreateCopy(name_map, ds_out, 0)
         ds_out = None
 
-        # call(('gdal_translate','-of','PCRaster','-ot','Float32', name_tif,name_map))
-    return names
+
 
 
 def CreateTif(TIF, rows, columns, geotransform, srs, fill=-9999):
@@ -882,3 +886,258 @@ def GetRasterTranform(rasterin, srsout):
         EPSG = 'EPSG:' + srsin.GetAuthorityCode(None)
         transform = osr.CoordinateTransformation(srsin, srsout)
     return transform, EPSG
+
+def gdal_writemap(file_name, file_format, x, y, data, fill_val, zlib=False,
+                  gdal_type=gdal.GDT_Float32, resolution=None, srs=None, logging=logging, metadata=None):
+    """ Write geographical file from numpy array
+    Dependencies are osgeo.gdal and numpy
+    Input:
+        file_name: -- string: reference path to GDAL-compatible file
+        file_format: -- string: file format according to GDAL acronym
+        (see http://www.gdal.org/formats_list.html)
+        x: -- 1D np-array: x-axis, or (if only one value), top-left x-coordinate
+        y: -- 1D np-array: y-axis, or (if only one value), top-left y-coordinate
+        data: -- 2D np-array: raster data
+        fill_val: -- float: fill value
+        --------------------------------
+    optional inputs:
+        zlib=False: -- boolean: determines if output file should be internally 
+                        zipped or not
+        gdal_type=gdal.GDT_Float32: -- gdal data type to write
+        resolution=None: -- resolution of dataset, only needed if x and y are given as upperleft coordinates
+        srs=None: -- projection object (imported by osgeo.osr)
+        metadata=None: -- dictionary of metadata entries (key/value pairs)
+    """
+    # make the geotransform
+    # Give georeferences
+    if hasattr(x, '__len__'):
+        # x is the full axes
+        xul = x[0]-(x[1]-x[0])/2
+        xres = x[1]-x[0]
+    else:
+        # x is the top-left corner
+        xul = x
+        xres = resolution
+    if hasattr(y, '__len__'):
+        # y is the full axes
+        yul = y[0]+(y[0]-y[1])/2
+        yres = y[1]-y[0]
+    else:
+        # y is the top-left corner
+        yul = y
+        yres = -resolution
+    geotrans = [xul, xres, 0, yul, 0, yres]
+    
+    gdal.AllRegister()
+    driver1 = gdal.GetDriverByName('GTiff')
+    driver2 = gdal.GetDriverByName(file_format)
+    # Processing
+    temp_file_name = str('{:s}.tif').format(file_name)
+    logging.info(str('Writing to temporary file {:s}').format(temp_file_name))
+    if zlib:
+        TempDataset = driver1.Create(temp_file_name, data.shape[1],
+                                     data.shape[0], 1, gdal_type,
+                                     ['COMPRESS=DEFLATE'])
+    else:
+        TempDataset = driver1.Create(temp_file_name, data.shape[1],
+                                     data.shape[0], 1, gdal_type)
+    TempDataset.SetGeoTransform(geotrans)
+    if srs:
+        TempDataset.SetProjection(srs.ExportToWkt())
+    # get rasterband entry
+    TempBand = TempDataset.GetRasterBand(1)
+    # fill rasterband with array
+    TempBand.WriteArray(data, 0, 0)
+    TempBand.FlushCache()
+    TempBand.SetNoDataValue(fill_val)
+    if metadata is not None:
+        TempDataset.SetMetadata(metadata)
+
+    # Create data to write to correct format (supported by 'CreateCopy')
+    logging.info(str('Writing to {:s}').format(file_name))
+    if zlib:
+        driver2.CreateCopy(file_name, TempDataset, 0, ['COMPRESS=DEFLATE'])
+    else:
+        driver2.CreateCopy(file_name, TempDataset, 0)
+    TempDataset = None
+    os.remove(temp_file_name)
+    
+def gdal_readmap(file_name, file_format, give_geotrans=False):
+    """ Read geographical file into memory
+    Dependencies are osgeo.gdal and numpy
+    Input:
+        file_name: -- string: reference path to GDAL-compatible file
+        file_format: -- string: file format according to GDAL acronym
+        (see http://www.gdal.org/formats_list.html)
+        give_geotrans (default=False): -- return the geotrans and amount of 
+            cols/rows instead of x, y axis
+    Output (if give_geotrans=False):
+        x: -- 1D np-array: x-axis
+        y: -- 1D np-array: y-axis
+        data:           -- 2D np-array: raster data
+        fill_val         -- float:       fill value
+    Output (if give_geotrans=True):
+        geotrans: -- 6-digit list with GDAL geotrans vector
+        size: -- 2-digit tuple with (cols, rows)
+        data:           -- 2D np-array: raster data
+        fill_val         -- float:       fill value
+    """
+    # Open file for binary-reading
+    mapFormat = gdal.GetDriverByName(file_format)
+    mapFormat.Register()
+    ds = gdal.Open(file_name)
+    if ds is None:
+        logging.warning('Could not open {:s} Shutting down'.format(file_name))
+        sys.exit(1)
+        # Retrieve geoTransform info
+    geotrans = ds.GetGeoTransform()
+    originX = geotrans[0]
+    originY = geotrans[3]
+    resX = geotrans[1]
+    resY = geotrans[5]
+    cols = ds.RasterXSize
+    rows = ds.RasterYSize
+    x = np.linspace(originX+resX/2, originX+resX/2+resX*(cols-1), cols)
+    y = np.linspace(originY+resY/2, originY+resY/2+resY*(rows-1), rows)
+    # Retrieve raster
+    RasterBand = ds.GetRasterBand(1)   # there's only 1 band, starting from 1
+    data = RasterBand.ReadAsArray(0, 0, cols, rows)
+    fill_val = RasterBand.GetNoDataValue()
+    RasterBand = None
+    ds = None
+    if give_geotrans==True:
+        return geotrans, (ds.RasterXSize, ds.RasterYSize), data, fill_val
+        
+    else:
+        return x, y, data, fill_val
+
+def gdal_warp(src_filename, clone_filename, dst_filename, gdal_type=gdalconst.GDT_Float32,
+              gdal_interp=gdalconst.GRA_Bilinear, format='GTiff', ds_in=None, override_src_proj=None):
+    """
+    Equivalent of the gdalwarp executable, commonly used on command line.
+    The function prepares from a source file, a new file, that has the same 
+    extent and projection as a clone file.
+    The clone file should contain the correct projection. 
+    The same projection will then be produced for the target file.
+    If the clone does not have a projection, EPSG:4326 (i.e. WGS 1984 lat-lon)
+    will be assumed.
+
+    :param src_filename: string - file with data that will be warped
+    :param clone_filename: string - containing clone file (with projection information)
+    :param dst_filename: string - destination file (will have the same extent/projection as clone)
+    :param gdal_type: - data type to use for output file (default=gdalconst.GDT_Float32)
+    :param gdal_interp: - interpolation type used (default=gdalconst.GRA_Bilinear)
+    :param format: - GDAL data format to return (default='GTiff')
+    :return: No parameters returned, instead a file is prepared
+    """
+    if ds_in is None:
+        src = gdal.Open(src_filename, gdalconst.GA_ReadOnly)
+    else:
+        src = ds_in
+    src_proj = src.GetProjection()
+    if override_src_proj is not None:
+        srs = osr.SpatialReference()
+        srs.ImportFromEPSG(override_src_proj)
+        src_proj = srs.ExportToWkt()        
+    src_nodata = src.GetRasterBand(1).GetNoDataValue()
+    # replace nodata value temporarily for some other value
+    src.GetRasterBand(1).SetNoDataValue(np.nan)
+    # We want a section of source that matches this:
+    clone_ds = gdal.Open(clone_filename, gdalconst.GA_ReadOnly)
+    clone_proj = clone_ds.GetProjection()
+    if not clone_proj:
+        # assume a WGS 1984 projection
+        srs = osr.SpatialReference()
+        srs.ImportFromEPSG(4326)
+        clone_proj = srs.ExportToWkt()
+    clone_geotrans = clone_ds.GetGeoTransform()
+    wide = clone_ds.RasterXSize
+    high = clone_ds.RasterYSize
+    # Output / destination
+    dst_mem = gdal.GetDriverByName('MEM').Create('', wide, high, 1, gdal_type)
+    dst_mem.SetGeoTransform(clone_geotrans)
+    dst_mem.SetProjection(clone_proj)
+    if not(src_nodata is None):
+        dst_mem.GetRasterBand(1).SetNoDataValue(src_nodata)
+
+
+    # Do the work, UUUUUUGGGGGHHHH: first make a nearest neighbour interpolation with the nodata values
+    # as actual values and determine which indexes have nodata values. This is needed because there is a bug in
+    # gdal.ReprojectImage, nodata values are not included and instead replaced by zeros! This is not ideal and if
+    # a better solution comes up, it should be replaced.
+
+    gdal.ReprojectImage(src, dst_mem, src_proj, clone_proj, gdalconst.GRA_NearestNeighbour)
+    data = dst_mem.GetRasterBand(1).ReadAsArray(0, 0)
+    idx = np.where(data==src_nodata)
+    # now remove the dataset
+    del data
+
+    # now do the real transformation and replace the values that are covered by NaNs by the missing value
+    if not(src_nodata is None):
+        src.GetRasterBand(1).SetNoDataValue(src_nodata)
+
+    gdal.ReprojectImage(src, dst_mem, src_proj, clone_proj, gdal_interp)
+    data = dst_mem.GetRasterBand(1).ReadAsArray(0, 0)
+    data[idx] = src_nodata
+    dst_mem.GetRasterBand(1).WriteArray(data, 0, 0)
+
+    if format=='MEM':
+        return dst_mem
+    else:
+        # retrieve numpy array of interpolated values
+        # write to final file in the chosen file format
+        gdal.GetDriverByName(format).CreateCopy(dst_filename, dst_mem, 0)
+
+def ogr_burn(lyr, clone, burn_value, file_out='',
+              gdal_type=gdal.GDT_Byte, format='MEM', fill_value=255, attribute=None):
+    """
+    ogr_burn burns polygons, points or lines from a geographical source (e.g. shapefile) onto a raster.
+    Inputs:
+        lyr:                Shape layer (e.g. read from ogr object) to burn
+        clone:              clone file to use to define geotransform
+        burn_value:         burn value
+        zlib=False:         Set to True (recommended) to internally zip the
+                            data
+        fill_value=255      Set the fill value
+        gdal_type=
+        gdal.GDT_Float32:   Set the GDAL output data type.
+        format='MEM':       File format (if 'MEM' is used, data is only kept in memory)
+        fill_value=255:     fill value to use
+        attribute=None:     alternative to burn_value, if set to attribute name, this attribute is used for burning instead of burn_value
+    Output:
+        The function returns a GDAL-compatible file (default = in-memory) and the numpy array raster
+        TO-DO add metadata and projection information to GeoTIFF
+    """
+    # get geotransform
+    ds_src = gdal.Open(clone, gdal.GA_ReadOnly)
+    geotrans = ds_src.GetGeoTransform()
+    xcount = ds_src.RasterXSize
+    ycount = ds_src.RasterYSize
+    # get the projection
+    WktString = ds_src.GetProjection()
+    srs = osr.SpatialReference()
+    srs.ImportFromWkt(WktString)
+    ds_src = None
+
+    ds = gdal.GetDriverByName(format).Create(file_out, xcount, ycount, 1, gdal_type)
+    ds.SetGeoTransform(geotrans)
+    ds.SetProjection(srs.ExportToWkt())
+    # create for target raster the same projection as for the value raster
+    raster_srs = osr.SpatialReference()
+    #    raster_srs.ImportFromWkt(raster.GetProjectionRef())
+    #    target_ds.SetProjection(raster_srs.ExportToWkt())
+
+    # rasterize zone polygon to raster
+    if attribute is None:
+        gdal.RasterizeLayer(ds, [1], lyr, burn_values=[burn_value])
+    else:
+        gdal.RasterizeLayer(ds, [1], lyr, options=["ATTRIBUTE={:s}".format(attribute)])
+    band = ds.GetRasterBand(1)
+
+    band.SetNoDataValue(fill_value)
+    if format == 'MEM':
+        return ds
+    else:
+    
+        band = None
+        ds = None

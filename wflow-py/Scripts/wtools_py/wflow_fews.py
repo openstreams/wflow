@@ -1,6 +1,9 @@
 
-import create_grid as cg
-import static_maps as sm
+
+
+import wflow.create_grid as cg
+import wflow.static_maps as sm
+    
 import glob
 import os
 import pcraster as pcr
