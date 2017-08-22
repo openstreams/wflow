@@ -187,7 +187,8 @@ if target == 'openda':
         Executable('wflow/wflow_gr4.py', base=base),
         Executable('wflow/wflow_floodmap.py', base=base),
         Executable('wflow/wflow_routing.py', base=base),
-        Executable('wflow/wflow_hbv.py', base=base)
+        Executable('wflow/wflow_hbv.py', base=base),
+        Executable('wflow/wflow_sphy.py', base=base)
     ]
 elif target == 'deltashell':
     executables = [
@@ -210,7 +211,8 @@ elif target == 'deltashell':
         Executable('wflow/wflow_wave.py', base=base),
         Executable('wflow/wflow_gr4.py', base=base),
         Executable('wflow/wflow_floodmap.py', base=base),
-        Executable('wflow/wflow_hbv.py', base=base)
+        Executable('wflow/wflow_hbv.py', base=base),
+        Executable('wflow/wflow_sphy.py', base=base)
     ]
 else:
     executables = [
@@ -232,7 +234,8 @@ else:
         Executable('wflow/wflow_wave.py', base=base),
         Executable('wflow/wflow_gr4.py', base=base),
         Executable('wflow/wflow_floodmap.py', base=base),
-        Executable('wflow/wflow_hbv.py', base=base)
+        Executable('wflow/wflow_hbv.py', base=base),
+        Executable('wflow/wflow_sphy.py', base=base)
     ]
 
 setup(name='wflow',
