@@ -256,7 +256,8 @@ class WflowModel(DynamicModel):
     self.GroundFLAG = int(configget(self.config,'MODULES','GroundFLAG','0'))
     
     # import the required modules
-    import datetime, calendar, reporting, timecalc, ET, rootzone, subzone
+    import datetime, calendar, timecalc, ET, rootzone, subzone
+    import wflow.reporting as reporting
     #from wflow.wflow_lib import *
     from math import pi
     #-standard python modules
