@@ -257,11 +257,11 @@ class WflowModel(DynamicModel):
     
     # import the required modules
     import datetime, calendar
-    import wflow.reporting as reporting
-    import wflow.timecalc as timecalc
-    import wflow.ET as ET
-    import wflow.rootzone as rootzone
-    import wflow.subzone as subzone
+    import wflow.sphy.reporting as reporting
+    import wflow.sphy.timecalc as timecalc
+    import wflow.sphy.ET as ET
+    import wflow.sphy.rootzone as rootzone
+    import wflow.sphy.subzone as subzone
 
     #from wflow.wflow_lib import *
     from math import pi
@@ -280,15 +280,15 @@ class WflowModel(DynamicModel):
     if self.GlacFLAG == 1:
     	self.SnowFLAG = 1
     	self.GroundFLAG = 1
-    	import glacier # glacier melting processes
+    	import wflow.sphy.glacier as glacier # glacier melting processes
     	self.glacier = glacier
     	del glacier
     if self.SnowFLAG == 1:
-    	import snow # snow melt processes
+    	import wflow.sphy.snow as snow # snow melt processes
     	self.snow = snow
     	del snow
     if self.RoutFLAG == 1:
-    	import routing # simple routing scheme
+    	import wflow.sphy.routing as routing # simple routing scheme
     	self.routing = routing
     	del routing
     if self.LakeFLAG == 1:
@@ -309,7 +309,7 @@ class WflowModel(DynamicModel):
     	self.dynamic_veg = dynamic_veg
     	del dynamic_veg
     if self.GroundFLAG == 1:
-    	import groundwater # groundwater storage as third storage layer. This is used instead of a fixed bottomflux
+    	import wflow.sphy.groundwater as groundwater # groundwater storage as third storage layer. This is used instead of a fixed bottomflux
     	self.groundwater = groundwater
     	del groundwater
     	
@@ -319,20 +319,20 @@ class WflowModel(DynamicModel):
     # self.inpathforcingP = config.get('DIRS','inputforcingdirP')
     # self.outpath = config.get('DIRS', 'outputdir')
     
-    self.starttime = configget(self.config,"run","starttime","0")
-    ds = dt.datetime.strptime(self.starttime, '%Y-%m-%d %H:%M:%S %Z')
-    self.endtime = configget(self.config,"run","endtime","0")
-    de = dt.datetime.strptime(self.endtime, '%Y-%m-%d %H:%M:%S %Z')
+    # self.starttime = configget(self.config,"run","starttime","0")
+    # ds = dt.datetime.strptime(self.starttime, '%Y-%m-%d %H:%M:%S %Z')
+    # self.endtime = configget(self.config,"run","endtime","0")
+    # de = dt.datetime.strptime(self.endtime, '%Y-%m-%d %H:%M:%S %Z')
 	
     # #-set the timing criteria
-    sy = ds.year
-    sm = ds.month
-    sd = ds.day
-    ey = de.year
-    em = de.month
-    ed = de.day
-    self.startdate = self.datetime.datetime(sy,sm,sd)
-    self.enddate = self.datetime.datetime(ey,em,ed)
+    # sy = ds.year
+    # sm = ds.month
+    # sd = ds.day
+    # ey = de.year
+    # em = de.month
+    # ed = de.day
+    # self.startdate = self.datetime.datetime(sy,sm,sd)
+    # self.enddate = self.datetime.datetime(ey,em,ed)
     
     # #-get start date of first forcing file in forcing directory
     # syF = config.getint('TIMING', 'startyear_F')
@@ -584,7 +584,7 @@ class WflowModel(DynamicModel):
     #-and the start date of the first forcing file in your forcing directory.
     #self.counter = (self.startdate - self.startdateF).days
     # #-initial date
-    self.curdate = self.startdate
+    # self.curdate = self.startdate
     #self.curdate = configget(self.config,"run","starttime","0")
     #print self.curdate
 	#-initial soil properties
