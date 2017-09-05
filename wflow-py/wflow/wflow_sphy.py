@@ -257,11 +257,11 @@ class WflowModel(DynamicModel):
     
     # import the required modules
     import datetime, calendar
-    import wflow.sphy.reporting as reporting
-    import wflow.sphy.timecalc as timecalc
-    import wflow.sphy.ET as ET
-    import wflow.sphy.rootzone as rootzone
-    import wflow.sphy.subzone as subzone
+    from  wflow.sphy import reporting as reporting
+    from  wflow.sphy import timecalc as timecalc
+    from  wflow.sphy import ET as ET
+    from  wflow.sphy import rootzone as rootzone
+    from  wflow.sphy import subzone as subzone
 
     #from wflow.wflow_lib import *
     from math import pi
@@ -486,7 +486,7 @@ class WflowModel(DynamicModel):
     	self.Tmin_mapstack = self.Dir + configget(self.config, "inputmapstacks", "Tmin","/inmaps/Tmin")  # timeseries for rainfall "/inmaps/TEMP"          # global radiation	
     	#self.Gsc = config.getfloat('ETREF', 'Gsc')
         self.Gsc = float(configget(self.config,'ETREF','Gsc',0.0820))
-    	import hargreaves
+    	from wflow.sphy import hargreaves
     	self.Hargreaves = hargreaves
     	del hargreaves
     
