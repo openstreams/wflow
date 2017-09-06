@@ -1400,7 +1400,16 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         for a in toprint:
             if hasattr(self._userModel(), a.replace('self.', '')):
                 thevar = getattr(self._userModel(), a.replace('self.', ''))
-                self._reportNew(thevar,
+
+                if type(thevar) is list:
+                    a = self._userModel().config.get("outputmaps", a)
+                    for i in arange(0,len(thevar)):
+                        thename = a + "_" + str(i) + "_"
+                        self._reportNew(thevar[0],
+                                    os.path.join(self._userModel().Dir, self._userModel().runId, "outmaps",
+                                                 thename), longname=thename)
+                else:
+                    self._reportNew(thevar,
                                 os.path.join(self._userModel().Dir, self._userModel().runId,"outmaps", self._userModel().config.get(
                                     "outputmaps", a)), longname=a)
             else:
@@ -2354,12 +2363,12 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         path = os.path.join(directoryPrefix, newName)
 
         if self.outputFormat == 1:
-            if not hasattr(self, 'NcOutput'):
-                report(variable, path)
-                if gzipit:
-                    Gzip(path, storePath=True)
-            else:
-                self.NcOutput.savetimestep(self._userModel().currentTimeStep(), variable, var=name, name=longname)
+                if not hasattr(self, 'NcOutput'):
+                    report(variable, path)
+                    if gzipit:
+                        Gzip(path, storePath=True)
+                else:
+                    self.NcOutput.savetimestep(self._userModel().currentTimeStep(), variable, var=name, name=longname)
 
         elif self.outputFormat == 2:
             numpy.savez(path, pcr2numpy(variable, -999))
