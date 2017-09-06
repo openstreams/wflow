@@ -708,7 +708,6 @@ class wflowbmi_csdms(bmi.Bmi):
         self.bmilogger.info("initialize: Initialising wflow bmi with ini: " + filename)
         self.initialize_config(filename,loglevel=loglevel)
         self.initialize_model()
-        self.dynModel.wf_resume(os.path.join(self.datadir,'instate'))
 
     def update(self):
         """
