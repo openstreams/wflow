@@ -5,21 +5,20 @@ Created on Tue Aug 12 16:07:41 2014
 @author: tollena
 """
 
-import numpy as np
-import ConfigParser
-from subprocess import call
+import os
 import copy
-import pcraster as pcr
 import sys
+from subprocess import call
+import ConfigParser
 import logging
 import logging.handlers
 
+import numpy as np
 from osgeo import ogr
-from osgeo import gdal,gdalconst
+from osgeo import gdal, gdalconst
 from osgeo.gdalconst import *
 from osgeo import osr
-import os
-import numpy as np
+import pcraster as pcr
 
 Driver = ogr.GetDriverByName("ESRI Shapefile")
 
