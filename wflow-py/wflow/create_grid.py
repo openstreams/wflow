@@ -63,31 +63,31 @@ def parse_args():
                       help='Destination folder (default=./wflow)')
 
     (options, args) = parser.parse_args()
-    
+
     print options.__dict__.items()
-    
-   
+
+
         ##### Preprocessing #####
     # check if either a file or an extent is provided. If not, sys.exit
-    
-    
+
+
     if options.inputfile is None and options.extent is None:
         parser.error('No input file (-f filename) or extent (-e (xmin, ymin, xmax, ymax)) given')
         parser.print_help()
         sys.exit(1)
-        
+
     if not options.inputfile is None:
         if not os.path.exists(options.inputfile):
             parser.error('input file provided but not found, please check path')
             parser.print_help()
             sys.exit(1)
-    
+
     if options.cellsize is None:
         parser.error('no cell size (-c cellsize) provided')
         parser.print_help()
         sys.exit(1)
-    
-    
+
+
     return options
 
 def main(logfilename,destination,inputfile,projection,cellsize,snap=False,verbose=True,locationid='wflow_mask'):
@@ -104,17 +104,17 @@ def main(logfilename,destination,inputfile,projection,cellsize,snap=False,verbos
     if inputfile is not None:
         # retrieve extent from input file. Check if projection is provided
         file_ext = os.path.splitext(os.path.basename(inputfile))[1]
-        if file_ext == '.shp':
-            file_att = os.path.splitext(os.path.basename(inputfile))[0]
+        if file_ext in ('.shp', '.geojson'):
             ds = ogr.Open(inputfile)
             # read the extent of the shapefile
-            lyr = ds.GetLayerByName(file_att)
+            lyr = ds.GetLayer(0)
             extent = lyr.GetExtent()
             extent_in = [extent[0], extent[2], extent[1], extent[3]]
             # get spatial reference from shapefile
             srs = lyr.GetSpatialRef()
         else:
             # Read extent from a GDAL compatible file
+            extent_in = wt.get_extent(inputfile)
             try:
                 extent_in = wt.get_extent(inputfile)
             except:

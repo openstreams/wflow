@@ -8,7 +8,7 @@ from osgeo import gdal
 
 # These for you installation
 
-pcrasterlib = 'c:/pcraster-4.1.0_x86-64/lib/'
+pcrasterlib = 'c:/bin/pcraster/lib/'
 # work-around https://github.com/pyinstaller/pyinstaller/issues/2384
 # will be fixed in PyInstaller 3.3
 from PyInstaller.utils.hooks import is_module_satisfies
@@ -18,7 +18,7 @@ PyInstaller.compat.is_module_satisfies = is_module_satisfies
 # list identical make_wflow_exe script with --normal
 # except for the wtools scripts
 scriptpaths = [
-    'Scripts/wtools_py/wflow_fews.py',
+    'Scripts/wtools_py/modelbuilder.py',
     'Scripts/pcr2netcdf.py',
     'Scripts/bmi2runner.py',
     'Scripts/wflow_prepare_step2.py',
@@ -52,7 +52,21 @@ def do_analysis(scriptpath):
                     binaries=[(pcrasterlib, '.')],
                     datas=[(gdal.GetConfigOption('GDAL_DATA'), 'gdal-data'),
                            (pyproj_datadir, 'proj-data')],
-                    hiddenimports=['pywt._extensions._cwt'])
+                    hiddenimports=['pywt._extensions._cwt',
+                                   'rasterio.control', # needed
+                                   'rasterio.crs', # needed
+                                   'rasterio._shim', # needed
+                                   'rasterio.sample', # needed
+                                   'rasterio.vrt', # needed
+                                   'rasterio.*', # TODO test if needed
+                                   'rasterio.coords',  # TODO test if needed
+                                   'rasterio.enums',  # TODO test if needed
+                                   'rasterio.env',  # TODO test if needed
+                                   'rasterio.errors',  # TODO test if needed
+                                   'rasterio.profiles',  # TODO test if needed
+                                   'rasterio.transform',  # TODO test if needed
+                                   'rasterio.vfs'  # TODO test if needed
+                                   ])
 
 
 def do_analysis_bare(scriptpath):
