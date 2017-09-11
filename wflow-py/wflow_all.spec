@@ -18,13 +18,14 @@ PyInstaller.compat.is_module_satisfies = is_module_satisfies
 # list identical make_wflow_exe script with --normal
 # except for the wtools scripts
 scriptpaths = [
-    'Scripts/wtools_py/create_grid.py',
-    'Scripts/wtools_py/static_maps.py',
+    'Scripts/wtools_py/wflow_fews.py',
     'Scripts/pcr2netcdf.py',
     'Scripts/bmi2runner.py',
     'Scripts/wflow_prepare_step2.py',
     'Scripts/wflow_prepare_step1.py',
     'Scripts/wflow_sbm_rtc.py',
+    'wflow/create_grid.py',
+    'wflow/static_maps.py',
     'wflow/wflow_topoflex.py',
     'wflow/wflow_sbm.py',
     'wflow/wflow_routing.py',
