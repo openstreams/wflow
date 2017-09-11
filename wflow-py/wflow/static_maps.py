@@ -14,7 +14,6 @@ $Keywords: $
 """
 
 # import sys packages
-from subprocess import call
 import sys
 import os
 import shutil
@@ -22,6 +21,7 @@ import glob
 import numpy as np
 
 # import admin packages
+import ConfigParser
 from optparse import OptionParser
 
 # import general packages
@@ -98,7 +98,7 @@ def parse_args():
     parser.add_option('-l', '--logfile',
                       dest='logfilename', default='wtools_static_maps.log',
                       help='log file name')
-    
+
     (options, args) = parser.parse_args()
     return options
 
@@ -109,20 +109,18 @@ def main(source,destination,inifile,dem_in,rivshp,catchshp,gaugeshp=None,landuse
             print other_maps
             other_maps = other_maps.replace(
                 ' ', '').replace('[', '').replace(']', '').split(',')
-    
-    
-    
+
+
+
     source = os.path.abspath(source)
     clone_map = os.path.join(source, 'mask.map')
     clone_shp = os.path.join(source, 'mask.shp')
     clone_prj = os.path.join(source, 'mask.prj')
 
-    if None in (inifile,
-                rivshp,
+    if None in (rivshp,
                 catchshp,
                 dem_in):
         msg = """The following files are compulsory:
-        - ini file
         - DEM (raster)
         - river (shape)
         - catchment (shape)
@@ -130,7 +128,7 @@ def main(source,destination,inifile,dem_in,rivshp,catchshp,gaugeshp=None,landuse
         print(msg)
         parser.print_help()
         sys.exit(1)
-    if not os.path.exists(inifile):
+    if (inifile is not None) and (not os.path.exists(inifile)):
         print 'path to ini file cannot be found'
         sys.exit(1)
     if not os.path.exists(rivshp):
@@ -177,7 +175,11 @@ def main(source,destination,inifile,dem_in,rivshp,catchshp,gaugeshp=None,landuse
 
     # READ CONFIG FILE
     # open config-file
-    config = wt.OpenConf(inifile)
+    if inifile is None:
+        config = ConfigParser.SafeConfigParser()
+        config.optionxform = str
+    else:
+        config = wt.OpenConf(inifile)
 
     # read settings
     snapgaugestoriver = wt.configget(config, 'settings',
@@ -209,7 +211,10 @@ def main(source,destination,inifile,dem_in,rivshp,catchshp,gaugeshp=None,landuse
     minorder = wt.configget(config, 'parameters',
                                     'riverorder_min', 3,
                                     datatype='int')
-    percentiles = np.array(config.get('parameters', 'statisticmaps', '0, 100').replace(' ', '').split(','), dtype='float')
+    try:
+        percentiles = np.array(config.get('parameters', 'statisticmaps', '0, 100').replace(' ', '').split(','), dtype='float')
+    except ConfigParser.NoOptionError:
+        percentiles = [0.0, 100.0]
     # read the parameters for generating a temporary very high resolution grid
     if unit_clone == 'degree':
         cellsize_hr = wt.configget(config, 'parameters',
@@ -295,8 +300,8 @@ def main(source,destination,inifile,dem_in,rivshp,catchshp,gaugeshp=None,landuse
         srs_dem.ImportFromEPSG(4326)
     clone2dem_transform = osr.CoordinateTransformation(srs, srs_dem)
     # if srs.ExportToProj4() == srs_dem.ExportToProj4():
-     
-    wt.windowstats(dem_in, len(yax), len(xax),trans, srs,destination,percentiles, transform=clone2dem_transform, logger=logger) 
+
+    wt.windowstats(dem_in, len(yax), len(xax),trans, srs,destination,percentiles, transform=clone2dem_transform, logger=logger)
 
     ## read catchment shape-file to create catchment map
     src = rasterio.open(clone_map)
@@ -304,7 +309,7 @@ def main(source,destination,inifile,dem_in,rivshp,catchshp,gaugeshp=None,landuse
     catchment_shapes = [feature["geometry"] for feature in shapefile]
     image = features.rasterize(catchment_shapes,out_shape=src.shape,all_touched=True,transform=src.transform)
     catchment_domain = pcr.numpy2pcr(pcr.Ordinal,image.copy(),0)
-    
+
     ## read river shape-file and create burn layer
     shapefile = fiona.open(rivshp,"r")
     river_shapes = [feature["geometry"] for feature in shapefile]
@@ -327,20 +332,20 @@ def main(source,destination,inifile,dem_in,rivshp,catchshp,gaugeshp=None,landuse
         riverldd = pcr.lddcreate(riverdem - riveroutlet, 1e35, 1e35, 1e35, 1e35)
     else: riveroutlet = pcr.cover(pcr.ifthen(pcr.scalar(riverldd) == 5, pcr.scalar(1000)),0)
     burn_layer = pcr.cover((pcr.scalar(pcr.ifthen(pcr.streamorder(riverldd) > 1, pcr.streamorder(riverldd) ))-1 )*1000 + riveroutlet,0)
-    
+
     ## create ldd per catchment
     logger.info('Calculating ldd')
     wflow_ldd = pcr.ldd(clone_map)
     for idx, shape in enumerate(catchment_shapes):
-        logger.info('Computing ldd for catchment ' + str(idx) + '/' + str(len(catchment_shapes)))
+        logger.info('Computing ldd for catchment ' + str(idx + 1) + '/' + str(len(catchment_shapes)))
         image = features.rasterize([shape],out_shape=src.shape,all_touched=True,transform=src.transform)
         catchment = pcr.numpy2pcr(pcr.Scalar,image.copy(),0)
         ldddem = (pcr.readmap(os.path.join(destination, dem_map)) * pcr.scalar(catchment_domain) * catchment) - burn_layer
         ldd_select = pcr.lddcreate(ldddem, 1e35, 1e35, 1e35, 1e35)
         wflow_ldd=pcr.cover(wflow_ldd,ldd_select)
-    
+
     pcr.report(wflow_ldd, os.path.join(destination, 'wflow_ldd.map'))
-      
+
 
     # compute stream order, identify river cells
     streamorder = pcr.ordinal(pcr.streamorder(wflow_ldd))
@@ -376,10 +381,9 @@ def main(source,destination,inifile,dem_in,rivshp,catchshp,gaugeshp=None,landuse
     riv_hr_file = os.path.join(destination, 'riv_highres.map')
     wt.gdal_warp(dem_in, clone_hr, dem_hr_file)
     # wt.CreateTif(riv_hr, rows_hr, cols_hr, hr_trans, srs, 0)
-    file_att = os.path.splitext(os.path.basename(rivshp))[0]
     # open the shape layer
     ds = ogr.Open(rivshp)
-    lyr = ds.GetLayerByName(file_att)
+    lyr = ds.GetLayer(0)
     wt.ogr_burn(lyr, clone_hr, -100, file_out=burn_hr_file,
                  format='GTiff', gdal_type=gdal.GDT_Float32, fill_value=0)
     # read dem and burn values and add
@@ -393,7 +397,7 @@ def main(source,destination,inifile,dem_in,rivshp,catchshp,gaugeshp=None,landuse
                       xax_hr, yax_hr, demburn_hr, -9999.)
     pcr.setclone(demburn_hr_file)
     demburn_hr = pcr.readmap(demburn_hr_file)
-    
+
     logger.info('Calculating ldd to determine river length')
     ldd_hr = pcr.lddcreate(demburn_hr, 1e35, 1e35, 1e35, 1e35)
     pcr.report(ldd_hr, os.path.join(destination, 'ldd_hr.map'))
