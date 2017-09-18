@@ -1034,6 +1034,11 @@ def gdal_warp(src_filename, clone_filename, dst_filename, gdal_type=gdalconst.GD
     else:
         src = ds_in
     src_proj = src.GetProjection()
+    if not src_proj:
+        # assume a WGS 1984 projection
+        srs = osr.SpatialReference()
+        srs.ImportFromEPSG(4326)
+        src_proj = srs.ExportToWkt()
     if override_src_proj is not None:
         srs = osr.SpatialReference()
         srs.ImportFromEPSG(override_src_proj)
