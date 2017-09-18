@@ -404,7 +404,7 @@ def main(source,destination,inifile,dem_in,rivshp,catchshp,gaugeshp=None,landuse
     pcr.setglobaloption('unittrue')
     pcr.setclone(clone_map)
     logger.info('Computing river length')
-    wt.windowstats(riv_hr_file, len(yax), len(xax),trans, srs, destination, stat='fact', transform=clone2dem_transform, logger=logger)
+    wt.windowstats(riv_hr_file, len(yax), len(xax),trans, srs, destination, stat='fact', transform=False, logger=logger)
 
     # TODO: nothing happends with the river lengths yet. Need to decide how to
     # use these
