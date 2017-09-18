@@ -325,7 +325,7 @@ def write_netcdf_timeseries(srcFolder, srcPrefix, trgFile, trgVar, trgUnits, trg
     # now loop over all time steps, check the date and write valid dates to a list, write time series to PCRaster maps
     for nn, curTime in enumerate(timeList):
         logger.debug("Adding time: " + str(curTime))
-        idx = where(timeObj==curTime)[0]
+        idx = int(where(timeObj==curTime)[0])
         count = nn + startidx
 
         below_thousand = count % 1000
