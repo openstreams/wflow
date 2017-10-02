@@ -117,7 +117,8 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         self.datadir = os.path.dirname(fullpathname)
         inifile = os.path.basename(filename)
         
-        mappingdir = self.datadir + '\\bmi_mapping\\'
+        #mappingdir = self.datadir + '\\bmi_mapping\\'
+        mappingdir = os.path.join(self.datadir,self.config.get('IdMapping','folder')) + '\\'
 
         self.models = configsection(self.config,'models')
         self.exchanges= configsection(self.config,'exchanges')
@@ -172,7 +173,7 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
                 bin_rtc = os.path.join(self.datadir,self.config.get('RTC wrapper engine','bin_rtc'))
                 print bin_rtc
                 os.chdir(bin_rtc)
-                import rtc_wflow_bmi as rtcwfbmi
+                import wflow.rtc_wflow_bmi as rtcwfbmi
                 print bin_rtc
                 self.bmimodels[mod] = rtcwfbmi.rtcbmi_csdms(os.path.join(bin_rtc,"RTCTools_BMI"))
             
