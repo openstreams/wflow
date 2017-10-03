@@ -82,19 +82,19 @@ def astro2(DAY, LAT):
     PI = 3.1415926
 
     # SINE AND COSINE OF LATITUDE
-    SINLAT = sin(PI * LAT / 180.)
-    COSLAT = cos(PI * LAT / 180.)
+    SINLAT = math.sin(PI * LAT / 180.)
+    COSLAT = math.cos(PI * LAT / 180.)
 
     # MAXIMAL SINE OF DECLINATION
-    SINDCM = sin(PI * 23.45 / 180.)
+    SINDCM = math.sin(PI * 23.45 / 180.)
 
     # SINE AND COSINE OF DECLINATION  (EQUATIONS 3.4, 3.5)
 
     # SINDEC = -SINDCM * cos(2.* PI * (DAY+10.)/365.)
     # The '9' below (instead of 10) keeps things in sync with FST...
     # Todo: try to understand this at a certain point... for now it works perfectly.
-    SINDEC = -SINDCM * cos(2. * PI * (DAY + 11.) / 365.)
-    COSDEC = sqrt(1. - SINDEC * SINDEC)
+    SINDEC = -SINDCM * math.cos(2. * PI * (DAY + 11.) / 365.)
+    COSDEC = math.sqrt(1. - SINDEC * SINDEC)
 
     # THE TERMS A AND B ACCORDING TO EQUATION 3.3
 
@@ -175,7 +175,7 @@ Pausedays = np_One[:] * (Pause + 1)
 
 # Crop specific coefficients for rice:
 K = 0.6  # light extinction coefficient
-LUE = 3.  # Light use efficiency.
+#LUE = 3.  # Light use efficiency.
 SLAC = 0.02  # Specific leaf area constant.
 TSUMAN = 1420.
 TSUMMT = 580.
@@ -381,6 +381,8 @@ class WflowModel(DynamicModel):
         """
         modelparameters = []
 
+        self.LUE = float(configget(self.config, "model", "LUE", "2.47"))
+        self.AutoStartStop = eval(configget(self.config, "model", "AutoStartStop", "True"))
         self.BMI_RUN = configget(self.config, "model", "BMI_RUN", "True")
         self.WATERLIMITED = (configget(self.config, "model", "WATERLIMITED", "True"))
         self.CropStartDOY = int(configget(self.config, "model", "CropStartDOY", "0"))
@@ -402,20 +404,14 @@ class WflowModel(DynamicModel):
 
         # Meteo and other forcing
         # modelparameters.append(self.ParamType(name="Temperature",stack="inmaps/TEMP",type="timeseries",default=10.0,verbose=False,lookupmaps=[])),
-        modelparameters.append(
-            self.ParamType(name="IRRAD", stack="inmaps/IRRAD", type="timeseries", default=11.0, verbose=False,
-                           lookupmaps=[])),
+        modelparameters.append(self.ParamType(name="IRRAD", stack="inmaps/IRRAD", type="timeseries", default=11.0, verbose=False,lookupmaps=[])),
         # modelparameters.append(self.ParamType(name="TMIN",stack="inmaps/TMIN",type="timeseries",default=10.0,verbose=False,lookupmaps=[])),
         # modelparameters.append(self.ParamType(name="TMAX",stack="inmaps/TMAX",type="timeseries",default=10.0,verbose=False,lookupmaps=[])),
-        modelparameters.append(
-            self.ParamType(name="T", stack="inmaps/T", type="timeseries", default=10.0, verbose=False, lookupmaps=[])),
+        modelparameters.append(self.ParamType(name="T", stack="inmaps/T", type="timeseries", default=10.0, verbose=False, lookupmaps=[])),
         # modelparameters.append(self.ParamType(name="VAP",stack="inmaps/VAP",type="timeseries",default=10.0,verbose=False,lookupmaps=[])),
         # modelparameters.append(self.ParamType(name="WIND",stack="inmaps/WIND",type="timeseries",default=2.0,verbose=False,lookupmaps=[])),
-        modelparameters.append(
-            self.ParamType(name="RAIN", stack="inmaps/P", type="timeseries", default=0., verbose=False, lookupmaps=[])),
-        modelparameters.append(
-            self.ParamType(name="CRPST", stack="inmaps/CRPST", type="timeseries", default=11.0, verbose=False,
-                           lookupmaps=[])),
+        modelparameters.append(self.ParamType(name="RAIN", stack="inmaps/P", type="timeseries", default=0., verbose=False, lookupmaps=[])),
+        modelparameters.append(self.ParamType(name="CRPST", stack="inmaps/CRPST", type="timeseries", default=11.0, verbose=False, lookupmaps=[])),
         return modelparameters
 
     def stateVariables(self):
@@ -656,7 +652,7 @@ class WflowModel(DynamicModel):
                                                                     1.)  # - ifthenelse(CropHarvNow, self.STARTED, 0.)
 
         elif self.CropStartDOY == 0 and AutoStartStop == True:
-            print "Transpl. date based on cumulative rain after November 1..."
+            #print "Transpl. date based on cumulative rain after November 1..."
             # Two auxilliary variables:
             # CropStartNow          = self.PSUM >= 200.
             PSUM200 = self.PSUM >= 200.
@@ -834,7 +830,7 @@ class WflowModel(DynamicModel):
         # pcr_PARINT            = 0.5 * self.IRRAD * 0.001 * (1.- exp(-K * self.LAI)) * scalar(Not_Finished)
         # np_pcr_PARINT         = pcr_as_numpy(pcr_PARINT)
         # check = np.equal(PARINT, np_pcr_PARINT)
-        GTOTAL = LUE * PARINT[:] * TRANRF[:]
+        GTOTAL = self.LUE * PARINT[:] * TRANRF[:]
         # FRT, FLV, FST, FSO    = dryMatterPartitioningFractions(self, NPART, TRANRF, NNI, FRTWET[:], FLVT[:], FSTT[:], FSOT[:])
 
 
@@ -901,61 +897,6 @@ class WflowModel(DynamicModel):
         TAGBM = np_WLV[:] + np_WST[:] + np_WSO[:]
 
         # ----------------------------------------------------------------------
-
-
-
-        bla = self.timestepsecs / self.basetimestep
-        np_Test = pcr_as_numpy(self.Test)
-        # self.Test = CropStartNow
-        # self.Test = boolean(self.STARTED)
-        # self.Test = HarvSeasonTwo
-
-        #     self.DAY              += 1.
-        # DOY = self.wf_supplyStartTimeDOY() + self.currentTimeStep() - 1
-
-        np_ROOTD_mm = pcr_as_numpy(self.ROOTD_mm)
-        # self.date = self.startdate_lintul + dt.timedelta(self.currentTimeStep()-1)
-
-        print "********************************************"
-        # print cellvalue(self.LAI, 100,100)
-        # self.LAI = boolean(self.LAI)
-        # self.LAI = xcoordinate(self.LAI)
-        # print xcoordinate(a)
-        # print "                                                                                 ", cellvalue(self.PSUM, 10, 280)
-        print "                                                                                 ", self.currentTimeStep()
-        print "                                                                                 ", november1
-        # print "                                                                                 ", cellvalue(self.RAIN, 10, 280)
-        # print "                                                                                 ", cellvalue(self.PSUM, 100, 10)
-        # if self.currentTimeStep() > 1000:
-        #    time.sleep(0.5)
-
-        # print "                                                                                 ", np.sum(np_CropStartNow)
-        # print "                                                                                 ", np.sum(np_CropHarvNow)
-        print "                                                                                 ", np.average(
-            np_Season[:])
-        # print "                                                                                 ", np.min(GLAI)
-        # print "                                                                                 ", np.min(np_CRPST), np.max(np_CRPST), np.sum(np_CRPST)
-        # print "                                                                                 ", np.min(np_WST), np.max(np_WST)
-        # print "                                                                                 ", np.min(np_WRT), np.max(np_WRT)
-        # time.sleep(0.5)
-        # print self.starttime_lintul
-        # print self.startdate_lintul, self.date, self.date.strftime('%j')
-        # print self.date, self.date.month, self.date.day, self.date.strftime('%j')
-        # print np.sum(np_RAIN)
-        # print setuptimeInfo(st)
-        # print self.currentTimeStep(), self.wf_supplyStartTimeDOY()
-        # print starttime, self.currentTimeStep(), self.wf_supplyStartTimeDOY(), DOY
-        # print np_CRPSTART
-        # sumcrpst = np.sum(np_CRPSTART)
-        # smstrtd  = np.sum(np_STARTED)
-        # avglai = np.max(np_LAI)
-        # print "                                                                                 ", sumcrpst, "CRPST"
-        # print "                                                                                 ", smstrtd, "STARTED"
-        # print "                                                                                 ", avglai, "LAI"
-        # time.sleep(1)
-
-        # ----------------------------------------------------------------------
-
 
 # The main function is used to run the program from the command line
 
