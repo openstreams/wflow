@@ -192,7 +192,7 @@ newnames = {
     'FirstZoneKsatVer': 'KsatVer',
     'FirstZoneMinCapacity': 'SoilMinThickness',
     'FirstZoneCapacity': 'SoilThickness',
-    'landuse': 'wflow_landuse',
+    # 'landuse': 'wflow_landuse',  # restore after issues caused by values in this map are fixed
     'soil_type': 'wflow_soil'
 }
 
