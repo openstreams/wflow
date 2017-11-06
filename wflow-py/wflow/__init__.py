@@ -22,3 +22,5 @@ if getattr(sys, 'frozen', False):
     # set environment variable instead of pyproj_datadir such
     # that child processes will inherit it
     os.environ['PROJ_DIR'] = os.path.join(basedir, 'proj-data')
+    # Fiona expects PROJ_LIB instead
+    os.environ['PROJ_LIB'] = os.path.join(basedir, 'proj-data')
