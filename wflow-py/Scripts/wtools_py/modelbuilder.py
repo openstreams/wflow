@@ -130,11 +130,15 @@ def build_model(geojson_path, cellsize, name, case_template, case_path, fews, fe
     if fews:
         # save default state-files in FEWS-config
         dir_state = os.path.join(case, 'outstate')
+        ensure_dir_exists(dir_state)
         state_files = ['CanopyStorage.map', 'GlacierStore.map', 'ReservoirVolume.map', 'SatWaterDepth.map', 'Snow.map',
                        'SnowWater.map', 'SurfaceRunoff.map', 'SurfaceRunoffDyn.map', 'TSoil.map',
                        'UStoreLayerDepth_0.map', 'WaterLevel.map', 'WaterLevelDyn.map']
         zip_name = name + '_GA_Historical default.zip'
+
         zip_loc = os.path.join(fews_config_path, 'ColdStateFiles', zip_name)
+        path_csf = os.path.dirname(zip_loc)
+        ensure_dir_exists(path_csf)
 
         mask = pcr.readmap(os.path.join(dir_mask, 'mask.map'))
 
@@ -245,6 +249,11 @@ def download_raster(region, path, variable, cell_size, crs):
     # clean-up
     os.rmdir(temp_dir)
     os.remove(f.name)
+
+
+def ensure_dir_exists(path_dir):
+    if not os.path.exists(path_dir):
+        os.makedirs(path_dir)
 
 
 def first_geometry(path_geojson):
