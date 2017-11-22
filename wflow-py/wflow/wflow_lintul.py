@@ -158,7 +158,7 @@ class Afgen2(object):
 
 
 
-AutoStartStop = True
+
 Pause = 13
 
 ###############################################################################
@@ -645,7 +645,7 @@ class WflowModel(DynamicModel):
             CropStarted = numpy2pcr(Boolean, np_CropStarted, -99)
             print "Warning: using start date from ini file, not read from Crop Profile..."
 
-        elif self.CropStartDOY == 0 and AutoStartStop == False:
+        elif self.CropStartDOY == 0 and self.AutoStartStop == False:
             print "Start date read from Crop Profile..."
             # Two auxilliary variables:
             np_CRPST_gt_0 = np.greater(np_CRPST[:], 0)
@@ -659,7 +659,7 @@ class WflowModel(DynamicModel):
             self.STARTED = (self.STARTED + self.CRPST) * ifthenelse(CropHarvNow, Zero,
                                                                     1.)  # - ifthenelse(CropHarvNow, self.STARTED, 0.)
 
-        elif self.CropStartDOY == 0 and AutoStartStop == True:
+        elif self.CropStartDOY == 0 and self.AutoStartStop == True:
             #print "Transpl. date based on cumulative rain after November 1..."
             # Two auxilliary variables:
             # CropStartNow          = self.PSUM >= 200.
