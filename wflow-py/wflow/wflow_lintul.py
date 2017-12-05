@@ -357,6 +357,7 @@ class WflowModel(DynamicModel):
         self.caseName = Dir
         self.Dir = Dir
         self.configfile = configfile
+        self.SaveDir = os.path.join(self.Dir,self.runId)
 
     def parameters(self):
         """
@@ -467,7 +468,7 @@ class WflowModel(DynamicModel):
         #: It is advised to use the wf_suspend() function
         #: here which will suspend the variables that are given by stateVariables
         #: function.
-        self.wf_suspend(self.Dir + "/outstate/")
+        self.wf_suspend(self.SaveDir + "/outstate/")
 
     def initial(self):
 
