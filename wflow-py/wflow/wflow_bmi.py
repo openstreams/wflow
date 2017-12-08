@@ -565,6 +565,9 @@ class wflowbmi_csdms(bmi.Bmi):
             elif "wflow_floodmap" in inifile:
                 import wflow.wflow_floodmap as wf
                 self.name = "wflow_floodmap"
+            elif "wflow_lintul" in inifile:
+                import wflow.wflow_lintul as wf
+                self.name = "wflow_lintul"
             else:
                 modname = os.path.splitext(os.path.basename(filename))[0]
                 exec "import wflow." + modname + " as wf"

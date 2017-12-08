@@ -586,6 +586,8 @@ def main():
             try:
                 shutil.copy(workdir + "/" + case +"/instate/SurfaceRunoff.map",workdir +  "/" + case +"/" +runId + "/outmaps/run00000.000")
                 shutil.copy(workdir + "/" + case +"/instate/WaterLevel.map",workdir +  "/" + case +"/" +runId + "/outmaps/lev00000.000")
+                shutil.copy(workdir + "/" + case +"/instate/WSO.map",workdir +  "/" + case +"/" +runId + "/outmaps/WSO00000.000")
+                shutil.copy(workdir + "/" + case +"/instate/LAI.map",workdir +  "/" + case +"/" +runId + "/outmaps/LAI00000.000")
             except:
                 logger.warn("Cannot copy Surfacerunoff and/or level")
 

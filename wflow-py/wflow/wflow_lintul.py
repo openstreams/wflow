@@ -927,6 +927,7 @@ x
     runinfoFile = "runinfo.xml"
     timestepsecs = 86400
     wflow_cloneMap = 'wflow_subcatch.map'
+    _NoOverWrite = 1
     loglevel = logging.DEBUG
 
     # This allows us to use the model both on the command line and to call
@@ -952,6 +953,7 @@ x
         if o == '-s': timestepsecs = int(a)
         if o == '-T': _lastTimeStep = int(a)
         if o == '-S': _firstTimeStep = int(a)
+        if o == '-f': _NoOverWrite = 0
         if o == '-l': exec "loglevel = logging." + a
 
     if (len(opts) <= 1):
@@ -962,7 +964,8 @@ x
 
     myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile)
     dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep, firstTimestep=_firstTimeStep, datetimestart=starttime)
-    dynModelFw.createRunId(NoOverWrite=False, level=loglevel)
+    #dynModelFw.createRunId(NoOverWrite=False, level=loglevel)
+    dynModelFw.createRunId(NoOverWrite=_NoOverWrite, level=loglevel, logfname=LogFileName,model="wflow_lintul",doSetupFramework=False)
 
     dynModelFw.setupFramework()
     dynModelFw._runInitial()
