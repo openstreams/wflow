@@ -1406,7 +1406,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     a = self._userModel().config.get("outputmaps", a)
                     for i in arange(0,len(thevar)):
                         thename = a + "_" + str(i) + "_"
-                        self._reportNew(thevar[0],
+                        self._reportNew(thevar[i],
                                     os.path.join(self._userModel().Dir, self._userModel().runId, "outmaps",
                                                  thename), longname=thename)
                 else:
