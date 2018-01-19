@@ -90,6 +90,7 @@ import __builtin__
 
 from wflow import wf_netcdfio
 
+
 logger = ""
 volumeMapStack="vol"
 runoffMapStack="run"
@@ -412,7 +413,7 @@ def _readTS(name, ts):
     ff = ff[:8] + "." + ff[8:]
     name = os.path.dirname(name) + "/" + ff
     mapje = readmap(name)
-    
+        
     return mapje
 
 
@@ -472,7 +473,7 @@ def dw_Write_Times(dwdir,T0,timeSteps,timeStepSec):
     minutes -= hours*60
     hours -= days*24   
     timestepstring = "  %03d%02d%02d%02d" % (days, hours, minutes, seconds)
-    
+        
     exfile = open(dwdir + "/B2_outputtimers.inc",'w')
     etime = T0 + timeRange
     print >>exfile, "  " + T0.strftime("%Y/%m/%d-%H:%M:%S") + "  " + etime.strftime("%Y/%m/%d-%H:%M:%S") + timestepstring
@@ -666,7 +667,7 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map):
     for i in range(m):
         for j in range(n):
             # Current element index
-            i_elem = np_ptid[i,j]
+            i_elem = int(np_ptid[i,j])
             if i_elem < 0:
                 # Skip inactive segment
                 continue
@@ -679,21 +680,21 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map):
                 i_elem_up_right = -1
             elif j == 0:
                 i_elem_up_left  = -1
-                i_elem_up       = np_ptid[i-1,j  ]
-                i_elem_up_right = np_ptid[i-1,j+1]
+                i_elem_up       = int(np_ptid[i-1,j  ])
+                i_elem_up_right = int(np_ptid[i-1,j+1])
             elif j == n-1:
-                i_elem_up_left  = np_ptid[i-1,j-1]
-                i_elem_up       = np_ptid[i-1,j  ]
+                i_elem_up_left  = int(np_ptid[i-1,j-1])
+                i_elem_up       = int(np_ptid[i-1,j  ])
                 i_elem_up_right = -1
             else:
-                i_elem_up_left  = np_ptid[i-1,j-1]
-                i_elem_up       = np_ptid[i-1,j  ]
-                i_elem_up_right = np_ptid[i-1,j+1]
+                i_elem_up_left  = int(np_ptid[i-1,j-1])
+                i_elem_up       = int(np_ptid[i-1,j  ])
+                i_elem_up_right = int(np_ptid[i-1,j+1])
             
             if j == 0:
                 i_elem_left = -1
             else:
-                i_elem_left = np_ptid[i  ,j-1]
+                i_elem_left = int(np_ptid[i  ,j-1])
             
             # Update nodes:
             # If left or upper neighbours are active, some nodes of current cell
@@ -1133,7 +1134,7 @@ def dw_WriteHydFile(fname, d):
     f.close()
 
 #TODO: fix this for pcraster maps
-def read_timestep(nc, var, timestep,logger):
+def read_timestep(nc, var, timestep,logger, caseId, runId):
     """
     Returns a map of the given variable at the given timestep.
     """
@@ -1154,7 +1155,10 @@ pointer = ""
 
 
 def main():
-    caseId = "Ahr_DW/"
+    
+    from dateutil import parser
+    
+    #global caseId, runId
     caseId = "default_hbv"
     runId = "run_default"
     dwdir = "dw_rhine"
@@ -1166,7 +1170,7 @@ def main():
     WriteAscii=False
     Write_Dynamic= False
     Write_Structure = True
-    T0 = datetime.strptime("2000-01-01 00:00:00",'%Y-%m-%d %H:%M:%S')
+    #T0 = datetime.strptime("2000-01-01 00:00:00",'%Y-%m-%d %H:%M:%S')
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'adD:C:R:S:hT:s:O:A:jc:n:')
@@ -1184,10 +1188,10 @@ def main():
         if o == '-s': timestepsecs = int(a)
         if o == '-S': sourcesMap.append(a)
         if o == '-h': usage()
-        if o == '-T': timeSteps = int(a)
+        #if o == '-T': timeSteps = int(a)
         if o == '-A': areamap = a.strip()
         if o == '-c': configfile = a.strip()
-        if o == '-O': T0 = datetime.strptime(a,'%Y-%m-%d %H:%M:%S')
+        #if o == '-O': T0 = datetime.strptime(a,'%Y-%m-%d %H:%M:%S')
         if o == '-n': nc_outmap_file = a.strip()
 
     global pointer
@@ -1200,14 +1204,40 @@ def main():
     
     timestepsecs = int(configget(config,"model","timestepsecs",str(timestepsecs)))
     
-
+    st = configget(config, 'run', 'starttime', "None")
+    runlengthdetermination = configget(config, 'run', 'runlengthdetermination', "steps")
+    
+    logger = pcrut.setlogger(dwdir + "/debug/wflow_delwaq.log","wflow_delwaq") 
+    
+    if st == "None": # try from the runinfo file
+        rinfo_str = configget(config, 'run', 'runinfo', "None")
+        if rinfo_str != "None":
+            T0 = wflow_adapt.getStartTimefromRuninfo(caseId +  "/" + rinfo_str)
+            datetimeend = wflow_adapt.getEndTimefromRuninfo(caseId +  "/" + rinfo_str)
+        else:
+            logger.eror(
+            "Not enough information in the [run] section. Need start and end time or a runinfo.xml file....")
+            sys.exit(1)
+    else:
+        T0 = parser.parse(st)
+        ed = configget(self._userModel().config, 'run', 'endtime', "None")
+        if ed != 'None':
+            datetimeend = parser.parse(ed)
+        else:
+            logger.error("No end time given with start time: [run] endtime = " + ed )
+            sys.exit(1)            
+             
+    if runlengthdetermination == 'steps':
+        runStateTime = T0 - datetime.timedelta(seconds=timestepsecs)
+    else:
+        runStateTime = T0
+    
+    timeSteps = (calendar.timegm(datetimeend.utctimetuple()) - calendar.timegm(runStateTime.utctimetuple()))/timestepsecs
     
     #: we need one delwaq calculation timesteps less than hydrology
     # timeSteps = timeSteps # need one more hydrological timestep as dw timestep
     firstTimeStep = 0
-        
-        
-    logger = pcrut.setlogger(dwdir + "/debug/wflow_delwaq.log","wflow_delwaq") 
+    
     #caseid = "default_hbv"
     logger.info("T0 of run: " + str(T0))
     boundids = len(sourcesMap)  # extra number of exchanges for all bounds
@@ -1337,7 +1367,7 @@ def main():
         
         for i in range(firstTimeStep,timeSteps * timestepsecs,timestepsecs):
 
-            volume_map = read_timestep(nc, 'vol', ts,logger)
+            volume_map = read_timestep(nc, 'vol', ts,logger, caseId, runId)
             volume_block = dw_pcrToDataBlock(volume_map)
             
             # volume for each timestep and number of segments
@@ -1347,12 +1377,12 @@ def main():
         
             # Now write the flows (exchnages)
             # First read the flows in the kinematic wave reservoir (internal exchnages)
-            flow = read_timestep(nc, 'run', ts,logger)
+            flow = read_timestep(nc, 'run', ts,logger, caseId, runId)
             flow_block_Q = dw_pcrToDataBlock(flow)
             # now the inw
             flowblock = flow_block_Q
             
-            wlevel = read_timestep(nc, 'lev', ts,logger)
+            wlevel = read_timestep(nc, 'lev', ts,logger, caseId, runId)
             areadyn = wlevel * internalflowwidth
             area_block_Q = dw_pcrToDataBlock(areadyn)
             area_block = area_block_Q
@@ -1361,7 +1391,7 @@ def main():
             # wave reservoir). Also write the areas
             for source in sourcesMap:
                 logger.info("Step: " + str(ts) + " source: " + str(source))
-                thesource = read_timestep(nc, source, ts,logger)
+                thesource = read_timestep(nc, source, ts,logger, caseId, runId)
                 thesource = zero_map + thesource
                 flow_block_IN = dw_pcrToDataBlock(thesource)
                 flowblock = hstack((flowblock,flow_block_IN))
@@ -1397,7 +1427,7 @@ def main():
         dw_WriteSegmentOrExchangeData(i,dwdir + '/includes_flow/flow.dat',flowblock,1,WriteAscii)
  
             
-        volume_map = read_timestep(nc, 'kwv', ts,logger)
+        volume_map = read_timestep(nc, 'voln', ts,logger, caseId, runId)
         volume_block = dw_pcrToDataBlock(volume_map)
         logger.info("Writing volumes.dat. Nr of points: " + str(size(volume_block)))
         dw_WriteSegmentOrExchangeData(i,dwdir + '/includes_flow/volume.dat',volume_block,1,WriteAscii)

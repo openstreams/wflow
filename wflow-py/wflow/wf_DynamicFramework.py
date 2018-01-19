@@ -1398,10 +1398,26 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         """
         # Print .ini defined outputmaps per timestep
         toprint = configsection(self._userModel().config, 'outputmaps')
+        
         for a in toprint:
-            if hasattr(self._userModel(), a.replace('self.', '')):
-                thevar = getattr(self._userModel(), a.replace('self.', ''))
-
+            report = False
+            if '+' in a:
+                a_ = a.split('+')
+                thevar = cover(0.0)
+                for i in arange(0,len(a_)):
+                    if hasattr(self._userModel(), a_[i].strip().replace('self.', '')):
+                        thevar = thevar + getattr(self._userModel(), a_[i].strip().replace('self.', ''))
+                        report = True
+                    else:
+                        report = False
+                        break
+            
+            else:
+                if hasattr(self._userModel(), a.replace('self.', '')):
+                    thevar = getattr(self._userModel(), a.replace('self.', ''))
+                    report = True
+                
+            if report == True:
                 if type(thevar) is list:
                     a = self._userModel().config.get("outputmaps", a)
                     for i in arange(0,len(thevar)):
