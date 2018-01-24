@@ -716,7 +716,7 @@ def main(argv=None):
     The user can set the caseName, the runDir, the timestep and the configfile.
     """      
     global multpars
-    caseName = "../openstreams_w3ra" # "D:/trambaue/_Projects/GLOFFIS/201501/GLOFFIS_SA/Modules/openstreams_w3ra/"
+    caseName = "default_w3ra" # "D:/trambaue/_Projects/GLOFFIS/201501/GLOFFIS_SA/Modules/openstreams_w3ra/"
     runId = "run_default"
     configfile="wflow_W3RA.ini"
     _lastTimeStep = 0
@@ -748,8 +748,8 @@ def main(argv=None):
         if o == '-s': timestepsecs = int(a)
 
         
-    if (len(opts) <=1):
-        usage()
+    #if (len(opts) <=1):
+    #    usage()
 
 
     starttime = dt.datetime(1990,01,01)

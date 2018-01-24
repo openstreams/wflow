@@ -648,7 +648,7 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
             if self.wrtodisk:
                 report(numpy2pcr(Scalar,tmp, -999),long_var_name + "_get_" + str(self.get_current_time()) + '.map')
             return self.bmimodels[cname[0]].get_value_at_indices(cname[1],inds)                
-   
+        #else:
         return None
 
 

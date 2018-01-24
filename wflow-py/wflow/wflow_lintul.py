@@ -158,7 +158,7 @@ class Afgen2(object):
 
 
 
-AutoStartStop = True
+
 Pause = 13
 
 ###############################################################################
@@ -357,6 +357,7 @@ class WflowModel(DynamicModel):
         self.caseName = Dir
         self.Dir = Dir
         self.configfile = configfile
+        self.SaveDir = os.path.join(self.Dir,self.runId)
 
     def parameters(self):
         """
@@ -387,10 +388,10 @@ class WflowModel(DynamicModel):
         self.WATERLIMITED = (configget(self.config, "model", "WATERLIMITED", "True"))
         self.CropStartDOY = int(configget(self.config, "model", "CropStartDOY", "0"))
         self.HarvestDAP = int(configget(self.config, "model", "HarvestDAP", "150"))
-        self.stdt = (configget(self.config, "run", "starttime", "1979-01-02 00:00:00")).rsplit('-')
-        self.startyr_lintul, self.startmo_lintul, self.startd_lintul = int(self.stdt[0]), int(self.stdt[1]), int(
-            self.stdt[2].rsplit()[0])
-        self.startdate_lintul = datetime(self.startyr_lintul, self.startmo_lintul, self.startd_lintul)
+        #self.stdt = (configget(self.config, "run", "starttime", "1979-01-02 00:00:00")).rsplit('-')
+        #self.startyr_lintul, self.startmo_lintul, self.startd_lintul = int(self.stdt[0]), int(self.stdt[1]), int(
+        #    self.stdt[2].rsplit()[0])
+        #self.startdate_lintul = datetime(self.startyr_lintul, self.startmo_lintul, self.startd_lintul)
 
         # Static model parameters
         # modelparameters.append(self.ParamType(name="RunoffGeneratingGWPerc",stack="intbl/RunoffGeneratingGWPerc.tbl",type="static",default=0.1))
@@ -467,7 +468,7 @@ class WflowModel(DynamicModel):
         #: It is advised to use the wf_suspend() function
         #: here which will suspend the variables that are given by stateVariables
         #: function.
-        self.wf_suspend(self.Dir + "/outstate/")
+        self.wf_suspend(self.SaveDir + "/outstate/")
 
     def initial(self):
 
@@ -492,6 +493,10 @@ class WflowModel(DynamicModel):
         # Reads all parameter from disk
         self.wf_updateparameters()
         self.logger.info("Starting LINTUL Dynamic Crop Growth Simulation...")
+        
+        wflow_ricemask = configget(self.config, "model", "wflow_ricemask", "staticmaps/wflow_ricemask.map")
+        self.ricemask = self.wf_readmap(os.path.join(self.Dir,wflow_ricemask),0.0,fail=True)
+        self.ricemask_BOOL = boolean(self.ricemask)
 
     def resume(self):
         """
@@ -539,9 +544,12 @@ class WflowModel(DynamicModel):
         output should also be saved here.
         """
         self.wf_updateparameters()
+        
 
-        self.date = self.startdate_lintul + dt.timedelta(self.currentTimeStep() - 1)
-        DOY = int(self.date.strftime('%j'))
+        #self.date = self.startdate_lintul + dt.timedelta(self.currentTimeStep() - 1)
+        self.date = datetime.utcfromtimestamp(self.wf_supplyStartTime()) + dt.timedelta(self.currentTimeStep() - 1)      
+        #DOY = int(self.date.strftime('%j'))
+        DOY = self.wf_supplyJulianDOY() 
 
         One = numpy2pcr(Scalar, np_One[:], -99)
         Zero = numpy2pcr(Scalar, np_Zero, -99)
@@ -550,8 +558,8 @@ class WflowModel(DynamicModel):
         Not_Finished = TSUM_not_Finished & DVS_not_Finished
         np_Not_Finished = pcr_as_numpy(Not_Finished)
         np_STARTED = pcr_as_numpy(self.STARTED)
-        self.ricemask = readmap("D:\\Reference_run\\wflow\\wflow_lintul\\inmaps\\CRPST000.031")
-        self.ricemask_BOOL = boolean(self.ricemask)
+        #self.ricemask = readmap("D:\\Reference_run\\wflow\\wflow_lintul\\inmaps\\CRPST000.031")
+        #self.ricemask_BOOL = boolean(self.ricemask)
         np_ricemask = pcr_as_numpy(self.ricemask)
 
         if (self.date.month == 11 and self.date.day == 1):  # and np.sum(np_RAIN) == 0.:
@@ -602,6 +610,7 @@ class WflowModel(DynamicModel):
         np_WCFC = WCFC * np_One[:]
         np_WCWET = WCWET * np_One[:]
         np_WCST = WCST * np_One[:]
+                
 
         # Initializing crop harvest:
         if self.CropStartDOY > 0 and self.HarvestDAP > 0:
@@ -637,7 +646,7 @@ class WflowModel(DynamicModel):
             CropStarted = numpy2pcr(Boolean, np_CropStarted, -99)
             print "Warning: using start date from ini file, not read from Crop Profile..."
 
-        elif self.CropStartDOY == 0 and AutoStartStop == False:
+        elif self.CropStartDOY == 0 and self.AutoStartStop == False:
             print "Start date read from Crop Profile..."
             # Two auxilliary variables:
             np_CRPST_gt_0 = np.greater(np_CRPST[:], 0)
@@ -651,7 +660,7 @@ class WflowModel(DynamicModel):
             self.STARTED = (self.STARTED + self.CRPST) * ifthenelse(CropHarvNow, Zero,
                                                                     1.)  # - ifthenelse(CropHarvNow, self.STARTED, 0.)
 
-        elif self.CropStartDOY == 0 and AutoStartStop == True:
+        elif self.CropStartDOY == 0 and self.AutoStartStop == True:
             #print "Transpl. date based on cumulative rain after November 1..."
             # Two auxilliary variables:
             # CropStartNow          = self.PSUM >= 200.
@@ -918,6 +927,7 @@ x
     runinfoFile = "runinfo.xml"
     timestepsecs = 86400
     wflow_cloneMap = 'wflow_subcatch.map'
+    _NoOverWrite = 1
     loglevel = logging.DEBUG
 
     # This allows us to use the model both on the command line and to call
@@ -943,6 +953,7 @@ x
         if o == '-s': timestepsecs = int(a)
         if o == '-T': _lastTimeStep = int(a)
         if o == '-S': _firstTimeStep = int(a)
+        if o == '-f': _NoOverWrite = 0
         if o == '-l': exec "loglevel = logging." + a
 
     if (len(opts) <= 1):
@@ -953,7 +964,8 @@ x
 
     myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile)
     dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep, firstTimestep=_firstTimeStep, datetimestart=starttime)
-    dynModelFw.createRunId(NoOverWrite=False, level=loglevel)
+    #dynModelFw.createRunId(NoOverWrite=False, level=loglevel)
+    dynModelFw.createRunId(NoOverWrite=_NoOverWrite, level=loglevel, logfname=LogFileName,model="wflow_lintul",doSetupFramework=False)
 
     dynModelFw.setupFramework()
     dynModelFw._runInitial()
