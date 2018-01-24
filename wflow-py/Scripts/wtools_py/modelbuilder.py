@@ -289,4 +289,6 @@ def first_geometry(path_geojson):
 
 
 if __name__ == '__main__':
-    build_model()
+    # use sys.argv[1:] to allow using PyCharm debugger
+    # https://github.com/pallets/click/issues/536
+    build_model(sys.argv[1:])
