@@ -410,8 +410,7 @@ def main(source,destination,inifile,dem_in,rivshp,catchshp,gaugeshp=None,landuse
     logger.info('Computing river length')
     wt.windowstats(riv_hr_file, len(yax), len(xax),trans, srs, destination, stat='fact', transform=False, logger=logger)
 
-    # TODO: nothing happends with the river lengths yet. Need to decide how to
-    # use these
+    # TODO: nothing happens with the river lengths yet. Need to decide how to use these
 
     # report outlet map
     pcr.report(pcr.ifthen(pcr.ordinal(wflow_ldd) == 5, pcr.ordinal(1)),
@@ -478,8 +477,8 @@ def main(source,destination,inifile,dem_in,rivshp,catchshp,gaugeshp=None,landuse
                           format='PCRaster',
                           gdal_interp=gdalconst.GRA_Bilinear,
                           gdal_type=gdalconst.GDT_Float32)
-#
-#    # report soil map
+
+    # report soil map
     if other_maps == None:
         logger.info('No other maps used. Skipping other maps.')
     else:
