@@ -5,12 +5,12 @@ Definition of the wflow_flood post processor.
 ---------------------------------------------
 
 Performs a planar volume spreading on outputs of a wflow\_sbm|hbv|routing model run.
-The module can be used to post-process model outputs into a flood map that has a 
-(much) higher resolution than the model resolution. 
+The module can be used to post-process model outputs into a flood map that has a
+(much) higher resolution than the model resolution.
 
-The routine aggregates flooded water volumes occurring across all river pixels 
+The routine aggregates flooded water volumes occurring across all river pixels
 across a user-defined strahler order basin scale (typically a quite small subcatchment)
-and then spreads this volume over a high resolution terrain model. To ensure that the 
+and then spreads this volume over a high resolution terrain model. To ensure that the
 flood volume is not spread in a rice-field kind of way (first filling the lowest cell in
 the occurring subbasin), the terrain data is first normalised to a Height-Above-Nearest-Drain
 (HAND) map of the associated typically flooding rivers (to be provided by user through a catchment order)
@@ -25,9 +25,9 @@ Backwater effects from flooding  of higher orders catchments to lower order catc
 are taken into account by taking the maximum flood level of both.
 
 Preferrably a user should use from the outputs of a wflow\_routing model
-because then the user can use the floodplain water level only (usually saved 
+because then the user can use the floodplain water level only (usually saved
 in a variable name levfp). If estimates from a HBV or SBM (or other wflow) model are used
-we recommend that the user also provides a "bank-full" water level in the command line 
+we recommend that the user also provides a "bank-full" water level in the command line
 arguments. If not provided, wflow_flood will also spread water volumes occuring
 within the banks of the river, probably leading to an overestimation of flooding.
 
@@ -65,20 +65,20 @@ The .ini file sections are treated below:
 
 The dem\_file contains a file with the high-res terrain data. It MUST be in .tif format.
 This is because .tif files can contain projection information. At the moment the .tif file
-must have the same projection as the WFLOW model (can be WGS84, but also any local projection 
+must have the same projection as the WFLOW model (can be WGS84, but also any local projection
 in meters), but we intend to also facilitate projections in the future.
 
 The ldd\_file contains the ldd, derived from the dem_file (PCRaster format)
 
-The stream\_file contains a stream order file (made with the PCRaster stream order file) 
+The stream\_file contains a stream order file (made with the PCRaster stream order file)
 derived from the LDD in ldd\_file.
 
 riv\_length\_fact\_file and riv\_width\_file contain the dimensions of the channels within the WFLOW
 pixels (unit meters) and are therefore in the resolution of the WFLOW model.
 The riv\_length\_fact\_file is used to derive a riv_length by multiplying the LDD length from cell to cell within the LDD network with the
 wflow\_riverlength_fact.map map, typically located in the staticmaps folder of the used WFLOW model.
-The width map is also in meters, and should contain the flood plain width in case the wflow_routing 
-model is used (typical name is wflow_floodplainwidth.map). If a HBV or SBM model is used, you should 
+The width map is also in meters, and should contain the flood plain width in case the wflow_routing
+model is used (typical name is wflow_floodplainwidth.map). If a HBV or SBM model is used, you should
 use the river width map instead (typical name wflow_riverwidth.map).
 
 ldd\_wflow is the ldd, derived at wflow resolution (typically wflow_ldd.map)
@@ -131,7 +131,7 @@ Some trial and error may be required to yield the right tile sizes and overlaps.
 
 The inundation section contains a number of settings for the flood fill algorithm.
 The number of iterations can be changed, we recommend to set it to 20 for
-an accurate results. The initial\_level is the largest water level that can occur during flooding. Make 
+an accurate results. The initial\_level is the largest water level that can occur during flooding. Make
 sure it is set to a level (much) higher than anticipated to occur but not to a value close to infinity.
 If you set it orders too high, the solution will not converge to a reasonable estimate.
 
@@ -182,7 +182,7 @@ Further explanation:
 
     -v
         Variable within the aforementioned file that contains the depth within the flood plain (typical levfp)
-    
+
     -b
         Similar file as -f but providing the bank full water level. Can e provided in case you know that a certain water depth is blocked, or remains within banks. In cae a NetCDF is provided, the maximum values are used, alternatively, you can provide a GeoTIFF.
 
@@ -191,13 +191,13 @@ Further explanation:
         volumes are averaged, before spreading.
         The Height-Above-Nearest-Drain maps are derived from this Strahler order on (until max Strahler order).
         NB: This is the strahler order of the high resolution stream order map
-    
+
     -m
         maximum strahler order over which flooding may occur (default value is the highest order in high res stream map)
-    
+
     -d
         path where the file is stored
-    
+
     -H
         HAND file prefix. As interim product, the module produces HAND files. This is a very time consuming process and therefore the user can also supply previously generated HAND files here (GeoTIFF format)
         The names of the HAND files should be constructed as follows: hand_prefix_{:02d}.format{hand_strahler}, so for example hand_prefix_03 for HAND map with minimum Strahler order 3. (in this case -H hand_prefix should be given)
@@ -207,7 +207,7 @@ Further explanation:
         allow for negative HAND maps - if this option is set to 1, the user allows the HAND maps to become negative. This can be useful when there are natural embankments which result in a lower elevation than the river bed.
         However, this option leads to artifacts when the used SRTM is not corrected for elevation and when the river shapefile is not entirely correct (for example if the burned in river is following an old meander.
         Therefore the user must be very confident about the used data sources (river shape file and digital elevation model corrected for vegetation) when this option is set to 1!
-    
+
 Outputs
 -------
 
@@ -260,8 +260,7 @@ def main():
     parser.add_option('-q', '--quiet',
                       dest='verbose', default=True, action='store_false',
                       help='do not print status messages to stdout')
-    pars
-    er.add_option('-i', '--ini', dest='inifile',
+    parser.add_option('-i', '--ini', dest='inifile',
                       default='hand_contour_inun.ini', nargs=1,
                       help='ini configuration file')
     parser.add_option('-f', '--flood_map',
@@ -319,7 +318,7 @@ def main():
     ### READ CONFIG FILE
     # open config-file
     config = inun_lib.open_conf(options.inifile)
-    
+
     # read settings
     options.dem_file = inun_lib.configget(config, 'HighResMaps',
                                   'dem_file',
@@ -364,6 +363,7 @@ def main():
     #                               'area_multiplier', 1., datatype='float')
     logger.info('DEM file: {:s}'.format(options.dem_file))
     logger.info('LDD file: {:s}'.format(options.ldd_file))
+    logger.info('streamfile: {:s}'.format(options.stream_file))
     logger.info('Columns per tile: {:d}'.format(options.x_tile))
     logger.info('Rows per tile: {:d}'.format(options.y_tile))
     logger.info('Columns overlap: {:d}'.format(options.x_overlap))
@@ -599,8 +599,12 @@ def main():
             xax = a.variables['x'][:]
             yax = a.variables['y'][:]
         else:
-            xax = a.variables['lon'][:]
-            yax = a.variables['lat'][:]
+            try:
+                xax = a.variables['lon'][:]
+                yax = a.variables['lat'][:]
+            except:
+                xax = a.variables['x'][:]
+                yax = a.variables['y'][:]
         if options.time == '':
             time_list = nc.num2date(a.variables['time'][:], units = a.variables['time'].units, calendar=a.variables['time'].calendar)
             time = [time_list[len(time_list)/2]]
@@ -634,6 +638,8 @@ def main():
             a = nc.Dataset(options.bankfull_map, 'r')
             xax = a.variables['x'][:]
             yax = a.variables['y'][:]
+#            xax = a.variables['lon'][:]
+#            yax = a.variables['lat'][:]
 
             bankfull_series = a.variables[options.flood_variable][:]
             bankfull_data = bankfull_series.max(axis=0)

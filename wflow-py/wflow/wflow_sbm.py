@@ -610,7 +610,7 @@ class WflowModel(DynamicModel):
             if not hasattr(self,"Kext"):
                 logging.error("Kext (canopy extinction coefficient) not defined! Needed becausee LAI is defined.")
                 logging.error("Please add it to the modelparameters section. e.g.:")
-                logging.error("Kext=inmaps/clim/LCtoSpecificLeafStorage.tbl,tbl,0.5,1,inmaps/clim/LC.map")
+                logging.error("Kext=inmaps/clim/LCtoExtinctionCoefficient.tbl,tbl,0.5,1,inmaps/clim/LC.map")
             if not hasattr(self,"Swood"):
                 logging.error("Swood wood (branches, trunks) canopy storage not defined! Needed becausee LAI is defined.")
                 logging.error("Please add it to the modelparameters section. e.g.:")
@@ -1141,7 +1141,7 @@ class WflowModel(DynamicModel):
             self.Snow, self.SnowWater, self.SnowMelt, self.PrecipitationPlusMelt,self.SnowFall = SnowPackHBV(self.Snow, self.SnowWater,
                                                                                        self.Precipitation,
                                                                                        self.Temperature, self.TTI,
-                                                                                       self.TT, self.Cfmax, self.WHC)
+                                                                                       self.TT, self.TTM, self.Cfmax, self.WHC)
             MaxSnowPack = 10000.0
             if self.MassWasting:
                 # Masswasting of dry snow

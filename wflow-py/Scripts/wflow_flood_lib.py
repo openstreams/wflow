@@ -57,8 +57,8 @@ def closeLogger(logger, ch):
     logger.removeHandler(ch)
     ch.flush()
     ch.close()
-    return logger, ch 
-    
+    return logger, ch
+
 def close_with_error(logger, ch, msg):
     logger.error(msg)
     logger, ch = closeLogger(logger, ch)
@@ -74,7 +74,7 @@ def open_conf(fn):
     else:
         print "Cannot open config file: " + fn
         sys.exit(1)
-        
+
     return config
 
 def configget(config, section, var, default, datatype='str'):
