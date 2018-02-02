@@ -7,6 +7,7 @@ import requests
 import click
 import wflow.create_grid as cg
 import wflow.static_maps as sm
+import wflow.wflowtools_lib as wt
 import json
 import shutil
 import zipfile
@@ -14,6 +15,7 @@ import tempfile
 from math import sqrt
 from pyproj import Geod
 import pcraster as pcr
+from osgeo import gdalconst
 
 SERVER_URL = 'http://hydro-engine.appspot.com'
 
@@ -39,7 +41,10 @@ SERVER_URL = 'http://hydro-engine.appspot.com'
 @click.option('--fews-config-path',
               default='Config', show_default=True,
               help='Path to the Delft-FEWS config directory.')
-def build_model(geojson_path, cellsize, name, case_template, case_path, fews, fews_config_path):
+@click.option('--dem-path',
+              help='Optionally provide a local or improved Digital Elevation Model (DEM) '
+              'to use instead of the default global DEM.')
+def build_model(geojson_path, cellsize, name, case_template, case_path, fews, fews_config_path, dem_path):
     """Prepare a simple WFlow model, anywhere, based on global datasets."""
 
     # force all encodings to utf-8 directly, see http://click.pocoo.org/5/python3/
@@ -48,6 +53,8 @@ def build_model(geojson_path, cellsize, name, case_template, case_path, fews, fe
     case_template = case_template.encode('utf-8')
     case_path = case_path.encode('utf-8')
     fews_config_path = fews_config_path.encode('utf-8')
+    if dem_path is not None:
+        dem_path = dem_path.encode('utf-8')
 
     # assumes it is in decimal degrees, see Geod
     region = first_geometry(geojson_path)
@@ -86,7 +93,12 @@ def build_model(geojson_path, cellsize, name, case_template, case_path, fews, fe
     dir_lai = os.path.join(case, 'data/parameters/clim')
 
     download_rivers(region, path_river, filter_upstream_gt)
-    download_raster(region, path_dem_in, 'dem', cellsize_m, crs)
+    if dem_path is None:
+        download_raster(region, path_dem_in, 'dem', cellsize_m, crs)
+    else:
+        mask_tif = os.path.join(dir_mask, 'mask.tif')
+        wt.gdal_warp(dem_path, mask_tif, path_dem_in,
+                     format='GTiff', gdal_interp=gdalconst.GRA_Bilinear)
 
     other_maps = [
         'FirstZoneCapacity',
