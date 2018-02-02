@@ -155,7 +155,7 @@ elif target == 'deltashell':
     packages.append('bmi')
     #packages.append('pkg_resources')
 else:
-    includes = ["matplotlib.backends.backend_qt4agg", 'wflow.wflow_bmi', 'wflow.wflow_w3ra', 'wflow.wflow_bmi_combined','lxml.etree', 'lxml._elementpath', 'gzip', 'numpy.core._methods', 'numpy.lib.format']
+    includes = ["matplotlib.backends.backend_qt4agg", 'wflow.pcrglobwb.landCover', 'wflow.wflow_bmi', 'wflow.wflow_w3ra', 'wflow.wflow_bmi_combined','lxml.etree', 'lxml._elementpath', 'gzip', 'numpy.core._methods', 'numpy.lib.format']
 
 #  "include_msvcr": True,
 options = {"includes": includes, "packages": packages,'include_files': data_files, "build_exe": thename,
@@ -187,7 +187,8 @@ if target == 'openda':
         Executable('wflow/wflow_floodmap.py', base=base),
         Executable('wflow/wflow_routing.py', base=base),
         Executable('wflow/wflow_hbv.py', base=base),
-        Executable('wflow/wflow_sphy.py', base=base)
+        Executable('wflow/wflow_sphy.py', base=base),
+        Executable('wflow/wflow_pcrglobwb.py', base=base)
     ]
 elif target == 'deltashell':
     executables = [
@@ -210,7 +211,8 @@ elif target == 'deltashell':
         Executable('wflow/wflow_gr4.py', base=base),
         Executable('wflow/wflow_floodmap.py', base=base),
         Executable('wflow/wflow_hbv.py', base=base),
-        Executable('wflow/wflow_sphy.py', base=base)
+        Executable('wflow/wflow_sphy.py', base=base),
+        Executable('wflow/wflow_pcrglobwb.py', base=base)
     ]
 else:
     executables = [
@@ -224,6 +226,7 @@ else:
         Executable('Scripts/wflow_sbm_rtc.py', base=base),
         Executable('wflow/wflow_topoflex.py', base=base),
         Executable('wflow/wflow_sbm.py', base=base),
+        Executable('wflow/wflow_lintul.py', base=base),
         Executable('wflow/wflow_routing.py', base=base),
         Executable('wflow/wflow_adapt.py', base=base),
         Executable('wflow/wflow_w3ra.py', base=base),
@@ -232,7 +235,8 @@ else:
         Executable('wflow/wflow_gr4.py', base=base),
         Executable('wflow/wflow_floodmap.py', base=base),
         Executable('wflow/wflow_hbv.py', base=base),
-        Executable('wflow/wflow_sphy.py', base=base)
+        Executable('wflow/wflow_sphy.py', base=base),
+        Executable('wflow/wflow_pcrglobwb.py', base=base)
     ]
 
 setup(name='wflow',

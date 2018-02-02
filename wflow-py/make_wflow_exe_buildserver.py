@@ -7,6 +7,7 @@ supported targets:
 --openda - includes thrift connection to openda, Make sure you have thrift installed first
 --deltashell - includes bmi/mmi link to deltashell. Windows only. Make sure you have zmq, bmi and mmi
   installed. bmi and mmi can be downloaded from the openearth github repository
+
 """
 
 
@@ -189,7 +190,8 @@ if target == 'openda':
         Executable('wflow/wflow_floodmap.py', base=base),
         Executable('wflow/wflow_routing.py', base=base),
         Executable('wflow/wflow_hbv.py', base=base),
-        Executable('wflow/wflow_sphy.py', base=base)
+        Executable('wflow/wflow_sphy.py', base=base),
+        Executable('wflow/wflow_pcrglobwb.py', base=base)
     ]
 elif target == 'deltashell':
     executables = [
@@ -212,7 +214,8 @@ elif target == 'deltashell':
         Executable('wflow/wflow_gr4.py', base=base),
         Executable('wflow/wflow_floodmap.py', base=base),
         Executable('wflow/wflow_hbv.py', base=base),
-        Executable('wflow/wflow_sphy.py', base=base)
+        Executable('wflow/wflow_sphy.py', base=base),
+        Executable('wflow/wflow_pcrglobwb.py', base=base)
     ]
 else:
     executables = [
@@ -234,7 +237,8 @@ else:
         Executable('wflow/wflow_gr4.py', base=base),
         Executable('wflow/wflow_floodmap.py', base=base),
         Executable('wflow/wflow_hbv.py', base=base),
-        Executable('wflow/wflow_sphy.py', base=base)
+        Executable('wflow/wflow_sphy.py', base=base),
+        Executable('wflow/wflow_pcrglobwb.py', base=base)
     ]
 
 setup(name='wflow',
