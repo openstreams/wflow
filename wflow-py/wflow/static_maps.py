@@ -335,17 +335,21 @@ def main(source,destination,inifile,dem_in,rivshp,catchshp,gaugeshp=None,landuse
 
     ## create ldd per catchment
     logger.info('Calculating ldd')
-    wflow_ldd = pcr.ldd(clone_map)
+    ldddem = pcr.scalar(clone_map)
+
+    # per subcatchment, burn dem, then create modified dem that fits the ldd of the subcatchment
+    # this ldd dem is merged over catchments, to create a global ldd that abides to the subcatchment boundaries
     for idx, shape in enumerate(catchment_shapes):
         logger.info('Computing ldd for catchment ' + str(idx + 1) + '/' + str(len(catchment_shapes)))
         image = features.rasterize([shape],out_shape=src.shape,all_touched=True,transform=src.transform)
         catchment = pcr.numpy2pcr(pcr.Scalar,image.copy(),0)
-        ldddem = (pcr.readmap(os.path.join(destination, dem_map)) * pcr.scalar(catchment_domain) * catchment) - burn_layer
-        ldd_select = pcr.lddcreate(ldddem, 1e35, 1e35, 1e35, 1e35)
-        wflow_ldd=pcr.cover(wflow_ldd,ldd_select)
+        dem_burned_catchment = (pcr.readmap(os.path.join(destination, dem_map)) * pcr.scalar(catchment_domain) * catchment) - burn_layer
+        ldddem_catchment = pcr.lddcreatedem(
+            dem_burned_catchment, 1e35, 1e35, 1e35, 1e35)
+        ldddem=pcr.cover(ldddem, ldddem_catchment)
 
+    wflow_ldd= pcr.lddcreate(ldddem, 1e35, 1e35, 1e35, 1e35)
     pcr.report(wflow_ldd, os.path.join(destination, 'wflow_ldd.map'))
-
 
     # compute stream order, identify river cells
     streamorder = pcr.ordinal(pcr.streamorder(wflow_ldd))
@@ -373,44 +377,46 @@ def main(source,destination,inifile,dem_in,rivshp,catchshp,gaugeshp=None,landuse
     # TODO: Add the gauge shape code from StaticMaps.py (line 454-489)
     # TODO: add river length map (see SticMaps.py, line 492-499)
 
-    # report river length
-    # make a high resolution empty map
-    dem_hr_file = os.path.join(destination, 'dem_highres.tif')
-    burn_hr_file = os.path.join(destination, 'burn_highres.tif')
-    demburn_hr_file = os.path.join(destination, 'demburn_highres.map')
-    riv_hr_file = os.path.join(destination, 'riv_highres.map')
-    wt.gdal_warp(dem_in, clone_hr, dem_hr_file)
-    # wt.CreateTif(riv_hr, rows_hr, cols_hr, hr_trans, srs, 0)
-    # open the shape layer
-    ds = ogr.Open(rivshp)
-    lyr = ds.GetLayer(0)
-    wt.ogr_burn(lyr, clone_hr, -100, file_out=burn_hr_file,
-                 format='GTiff', gdal_type=gdal.GDT_Float32, fill_value=0)
-    # read dem and burn values and add
-    xax_hr, yax_hr, burn_hr, fill = wt.gdal_readmap(burn_hr_file, 'GTiff')
-    burn_hr[burn_hr == fill] = 0
-    xax_hr, yax_hr, dem_hr, fill = wt.gdal_readmap(dem_hr_file, 'GTiff')
-    dem_hr[dem_hr == fill] = np.nan
-    demburn_hr = dem_hr + burn_hr
-    demburn_hr[np.isnan(demburn_hr)] = -9999
-    wt.gdal_writemap(demburn_hr_file, 'PCRaster',
-                      xax_hr, yax_hr, demburn_hr, -9999.)
-    pcr.setclone(demburn_hr_file)
-    demburn_hr = pcr.readmap(demburn_hr_file)
+    # since the products here (river length fraction) are not yet used
+    # this is disabled for now, as it also takes a lot of computation time
+    if False:
+        # report river length
+        # make a high resolution empty map
+        dem_hr_file = os.path.join(destination, 'dem_highres.tif')
+        burn_hr_file = os.path.join(destination, 'burn_highres.tif')
+        demburn_hr_file = os.path.join(destination, 'demburn_highres.map')
+        riv_hr_file = os.path.join(destination, 'riv_highres.map')
+        wt.gdal_warp(dem_in, clone_hr, dem_hr_file)
+        # wt.CreateTif(riv_hr, rows_hr, cols_hr, hr_trans, srs, 0)
+        # open the shape layer
+        ds = ogr.Open(rivshp)
+        lyr = ds.GetLayer(0)
+        wt.ogr_burn(lyr, clone_hr, -100, file_out=burn_hr_file,
+                     format='GTiff', gdal_type=gdal.GDT_Float32, fill_value=0)
+        # read dem and burn values and add
+        xax_hr, yax_hr, burn_hr, fill = wt.gdal_readmap(burn_hr_file, 'GTiff')
+        burn_hr[burn_hr == fill] = 0
+        xax_hr, yax_hr, dem_hr, fill = wt.gdal_readmap(dem_hr_file, 'GTiff')
+        dem_hr[dem_hr == fill] = np.nan
+        demburn_hr = dem_hr + burn_hr
+        demburn_hr[np.isnan(demburn_hr)] = -9999
+        wt.gdal_writemap(demburn_hr_file, 'PCRaster',
+                          xax_hr, yax_hr, demburn_hr, -9999.)
+        pcr.setclone(demburn_hr_file)
+        demburn_hr = pcr.readmap(demburn_hr_file)
 
-    logger.info('Calculating ldd to determine river length')
-    ldd_hr = pcr.lddcreate(demburn_hr, 1e35, 1e35, 1e35, 1e35)
-    pcr.report(ldd_hr, os.path.join(destination, 'ldd_hr.map'))
-    pcr.setglobaloption('unitcell')
-    riv_hr = pcr.scalar(pcr.streamorder(ldd_hr) >=
-                        minorder) * pcr.downstreamdist(ldd_hr)
-    pcr.report(riv_hr, riv_hr_file)
-    pcr.setglobaloption('unittrue')
-    pcr.setclone(clone_map)
-    logger.info('Computing river length')
-    wt.windowstats(riv_hr_file, len(yax), len(xax),trans, srs, destination, stat='fact', transform=False, logger=logger)
-
-    # TODO: nothing happens with the river lengths yet. Need to decide how to use these
+        logger.info('Calculating ldd to determine river length')
+        ldd_hr = pcr.lddcreate(demburn_hr, 1e35, 1e35, 1e35, 1e35)
+        pcr.report(ldd_hr, os.path.join(destination, 'ldd_hr.map'))
+        pcr.setglobaloption('unitcell')
+        riv_hr = pcr.scalar(pcr.streamorder(ldd_hr) >=
+                            minorder) * pcr.downstreamdist(ldd_hr)
+        pcr.report(riv_hr, riv_hr_file)
+        pcr.setglobaloption('unittrue')
+        pcr.setclone(clone_map)
+        logger.info('Computing river length')
+        wt.windowstats(riv_hr_file, len(yax), len(xax),trans, srs, destination, stat='fact', transform=False, logger=logger)
+        # TODO: nothing happens with the river lengths yet. Need to decide how to use these
 
     # report outlet map
     pcr.report(pcr.ifthen(pcr.ordinal(wflow_ldd) == 5, pcr.ordinal(1)),
