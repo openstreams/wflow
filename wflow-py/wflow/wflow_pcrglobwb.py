@@ -310,7 +310,7 @@ class WflowModel(DynamicModel):
     self.TEMP_mapstack = self.Dir + configget(self.config, "inputmapstacks", "temperature",
                                                   "/inmaps/TEMP")  # timeseries for rainfall "/inmaps/TEMP"          # global radiation
     # Meteo and other forcing
-    modelparameters.append(self.ParamType(name="precipitation",stack=self.P_mapstack,type="timeseries",default=0.003,verbose=True,lookupmaps=[]))
+    modelparameters.append(self.ParamType(name="precipitation",stack=self.P_mapstack,type="timeseries",default=0.0,verbose=True,lookupmaps=[]))
     modelparameters.append(self.ParamType(name="referencePotET",stack=self.PET_mapstack,type="timeseries",default=0.0,verbose=True,lookupmaps=[]))
     modelparameters.append(self.ParamType(name="temperature",stack=self.TEMP_mapstack,type="timeseries",default=10.0,verbose=True,lookupmaps=[]))
 
