@@ -1411,9 +1411,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 thevar = cover(0.0)
                 for i in arange(0,len(a_)):
                     #check for nested objects
-                    if len(a_.replace('self.', '').split('.')) > 1:
-                        if hasattr(self._userModel(), a_.replace('self.', '').split('.')[0]) and hasattr(eval("self._userModel()." + a_.replace('self.', '').split('.')[0]), a.replace('self.', '').split('.')[1]):
-                            thevar = thevar + reduce(getattr, a_.replace('self.', '').split('.'), self._userModel())
+                    if len(a_[i].replace('self.', '').split('.')) > 1:
+                        if hasattr(self._userModel(), a_[i].replace('self.', '').split('.')[0]) and hasattr(eval("self._userModel()." + a_[i].replace('self.', '').split('.')[0]), a_[i].replace('self.', '').split('.')[1]):
+                            thevar = thevar + reduce(getattr, a_[i].replace('self.', '').split('.'), self._userModel())
                             report = True
                         
                     elif hasattr(self._userModel(), a_[i].strip().replace('self.', '')):
