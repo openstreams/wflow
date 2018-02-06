@@ -41,7 +41,7 @@ except:
 # Source dist
 setup(name='wflow',
       version= MVERSION,
-      packages=['wflow'],
+      packages=['wflow','wflow.pcrglobwb','wflow.sphy','wflow.wrappers.rtc'],
       package_dir={'wflow': 'wflow'},
       author='J. Schellekens',
       author_email='jaap.schellekens@deltares.nl',
