@@ -116,7 +116,8 @@ def setlogger(logfilename,loggername,thelevel=logging.INFO):
         console.setLevel(logging.DEBUG)
         ch.setLevel(logging.DEBUG)
         #create formatter
-        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+        formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(module)s - %(levelname)s - %(message)s")
         #add formatter to ch
         ch.setFormatter(formatter)
         console.setFormatter(formatter)

@@ -36,7 +36,7 @@ def setlogger(logfilename, logReference, verbose=True):
         ch.setLevel(logging.DEBUG)
         # create formatter
         formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+            "%(asctime)s - %(name)s - %(module)s - %(levelname)s - %(message)s")
         # add formatter to ch
         ch.setFormatter(formatter)
         # add ch to logger
