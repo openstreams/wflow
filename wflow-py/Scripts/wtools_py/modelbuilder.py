@@ -8,6 +8,7 @@ import click
 import wflow.create_grid as cg
 import wflow.static_maps as sm
 import wflow.wflowtools_lib as wt
+from wflow import ogr2ogr
 import json
 import shutil
 import zipfile
@@ -46,7 +47,10 @@ SERVER_URL = 'http://hydro-engine.appspot.com'
 @click.option('--dem-path',
               help='Optionally provide a local or improved Digital Elevation Model (DEM) '
               'to use instead of the default global DEM.')
-def build_model(geojson_path, cellsize, name, case_template, case_path, fews, fews_config_path, dem_path):
+@click.option('--river-path',
+              help='Optionally provide a local or improved river vector file '
+              'to use instead of the default global one.')
+def build_model(geojson_path, cellsize, name, case_template, case_path, fews, fews_config_path, dem_path, river_path):
     """Prepare a simple WFlow model, anywhere, based on global datasets."""
 
     # force all encodings to utf-8 directly, see http://click.pocoo.org/5/python3/
@@ -57,6 +61,8 @@ def build_model(geojson_path, cellsize, name, case_template, case_path, fews, fe
     fews_config_path = fews_config_path.encode('utf-8')
     if dem_path is not None:
         dem_path = dem_path.encode('utf-8')
+    if river_path is not None:
+        river_path = river_path.encode('utf-8')
 
     # assumes it is in decimal degrees, see Geod
     region = first_geometry(geojson_path)
@@ -93,6 +99,7 @@ def build_model(geojson_path, cellsize, name, case_template, case_path, fews, fe
             bounds = src.bounds
             bbox = warp.transform_bounds(src.crs,
                             {'init': 'epsg:4326'}, *bounds)
+
         with open(path_catchment, 'w') as f:
             coverall = '{{"type":"Polygon","coordinates":[[[{0},{1}],[{2},{1}],[{2},{3}],[{0},{3}],[{0},{1}]]]}}'.format(*bbox)
             f.write(coverall)
@@ -105,10 +112,20 @@ def build_model(geojson_path, cellsize, name, case_template, case_path, fews, fe
     # use custom inifile, default high res ldd takes too long
     path_inifile = os.path.join(case, 'data/staticmaps.ini')
     path_dem_in = os.path.join(case, 'data/dem/dem.tif')
-    path_river = os.path.join(case, 'data/rivers/rivers.geojson')
     dir_lai = os.path.join(case, 'data/parameters/clim')
 
-    download_rivers(region, path_river, filter_upstream_gt)
+    if river_path is None:
+        # download the global dataset
+        river_data_path = os.path.join(case, 'data/rivers/rivers.geojson')
+        download_rivers(region, river_data_path, filter_upstream_gt)
+    else:
+        # take the local dataset, reproject and clip
+        # command line equivalent of
+        # ogr2ogr -t_srs EPSG:4326 -f GPKG -overwrite -clipdst xmin ymin xmax ymax rivers.gpkg rivers.shp
+        river_data_path = os.path.join(case, 'data/rivers/rivers.gpkg')
+        ogr2ogr.main(['', '-t_srs', 'EPSG:4326', '-f', 'GPKG', '-overwrite', '-clipdst',
+                      str(bbox[0]), str(bbox[1]), str(bbox[2]), str(bbox[3]), river_data_path, river_path])
+
     if dem_path is None:
         # download the global dem
         download_raster(region, path_dem_in, 'dem', cellsize_m, crs)
@@ -154,7 +171,7 @@ def build_model(geojson_path, cellsize, name, case_template, case_path, fews, fe
         download_raster(
             region, path, 'LAI{}'.format(mm), cellsize_m, crs)
 
-    sm.main(dir_mask, dir_dest, path_inifile, path_dem_in, path_river,
+    sm.main(dir_mask, dir_dest, path_inifile, path_dem_in, river_data_path,
             path_catchment, lai=dir_lai, other_maps=path_other_maps)
 
     if fews:
