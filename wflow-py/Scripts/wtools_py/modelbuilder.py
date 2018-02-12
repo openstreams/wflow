@@ -80,9 +80,24 @@ def build_model(geojson_path, cellsize, name, case_template, case_path, fews, fe
     path_catchment = os.path.join(case, 'data/catchments/catchments.geojson')
     projection = 'EPSG:4326'
 
-    download_catchments(region, path_catchment)
+    if dem_path is None:
+        # when using a global dem, use the corresponding catchment shape for the model area
+        download_catchments(region, path_catchment)
+        cg_extent = path_catchment
+    else:
+        # when using a local dem, get the extent from the local dem itself
+        cg_extent = path_catchment
+        # staticmaps still needs the separate catchments, work around this
+        # by writing a polygon that covers the entire dem
+        with rasterio.open(dem_path) as src:
+            bounds = src.bounds
+            bbox = warp.transform_bounds(src.crs,
+                            {'init': 'epsg:4326'}, *bounds)
+        with open(path_catchment, 'w') as f:
+            coverall = '{{"type":"Polygon","coordinates":[[[{0},{1}],[{2},{1}],[{2},{3}],[{0},{3}],[{0},{1}]]]}}'.format(*bbox)
+            f.write(coverall)
 
-    cg.main(path_log, dir_mask, path_catchment, projection,
+    cg.main(path_log, dir_mask, cg_extent, projection,
             cellsize, locationid=name, snap=True)
 
     # create static maps
@@ -91,7 +106,6 @@ def build_model(geojson_path, cellsize, name, case_template, case_path, fews, fe
     path_inifile = os.path.join(case, 'data/staticmaps.ini')
     path_dem_in = os.path.join(case, 'data/dem/dem.tif')
     path_river = os.path.join(case, 'data/rivers/rivers.geojson')
-    path_catchment = os.path.join(case, 'data/catchments/catchments.geojson')
     dir_lai = os.path.join(case, 'data/parameters/clim')
 
     download_rivers(region, path_river, filter_upstream_gt)
