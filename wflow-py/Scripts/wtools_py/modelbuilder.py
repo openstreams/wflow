@@ -16,6 +16,8 @@ from math import sqrt
 from pyproj import Geod
 import pcraster as pcr
 from osgeo import gdalconst
+import rasterio
+from rasterio import warp
 
 SERVER_URL = 'http://hydro-engine.appspot.com'
 
@@ -94,11 +96,13 @@ def build_model(geojson_path, cellsize, name, case_template, case_path, fews, fe
 
     download_rivers(region, path_river, filter_upstream_gt)
     if dem_path is None:
+        # download the global dem
         download_raster(region, path_dem_in, 'dem', cellsize_m, crs)
     else:
+        # warp the local dem onto model grid
         mask_tif = os.path.join(dir_mask, 'mask.tif')
-        wt.gdal_warp(dem_path, mask_tif, path_dem_in,
-                     format='GTiff', gdal_interp=gdalconst.GRA_Bilinear)
+        wt.warp_like(dem_path, path_dem_in, mask_tif,
+                     format='GTiff', co={'dtype': 'float32'}, resampling=warp.Resampling.med)
 
     other_maps = [
         'FirstZoneCapacity',
