@@ -109,7 +109,7 @@ nrbits = str(ctypes.sizeof(ctypes.c_voidp) * 8)
 
 thename = "wflow-bin/Wflow"+MVERSION+'-'+target+'-'+sys.platform+'-'+nrbits
 
-packages = ["osgeo"]
+packages = ["osgeo","numpy"]
 
 if target == 'openda':
     import thrift.protocol.TBinaryProtocol as TBinaryProtocol
