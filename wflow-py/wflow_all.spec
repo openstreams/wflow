@@ -30,7 +30,9 @@ scriptpaths = [
     'wflow/wflow_wave.py',
     'wflow/wflow_gr4.py',
     'wflow/wflow_floodmap.py',
-    'wflow/wflow_hbv.py'
+    'wflow/wflow_hbv.py',
+    'wflow/wflow_sphy.py',
+    'wflow/wflow_pcrglobwb.py'
 ]
 
 
