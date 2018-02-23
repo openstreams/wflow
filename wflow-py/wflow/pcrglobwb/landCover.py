@@ -116,7 +116,7 @@ class LandCover(object):
         # - To avoid this, Edwin changed few lines (see the method updateSoilStates)
         self.allowNegativePercolation = False
         if 'allowNegativePercolation' in self.iniItemsLC.keys() and self.iniItemsLC['allowNegativePercolation'] == "True":
-            msg  = 'Allowing negative values of percolation percUpp (P1), as done in the oldcalc script of PCR-GLOBWB 1.0. \n'
+            msg  = 'Allowing negative values of percolation percUpp (P1), as done in the oldcalc script of PCR-GLOBWB 1.0. ' #\n'
             msg += 'Note that this option is only relevant for the two layer soil model.'
             logger.warning(msg)
             self.allowNegativePercolation = True
@@ -125,7 +125,7 @@ class LandCover(object):
         # - To avoid this, Edwin changed few lines (see the methods 'scaleRootFractionsFromTwoLayerSoilParameters' and 'estimateTranspirationAndBareSoilEvap')
         self.usingOriginalOldCalcRootTranspirationPartitioningMethod = False
         if 'usingOriginalOldCalcRootTranspirationPartitioningMethod' in self.iniItemsLC.keys() and self.iniItemsLC['usingOriginalOldCalcRootTranspirationPartitioningMethod'] == "True":
-            msg  = 'Using the original rootFraction/transpiration as defined in the oldcalc script of PCR-GLOBWB 1.0. \n'
+            msg  = 'Using the original rootFraction/transpiration as defined in the oldcalc script of PCR-GLOBWB 1.0. '#\n'
             msg += 'There is a possibility that rootFraction/transpiration is only defined in the bottom layer, while no root in upper layer(s).'
             logger.warning(msg)
             self.usingOriginalOldCalcRootTranspirationPartitioningMethod = True
@@ -231,8 +231,8 @@ class LandCover(object):
             self.coverFractionNC = vos.getFullPath(\
                       self.iniItemsLC['coverFractionNC'], self.inputDir)
         else:
-			msg = 'The netcdf files for interceptCapNC (interception capacity) and/or coverFraction (canopy cover fraction) are NOT defined for the landCover type: ' + self.name + '\n'
-			msg = 'This run assumes zero canopy interception capacity for this run, UNLESS minInterceptCap (minimum interception capacity) is bigger than zero.' + '\n'
+			msg = 'The netcdf files for interceptCapNC (interception capacity) and/or coverFraction (canopy cover fraction) are NOT defined for the landCover type: ' + self.name + ' '# '\n'
+			msg = 'This run assumes zero canopy interception capacity for this run, UNLESS minInterceptCap (minimum interception capacity) is bigger than zero.' #+ '\n'
 			logger.warning(msg)
 			self.coverFractionNC = None               
 			self.interceptCapNC  = None
@@ -867,19 +867,14 @@ class LandCover(object):
             if self.includeIrrigation: self.calculateTotAvlWaterCapacityInRootZone()
 
         # calculate total PotET (based on meteo and cropKC)
-        wflow_logger.info("start getPotET")
-        self.getPotET(meteo,currTimeStep,wflow_logger) 
-        wflow_logger.info("end getPotET")
+        self.getPotET(meteo,currTimeStep,wflow_logger)
         # calculate interception evaporation flux (m/day) and update interception storage (m)
         self.interceptionUpdate(meteo, currTimeStep)    	 
-        wflow_logger.info("end interceptionUpdate")
         # calculate snow melt (or refreezing)
         if self.snowModuleType  == "Simple": self.snowMeltHBVSimple(meteo,currTimeStep)
         # TODO: Define other snow modules
-        wflow_logger.info("end snowMeltHBVSimple")
-        
+
         # calculate qDR & qSF & q23 (and update storages)
-        wflow_logger.info("start upperSoilUpdate")
         self.upperSoilUpdate(meteo, \
                              groundwater, \
                              routing, \
@@ -890,7 +885,6 @@ class LandCover(object):
                              allocSegments, \
                              desalinationWaterUse, \
                              groundwater_pumping_region_ids,regionalAnnualGroundwaterAbstractionLimit)
-        wflow_logger.info("end upperSoilUpdate")                     
         # saturation degrees (needed only for reporting):
         if self.numberOfSoilLayers == 2:
             self.satDegUpp = vos.getValDivZero(\
