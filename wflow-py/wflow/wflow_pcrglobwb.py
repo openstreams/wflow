@@ -166,7 +166,6 @@ def setLandSurfaceStates(landSurface):
     if landSurface.numberOfSoilLayers == 3:
         for coverType in landSurface.coverTypes:
             landSurface.landCoverObj[coverType].interceptStor = getattr(landSurface, 'interceptStor_' + str(coverType))
-            report(getattr(landSurface, 'interceptStor_' + 'forest'),r'd:\Projects\CRUCIAL\VanEskedar\wflow-py\wflow_rhine_pcrglobwb\test.map')
             landSurface.landCoverObj[coverType].snowCoverSWE = getattr(landSurface, 'snowCoverSWE_' + str(coverType))
             landSurface.landCoverObj[coverType].snowFreeWater = getattr(landSurface, 'snowFreeWater_' + str(coverType))
             landSurface.landCoverObj[coverType].topWaterLayer = getattr(landSurface, 'topWaterLayer_' + str(coverType))
