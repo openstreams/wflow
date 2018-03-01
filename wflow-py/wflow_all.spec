@@ -13,26 +13,27 @@ pcrasterlib = 'c:/bin/pcraster/lib/'
 # list identical make_wflow_exe script with --normal
 # except for the wtools scripts
 scriptpaths = [
-    'Scripts/wtools_py/modelbuilder.py',
-    'Scripts/pcr2netcdf.py',
+    'openda_bmi/opendapy.py',
     'Scripts/bmi2runner.py',
-    'Scripts/wflow_prepare_step2.py',
+    'Scripts/pcr2netcdf.py',
     'Scripts/wflow_prepare_step1.py',
+    'Scripts/wflow_prepare_step2.py',
     'Scripts/wflow_sbm_rtc.py',
     'wflow/create_grid.py',
     'wflow/static_maps.py',
-    'wflow/wflow_topoflex.py',
-    'wflow/wflow_sbm.py',
-    'wflow/wflow_routing.py',
     'wflow/wflow_adapt.py',
-    'wflow/wflow_w3ra.py',
     'wflow/wflow_delwaq.py',
-    'wflow/wflow_wave.py',
-    'wflow/wflow_gr4.py',
     'wflow/wflow_floodmap.py',
+    'wflow/wflow_gr4.py',
     'wflow/wflow_hbv.py',
+    'wflow/wflow_lintul.py',
+    'wflow/wflow_pcrglobwb.py',
+    'wflow/wflow_routing.py',
+    'wflow/wflow_sbm.py',
     'wflow/wflow_sphy.py',
-    'wflow/wflow_pcrglobwb.py'
+    'wflow/wflow_topoflex.py',
+    'wflow/wflow_w3ra.py',
+    'wflow/wflow_wave.py',
 ]
 
 
@@ -53,11 +54,11 @@ def do_analysis(scriptpath):
                     datas=[(gdal.GetConfigOption('GDAL_DATA'), 'gdal-data'),
                            (pyproj_datadir, 'proj-data')],
                     hiddenimports=['pywt._extensions._cwt',
-                                   'rasterio.control', # needed
-                                   'rasterio.crs', # needed
-                                   'rasterio._shim', # needed
-                                   'rasterio.sample', # needed
-                                   'rasterio.vrt', # needed
+                                   'rasterio.control',  # needed
+                                   'rasterio.crs',  # needed
+                                   'rasterio._shim',  # needed
+                                   'rasterio.sample',  # needed
+                                   'rasterio.vrt',  # needed
                                    'rasterio.coords',  # TODO test if needed
                                    'rasterio.enums',  # TODO test if needed
                                    'rasterio.env',  # TODO test if needed
