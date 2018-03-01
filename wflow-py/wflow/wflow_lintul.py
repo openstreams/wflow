@@ -48,7 +48,7 @@ NPART = 1.0  # Coefficient for the effect of N stress on leaf biomass reduction 
 NSLA  = 1.0  # Coefficient for the effect of N stress on SLA reduction (presently non-functional, for future development)
 NLAI  = 1.0  # Coefficient for the effect of N stress on LAI reduction(during juvenile phase; presently non-functional, for future development)
 
-Point_Output = open('Point_Output.csv', 'w')
+#Point_Output = open('Point_Output.csv', 'w')
 
 def NOTNUL(matrix):
     """
@@ -254,7 +254,7 @@ class WflowModel(DynamicModel):
         self.AutoStartStop        = eval(configget(self.config, "model", "AutoStartStop", "False")) #default changed to 'False', for running from 'crop profile' maps (CRPST.xxx) under DEWS. sdv 21-2-2018
         self.BMI_RUN              = configget(self.config, "model", "BMI_RUN", "True")
         self.WATERLIMITED         = (configget(self.config, "model", "WATERLIMITED", "True"))
-        self.CropStartDOY         = int(configget(self.config, "model", "CropStartDOY", "0")) - 1
+        self.CropStartDOY         = int(configget(self.config, "model", "CropStartDOY", "0")) - 1 # to keep things in sync with the original LINTUL version in FST
         self.HarvestDAP           = int(configget(self.config, "model", "HarvestDAP", "150"))
         self.LAT                  = float(configget(self.config, "model", "LAT", "3.16"))        
         self.TSUMI                = float(configget(self.config, "model", "TSUMI", "362."))        
@@ -303,9 +303,9 @@ class WflowModel(DynamicModel):
 
         # Meteo and other forcing
         modelparameters.append(self.ParamType(name="IRRAD", stack="inmaps/IRRAD", type="timeseries", default=11.0, verbose=False,lookupmaps=[])),
-        #modelparameters.append(self.ParamType(name="T", stack="inmaps/T", type="timeseries", default=10.0, verbose=False, lookupmaps=[])),
-        modelparameters.append(self.ParamType(name="TMIN",stack="inmaps/TMIN",type="timeseries",default=10.0,verbose=False,lookupmaps=[])),
-        modelparameters.append(self.ParamType(name="TMAX",stack="inmaps/TMAX",type="timeseries",default=10.0,verbose=False,lookupmaps=[])),
+        modelparameters.append(self.ParamType(name="T", stack="inmaps/T", type="timeseries", default=10.0, verbose=False, lookupmaps=[])),
+        #modelparameters.append(self.ParamType(name="TMIN",stack="inmaps/TMIN",type="timeseries",default=10.0,verbose=False,lookupmaps=[])),
+        #modelparameters.append(self.ParamType(name="TMAX",stack="inmaps/TMAX",type="timeseries",default=10.0,verbose=False,lookupmaps=[])),
         modelparameters.append(self.ParamType(name="RAIN", stack="inmaps/P", type="timeseries", default=0., verbose=False, lookupmaps=[])),
         modelparameters.append(self.ParamType(name="CRPST", stack="inmaps/CRPST", type="timeseries", default=11.0, verbose=False, lookupmaps=[])),
         return modelparameters
@@ -473,7 +473,7 @@ class WflowModel(DynamicModel):
         
       # Get the date as a Python datetime object and as the day of the year (DOY): used for cropping calendar and daylength.
         self.date         = datetime.utcfromtimestamp(self.wf_supplyStartTime()) + dt.timedelta(self.currentTimeStep() - 1)      
-        self.enddate     = datetime.utcfromtimestamp(self.wf_supplyEndTime()) #wf_supplyEndTime() in wflow_dyamicframework? todo
+        #self.enddate     = datetime.utcfromtimestamp(self.wf_supplyEndTime()) #wf_supplyEndTime() in wflow_dyamicframework? todo
         DOY               = self.wf_supplyJulianDOY() 
 
       # Some Boolean PCRaster variables:
@@ -601,7 +601,7 @@ class WflowModel(DynamicModel):
             CropStarted          = numpy2pcr(Boolean, np_CropStarted, -99)
             print "Crop growth not initializing, pls. check wflow_lintul.ini..."
 
-        self.T = (self.TMIN + self.TMAX)/2. # for testing with Wageningen weather files only - sdv
+        #self.T = (self.TMIN + self.TMAX)/2. # for testing with Wageningen weather files only - sdv
         np_T                     = pcr_as_numpy(self.T)
         np_DAVTMP                = np_T  
         np_NNI                   = NNI * np_One[:]
@@ -791,17 +791,16 @@ class WflowModel(DynamicModel):
         #FRTTB2file = 'frttb2'
         self.Test += 1.
         print np_Transpiration[100,100], np_PotTrans[100,100]
-        time.sleep(0.125)
 
       # For quickly getting point output (sdv). Works only with a wf_supplyEndTime() implemented in wf_dynamicframework... todo?
-        Point_Output_Line = (str(cellvalue (self.LAI, 100,100)[0]) + "," + str(cellvalue (self.TSUM, 100,100)[0]) + "," + str(np_IRRAD[100,100]) + "," +
-                            str(cellvalue (self.TMIN, 100,100)[0]) + "," + str(cellvalue (self.TMAX, 100,100)[0]) + "," + str(np_DVS[100,100]) + "," +
-                            str(cellvalue (RTSUMP, 100,100)[0]) + "," +
-                            str(GLAI[100,100]) + "," + str(SLA[100,100]) + "," + str(np_PARINT[100,100])+ ","+str(DAYL) + '\n')
-        if self.date < self.enddate:
-            Point_Output.write(Point_Output_Line)
-        elif self.date == self.enddate:
-            Point_Output.close()
+        #Point_Output_Line = (str(cellvalue (self.LAI, 100,100)[0]) + "," + str(cellvalue (self.TSUM, 100,100)[0]) + "," + str(np_IRRAD[100,100]) + "," +
+        #                    str(cellvalue (self.TMIN, 100,100)[0]) + "," + str(cellvalue (self.TMAX, 100,100)[0]) + "," + str(np_DVS[100,100]) + "," +
+        #                    str(cellvalue (RTSUMP, 100,100)[0]) + "," +
+        #                    str(GLAI[100,100]) + "," + str(SLA[100,100]) + "," + str(np_PARINT[100,100])+ ","+str(DAYL) + '\n')
+        #if self.date < self.enddate:
+        #    Point_Output.write(Point_Output_Line)
+        #elif self.date == self.enddate:
+        #    Point_Output.close()
 
 
 # The main function is used to run the program from the command line
