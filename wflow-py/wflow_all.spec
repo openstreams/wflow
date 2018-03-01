@@ -85,7 +85,8 @@ def do_exe(apyz):
     return EXE(pyz, a.scripts,
                exclude_binaries=True,
                name=scriptname(a.inputs[0]),
-               upx=True)
+               upx=True,
+               icon='logo.ico')
 
 
 def do_collect(aexe):
