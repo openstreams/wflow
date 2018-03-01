@@ -33,18 +33,14 @@ def setlogger(logfilename, logReference, verbose=True):
         logger.setLevel(logging.DEBUG)
         ch = logging.handlers.RotatingFileHandler(
             logfilename, maxBytes=10 * 1024 * 1024, backupCount=5)
-        console = logging.StreamHandler()
-        console.setLevel(logging.DEBUG)
         ch.setLevel(logging.DEBUG)
         # create formatter
         formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+            "%(asctime)s - %(name)s - %(module)s - %(levelname)s - %(message)s")
         # add formatter to ch
         ch.setFormatter(formatter)
-        console.setFormatter(formatter)
         # add ch to logger
         logger.addHandler(ch)
-        logger.addHandler(console)
         logger.debug("File logging to " + logfilename)
         return logger, ch
     except IOError:
@@ -779,8 +775,10 @@ def windowstats(rasterin, t_rows, t_columns, t_geotransform, t_srs, resultdir, s
             yOffset = int((coordtl[1] - origin[1]) / -cellsize_in)
             xBlock = int((coordbr[0] - coordtl[0]) / cellsize_in + 1)
             yBlock = int((coordtl[1] - coordbr[1]) / cellsize_in + 1)
-            data_block = band_in.ReadAsArray(
-                xOffset, yOffset, xBlock, yBlock).astype(float)
+            data_block = band_in.ReadAsArray(xOffset, yOffset, xBlock, yBlock)
+            if data_block is None:
+                continue
+            data_block = data_block.astype(np.float)
             data_block[data_block == float(nodata)] = np.nan
             # print data_block
             #data_block = data_block.astype(int)
@@ -842,7 +840,7 @@ def windowstats(rasterin, t_rows, t_columns, t_geotransform, t_srs, resultdir, s
                 resultdir, 'wflow_dem{:02d}.map'.format(int(perc)))
             logger.info('wflow_dem{:02d}.map'.format(int(perc)))
         names.append(name)
-            
+
         # name_tif = 'work\\dem_' + name + '.tif'
         ds_out = gdal.GetDriverByName('MEM').Create(
             '', t_columns, t_rows, 1, GDT_Float32)
@@ -900,7 +898,7 @@ def gdal_writemap(file_name, file_format, x, y, data, fill_val, zlib=False,
         fill_val: -- float: fill value
         --------------------------------
     optional inputs:
-        zlib=False: -- boolean: determines if output file should be internally 
+        zlib=False: -- boolean: determines if output file should be internally
                         zipped or not
         gdal_type=gdal.GDT_Float32: -- gdal data type to write
         resolution=None: -- resolution of dataset, only needed if x and y are given as upperleft coordinates
@@ -926,7 +924,7 @@ def gdal_writemap(file_name, file_format, x, y, data, fill_val, zlib=False,
         yul = y
         yres = -resolution
     geotrans = [xul, xres, 0, yul, 0, yres]
-    
+
     gdal.AllRegister()
     driver1 = gdal.GetDriverByName('GTiff')
     driver2 = gdal.GetDriverByName(file_format)
@@ -960,7 +958,7 @@ def gdal_writemap(file_name, file_format, x, y, data, fill_val, zlib=False,
         driver2.CreateCopy(file_name, TempDataset, 0)
     TempDataset = None
     os.remove(temp_file_name)
-    
+
 def gdal_readmap(file_name, file_format, give_geotrans=False):
     """ Read geographical file into memory
     Dependencies are osgeo.gdal and numpy
@@ -968,7 +966,7 @@ def gdal_readmap(file_name, file_format, give_geotrans=False):
         file_name: -- string: reference path to GDAL-compatible file
         file_format: -- string: file format according to GDAL acronym
         (see http://www.gdal.org/formats_list.html)
-        give_geotrans (default=False): -- return the geotrans and amount of 
+        give_geotrans (default=False): -- return the geotrans and amount of
             cols/rows instead of x, y axis
     Output (if give_geotrans=False):
         x: -- 1D np-array: x-axis
@@ -1006,7 +1004,7 @@ def gdal_readmap(file_name, file_format, give_geotrans=False):
     ds = None
     if give_geotrans==True:
         return geotrans, (ds.RasterXSize, ds.RasterYSize), data, fill_val
-        
+
     else:
         return x, y, data, fill_val
 
@@ -1014,9 +1012,9 @@ def gdal_warp(src_filename, clone_filename, dst_filename, gdal_type=gdalconst.GD
               gdal_interp=gdalconst.GRA_Bilinear, format='GTiff', ds_in=None, override_src_proj=None):
     """
     Equivalent of the gdalwarp executable, commonly used on command line.
-    The function prepares from a source file, a new file, that has the same 
+    The function prepares from a source file, a new file, that has the same
     extent and projection as a clone file.
-    The clone file should contain the correct projection. 
+    The clone file should contain the correct projection.
     The same projection will then be produced for the target file.
     If the clone does not have a projection, EPSG:4326 (i.e. WGS 1984 lat-lon)
     will be assumed.
@@ -1042,7 +1040,7 @@ def gdal_warp(src_filename, clone_filename, dst_filename, gdal_type=gdalconst.GD
     if override_src_proj is not None:
         srs = osr.SpatialReference()
         srs.ImportFromEPSG(override_src_proj)
-        src_proj = srs.ExportToWkt()        
+        src_proj = srs.ExportToWkt()
     src_nodata = src.GetRasterBand(1).GetNoDataValue()
     # replace nodata value temporarily for some other value
     src.GetRasterBand(1).SetNoDataValue(np.nan)
@@ -1142,6 +1140,6 @@ def ogr_burn(lyr, clone, burn_value, file_out='',
     if format == 'MEM':
         return ds
     else:
-    
+
         band = None
         ds = None

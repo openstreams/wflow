@@ -40,7 +40,8 @@ def setlogger(logfilename, logReference, verbose=True):
         console.setLevel(logging.DEBUG)
         ch.setLevel(logging.DEBUG)
         #create formatter
-        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+        formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(module)s - %(levelname)s - %(message)s")
         #add formatter to ch
         ch.setFormatter(formatter)
         console.setFormatter(formatter)
@@ -57,8 +58,8 @@ def closeLogger(logger, ch):
     logger.removeHandler(ch)
     ch.flush()
     ch.close()
-    return logger, ch 
-    
+    return logger, ch
+
 def close_with_error(logger, ch, msg):
     logger.error(msg)
     logger, ch = closeLogger(logger, ch)
@@ -74,7 +75,7 @@ def open_conf(fn):
     else:
         print "Cannot open config file: " + fn
         sys.exit(1)
-        
+
     return config
 
 def configget(config, section, var, default, datatype='str'):

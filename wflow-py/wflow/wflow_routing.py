@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 # Wflow is Free software, see below:
-# 
+#
 # Copyright (c) J. Schellekens/Deltares 2005-2014
 #
 # This program is free software: you can redistribute it and/or modify
@@ -24,29 +24,29 @@ Run the wflow_routing model..
 usage
 
 ::
-    
+
     wflow_routing [-h][-v level][-F runinfofile][-L logfile][-C casename][-R runId]
           [-c configfile][-T last_step][-S first_step][-s seconds][-l loglevel]
 
-        
-    -X: save state at the end of the run over the initial conditions at the start        
+
+    -X: save state at the end of the run over the initial conditions at the start
 
     -T: Set end time of the run: yyyy-mm-dd hh:mm:ss
 
     -S: Set start time of the run: yyyy-mm-dd hh:mm:ss
-    
+
     -s: Set the model timesteps in seconds
-    
+
     -I: re-initialize the initial model conditions with default
 
     -C: set the name  of the case (directory) to run
-    
+
     -R: set the name runId within the current case
-    
+
     -L: set the logfile
-    
+
     -c: name of wflow the configuration file (default: Casename/wflow_routing.ini).
-    
+
     -h: print usage information
 
     -P: set parameter change string (e.g: -P 'self.FC = self.FC * 1.6') for non-dynamic variables
@@ -54,8 +54,6 @@ usage
     -p: set parameter change string (e.g: -P 'self.Precipitation = self.Precipitation * 1.11') for
         dynamic variables
 
-
-    -l: loglevel (must be one of DEBUG, WARNING, ERROR)
     -l: loglevel (must be one of DEBUG, WARNING, ERROR)
 
 
@@ -206,7 +204,7 @@ class WflowModel(DynamicModel):
             self.logger.info("Saving initial conditions over start conditions...")
             self.wf_suspend(self.SaveDir + "/instate/")
 
-			
+
 
 
 
@@ -216,7 +214,7 @@ class WflowModel(DynamicModel):
 
 
     *Surface water*
-    
+
     :var N.tbl: Manning's N parameter
     :var N_river.tbl: Manning's N parameter fro cells marked as river
 
@@ -269,14 +267,14 @@ class WflowModel(DynamicModel):
         wflow_riverwidth = configget(self.config, "model", "wflow_riverwidth", "staticmaps/wflow_riverwidth.map")
         wflow_floodplainwidth = configget(self.config, "model", "wflow_floodplainwidth", "staticmaps/wflow_floodplainwidth.map")
         wflow_bankfulldepth = configget(self.config, "model", "wflow_bankfulldepth", "staticmaps/wflow_bankfulldepth.map")
-        wflow_floodplaindist = configget(self.config, "model", "wflow_bankfulldepth", "staticmaps/wflow_floodplaindist.map")
+        wflow_floodplaindist = configget(self.config, "model", "wflow_floodplaindist", "staticmaps/wflow_floodplaindist.map")
 
         wflow_landuse = configget(self.config, "model", "wflow_landuse", "staticmaps/wflow_landuse.map")
         wflow_soil = configget(self.config, "model", "wflow_soil", "staticmaps/wflow_soil.map")
 
         # 2: Input base maps ########################################################
         self.instate = configget(self.config,"model","instate","instate")
-		
+
         subcatch = ordinal(self.wf_readmap(os.path.join(self.Dir,wflow_subcatch),0.0,fail=True))  # Determines the area of calculations (all cells > 0)
         subcatch = ifthen(subcatch > 0, subcatch)
 
@@ -440,14 +438,21 @@ class WflowModel(DynamicModel):
 
 
           """
-          lst = ['self.RiverWidth',
-                'self.N',
+          lst = ['self.N',
+                'self.NRiver',
+                'self.NFloodPlain',
                 'self.xl',
                 'self.yl',
-                'self.DCL',
+                'self.RiverWidth',
                 'self.Bw',
+                'self.RiverLength',
+                'self.RiverLengthFac',
+                'self.DCL',
                 'self.Slope',
-                'self.SlopeDCL']
+                'self.SlopeDCL',
+                'self.bankFull',
+                'self.floodPlainWidth',
+                'self.floodPlainDist']
 
           return lst
 
@@ -537,7 +542,7 @@ class WflowModel(DynamicModel):
         :var self.Qfloodplain: Discharge over the floodplain [m^3/s]
         :var self.WaterLevelCH: Water level in the channel [m] Cannot go above bankfull above the bottom
         :var self.WaterLevelFP: Water level on the floodplain [m] above the floodplain level (bottom + bankfull)
-        :var self.WaterLevel: Total aater level in the kinematic wave [m] (above the bottom)
+        :var self.WaterLevel: Total water level in the kinematic wave [m] (above the bottom)
         :var self.Pfp: Actual wetted perimiter of the floodplain [m]
         :var self.Pch: Actual wetted perimiter of the channel [m]
 
@@ -709,7 +714,7 @@ def main(argv=None):
     configfile = "wflow_routing.ini"
     _lastTimeStep = 0
     _firstTimeStep = 0
-    LogFileName = "wflow.log"
+    LogFileName = "wflow_routing.log"
     runinfoFile = "runinfo.xml"
     timestepsecs = 86400
     wflow_cloneMap = 'wflow_subcatch.map'
@@ -743,7 +748,7 @@ def main(argv=None):
 
 
     starttime = dt.datetime(1990,01,01)
-        
+
     if _lastTimeStep < _firstTimeStep:
         print "The starttimestep (" + str(_firstTimeStep) + ") is smaller than the last timestep (" + str(
             _lastTimeStep) + ")"

@@ -38,59 +38,54 @@ def parse_args():
     parser = OptionParser()
     usage = "usage: %prog [options]"
     parser = OptionParser(usage=usage)
-    parser.add_option('-q', '--quiet',
-                      dest='verbose', default=True, action='store_false',
-                      help='do not print status messages to stdout')
-    parser.add_option('-f', '--file', dest='inputfile',  nargs=1,
-                      help='file of which extent will be read. Most logically the catchment layer\nformat: ESRI Shapefile or any gdal supported raster format (preferred GeoTiff)')
-#    parser.add_option('-e', '--extent',
-#                      nargs=4, dest='extent', type='float',
-#                      help='extent in WGS 1984 lat-lon (xmin, ymin, xmax, ymax)')
+    parser.add_option('-d', '--destination',
+                      dest='destination', default='wflow',
+                      help='Destination folder (default=./wflow)')
     parser.add_option('-l', '--logfile',
                       dest='logfilename', default='wtools_create_grid.log',
                       help='log file name')
+    parser.add_option('-f', '--file', dest='inputfile',  nargs=1,
+                      help='file of which extent will be read. Most logically the catchment layer\nformat: ESRI Shapefile or any gdal supported raster format (preferred GeoTiff)')
     parser.add_option('-p', '--projection',
                       dest='projection', default='EPSG:4326',
                       help='Only used if no file is provided, either of type EPSG:<####> or +proj...')
     parser.add_option('-c', '--cellsize', type='float',
                       nargs=1, dest='cellsize',
                       help='extent')
+    parser.add_option('--locationid',
+                      dest='locationid', default='wflow_case',
+                      help='Sets the name of the locationId in the Delft-FEWS XML grid definition')
     parser.add_option('-s', '--snap',
                       dest='snap', default=False, action='store_true',
                       help='Snaps grid extents to a multiple of the resolution')
-    parser.add_option('-d', '--destination',
-                      dest='destination', default='wflow',
-                      help='Destination folder (default=./wflow)')
+    parser.add_option('-q', '--quiet',
+                      dest='verbose', default=True, action='store_false',
+                      help='do not print status messages to stdout')
 
     (options, args) = parser.parse_args()
-    
+
     print options.__dict__.items()
-    
-   
-        ##### Preprocessing #####
-    # check if either a file or an extent is provided. If not, sys.exit
-    
-    
-    if options.inputfile is None and options.extent is None:
-        parser.error('No input file (-f filename) or extent (-e (xmin, ymin, xmax, ymax)) given')
+
+    if options.inputfile is None:
+        parser.error('No input file (-f filename) given')
         parser.print_help()
         sys.exit(1)
-        
+
     if not options.inputfile is None:
         if not os.path.exists(options.inputfile):
             parser.error('input file provided but not found, please check path')
             parser.print_help()
             sys.exit(1)
-    
+
     if options.cellsize is None:
         parser.error('no cell size (-c cellsize) provided')
         parser.print_help()
         sys.exit(1)
-    
-    
+
     return options
 
-def main(logfilename,destination,inputfile,projection,cellsize,snap=False,verbose=True,locationid='wflow_mask'):
+
+def main(logfilename,destination,inputfile,projection,cellsize,locationid,snap=False,verbose=True):
 
     # open a logger, dependent on verbose print to screen or not
     logger, ch = wt.setlogger(logfilename, 'WTOOLS', verbose)
@@ -104,17 +99,17 @@ def main(logfilename,destination,inputfile,projection,cellsize,snap=False,verbos
     if inputfile is not None:
         # retrieve extent from input file. Check if projection is provided
         file_ext = os.path.splitext(os.path.basename(inputfile))[1]
-        if file_ext == '.shp':
-            file_att = os.path.splitext(os.path.basename(inputfile))[0]
+        if file_ext in ('.shp', '.geojson'):
             ds = ogr.Open(inputfile)
             # read the extent of the shapefile
-            lyr = ds.GetLayerByName(file_att)
+            lyr = ds.GetLayer(0)
             extent = lyr.GetExtent()
             extent_in = [extent[0], extent[2], extent[1], extent[3]]
             # get spatial reference from shapefile
             srs = lyr.GetSpatialRef()
         else:
             # Read extent from a GDAL compatible file
+            extent_in = wt.get_extent(inputfile)
             try:
                 extent_in = wt.get_extent(inputfile)
             except:
@@ -123,7 +118,7 @@ def main(logfilename,destination,inputfile,projection,cellsize,snap=False,verbos
                 wt.close_with_error(logger, ch, msg)
                 sys.exit(1)
 
-#            # get spatial reference from grid file
+            # get spatial reference from grid file
             try:
                 srs = wt.get_projection(inputfile)
             except:
@@ -132,18 +127,18 @@ def main(logfilename,destination,inputfile,projection,cellsize,snap=False,verbos
                 srs = osr.SpatialReference()
                 srs.ImportFromEPSG(4326)
 
-#            geotransform = ds.GetGeoTransform()
-#            raster_cellsize = geotransform[1]
-#            ncols = ds.RasterXSize
-#            nrows = ds.RasterYSize
-#            extent_in = [geotransform[0],
-#                         geotransform[3]-nrows*raster_cellsize,
-#                         geotransform[0]+ncols*raster_cellsize,
-#                         geotransform[3]]
-#            # get spatial reference from grid file
-#            WktString = ds.GetProjection()
-#            srs = osr.SpatialReference()
-#            srs.ImportFromWkt(WktString)
+        # geotransform = ds.GetGeoTransform()
+        # raster_cellsize = geotransform[1]
+        # ncols = ds.RasterXSize
+        # nrows = ds.RasterYSize
+        # extent_in = [geotransform[0],
+        #              geotransform[3]-nrows*raster_cellsize,
+        #              geotransform[0]+ncols*raster_cellsize,
+        #              geotransform[3]]
+        # # get spatial reference from grid file
+        # WktString = ds.GetProjection()
+        # srs = osr.SpatialReference()
+        # srs.ImportFromWkt(WktString)
     else:
         lonmin, latmin, lonmax, latmax = extent
         srs_4326 = osr.SpatialReference()
@@ -225,7 +220,7 @@ def main(logfilename,destination,inputfile,projection,cellsize,snap=False,verbos
     etree.SubElement(root, 'xCellSize').text = str(cellsize)
     etree.SubElement(root, 'yCellSize').text = str(cellsize)
     xml_file = os.path.abspath(os.path.join(destination, 'grid.xml'))
-    logger.info('Writing FEWS grid definition to {:s}'.format(xml_file))
+    logger.info('Writing Delft-FEWS grid definition to {:s}'.format(xml_file))
     gridxml = open(xml_file, 'w+')
     gridxml.write(etree.tostring(root, pretty_print=True))
     gridxml.close()
@@ -234,7 +229,8 @@ def main(logfilename,destination,inputfile,projection,cellsize,snap=False,verbos
     Driver = ogr.GetDriverByName("ESRI Shapefile")
     shp_file = os.path.abspath(os.path.join(destination, 'mask.shp'))
     logger.info('Writing shape of clone to {:s}'.format(shp_file))
-    shp_att = os.path.splitext(os.path.basename(shp_file))[0]
+    # for encode see https://gis.stackexchange.com/a/53939
+    shp_att = os.path.splitext(os.path.basename(shp_file))[0].encode('utf-8')
     shp = Driver.CreateDataSource(shp_file)
     lyr = shp.CreateLayer(shp_att, srs, geom_type=ogr.wkbPolygon)
     fieldDef = ogr.FieldDefn('ID', ogr.OFTString)
@@ -265,7 +261,6 @@ def main(logfilename,destination,inputfile,projection,cellsize,snap=False,verbos
             'With this amount of cells your model will run slow.\nConsider a larger cell-size. Fast models run with < 1,000,000 cells')
     logger, ch = wt.closeLogger(logger, ch)
     del logger, ch
-    #sys.exit(1)
 
 
 if __name__ == "__main__":

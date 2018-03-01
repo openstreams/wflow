@@ -497,7 +497,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self._addMethodToClass(self.wf_updateparameters)
         self._addMethodToClass(self.wf_savesummarymaps)
         self._addMethodToClass(self.wf_supplyStartTimeDOY)
+        self._addMethodToClass(self.wf_supplyStartTime)
         self._addMethodToClass(self.wf_supplyJulianDOY)
+        self._addMethodToClass(self.wf_supplyStartDateTime)
+        self._addMethodToClass(self.wf_supplyCurrentDateTime)
         self._addAttributeToClass("ParamType", self.ParamType)
         self._addAttributeToClass("timestepsecs", self.DT.timeStepSecs)
         self._addAttributeToClass("__version__", __version__)
@@ -1397,15 +1400,48 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         """
         # Print .ini defined outputmaps per timestep
         toprint = configsection(self._userModel().config, 'outputmaps')
+        
+        self.logger.info("saving maps")
+        
         for a in toprint:
-            if hasattr(self._userModel(), a.replace('self.', '')):
-                thevar = getattr(self._userModel(), a.replace('self.', ''))
+            report = False
+            #possible to add variables
+            if '+' in a:
+                a_ = a.split('+')
+                thevar = cover(0.0)
+                for i in arange(0,len(a_)):
+                    #check for nested objects
+                    if len(a_[i].replace('self.', '').split('.')) > 1:
+                        if hasattr(self._userModel(), a_[i].replace('self.', '').split('.')[0]) and hasattr(eval("self._userModel()." + a_[i].replace('self.', '').split('.')[0]), a_[i].replace('self.', '').split('.')[1]):
+                            thevar = thevar + reduce(getattr, a_[i].replace('self.', '').split('.'), self._userModel())
+                            report = True
+                        
+                    elif hasattr(self._userModel(), a_[i].strip().replace('self.', '')):
+                        thevar = thevar + getattr(self._userModel(), a_[i].strip().replace('self.', ''))
+                        report = True
+                                       
+                    else:
+                        report = False
+                        break
 
+            
+            else:
+                #check for nested objects
+                if len(a.replace('self.', '').split('.')) > 1:
+                    if hasattr(self._userModel(), a.replace('self.', '').split('.')[0]) and hasattr(eval("self._userModel()." + a.replace('self.', '').split('.')[0]), a.replace('self.', '').split('.')[1]):
+                        thevar = reduce(getattr, a.replace('self.', '').split('.'), self._userModel())
+                        report = True
+
+                elif hasattr(self._userModel(), a.replace('self.', '')):
+                    thevar = getattr(self._userModel(), a.replace('self.', ''))
+                    report = True
+                                
+            if report == True:
                 if type(thevar) is list:
                     a = self._userModel().config.get("outputmaps", a)
                     for i in arange(0,len(thevar)):
                         thename = a + "_" + str(i) + "_"
-                        self._reportNew(thevar[0],
+                        self._reportNew(thevar[i],
                                     os.path.join(self._userModel().Dir, self._userModel().runId, "outmaps",
                                                  thename), longname=thename)
                 else:
@@ -1456,7 +1492,14 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     mpath = os.path.join(directory, var + ".map").replace("\\", "/")
                     tvar = self.wf_readmap(mpath, 0.0, ncfilesource=self.ncinfilestates)
                     #wf_readmtvar = self.wf_readmap(mpath,0.0,ncfilesource=self.ncinfilestates,fail=True)
-                    setattr(self._userModel(), var,tvar)
+                    
+                    #check for nested objects
+                    if '.' in var:
+                        attrs = var.split('.')
+                        c = getattr(self._userModel(), attrs[0])
+                        setattr(c, attrs[1],tvar)
+                    else:
+                        setattr(self._userModel(), var,tvar)
                 except:
                     self.logger.error(
                         "problem while reading state variable from disk: " + mpath + " Suggest to use the -I option to restart")
@@ -2074,6 +2117,35 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         seconds_since_epoch = calendar.timegm(dtt.utctimetuple())
 
         return seconds_since_epoch
+    
+    
+    def wf_supplyCurrentDateTime(self):
+        """
+        gets the current time in seconds after the start of the run
+        Assumed daily timesteps if not defined in the user model
+
+        Output:
+           - current model time (since start of the run)
+
+        """
+        dtt = self.DT.currentDateTime
+
+        return dtt
+
+
+    def wf_supplyStartDateTime(self):
+        """
+        gets the current time in seconds after the start of the run
+        Assumed daily timesteps if not defined in the user model
+
+        Output:
+           - current model time (since start of the run)
+
+        """
+        dtt = self.DT.runStartTime
+
+        return dtt
+
 
     def wf_supplyEpoch(self):
         """

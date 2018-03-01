@@ -155,7 +155,7 @@ elif target == 'deltashell':
     packages.append('bmi')
     #packages.append('pkg_resources')
 else:
-    includes = ["matplotlib.backends.backend_qt4agg", 'wflow.wflow_bmi', 'wflow.wflow_w3ra', 'wflow.wflow_bmi_combined','lxml.etree', 'lxml._elementpath', 'gzip', 'numpy.core._methods', 'numpy.lib.format']
+    includes = ["matplotlib.backends.backend_qt4agg", 'wflow.pcrglobwb.landCover', 'wflow.wflow_bmi', 'wflow.wflow_w3ra', 'wflow.wflow_bmi_combined','lxml.etree', 'lxml._elementpath', 'gzip', 'numpy.core._methods', 'numpy.lib.format']
 
 #  "include_msvcr": True,
 options = {"includes": includes, "packages": packages,'include_files': data_files, "build_exe": thename,
@@ -171,7 +171,6 @@ if target == 'openda':
         Executable('Scripts/wtools_py/CatchRiver.py', base=base),
         Executable('wflow/create_grid.py', base=base),
         Executable('wflow/static_maps.py', base=base),
-        Executable('Scripts/wtools_py/wflow_fews.py', base=base),
         Executable('Scripts/pcr2netcdf.py', base=base),
         Executable('Scripts/bmi2runner.py', base=base),
         Executable('openda_bmi/opendapy.py', base=base),
@@ -188,14 +187,14 @@ if target == 'openda':
         Executable('wflow/wflow_floodmap.py', base=base),
         Executable('wflow/wflow_routing.py', base=base),
         Executable('wflow/wflow_hbv.py', base=base),
-        Executable('wflow/wflow_sphy.py', base=base)
+        Executable('wflow/wflow_sphy.py', base=base),
+        Executable('wflow/wflow_pcrglobwb.py', base=base)
     ]
 elif target == 'deltashell':
     executables = [
         Executable('Scripts/wtools_py/CatchRiver.py', base=base),
         Executable('wflow/create_grid.py', base=base),
         Executable('wflow/static_maps.py', base=base),
-        Executable('Scripts/wtools_py/wflow_fews.py', base=base),
         Executable('Scripts/pcr2netcdf.py', base=base),
         Executable('Scripts/bmi2runner.py', base=base),
         Executable('Scripts/wfds_core.py', base=base),
@@ -212,14 +211,14 @@ elif target == 'deltashell':
         Executable('wflow/wflow_gr4.py', base=base),
         Executable('wflow/wflow_floodmap.py', base=base),
         Executable('wflow/wflow_hbv.py', base=base),
-        Executable('wflow/wflow_sphy.py', base=base)
+        Executable('wflow/wflow_sphy.py', base=base),
+        Executable('wflow/wflow_pcrglobwb.py', base=base)
     ]
 else:
     executables = [
         Executable('Scripts/wtools_py/CatchRiver.py', base=base),
         Executable('wflow/create_grid.py', base=base),
         Executable('wflow/static_maps.py', base=base),
-        Executable('Scripts/wtools_py/wflow_fews.py', base=base),
         Executable('Scripts/pcr2netcdf.py', base=base),
         Executable('Scripts/bmi2runner.py', base=base),
         Executable('Scripts/wflow_prepare_step2.py', base=base),
@@ -227,6 +226,7 @@ else:
         Executable('Scripts/wflow_sbm_rtc.py', base=base),
         Executable('wflow/wflow_topoflex.py', base=base),
         Executable('wflow/wflow_sbm.py', base=base),
+        Executable('wflow/wflow_lintul.py', base=base),
         Executable('wflow/wflow_routing.py', base=base),
         Executable('wflow/wflow_adapt.py', base=base),
         Executable('wflow/wflow_w3ra.py', base=base),
@@ -235,7 +235,8 @@ else:
         Executable('wflow/wflow_gr4.py', base=base),
         Executable('wflow/wflow_floodmap.py', base=base),
         Executable('wflow/wflow_hbv.py', base=base),
-        Executable('wflow/wflow_sphy.py', base=base)
+        Executable('wflow/wflow_sphy.py', base=base),
+        Executable('wflow/wflow_pcrglobwb.py', base=base)
     ]
 
 setup(name='wflow',

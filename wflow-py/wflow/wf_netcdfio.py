@@ -459,8 +459,8 @@ class netcdfinput():
         floatspermb = 1048576 / 4
         maxmb = 40
 
-        maxlentime = len(self.dataset.variables['time'])
-        self.maxsteps = minimum(maxmb * len(a) / floatspermb + 1,maxlentime - 1)
+        self.maxlentime = len(self.dataset.variables['time'])
+        self.maxsteps = minimum(maxmb * len(a) / floatspermb + 1,self.maxlentime - 1)
         self.fstep = 0
         self.lstep = self.fstep + self.maxsteps
         self.offset = 0
@@ -530,7 +530,7 @@ class netcdfinput():
         for var in vars:
             try:
                 #self.alldat[var] = self.dataset.variables[var][self.fstep:self.maxsteps]
-                self.alldat[var] = self.dataset.variables[var]
+                self.alldat[var] = reshape(self.dataset.variables[var],(self.maxlentime,len(y),len(x)))
             except:
                 self.alldat.pop(var, None)
                 logging.warn("Variable " + var + " not found in netcdf file: " + netcdffile)
@@ -578,12 +578,12 @@ class netcdfinput():
             if ncindex == self.lstep:  # Read new block of data in mem
                 logging.debug("reading new netcdf data block starting at: " + str(ncindex))
                 for vars in self.alldat:
-                    self.alldat[vars] = self.dataset.variables[vars][ncindex:ncindex + self.maxsteps]
+                    self.alldat[vars] = reshape(self.dataset.variables[vars],(self.maxlentime,len(self.y),len(self.x)))[ncindex:ncindex + self.maxsteps]
 
                 self.fstep = ncindex
                 self.lstep = ncindex + self.maxsteps
 
-            np_step = self.alldat[var][ncindex - self.fstep, self.latidx.min():self.latidx.max()+1,
+            np_step = self.alldat[var][ncindex - self.fstep,self.latidx.min():self.latidx.max()+1,
                       self.lonidx.min():self.lonidx.max()+1]
 
             miss = float(self.dataset.variables[var]._FillValue)

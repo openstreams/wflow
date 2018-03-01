@@ -36,6 +36,9 @@ import os.path
 import shutil, glob
 import getopt
 
+import xarray
+import numpy as np
+
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
  
@@ -55,6 +58,23 @@ def pcr_tanh(x):
     
     """
     return (exp(x)-exp(-x))/(exp(x) + exp(-x))
+    
+def interp_hand(z,hand,hand_perc):
+    
+    z_lim = xarray.ufuncs.minimum( xarray.ufuncs.maximum(z,hand[0]), hand[perc.size-1] ) # limit values within measured elevation range
+
+    iLower = (hand.where(hand <= z_lim)) # find next lower elevation
+    PercLower = ((iLower*0+1.0).where(iLower==iLower.max(axis=0)) * hand_perc).max(axis=0, skipna = True)
+    zLower = iLower.where(iLower==iLower.max(axis=0)).max(axis=0, skipna = True)
+
+    iUpper = (hand.where(hand >= z_lim)) # find next higher elevation
+    PercUpper   = ((iUpper*0+1.0).where(iUpper==iUpper.min(axis=0)) * hand_perc).max(axis=0, skipna = True)
+    zUpper = iUpper.where(iUpper==iUpper.min(axis=0)).max(axis=0, skipna = True)
+    
+    flim = PercLower + (PercUpper - PercLower) * xarray.ufuncs.maximum(0, xarray.ufuncs.minimum(1, (z_lim - zLower) / (zUpper - zLower)))
+    pcr_flim = numpy2pcr(Scalar,flim.values,np.nan)
+    
+    return pcr_flim
 
 
 class WflowModel(DynamicModel):  
@@ -164,83 +184,108 @@ class WflowModel(DynamicModel):
     self.latitude = ycoordinate(boolean(self.Altitude))
 
    # Add reading of parameters here
-    self.ER_coef = self.wf_readmap(os.path.join(self.Dir, "staticmaps/ER_coef.map"),0.0,fail=True)
-    self.flmp = self.wf_readmap(os.path.join(self.Dir, "staticmaps/flmp.map"),0.0,fail=True)
-    self.fPotDeep = self.wf_readmap(os.path.join(self.Dir, "staticmaps/fPotDeep.map"),0.0,fail=True)
-    self.FsoilEmax = self.wf_readmap(os.path.join(self.Dir, "staticmaps/FsoilEmax.map"),0.0,fail=True)
-    self.Gs_scalar = self.wf_readmap(os.path.join(self.Dir, "staticmaps/Gs_scalar.map"),0.0,fail=True)    
-    self.hand_percentile0 = self.wf_readmap(os.path.join(self.Dir, "staticmaps/hand_percentile0.map"),0.0,fail=True)    
-    self.hand_percentile1 = self.wf_readmap(os.path.join(self.Dir, "staticmaps/hand_percentile1.map"),0.0,fail=True)    
-    self.hand_percentile2 = self.wf_readmap(os.path.join(self.Dir, "staticmaps/hand_percentile2.map"),0.0,fail=True)    
-    self.hand_percentile3 = self.wf_readmap(os.path.join(self.Dir, "staticmaps/hand_percentile3.map"),0.0,fail=True)    
-    self.hand_percentile4 = self.wf_readmap(os.path.join(self.Dir, "staticmaps/hand_percentile4.map"),0.0,fail=True)    
-    self.hand_percentile5 = self.wf_readmap(os.path.join(self.Dir, "staticmaps/hand_percentile5.map"),0.0,fail=True)    
-    self.hand_percentile6 = self.wf_readmap(os.path.join(self.Dir, "staticmaps/hand_percentile6.map"),0.0,fail=True)    
-    self.hand_percentile7 = self.wf_readmap(os.path.join(self.Dir, "staticmaps/hand_percentile7.map"),0.0,fail=True)    
-    self.hand_percentile8 = self.wf_readmap(os.path.join(self.Dir, "staticmaps/hand_percentile8.map"),0.0,fail=True)    
-    self.hand_percentile9 = self.wf_readmap(os.path.join(self.Dir, "staticmaps/hand_percentile9.map"),0.0,fail=True)    
-    self.hand_percentile10 = self.wf_readmap(os.path.join(self.Dir, "staticmaps/hand_percentile10.map"),0.0,fail=True)    
-    self.hand_percentile11 = self.wf_readmap(os.path.join(self.Dir, "staticmaps/hand_percentile11.map"),0.0,fail=True)    
-    self.hand_percentile12 = self.wf_readmap(os.path.join(self.Dir, "staticmaps/hand_percentile12.map"),0.0,fail=True)    
-    self.hand_percentile13 = self.wf_readmap(os.path.join(self.Dir, "staticmaps/hand_percentile13.map"),0.0,fail=True)    
-    self.hand_percentile14 = self.wf_readmap(os.path.join(self.Dir, "staticmaps/hand_percentile14.map"),0.0,fail=True)    
-    self.hand_percentile15 = self.wf_readmap(os.path.join(self.Dir, "staticmaps/hand_percentile15.map"),0.0,fail=True)    
-    self.hand_percentile16 = self.wf_readmap(os.path.join(self.Dir, "staticmaps/hand_percentile16.map"),0.0,fail=True)    
-    self.hand_percentile17 = self.wf_readmap(os.path.join(self.Dir, "staticmaps/hand_percentile17.map"),0.0,fail=True)    
-    self.hand_percentile18 = self.wf_readmap(os.path.join(self.Dir, "staticmaps/hand_percentile18.map"),0.0,fail=True)    
-    self.hand_percentile19 = self.wf_readmap(os.path.join(self.Dir, "staticmaps/hand_percentile19.map"),0.0,fail=True)    
-    self.hveg = self.wf_readmap(os.path.join(self.Dir, "staticmaps/hveg.map"),0.0,fail=True)
-    self.K_gw = self.wf_readmap(os.path.join(self.Dir, "staticmaps/K_gw.map"),0.0,fail=True)
-    self.k_s = self.wf_readmap(os.path.join(self.Dir, "staticmaps/k_s.map"),0.0,fail=True)
-    self.K0_scalar = self.wf_readmap(os.path.join(self.Dir, "staticmaps/K0_scalar.map"),0.0,fail=True)
-    self.Ksat_exp = self.wf_readmap(os.path.join(self.Dir, "staticmaps/Ksat_exp.map"),0.0,fail=True)
-    #self.lambda = self.wf_readmap(os.path.join(self.Dir, "staticmaps/lambda.map"),0.0,fail=True)
+
+    self.Fhru = self.wf_readmap(os.path.join(self.Dir, "staticmaps/fHRU.map"),0.0,fail=True)
+    self.T_offset = self.wf_readmap(os.path.join(self.Dir, "staticmaps/T_offset.map"),0.0,fail=True)
     self.OpenWaterFrac = self.wf_readmap(os.path.join(self.Dir, "staticmaps/OpenWaterFrac.map"),0.0,fail=True)
-    self.porosity = self.wf_readmap(os.path.join(self.Dir, "staticmaps/porosity.map"),0.0,fail=True)
-    self.Pref = self.wf_readmap(os.path.join(self.Dir, "staticmaps/pref.map"),0.0,fail=True)
-    self.psi_s = self.wf_readmap(os.path.join(self.Dir, "staticmaps/psi_s.map"),0.0,fail=True)
-    self.S_sls = self.wf_readmap(os.path.join(self.Dir, "staticmaps/S_sls.map"),0.0,fail=True)
     self.slope = self.wf_readmap(os.path.join(self.Dir, "staticmaps/slope.map"),0.0,fail=True)
+    self.hveg = self.wf_readmap(os.path.join(self.Dir, "staticmaps/hveg.map"),0.0,fail=True)
+    self.Gs_scalar = self.wf_readmap(os.path.join(self.Dir, "staticmaps/Gs_scalar.map"),0.0,fail=True)
+    self.ER_coef = self.wf_readmap(os.path.join(self.Dir, "staticmaps/ER_coef.map"),0.0,fail=True)
+    self.FsoilEmax = self.wf_readmap(os.path.join(self.Dir, "staticmaps/FsoilEmax.map"),0.0,fail=True)
+    self.K0_scalar = self.wf_readmap(os.path.join(self.Dir, "staticmaps/K0_scalar.map"),0.0,fail=True)
+    self.Ksat_exp = self.wf_readmap(os.path.join(self.Dir, "staticmaps/Ksat_exp.map"),0.0,fail=True)    
+    self.k_s = self.wf_readmap(os.path.join(self.Dir, "staticmaps/k_s.map"),0.0,fail=True)
+    self.Lambda = self.wf_readmap(os.path.join(self.Dir, "staticmaps/lambda.map"),0.0,fail=True)
+    self.S_sls = self.wf_readmap(os.path.join(self.Dir, "staticmaps/S_sls.map"),0.0,fail=True)    
     self.snow_Cfmax = self.wf_readmap(os.path.join(self.Dir, "staticmaps/snow_Cfmax.map"),0.0,fail=True)
     self.snow_Cfr = self.wf_readmap(os.path.join(self.Dir, "staticmaps/snow_Cfr.map"),0.0,fail=True)
     self.snow_TT = self.wf_readmap(os.path.join(self.Dir, "staticmaps/snow_TT.map"),0.0,fail=True)
     self.snow_WHC = self.wf_readmap(os.path.join(self.Dir, "staticmaps/snow_WHC.map"),0.0,fail=True)
-    self.T_offset = self.wf_readmap(os.path.join(self.Dir, "staticmaps/T_offset.map"),0.0,fail=True)
+    self.flmp = self.wf_readmap(os.path.join(self.Dir, "staticmaps/flmp.map"),0.0,fail=True)
+    self.Pref = self.wf_readmap(os.path.join(self.Dir, "staticmaps/pref.map"),0.0,fail=True)
+    self.psi_s = self.wf_readmap(os.path.join(self.Dir, "staticmaps/psi_s.map"),0.0,fail=True)
+    self.fPotDeep = self.wf_readmap(os.path.join(self.Dir, "staticmaps/fPotDeep.map"),0.0,fail=True)
+    self.porosity = self.wf_readmap(os.path.join(self.Dir, "staticmaps/porosity.map"),0.0,fail=True)
+    self.K_gw = self.wf_readmap(os.path.join(self.Dir, "staticmaps/K_gw.map"),0.0,fail=True)
     self.theta_s = self.wf_readmap(os.path.join(self.Dir, "staticmaps/theta_s.map"),0.0,fail=True)
-    #self.K_rout = self.wf_readmap(os.path.join(self.Dir,  "staticmaps/k_rout.map"),0.0,fail=True)
-    #self.Sgref = self.wf_readmap(os.path.join(self.Dir, "staticmaps/sgref.map"),0.0,fail=True)
-    #self.alb_dry = self.wf_readmap(os.path.join(self.Dir, "staticmaps/alb_dry.map"),0.0,fail=True)
-    #self.alb_wet = self.wf_readmap(os.path.join(self.Dir, "staticmaps/alb_wet.map"),0.0,fail=True)
-    #self.beta = self.wf_readmap(os.path.join(self.Dir, "staticmaps/beta.map"),0.0,fail=True)
-    #self.cGsmax = self.wf_readmap(os.path.join(self.Dir, "staticmaps/cgsmax.map"),0.0,fail=True)
-    #self.ER_frac_ref = self.wf_readmap(os.path.join(self.Dir, "staticmaps/er_frac_ref.map"),0.0,fail=True)
-    #self.Fhru = self.wf_readmap(os.path.join(self.Dir, "staticmaps/fHRU.map"),0.0,fail=True)
-    #self.FdrainFC = self.wf_readmap(os.path.join(self.Dir, "staticmaps/fdrainfc.map"),0.0,fail=True)
-    #self.Fgw_conn = self.wf_readmap(os.path.join(self.Dir, "staticmaps/fgw_conn.map"),0.0,fail=True)
-    #self.SLA  = self.wf_readmap(os.path.join(self.Dir, "staticmaps/sla.map"),0.0,fail=True)
-    #self.LAIref = self.wf_readmap(os.path.join(self.Dir, "staticmaps/lairef.map"),0.0,fail=True)
-    #self.fvegref_G = self.wf_readmap(os.path.join(self.Dir, "staticmaps/fvegref_g.map"),0.0,fail=True)
-    #self.FwaterE = self.wf_readmap(os.path.join(self.Dir, "staticmaps/fwatere.map"),0.0,fail=True)
-    #self.Gfrac_max = self.wf_readmap(os.path.join(self.Dir, "staticmaps/gfrac_max.map"),0.0,fail=True)
-    #self.InitLoss = self.wf_readmap(os.path.join(self.Dir, "staticmaps/initloss.map"),0.0,fail=True)
-    #self.LAImax = self.wf_readmap(os.path.join(self.Dir, "staticmaps/laimax.map"),0.0,fail=True)
-    #self.S0FC = self.wf_readmap(os.path.join(self.Dir, "staticmaps/s0fc.map"),0.0,fail=True)
-    #self.SsFC = self.wf_readmap(os.path.join(self.Dir, "staticmaps/ssfc.map"),0.0,fail=True)
-    #self.SdFC = self.wf_readmap(os.path.join(self.Dir, "staticmaps/sdfc.map"),0.0,fail=True)
-    #self.Vc  = self.wf_readmap(os.path.join(self.Dir, "staticmaps/vc.map"),0.0,fail=True)
-    #self.w0ref_alb = self.wf_readmap(os.path.join(self.Dir, "staticmaps/w0ref_alb.map"),0.0,fail=True)
-    #self.Us0  = self.wf_readmap(os.path.join(self.Dir, "staticmaps/us0.map"),0.0,fail=True)
-    #self.Ud0  = self.wf_readmap(os.path.join(self.Dir, "staticmaps/ud0.map"),0.0,fail=True)
-    #self.wslimU = self.wf_readmap(os.path.join(self.Dir, "staticmaps/wslimu.map"),0.0,fail=True)
-    #self.wdlimU = self.wf_readmap(os.path.join(self.Dir, "staticmaps/wdlimu.map"),0.0,fail=True)
-    #self.w0limE = self.wf_readmap(os.path.join(self.Dir, "staticmaps/w0lime.map"),0.0,fail=True)
-    #self.Tgrow = self.wf_readmap(os.path.join(self.Dir, "staticmaps/tgrow.map"),0.0,fail=True)
-    #self.Tsenc = self.wf_readmap(os.path.join(self.Dir, "staticmaps/tsenc.map"),0.0,fail=True)
+    
+    
+    self.alb_dry = self.wf_readmap(os.path.join(self.Dir, "staticmaps/alb_dry.map"),0.20,fail=True)
+    self.alb_wet = self.wf_readmap(os.path.join(self.Dir, "staticmaps/alb_wet.map"),0.15,fail=True)
+    self.alb_snow = self.wf_readmap(os.path.join(self.Dir, "staticmaps/alb_snow.map"),0.60,fail=True)
+    self.alb_water = self.wf_readmap(os.path.join(self.Dir, "staticmaps/alb_water.map"),0.05,fail=True)
+    self.Cg = self.wf_readmap(os.path.join(self.Dir, "staticmaps/Cg.map"),1.940,fail=True)
+    self.cGsmax = self.wf_readmap(os.path.join(self.Dir, "staticmaps/cGsmax.map"),0.020,fail=True)
+    self.d0 = self.wf_readmap(os.path.join(self.Dir, "staticmaps/d0.map"),0.15,fail=True)
+    self.ds = self.wf_readmap(os.path.join(self.Dir, "staticmaps/ds.map"),0.85,fail=True)
+    self.dd = self.wf_readmap(os.path.join(self.Dir, "staticmaps/dd.map"),4.00,fail=True)
+    self.D50 = self.wf_readmap(os.path.join(self.Dir, "staticmaps/D50.map"),700,fail=True)
+    self.ER_exp = self.wf_readmap(os.path.join(self.Dir, "staticmaps/ER_exp.map"),0.114,fail=True)
+    self.f_alb_Vc = self.wf_readmap(os.path.join(self.Dir, "staticmaps/f_alb_Vc.map"),0.4,fail=True)
+    self.Fgw_conn = self.wf_readmap(os.path.join(self.Dir, "staticmaps/Fgw_conn.map"),1,fail=True)
+    self.fvegref_G = self.wf_readmap(os.path.join(self.Dir, "staticmaps/fvegref_G.map"),0.15,fail=True)
+    self.FwaterE = self.wf_readmap(os.path.join(self.Dir, "staticmaps/FwaterE.map"),1,fail=True)
+    self.Gfrac_max = self.wf_readmap(os.path.join(self.Dir, "staticmaps/Gfrac_max.map"),0.15,fail=True)
+    self.InitLoss = self.wf_readmap(os.path.join(self.Dir, "staticmaps/InitLoss.map"),0,fail=True)
+    self.K_rout = self.wf_readmap(os.path.join(self.Dir, "staticmaps/K_rout.map"),0.5,fail=True)
+    self.Kr_coeff = self.wf_readmap(os.path.join(self.Dir, "staticmaps/Kr_coeff.map"),0.0741,fail=True)
+    self.LAIref = self.wf_readmap(os.path.join(self.Dir, "staticmaps/LAIref.map"),2.4,fail=True)
+    self.LUEmax = self.wf_readmap(os.path.join(self.Dir, "staticmaps/LUEmax.map"),0.0544,fail=True)  
+    self.Pref_imp = self.wf_readmap(os.path.join(self.Dir, "staticmaps/Pref_imp.map"),10,fail=True)
+    self.R0 = self.wf_readmap(os.path.join(self.Dir, "staticmaps/R0.map"),0.789,fail=True)
+    self.SLA = self.wf_readmap(os.path.join(self.Dir, "staticmaps/SLA.map"),5,fail=True)
+    self.slope_coeff = self.wf_readmap(os.path.join(self.Dir, "staticmaps/slope_coeff.map"),0.9518,fail=True)
+    self.snow_TTI = self.wf_readmap(os.path.join(self.Dir, "staticmaps/snow_TTI.map"),1,fail=True)
+    self.T24_snow = self.wf_readmap(os.path.join(self.Dir, "staticmaps/T24_snow.map"),18,fail=True)
+    self.Tmin = self.wf_readmap(os.path.join(self.Dir, "staticmaps/Tmin.map"),-10,fail=True)
+    self.Topt = self.wf_readmap(os.path.join(self.Dir, "staticmaps/Topt.map"),10,fail=True)
+    self.Tgrow = self.wf_readmap(os.path.join(self.Dir, "staticmaps/Tgrow.map"),200,fail=True)
+    self.Tsenc = self.wf_readmap(os.path.join(self.Dir, "staticmaps/Tsenc.map"),20,fail=True)
+    self.Ud0 = self.wf_readmap(os.path.join(self.Dir, "staticmaps/Ud0.map"),6,fail=True)
+    self.Ug0 = self.wf_readmap(os.path.join(self.Dir, "staticmaps/Ug0.map"),1,fail=True)
+    self.Us0 = self.wf_readmap(os.path.join(self.Dir, "staticmaps/Us0.map"),6,fail=True)
+    self.Vc = self.wf_readmap(os.path.join(self.Dir, "staticmaps/Vc.map"),0.5,fail=True)
+    self.w0ref_alb = self.wf_readmap(os.path.join(self.Dir, "staticmaps/w0ref_alb.map"),0.3,fail=True)     
+    
+    ds_hand = xarray.open_dataset(os.path.join(self.Dir, "staticmaps/HAND.nc"))
+    
+    hand = ds_hand['HAND']
+    self.HAND = xarray.concat([(hand[0]*0.0).expand_dims('z'),hand],dim='z')
+    
+    perc_HAND = ds_hand['percentile']
+    self.perc_HAND = xarray.concat([(perc_HAND[0]*0.0).expand_dims('z'),perc_HAND],dim='z')
+    
+    psi_FC = self.wf_readmap(os.path.join(self.Dir, "staticmaps/psi_FC.map"),-3.3,fail=True) # m or hPa or 33 kPa
+    psi_FC0 = self.wf_readmap(os.path.join(self.Dir, "staticmaps/psi_FC0.map"),-0.5,fail=True) # m or hPa or 5 kPa - rapidly drainable theta for top soil
+    psi_ERRP = self.wf_readmap(os.path.join(self.Dir, "staticmaps/psi_ERRP.map"),-10,fail=True) # m or 100 kPa - assumed pressure at which soil moisture starts to limit soil evaporation (following D. Tran, 2015)
+    psi_d = self.wf_readmap(os.path.join(self.Dir, "staticmaps/psi_d.map"),-50,fail=True) # m assumed pressure at which soil moisture starts to limit soil water uptake
+    psi_PWP = self.wf_readmap(os.path.join(self.Dir, "staticmaps/psi_PWP.map"),-150,fail=True) # m 
+    psi_res = self.wf_readmap(os.path.join(self.Dir, "staticmaps/psi_res.map"),-1e6,fail=True) # m 
+    
+    
+    theta_FC   = self.theta_s * min(1, (self.psi_s / psi_FC))**self.Lambda #fraction
+    theta_FC0   = self.theta_s * min(1, (self.psi_s / psi_FC0 ))**self.Lambda # fraction
+    theta_ERRP   = self.theta_s *min(1, (self.psi_s / psi_ERRP ))**self.Lambda # fraction
+    theta_d   = self.theta_s *min(1, (self.psi_s / psi_d ))**self.Lambda # fraction
+    theta_PWP   = self.theta_s *min(1, (self.psi_s / psi_PWP ))**self.Lambda # fraction
+    self.theta_res   = self.theta_s *min(1, (self.psi_s / psi_res ))**self.Lambda # fraction
+    
+    self.S0max = self.d0 * 1000 * (theta_FC0 - self.theta_res) # mm available storage for evaporation, note FC0 is used rather than theta_sat
+    self.Ssmax = self.ds * 1000 * (self.theta_s - theta_PWP);
+    self.Sdmax = self.dd * 1000 * (self.theta_s - theta_PWP);
+    self.K0sat = self.K0_scalar * self.k_s # mm/d - note that this is technically in fact not Ksat but K(theta_FC0)
+    self.Kssat = self.Ks_scalar * self.k_s
+    self.Kdsat = self.Kd_scalar * self.k_s
+    self.w0limE      =  (theta_ERRP - theta_res) / (self.theta_s - theta_res)
+    self.wslimU      =  (theta_d - theta_PWP) /(self.theta_s - theta_PWP)
+    self.wdlimU      =  (theta_d - theta_PWP) /(self.theta_s - theta_PWP)
 
     self.wf_multparameters()
+    
     # Static, for the computation of Aerodynamic conductance (3.7)
-    self.fh = ln(813./max(self.hveg,0.25)-5.45)
-    self.ku1 = 0.305/(self.fh*(self.fh+2.3))
+    #self.fh = ln(813./max(self.hveg,0.25)-5.45)
+    #self.ku1 = 0.305/(self.fh*(self.fh+2.3))
 
     self.logger.info("Starting Dynamic run...")
 
@@ -356,41 +401,46 @@ class WflowModel(DynamicModel):
 
 
         # diagnostic equations
-
-        self.LAI = self.SLA*self.Mleaf   # (5.3)
-        fveg = max(1 - exp(-self.LAI/self.LAIref),0.000001) # (5.3)
-
-        # Vc = max(0,EVI-0.07)/fveg
-        fsoil = 1 - fveg
-        w0 = self.S0/self.S0max     # (2.)
+        w0 = self.S0/self.S0max     # (2.1)
         ws = self.Ss/self.Ssmax     # (2.1)
         wd = self.Sd/self.Sdmax     # (2.1)
-
-
-        TotSnow = self.FreeWater+self.DrySnow
-        #wSnow = self.FreeWater/(TotSnow+1e-5)
-
-        # Spatialise catchment fractions
-        #Sgfree =   max(self.Sg,0.0)
-        # JS: Not sure if this is translated properly....
-        #for i=1:par.Nhru
+        
+        #Calculate vegetation parameters and cover fractions
+        self.LAI    =   self.SLA  * self.Mleaf # (5.3)
+        fveg        =   max(1 - exp(- self.LAI / self.LAIref),0.000001) # (5.3)
+        fsoil       =   1 - fveg
+        LUE         =   self.LUEmax  * self.Vc * fveg
+        
+        # Calculate open water fraction
         ChannelSurface =   min(0,(0.007*self.Sr**0.75))
         OpenWaterFrac = max(ChannelSurface, self.OpenWaterFrac)
+
+        # Calculate snow cover fraction
+        TotSnow = self.FreeWater + self.DrySnow
+        fsnow = min(1.0,0.05*TotSnow) # assumed; more analysis needed
         
-         !! HANDometric functions go here !!
+        # V5 'HANDometric' equations
+        # requires self.porosity, self.HAND, self.perc_HAND
+        z_g = self.HAND[0] + pcr.pcr2numpy(self.Sg / (self.porosity * 1e3), np.nan) # groundwater table height in m AMSL (Sg=0 equates to drainage base)
+        # saturated area (considers capillary rise, hence +0.3 m)        
+        z = self.HAND[0] + pcr.pcr2numpy(self.Sg /(self.porosity * 1e3) + (-self.psi_s), np.nan) #bubbling pressure as indication of capillary fringe
+        fg = interp_hand(z,self.HAND,self.perc_HAND) / 100
+        # same for veg with access to gw
+        RD = 1 # assumed maximum depth of shallow root water uptake
+        z = self.HAND[0] + self.Sg / (self.porosity * 1e3) + RD
+        fUgShallow  = interp_hand(z,self.HAND,self.perc_HAND) /100 * (1 - self.fPotDeep )
+        RD = 7 # assumed maximum depth of deep root water uptake
+        z = self.HAND[0] + self.Sg /(self.porosity * 1e3) + RD
+        fUgDeep = interp_hand(z,self.HAND,self.perc_HAND) /100  * self.fPotDeep
+        fUg = fUgShallow + fUgDeep
+        
+        # Spatialise these fractions (largely superfluous with 1 HRU)
+        # Rewrite this part if > 1 HRU
+        fw_local = ChannelSurface
+        fwater = OpenWaterFrac
+        fsat = min(1,max( OpenWaterFrac, fg )) ## V5
 
-        #fsat =   min(1.0,max(min(0.005,0.007*self.Sr**0.75),Sgfree/self.Sgref))
-        #Sghru =   self.Sg
 
-        # CALCULATION OF PET
-        # Conversions and coefficients (3.1)
-        pesx = min((scalar(17.27)*Ta/(scalar(237.3)+Ta)),scalar(10))
-        pes = min(scalar((scalar(610.8))*exp(pesx)),scalar(10000))  # saturated vapour pressure
-        # fRH = pe/pes  # relative air humidity                                  -------------- check 
-        cRE = 0.03449+4.27e-5*Ta
-        # Caero = self.fday*0.176*(1+Ta/209.1)*(pair-0.417*pe)*(1-fRH)         -------------- check 
-        # keps = 1.4e-3*((Ta/187)**2+Ta/107+1)*(6.36*pair+pe)/pes
-        ga = max(0.001, self.ku1*self.u1 )
 
         
         if self.UseETPdata == 1:
@@ -398,44 +448,49 @@ class WflowModel(DynamicModel):
             keps = 0.655E-3 * pair / pes   # See Appendix A3 (http://www.clw.csiro.au/publications/waterforahealthycountry/2010/wfhc-aus-water-resources-assessment-system.pdf) --------------------------------   check!
         
         elif self.UseETPdata == 0:
-            # Aerodynamic conductance (3.7)
+            # CALCULATION OF PET
+            # Conversions and coefficients (3.1)
+            fRH = pe/pes  # relative air humidity                                  -------------- check 
+            cRE = 0.03449+4.27e-5*Ta
+            Caero = 0.176*(1+Ta/209.1)*(pair-0.417*pe)*(1-fRH) # removed fday as already daytime
+            keps = 1.4e-3*((Ta/187)**2+Ta/107+1)*(6.36*pair+pe)/pes
+            Rgeff = Rg /self.fday  # this is original
 
-            ns_alb = self.ALBEDO # available as parameter climatology
-            Rgeff = Rg/self.fday
-            # shortwave radiation balance (3.2)
-            #alb_veg = 0.452*Vc
-            #alb_soil = alb_wet+(alb_dry-alb_wet)*exp(-w0/w0ref_alb)
-            # new equations for snow albedo
-            alb_snow = self.SNOWALBEDO          # available as parameter climatology
-            fsnow = min(1.0,0.05*TotSnow)     # assumed; ideally some lit research needed
-            #alb = fveg*alb_veg+(fsoil-fsnow)*alb_soil +fsnow*alb_snow
-            #alb = albedo
-            alb = (1-fsnow)*ns_alb +fsnow*alb_snow
+            # albedo model            
+            alb_veg = self.f_alb_Vc * self.Vc
+            dryfrac = exp(-w0/self.w0ref_alb)*(1-fsat)
+            alb_soil = self.alb_wet + (self.alb_dry-self.alb_snow) * dryfrac
+            alb_ns = fveg*alb_veg+fsoil*alb_soil
+            alb = (1-fwater)*(1-fsnow)*alb_ns +fsnow*self.alb_snow + fwater*self.alb_water
+            
             RSn = (1-alb)*Rgeff
+            
             # long wave radiation balance (3.3 to 3.5)
             StefBolz = 5.67e-8
             Tkelv = Ta+273.16
-#            self.RLin = (0.65*(pe/Tkelv)**0.14)*StefBolz*Tkelv**4     # (3.3)
-            self.RLin - self.LWDOWN  # available from meteo forcing 
-            RLout = StefBolz*Tkelv**4.0      # (3.4)
-            self.RLn = self.RLin-RLout
-    
+            
+            RLin = self.LWdown # provided by E2O data (though not sure how good it is..)
+            RLout = 1 * StefBolz * Tkelv**4 #v0.5   # (3.4)
+            RLn = RLin-RLout
+            
             self.fGR = self.Gfrac_max*(1-exp(-fsoil/self.fvegref_G))
-            self.Rneff = max(1, (RSn+self.RLn)*(1-self.fGR) ) 
+            self.Rneff = max(1, (RSn+self.RLn)*(1-self.fGR) ) # original (assuming any condensation is already measured in rain and there is a minimum Rneff of 1 W/m2 (to prevent any zero issues) 
             
-            fRH = pe/pes  # relative air humidity
-            Caero = self.fday*0.176*(1+Ta/209.1)*(pair-0.417*pe)*(1-fRH)        # -------------- check  
-            keps = 1.4e-3*((Ta/187)**2+Ta/107+1)*(6.36*pair+pe)/pes
+            # Aerodynamic conductance (3.7)
+            fh = ln(813/max(0.25,self.hveg)-5.45) # assume minimum roughness of 0.25 m
+            # ADJUSTED FOR E2O WFEI DATA: uz at 1m screen height (see AWRA technical report)
+            ku1 = 0.359 / (fh*(fh+2.3))
+            ga = max(0.001, ku1*self.u1) # minimum of 0.001 imposed to avoid issues 
+                        
             
-            #  Potential evaporation
-            kalpha = 1+Caero*ga/self.Rneff
-            self.E0 = cRE*(1/(1+keps))*kalpha*self.Rneff*self.fday
-            self.E0 = max(self.E0,0)
-            self.Eeq = cRE*(1/(1+keps))*1*self.Rneff*self.fday
-            self.Ept = cRE*(1/(1+keps))*1.26*self.Rneff*self.fday
+            # Potential evaporation (original)
+            kalpha = min(1.4, 1+Caero*ga/self.Rneff) # do not allow value higher as that implies a unlikely high rate of advection from nearby areas only likely to occur for wet canopy.
+            self.E0 = cRE*(1/(1+keps))*kalpha*self.Rneff*self.fday # for canopy
+            self.Ept = cRE*(1/(1+keps))*1.26*self.Rneff*self.fday # for open water
  
         # CALCULATION OF ET FLUXES AND ROOT WATER UPTAKE
         # Root water uptake constraint (4.4)
+        # For v5 no Uomax so temporarily bypassed here  
         U0max = scalar(0)
         Usmax = max(0, self.Us0*min(1,ws/self.wslimU))       ##0-waarden omdat ws1 bevat 0-waarden (zie regel 116)
         Udmax = max(0, self.Ud0*min(1,wd/self.wdlimU))       ##0-waarden omdat wd1 bevat 0-waarden (zie regel 118)
@@ -445,7 +500,7 @@ class WflowModel(DynamicModel):
         # Maximum transpiration (4.3)
         Gsmax = self.Gs_scalar*self.cGsmax*self.Vc
         VPD = max(0,pes-pe)
-        fD = self.Cg./(1+VPD/self.D50)
+        fD = self.Cg /(1+VPD/self.D50)
         gs = fveg*fD*Gsmax
         ft = 1/(1+(keps/(1+keps))*ga/gs)
         Etmax = ft*self.E0
@@ -454,22 +509,26 @@ class WflowModel(DynamicModel):
         Et = min(Umax, Etmax)
         
         # # Root water uptake distribution (2.3)
-        U0 = max(min((U0max/(U0max + Usmax + Udmax + Ugmax))*Et, self.S0-1e-2),0)
-        Us = max(min((Usmax/(U0max + Usmax + Udmax + Ugmax))*Et, self.Ss-1e-2),0)
-        Ud = max(min((Udmax/(U0max + Usmax + Udmax + Ugmax))*Et, self.Sd-1e-2),0)
-        Ug = max(min((Ugmax/(U0max + Usmax + Udmax + Ugmax))*Et, self.Sd-1e-2),0)
+        # # Below seems to be in v5
+        U0 = scalar(0)
+        Us = max(0, min( (Usmax /(Usmax+Udmax+Ugmax))*Et, self.Ss-1e-2 ) )
+        Ud = max(0, min( (Udmax /(Usmax+Udmax+Ugmax))*Et, self.Sd-1e-2 ) )
+        Ug = max(0, min( (Ugmax /(Usmax+Udmax+Ugmax))*Et, self.Sd-1e-2 ) )
+        
         Et = U0 + Us + Ud + Ug      # to ensure mass balance
 
         # Soil evaporation (4.5)
-        w0x = max(0, (self.S0 - U0)/self.S0max )    # (2.1)
+        w0x = max(0, (self.S0 - U0)/self.S0max) # adjusted top soil water content
         fsoilE = self.FsoilEmax*min(1,w0x/self.w0limE)
-        Es0 = (1-fsat)*fsoilE*(max(0,self.Eeq-Et))
+        Es0 = (1-fsat)*fsoilE*(max(0,self.E0-Et))
+        
         # Groundwater evaporation (4.6)
-        Eg0 = max(0,fsat-fwater)*self.FsoilEmax*max(0,self.Eeq-Et)
+        Eg0 = max(0,fsat-fwater)*self.FsoilEmax*max(0,self.E0-Et)
         Es = Es0 + Eg0
-        # Open water evaporation (4.7)
-        Erl = fw_local*self.FwaterE.*self.Ept
-        Err = (fwater-fw_local)*self.FwaterE.*self.Ept
+        
+        # Open water evaporation (4.7) # uses Priestley-Taylor
+        Erl = fw_local*self.FwaterE*self.Ept # from local river channels
+        Err = (fwater-fw_local)*self.FwaterE*self.Ept # from remaining open water
         Er = Erl + Err
 
         # Rainfall interception evaporation (4.2)
@@ -517,23 +576,22 @@ class WflowModel(DynamicModel):
         # surface water fluxes (2.2)
         Rsof = fsat * Ps
         Pi = max(0, Ps-self.InitLoss)
-        Rhof_soil = max(0,1-fsat-self.fImp)*(Pi - self.Pref*pcr_tanh(Pi/self.Pref)) # CHECK IF THIS GOES OK IN PYTHON
+        Rhof_soil = max(0,1-fsat-self.fImp)*(Pi - self.Pref*pcr_tanh(Pi/self.Pref)) # CHECK IF THIS GOES OK IN PYTHON ## v5 ##
         Rhof_imp = self.fImp*(Pi - self.Pref_imp*pcr_tanh(Pi/self.Pref_imp)) # CHECK IF THIS GOES OK IN PYTHON
         Rhof = Rhof_soil + Rhof_imp
-        QR = Rhof + Rsof + Rmelt
+        QR = Rhof + Rsof + Rmelt # combined runoff
         I = Ps - Rhof - Rsof 
 
         # SOIL WATER BALANCES (2.1 & 2.4)
-        # Topsoil water balance (S0)
 
-        # top soil layer hydrology
+        # Soil hydrology from v5 (Viney et al., 2015) http://www.bom.gov.au/water/landscape/static/publications/Viney_et_al_2015_AWRA_L_5.0_model_description.pdf
         Kr_0s = self.K0sat/self.Kssat
         Rh_0s = pcr_tanh(self.slope_coeff*self.slope*w0)*pcr_tanh(self.Kr_coeff*(Kr_0s-1)*w0)
-        # general default case
+        # general case
         Km = (self.K0sat*self.Kssat)**0.5
         A = Km/(self.S0max**2)
         B = 1
-        C = -(self.S0+I+Es)
+        C = -(self.S0 + I - Es)
         S0 = (-B + ((B**2-4*A*C)**0.5))/(2*A)
         D0 = (1-Rh_0s)*Km*((self.S0/self.S0max)**2)
         IF0 = Rh_0s*Km*((self.S0/self.S0max)**2)
@@ -548,17 +606,17 @@ class WflowModel(DynamicModel):
         D0 = ifthenelse(imap,(1-Rh_0s)*self.K0sat,D0)
         IF0 = ifthenelse(imap,Rh_0s*self.K0sat+(self.S0-self.S0max-self.K0sat+I-Es),IF0)
         S0 = ifthenselse(imap,self.S0max,S0)
-        # enforce mass balance (for numerical & rounding errors
+        # enforce mass balance (there can be small numerical errors in quadratic equation)
         S0 = max(0, min(S0,self.S0max))
         massbal = self.S0 + I - Es - D0 - IF0 - S0
         D0 = D0 + (1-Rh_0s)*massbal
         IF0 = IF0 + Rh_0s*massbal
         self.S0 = S0  # Update state
         
-        # shallow soil layer hydrology
+        # # Shallow root zone water balance (Ss) (2.4)
         Kr_sd = self.Kssat/self.Kdsat
         Rh_sd = pcr_tanh(self.slope_coeff*self.slope*ws)*pcr_tanh(self.Kr_coeff*(Kr_sd-1)*ws)
-        # general default case
+        # general case
         Km = (self.Kssat*self.Kdsat)**0.5
         A = Km/(self.Ssmax**2)
         B = 1
@@ -577,14 +635,15 @@ class WflowModel(DynamicModel):
         Ds = ifthenelse(imap,(1-Rh_sd)*self.Kssat,Ds)
         IFs = ifthenelse(imap,Rh_sd*self.Kssat+(self.Ss-self.Ssmax-self.Kssat+D0-Us),IFs)
         Ss = ifthenselse(imap,self.Ssmax,Ss)
-        # enforce mass balance (for numerical & rounding errors
+        # enforce mass balance (for numerical & rounding errors)
         Ss = max(0, min(Ss,self.Ssmax))
         massbal = self.Ss + D0 - Us - Ds - IFs - Ss
         Ds = Ds + (1-Rh_sd)*massbal
         IFs = IFs + Rh_sd*massbal
         self.Ss = Ss  # Update state
 
-        # Deep soil layer hydrology
+        # # Deep root zone water balance (Sd) (2.4)
+        # general case
         A = self.Kdsat/(self.Sdmax**2)
         B = 1
         C = -(self.Sd+Ds-Ud)
@@ -600,7 +659,7 @@ class WflowModel(DynamicModel):
         # saturation case
         imap   = (self.Sdmax-self.Sd-self.Kdsat)<=(Ds-Ud)
         Dd = ifthenelse(imap,self.Kdsat,Dd)
-        IFd = ifthenelse(imap,self.Sd-self.Sdmax-self.Kdsat+Ds-Ud),IFd)
+        IFd = ifthenelse(imap,(self.Sd-self.Sdmax-self.Kdsat+Ds-Ud),IFd)
         Sd = ifthenselse(imap,self.Sdmax,Sd)
         # enforce mass balance (for numerical & rounding errors
         Sd = max(0, min(Sd,self.Sdmax))
@@ -608,39 +667,37 @@ class WflowModel(DynamicModel):
         Dd = Dd + massbal
         self.Sd = Sd  # Update state
 
-        IFs = IFs + IFd ; # add up to interflow 
-        QR = QR + IF0 + IFs;
+        IFs = IFs + IFd  # add up to interflow 
+        QR = QR + IF0 + IFs # add to runoff
         
         # CATCHMENT WATER BALANCE
         # Groundwater store water balance (Sg) (2.5)
-        NetGf = Dd - Eg - Ug
+        NetGf = Dd - Eg0 - Ug
         self.Sg = self.Sg + NetGf
-        Sgfree = max(self.Sg,0)
-        Qg = min(Sgfree, (1-exp(-self.K_gw))*Sgfree)
+        Sg_fd = max(self.Sg,0)
+        Qg = min(Sg_fd, (1-exp(-self.K_gw))*Sgfree)
         self.Sg = self.Sg - Qg
 
         # Surface water store water balance (Sr) (2.7)
-        self.Sr = max(0, self.Sr  +  QR - Er + Qg )
+        self.Sr = max(0, self.Sr  +  QR - Erl + Qg )
         self.Qtot = max(0, min(self.Sr, (1-exp(-self.K_rout))*self.Sr) )
         self.Sr = self.Sr  - self.Qtot
 
-        # VEGETATION ADJUSTMENT (5)
+        # VEGETATION ADJUSTMENT (5.7-5.8)
         fvmax = 1-exp(-max(self.LAImax,0.002778)/self.LAIref)
         fveq = (1/max((self.E0/Umax)-1,1e-3))*(keps/(1+keps))*(ga/(fd*Gsmax))
         fveq = min(fveq,fvmax)
+        
+        # VEGETATION ADJUSTMENT (5.4-5.6)
         dMleaf = -ln(1-fveq)*self.LAIref/self.SLA-self.Mleaf
-
-        #Mleafnet1 = dMleaf1 * (dMleaf1/self.Tgrow1) + dMleaf1 * dMleaf1/self.Tsenc1
-        #Mleafnet2 = dMleaf2 * (dMleaf1/self.Tgrow2) + dMleaf2 * dMleaf2/self.Tsenc2
         Mleafnet = scalar(dMleaf>0)*(dMleaf/self.Tgrow) +scalar(dMleaf<0)*dMleaf/self.Tsenc
-
-
         self.Mleaf = self.Mleaf + Mleafnet
+
         self.LAI = self.SLA*self.Mleaf   # (5.3)
 
-        fveg = 1 - exp(-self.LAI1/self.LAIref1)     #(5.3)
+        fveg = 1 - exp(-self.LAI/self.LAIref1)     #(5.3)
         # in case this is desired as output:
-        self.w0 = self.S0/self.S0max
+        self.w0 = self.S0/self.S0max #(2.1)
         self.TotSnow = self.DrySnow + self.FreeWater 
 
 # The main function is used to run the program from the command line

@@ -7,6 +7,7 @@ supported targets:
 --openda - includes thrift connection to openda, Make sure you have thrift installed first
 --deltashell - includes bmi/mmi link to deltashell. Windows only. Make sure you have zmq, bmi and mmi
   installed. bmi and mmi can be downloaded from the openearth github repository
+
 """
 
 
@@ -17,6 +18,8 @@ import ctypes,glob,os,shutil
 import matplotlib
 import scipy
 import sys
+import glob
+import json
 
 target = 'normal'
 # Filter out wflow specific options
@@ -34,44 +37,11 @@ if "--deltashell" in sys.argv:
 pdir = os.path.dirname(sys.executable) + "/"
 
 if sys.platform == 'win32':
-    # list comes from: c:\Anaconda\conda-meta\mkl-11.3.3-1.json
-    MKL_files= [pdir + "Library/bin/cilkrts20.dll",
-        pdir + "Library/bin/ifdlg100.dll",
-        pdir + "Library/bin/libchkp.dll",
-        pdir + "Library/bin/libicaf.dll",
-        pdir + "Library/bin/libifcoremd.dll",
-        pdir + "Library/bin/libifcoremdd.dll",
-        pdir + "Library/bin/libifcorert.dll",
-        pdir + "Library/bin/libifcorertd.dll",
-        pdir + "Library/bin/libifportmd.dll",
-        pdir + "Library/bin/libimalloc.dll",
-        pdir + "Library/bin/libiomp5md.dll",
-        pdir + "Library/bin/libiompstubs5md.dll",
-        pdir + "Library/bin/libmmd.dll",
-        pdir + "Library/bin/libmmdd.dll",
-        pdir + "Library/bin/libmpx.dll",
-        pdir + "Library/bin/liboffload.dll",
-        pdir + "Library/bin/mkl_avx.dll",
-        pdir + "Library/bin/mkl_avx2.dll",
-        pdir + "Library/bin/mkl_avx512.dll",
-        pdir + "Library/bin/mkl_core.dll",
-        pdir + "Library/bin/mkl_def.dll",
-        pdir + "Library/bin/mkl_intel_thread.dll",
-        pdir + "Library/bin/mkl_mc.dll",
-        pdir + "Library/bin/mkl_mc3.dll",
-        pdir + "Library/bin/mkl_msg.dll",
-        pdir + "Library/bin/mkl_rt.dll",
-        pdir + "Library/bin/mkl_sequential.dll",
-        pdir + "Library/bin/mkl_tbb_thread.dll",
-        pdir + "Library/bin/mkl_vml_avx.dll",
-        pdir + "Library/bin/mkl_vml_avx2.dll",
-        pdir + "Library/bin/mkl_vml_avx512.dll",
-        pdir + "Library/bin/mkl_vml_cmpt.dll",
-        pdir + "Library/bin/mkl_vml_def.dll",
-        pdir + "Library/bin/mkl_vml_mc.dll",
-        pdir + "Library/bin/mkl_vml_mc2.dll",
-        pdir + "Library/bin/mkl_vml_mc3.dll",
-        pdir + "Library/bin/svml_dispmd.dll"]
+    mkl_file = glob.glob(pdir + "conda-meta" + "/" + "mkl-*")[0]
+    data = json.load(open(mkl_file))
+
+
+MKL_files = [(pdir + s) for s in data['files']]
 
 
 os.system("c:\Anaconda\python mkversion_buildserver.py")
@@ -139,7 +109,7 @@ nrbits = str(ctypes.sizeof(ctypes.c_voidp) * 8)
 
 thename = "wflow-bin/Wflow"+MVERSION+'-'+target+'-'+sys.platform+'-'+nrbits
 
-packages = ["osgeo"]
+packages = ["osgeo","numpy"]
 
 if target == 'openda':
     import thrift.protocol.TBinaryProtocol as TBinaryProtocol
@@ -173,7 +143,6 @@ if target == 'openda':
         Executable('Scripts/wtools_py/CatchRiver.py', base=base),
         Executable('wflow/create_grid.py', base=base),
         Executable('wflow/static_maps.py', base=base),
-        Executable('Scripts/wtools_py/wflow_fews.py', base=base),
         Executable('Scripts/pcr2netcdf.py', base=base),
         Executable('Scripts/bmi2runner.py', base=base),
         Executable('openda_bmi/opendapy.py', base=base),
@@ -190,14 +159,14 @@ if target == 'openda':
         Executable('wflow/wflow_floodmap.py', base=base),
         Executable('wflow/wflow_routing.py', base=base),
         Executable('wflow/wflow_hbv.py', base=base),
-        Executable('wflow/wflow_sphy.py', base=base)
+        Executable('wflow/wflow_sphy.py', base=base),
+        Executable('wflow/wflow_pcrglobwb.py', base=base)
     ]
 elif target == 'deltashell':
     executables = [
         Executable('Scripts/wtools_py/CatchRiver.py', base=base),
         Executable('wflow/create_grid.py', base=base),
         Executable('wflow/static_maps.py', base=base),
-        Executable('Scripts/wtools_py/wflow_fews.py', base=base),
         Executable('Scripts/pcr2netcdf.py', base=base),
         Executable('Scripts/bmi2runner.py', base=base),
         Executable('Scripts/wfds_core.py', base=base),
@@ -214,14 +183,14 @@ elif target == 'deltashell':
         Executable('wflow/wflow_gr4.py', base=base),
         Executable('wflow/wflow_floodmap.py', base=base),
         Executable('wflow/wflow_hbv.py', base=base),
-        Executable('wflow/wflow_sphy.py', base=base)
+        Executable('wflow/wflow_sphy.py', base=base),
+        Executable('wflow/wflow_pcrglobwb.py', base=base)
     ]
 else:
     executables = [
         Executable('Scripts/wtools_py/CatchRiver.py', base=base),
         Executable('wflow/create_grid.py', base=base),
         Executable('wflow/static_maps.py', base=base),
-        Executable('Scripts/wtools_py/wflow_fews.py', base=base),
         Executable('Scripts/pcr2netcdf.py', base=base),
         Executable('Scripts/bmi2runner.py', base=base),
         Executable('Scripts/wflow_prepare_step2.py', base=base),
@@ -237,7 +206,8 @@ else:
         Executable('wflow/wflow_gr4.py', base=base),
         Executable('wflow/wflow_floodmap.py', base=base),
         Executable('wflow/wflow_hbv.py', base=base),
-        Executable('wflow/wflow_sphy.py', base=base)
+        Executable('wflow/wflow_sphy.py', base=base),
+        Executable('wflow/wflow_pcrglobwb.py', base=base)
     ]
 
 setup(name='wflow',
