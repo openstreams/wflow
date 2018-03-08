@@ -41,6 +41,7 @@ np_One = numpy.ones((219, 286))
 # Some last remaining hardcoded (& partly non-functional) parameters:
 DELT  = 1.   # Time step (delta T) = 1 day; changing it is not recommended.
 TINY  = 1e-6 # A tiny number (from the original LINTUL code:)
+WCWP  = 0.21 # Volumetric soil water content at wilting point... how soil specific is this for puddled soils...? todo
 WCFC  = 0.47 # Volumetric soil water content at field capacity... how soil specific is this for puddled soils...? todo
 WCST  = 0.55 # Volumetric soil water content at saturation (normal condition for irrigated rice soil) ... how soil specific is this for puddled soils...? todo
 NNI   = 1.   # Nitrogen Nutrition Index (non-functional, for future development)
@@ -48,7 +49,7 @@ NPART = 1.0  # Coefficient for the effect of N stress on leaf biomass reduction 
 NSLA  = 1.0  # Coefficient for the effect of N stress on SLA reduction (presently non-functional, for future development)
 NLAI  = 1.0  # Coefficient for the effect of N stress on LAI reduction(during juvenile phase; presently non-functional, for future development)
 
-#Point_Output = open('Point_Output.csv', 'w')
+Point_Output = open('Point_Output.csv', 'w')
 
 def NOTNUL(matrix):
     """
@@ -63,7 +64,18 @@ def NOTNUL(matrix):
     matrix += NOTNUL_check[:]
     return matrix
 
+def NOTNUL_pcr(pcr_map):
+    """
+    NOTNUL was originally a FST Fortran Simulation Translator intrinsic function.
+    Here it is applied to arrays. If a value in the array is positive, NOTNUL will 
+    just return the value as is. If it equals zero: NOTNUL will return a value of 1 instead.
+    Sander de Vries, 01-12-2015
+    """
+    checkzeros = pcr_map == False
+    map = ifthenelse(checkzeros, 1., scalar(pcr_map))
+    return pcr_map
 
+    
 def astro2(DAY, LAT):
     """
 * ---------------------------------------------------------------------*
@@ -247,12 +259,11 @@ class WflowModel(DynamicModel):
         """
         modelparameters = []
         
-        self.MonsoonCount_Month   = int(configget(self.config, "model", "MonsoonCount_Month", "11"))        
-        self.MonsoonCount_Day      = float(configget(self.config, "model", "MonsoonCount_Day", "1"))        
-        self.RainReq_PlantSeason1 = int(configget(self.config, "model", "RainReq_PlantSeason1", "200"))        
+        self.RainSumStart_Month   = int(configget(self.config, "model", "RainSumStart_Month", "11"))        
+        self.RainSumStart_Day     = float(configget(self.config, "model", "RainSumStart_Day", "1"))        
+        self.RainSumReq           = float(configget(self.config, "model", "RainSumReq", "200."))        
         self.Pause                = int(configget(self.config, "model", "Pause", "13"))        
         self.AutoStartStop        = eval(configget(self.config, "model", "AutoStartStop", "False")) #default changed to 'False', for running from 'crop profile' maps (CRPST.xxx) under DEWS. sdv 21-2-2018
-        self.BMI_RUN              = configget(self.config, "model", "BMI_RUN", "True")
         self.WATERLIMITED         = (configget(self.config, "model", "WATERLIMITED", "True"))
         self.CropStartDOY         = int(configget(self.config, "model", "CropStartDOY", "0")) - 1 # to keep things in sync with the original LINTUL version in FST
         self.HarvestDAP           = int(configget(self.config, "model", "HarvestDAP", "150"))
@@ -272,7 +283,7 @@ class WflowModel(DynamicModel):
         self.RDRNS                = float(configget(self.config, "model", "RDRNS", "0.03"))
         self.DVSDR                = float(configget(self.config, "model", "DVSDR", "0.8"))
         self.RDRRT                = float(configget(self.config, "model", "RDRRT", "0.03"))
-        self.TTSUM                = float(configget(self.config, "model", "TTSUM", "2000."))
+        #self.TTSUM                = float(configget(self.config, "model", "TTSUM", "2000."))
         self.RDRSHM               = float(configget(self.config, "model", "RDRSHM", "0.03"))
         self.LAICR                = float(configget(self.config, "model", "LAICR", "4."))
         self.ROOTDM_mm            = float(configget(self.config, "model", "ROOTDM_mm", "1000."))
@@ -304,8 +315,8 @@ class WflowModel(DynamicModel):
         # Meteo and other forcing
         modelparameters.append(self.ParamType(name="IRRAD", stack="inmaps/IRRAD", type="timeseries", default=11.0, verbose=False,lookupmaps=[])),
         modelparameters.append(self.ParamType(name="T", stack="inmaps/T", type="timeseries", default=10.0, verbose=False, lookupmaps=[])),
-        #modelparameters.append(self.ParamType(name="TMIN",stack="inmaps/TMIN",type="timeseries",default=10.0,verbose=False,lookupmaps=[])),
-        #modelparameters.append(self.ParamType(name="TMAX",stack="inmaps/TMAX",type="timeseries",default=10.0,verbose=False,lookupmaps=[])),
+        modelparameters.append(self.ParamType(name="TMIN",stack="inmaps/TMIN",type="timeseries",default=10.0,verbose=False,lookupmaps=[])),
+        modelparameters.append(self.ParamType(name="TMAX",stack="inmaps/TMAX",type="timeseries",default=10.0,verbose=False,lookupmaps=[])),
         modelparameters.append(self.ParamType(name="RAIN", stack="inmaps/P", type="timeseries", default=0., verbose=False, lookupmaps=[])),
         modelparameters.append(self.ParamType(name="CRPST", stack="inmaps/CRPST", type="timeseries", default=11.0, verbose=False, lookupmaps=[])),
         return modelparameters
@@ -328,8 +339,6 @@ class WflowModel(DynamicModel):
 
         states = ['Season', 'PSUM', 'Test', 'LAI', 'WLVG', 'WLVD', 'WST', 'WSO', 'WRT', 'ROOTD_mm', 'WDRT', 'TSUM',
                   'STARTED', 'DVS']
-        if self.BMI_RUN == "False":
-            states.append('WA')
 
         return states
 
@@ -398,15 +407,16 @@ class WflowModel(DynamicModel):
         self.Pausedays     = self.Pause + 1
         
       # Calculate initial development stage (at the time of transplanting)
-        DVSI               = self.TSUMI / self.TSUMAN
+        self.DVSI               = self.TSUMI / self.TSUMAN
       # Calculate the initial leaf area correction function as a function of development stage, DVS. 
         Interpol_SLACF     = Afgen2(self.SLACF)
-        SLACFI             = Interpol_SLACF(DVSI)
+        SLACFI             = Interpol_SLACF(self.DVSI)
       # Multiply with specific leaf area constant => initial specific leaf area
         ISLA               = self.SLAC * SLACFI
       # Multiply with weight of green leaves to obtain initial LAI
         self.LAII          = self.WLVGI * ISLA
-        
+      # Calculate total temperature sum from transplanting to crop maturity:
+        self.TTSUM = self.TSUMAN + self.TSUMMT      
       #For future development - Todo - sdv
         #self.SLACF2        = Interpol_Obj(self.SLACF2)
         #self.FLVTB2        = Interpol_Obj(self.FLVTB2)
@@ -414,15 +424,6 @@ class WflowModel(DynamicModel):
         #SLACFI2            = self.SLACF2.lookup_linear(DVSI)
         #report(SLACFI2, "SLACFI2")
         #self.SLAF2.naam()
-        
-      # Just to display import info regarding the type of run  at the beginning of simulation. 
-      # (If/elif/else statements should be identical to the ones in the dynamic section)
-        if self.BMI_RUN == "True" and self.WATERLIMITED == "True":
-            self.logger.info("BMI run with water limitation...")
-        elif self.BMI_RUN == "True" and self.WATERLIMITED == "False":
-            self.logger.info("BMI run w/o water limitation")
-        else:
-            self.logger.info("BMI not engaged => no water reduction...!")
         
     def resume(self):
         """
@@ -473,7 +474,7 @@ class WflowModel(DynamicModel):
         
       # Get the date as a Python datetime object and as the day of the year (DOY): used for cropping calendar and daylength.
         self.date         = datetime.utcfromtimestamp(self.wf_supplyStartTime()) + dt.timedelta(self.currentTimeStep() - 1)      
-        #self.enddate     = datetime.utcfromtimestamp(self.wf_supplyEndTime()) #wf_supplyEndTime() in wflow_dyamicframework? todo
+        self.enddate     = datetime.utcfromtimestamp(self.wf_supplyEndTime()) #wf_supplyEndTime() in wflow_dyamicframework? todo
         DOY               = self.wf_supplyJulianDOY() 
 
       # Some Boolean PCRaster variables:
@@ -486,7 +487,7 @@ class WflowModel(DynamicModel):
 
       # Start calculating the accumulated preciptation from November one on, 
       # to judge when there's enough water for crop establishment. 
-        if (self.date.month == self.MonsoonCount_Month and self.date.day == self.MonsoonCount_Day):  
+        if (self.date.month == self.RainSumStart_Month and self.date.day == self.RainSumStart_Day):  
             Calc_RainSum     = True
             self.PSUM       += self.RAIN + TINY
         else:
@@ -499,7 +500,7 @@ class WflowModel(DynamicModel):
       # Check whether the precipitation sum is positive
         TestPos           = self.PSUM > 0.
       # Check whether the precipitation sum is still below the threshhold for crop establishment
-        Test200           = self.PSUM <= self.RainReq_PlantSeason1
+        Test200           = self.PSUM <= self.RainSumReq
         TestRange         = TestPos & Test200
       # Add rain when the precipitation sum is positive but still below the threshold for crop establishment, reset to 0. when this is no longer the case.
         self.PSUM         = (self.PSUM + ifthenelse(TestRange, self.RAIN, 0.)) * ifthenelse(TestRange, scalar(1.), 0.)
@@ -523,84 +524,122 @@ class WflowModel(DynamicModel):
         np_WLVD           = pcr_as_numpy(self.WLVD)
         np_ROOTD_mm       = pcr_as_numpy(self.ROOTD_mm)
         np_Season         = pcr_as_numpy(self.Season)
-     
+
+
+        
       # Initializing crop harvest:
+      
+        TheDayAfter = self.STARTED == 2
+        #No_Hangover = TheDayAfter & Enough_water
+        #Not_Finished = Not_Finished & No_Hangover 
+        
       # If a fixed planting and a fixed harvest date are forced for the whole catchment:
-        if self.CropStartDOY   > 0   and self.HarvestDAP > 0:
-            np_CropHarvNow     = np.greater_equal(DOY, self.CropStartDOY + self.HarvestDAP) * np_One[:]
-            CropHarvNow        = numpy2pcr(Boolean, np_CropHarvNow, -99)
-            print "Warning: harvest date read from ini file, not from Crop Profile map..."
-      # If a fixed planting is forced for the whole catchment, but crop harvest occurs at crop maturity (may vary depending on ambient temperatures during the growing season):            
-        elif self.CropStartDOY > 0 and self.HarvestDAP == 0:
-            np_CropHarvNow     = 1 - np_Not_Finished
-            CropHarvNow        = Not_Finished == False
-            print "Harvest date not specified; crop harvest at crop maturity"
-      # If planting is initiated gridcell-by-gridcell when a pre-determined rainfall requirement is met OR based on a (remotely sensed) crop profile map,
-      # and a fixed harvest date is used across all gridcells:
-        elif self.CropStartDOY == 0 and self.HarvestDAP > 0:
-            CropHarvNow        = self.STARTED == self.HarvestDAP
-            np_CropHarvNow     = pcr_as_numpy(CropHarvNow)
-      # If planting is initiated gridcell-by-gridcell based on accumulated rainfall OR a (remotely sensed) crop profile map and crop harvest occurs at crop maturity (may vary depending on ambient temperatures during the growing season):            
-        elif self.CropStartDOY == 0 and self.HarvestDAP == 0:
-            started_gt_zero    = self.STARTED > 0.
-            crpprfl_eq_zero    = self.CRPST == 0.
-            CropHarvNow        = pcrand(started_gt_zero, crpprfl_eq_zero)
-            np_CropHarvNow     = pcr_as_numpy(CropHarvNow)
-        else:
-            np_CropHarvNow     = np_Zero[:]
-            CropHarvNow        = numpy2pcr(Boolean, np_CropHarvNow, -99)
-            print "Crop harvest not initialized, found a strange values in ini file..."
-                   
-      # Initializing crop growth, optionally from a single start day (CropStartDOY in the ini file),
-      # but normally from a crop profile forcing variable.
-        if self.CropStartDOY   > 0.:  
+        if self.CropStartDOY   > -1:        
+            if self.HarvestDAP > 0:
+               #np_CropHarvNow     = np.greater_equal(DOY, self.CropStartDOY + self.HarvestDAP) * np_One[:]
+                np_CropHarvNow     = np.greater_equal(DOY, self.CropStartDOY + self.HarvestDAP) * np_ricemask[:]
+                CropHarvNow        = numpy2pcr(Boolean, np_CropHarvNow, -99)    
+                print "Warning: harvest date read from ini file, not from Crop Profile map..."
+            elif  self.HarvestDAP == 0:
+                np_CropHarvNow     = (1 - np_Not_Finished)* np_ricemask[:]
+                HarvNow            = Not_Finished == False
+                CropHarvNow        = HarvNow & self.ricemask_BOOL
+                print "Harvest date not specified; crop harvest at crop maturity"
+            else: 
+                print "Crop harvest not initialized, found strange values in ini file... CTRL + C to exit..."
+                
+            # Initializing crop growth, optionally from a single start day (CropStartDOY in the ini file),
+            # but normally from a crop profile forcing variable.
             np_CropStartNow    = np.equal(DOY, self.CropStartDOY) * np_ricemask[:]
             CropStartNow       = numpy2pcr(Boolean, np_CropStartNow, -99)
-            np_CropStarted     = np.greater_equal(DOY, self.CropStartDOY) * np_ricemask[:]
-            CropStarted        = numpy2pcr(Boolean, np_CropStarted, -99)
+            CropStartNow_scalar= scalar(CropStartNow)
+            #np_CropStarted    = np.greater_equal(DOY, self.CropStartDOY) * np_ricemask[:]
+            #CropStarted       = numpy2pcr(Boolean, np_CropStarted, -99)
+            Started            = self.STARTED > 0
+            CropStarted        = Started & self.ricemask_BOOL
+            np_CropStarted     = pcr_as_numpy(CropStarted)
+            self.STARTED       = (self.STARTED + CropStartNow_scalar + scalar(CropStarted)) * ifthenelse(CropHarvNow, scalar(0.), 1.) 
             print "Warning: using start date from ini file, not read from Crop Profile..."
+                
+      # If planting is initiated gridcell-by-gridcell when a pre-determined rainfall requirement is met OR based on a (remotely sensed) crop profile map,
+      # and a fixed harvest date is used across all gridcells:
+        elif self.CropStartDOY == -1:
+            if self.HarvestDAP > 0:
+                HarvNow            = self.STARTED == self.HarvestDAP
+                CropHarvNow        = HarvNow & self.ricemask_BOOL
+                np_CropHarvNow     = pcr_as_numpy(CropHarvNow)
+                
+      # If planting is initiated gridcell-by-gridcell based on accumulated rainfall OR a (remotely sensed) crop profile map and crop harvest occurs at crop maturity (may vary depending on ambient temperatures during the growing season):            
+            elif self.CropStartDOY == -1 and self.HarvestDAP == 0:
+                if self.AutoStartStop == False:
+                    started_gt_zero    = self.STARTED > 0.
+                    crpprfl_eq_zero    = self.CRPST == 0.
+                    #CropHarvNow        = pcrand(started_gt_zero, crpprfl_eq_zero)
+                    CropHarvNow        = started_gt_zero & crpprfl_eq_zero & self.ricemask_BOOL
+                    np_CropHarvNow     = pcr_as_numpy(CropHarvNow)
+            
+                    print "Start date read from Crop Profile..."
+                    # Two auxilliary variables:
+                    np_CRPST_gt_0       = np.greater(np_CRPST[:], 0)
+                    np_CRPST_eq_STARTED = np.equal(np_CRPST[:], np_STARTED[:])  # of course started has to become positive then.
+                    np_CropStartNow     = np.logical_and(np_CRPST_gt_0[:], np_CRPST_eq_STARTED[:]) * np_ricemask[:]  ##!
+                    CropStartNow        = numpy2pcr(Boolean, np_CropStartNow, -99)
+                    Started             = self.STARTED > 0
+                    CropStarted         = Started & self.ricemask_BOOL
+                    np_CropStarted      = pcr_as_numpy(CropStarted) * np_ricemask[:]  ##!
+                    self.STARTED        = (self.STARTED + self.CRPST) * ifthenelse(CropHarvNow, scalar(0.), 1.)  # - ifthenelse(CropHarvNow, self.STARTED, 0.)
+                elif self.AutoStartStop == True:
+                    np_CropHarvNow     = (1 - np_Not_Finished)* np_ricemask[:]
+                    HarvNow            = Not_Finished == False
+                    CropHarvNow        = HarvNow & self.ricemask_BOOL
+                    #print "Transpl. date based on cumulative rain after November 1..."
+                    # Two auxilliary variables:
+                    Time2Plant1stCrop    = self.PSUM >= self.RainSumReq
+                    StdMin1              = self.STARTED == -1
+                    CropStartNow_Season1 = pcrand(Time2Plant1stCrop, self.ricemask_BOOL)
+                    CropStartNow_Season2 = pcrand(StdMin1, self.ricemask_BOOL)
+                    CropStartNow         = pcror(CropStartNow_Season1, CropStartNow_Season2)
+                    np_CropStartNow      = pcr_as_numpy(CropStartNow) 
+                    CropStartNow_scalar  = scalar(CropStartNow)
 
-        elif self.CropStartDOY == 0 and self.AutoStartStop == False:
-            print "Start date read from Crop Profile..."
-          # Two auxilliary variables:
-            np_CRPST_gt_0       = np.greater(np_CRPST[:], 0)
-            np_CRPST_eq_STARTED = np.equal(np_CRPST[:], np_STARTED[:])  # of course started has to become positive then.
-            np_CropStartNow     = np.logical_and(np_CRPST_gt_0[:], np_CRPST_eq_STARTED[:]) * np_ricemask[:]  ##!
-            CropStartNow        = numpy2pcr(Boolean, np_CropStartNow, -99)
-            CropStarted         = self.STARTED > 0
-            np_CropStarted      = pcr_as_numpy(CropStarted) * np_ricemask[:]  ##!
-            self.STARTED        = (self.STARTED + self.CRPST) * ifthenelse(CropHarvNow, scalar(0.), 1.)  # - ifthenelse(CropHarvNow, self.STARTED, 0.)
-
-        elif self.CropStartDOY == 0 and self.AutoStartStop == True:
-            #print "Transpl. date based on cumulative rain after November 1..."
-          # Two auxilliary variables:
-            Time2Plant1stCrop    = self.PSUM >= RainReq_PlantSeason1
-            StdMin1              = self.STARTED == -1
-            CropStartNow_Season1 = pcrand(Time2Plant1stCrop, self.ricemask_BOOL)
-            CropStartNow_Season2 = pcrand(StdMin1, self.ricemask_BOOL)
-            CropStartNow         = pcror(CropStartNow_Season1, CropStartNow_Season2)
-            np_CropStartNow      = pcr_as_numpy(CropStartNow) * np_ricemask[:]
-            CropStartNow_scalar  = scalar(CropStartNow)
-
-            HarvSeason1_temp     = pcrand(FirstSeason, CropHarvNow)
-            HarvSeasonOne        = pcrand(HarvSeason1_temp, self.ricemask_BOOL)
-            HarvSeason2_temp     = pcrand(SecondSeason, CropHarvNow)
-            HarvSeasonTwo        = pcrand(HarvSeason2_temp, self.ricemask_BOOL)
-            self.Season          = self.Season + ifthenelse(HarvSeasonOne, self.ricemask, 0.) - ifthenelse(HarvSeasonTwo, self.ricemask * 2., 0.)
-            CropStarted          = self.STARTED > 0
-            SeasonOneHarvd       = self.STARTED < 0
-            SeasonOneHarvd_Scalar = scalar(SeasonOneHarvd)
-            np_CropStarted       = pcr_as_numpy(CropStarted)
-            self.STARTED         = (self.STARTED + CropStartNow_scalar + scalar(CropStarted)) * ifthenelse(CropHarvNow, scalar(0.), 1.) - ifthenelse(HarvSeasonOne, pcr_PrepareField, 0.) + SeasonOneHarvd_Scalar
-            # self.started= 0 and season = 2
-            # change season directly after harvest season 1
+                    HarvSeason1_temp     = pcrand(FirstSeason, CropHarvNow)
+                    HarvSeasonOne        = pcrand(HarvSeason1_temp, self.ricemask_BOOL)
+                    HarvSeason2_temp     = pcrand(SecondSeason, CropHarvNow)
+                    HarvSeasonTwo        = pcrand(HarvSeason2_temp, self.ricemask_BOOL)
+                    self.Season          = self.Season + ifthenelse(HarvSeasonOne, self.ricemask, 0.) - ifthenelse(HarvSeasonTwo, self.ricemask * 2., 0.)
+                    Started              = self.STARTED > 0
+                    CropStarted          = Started & self.ricemask_BOOL
+                    SeasonOneHarvd       = self.STARTED < 0
+                    SeasonOneHarvd_Scalar= scalar(SeasonOneHarvd)
+                    np_CropStarted       = pcr_as_numpy(CropStarted)
+                    self.STARTED         = (self.STARTED + CropStartNow_scalar + scalar(CropStarted)) * ifthenelse(CropHarvNow, scalar(0.), 1.) - ifthenelse(HarvSeasonOne, pcr_PrepareField, 0.) + SeasonOneHarvd_Scalar
+                    # self.started= 0 and season = 2
+                    # change season directly after harvest season 1
+                else:
+                    np_CropStartNow      = np_Zero[:]
+                    CropStartNow         = numpy2pcr(Boolean, np_CropStartNow, -99)
+                    np_CropStarted       = np_Zero[:]
+                    CropStarted          = numpy2pcr(Boolean, np_CropStarted, -99)
+                    print "Crop growth and/or harvest not initializing, pls. check wflow_lintul.ini..."            
+                    time.sleep(100)
+                           
+        
+        if self.WATERLIMITED == "True":
+            #pcr_TRANRF       = self.Transpiration/self.PotTrans # Via numpy, because the NOTNUL is essential here. 
+            np_PotTrans       = pcr_as_numpy(self.PotTrans)
+            np_Transpiration  = pcr_as_numpy(self.Transpiration)
+            np_TRANRF         = np_Transpiration[:] / NOTNUL(np_PotTrans[:]) # Via numpy, because the NOTNUL is essential here (todo: implement NOTNUL for pcr). 
+            pcr_TRANRF        = numpy2pcr(Scalar, np_TRANRF, -99)
+            WAWP              = WCWP * self.ROOTD_mm 
+            Enough_water      = ifthenelse(CropStartNow, True, self.WA > WAWP) # timestep delay...! todo 
+            np_Enough_water   = pcr_as_numpy(Enough_water)
         else:
-            np_CropStartNow      = np_Zero[:]
-            CropStartNow         = numpy2pcr(Boolean, np_CropStartNow, -99)
-            np_CropStarted       = np_Zero[:]
-            CropStarted          = numpy2pcr(Boolean, np_CropStarted, -99)
-            print "Crop growth not initializing, pls. check wflow_lintul.ini..."
-
+            print "Warning, run without water effects on crop growth..."
+            np_TRANRF         = np_One[:]
+            pcr_TRANRF        = numpy2pcr(Scalar, np_TRANRF, -99)
+            np_Enough_water   = np_One[:] #Todo: check!
+            Enough_water      = numpy2pcr(Boolean, np_Enough_water, -99)
+            
         #self.T = (self.TMIN + self.TMAX)/2. # for testing with Wageningen weather files only - sdv
         np_T                     = pcr_as_numpy(self.T)
         np_DAVTMP                = np_T  
@@ -614,9 +653,9 @@ class WflowModel(DynamicModel):
         DTEFF          = ifthenelse(Warm_Enough, DegreeDay, 0.)
         np_DTEFF       = pcr_as_numpy(DTEFF)
 
-        # np_Enough_water = np.greater(np_WA[:], (WCWP * np_ROOTD[:] * 1000.))
-        np_Enough_water   = np_One[:] #Todo: check!
-        Enough_water      = numpy2pcr(Boolean, np_Enough_water, -99)
+        #np_Enough_water = np.greater(np_WA[:], (WCWP * np_ROOTD_mm[:]))
+        #np_Enough_water   = np_One[:] #Todo: check!
+        #Enough_water      = numpy2pcr(Boolean, np_Enough_water, -99)
         Leaves_Present    = self.LAI > 0.
         np_Leaves_Present = pcr_as_numpy(Leaves_Present)
 
@@ -673,7 +712,6 @@ class WflowModel(DynamicModel):
         TSUM_veg  = self.TSUM / self.TSUMAN * ifthenelse(CropHarvNow, scalar(0.), 1.)
         TSUM_gen  = (1. + (self.TSUM - self.TSUMAN) / self.TSUMMT) * ifthenelse(CropHarvNow, scalar(0.), 1.)
         self.DVS  = ifthenelse(Vegetative, TSUM_veg, 0.) + ifthenelse(Generative, TSUM_gen, 0.)
-      # In TSUM_gen, '1' in fact stands for TSUM/TSUMAN, at the moment that TSUM = TSUMAN
 
       # Root depth growth:
         CanGrowDownward      = self.ROOTD_mm <= self.ROOTDM_mm
@@ -684,25 +722,16 @@ class WflowModel(DynamicModel):
       # np_EXPLOR            = np_RROOTD_mm[:] * WCFC # for ROOTD in mm (!)
         np_EXPLOR            = np_RROOTD_mm[:] * WCST # for ROOTD in mm (!)
 
-        #############################################################################################################
-        if self.BMI_RUN == "True" and self.WATERLIMITED == "True":
-            np_Transpiration = pcr_as_numpy(self.Transpiration)
-            np_PotTrans      = pcr_as_numpy(self.PotTrans)
-            pcr_TRANRF       = self.Transpiration/self.PotTrans
-            np_TRANRF        = np_Transpiration[:] / NOTNUL(np_PotTrans[:])
-        elif self.BMI_RUN == "True" and self.WATERLIMITED == "False":
-            np_TRANRF        = np_One[:]
-        else:
-            np_TRANRF        = np_One[:]
-
+        
         #############################################################################################################
       # Water Limitation: effects on partitioning
         #FRTMOD              = np_One[:]  
-        FRTMOD               = np.maximum(np_One[:], np_One[:] / (np_TRANRF[:] + 0.5 * np_One[:]))
-        FRTMOD2              = max(1., 1./(pcr_TRANRF + 0.5))
-        FRT                  = FRTWET[:] * FRTMOD[:]
+        #np_FRTMOD               = np.maximum(np_One[:], np_One[:] / (np_TRANRF[:] + 0.5 * np_One[:]))
+        FRTMOD               = max(1., 1./(pcr_TRANRF + 0.5)) # was FRTMOD2
+        np_FRTMOD            = pcr_as_numpy(FRTMOD)
+        FRT                  = FRTWET[:] * np_FRTMOD[:]
         #FRT2                = FRTWET2 * FRTMOD2
-        FSHMOD               = (1. - FRT[:]) / (1. - (FRT[:] / FRTMOD[:]))
+        FSHMOD               = (1. - FRT[:]) / (1. - (FRT[:] / np_FRTMOD[:]))
         #FSHMOD2             = (1. -FRT2)/(1 - FRT2/FRTMOD2)
         FLV                  = FLVT[:] * FSHMOD
         #FLV2                = FLVT2 * FSHMOD2
@@ -733,7 +762,7 @@ class WflowModel(DynamicModel):
         DLVS                 = np_WLVG[:] * np_RDR[:]
         DLV                  = (DLVS[:] + DLVNS[:]) * np_Not_Finished[:]
 
-        RWLVG                = GTOTAL[:] * FLV[:] - DLV[:]
+        RWLVG                = np_EMERG[:] * (GTOTAL[:] * FLV[:] - DLV[:])
         np_WLVG[:]           = (np_WLVG[:] + np_CropStartNow[:] * self.WLVGI + RWLVG[:]) * (1. - np_CropHarvNow[:])
         np_WLVD[:]          += DLV[:]
 
@@ -774,35 +803,41 @@ class WflowModel(DynamicModel):
         
         # DRRT = np.greater_equal(np_DVS[:], np_DVSDR[:]) * np_WRT[:] * RDRRT
         DRRT       = np_Roots_Dying[:] * np_WRT[:] * self.RDRRT
-        RWRT       = GTOTAL[:] * FRT[:] - DRRT[:] * np_Not_Finished[:]
+        #RWRT       = GTOTAL[:] * FRT[:] - DRRT[:] * np_Not_Finished[:]
+        RWRT       = np_EMERG[:] * (GTOTAL[:] * FRT[:] - DRRT[:])
         np_WRT[:]  = (np_WRT[:] + np_CropStartNow[:] * self.WRTLI + RWRT[:]) * (1. - np_CropHarvNow[:])
         np_WDRT[:]+= DRRT[:]
 
-        RWSO       = GTOTAL[:] * FSO[:]
+        RWSO       = np_EMERG[:] * (GTOTAL[:] * FSO[:])
         np_WSO[:]  = (np_WSO[:] + np_CropStartNow[:] * self.WSOI + RWSO[:]) * (1. - np_CropHarvNow[:])
         np_WSOTHA  = np_WSO[:] / 100.
 
-        RWST       = GTOTAL[:] * FST[:]
+        RWST       = np_EMERG[:] * (GTOTAL[:] * FST[:])
         np_WST[:]  = (np_WST[:] + np_CropStartNow[:] * self.WSTI + RWST[:]) * (1. - np_CropHarvNow[:])
 
         np_WLV     = np_WLVG[:] + np_WLVD[:]
         TAGBM      = np_WLV[:] + np_WST[:] + np_WSO[:]
         
+        
         #FRTTB2file = 'frttb2'
-        self.Test += 1.
-        print np_Transpiration[100,100], np_PotTrans[100,100]
+        self.Test = EMERG
+        
+        #print '\n', cellvalue(self.STARTED,100,100)[0], '\n'
+        #print self.DVSI, "self.dvsi"
+        #time.sleep(0.25)
+       #print '\n', cellvalue(Enough_water,100,100)[0], cellvalue(self.WA,100,100)[0], cellvalue(self.TSUM,100,100)[0],cellvalue(CropStartNow,100,100)[0], self.currentTimeStep(), '\n'
+        
+       #For quickly getting point output (sdv). Works only with a wf_supplyEndTime() implemented in wf_dynamicframework... todo?
+        Point_Output_Line = (str(cellvalue (self.LAI, 100,100)[0]) + "," + str(cellvalue (self.TSUM, 100,100)[0]) + "," + str(cellvalue (self.Test, 100,100)[0]) + "," +
+                            str(cellvalue (CropStarted, 100,100)[0]) + "," + str(cellvalue (Enough_water, 100,100)[0])  + "," + str(cellvalue (Leaves_Present, 100,100)[0]) + ","
+                             + str(cellvalue (Not_Finished, 100,100)[0]) +"," + str(cellvalue (self.STARTED, 100,100)[0]) + "," +   str(cellvalue (self.Season, 100,100)[0]) + "," +
+                            str(np_CropStartNow[100,100])+ "," + str(np_CropHarvNow[100,100]) + '\n')
+        if self.date < self.enddate:
+            Point_Output.write(Point_Output_Line)
+        elif self.date == self.enddate:
+            Point_Output.close()
 
-      # For quickly getting point output (sdv). Works only with a wf_supplyEndTime() implemented in wf_dynamicframework... todo?
-        #Point_Output_Line = (str(cellvalue (self.LAI, 100,100)[0]) + "," + str(cellvalue (self.TSUM, 100,100)[0]) + "," + str(np_IRRAD[100,100]) + "," +
-        #                    str(cellvalue (self.TMIN, 100,100)[0]) + "," + str(cellvalue (self.TMAX, 100,100)[0]) + "," + str(np_DVS[100,100]) + "," +
-        #                    str(cellvalue (RTSUMP, 100,100)[0]) + "," +
-        #                    str(GLAI[100,100]) + "," + str(SLA[100,100]) + "," + str(np_PARINT[100,100])+ ","+str(DAYL) + '\n')
-        #if self.date < self.enddate:
-        #    Point_Output.write(Point_Output_Line)
-        #elif self.date == self.enddate:
-        #    Point_Output.close()
-
-
+#EMERG     = CropStarted & Enough_water & Leaves_Present & Not_Finished
 # The main function is used to run the program from the command line
 
 def main(argv=None):
