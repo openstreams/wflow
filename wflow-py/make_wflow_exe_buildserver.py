@@ -37,7 +37,7 @@ if "--deltashell" in sys.argv:
 pdir = os.path.dirname(sys.executable) + "/"
 
 if sys.platform == 'win32':
-    mkl_file = glob.glob(pdir + "conda-meta" + "/" + "mkl-*")[0]
+    mkl_file = glob.glob(pdir + "conda-meta" + "/" + "mkl-[!service]*.json")[0]
     data = json.load(open(mkl_file))
 
 
