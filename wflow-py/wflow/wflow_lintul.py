@@ -261,6 +261,7 @@ class WflowModel(DynamicModel):
         
         self.RainSumStart_Month   = int(configget(self.config, "model", "RainSumStart_Month", "11"))        
         self.RainSumStart_Day     = float(configget(self.config, "model", "RainSumStart_Day", "1"))        
+        self.Sim3rdSeason         = eval(configget(self.config, "model", "Sim3rdSeason", "False"))
         self.RainSumReq           = float(configget(self.config, "model", "RainSumReq", "200."))        
         self.Pause                = int(configget(self.config, "model", "Pause", "13"))        
         self.AutoStartStop        = eval(configget(self.config, "model", "AutoStartStop", "False")) #default changed to 'False', for running from 'crop profile' maps (CRPST.xxx) under DEWS. sdv 21-2-2018
@@ -493,19 +494,22 @@ class WflowModel(DynamicModel):
         else:
             Calc_RainSum     = False
        
+      # Check whether the precipitation sum is positive
+        WeveGotRain       = self.PSUM > 0.
+      # Check whether the precipitation sum is still below the threshhold for crop establishment
+        NotEnoughRainYet  = self.PSUM <= self.RainSumReq
+        EnoughRain        = self.PSUM >= self.RainSumReq
+        KeepAddingRain    = WeveGotRain & NotEnoughRainYet
       # The first season is defined here as starting on November 1
-        self.Season      += ifthenelse(Calc_RainSum, self.ricemask, 0.)
+        #self.Season      += ifthenelse(Calc_RainSum, self.ricemask, 0.)
+        self.Season      += ifthenelse(EnoughRain, self.ricemask, 0.) # beware, this variable is also modified in another equation
         FirstSeason       = self.Season == 1
         SecondSeason      = self.Season == 2
-      # Check whether the precipitation sum is positive
-        TestPos           = self.PSUM > 0.
-      # Check whether the precipitation sum is still below the threshhold for crop establishment
-        Test200           = self.PSUM <= self.RainSumReq
-        TestRange         = TestPos & Test200
+        ThirdSeason       = self.Season == 3
       # Add rain when the precipitation sum is positive but still below the threshold for crop establishment, reset to 0. when this is no longer the case.
-        self.PSUM         = (self.PSUM + ifthenelse(TestRange, self.RAIN, 0.)) * ifthenelse(TestRange, scalar(1.), 0.)
-        pcr_PrepareField_temp = scalar(self.Pausedays)
-        pcr_PrepareField      = ifthenelse(FirstSeason, pcr_PrepareField_temp, 0.)
+        self.PSUM         = (self.PSUM + ifthenelse(KeepAddingRain, self.RAIN, 0.)) * ifthenelse(KeepAddingRain, scalar(1.), 0.)
+        #pcr_PrepareField_temp = scalar(self.Pausedays)
+        #pcr_PrepareField      = ifthenelse(FirstSeason, pcr_PrepareField_temp, 0.)
 
       # Create numpy array from states:
         np_CRPST          = pcr_as_numpy(self.CRPST)
@@ -528,11 +532,6 @@ class WflowModel(DynamicModel):
 
         
       # Initializing crop harvest:
-      
-        TheDayAfter = self.STARTED == 2
-        #No_Hangover = TheDayAfter & Enough_water
-        #Not_Finished = Not_Finished & No_Hangover 
-        
       # If a fixed planting and a fixed harvest date are forced for the whole catchment:
         if self.CropStartDOY   > -1:        
             if self.HarvestDAP > 0:
@@ -596,23 +595,44 @@ class WflowModel(DynamicModel):
                     # Two auxilliary variables:
                     Time2Plant1stCrop    = self.PSUM >= self.RainSumReq
                     StdMin1              = self.STARTED == -1
-                    CropStartNow_Season1 = pcrand(Time2Plant1stCrop, self.ricemask_BOOL)
-                    CropStartNow_Season2 = pcrand(StdMin1, self.ricemask_BOOL)
-                    CropStartNow         = pcror(CropStartNow_Season1, CropStartNow_Season2)
+                    CropStartNow_Season1 = Time2Plant1stCrop & self.ricemask_BOOL
+                    CropStartNow_Season2 = StdMin1 & self.ricemask_BOOL
+                    CropStartNow         = CropStartNow_Season1 | CropStartNow_Season2
                     np_CropStartNow      = pcr_as_numpy(CropStartNow) 
                     CropStartNow_scalar  = scalar(CropStartNow)
-
-                    HarvSeason1_temp     = pcrand(FirstSeason, CropHarvNow)
-                    HarvSeasonOne        = pcrand(HarvSeason1_temp, self.ricemask_BOOL)
-                    HarvSeason2_temp     = pcrand(SecondSeason, CropHarvNow)
-                    HarvSeasonTwo        = pcrand(HarvSeason2_temp, self.ricemask_BOOL)
-                    self.Season          = self.Season + ifthenelse(HarvSeasonOne, self.ricemask, 0.) - ifthenelse(HarvSeasonTwo, self.ricemask * 2., 0.)
-                    Started              = self.STARTED > 0
-                    CropStarted          = Started & self.ricemask_BOOL
-                    SeasonOneHarvd       = self.STARTED < 0
-                    SeasonOneHarvd_Scalar= scalar(SeasonOneHarvd)
-                    np_CropStarted       = pcr_as_numpy(CropStarted)
-                    self.STARTED         = (self.STARTED + CropStartNow_scalar + scalar(CropStarted)) * ifthenelse(CropHarvNow, scalar(0.), 1.) - ifthenelse(HarvSeasonOne, pcr_PrepareField, 0.) + SeasonOneHarvd_Scalar
+                    if self.Sim3rdSeason == False:   
+                        HarvSeason1_temp     = FirstSeason & CropHarvNow
+                    
+                        HarvSeasonOne        = HarvSeason1_temp & self.ricemask_BOOL
+                        HarvSeason2_temp     = SecondSeason & CropHarvNow
+                        HarvSeasonTwo        = HarvSeason2_temp & self.ricemask_BOOL
+                        self.Season          = self.Season + ifthenelse(HarvSeasonOne, self.ricemask, 0.) - ifthenelse(HarvSeasonTwo, self.ricemask * 2., 0.) # beware, this variable is also modified in another equation
+                        Started              = self.STARTED > 0
+                        CropStarted          = Started & self.ricemask_BOOL
+                        SeasonOneHarvd       = self.STARTED < 0
+                        SeasonOneHarvd_Scalar= scalar(SeasonOneHarvd)
+                        np_CropStarted       = pcr_as_numpy(CropStarted)
+                        pcr_PrepareField_temp = scalar(self.Pausedays)
+                        pcr_PrepareField      = ifthenelse(FirstSeason, pcr_PrepareField_temp, 0.)
+                        self.STARTED         = (self.STARTED + CropStartNow_scalar + scalar(CropStarted)) * ifthenelse(CropHarvNow, scalar(0.), 1.) - ifthenelse(HarvSeasonOne, pcr_PrepareField, 0.) + SeasonOneHarvd_Scalar
+                    elif self.Sim3rdSeason == True:   
+                        HarvSeason12_temp    = FirstSeason | SecondSeason
+                        HarvSeasonOneTwo     = HarvSeason12_temp & CropHarvNow
+                        #HarvSeason3_temp     = SecondSeason & CropHarvNow
+                        HarvSeasonThree      = ThirdSeason & CropHarvNow
+                        self.Season          = self.Season + ifthenelse(HarvSeasonOneTwo, scalar(1.), 0.) - ifthenelse(HarvSeasonThree, scalar(3.), 0.) # beware, this variable is also modified in another equation
+                        Started              = self.STARTED > 0
+                        CropStarted          = Started & self.ricemask_BOOL
+                        Season12Harvd       = self.STARTED < 0
+                        Season12Harvd_Scalar= scalar(Season12Harvd)
+                        np_CropStarted       = pcr_as_numpy(CropStarted)
+                        pcr_PrepareField_temp = scalar(self.Pausedays)
+                        FirstorSecondSeason     = FirstSeason | SecondSeason
+                        pcr_PrepareField      = ifthenelse(FirstorSecondSeason, pcr_PrepareField_temp, 0.)
+                        self.STARTED         = (self.STARTED + CropStartNow_scalar + scalar(CropStarted)) * ifthenelse(CropHarvNow, scalar(0.), 1.) - ifthenelse(HarvSeasonOneTwo, pcr_PrepareField, 0.) + Season12Harvd_Scalar
+                    else: 
+                        print self.Sim3rdSeason
+                        time.sleep(10)
                     # self.started= 0 and season = 2
                     # change season directly after harvest season 1
                 else:
@@ -822,7 +842,7 @@ class WflowModel(DynamicModel):
         #FRTTB2file = 'frttb2'
         self.Test = EMERG
         
-        #print '\n', cellvalue(self.STARTED,100,100)[0], '\n'
+        print '\n', cellvalue(ThirdSeason,100,100)[0], '\n'
         #print self.DVSI, "self.dvsi"
         #time.sleep(0.25)
        #print '\n', cellvalue(Enough_water,100,100)[0], cellvalue(self.WA,100,100)[0], cellvalue(self.TSUM,100,100)[0],cellvalue(CropStartNow,100,100)[0], self.currentTimeStep(), '\n'
@@ -830,7 +850,7 @@ class WflowModel(DynamicModel):
        #For quickly getting point output (sdv). Works only with a wf_supplyEndTime() implemented in wf_dynamicframework... todo?
         Point_Output_Line = (str(cellvalue (self.LAI, 100,100)[0]) + "," + str(cellvalue (self.TSUM, 100,100)[0]) + "," + str(cellvalue (self.Test, 100,100)[0]) + "," +
                             str(cellvalue (CropStarted, 100,100)[0]) + "," + str(cellvalue (Enough_water, 100,100)[0])  + "," + str(cellvalue (Leaves_Present, 100,100)[0]) + ","
-                             + str(cellvalue (Not_Finished, 100,100)[0]) +"," + str(cellvalue (self.STARTED, 100,100)[0]) + "," +   str(cellvalue (self.Season, 100,100)[0]) + "," +
+                             + str(cellvalue (HarvSeasonOne, 100,100)[0]) +"," + str(cellvalue (self.STARTED, 100,100)[0]) + "," +   str(cellvalue (self.Season, 100,100)[0]) + "," +
                             str(np_CropStartNow[100,100])+ "," + str(np_CropHarvNow[100,100]) + '\n')
         if self.date < self.enddate:
             Point_Output.write(Point_Output_Line)
