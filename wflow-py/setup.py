@@ -22,7 +22,7 @@ try:
     import netCDF4
 except:
     print("Could not import netCDF4, make sure it is installed")
-    
+
 try:
     import pcraster
 except:
