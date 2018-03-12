@@ -271,7 +271,7 @@ class WflowModel(DynamicModel):
       timeInfo['year'] = timeInfo['day'].year
       timeInfo['yesterday'] = timeInfo['day'] - timedelta(days=1)
       timeInfo['doy'] = timeInfo['day'].timetuple().tm_yday
-      timeInfo['isLastDayofYear'] = (timeInfo['day'] + timedelta(days=1)).timetuple().tm_yday == 1 
+      timeInfo['isLastDayOfYear'] = (timeInfo['day'] + timedelta(days=1)).timetuple().tm_yday == 1
       timeInfo['endMonth'] = (timeInfo['day'] + timedelta(days=1)).day == 1
       timeInfo['monthIdx'] = self.monthIdx
       timeInfo['endYear'] = (timeInfo['day'] + timedelta(days=1)).timetuple().tm_yday == 1 
@@ -397,7 +397,7 @@ class WflowModel(DynamicModel):
             
       self.currTimeStep = self.supplyTimeInfo()
             
-      if self.currTimeStep.isLastDayofYear:
+      if self.currTimeStep.isLastDayOfYear:
           self.annuaIdx = self.annuaIdx + 1
       
       if self.currTimeStep.endMonth:
