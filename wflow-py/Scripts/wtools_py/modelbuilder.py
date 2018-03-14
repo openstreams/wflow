@@ -182,7 +182,7 @@ def build_model(geojson_path, cellsize, model, name, case_template, case_path, f
             'SFCF',
             'TT',
             'UZL',
-            'WCH']}
+            'WHC']}
 
     # TODO rename these in hydro-engine
     newnames = {
