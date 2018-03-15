@@ -112,8 +112,8 @@ nrbits = str(ctypes.sizeof(ctypes.c_voidp) * 8)
 bf = os.path.join(os.getcwd(),"wflow-bin")
 shutil.rmtree(bf,ignore_errors=True)
 
-a = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'], shell=True).strip()
-thename = "wflow-bin/Wflow"+MVERSION+'-'+target+'-'+sys.platform+'-'+nrbits+'-'+str(a)
+#a = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'], shell=True).strip()
+#thename = "wflow-bin/Wflow"+MVERSION+'-'+target+'-'+sys.platform+'-'+nrbits+'-'+str(a)
 
 data_files.append('_version.py')
 
