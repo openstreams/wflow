@@ -117,7 +117,7 @@ if target == 'openda':
     import thrift.transport.THttpClient as THttpClient
     import thrift.protocol.TBinaryProtocol as TBinaryProtocol
     import thrift.transport.THttpClient as THttpClient
-    includes = ['wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined','lxml.etree', 'lxml._elementpath', 'gzip']
+    includes = ['wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined','lxml.etree', 'lxml._elementpath', 'gzip','numpy.core._methods', 'numpy.lib.format']
     packages.append('openda_bmi')
 elif target == 'deltashell':
     import zmq.libzmq
