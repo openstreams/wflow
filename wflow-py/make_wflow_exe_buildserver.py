@@ -109,8 +109,8 @@ nrbits = str(ctypes.sizeof(ctypes.c_voidp) * 8)
 #includes = ['wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined','bmi','bmi.wrapper',"pcraster","osgeo.ogr"]
 
 #clean wflow-bin dir
-bf = os.path.join(os.getcwd(),"wflow-bin","*")
-os.remove(bf)
+bf = os.path.join(os.getcwd(),"wflow-bin")
+shutil.rmtree(bf,ignore_errors=True)
 
 a = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'])
 thename = "wflow-bin/Wflow"+MVERSION+'-'+target+'-'+sys.platform+'-'+nrbits+'-'+str(a)
