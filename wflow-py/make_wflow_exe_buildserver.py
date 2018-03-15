@@ -20,6 +20,7 @@ import scipy
 import sys
 import glob
 import json
+import subprocess
 
 target = 'normal'
 # Filter out wflow specific options
@@ -107,17 +108,23 @@ data_files.extend(mkdatatuples(glob.glob(gdaldata + "/*.*"),destdir='gdal-data')
 nrbits = str(ctypes.sizeof(ctypes.c_voidp) * 8)
 #includes = ['wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined','bmi','bmi.wrapper',"pcraster","osgeo.ogr"]
 
-thename = "wflow-bin/Wflow"+MVERSION+'-'+target+'-'+sys.platform+'-'+nrbits
+#clean wflow-bin dir
+bf = os.path.join(os.getcwd(),"wflow-bin/*")
+os.remove(bf)
 
+a = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'])
+thename = "wflow-bin/Wflow"+MVERSION+'-'+target+'-'+sys.platform+'-'+nrbits+'-'+str(a)
 
-packages = ["osgeo","numpy","numpy.core._methods"]
+data_files.append('_version.py')
+
+packages = ["osgeo"]
 
 if target == 'openda':
     import thrift.protocol.TBinaryProtocol as TBinaryProtocol
     import thrift.transport.THttpClient as THttpClient
     import thrift.protocol.TBinaryProtocol as TBinaryProtocol
     import thrift.transport.THttpClient as THttpClient
-    includes = ['wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined','lxml.etree', 'lxml._elementpath', 'gzip','numpy.core._methods', 'numpy.lib.format']
+    includes = ['wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined','lxml.etree', 'lxml._elementpath', 'gzip']
     packages.append('openda_bmi')
 elif target == 'deltashell':
     import zmq.libzmq
@@ -134,9 +141,6 @@ else:
 options = {"includes": includes, "packages": packages,'include_files': data_files, "build_exe": thename,
             'excludes': ['collections.abc']}
 base=None
-
-
-
 
 if target == 'openda':
     import thrift
