@@ -54,6 +54,9 @@ def do_analysis(scriptpath):
                     datas=[(gdal.GetConfigOption('GDAL_DATA'), 'gdal-data'),
                            (pyproj_datadir, 'proj-data')],
                     hiddenimports=['pywt._extensions._cwt',
+                                   # in opendapy.py: importlib.import_module(sys.argv[3])
+                                   # for wflow this would always be wflow.wflow_bmi
+                                   'wflow.wflow_bmi',
                                    'rasterio.control',  # needed
                                    'rasterio.crs',  # needed
                                    'rasterio._shim',  # needed
