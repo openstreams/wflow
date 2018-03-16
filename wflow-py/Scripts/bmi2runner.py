@@ -23,79 +23,70 @@ Example ini file:
 """
 import wflow
 import wflow.wflow_bmi_combined as wfbmi
-import getopt
-import sys
-import logging
-
-import wflow.wflow_bmi_combined as bmi
 import wflow.pcrut as pcrut
-import wflow.wflow_adapt as wfa
+import os
+import time
 
 
 
-def usage(*args):
-    sys.stdout = sys.stderr
-    """Way"""
-    for msg in args: print msg
-    print __doc__
-    sys.exit(0)
+"""
+Perform command line execution of the model.
+"""
+
+configfile = "bmi2runner.ini"
+
+loglevel = 'INFO'
+combilogger = pcrut.setlogger('bmi2runner.log','bmi2runner_logging',thelevel=loglevel)
+
+# Construct object and initilize the models
+combilogger.info('Starting combined bmi object')
+bmiobj = wfbmi.wflowbmi_csdms()
+
+#this line is needed when running from batch script
+#os.sys.path.append(os.getcwd() +'\\rtc\\rtc_brantas\\bin\\')
+
+bmiobj.initialize_config(configfile,loglevel=loglevel)
+bmiobj.initialize_model()
+
+#Get and set start and end times
+start = bmiobj.get_start_time()
+end = bmiobj.get_end_time()
+bmiobj.set_start_time(start)
+bmiobj.set_end_time(end)
+
+#Update models (if necessary) to start time
+bmiobj.update_to_start_time(start)
+
+#Number of steps to run models
+ts = bmiobj.get_time_step()
+steps = int((end - start)/ts + 1)
+
+print 'start = ', start#time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(start))
+print 'start time rtc =', time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(bmiobj.bmimodels['RTC-Tools'].get_start_time()))
+print 'start time wflow =', time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(bmiobj.bmimodels['wflow_sbm'].get_start_time()))
+print 'start time lintul =', time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(bmiobj.bmimodels['wflow_lintul'].get_start_time()))
 
 
-def main(argv=None):
-    """
-    Perform command line execution of the model.
-    """
+cts = bmiobj.currenttimestep
+# Loop over the time duration    
+while cts < steps:
 
-    configfile = "bmirunner.ini"
-
-
-    if argv is None:
-        argv = sys.argv[1:]
-        if len(argv) == 0:
-            usage()
-            return
-    ########################################################################
-    ## Process command-line options                                        #
-    ########################################################################
-    try:
-        opts, args = getopt.getopt(argv, 'c:l:')
-    except getopt.error, msg:
-        usage(msg)
-
-    loglevel=logging.WARN
-    for o, a in opts:
-        if o == '-c': configfile = a
-        if o == '-l': exec "loglevel = logging." + a
+    bmiobj.update()
+    cts = bmiobj.currenttimestep
 
 
-    combilogger = pcrut.setlogger('bmi2runner.log','bmi2runner_logging',thelevel=loglevel)
-    # Construct object and initilize the models
-    combilogger.info('Starting combined bmi object')
-    bmiobj = bmi.wflowbmi_csdms()
-    bmiobj.initialize_config(configfile,loglevel=loglevel)
-    bmiobj.initialize_model()
-    start = bmiobj.get_start_time()
-    end = bmiobj.get_end_time()
-    #bmiobj.set_start_time(start)
-    #bmiobj.set_end_time(end)
-    # Get time for the loop
-
-    ts = bmiobj.get_time_step()
-    curtime = bmiobj.get_current_time()
-    # Loop over the time duration
-
-    while curtime < end:
-        combilogger.info("time is: " + str(curtime))
-        bmiobj.update_until(curtime + ts)
-        curtime = bmiobj.get_current_time()
-
-    bmiobj.finalize()
-    combilogger.info('Finishing run')
+#else: 
+#    bmiobj.bmimodels['RTC-Tools'].update()
+#    bmiobj.bmimodels['wflow_sbm'].update()
+#    bmiobj.bmimodels['wflow_lintul'].update()
+#    cts = bmiobj.currenttimestep
+        
+bmiobj.bmimodels['RTC-Tools'].finalize()
+bmiobj.bmimodels['wflow_sbm'].finalize()
+bmiobj.bmimodels['wflow_lintul'].finalize()
+combilogger.info('Finishing run')
 
 
-
-if __name__ == "__main__":
-    main()
 
 
 

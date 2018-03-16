@@ -12,11 +12,11 @@ README = open(os.path.join(here, '../README.rst')).read()
 TODO = open(os.path.join(here, 'TODO.txt')).read()
 
 
+
 try:
-    import pcraster
+    import osgeo
 except:
-    print("Could not import pcraster, make sure it is installed including the python extensions")
-    print("see www.pcraster.eu")
+    print("Could not import osgeo (gdal), make sure it is installed")
 
 try:
     import netCDF4
@@ -24,9 +24,10 @@ except:
     print("Could not import netCDF4, make sure it is installed")
 
 try:
-    import osgeo
+    import pcraster
 except:
-    print("Could not import osgeo (gdal), make sure it is installed")
+    print("Could not import pcraster, make sure it is installed including the python extensions")
+    print("see www.pcraster.eu")
 
 try:
     import pyproj
