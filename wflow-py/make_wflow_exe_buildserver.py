@@ -139,7 +139,7 @@ else:
 
 #  "include_msvcr": True,
 options = {"includes": includes, "packages": packages,'include_files': data_files, "build_exe": thename,
-            'excludes': ['collections.abc']}
+            'excludes': ['collections.abc'],"include_msvcr": True}
 base=None
 
 if target == 'openda':
