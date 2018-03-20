@@ -53,6 +53,7 @@ def do_analysis(scriptpath):
                     # Though this seems more solid, submit as hook patch?
                     datas=[(gdal.GetConfigOption('GDAL_DATA'), 'gdal-data'),
                            (pyproj_datadir, 'proj-data')],
+                    excludes=['numpy.distutils'],
                     hiddenimports=['pywt._extensions._cwt',
                                    # in opendapy.py: importlib.import_module(sys.argv[3])
                                    # for wflow this would always be wflow.wflow_bmi
