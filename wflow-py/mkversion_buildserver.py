@@ -55,7 +55,7 @@ a.write("    # set environment variable instead of pyproj_datadir such\n")
 a.write("    # that child processes will inherit it\n")
 a.write("    os.environ['PROJ_DIR'] = os.path.join(basedir, 'proj-data')\n")
 a.write("    os.environ['PATH'] = basedir + ';' + os.environ['PATH']\n")
-a.write("    os.environ['PYTHONPATH'] = basedir + ';' + os.environ['PYTHONPATH']\n")
+a.write("    os.environ['PYTHONPATH'] = _ROOT + ';' + os.environ['PYTHONPATH']\n")
 
 
 print "============================================================================="
