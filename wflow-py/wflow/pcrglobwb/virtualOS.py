@@ -119,59 +119,59 @@ def netcdf2PCRobjCloneWithoutTime(ncFile, varName,
         except:
             pass
     
-    sameClone = True
-    # check whether clone and input maps have the same attributes:
-    if cloneMapFileName != None:
-        # get the attributes of cloneMap
-        #attributeClone = getMapAttributesALL(cloneMapFileName)
-        #cellsizeClone = attributeClone['cellsize']
-        #rowsClone = attributeClone['rows']
-        #colsClone = attributeClone['cols']
-        #xULClone = attributeClone['xUL']
-        #yULClone = attributeClone['yUL']     
-        attributeClone = getgridparams()
-        cellsizeClone = attributeClone[2]
-        rowsClone = attributeClone[4]
-        colsClone = attributeClone[5]
-        xULClone = attributeClone[0] - 0.5*cellsizeClone
-        yULClone = attributeClone[1] + 0.5*cellsizeClone
-        # get the attributes of input (netCDF) 
-        cellsizeInput = f.variables['lat'][0]- f.variables['lat'][1]
-        cellsizeInput = float(cellsizeInput)
-        rowsInput = len(f.variables['lat'])
-        colsInput = len(f.variables['lon'])
-        xULInput = f.variables['lon'][0]-0.5*cellsizeInput
-        yULInput = f.variables['lat'][0]+0.5*cellsizeInput
-        # check whether both maps have the same attributes 
-        if cellsizeClone != cellsizeInput: sameClone = False
-        if rowsClone != rowsInput: sameClone = False
-        if colsClone != colsInput: sameClone = False
-        if xULClone != xULInput: sameClone = False
-        if yULClone != yULInput: sameClone = False
-
+#    sameClone = True
+#    # check whether clone and input maps have the same attributes:
+#    if cloneMapFileName != None:
+#        # get the attributes of cloneMap
+#        #attributeClone = getMapAttributesALL(cloneMapFileName)
+#        #cellsizeClone = attributeClone['cellsize']
+#        #rowsClone = attributeClone['rows']
+#        #colsClone = attributeClone['cols']
+#        #xULClone = attributeClone['xUL']
+#        #yULClone = attributeClone['yUL']     
+#        attributeClone = getgridparams()
+#        cellsizeClone = attributeClone[2]
+#        rowsClone = attributeClone[4]
+#        colsClone = attributeClone[5]
+#        xULClone = attributeClone[0] - 0.5*cellsizeClone
+#        yULClone = attributeClone[1] + 0.5*cellsizeClone
+#        # get the attributes of input (netCDF) 
+#        cellsizeInput = f.variables['lat'][0]- f.variables['lat'][1]
+#        cellsizeInput = float(cellsizeInput)
+#        rowsInput = len(f.variables['lat'])
+#        colsInput = len(f.variables['lon'])
+#        xULInput = f.variables['lon'][0]-0.5*cellsizeInput
+#        yULInput = f.variables['lat'][0]+0.5*cellsizeInput
+#        # check whether both maps have the same attributes 
+#        if cellsizeClone != cellsizeInput: sameClone = False
+#        if rowsClone != rowsInput: sameClone = False
+#        if colsClone != colsInput: sameClone = False
+#        if xULClone != xULInput: sameClone = False
+#        if yULClone != yULInput: sameClone = False
+#
     cropData = f.variables[varName][:,:]       # still original data
-    factor = 1                                 # needed in regridData2FinerGrid
-    if sameClone == False:
-        # crop to cloneMap:
-        minX    = min(abs(f.variables['lon'][:] - (xULClone + 0.5*cellsizeInput))) # ; print(minX)
-        xIdxSta = int(np.where(abs(f.variables['lon'][:] - (xULClone + 0.5*cellsizeInput)) == minX)[0])
-        xIdxEnd = int(math.ceil(xIdxSta + colsClone /(cellsizeInput/cellsizeClone)))
-        minY    = min(abs(f.variables['lat'][:] - (yULClone - 0.5*cellsizeInput))) # ; print(minY)
-        yIdxSta = int(np.where(abs(f.variables['lat'][:] - (yULClone - 0.5*cellsizeInput)) == minY)[0])
-        yIdxEnd = int(math.ceil(yIdxSta + rowsClone /(cellsizeInput/cellsizeClone)))
-        cropData = f.variables[varName][yIdxSta:yIdxEnd,xIdxSta:xIdxEnd]
-        factor = int(round(float(cellsizeInput)/float(cellsizeClone)))
-
-        if factor > 1: logger.debug('Resample: input cell size = '+str(float(cellsizeInput))+' ; output/clone cell size = '+str(float(cellsizeClone)))
+#    factor = 1                                 # needed in regridData2FinerGrid
+#    if sameClone == False:
+#        # crop to cloneMap:
+#        minX    = min(abs(f.variables['lon'][:] - (xULClone + 0.5*cellsizeInput))) # ; print(minX)
+#        xIdxSta = int(np.where(abs(f.variables['lon'][:] - (xULClone + 0.5*cellsizeInput)) == minX)[0])
+#        xIdxEnd = int(math.ceil(xIdxSta + colsClone /(cellsizeInput/cellsizeClone)))
+#        minY    = min(abs(f.variables['lat'][:] - (yULClone - 0.5*cellsizeInput))) # ; print(minY)
+#        yIdxSta = int(np.where(abs(f.variables['lat'][:] - (yULClone - 0.5*cellsizeInput)) == minY)[0])
+#        yIdxEnd = int(math.ceil(yIdxSta + rowsClone /(cellsizeInput/cellsizeClone)))
+#        cropData = f.variables[varName][yIdxSta:yIdxEnd,xIdxSta:xIdxEnd]
+#        factor = int(round(float(cellsizeInput)/float(cellsizeClone)))
+#
+#        if factor > 1: logger.debug('Resample: input cell size = '+str(float(cellsizeInput))+' ; output/clone cell size = '+str(float(cellsizeClone)))
     
     # convert to PCR object and close f
     if specificFillValue != None:
-        outPCR = pcr.numpy2pcr(pcr.Scalar, \
-                  regridData2FinerGrid(factor,cropData,MV), \
+        outPCR = pcr.numpy2pcr(pcr.Scalar, cropData, \
+                  #regridData2FinerGrid(factor,cropData,MV), \
                   float(specificFillValue))
     else:
-        outPCR = pcr.numpy2pcr(pcr.Scalar, \
-                  regridData2FinerGrid(factor,cropData,MV), \
+        outPCR = pcr.numpy2pcr(pcr.Scalar, cropData, \
+                  #regridData2FinerGrid(factor,cropData,MV), \
                   float(f.variables[varName]._FillValue))
                   
     #~ # debug:
@@ -346,64 +346,64 @@ def netcdf2PCRobjClone(ncFile,varName,dateInput,\
     idx = int(idx)                                                  
     logger.debug('Using the date index '+str(idx))
 
-    sameClone = True
-    # check whether clone and input maps have the same attributes:
-    if cloneMapFileName != None:
-        # get the attributes of cloneMap
-        #attributeClone = getMapAttributesALL(cloneMapFileName)
-        #cellsizeClone = attributeClone['cellsize']
-        #rowsClone = attributeClone['rows']
-        #colsClone = attributeClone['cols']
-        #xULClone = attributeClone['xUL']
-        #yULClone = attributeClone['yUL']       
-        attributeClone = getgridparams()
-        cellsizeClone = attributeClone[2]
-        rowsClone = attributeClone[4]
-        colsClone = attributeClone[5]
-        xULClone = attributeClone[0] - 0.5*cellsizeClone
-        yULClone = attributeClone[1] + 0.5*cellsizeClone
-        # get the attributes of input (netCDF) 
-        cellsizeInput = f.variables['lat'][0]- f.variables['lat'][1]
-        cellsizeInput = float(cellsizeInput)
-        rowsInput = len(f.variables['lat'])
-        colsInput = len(f.variables['lon'])
-        xULInput = f.variables['lon'][0]-0.5*cellsizeInput
-        yULInput = f.variables['lat'][0]+0.5*cellsizeInput
-        # check whether both maps have the same attributes 
-        if cellsizeClone != cellsizeInput: sameClone = False
-        if rowsClone != rowsInput: sameClone = False
-        if colsClone != colsInput: sameClone = False
-        if xULClone != xULInput: sameClone = False
-        if yULClone != yULInput: sameClone = False
+#    sameClone = True
+#    # check whether clone and input maps have the same attributes:
+#    if cloneMapFileName != None:
+#        # get the attributes of cloneMap
+#        #attributeClone = getMapAttributesALL(cloneMapFileName)
+#        #cellsizeClone = attributeClone['cellsize']
+#        #rowsClone = attributeClone['rows']
+#        #colsClone = attributeClone['cols']
+#        #xULClone = attributeClone['xUL']
+#        #yULClone = attributeClone['yUL']       
+#        attributeClone = getgridparams()
+#        cellsizeClone = attributeClone[2]
+#        rowsClone = attributeClone[4]
+#        colsClone = attributeClone[5]
+#        xULClone = attributeClone[0] - 0.5*cellsizeClone
+#        yULClone = attributeClone[1] + 0.5*cellsizeClone
+#        # get the attributes of input (netCDF) 
+#        cellsizeInput = f.variables['lat'][0]- f.variables['lat'][1]
+#        cellsizeInput = float(cellsizeInput)
+#        rowsInput = len(f.variables['lat'])
+#        colsInput = len(f.variables['lon'])
+#        xULInput = f.variables['lon'][0]-0.5*cellsizeInput
+#        yULInput = f.variables['lat'][0]+0.5*cellsizeInput
+#        # check whether both maps have the same attributes 
+#        if cellsizeClone != cellsizeInput: sameClone = False
+#        if rowsClone != rowsInput: sameClone = False
+#        if colsClone != colsInput: sameClone = False
+#        if xULClone != xULInput: sameClone = False
+#        if yULClone != yULInput: sameClone = False
 
     cropData = f.variables[varName][int(idx),:,:]       # still original data
-    factor = 1                          # needed in regridData2FinerGrid
+#    factor = 1                          # needed in regridData2FinerGrid
 
-    if sameClone == False:
-        
-        logger.debug('Crop to the clone map with lower left corner (x,y): '+str(xULClone)+' , '+str(yULClone))
-        # crop to cloneMap:
-        #~ xIdxSta = int(np.where(f.variables['lon'][:] == xULClone + 0.5*cellsizeInput)[0])
-        minX    = min(abs(f.variables['lon'][:] - (xULClone + 0.5*cellsizeInput))) # ; print(minX)
-        xIdxSta = int(np.where(abs(f.variables['lon'][:] - (xULClone + 0.5*cellsizeInput)) == minX)[0])
-        xIdxEnd = int(math.ceil(xIdxSta + colsClone /(cellsizeInput/cellsizeClone)))
-        #~ yIdxSta = int(np.where(f.variables['lat'][:] == yULClone - 0.5*cellsizeInput)[0])
-        minY    = min(abs(f.variables['lat'][:] - (yULClone - 0.5*cellsizeInput))) # ; print(minY)
-        yIdxSta = int(np.where(abs(f.variables['lat'][:] - (yULClone - 0.5*cellsizeInput)) == minY)[0])
-        yIdxEnd = int(math.ceil(yIdxSta + rowsClone /(cellsizeInput/cellsizeClone)))
-        cropData = f.variables[varName][idx,yIdxSta:yIdxEnd,xIdxSta:xIdxEnd]
-
-        factor = int(round(float(cellsizeInput)/float(cellsizeClone)))
-        if factor > 1: logger.debug('Resample: input cell size = '+str(float(cellsizeInput))+' ; output/clone cell size = '+str(float(cellsizeClone)))
+#    if sameClone == False:
+#        
+#        logger.debug('Crop to the clone map with lower left corner (x,y): '+str(xULClone)+' , '+str(yULClone))
+#        # crop to cloneMap:
+#        #~ xIdxSta = int(np.where(f.variables['lon'][:] == xULClone + 0.5*cellsizeInput)[0])
+#        minX    = min(abs(f.variables['lon'][:] - (xULClone + 0.5*cellsizeInput))) # ; print(minX)
+#        xIdxSta = int(np.where(abs(f.variables['lon'][:] - (xULClone + 0.5*cellsizeInput)) == minX)[0])
+#        xIdxEnd = int(math.ceil(xIdxSta + colsClone /(cellsizeInput/cellsizeClone)))
+#        #~ yIdxSta = int(np.where(f.variables['lat'][:] == yULClone - 0.5*cellsizeInput)[0])
+#        minY    = min(abs(f.variables['lat'][:] - (yULClone - 0.5*cellsizeInput))) # ; print(minY)
+#        yIdxSta = int(np.where(abs(f.variables['lat'][:] - (yULClone - 0.5*cellsizeInput)) == minY)[0])
+#        yIdxEnd = int(math.ceil(yIdxSta + rowsClone /(cellsizeInput/cellsizeClone)))
+#        cropData = f.variables[varName][idx,yIdxSta:yIdxEnd,xIdxSta:xIdxEnd]
+#
+#        factor = int(round(float(cellsizeInput)/float(cellsizeClone)))
+#        if factor > 1: logger.debug('Resample: input cell size = '+str(float(cellsizeInput))+' ; output/clone cell size = '+str(float(cellsizeClone)))
 
     # convert to PCR object and close f
     if specificFillValue != None:
-        outPCR = pcr.numpy2pcr(pcr.Scalar, \
-                  regridData2FinerGrid(factor,cropData,MV), \
+        outPCR = pcr.numpy2pcr(pcr.Scalar, cropData, \
+#                  regridData2FinerGrid(factor,cropData,MV), \
                   float(specificFillValue))
     else:
-        outPCR = pcr.numpy2pcr(pcr.Scalar, \
-                  regridData2FinerGrid(factor,cropData,MV), \
+        outPCR = pcr.numpy2pcr(pcr.Scalar, cropData, \
+#                  regridData2FinerGrid(factor,cropData,MV), \
                   float(f.variables[varName]._FillValue))
                   
     #f.close();
@@ -551,7 +551,7 @@ def netcdf2PCRobjCloneJOYCE(ncFile,varName,dateInput,\
     logger.debug('Using the date index '+str(idx))
 
     cropData = f.variables[varName][int(idx),:,:].copy()       # still original data
-    factor = 1                                                 # needed in regridData2FinerGrid
+#    factor = 1                                                 # needed in regridData2FinerGrid
     
     # store latitudes and longitudes to a new variable
     latitude  = f.variables['lat']
@@ -563,35 +563,35 @@ def netcdf2PCRobjCloneJOYCE(ncFile,varName,dateInput,\
         we_have_to_flip = True
         latitude = np.flipud(latitude)
     
-    sameClone = True
-    # check whether clone and input maps have the same attributes:
-    if cloneMapFileName != None:
-        # get the attributes of cloneMap
-        #attributeClone = getMapAttributesALL(cloneMapFileName)
-        #cellsizeClone = attributeClone['cellsize']
-        #rowsClone = attributeClone['rows']
-        #colsClone = attributeClone['cols']
-        #xULClone = attributeClone['xUL']
-        #yULClone = attributeClone['yUL']     
-        attributeClone = getgridparams()
-        cellsizeClone = attributeClone[2]
-        rowsClone = attributeClone[4]
-        colsClone = attributeClone[5]
-        xULClone = attributeClone[0] - 0.5*cellsizeClone
-        yULClone = attributeClone[1] + 0.5*cellsizeClone      
-        # get the attributes of input (netCDF) 
-        cellsizeInput = latitude[0]- latitude[1]
-        cellsizeInput = float(cellsizeInput)
-        rowsInput = len(latitude)
-        colsInput = len(longitude)
-        xULInput = longitude[0]-0.5*cellsizeInput
-        yULInput = latitude[0] +0.5*cellsizeInput
-        # check whether both maps have the same attributes 
-        if cellsizeClone != cellsizeInput: sameClone = False
-        if rowsClone != rowsInput: sameClone = False
-        if colsClone != colsInput: sameClone = False
-        if xULClone != xULInput: sameClone = False
-        if yULClone != yULInput: sameClone = False
+#    sameClone = True
+#    # check whether clone and input maps have the same attributes:
+#    if cloneMapFileName != None:
+#        # get the attributes of cloneMap
+#        #attributeClone = getMapAttributesALL(cloneMapFileName)
+#        #cellsizeClone = attributeClone['cellsize']
+#        #rowsClone = attributeClone['rows']
+#        #colsClone = attributeClone['cols']
+#        #xULClone = attributeClone['xUL']
+#        #yULClone = attributeClone['yUL']     
+#        attributeClone = getgridparams()
+#        cellsizeClone = attributeClone[2]
+#        rowsClone = attributeClone[4]
+#        colsClone = attributeClone[5]
+#        xULClone = attributeClone[0] - 0.5*cellsizeClone
+#        yULClone = attributeClone[1] + 0.5*cellsizeClone      
+#        # get the attributes of input (netCDF) 
+#        cellsizeInput = latitude[0]- latitude[1]
+#        cellsizeInput = float(cellsizeInput)
+#        rowsInput = len(latitude)
+#        colsInput = len(longitude)
+#        xULInput = longitude[0]-0.5*cellsizeInput
+#        yULInput = latitude[0] +0.5*cellsizeInput
+#        # check whether both maps have the same attributes 
+#        if cellsizeClone != cellsizeInput: sameClone = False
+#        if rowsClone != rowsInput: sameClone = False
+#        if colsClone != colsInput: sameClone = False
+#        if xULClone != xULInput: sameClone = False
+#        if yULClone != yULInput: sameClone = False
 
     # flip cropData if necessary 
     if we_have_to_flip: 
@@ -634,29 +634,29 @@ def netcdf2PCRobjCloneJOYCE(ncFile,varName,dateInput,\
         pcr.report(pcr_map, "test2.map")
         os.system("aguila test2.map")
     
-    if sameClone == False:
-        
-        logger.debug('Crop to the clone map with lower left corner (x,y): '+str(xULClone)+' , '+str(yULClone))
-        # crop to cloneMap:
-        minX    = min(abs(longitude[:] - (xULClone + 0.5*cellsizeInput))) # ; print(minX)
-        xIdxSta = int(np.where(abs(longitude[:] - (xULClone + 0.5*cellsizeInput)) == minX)[0])
-        xIdxEnd = int(math.ceil(xIdxSta + colsClone /(cellsizeInput/cellsizeClone)))
-        minY    = min(abs(latitude[:] - (yULClone - 0.5*cellsizeInput))) # ; print(minY)
-        yIdxSta = int(np.where(abs(latitude[:] - (yULClone - 0.5*cellsizeInput)) == minY)[0])
-        yIdxEnd = int(math.ceil(yIdxSta + rowsClone /(cellsizeInput/cellsizeClone)))
-        cropData = cropData[yIdxSta:yIdxEnd,xIdxSta:xIdxEnd]
-
-        factor = int(round(float(cellsizeInput)/float(cellsizeClone)))
-        if factor > 1: logger.debug('Resample: input cell size = '+str(float(cellsizeInput))+' ; output/clone cell size = '+str(float(cellsizeClone)))
+#    if sameClone == False:
+#        
+#        logger.debug('Crop to the clone map with lower left corner (x,y): '+str(xULClone)+' , '+str(yULClone))
+#        # crop to cloneMap:
+#        minX    = min(abs(longitude[:] - (xULClone + 0.5*cellsizeInput))) # ; print(minX)
+#        xIdxSta = int(np.where(abs(longitude[:] - (xULClone + 0.5*cellsizeInput)) == minX)[0])
+#        xIdxEnd = int(math.ceil(xIdxSta + colsClone /(cellsizeInput/cellsizeClone)))
+#        minY    = min(abs(latitude[:] - (yULClone - 0.5*cellsizeInput))) # ; print(minY)
+#        yIdxSta = int(np.where(abs(latitude[:] - (yULClone - 0.5*cellsizeInput)) == minY)[0])
+#        yIdxEnd = int(math.ceil(yIdxSta + rowsClone /(cellsizeInput/cellsizeClone)))
+#        cropData = cropData[yIdxSta:yIdxEnd,xIdxSta:xIdxEnd]
+#
+#        factor = int(round(float(cellsizeInput)/float(cellsizeClone)))
+#        if factor > 1: logger.debug('Resample: input cell size = '+str(float(cellsizeInput))+' ; output/clone cell size = '+str(float(cellsizeClone)))
 
     # convert to PCR object and close f
     if specificFillValue != None:
-        outPCR = pcr.numpy2pcr(pcr.Scalar, \
-                  regridData2FinerGrid(factor,cropData,MV), \
+        outPCR = pcr.numpy2pcr(pcr.Scalar, cropData, \
+#                  regridData2FinerGrid(factor,cropData,MV), \
                   float(specificFillValue))
     else:
-        outPCR = pcr.numpy2pcr(pcr.Scalar, \
-                  regridData2FinerGrid(factor,cropData,MV), \
+        outPCR = pcr.numpy2pcr(pcr.Scalar, cropData, \
+#                  regridData2FinerGrid(factor,cropData,MV), \
                   float(f.variables[varName]._FillValue))
                   
     #f.close();
@@ -691,50 +691,50 @@ def netcdf2PCRobjCloneWindDist(ncFile,varName,dateInput,useDoy = None,
                                                      select='exact')
     idx = int(idx)                                                  
 
-    sameClone = True
-    # check whether clone and input maps have the same attributes:
-    if cloneMapFileName != None:
-        # get the attributes of cloneMap
-        #attributeClone = getMapAttributesALL(cloneMapFileName)
-        #cellsizeClone = attributeClone['cellsize']
-        #rowsClone = attributeClone['rows']
-        #colsClone = attributeClone['cols']
-        #xULClone = attributeClone['xUL']
-        #yULClone = attributeClone['yUL']      
-        attributeClone = getgridparams()
-        cellsizeClone = attributeClone[2]
-        rowsClone = attributeClone[4]
-        colsClone = attributeClone[5]
-        xULClone = attributeClone[0] - 0.5*cellsizeClone
-        yULClone = attributeClone[1] + 0.5*cellsizeClone
-        # get the attributes of input (netCDF) 
-        cellsizeInput = f.variables['lat'][0]- f.variables['lat'][1]
-        cellsizeInput = float(cellsizeInput)
-        rowsInput = len(f.variables['lat'])
-        colsInput = len(f.variables['lon'])
-        xULInput = f.variables['lon'][0]-0.5*cellsizeInput
-        yULInput = f.variables['lat'][0]+0.5*cellsizeInput
-        # check whether both maps have the same attributes 
-        if cellsizeClone != cellsizeInput: sameClone = False
-        if rowsClone != rowsInput: sameClone = False
-        if colsClone != colsInput: sameClone = False
-        if xULClone != xULInput: sameClone = False
-        if yULClone != yULInput: sameClone = False
+#    sameClone = True
+#    # check whether clone and input maps have the same attributes:
+#    if cloneMapFileName != None:
+#        # get the attributes of cloneMap
+#        #attributeClone = getMapAttributesALL(cloneMapFileName)
+#        #cellsizeClone = attributeClone['cellsize']
+#        #rowsClone = attributeClone['rows']
+#        #colsClone = attributeClone['cols']
+#        #xULClone = attributeClone['xUL']
+#        #yULClone = attributeClone['yUL']      
+#        attributeClone = getgridparams()
+#        cellsizeClone = attributeClone[2]
+#        rowsClone = attributeClone[4]
+#        colsClone = attributeClone[5]
+#        xULClone = attributeClone[0] - 0.5*cellsizeClone
+#        yULClone = attributeClone[1] + 0.5*cellsizeClone
+#        # get the attributes of input (netCDF) 
+#        cellsizeInput = f.variables['lat'][0]- f.variables['lat'][1]
+#        cellsizeInput = float(cellsizeInput)
+#        rowsInput = len(f.variables['lat'])
+#        colsInput = len(f.variables['lon'])
+#        xULInput = f.variables['lon'][0]-0.5*cellsizeInput
+#        yULInput = f.variables['lat'][0]+0.5*cellsizeInput
+#        # check whether both maps have the same attributes 
+#        if cellsizeClone != cellsizeInput: sameClone = False
+#        if rowsClone != rowsInput: sameClone = False
+#        if colsClone != colsInput: sameClone = False
+#        if xULClone != xULInput: sameClone = False
+#        if yULClone != yULInput: sameClone = False
 
     cropData = f.variables[varName][int(idx),:,:]       # still original data
-    factor = 1                          # needed in regridData2FinerGrid
-    if sameClone == False:
-        # crop to cloneMap:
-        xIdxSta = int(np.where(f.variables['lon'][:] == xULClone + 0.5*cellsizeInput)[0])
-        xIdxEnd = int(math.ceil(xIdxSta + colsClone /(cellsizeInput/cellsizeClone)))
-        yIdxSta = int(np.where(f.variables['lat'][:] == yULClone - 0.5*cellsizeInput)[0])
-        yIdxEnd = int(math.ceil(yIdxSta + rowsClone /(cellsizeInput/cellsizeClone)))
-        cropData = f.variables[varName][idx,yIdxSta:yIdxEnd,xIdxSta:xIdxEnd]
-        factor = int(float(cellsizeInput)/float(cellsizeClone))
+#    factor = 1                          # needed in regridData2FinerGrid
+#    if sameClone == False:
+#        # crop to cloneMap:
+#        xIdxSta = int(np.where(f.variables['lon'][:] == xULClone + 0.5*cellsizeInput)[0])
+#        xIdxEnd = int(math.ceil(xIdxSta + colsClone /(cellsizeInput/cellsizeClone)))
+#        yIdxSta = int(np.where(f.variables['lat'][:] == yULClone - 0.5*cellsizeInput)[0])
+#        yIdxEnd = int(math.ceil(yIdxSta + rowsClone /(cellsizeInput/cellsizeClone)))
+#        cropData = f.variables[varName][idx,yIdxSta:yIdxEnd,xIdxSta:xIdxEnd]
+#        factor = int(float(cellsizeInput)/float(cellsizeClone))
     
     # convert to PCR object and close f
-    outPCR = pcr.numpy2pcr(pcr.Scalar, \
-               regridData2FinerGrid(factor,cropData,MV), \
+    outPCR = pcr.numpy2pcr(pcr.Scalar, cropData, \
+#               regridData2FinerGrid(factor,cropData,MV), \
                   float(0.0))
     f.close();
     f = None ; cropData = None 
@@ -766,50 +766,50 @@ def netcdf2PCRobjCloneWind(ncFile,varName,dateInput,useDoy = None,
         idx = nc.date2index(date, nctime, select="exact")
     idx = int(idx)                                                  
 
-    sameClone = True
-    # check whether clone and input maps have the same attributes:
-    if cloneMapFileName != None:
-        # get the attributes of cloneMap
-        #attributeClone = getMapAttributesALL(cloneMapFileName)
-        #cellsizeClone = attributeClone['cellsize']
-        #rowsClone = attributeClone['rows']
-        #colsClone = attributeClone['cols']
-        #xULClone = attributeClone['xUL']
-        #yULClone = attributeClone['yUL']        
-        attributeClone = getgridparams()
-        cellsizeClone = attributeClone[2]
-        rowsClone = attributeClone[4]
-        colsClone = attributeClone[5]
-        xULClone = attributeClone[0] - 0.5*cellsizeClone
-        yULClone = attributeClone[1] + 0.5*cellsizeClone
-        # get the attributes of input (netCDF) 
-        cellsizeInput = f.variables['lat'][0]- f.variables['lat'][1]
-        cellsizeInput = float(cellsizeInput)
-        rowsInput = len(f.variables['lat'])
-        colsInput = len(f.variables['lon'])
-        xULInput = f.variables['lon'][0]-0.5*cellsizeInput
-        yULInput = f.variables['lat'][0]+0.5*cellsizeInput
-        # check whether both maps have the same attributes 
-        if cellsizeClone != cellsizeInput: sameClone = False
-        if rowsClone != rowsInput: sameClone = False
-        if colsClone != colsInput: sameClone = False
-        if xULClone != xULInput: sameClone = False
-        if yULClone != yULInput: sameClone = False
+#    sameClone = True
+#    # check whether clone and input maps have the same attributes:
+#    if cloneMapFileName != None:
+#        # get the attributes of cloneMap
+#        #attributeClone = getMapAttributesALL(cloneMapFileName)
+#        #cellsizeClone = attributeClone['cellsize']
+#        #rowsClone = attributeClone['rows']
+#        #colsClone = attributeClone['cols']
+#        #xULClone = attributeClone['xUL']
+#        #yULClone = attributeClone['yUL']        
+#        attributeClone = getgridparams()
+#        cellsizeClone = attributeClone[2]
+#        rowsClone = attributeClone[4]
+#        colsClone = attributeClone[5]
+#        xULClone = attributeClone[0] - 0.5*cellsizeClone
+#        yULClone = attributeClone[1] + 0.5*cellsizeClone
+#        # get the attributes of input (netCDF) 
+#        cellsizeInput = f.variables['lat'][0]- f.variables['lat'][1]
+#        cellsizeInput = float(cellsizeInput)
+#        rowsInput = len(f.variables['lat'])
+#        colsInput = len(f.variables['lon'])
+#        xULInput = f.variables['lon'][0]-0.5*cellsizeInput
+#        yULInput = f.variables['lat'][0]+0.5*cellsizeInput
+#        # check whether both maps have the same attributes 
+#        if cellsizeClone != cellsizeInput: sameClone = False
+#        if rowsClone != rowsInput: sameClone = False
+#        if colsClone != colsInput: sameClone = False
+#        if xULClone != xULInput: sameClone = False
+#        if yULClone != yULInput: sameClone = False
 
     cropData = f.variables[varName][int(idx),:,:]       # still original data
-    factor = 1                          # needed in regridData2FinerGrid
-    if sameClone == False:
-        # crop to cloneMap:
-        xIdxSta = int(np.where(f.variables['lon'][:] == xULClone + 0.5*cellsizeInput)[0])
-        xIdxEnd = int(math.ceil(xIdxSta + colsClone /(cellsizeInput/cellsizeClone)))
-        yIdxSta = int(np.where(f.variables['lat'][:] == yULClone - 0.5*cellsizeInput)[0])
-        yIdxEnd = int(math.ceil(yIdxSta + rowsClone /(cellsizeInput/cellsizeClone)))
-        cropData = f.variables[varName][idx,yIdxSta:yIdxEnd,xIdxSta:xIdxEnd]
-        factor = int(float(cellsizeInput)/float(cellsizeClone))
+#    factor = 1                          # needed in regridData2FinerGrid
+#    if sameClone == False:
+#        # crop to cloneMap:
+#        xIdxSta = int(np.where(f.variables['lon'][:] == xULClone + 0.5*cellsizeInput)[0])
+#        xIdxEnd = int(math.ceil(xIdxSta + colsClone /(cellsizeInput/cellsizeClone)))
+#        yIdxSta = int(np.where(f.variables['lat'][:] == yULClone - 0.5*cellsizeInput)[0])
+#        yIdxEnd = int(math.ceil(yIdxSta + rowsClone /(cellsizeInput/cellsizeClone)))
+#        cropData = f.variables[varName][idx,yIdxSta:yIdxEnd,xIdxSta:xIdxEnd]
+#        factor = int(float(cellsizeInput)/float(cellsizeClone))
     
     # convert to PCR object and close f
-    outPCR = pcr.numpy2pcr(pcr.Scalar, \
-               regridData2FinerGrid(factor,cropData,MV), \
+    outPCR = pcr.numpy2pcr(pcr.Scalar, cropData, \
+#               regridData2FinerGrid(factor,cropData,MV), \
                   float(f.variables[varName]._FillValue))
     f.close();
     f = None ; cropData = None 
