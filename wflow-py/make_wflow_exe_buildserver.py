@@ -117,7 +117,7 @@ thename = "wflow-bin/Wflow"+MVERSION+'-'+target+'-'+sys.platform+'-'+nrbits
 
 data_files.append('_version.py')
 
-packages = ["osgeo","numpy"]
+packages = ["osgeo"]
 
 if target == 'openda':
     import thrift.protocol.TBinaryProtocol as TBinaryProtocol
@@ -139,7 +139,7 @@ else:
 
 #  "include_msvcr": True,
 options = {"includes": includes, "packages": packages,'include_files': data_files, "build_exe": thename,
-            'excludes': ['collections.abc'],"include_msvcr": True}
+            'excludes': ['collections.abc']}
 base=None
 
 if target == 'openda':
