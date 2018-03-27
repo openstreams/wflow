@@ -23,6 +23,13 @@ version = nrversion = '1.0' + "." + vers
 ###################################
 a = open("_version.py","w")
 
+a.write("# This file is made by mkversion.py, do not edit!\n")
+a.write("VERSION='" + manualversion + "'\n")
+a.write("MVERSION='" + manualmainversion + "'\n")
+a.write("NVERSION='" + version + "'\n")
+a.write("BUILD='" + str(build) + "'\n")
+a.close()
+
 build=datetime.datetime.now()
 
 a = open("wflow/__init__.py", "w")
