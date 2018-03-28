@@ -90,9 +90,7 @@ for mpldir in mpl:
 if sys.platform == 'win32':
     # MKL files
     data_files.extend(mkdatatuples(MKL_files,destdir="."))
-    # pcraster dll's
-    #ddir = "c:/pcraster/lib/"
-    # for teamcity
+    # pcraster dll's for teamcity
     ddir = "d:/BuildAgent/work/wflow_exe/pcraster-4.1.0_x86-64/lib"
     data_files.extend(mkdatatuples(glob.glob(ddir + "/*.dll"),destdir='.'))
 
