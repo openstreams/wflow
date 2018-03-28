@@ -8,7 +8,7 @@ from osgeo import gdal
 
 # Set these for your installation
 
-pcrasterlib = 'c:/bin/pcraster/lib/'
+pcrasterlib = 'D:/BuildAgent/work/wflow_exe/pcraster-4.1.0_x86-64'
 
 # list identical make_wflow_exe script with --normal
 # except for the wtools scripts
@@ -53,6 +53,7 @@ def do_analysis(scriptpath):
                     # Though this seems more solid, submit as hook patch?
                     datas=[(gdal.GetConfigOption('GDAL_DATA'), 'gdal-data'),
                            (pyproj_datadir, 'proj-data')],
+                    excludes=['numpy.distutils'],
                     hiddenimports=['pywt._extensions._cwt',
                                    # in opendapy.py: importlib.import_module(sys.argv[3])
                                    # for wflow this would always be wflow.wflow_bmi

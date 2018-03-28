@@ -2,7 +2,7 @@ __all__ = ['wflow_funcs','wflow_adapt','wflow_lib','pcrut','wf_DynamicFramework'
 __version__='1.0.master'
 __release__='1.0.master.1'
 __versionnr__='1.0.1'
-__build__='2018-03-12 15:15:56.508000'
+__build__='2018-03-16 10:34:36.170000'
 
 import os, sys
 import osgeo.gdal as gdal
