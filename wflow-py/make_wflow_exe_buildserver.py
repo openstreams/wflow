@@ -35,8 +35,6 @@ if "--deltashell" in sys.argv:
     sys.argv.remove("--deltashell")
 
 
-os.environ['PATH'] = os.environ['PATH'] + ';D:\BuildAgent\work\wflow_exe\pcraster-4.1.0_x86-64\bin'
-
 pdir = os.path.dirname(sys.executable) + "/"
 
 if sys.platform == 'win32':
@@ -95,7 +93,7 @@ if sys.platform == 'win32':
     # pcraster dll's
     #ddir = "c:/pcraster/lib/"
     # for teamcity
-    ddir = "D:/BuildAgent/work/wflow_exe/pcraster-4.1.0_x86-64/bin"
+    ddir = "d:/BuildAgent/work/wflow_exe/pcraster-4.1.0_x86-64/lib"
     data_files.extend(mkdatatuples(glob.glob(ddir + "/*.dll"),destdir='.'))
 
 # GDAL data files
