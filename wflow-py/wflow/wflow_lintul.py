@@ -30,8 +30,8 @@ wflow_lintul  -C case -R Runid -c inifile
     -c name of the config file (in the case directory)
 
 $Author: SanderCdeVries $
-$Id: lintul1.py 2018-02-21 16:08:06Z
-$Rev: 001 $
+$Id: lintul1.py 2018-03-16 16:08:06Z
+$Rev: 002 $
 """
 
 # This needs to be set according to the geographic extent (map dimensions) of your study area/catchment:
