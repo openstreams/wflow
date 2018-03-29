@@ -7,6 +7,8 @@ import requests
 import click
 import wflow.create_grid as cg
 import wflow.static_maps as sm
+import wflow.wflowtools_lib as wt
+from wflow import ogr2ogr
 import json
 import shutil
 import zipfile
@@ -14,6 +16,9 @@ import tempfile
 from math import sqrt
 from pyproj import Geod
 import pcraster as pcr
+from osgeo import gdalconst
+import rasterio
+from rasterio import warp
 
 SERVER_URL = 'http://hydro-engine.appspot.com'
 
@@ -24,11 +29,13 @@ SERVER_URL = 'http://hydro-engine.appspot.com'
 @click.option('--cellsize',
               default=0.01, show_default=True,
               help='Desired model cell size in decimal degrees.')
+@click.option('--model',
+              type=click.Choice(['sbm', 'hbv', 'w3ra']),
+              default='sbm', show_default=True,
+              help='Name of the WFlow model concept.')
 @click.option('--name',
-              default='wflow_case', show_default=True,
               help='Name of the WFlow case.')
 @click.option('--case-template',
-              default='wflow_template', show_default=True,
               help='Name of the template WFlow case.')
 @click.option('--case-path',
               default='.', show_default=True,
@@ -39,15 +46,41 @@ SERVER_URL = 'http://hydro-engine.appspot.com'
 @click.option('--fews-config-path',
               default='Config', show_default=True,
               help='Path to the Delft-FEWS config directory.')
-def build_model(geojson_path, cellsize, name, case_template, case_path, fews, fews_config_path):
+@click.option('--dem-path',
+              help='Optionally provide a local or improved Digital Elevation Model (DEM) '
+              'to use instead of the default global DEM.')
+@click.option('--river-path',
+              help='Optionally provide a local or improved river vector file '
+              'to use instead of the default global one.')
+def build_model(geojson_path, cellsize, model, name, case_template, case_path, fews, fews_config_path, dem_path, river_path):
     """Prepare a simple WFlow model, anywhere, based on global datasets."""
 
-    # force all encodings to utf-8 directly, see http://click.pocoo.org/5/python3/
-    geojson_path = geojson_path.encode('utf-8')
-    name= name.encode('utf-8')
-    case_template = case_template.encode('utf-8')
-    case_path = case_path.encode('utf-8')
-    fews_config_path = fews_config_path.encode('utf-8')
+    # lists below need to stay synchronized, not sure of a better way
+    [
+        geojson_path,
+        model,
+        name,
+        case_template,
+        case_path,
+        fews_config_path,
+        dem_path,
+        river_path
+    ] = [encode_utf8(p) for p in [
+        geojson_path,
+        model,
+        name,
+        case_template,
+        case_path,
+        fews_config_path,
+        dem_path,
+        river_path
+    ]]
+
+    # fill in the dependent defaults
+    if name is None:
+        name = 'wflow_{}_case'.format(model)
+    if case_template is None:
+        case_template = 'wflow_{}_template'.format(model)
 
     # assumes it is in decimal degrees, see Geod
     region = first_geometry(geojson_path)
@@ -71,35 +104,85 @@ def build_model(geojson_path, cellsize, name, case_template, case_path, fews, fe
     path_catchment = os.path.join(case, 'data/catchments/catchments.geojson')
     projection = 'EPSG:4326'
 
-    download_catchments(region, path_catchment)
+    if dem_path is None:
+        # when using a global dem, use the corresponding catchment shape for the model area
+        download_catchments(region, path_catchment)
+        cg_extent = path_catchment
+    else:
+        # when using a local dem, get the extent from the local dem itself
+        cg_extent = path_catchment
+        # staticmaps still needs the separate catchments, work around this
+        # by writing a polygon that covers the entire dem
+        with rasterio.open(dem_path) as src:
+            bounds = src.bounds
+            bbox = warp.transform_bounds(src.crs,
+                                         {'init': 'epsg:4326'}, *bounds)
 
-    cg.main(path_log, dir_mask, path_catchment, projection,
+        with open(path_catchment, 'w') as f:
+            coverall = '{{"type":"Polygon","coordinates":[[[{0},{1}],[{2},{1}],[{2},{3}],[{0},{3}],[{0},{1}]]]}}'.format(
+                *bbox)
+            f.write(coverall)
+
+    cg.main(path_log, dir_mask, cg_extent, projection,
             cellsize, locationid=name, snap=True)
+    mask_tif = os.path.join(dir_mask, 'mask.tif')
 
     # create static maps
     dir_dest = os.path.join(case, 'staticmaps')
     # use custom inifile, default high res ldd takes too long
     path_inifile = os.path.join(case, 'data/staticmaps.ini')
     path_dem_in = os.path.join(case, 'data/dem/dem.tif')
-    path_river = os.path.join(case, 'data/rivers/rivers.geojson')
-    path_catchment = os.path.join(case, 'data/catchments/catchments.geojson')
     dir_lai = os.path.join(case, 'data/parameters/clim')
 
-    download_rivers(region, path_river, filter_upstream_gt)
-    download_raster(region, path_dem_in, 'dem', cellsize_m, crs)
+    if river_path is None:
+        # download the global dataset
+        river_data_path = os.path.join(case, 'data/rivers/rivers.geojson')
+        download_rivers(region, river_data_path, filter_upstream_gt)
+    else:
+        # take the local dataset, reproject and clip
+        # command line equivalent of
+        # ogr2ogr -t_srs EPSG:4326 -f GPKG -overwrite -clipdst xmin ymin xmax ymax rivers.gpkg rivers.shp
+        river_data_path = os.path.join(case, 'data/rivers/rivers.gpkg')
+        ogr2ogr.main(['', '-t_srs', 'EPSG:4326', '-f', 'GPKG', '-overwrite', '-clipdst',
+                      str(bbox[0]), str(bbox[1]), str(bbox[2]), str(bbox[3]), river_data_path, river_path])
 
-    other_maps = [
-        'FirstZoneCapacity',
-        'FirstZoneKsatVer',
-        'FirstZoneMinCapacity',
-        'InfiltCapSoil',
-        'M',
-        'PathFrac',
-        'WaterFrac',
-        'thetaS',
-        'soil_type',
-        'landuse'
-    ]
+    if dem_path is None:
+        # download the global dem
+        download_raster(region, path_dem_in, 'dem', cellsize_m, crs)
+    else:
+        # warp the local dem onto model grid
+        wt.warp_like(dem_path, path_dem_in, mask_tif,
+                     format='GTiff', co={'dtype': 'float32'}, resampling=warp.Resampling.med)
+
+    other_maps = {
+        'sbm': [
+            'FirstZoneCapacity',
+            'FirstZoneKsatVer',
+            'FirstZoneMinCapacity',
+            'InfiltCapSoil',
+            'M',
+            'PathFrac',
+            'WaterFrac',
+            'thetaS',
+            'soil_type',
+            'landuse'],
+        'hbv': [
+            'BETA',
+            'CET',
+            'CFMAX',
+            'CFR',
+            'FC',
+            'K0',
+            'K1',
+            'K2',
+            'LP',
+            'MAXBAS',
+            'PCORR',
+            'PERC',
+            'SFCF',
+            'TT',
+            'UZL',
+            'WHC']}
 
     # TODO rename these in hydro-engine
     newnames = {
@@ -110,21 +193,38 @@ def build_model(geojson_path, cellsize, name, case_template, case_path, fews, fe
         'soil_type': 'wflow_soil'
     }
 
+    # destination paths
     path_other_maps = []
-    for param in other_maps:
-        path = os.path.join(case, 'data/parameters', newnames.get(param, param) + '.tif')
+    for param in other_maps[model]:
+        path = os.path.join(case, 'data/parameters',
+                            newnames.get(param, param) + '.tif')
         path_other_maps.append(path)
 
-    for param, path in zip(other_maps, path_other_maps):
-        download_raster(region, path, param, cellsize_m, crs)
+    for param, path in zip(other_maps[model], path_other_maps):
+        if model == 'sbm':
+            download_raster(region, path, param, cellsize_m, crs)
+        elif model == 'hbv':
+            # these are not yet in the earth engine, use local paths
+            path_staticmaps_global = r'p:\1209286-earth2observe\HBV-GLOBAL\staticmaps'
+            path_in = os.path.join(path_staticmaps_global, param + '.tif')
+            
+            # warp the local staticmaps onto model grid
+            wt.warp_like(path_in, path, mask_tif,
+                     format='GTiff', co={'dtype': 'float32'}, resampling=warp.Resampling.med)
 
-    for m in range(1, 13):
-        mm = str(m).zfill(2)
-        path = os.path.join(dir_lai, 'LAI00000.0{}'.format(mm))
-        download_raster(
-            region, path, 'LAI{}'.format(mm), cellsize_m, crs)
 
-    sm.main(dir_mask, dir_dest, path_inifile, path_dem_in, path_river,
+    if model == 'sbm':
+        for m in range(1, 13):
+            mm = str(m).zfill(2)
+            path = os.path.join(dir_lai, 'LAI00000.0{}'.format(mm))
+            download_raster(
+                region, path, 'LAI{}'.format(mm), cellsize_m, crs)
+    else:
+        # TODO this creates defaults in static_maps, disable this behavior?
+        # or otherwise adapt static_maps for the other models
+        dir_lai = None
+
+    sm.main(dir_mask, dir_dest, path_inifile, path_dem_in, river_data_path,
             path_catchment, lai=dir_lai, other_maps=path_other_maps)
 
     if fews:
@@ -146,7 +246,8 @@ def build_model(geojson_path, cellsize, name, case_template, case_path, fews, fe
             for state_file in state_files:
                 state_path = os.path.join(dir_state, state_file)
                 pcr.report(pcr.cover(mask, pcr.scalar(0)), state_path)
-                zf.write(state_path, state_file, compress_type=zipfile.ZIP_DEFLATED)
+                zf.write(state_path, state_file,
+                         compress_type=zipfile.ZIP_DEFLATED)
 
 
 def copycase(srccase, dstcase):
@@ -286,6 +387,30 @@ def first_geometry(path_geojson):
         raise AssertionError(errmsg.format(geom.type, path_geojson))
     else:
         return geom
+
+
+def encode_utf8(path):
+    """Modify path to encode in utf-8"""
+    # see http://click.pocoo.org/5/python3/
+    if path is None:
+        return None
+    else:
+        return path.encode('utf-8')
+
+
+# def encode_utf8(paths):
+#     """Modify paths to encode all strings in utf-8"""
+#     # see http://click.pocoo.org/5/python3/
+#     n = len(paths)
+#     for i in range(n):
+#         strarg = paths[i]
+#         # leave None intact
+#         if strarg is None:
+#             utfarg = strarg
+#         else:
+#             utfarg = strarg.encode('utf-8')
+#         paths[i] = utfarg
+#     return paths
 
 
 if __name__ == '__main__':
