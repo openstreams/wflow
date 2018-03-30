@@ -867,7 +867,7 @@ def readPCRmapClone(v,cloneMapFileName,tmpDir,absolutePath=None,isLddMap=False,c
     elif not re.match(r"[0-9.-]*$",v):
         if absolutePath != None: v = getFullPath(v,absolutePath)
         # print(v)
-        sameClone = isSameClone(v,cloneMapFileName)
+        sameClone = True #isSameClone(v,cloneMapFileName) #for wflow CloneMap and inputMap should be the same
         if sameClone == True:
             PCRmap = pcr.readmap(v)
         else:
