@@ -117,7 +117,7 @@ MVERSION = versions['version'].split('+')[0]
 
 thename = "wflow-bin/Wflow-"+MVERSION+'-'+target+'-'+sys.platform+'-'+nrbits
 
-data_files.append('\build\lib\wflow\_version.py')
+data_files.append( os.path.join(os.getcwd(), 'build/lib/wflow/_version.py'))
 
 packages = ["osgeo"]
 
