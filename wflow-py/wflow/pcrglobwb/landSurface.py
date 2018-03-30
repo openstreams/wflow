@@ -108,13 +108,13 @@ class LandSurface(object):
         
 
 
-    def __init__(self,iniItems,landmask,Dir,cloneMap,startTime,initialState=None):
+    def __init__(self,iniItems,landmask,Dir,staticmaps,cloneMap,startTime,initialState=None):
         object.__init__(self)
 
         # clone map, temporary directory, absolute path of input directory, and landmask
         self.cloneMap = cloneMap #iniItems.cloneMap
         self.tmpDir   = os.path.join(os.path.abspath(Dir),"tmp") #iniItems.tmpDir
-        self.inputDir = os.path.join(os.path.abspath(Dir),"staticmaps") #iniItems.globalOptions['inputDir']
+        self.inputDir = os.path.join(os.path.abspath(Dir),staticmaps) #iniItems.globalOptions['inputDir']
         self.landmask = landmask
         self.startTime = startTime
 

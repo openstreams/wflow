@@ -77,14 +77,14 @@ class Routing(object):
 
         return result
 
-    def __init__(self,iniItems,initialConditions,lddMap, Dir, cloneMap):
+    def __init__(self,iniItems,initialConditions,lddMap, Dir, staticmaps, cloneMap):
         object.__init__(self)
 
         self.lddMap = lddMap
 
         self.cloneMap =  cloneMap #iniItems.cloneMap
         self.tmpDir   = os.path.join(os.path.abspath(Dir),"tmp") #iniItems.tmpDir
-        self.inputDir = os.path.join(os.path.abspath(Dir),"staticmaps") #iniItems.globalOptions['inputDir']
+        self.inputDir = os.path.join(os.path.abspath(Dir),staticmaps) #iniItems.globalOptions['inputDir']
 
 
         # option to activate water balance check

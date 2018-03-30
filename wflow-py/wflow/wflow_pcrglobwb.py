@@ -182,14 +182,15 @@ class WflowModel(DynamicModel):
 
   """
 
-  def __init__(self, cloneMap,Dir,RunDir,configfile):
+  def __init__(self, cloneMap,Dir,RunDir,configfile,staticmaps):
       DynamicModel.__init__(self)
 
       self.caseName = os.path.abspath(Dir)
-      self.clonemappath = os.path.join(os.path.abspath(Dir),"staticmaps",cloneMap)
-      setclone(self.clonemappath)
       self.runId = RunDir
       self.Dir = os.path.abspath(Dir)
+      self.staticmaps = os.path.join(self.Dir, staticmaps)
+      self.clonemappath = os.path.join(os.path.abspath(Dir),staticmaps,cloneMap)
+      setclone(self.clonemappath)
       self.configfile = configfile
       self.SaveDir = os.path.join(self.Dir,self.runId)         
       
@@ -342,21 +343,21 @@ class WflowModel(DynamicModel):
       self.OverWriteInit = int(configget(self.config, "model", "OverWriteInit", "0"))
       
       initialState = None
-                 
+
       landmask = configget(self.config, "globalOptions", "landmask", "wflow_landmask.map")
       lddMap = configget(self.config, "routingOptions", "lddMap", "wflow_ldd.map")
       
-      wflow_landmask = self.wf_readmap(os.path.join(self.Dir,"staticmaps",landmask),0.0,fail=True)
-      wflow_ldd = ldd(self.wf_readmap(os.path.join(self.Dir,"staticmaps",lddMap),0.0,fail=True))
+      wflow_landmask = self.wf_readmap(os.path.join(self.staticmaps,landmask),0.0,fail=True)
+      wflow_ldd = ldd(self.wf_readmap(os.path.join(self.staticmaps,lddMap),0.0,fail=True))
       
       self.monthIdx = 0
       self.annuaIdx = 0
       
       startTime = self.wf_supplyStartDateTime()
             
-      self.landSurface = landSurface.LandSurface(self.config,wflow_landmask,self.Dir, self.clonemappath,startTime,initialState)
-      self.groundwater = groundwater.Groundwater(self.config,wflow_landmask,initialState,self.Dir, self.clonemappath)
-      self.routing = routing.Routing(self.config, initialState, wflow_ldd,self.Dir, self.clonemappath)
+      self.landSurface = landSurface.LandSurface(self.config,wflow_landmask,self.Dir,self.staticmaps, self.clonemappath,startTime,initialState)
+      self.groundwater = groundwater.Groundwater(self.config,wflow_landmask,initialState,self.Dir,self.staticmaps, self.clonemappath)
+      self.routing = routing.Routing(self.config, initialState, wflow_ldd,self.Dir,self.staticmaps, self.clonemappath)
       
       self.wf_updateparameters()
 
@@ -431,6 +432,7 @@ def main(argv=None):
     caseName = "default_pcrglobwb"
     runId = "run_default"
     configfile="wflow_pcrglobwb.ini"
+    staticmaps = "staticmaps"
     LogFileName="wflow.log"
     _lastTimeStep = 0
     _firstTimeStep = 0
@@ -451,12 +453,11 @@ def main(argv=None):
     ## Process command-line options                                        #
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, 'XL:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:')
+        opts, args = getopt.getopt(argv, 'XL:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:d:')
     except getopt.error, msg:
         pcrut.usage(msg)
 
     for o, a in opts:
-
         if o == '-C': caseName = a
         if o == '-R': runId = a
         if o == '-c': configfile = a
@@ -465,6 +466,7 @@ def main(argv=None):
         if o == '-h': usage()
         if o == '-f': _NoOverWrite = 0
         if o == '-l': exec "loglevel = logging." + a
+        if o == '-d': staticmaps = a
 
 
     starttime = dt.datetime(1990,01,01)
@@ -474,7 +476,7 @@ def main(argv=None):
             _lastTimeStep) + ")"
         usage()
 
-    myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile)
+    myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile, staticmaps)
     dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep, firstTimestep=_firstTimeStep,datetimestart=starttime)
     dynModelFw.createRunId(NoOverWrite=_NoOverWrite, level=loglevel, logfname=LogFileName,model="wflow_pcrglobwb",doSetupFramework=False)
 

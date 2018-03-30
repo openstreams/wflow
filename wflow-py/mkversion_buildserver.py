@@ -25,10 +25,6 @@ a.write("from ._version import get_versions\n")
 a.write("__version__ = get_versions()['version']\n")
 a.write("del get_versions\n")
 
-from ._version import get_versions
-__version__ = get_versions()['version']
-del get_versions
-
 
 print "============================================================================="
 print "Now install wflow using setup.py install and regenerate the documentation...."

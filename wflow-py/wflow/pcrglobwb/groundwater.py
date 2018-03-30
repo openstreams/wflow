@@ -61,12 +61,12 @@ class Groundwater(object):
 
         return result
 
-    def __init__(self, iniItems,landmask,spinUp,Dir, cloneMap):
+    def __init__(self, iniItems,landmask,spinUp,Dir, staticmaps, cloneMap):
         object.__init__(self)
 
         self.cloneMap = cloneMap #iniItems.cloneMap
         self.tmpDir   = os.path.join(os.path.abspath(Dir),"tmp") #iniItems.tmpDir
-        self.inputDir = os.path.join(os.path.abspath(Dir),"staticmaps") #iniItems.globalOptions['inputDir']
+        self.inputDir = os.path.join(os.path.abspath(Dir),staticmaps) #iniItems.globalOptions['inputDir']
         self.landmask = landmask
 
         # configuration from the ini file
