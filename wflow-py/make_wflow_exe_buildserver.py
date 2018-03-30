@@ -13,13 +13,13 @@ supported targets:
 
 from cx_Freeze import setup, Executable, hooks
 
-from _version import *
 import ctypes,glob,os,shutil
 import matplotlib
 import scipy
 import sys
 import glob
 import json
+import versioneer
 import subprocess
 
 target = 'normal'
@@ -111,9 +111,13 @@ bf = os.path.join(os.getcwd(),"wflow-bin")
 shutil.rmtree(bf,ignore_errors=True)
 
 #a = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'], shell=True).strip()
-thename = "wflow-bin/Wflow"+MVERSION+'-'+target+'-'+sys.platform+'-'+nrbits
 
-data_files.append('_version.py')
+versions = versioneer.get_versions()
+MVERSION = versions['version'].split('+')[0]
+
+thename = "wflow-bin/Wflow-"+MVERSION+'-'+target+'-'+sys.platform+'-'+nrbits
+
+data_files.append('\build\lib\wflow\_version.py')
 
 packages = ["osgeo"]
 
@@ -213,8 +217,9 @@ else:
         Executable('wflow/wflow_pcrglobwb.py', base=base)
     ]
 
+
 setup(name='wflow',
-      version=NVERSION,
+      version=MVERSION,
       description='Wflow',
       options={"build_exe" : options},
       executables=executables,

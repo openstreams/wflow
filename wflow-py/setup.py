@@ -1,5 +1,4 @@
 import os
-from _version import *
 
 try:
     from setuptools import setup
@@ -39,9 +38,15 @@ try:
 except:
     print("Could not import matplotlib, make sure it is installed")
 
+try:
+    import versioneer
+except:
+    print("Could not import versioneer, make sure it is installed")
+
 # Source dist
-setup(name='wflow',
-      version= MVERSION,
+setup(name='wflow',version=versioneer.get_version(),
+      cmdclass=versioneer.get_cmdclass(),	
+      #version= MVERSION,
       packages=['wflow','wflow.pcrglobwb','wflow.sphy','wflow.wrappers.rtc'],
       package_dir={'wflow': 'wflow'},
       author='J. Schellekens',
