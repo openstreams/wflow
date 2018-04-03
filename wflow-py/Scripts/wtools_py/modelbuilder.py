@@ -33,6 +33,10 @@ SERVER_URL = 'http://hydro-engine.appspot.com'
               type=click.Choice(['sbm', 'hbv', 'w3ra']),
               default='sbm', show_default=True,
               help='Name of the WFlow model concept.')
+@click.option('--timestep',
+              type=click.Choice(['hourly', 'daily']),
+              default='daily', show_default=True,
+              help='Model time step - daily or hourly (only for hbv).')
 @click.option('--name',
               help='Name of the WFlow case.')
 @click.option('--case-template',
@@ -52,13 +56,14 @@ SERVER_URL = 'http://hydro-engine.appspot.com'
 @click.option('--river-path',
               help='Optionally provide a local or improved river vector file '
               'to use instead of the default global one.')
-def build_model(geojson_path, cellsize, model, name, case_template, case_path, fews, fews_config_path, dem_path, river_path):
+def build_model(geojson_path, cellsize, model, timestep, name, case_template, case_path, fews, fews_config_path, dem_path, river_path):
     """Prepare a simple WFlow model, anywhere, based on global datasets."""
 
     # lists below need to stay synchronized, not sure of a better way
     [
         geojson_path,
         model,
+        timestep,
         name,
         case_template,
         case_path,
@@ -68,6 +73,7 @@ def build_model(geojson_path, cellsize, model, name, case_template, case_path, f
     ] = [encode_utf8(p) for p in [
         geojson_path,
         model,
+        timestep,
         name,
         case_template,
         case_path,
@@ -81,6 +87,11 @@ def build_model(geojson_path, cellsize, model, name, case_template, case_path, f
         name = 'wflow_{}_case'.format(model)
     if case_template is None:
         case_template = 'wflow_{}_template'.format(model)
+    if model == 'hbv':
+        if timestep == 'hourly':
+            case_template = 'wflow_{}_hourly_template'.format(model)
+        else:
+            case_template = 'wflow_{}_daily_template'.format(model)
 
     # assumes it is in decimal degrees, see Geod
     region = first_geometry(geojson_path)
@@ -167,17 +178,13 @@ def build_model(geojson_path, cellsize, model, name, case_template, case_path, f
             'soil_type',
             'landuse'],
         'hbv': [
-            'BETA',
-            'CET',
-            'CFMAX',
+            'BetaSeepage',
+            'Cfmax',
             'CFR',
             'FC',
             'K0',
-            'K1',
-            'K2',
             'LP',
-            'MAXBAS',
-            'PCORR',
+            'Pcorr',
             'PERC',
             'SFCF',
             'TT',
@@ -205,7 +212,10 @@ def build_model(geojson_path, cellsize, model, name, case_template, case_path, f
             download_raster(region, path, param, cellsize_m, crs)
         elif model == 'hbv':
             # these are not yet in the earth engine, use local paths
-            path_staticmaps_global = r'p:\1209286-earth2observe\HBV-GLOBAL\staticmaps'
+            if timestep == 'hourly':
+                path_staticmaps_global = r'p:\1209286-earth2observe\HBV-GLOBAL\staticmaps_hourly'
+            else:
+                path_staticmaps_global = r'p:\1209286-earth2observe\HBV-GLOBAL\staticmaps'
             path_in = os.path.join(path_staticmaps_global, param + '.tif')
             
             # warp the local staticmaps onto model grid
@@ -231,9 +241,13 @@ def build_model(geojson_path, cellsize, model, name, case_template, case_path, f
         # save default state-files in FEWS-config
         dir_state = os.path.join(case, 'outstate')
         ensure_dir_exists(dir_state)
-        state_files = ['CanopyStorage.map', 'GlacierStore.map', 'ReservoirVolume.map', 'SatWaterDepth.map', 'Snow.map',
-                       'SnowWater.map', 'SurfaceRunoff.map', 'SurfaceRunoffDyn.map', 'TSoil.map',
-                       'UStoreLayerDepth_0.map', 'WaterLevel.map', 'WaterLevelDyn.map']
+        if model == 'sbm':
+            state_files = ['CanopyStorage.map', 'GlacierStore.map', 'ReservoirVolume.map', 'SatWaterDepth.map', 'Snow.map',
+                           'SnowWater.map', 'SurfaceRunoff.map', 'SurfaceRunoffDyn.map', 'TSoil.map',
+                           'UStoreLayerDepth_0.map', 'WaterLevel.map', 'WaterLevelDyn.map']
+        elif model == 'hbv':
+            state_files = ['DrySnow.map', 'FreeWater.map', 'InterceptionStorage.map', 'LowerZoneStorage.map', 
+                           'SoilMoisture.map', 'SurfaceRunoff.map', 'UpperZoneStorage.map', 'WaterLevel.map']
         zip_name = name + '_GA_Historical default.zip'
 
         zip_loc = os.path.join(fews_config_path, 'ColdStateFiles', zip_name)
