@@ -109,6 +109,11 @@ def build_model(geojson_path, cellsize, model, timestep, name, case_template, ca
     # start by making case an exact copy of the template
     copycase(case_template, case)
 
+    # create folder structure for data folder
+    for d in ['catchments', 'dem', 'rivers']:
+        dir_data = os.path.join(case, 'data', d)
+        ensure_dir_exists(dir_data)    
+
     # create grid
     path_log = 'wtools_create_grid.log'
     dir_mask = os.path.join(case, 'mask')
@@ -188,7 +193,6 @@ def build_model(geojson_path, cellsize, model, timestep, name, case_template, ca
             'PERC',
             'SFCF',
             'TT',
-            'UZL',
             'WHC']}
 
     # TODO rename these in hydro-engine
@@ -233,6 +237,15 @@ def build_model(geojson_path, cellsize, model, timestep, name, case_template, ca
         # TODO this creates defaults in static_maps, disable this behavior?
         # or otherwise adapt static_maps for the other models
         dir_lai = None
+
+    # create default folder structure for running wflow
+    dir_inmaps = os.path.join(case, 'inmaps')
+    ensure_dir_exists(dir_inmaps)
+    dir_instate = os.path.join(case, 'instate')
+    ensure_dir_exists(dir_instate)
+    for d in ['instate', 'intbl', 'intss', 'outmaps', 'outstate', 'outsum', 'runinfo']:
+        dir_run = os.path.join(case, 'run_default', d)
+        ensure_dir_exists(dir_run)
 
     sm.main(dir_mask, dir_dest, path_inifile, path_dem_in, river_data_path,
             path_catchment, lai=dir_lai, other_maps=path_other_maps)
