@@ -228,6 +228,7 @@ def build_model(geojson_path, cellsize, model, timestep, name, case_template, ca
 
 
     if model == 'sbm':
+        ensure_dir_exists(dir_lai)
         for m in range(1, 13):
             mm = str(m).zfill(2)
             path = os.path.join(dir_lai, 'LAI00000.0{}'.format(mm))
