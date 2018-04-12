@@ -265,6 +265,15 @@ BMI: Basic modeling interface
    wflow_bmi_combined
    bmi2runner
 
+
+Using the wflow modelbuilder
+============================
+.. toctree::
+   :maxdepth: 2
+
+   wflow_modelbuilder
+
+   
 Adding a new model yourself using the framework
 ===============================================
 .. toctree::
