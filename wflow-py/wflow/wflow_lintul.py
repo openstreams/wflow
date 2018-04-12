@@ -30,8 +30,8 @@ wflow_lintul  -C case -R Runid -c inifile
     -c name of the config file (in the case directory)
 
 $Author: SanderCdeVries $
-$Id: lintul1.py 2018-03-16 16:08:06Z
-$Rev: 002 $
+$Id: lintul1.py 2018-02-21 16:08:06Z
+$Rev: 001 $
 """
 
 # This needs to be set according to the geographic extent (map dimensions) of your study area/catchment:
@@ -65,7 +65,7 @@ def NOTNUL_pcr(pcr_map):
     return pcr_map
 
     
-def astro2(DAY, LAT):
+def astro_py(DAY, LAT):
     """
 * ---------------------------------------------------------------------*
 *   SUBROUTINE ASTRO                                                    *
@@ -234,14 +234,14 @@ class WflowModel(DynamicModel):
         self.RRDMAX_mm            = float(configget(self.config, "model", "RRDMAX_mm", "10."))
         self.ROOTDI_mm            = float(configget(self.config, "model", "ROOTDI_mm", "50."))
         self.NLAI                 = float(configget(self.config, "model", "NLAI", "1."))
-        self.RDRTB2               = eval(configget(self.config, "model", "RDRTB2", "[0.0, 0.00 , 0.6 , 0.00, 1.0 , .015, 1.6 , 0.025, 2.1 , 0.05, 'RDRTB2']"))
-        self.PHOTTB2              = eval(configget(self.config, "model", "PHOTTB2", "[0.0, 0.0  , 8.  , 0.0 , 10. , 1.0 , 12. , 1.0  , 13. , 0.8  , 14.,  0.6 , 18. , 0.0, 'PHOTTB2']"))
-        self.SLACF2               = eval(configget(self.config, "model", "SLACF2", "[0.0, 1.72 , 0.21, 1.72, 0.24, 1.72, 0.33, 1.32 , 0.7 , 1.20 , 1.01, 1.00, 2.0 , 0.75, 2.1 , 0.75, 'SLACF2']")) #for testing/development
+        self.RDRTB               = eval(configget(self.config, "model", "RDRTB", "[0.0, 0.00 , 0.6 , 0.00, 1.0 , .015, 1.6 , 0.025, 2.1 , 0.05, 'RDRTB']"))
+        self.PHOTTB              = eval(configget(self.config, "model", "PHOTTB", "[0.0, 0.0  , 8.  , 0.0 , 10. , 1.0 , 12. , 1.0  , 13. , 0.8  , 14.,  0.6 , 18. , 0.0, 'PHOTTB']"))
+        self.SLACF               = eval(configget(self.config, "model", "SLACF", "[0.0, 1.72 , 0.21, 1.72, 0.24, 1.72, 0.33, 1.32 , 0.7 , 1.20 , 1.01, 1.00, 2.0 , 0.75, 2.1 , 0.75, 'SLACF']")) #for testing/development
         self.NMXLV                = eval(configget(self.config, "model", "NMXLV", "[0.0, 0.05 , 0.4 , 0.05, 0.7 , 0.04, 1.0 , 0.03 , 2.0 , 0.02 , 2.1 , 0.02]"))
-        self.FRTTB2               = eval(configget(self.config, "model", "FRTTB2", "[0.0, 0.300, 0.48, 0.30, 0.62, 0.12, 0.69, 0.11 , 0.84, 0.11 , 0.92, 0.10, 1.00, 0.08, 1.38, 0.00, 2.10, 0.0, 'FRTTB2']")) #for testing/development
-        self.FLVTB2               = eval(configget(self.config, "model", "FLVTB2", "[0.0, 0.315, 0.48, 0.35, 0.62, 0.44, 0.69, 0.463, 0.84, 0.463, 0.92, 0.45, 1.00, 0.00, 1.38, 0.00, 2.10, 0.0, 'FLVTB2']")) #for testing/development
-        self.FSTTB2               = eval(configget(self.config, "model", "FSTTB2", "[0.0, 0.385, 0.48, 0.35, 0.62, 0.44, 0.69, 0.427, 0.84, 0.427, 0.92, 0.27, 1.00, 0.00, 1.38, 0.00, 2.10, 0.0, 'FSTTB2']"))
-        self.FSOTB2               = eval(configget(self.config, "model", "FSOTB2", "[0.0, 0.00 , 0.48, 0.00, 0.62, 0.00, 0.69, 0.00 , 0.84, 0.00 , 0.92, 0.18, 1.00, 0.92, 1.38, 1.00, 2.10, 1.00, 'FSOTB2']"))
+        self.FRTTB               = eval(configget(self.config, "model", "FRTTB", "[0.0, 0.300, 0.48, 0.30, 0.62, 0.12, 0.69, 0.11 , 0.84, 0.11 , 0.92, 0.10, 1.00, 0.08, 1.38, 0.00, 2.10, 0.0, 'FRTTB']")) #for testing/development
+        self.FLVTB               = eval(configget(self.config, "model", "FLVTB", "[0.0, 0.315, 0.48, 0.35, 0.62, 0.44, 0.69, 0.463, 0.84, 0.463, 0.92, 0.45, 1.00, 0.00, 1.38, 0.00, 2.10, 0.0, 'FLVTB']")) #for testing/development
+        self.FSTTB               = eval(configget(self.config, "model", "FSTTB", "[0.0, 0.385, 0.48, 0.35, 0.62, 0.44, 0.69, 0.427, 0.84, 0.427, 0.92, 0.27, 1.00, 0.00, 1.38, 0.00, 2.10, 0.0, 'FSTTB']"))
+        self.FSOTB               = eval(configget(self.config, "model", "FSOTB", "[0.0, 0.00 , 0.48, 0.00, 0.62, 0.00, 0.69, 0.00 , 0.84, 0.00 , 0.92, 0.18, 1.00, 0.92, 1.38, 1.00, 2.10, 1.00, 'FSOTB']"))
 
         # Static model parameters
         # modelparameters.append(self.ParamType(name="RunoffGeneratingGWPerc",stack="intbl/RunoffGeneratingGWPerc.tbl",type="static",default=0.1))
@@ -351,17 +351,17 @@ class WflowModel(DynamicModel):
         self.DVSI          = self.TSUMI / self.TSUMAN
         
         
-        self.RDRTB2        = Interpol_Obj(self.RDRTB2)
-        self.PHOTTB2       = Interpol_Obj(self.PHOTTB2)
-        self.SLACF2        = Interpol_Obj(self.SLACF2)        
-        self.FRTTB2        = Interpol_Obj(self.FRTTB2)
-        self.FLVTB2        = Interpol_Obj(self.FLVTB2)
-        self.FSTTB2        = Interpol_Obj(self.FSTTB2)
-        self.FSOTB2        = Interpol_Obj(self.FSOTB2)
+        self.RDRTB        = Interpol_Obj(self.RDRTB)
+        self.PHOTTB       = Interpol_Obj(self.PHOTTB)
+        self.SLACF        = Interpol_Obj(self.SLACF)        
+        self.FRTTB        = Interpol_Obj(self.FRTTB)
+        self.FLVTB        = Interpol_Obj(self.FLVTB)
+        self.FSTTB        = Interpol_Obj(self.FSTTB)
+        self.FSOTB        = Interpol_Obj(self.FSOTB)
         
 
       # Calculate the initial leaf area correction function as a function of development stage, DVS. 
-        SLACFI             = self.SLACF2.lookup_linear(self.DVSI)
+        SLACFI             = self.SLACF.lookup_linear(self.DVSI)
       # Multiply with specific leaf area constant => initial specific leaf area
         ISLA               = self.SLAC * SLACFI
       # Multiply with weight of green leaves to obtain initial LAI
@@ -544,12 +544,12 @@ class WflowModel(DynamicModel):
             time.sleep(100)
         
         if self.WATERLIMITED == "True":
-            pcr_TRANRF = self.Transpiration/NOTNUL_pcr(self.PotTrans)
+            TRANRF = self.Transpiration/NOTNUL_pcr(self.PotTrans)
             WAWP              = WCWP * self.ROOTD_mm 
             Enough_water      = ifthenelse(CropStartNow, True, self.WA > WAWP) # timestep delay...! todo 
         else:
             print "Warning, run without water effects on crop growth..."
-            pcr_TRANRF        = scalar(1.)
+            TRANRF        = scalar(1.)
             Enough_water      = True
             
         #self.T = (self.TMIN + self.TMAX)/2. # for testing with Wageningen weather files only - sdv
@@ -575,17 +575,17 @@ class WflowModel(DynamicModel):
         Adult        = LaterStages | BiggerLeaves
         
       # Calculate daylength, based on latitude and day of year (assumed similar throughout the catchment area -> scalar, no array) - SdV
-        DAYL = astro2(DOY, self.LAT)
+        DAYL = astro_py(DOY, self.LAT)
         
-        SLA2      = self.SLAC * self.SLACF2.lookup_linear(self.DVS) 
-        FRTWET2   = self.FRTTB2.lookup_linear(self.DVS)
-        FLVT2     = self.FLVTB2.lookup_linear(self.DVS)
-        FSTT2     = self.FSTTB2.lookup_linear(self.DVS)
-        FSOT2     = self.FSOTB2.lookup_linear(self.DVS)
-        RDRTMP2   = self.RDRTB2.lookup_linear(self.DVS)
-        PHOTT2    = self.PHOTTB2.lookup_linear(DAYL)
+        SLA       = self.SLAC * self.SLACF.lookup_linear(self.DVS) 
+        FRTWET   = self.FRTTB.lookup_linear(self.DVS)
+        FLVT     = self.FLVTB.lookup_linear(self.DVS)
+        FSTT     = self.FSTTB.lookup_linear(self.DVS)
+        FSOT     = self.FSOTB.lookup_linear(self.DVS)
+        RDRTMP    = self.RDRTB.lookup_linear(self.DVS)
+        PHOTT     = self.PHOTTB.lookup_linear(DAYL)
         EMERG     = CropStarted & Enough_water & Leaves_Present & Not_Finished
-        PHOTPF    = ifthenelse(BeforeAnthesis, PHOTT2, scalar(1.))
+        PHOTPF    = ifthenelse(BeforeAnthesis, PHOTT, scalar(1.))
         RTSUMP    = DTEFF * PHOTPF
         self.TSUM = (self.TSUM + ifthenelse(CropStartNow, scalar(self.TSUMI), 0.) + ifthenelse(EMERG, RTSUMP, 0.)) * ifthenelse(CropHarvNow, scalar(0.), 1.)  
 
@@ -602,62 +602,62 @@ class WflowModel(DynamicModel):
         
         #############################################################################################################
       # Water Limitation: effects on partitioning
-        FRTMOD               = max(1., 1./(pcr_TRANRF + 0.5)) # was FRTMOD2
-        FRT2                 = FRTWET2 * FRTMOD
-        FSHMOD2              = (1. -FRT2)/(1 - FRT2/FRTMOD)
-        FLV                  = FLVT2 * FSHMOD2
-        FST                  = FSTT2 * FSHMOD2
-        FSO                  = FSOT2 * FSHMOD2
+        FRTMOD               = max(1., 1./(TRANRF + 0.5)) # was FRTMOD2
+        FRT                  = FRTWET * FRTMOD
+        FSHM OD              = (1. -FRT)/(1 - FRT/FRTMOD)
+        FLV                  = FLVT * FSHMOD
+        FST                  = FSTT * FSHMOD
+        FSO                  = FSOT * FSHMOD
 
       # todo: incorporate effects of N stress - sdv 30-11-15
-        PARINT2              = ifthenelse(Not_Finished, 0.5 * self.IRRAD * 0.001 * (1. - exp(-self.K * self.LAI)), 0.)
-        GTOTAL2              = self.LUE * PARINT2 * pcr_TRANRF
+        PARINT               = ifthenelse(Not_Finished, 0.5 * self.IRRAD * 0.001 * (1. - exp(-self.K * self.LAI)), 0.)
+        GTOTAL               = self.LUE * PARINT * TRANRF
 
       # Rel. Death rate due to ageing:
-        RDRDV                = ifthenelse(AtAndAfterAnthesis, RDRTMP2, scalar(0.))
+        RDRDV                = ifthenelse(AtAndAfterAnthesis, RDRTMP, scalar(0.))
         RDRSH                = max(0., self.RDRSHM * (self.LAI - self.LAICR)/self.LAICR)
         RDR                  = max(RDRDV, RDRSH)
 
       # Impact of leaf dying on leaf weight - N limitation stuff not (yet) implemented
-        N_Limitation2        = NNI < 1.
-        DLVNS2               = ifthenelse(CropStarted, scalar(1.), 0.) * ifthenelse(N_Limitation2, self.WLVG * self.RDRNS * (1. - NNI), 0.)
-        DLVS2                = self.WLVG * RDR
-        DLV2                 = (DLVS2 + DLVNS2) * scalar(Not_Finished)
-        RWLVG                = ifthenelse(EMERG, GTOTAL2 * FLV - DLV2, scalar(0.))
+        N_Limitation         = NNI < 1.
+        DLVNS                = ifthenelse(CropStarted, scalar(1.), 0.) * ifthenelse(N_Limitation, self.WLVG * self.RDRNS * (1. - NNI), 0.)
+        DLVS                 = self.WLVG * RDR
+        DLV                  = (DLVS + DLVNS) * scalar(Not_Finished)
+        RWLVG                = ifthenelse(EMERG, GTOTAL * FLV - DLV, scalar(0.))
         self.WLVG            = (self.WLVG + ifthenelse(CropStartNow, self.WLVGI, scalar(0.)) + RWLVG) * (1. - scalar(CropHarvNow))
-        self.WLVD            = (self.WLVD + DLV2) * (1. - scalar(CropHarvNow))
+        self.WLVD            = (self.WLVD + DLV) * (1. - scalar(CropHarvNow))
 
       # Leaf totalGrowthRate and LAI.
-        GLV2                = FLV * GTOTAL2
+        GLV                 = FLV * GTOTAL
         Adt_or_Harv         = pcror(Adult, CropHarvNow)
         Juv_or_Harv         = pcror(Juvenile, CropHarvNow)
         NoLeavesYet         = self.LAI == 0.
         LetsGo              = pcrand(Enough_water, CropStartNow)
         LetsGro             = pcrand(NoLeavesYet, LetsGo)
         
-        GLAI2      = ifthenelse(Adt_or_Harv, SLA2 * GLV2, scalar(0.))  + \
-                     ifthenelse(Juv_or_Harv, self.LAI * (exp(self.RGRL * DTEFF * DELT )- 1.)/DELT * pcr_TRANRF * exp(-self.LAI * (1.0-NNI)), 0.)  + \
+        GLAI       = ifthenelse(Adt_or_Harv, SLA * GLV, scalar(0.))  + \
+                     ifthenelse(Juv_or_Harv, self.LAI * (exp(self.RGRL * DTEFF * DELT )- 1.)/DELT * TRANRF * exp(-self.LAI * (1.0-NNI)), 0.)  + \
                      ifthenelse(LetsGro, self.LAII/DELT, scalar(0.))
                  
       # (Abs.) impact of leaf dying on LAI
       # Death of leaves due to ageing and shading:
-        DLAIS2      = self.LAI * RDR
-        DLAINS2     = ifthenelse(CropStarted, scalar(1.), 0.) * ifthenelse(N_Limitation2, DLVNS2 * SLA2, 0.)
-        DLAI2       = (DLAIS2 + DLAINS2) * scalar(Not_Finished)
+        DLAIS       = self.LAI * RDR
+        DLAINS      = ifthenelse(CropStarted, scalar(1.), 0.) * ifthenelse(N_Limitation, DLVNS * SLA, 0.)
+        DLAI        = (DLAIS + DLAINS) * scalar(Not_Finished)
         
       # The initial LAI (LAII, transplanted rice) is added to GLAI at crop establishment, not in below state equation as done by Shibu et al. (2010).         
-        self.LAI   = (self.LAI + GLAI2 - DLAI2) * ifthenelse(CropHarvNow, scalar(0.), 1.)
+        self.LAI   = (self.LAI + GLAI - DLAI) * ifthenelse(CropHarvNow, scalar(0.), 1.)
         
         # DRRT = np.greater_equal(np_DVS[:], np_DVSDR[:]) * np_WRT[:] * RDRRT
         DRRT        = ifthenelse(Roots_Dying, self.WRT * self.RDRRT, scalar(0.))
-        RWRT        = ifthenelse(EMERG, GTOTAL2 * FRT2 - DRRT, scalar(0.))
+        RWRT        = ifthenelse(EMERG, GTOTAL * FRT - DRRT, scalar(0.))
         self.WRT    = (self.WRT + ifthenelse(CropStartNow, self.WRTLI, scalar(0.)) + RWRT) * (1. - scalar(CropHarvNow))
         self.WDRT   = (self.WDRT + DRRT) * (1. - scalar(CropHarvNow))
         
-        RWSO        = ifthenelse(EMERG, GTOTAL2 * FSO, scalar(0.))
+        RWSO        = ifthenelse(EMERG, GTOTAL * FSO, scalar(0.))
         self.WSO    = (self.WSO + ifthenelse(CropStartNow, self.WSOI, scalar(0.)) + RWSO) * (1. - scalar(CropHarvNow))
         WSOTHA      = self.WSO / 100.
-        RWST        = ifthenelse(EMERG, GTOTAL2 * FST, scalar (0.))
+        RWST        = ifthenelse(EMERG, GTOTAL * FST, scalar (0.))
         self.WST    = (self.WST + ifthenelse(CropHarvNow, self.WSTI, scalar(0.)) + RWST) * (1. - scalar(CropHarvNow))
         self.Test  += 1.
         
