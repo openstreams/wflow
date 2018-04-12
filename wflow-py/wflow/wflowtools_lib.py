@@ -14,6 +14,8 @@ import logging
 import logging.handlers
 
 import numpy as np
+import rasterio
+from rasterio import warp
 from osgeo import ogr
 from osgeo import gdal, gdalconst
 from osgeo.gdalconst import *
@@ -1089,6 +1091,89 @@ def gdal_warp(src_filename, clone_filename, dst_filename, gdal_type=gdalconst.GD
         # retrieve numpy array of interpolated values
         # write to final file in the chosen file format
         gdal.GetDriverByName(format).CreateCopy(dst_filename, dst_mem, 0)
+
+
+# Check if this can fully replace the gdal_warp defined above.
+# This initializes with nodata instead of 0.
+def warp_like(input, output, like, format=None, co={}, resampling=warp.Resampling.nearest):
+    """Warp a raster to lie on top op of an existing dataset.
+
+    This function is meant to be similar to the ``rio warp --like`` CLI,
+    and uses code from the implementation. Once https://github.com/mapbox/rasterio/issues/784
+    is resolved this function may no longer be required. For further information see
+    https://mapbox.github.io/rasterio/cli.html#warp and
+    https://mapbox.github.io/rasterio/topics/reproject.html
+
+    Parameters
+    ----------
+    input : str
+        Path to the input raster.
+    output : str
+        Path to the output raster.
+    like : str or rasterio.DatasetReader
+        The raster whose affine transform, size, and crs are used.
+    format : str, optional
+        The GDAL raster driver code of the output, see http://www.gdal.org/formats_list.html
+        By default, use the same format as the input.
+    co : dict, optional
+        Creation options for creating the output.
+    resampling : Resampling enum, optional
+        Default value is ``rasterio.warp.Resampling.nearest``. For other values see
+        https://mapbox.github.io/rasterio/topics/resampling.html?highlight=resampling#resampling-methods
+    
+    Example
+    -------
+    >>> warp_like('input.map', 'output.tif', 'like.tif', format='GTiff',
+                  co={'COMPRESS':'DEFLATE'}, resampling=warp.Resampling.med)
+    """
+
+    dst_crs, dst_transform, dst_height, dst_width = _like(like)
+
+    with rasterio.open(input) as src:
+        out_kwargs = src.profile.copy()
+        out_kwargs.update({
+            'crs': dst_crs,
+            'transform': dst_transform,
+            'width': dst_width,
+            'height': dst_height
+        })
+
+        # else the format is equal to the input format
+        if format is not None:
+            out_kwargs['driver'] = format
+
+        # Adjust block size if necessary.
+        if ('blockxsize' in out_kwargs and
+                dst_width < out_kwargs['blockxsize']):
+            del out_kwargs['blockxsize']
+        if ('blockysize' in out_kwargs and
+                dst_height < out_kwargs['blockysize']):
+            del out_kwargs['blockysize']
+
+        out_kwargs.update(co)
+
+        with rasterio.open(output, 'w', **out_kwargs) as dst:
+            warp.reproject(
+                source=rasterio.band(src, list(range(1, src.count + 1))),
+                destination=rasterio.band(
+                    dst, list(range(1, src.count + 1))),
+                src_transform=src.transform,
+                src_crs=src.crs,
+                src_nodata=src.nodata,
+                dst_transform=out_kwargs['transform'],
+                dst_crs=out_kwargs['crs'],
+                dst_nodata=dst.nodata,
+                resampling=resampling)
+
+
+def _like(src):
+    """Get the properties from a raster for warp_like"""
+    if isinstance(src, rasterio.DatasetReader):
+        return src.crs, src.transform, src.height, src.width
+    else:
+        with rasterio.open(src) as ds:
+            return ds.crs, ds.transform, ds.height, ds.width
+
 
 def ogr_burn(lyr, clone, burn_value, file_out='',
               gdal_type=gdal.GDT_Byte, format='MEM', fill_value=255, attribute=None):

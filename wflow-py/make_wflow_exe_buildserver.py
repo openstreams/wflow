@@ -13,13 +13,13 @@ supported targets:
 
 from cx_Freeze import setup, Executable, hooks
 
-from _version import *
 import ctypes,glob,os,shutil
 import matplotlib
 import scipy
 import sys
 import glob
 import json
+import versioneer
 import subprocess
 
 target = 'normal'
@@ -34,8 +34,6 @@ if "--deltashell" in sys.argv:
     target = 'deltashell'
     sys.argv.remove("--deltashell")
 
-
-os.environ['PATH'] = os.environ['PATH'] + ';D:\BuildAgent\work\wflow_exe\pcraster-4.1.0_x86-64\bin'
 
 pdir = os.path.dirname(sys.executable) + "/"
 
@@ -92,10 +90,8 @@ for mpldir in mpl:
 if sys.platform == 'win32':
     # MKL files
     data_files.extend(mkdatatuples(MKL_files,destdir="."))
-    # pcraster dll's
-    #ddir = "c:/pcraster/lib/"
-    # for teamcity
-    ddir = "D:/BuildAgent/work/wflow_exe/pcraster-4.1.0_x86-64/bin"
+    # pcraster dll's for teamcity
+    ddir = "d:/BuildAgent/work/wflow_exe/pcraster-4.1.0_x86-64/lib"
     data_files.extend(mkdatatuples(glob.glob(ddir + "/*.dll"),destdir='.'))
 
 # GDAL data files
@@ -115,9 +111,13 @@ bf = os.path.join(os.getcwd(),"wflow-bin")
 shutil.rmtree(bf,ignore_errors=True)
 
 #a = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'], shell=True).strip()
-thename = "wflow-bin/Wflow"+MVERSION+'-'+target+'-'+sys.platform+'-'+nrbits
 
-data_files.append('_version.py')
+versions = versioneer.get_versions()
+MVERSION = versions['version'].split('+')[0]
+
+thename = "wflow-bin/Wflow-"+MVERSION+'-'+target+'-'+sys.platform+'-'+nrbits
+
+data_files.append( os.path.join(os.getcwd(), 'build/lib/wflow/_version.py'))
 
 packages = ["osgeo"]
 
@@ -217,8 +217,9 @@ else:
         Executable('wflow/wflow_pcrglobwb.py', base=base)
     ]
 
+
 setup(name='wflow',
-      version=NVERSION,
+      version=MVERSION,
       description='Wflow',
       options={"build_exe" : options},
       executables=executables,

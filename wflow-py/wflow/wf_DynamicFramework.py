@@ -32,8 +32,8 @@ import time
 import calendar
 
 from wflow import __version__
-from wflow import __release__
-from wflow import __build__
+#from wflow import __release__
+#from wflow import __build__
 
 def log_uncaught_exceptions(ex_cls, ex, tb):
     global logging
@@ -504,8 +504,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self._addAttributeToClass("ParamType", self.ParamType)
         self._addAttributeToClass("timestepsecs", self.DT.timeStepSecs)
         self._addAttributeToClass("__version__", __version__)
-        self._addAttributeToClass("__release__", __release__)
-        self._addAttributeToClass("__build__", __build__)
+        #self._addAttributeToClass("__release__", __release__)
+        #self._addAttributeToClass("__build__", __build__)
         self.skipfirsttimestep = 0
 
         if firstTimestep == 0:
@@ -926,7 +926,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         caseName = self._userModel().caseName
         runId = self._userModel().runId
         if modelVersion == "no version":
-            modelVersion = __release__
+            modelVersion = __version__
 
         configfile = self._userModel().configfile
         if not os.path.isdir(caseName + "/" + runId):
@@ -952,7 +952,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         self.logger = self._userModel().logger
 
-        self.logger.info("Initialise framework version: " + __version__ + "(" + __release__ + ")")
+        self.logger.info("Initialise framework version: " + __version__ )# + "(" + __release__ + ")")
 
         global logging
         logging = self.logger
@@ -1117,8 +1117,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         meta['caseName'] = caseName
         meta['runId'] = runId
         meta['wflow_version'] = __version__
-        meta['wflow_release'] = __release__
-        meta['wflow_build'] = __build__
+        #meta['wflow_release'] = __release__
+        #meta['wflow_build'] = __build__
         meta['wflow_ini'] = self._userModel().configfile
         if hasattr(sys, "frozen"):
             meta['wflow_exe'] = "True"
