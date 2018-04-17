@@ -154,6 +154,8 @@ see their respective documentation to see the options):
         self.Precipitation * 1.11') for dynamic variables
     -v: set verbosity level
 
+.. _ini-file:
+	
 wflow\_sbm\|hbv.ini file
 ------------------------
 

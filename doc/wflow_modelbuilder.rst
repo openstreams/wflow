@@ -9,8 +9,7 @@ The wflow modelbuilder is a new tool with which you can set up a wflow
 model in a few simple steps. The default setup of the wflow modelbuilder
 is fully based on global data sets. The modelbuilder uses a set of tools
 called hydro-engine (https://github.com/openearth/hydro-engine), which
-are built on top of Google Earth Engine
-(https://earthengine.google.com/).
+are built on top of Google Earth Engine (https://earthengine.google.com/).
 
 Installation
 ------------
@@ -28,12 +27,16 @@ Set up a wflow model
 Once you have downloaded and installed wflow, the modelbuilder is
 available in this location:
 
-	<your wflow folder>\wflow-py\Scripts\wtools_py\modelbuilder.py
+::
+
+	<your_wflow_folder>/wflow-py/Scripts/wtools_py/modelbuilder.py
 
 You can run the modelbuilder script from the command line or in a batch
 file. The script uses the settings.json file for the location of the
 model. To run the modelbuilder script with python, use the following
 command:
+
+::
 
 	python modelbuilder.py --geojson-path settings.json
 
@@ -64,58 +67,55 @@ the coordinates in the example are for the Moselle catchment in Germany,
 a tributary of the Rhine river. To make your own settings.json file, you
 can use the website `geojson.io <http://geojson.io>`__. This is a
 website that can be used to easily select a location and create your own
-settings.json file. Alternatively, you can change the coordinates and
-cell size in the default settings.json file. This settings.json must be
-present, for the modelbuilder to know the location of the model.
+settings.json file. Alternatively, you can change the coordinates in the default settings.json file. This settings.json must be
+present for the modelbuilder to know the location of the model.
 
 Furthermore you can specify the following options:
 
-	--geojson-path Path to a GeoJSON file with the geometry that needs to be
-	path of the model
+::
 
-	--cellsize Desired model cell size in decimal degrees (default=0.01)
+	--geojson-path		Path to a GeoJSON file with the geometry that needs to be path of the model
 
-	--name Name of the wflow case (default=wflow_<modelconcept>_case)
+	--cellsize		Desired model cell size in decimal degrees (default=0.01)
 
-	--model Name of the wflow model concept (options: sbm, hbv, w3ra)
-	(default=sbm)
+	--name			Name of the wflow case (default=wflow_<modelconcept>_case)
 
-	--timestep Model time step for hbv (options: hourly, daily)
-	(default=daily)
+	--model			Name of the wflow model concept (options: sbm, hbv, w3ra)(default=sbm)
 
-	--case-template Name of the template wflow case
-	(default=wflow_<modelconcept>_template)
+	--timestep		Model time step for hbv (options: hourly, daily) (default=daily)
 
-	--case-path Path where both the template and created case reside
-	(default is the current directory)
+	--case-template		Name of the template wflow case (default=wflow_<modelconcept>_template)
 
-	--fews/--no-fews Flag indicating whether the wflow case is part of a
-	Delft-FEWS setup (default=no-fews)
+	--case-path		Path where both the template and created case reside(default is the current directory)
 
-	--fews-config-path Path to the Delft-FEWS config directory (to save
-	default FEWS states) (default=Config)
+	--fews/--no-fews	Flag indicating whether the wflow case is part of a Delft-FEWS setup (default=no-fews)
 
-	--dem-path Path to a local DEM if available
+	--fews-config-path	Path to the Delft-FEWS config directory (to save default FEWS states) (default=Config)
 
-	--river-path Path to a local river shapefile if available
+	--dem-path		Path to a local DEM if available
+
+	--river-path		Path to a local river shapefile if available
 
 Example:
 
-	python modelbuilder.py --geojson-path settings.json --name wflow_moselle
-	--cellsize 0.01
+::
+
+	python modelbuilder.py --geojson-path settings.json --name wflow_moselle --cellsize 0.01
 
 Run this command from the command line or in a batch file, and you will
 have your model.
 
 The generated model structure looks like this:
 
-    data\\
-    inmaps\\
-    instate\\
-    intbl\\
-    mask\\
-    run_default\\
-    staticmaps\\
+::
+
+    data\
+    inmaps\
+    instate\
+    intbl\
+    mask\
+    run_default\
+    staticmaps\
     wflow_sbm.ini
 
 To run the wlfow model, you need the staticmaps and intbl directories
@@ -136,7 +136,7 @@ maps.
 The wflow_sbm.ini file is the file with configuration settings that is
 needed to run the wflow-sbm model. This is an example file – please
 change the settings in the ini file according to your specific model
-setup (see Section XX of the documentation/tutorial).
+setup (see :ref:`ini-file`).
 
 Model data
 ----------
@@ -164,7 +164,7 @@ For the river network, the HydroSHEDS drainage network is queried as
 polylines (http://hydrosheds.org/).
 
 Optionally, a local or improved river vector file (shapefile, geojson,
-etc.) can be provided to the modelbuilder with the option --river-path.
+etc.) can be provided to the modelbuilder with the option ``--river-path``.
 If a local river vector file is specified, this will be used instead of
 the default global river file.
 
@@ -175,7 +175,7 @@ For the elevation data the digital elevation model (DEM) used is SRTM
 v4, 30m (https://www2.jpl.nasa.gov/srtm/)
 
 Optionally, a local or improved Digital Elevation Model (DEM) can be
-provided to the modelbuilder with the option --dem-path. If a local DEM
+provided to the modelbuilder with the option ``--dem-path``. If a local DEM
 is specified, this will be used instead of the default global DEM.
 
 Land use
@@ -186,23 +186,23 @@ the USGS Land Cover Institute (LCI) is used
 (https://landcover.usgs.gov/global_climatology.php). This land cover
 dataset consists of 17 different classes for land cover types. The
 legend for this land cover map is also provided in the template case
-(and copied to your wflow model) in data\parameters\lulegend.txt
+(and copied to your wflow model) in data/parameters/lulegend.txt
 
 LAI
 ~~~
 
 LAI (Leaf Area Index) maps for the wflow-sbm model are stored in the
 staticmaps/clim directory. These are twelve maps with monthly average
-LAI, based on combined AVHRR and MODIS data, derived from [Liu et al. 2012]_, calculated as averages over 1981-2011.
+LAI, based on combined AVHRR and MODIS data, derived from Liu et al. 2012 [Liu2012]_, calculated as averages over 1981-2011.
 
 Soil type
 ~~~~~~~~~
 
 A soil map indicating major soil texture types is also downloaded with
 the modelbuilder (wflow_soil.map), which is derived from the Harmonized
-World Soil Database (HWSD) [FAO et al. 2009]. The legend for
+World Soil Database (HWSD) (FAO et al. 2009 [FAO2009]_). The legend for
 this soil dataset is also provided in the template case in
-data\parameters\wflow_soil.csv. In the current setup with global data,
+data/parameters/wflow_soil.csv. In the current setup with global data,
 this soil map is not used, since all soil-based parameters are specified
 as rasters. It can however be useful if you want to differentiate
 parameters in the intbl directory based on soil type, or if you want add
@@ -213,20 +213,19 @@ Model parameters
 
 Parameters linked to LAI:
 
--  Specific leaf storage: determined from [Liu 1998]_
+-  Specific leaf storage: determined from Liu 1998 [Liu1998]_
 -  Storage on the woody part of the vegetation (branch and trunk
-   storage): determined from [Liu 1998]_
--  Extinction coefficient: [Van Dijk & Bruijnzeel 2001]_
+   storage): determined from Liu 1998 [Liu1998]_
+-  Extinction coefficient: Van Dijk & Bruijnzeel 2001 [VanDijk2001]_
 
 Parameters linked to soil and land use:
 
--  Parameters provided as maps in the staticmaps directory: [Dai et al. 2013]_ and [Shangguan et al. 2014]_ 
+-  Parameters provided as maps in the staticmaps directory: based on Dai et al. 2013 [Dai2013]_ and Shangguan et al. 2014 [Shangguan2014]_ 
 -  Other parameters provided as intbl files: the parameters that are not
    specified as rasters, are given in the intbl directory as .tbl files,
    which can be linked to either land use, soil type or subcatchment
-   (see Section XX of the documentation/tutorial). For these parameters
-   a default value or values have been established based on expert
-   judgement.
+   (see :ref:`Input-Parameters`). For these parameters
+   a default value or values have been established.
 
 It is important to note that with the modelbuilder setup you can easily
 generate a functioning model, including the model structure and all the
@@ -245,28 +244,14 @@ modelbuilder in the WGS84 coordinate system (EPSG:4326).
 References
 ----------
 
-.. [Dai et al. 2013] Dai, Y., W. Shangguan, Q. Duan, B. Liu, S. Fu, G. Niu, 2013. Development
-of a China Dataset of Soil Hydraulic Parameters Using Pedotransfer
-Functions for Land Surface Modeling. Journal of Hydrometeorology, 14:
-869-887.
+.. [Dai2013] Dai, Y., W. Shangguan, Q. Duan, B. Liu, S. Fu, G. Niu, 2013. Development of a China Dataset of Soil Hydraulic Parameters Using Pedotransfer Functions for Land Surface Modeling. Journal of Hydrometeorology, 14:869-887.
 
-.. [Van Dijk & Bruijnzeel 2001] Dijk, A.I.J.M. van and L.A. Bruijnzeel (2001), Modelling rainfall
-interception by vegetation of variable density using an adapted
-analytical model. Part 1. Model description. Journal of Hydrology 247,
-230-238.
+.. [VanDijk2001] Dijk, A.I.J.M. van and L.A. Bruijnzeel (2001), Modelling rainfall interception by vegetation of variable density using an adapted analytical model. Part 1. Model description. Journal of Hydrology 247, 230-238.
 
-.. [FAO et al. 2009] FAO/IIASA/ISRIC/ISS-CAS/JRC, 2009. Harmonized World Soil Database
-(version 1.1). FAO, Rome, Italy and IIASA, Laxenburg, Austria.
+.. [FAO2009] FAO/IIASA/ISRIC/ISS-CAS/JRC, 2009. Harmonized World Soil Database (version 1.1). FAO, Rome, Italy and IIASA, Laxenburg, Austria.
 
-.. [Liu 1998] Liu, S. (1998), Estimation of rainfall storage capacity in the canopies
-of cypress wetlands and slash pine uplands in North-Central Florida.
-Journal of Hydrology 207, 32-41.
+.. [Liu1998] Liu, S. (1998), Estimation of rainfall storage capacity in the canopies of cypress wetlands and slash pine uplands in North-Central Florida. Journal of Hydrology 207, 32-41.
 
-.. [Liu et al. 2012] Liu, Y., R. Liu, and J. M. Chen (2012), Retrospective retrieval of
-long-term consistent global leaf area index (1981–2011) from combined
-AVHRR and MODIS data. J. Geophys. Res., 117, G04003,
-doi:10.1029/2012JG002084.
+.. [Liu2012] Liu, Y., R. Liu, and J. M. Chen (2012), Retrospective retrieval of long-term consistent global leaf area index (1981–2011) from combined AVHRR and MODIS data. J. Geophys. Res., 117, G04003, doi:10.1029/2012JG002084.
 
-.. [Shangguan et al. 2014] Shangguan, W., Dai, Y., Duan, Q., Liu, B. and Yuan, H., 2014. A Global
-Soil Data Set for Earth System Modeling. Journal of Advances in Modeling
-Earth Systems, 6: 249-263.
+.. [Shangguan2014] Shangguan, W., Dai, Y., Duan, Q., Liu, B. and Yuan, H., 2014. A Global Soil Data Set for Earth System Modeling. Journal of Advances in Modeling Earth Systems, 6: 249-263.
