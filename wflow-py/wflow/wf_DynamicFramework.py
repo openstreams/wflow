@@ -493,6 +493,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self._addMethodToClass(self.wf_readmapClimatology)
         self._addMethodToClass(self.readtblDefault)
         self._addMethodToClass(self.readtblLayersDefault)
+        self._addMethodToClass(self.readtblFlexDefault)
         self._addMethodToClass(self.wf_supplyVariableNamesAndRoles)
         self._addMethodToClass(self.wf_updateparameters)
         self._addMethodToClass(self.wf_savesummarymaps)
@@ -786,7 +787,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         return rest
 
-    def readtblLayersDefault(self,pathtotbl, landuse, subcatch, soil, layer, default):
+    def readtblLayersDefault(self,pathtotbl, landuse, subcatch, soil, n, default):
         """
         First check if a prepared  maps of the same name is present
         in the staticmaps directory. next try to
@@ -813,13 +814,14 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         """
 
         mapname = os.path.join(os.path.dirname(pathtotbl),"../staticmaps", os.path.splitext(os.path.basename(pathtotbl))[
-            0] + ".map")
+            0] + "_" + str(n) +  ".map")
+
         if os.path.exists(mapname):
             self.logger.info("reading map parameter file: " + mapname)
             rest = cover(readmap(mapname), default)
         else:
             if os.path.isfile(pathtotbl):
-                rest = lookupscalar(pathtotbl, landuse, subcatch, soil, layer)
+                rest = lookupscalar(pathtotbl, landuse, subcatch, soil, cover(0.0) + n)
                 self.logger.info("Creating map from table: " + pathtotbl)
             else:
                 self.logger.warn("tbl file not found (" + pathtotbl + ") returning default value: " + str(default))
