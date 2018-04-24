@@ -604,7 +604,7 @@ class WflowModel(DynamicModel):
       # Water Limitation: effects on partitioning
         FRTMOD               = max(1., 1./(TRANRF + 0.5)) # was FRTMOD2
         FRT                  = FRTWET * FRTMOD
-        FSHM OD              = (1. -FRT)/(1 - FRT/FRTMOD)
+        FSHMOD               = (1. -FRT)/(1 - FRT/FRTMOD)
         FLV                  = FLVT * FSHMOD
         FST                  = FSTT * FSHMOD
         FSO                  = FSOT * FSHMOD
