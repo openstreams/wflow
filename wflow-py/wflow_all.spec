@@ -1,6 +1,7 @@
 # -*- mode: python -*-
 
 import os
+import sys
 import shutil
 from distutils.dir_util import copy_tree, remove_tree
 from pyproj import pyproj_datadir
@@ -8,7 +9,7 @@ from osgeo import gdal
 
 # Set these for your installation
 
-pcrasterlib = 'c:/bin/pcraster/lib/'
+pcrasterlib = sys.argv[1]
 
 # list identical make_wflow_exe script with --normal
 # except for the wtools scripts
