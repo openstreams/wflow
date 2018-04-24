@@ -16,3 +16,4 @@ dependencies:
   - pyinstaller>=3.3
   - versioneer>=0.18
   - pywin32>=221
+  - setuptools>=38
