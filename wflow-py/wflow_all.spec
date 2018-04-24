@@ -9,7 +9,7 @@ from osgeo import gdal
 
 # Set these for your installation
 
-pcrasterlib = sys.argv[1]
+pcrasterlib = sys.argv[-1]
 
 # list identical make_wflow_exe script with --normal
 # except for the wtools scripts
