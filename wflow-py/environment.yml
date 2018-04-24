@@ -8,6 +8,7 @@ channels:
 dependencies:
   - python=2.7
   - numpy>=1.12
+  - scipy>=1.0
   - gdal>=2.2
   - rasterio>=1.0a12
   - netcdf4>=1.3
