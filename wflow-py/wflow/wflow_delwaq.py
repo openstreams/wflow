@@ -1215,7 +1215,7 @@ def main():
             T0 = wflow_adapt.getStartTimefromRuninfo(caseId +  "/" + rinfo_str)
             datetimeend = wflow_adapt.getEndTimefromRuninfo(caseId +  "/" + rinfo_str)
         else:
-            logger.eror(
+            logger.error(
             "Not enough information in the [run] section. Need start and end time or a runinfo.xml file....")
             sys.exit(1)
     else:
