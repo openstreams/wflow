@@ -45,7 +45,7 @@ from wflow.wflow_adapt import *
 
 
 #TODO: Make the script HRU independent (loop over the nr of HRU's)
-#TODO: 
+#TODO: Add self.LAImax
 
 def usage(*args):
     sys.stdout = sys.stderr
