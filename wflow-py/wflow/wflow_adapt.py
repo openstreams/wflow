@@ -519,13 +519,17 @@ def main():
     netcdfoutput = False
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "-M:-t:-s:-o:-r:-w:-C:-I:R:")
+        opts, _ = getopt.getopt(sys.argv[1:], "-M:-t:-s:-o:-r:-w:-C:-I:R:")
     except getopt.GetoptError, err:
         # print help information and exit:
         print str(err) 
         usage()
         sys.exit(2)
-        
+
+    if not opts:
+        usage()
+        sys.exit(2)
+
     xmlTimeSeries = ""
     stateFile = ""
     
