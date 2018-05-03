@@ -309,19 +309,23 @@ def get_data(url):
     return r
 
 
-def download_catchments(region, path):
+def download_catchments(region, path,
+                        region_filter='catchments-upstream', catchment_level=6):
     """Download a GeoJSON of the catchment upstream of `region`.
     Function copied from hydroengine, with added error reporting"""
-    data = {'type': 'get_catchments', 'bounds': region, 'dissolve': True}
+    data = {'type': 'get_catchments', 'region': region, 'dissolve': True,
+            'region_filter': region_filter, 'catchment_level': catchment_level}
     r = post_data(SERVER_URL + '/get_catchments', data)
     with open(path, 'w') as f:
         f.write(r.text)
 
 
-def download_rivers(region, path, filter_upstream_gt):
+def download_rivers(region, path, filter_upstream_gt,
+                    region_filter='catchments-upstream', catchment_level=6):
     """Download a GeoJSON of the rivers in the upstream catchment of `region`.
     Function copied from hydroengine, with added error reporting"""
-    data = {'type': 'get_rivers', 'bounds': region}
+    data = {'type': 'get_rivers', 'region': region,
+            'region_filter': region_filter, 'catchment_level': catchment_level}
 
     if filter_upstream_gt:
         data['filter_upstream_gt'] = filter_upstream_gt
@@ -337,13 +341,15 @@ def download_rivers(region, path, filter_upstream_gt):
         shutil.copyfileobj(r.raw, f)
 
 
-def download_raster(region, path, variable, cell_size, crs):
+def download_raster(region, path, variable, cell_size, crs,
+                    region_filter='catchments-upstream', catchment_level=6):
     """Download a GeoTIFF raster of `variable` in the upstream catchment of `region`.
     Function copied from hydroengine, with added error reporting"""
     path_name = os.path.splitext(path)[0]
 
-    data = {'type': 'get_raster', 'bounds': region,
-            'variable': variable, 'cell_size': cell_size, 'crs': crs}
+    data = {'type': 'get_raster', 'region': region, 'variable': variable,
+            'cell_size': cell_size, 'crs': crs, 'region_filter': region_filter,
+            'catchment_level': catchment_level}
 
     r = post_data(SERVER_URL + '/get_raster', data)
 

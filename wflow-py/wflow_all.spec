@@ -1,6 +1,7 @@
 # -*- mode: python -*-
 
 import os
+import sys
 import shutil
 from distutils.dir_util import copy_tree, remove_tree
 from pyproj import pyproj_datadir
@@ -8,7 +9,7 @@ from osgeo import gdal
 
 # Set these for your installation
 
-pcrasterlib = 'c:/bin/pcraster/lib/'
+pcrasterlib = sys.argv[-1]
 
 # list identical make_wflow_exe script with --normal
 # except for the wtools scripts
@@ -54,8 +55,7 @@ def do_analysis(scriptpath):
                     # Though this seems more solid, submit as hook patch?
                     datas=[(gdal.GetConfigOption('GDAL_DATA'), 'gdal-data'),
                            (pyproj_datadir, 'proj-data')],
-                    hiddenimports=['pywt._extensions._cwt',
-                                   # in opendapy.py: importlib.import_module(sys.argv[3])
+                    hiddenimports=[# in opendapy.py: importlib.import_module(sys.argv[3])
                                    # for wflow this would always be wflow.wflow_bmi
                                    'wflow.wflow_bmi',
                                    'rasterio.control',  # needed
