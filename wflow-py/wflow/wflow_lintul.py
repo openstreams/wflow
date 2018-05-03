@@ -49,8 +49,6 @@ NPART = 1.0  # Coefficient for the effect of N stress on leaf biomass reduction 
 NSLA  = 1.0  # Coefficient for the effect of N stress on SLA reduction (presently non-functional, for future development)
 NLAI  = 1.0  # Coefficient for the effect of N stress on LAI reduction(during juvenile phase; presently non-functional, for future development)
 
-Point_Output = open('Point_Output.csv', 'w')
-
 
 def NOTNUL_pcr(pcr_map):
     """
@@ -662,6 +660,7 @@ class WflowModel(DynamicModel):
         self.Test  += 1.
         
        #For quickly getting point output (sdv). Works only with a wf_supplyEndTime() implemented in wf_dynamicframework... todo?
+        #Point_Output = open('Point_Output.csv', 'w')
         #Point_Output_Line = (str(cellvalue (self.LAI, 100,100)[0]) ) + '\n'
         #                    #str(np_CropStartNow[100,100])+ "," + str(np_CropHarvNow[100,100]) + '\n')
         #if self.date < self.enddate:
