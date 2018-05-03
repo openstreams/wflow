@@ -27,7 +27,7 @@ from optparse import OptionParser
 # import general packages
 import numpy as np
 from osgeo import osr,ogr
-from lxml import etree
+from xml.etree import ElementTree
 import pyproj
 # import specific packages
 import wflow.wflowtools_lib as wt
@@ -210,19 +210,19 @@ def main(logfilename,destination,inputfile,projection,cellsize,locationid,snap=F
                       zlib=True, srs=srs)
 
     # create grid.xml
-    root = etree.Element('regular', locationId=locationid)
-    etree.SubElement(root, 'rows').text = str(rows)
-    etree.SubElement(root, 'columns').text = str(cols)
-    etree.SubElement(root, 'geoDatum').text = geodatum
-    etree.SubElement(root, 'firstCellCenter')
-    etree.SubElement(root[3], 'x').text = str(xorg + 0.5 * cellsize)
-    etree.SubElement(root[3], 'y').text = str(yorg - 0.5 * cellsize)
-    etree.SubElement(root, 'xCellSize').text = str(cellsize)
-    etree.SubElement(root, 'yCellSize').text = str(cellsize)
+    root = ElementTree.Element('regular', locationId=locationid)
+    ElementTree.SubElement(root, 'rows').text = str(rows)
+    ElementTree.SubElement(root, 'columns').text = str(cols)
+    ElementTree.SubElement(root, 'geoDatum').text = geodatum
+    ElementTree.SubElement(root, 'firstCellCenter')
+    ElementTree.SubElement(root[3], 'x').text = str(xorg + 0.5 * cellsize)
+    ElementTree.SubElement(root[3], 'y').text = str(yorg - 0.5 * cellsize)
+    ElementTree.SubElement(root, 'xCellSize').text = str(cellsize)
+    ElementTree.SubElement(root, 'yCellSize').text = str(cellsize)
     xml_file = os.path.abspath(os.path.join(destination, 'grid.xml'))
     logger.info('Writing Delft-FEWS grid definition to {:s}'.format(xml_file))
     gridxml = open(xml_file, 'w+')
-    gridxml.write(etree.tostring(root, pretty_print=True))
+    gridxml.write(ElementTree.tostring(root))
     gridxml.close()
 
     # create shape file
