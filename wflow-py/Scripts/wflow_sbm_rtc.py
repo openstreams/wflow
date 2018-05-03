@@ -73,7 +73,11 @@ try:
    print opts
 except getopt.error, msg:
    print 'cannot parse commandline'
-   sys.exit
+   sys.exit(2)
+
+if not opts:
+    print 'cannot parse commandline'
+    sys.exit(2)
 
 for o, a in opts:
    if o == '-c': configfile = a
