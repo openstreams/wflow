@@ -852,7 +852,8 @@ def windowstats(rasterin, t_rows, t_columns, t_geotransform, t_srs, resultdir, s
         band_out.WriteArray(array_out[:, :, idx], 0, 0)
         band_out.SetNoDataValue(nodata)
         histogram = band_out.GetDefaultHistogram()
-        band_out.SetDefaultHistogram(histogram[0], histogram[1], histogram[3])
+        if histogram is not None:
+            band_out.SetDefaultHistogram(histogram[0], histogram[1], histogram[3])
         ds_in = None
         gdal.GetDriverByName('PCRaster').CreateCopy(name_map, ds_out, 0)
         ds_out = None
