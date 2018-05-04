@@ -1,31 +1,36 @@
 # currently assumes the working directory is right above the wflow cases
 
+import json
 import os
+import shutil
 import sys
-import geojson
-import requests
+import tempfile
+import zipfile
+from math import sqrt
+
 import click
+import fiona
+import geojson
+import numpy as np
+import rasterio
+import requests
+from shapely.ops import unary_union
+import shapely.geometry as sg
+from pyproj import Geod
+from rasterio import warp
+
+import pcraster as pcr
 import wflow.create_grid as cg
 import wflow.static_maps as sm
 import wflow.wflowtools_lib as wt
 from wflow import ogr2ogr
-import json
-import shutil
-import zipfile
-import tempfile
-from math import sqrt
-from pyproj import Geod
-import pcraster as pcr
-from osgeo import gdalconst
-import rasterio
-from rasterio import warp
 
 SERVER_URL = 'http://hydro-engine.appspot.com'
 
 
 @click.command()
 @click.option('--geojson-path',
-              help='Path to a GeoJSON file with the geometry that needs to be path of the model.')
+              help='Path to a GeoJSON file with the geometry that needs to be part of the model.')
 @click.option('--cellsize',
               default=0.01, show_default=True,
               help='Desired model cell size in decimal degrees.')
@@ -56,7 +61,18 @@ SERVER_URL = 'http://hydro-engine.appspot.com'
 @click.option('--river-path',
               help='Optionally provide a local or improved river vector file '
               'to use instead of the default global one.')
-def build_model(geojson_path, cellsize, model, timestep, name, case_template, case_path, fews, fews_config_path, dem_path, river_path):
+@click.option('--region-filter',
+              type=click.Choice(
+                  ['catchments-upstream', 'catchments-intersection', 'region']),
+              default='catchments-upstream', show_default=True,
+              help='Tell hydro-engine which model area to pick, by default this '
+              'is everything upstream of the provided geometry, but it is also '
+              'possible to get only the current catchment (catchments-intersection), '
+              'or just exactly the provided geometry (region), like your own '
+              'catchment polygon.')
+def build_model(geojson_path, cellsize, model, timestep, name, case_template,
+                case_path, fews, fews_config_path, dem_path, river_path,
+                region_filter):
     """Prepare a simple WFlow model, anywhere, based on global datasets."""
 
     # lists below need to stay synchronized, not sure of a better way
@@ -69,7 +85,8 @@ def build_model(geojson_path, cellsize, model, timestep, name, case_template, ca
         case_path,
         fews_config_path,
         dem_path,
-        river_path
+        river_path,
+        region_filter
     ] = [encode_utf8(p) for p in [
         geojson_path,
         model,
@@ -79,7 +96,8 @@ def build_model(geojson_path, cellsize, model, timestep, name, case_template, ca
         case_path,
         fews_config_path,
         dem_path,
-        river_path
+        river_path,
+        region_filter
     ]]
 
     # fill in the dependent defaults
@@ -94,11 +112,17 @@ def build_model(geojson_path, cellsize, model, timestep, name, case_template, ca
             case_template = 'wflow_{}_daily_template'.format(model)
 
     # assumes it is in decimal degrees, see Geod
-    region = first_geometry(geojson_path)
-    x, y = region['coordinates']
+    case = os.path.join(case_path, name)
+    path_catchment = os.path.join(case, 'data/catchments/catchments.geojson')
+
+    region = hydro_engine_geometry(geojson_path, region_filter)
+
+    # get the centroid of the region, such that we have a point for unit conversion
+    centroid = sg.shape(region).centroid
+    x, y = centroid.x, centroid.y
+
     filter_upstream_gt = 1000
     crs = 'EPSG:4326'
-    case = os.path.join(case_path, name)
 
     g = Geod(ellps='WGS84')
     # convert to meters in the center of the grid
@@ -117,31 +141,18 @@ def build_model(geojson_path, cellsize, model, timestep, name, case_template, ca
     # create grid
     path_log = 'wtools_create_grid.log'
     dir_mask = os.path.join(case, 'mask')
-    path_catchment = os.path.join(case, 'data/catchments/catchments.geojson')
     projection = 'EPSG:4326'
 
-    if dem_path is None:
-        # when using a global dem, use the corresponding catchment shape for the model area
-        download_catchments(region, path_catchment)
-        cg_extent = path_catchment
-    else:
-        # when using a local dem, get the extent from the local dem itself
-        cg_extent = path_catchment
-        # staticmaps still needs the separate catchments, work around this
-        # by writing a polygon that covers the entire dem
-        with rasterio.open(dem_path) as src:
-            bounds = src.bounds
-            bbox = warp.transform_bounds(src.crs,
-                                         {'init': 'epsg:4326'}, *bounds)
-
-        with open(path_catchment, 'w') as f:
-            coverall = '{{"type":"Polygon","coordinates":[[[{0},{1}],[{2},{1}],[{2},{3}],[{0},{3}],[{0},{1}]]]}}'.format(
-                *bbox)
-            f.write(coverall)
+    download_catchments(region, path_catchment, geojson_path, region_filter=region_filter)
+    cg_extent = path_catchment
 
     cg.main(path_log, dir_mask, cg_extent, projection,
             cellsize, locationid=name, snap=True)
     mask_tif = os.path.join(dir_mask, 'mask.tif')
+
+    with rasterio.open(mask_tif) as ds:
+        bbox = ds.bounds
+
 
     # create static maps
     dir_dest = os.path.join(case, 'staticmaps')
@@ -153,18 +164,21 @@ def build_model(geojson_path, cellsize, model, timestep, name, case_template, ca
     if river_path is None:
         # download the global dataset
         river_data_path = os.path.join(case, 'data/rivers/rivers.geojson')
-        download_rivers(region, river_data_path, filter_upstream_gt)
+        raise ValueError("User must supply river_path for now, see hydro-engine#14")
+        download_rivers(region, river_data_path,
+                        filter_upstream_gt, region_filter=region_filter)
     else:
         # take the local dataset, reproject and clip
         # command line equivalent of
         # ogr2ogr -t_srs EPSG:4326 -f GPKG -overwrite -clipdst xmin ymin xmax ymax rivers.gpkg rivers.shp
         river_data_path = os.path.join(case, 'data/rivers/rivers.gpkg')
         ogr2ogr.main(['', '-t_srs', 'EPSG:4326', '-f', 'GPKG', '-overwrite', '-clipdst',
-                      str(bbox[0]), str(bbox[1]), str(bbox[2]), str(bbox[3]), river_data_path, river_path])
+                      str(bbox.left), str(bbox.bottom), str(bbox.right), str(bbox.top), river_data_path, river_path])
 
     if dem_path is None:
         # download the global dem
-        download_raster(region, path_dem_in, 'dem', cellsize_m, crs)
+        download_raster(region, path_dem_in, 'dem', cellsize_m,
+                        crs, region_filter=region_filter)
     else:
         # warp the local dem onto model grid
         wt.warp_like(dem_path, path_dem_in, mask_tif,
@@ -213,7 +227,8 @@ def build_model(geojson_path, cellsize, model, timestep, name, case_template, ca
 
     for param, path in zip(other_maps[model], path_other_maps):
         if model == 'sbm':
-            download_raster(region, path, param, cellsize_m, crs)
+            download_raster(region, path, param, cellsize_m,
+                            crs, region_filter=region_filter)
         elif model == 'hbv':
             # these are not yet in the earth engine, use local paths
             if timestep == 'hourly':
@@ -233,7 +248,7 @@ def build_model(geojson_path, cellsize, model, timestep, name, case_template, ca
             mm = str(m).zfill(2)
             path = os.path.join(dir_lai, 'LAI00000.0{}'.format(mm))
             download_raster(
-                region, path, 'LAI{}'.format(mm), cellsize_m, crs)
+                region, path, 'LAI{}'.format(mm), cellsize_m, crs, region_filter=region_filter)
     else:
         # TODO this creates defaults in static_maps, disable this behavior?
         # or otherwise adapt static_maps for the other models
@@ -248,8 +263,13 @@ def build_model(geojson_path, cellsize, model, timestep, name, case_template, ca
         dir_run = os.path.join(case, 'run_default', d)
         ensure_dir_exists(dir_run)
 
+    # this is for coastal catchments only, if it is not coastal and no outlets
+    # are found, then it will just be the pit of the ldd
+    outlets = outlets_coords(path_catchment, river_data_path)
+
     sm.main(dir_mask, dir_dest, path_inifile, path_dem_in, river_data_path,
-            path_catchment, lai=dir_lai, other_maps=path_other_maps)
+            path_catchment, lai=dir_lai, other_maps=path_other_maps,
+            outlets=outlets)
 
     if fews:
         # save default state-files in FEWS-config
@@ -309,15 +329,21 @@ def get_data(url):
     return r
 
 
-def download_catchments(region, path,
+def download_catchments(region, path, path_geojson,
                         region_filter='catchments-upstream', catchment_level=6):
     """Download a GeoJSON of the catchment upstream of `region`.
     Function copied from hydroengine, with added error reporting"""
-    data = {'type': 'get_catchments', 'region': region, 'dissolve': True,
-            'region_filter': region_filter, 'catchment_level': catchment_level}
-    r = post_data(SERVER_URL + '/get_catchments', data)
-    with open(path, 'w') as f:
-        f.write(r.text)
+
+    if region_filter == 'region':
+        # use the geojson as catchment
+        # some checks are already done in hydro_engine_geometry
+        shutil.copy2(path_geojson, path)
+    else:
+        data = {'type': 'get_catchments', 'region': region, 'dissolve': True,
+                'region_filter': region_filter, 'catchment_level': catchment_level}
+        r = post_data(SERVER_URL + '/get_catchments', data)
+        with open(path, 'w') as f:
+            f.write(r.text)
 
 
 def download_rivers(region, path, filter_upstream_gt,
@@ -346,7 +372,10 @@ def download_raster(region, path, variable, cell_size, crs,
     """Download a GeoTIFF raster of `variable` in the upstream catchment of `region`.
     Function copied from hydroengine, with added error reporting"""
     path_name = os.path.splitext(path)[0]
-
+    # print region.type
+    with open('db.json', 'w') as f:
+        f.write(geojson.dumps(region))
+    # print region
     data = {'type': 'get_raster', 'region': region, 'variable': variable,
             'cell_size': cell_size, 'crs': crs, 'region_filter': region_filter,
             'catchment_level': catchment_level}
@@ -391,10 +420,10 @@ def ensure_dir_exists(path_dir):
         os.makedirs(path_dir)
 
 
-def first_geometry(path_geojson):
-    """Provided a path to a GeoJSON file,
-    check if the GeoJSON is valid and has max 1 feature,
-    then return its geometry."""
+def hydro_engine_geometry(path_geojson, region_filter):
+    """Provided a path to a GeoJSON file, check if it is valid,
+    then return its geometry. Hydro-engine currently only accepts
+    geometries, so we need to enforce this here."""
 
     with open(path_geojson) as f:
         d = geojson.load(f)
@@ -403,24 +432,47 @@ def first_geometry(path_geojson):
         raise AssertionError(
             '{} is not a valid GeoJSON file\n{}'.format(path_geojson, d.errors()))
 
-    if d.type == 'FeatureCollection':
-        nfeatures = len(d.features)
-
-        if nfeatures != 1:
-            raise AssertionError(
-                'Expecting 1 feature in {}, found {}'.format(path_geojson, nfeatures))
-
-        geom = d.features[0].geometry
-    elif d.type == 'Feature':
-        geom = d.geometry
+    # this needs special casing since we want to be able to specify a
+    # FeatureCollection of catchment polygons, though at the same time make it
+    # compatible with the hydro-engine 1 geometry requirement
+    polytypes = ('Polygon', 'MultiPolygon')
+    if region_filter == 'region':
+        # these polygon checks should cover all types of GeoJSON
+        if d.type == 'FeatureCollection':
+            # this should check all features
+            gtype = d.features[0].geometry.type
+            if gtype not in polytypes:
+                raise ValueError(
+                    'Geometry type in {} is {}, needs to be a polygon'.format(path_geojson, gtype))
+            # combine features into 1 geometry
+            polys = []
+            for fcatch in d.features:
+                g = sg.shape(fcatch['geometry'])
+                polys.append(g)
+            # now simplify it to a rectangular polygon
+            bnds = unary_union(polys).bounds
+            geom = sg.mapping(sg.box(*bnds))
+        elif d.type == 'Feature':
+            assert d.geometry.type in polytypes
+            geom = d.geometry
+        else:
+            assert d.type in polytypes
+            geom = d
+        # now simplify it to a rectangular polygon
+        bnds = sg.shape(geom).bounds
+        geom = sg.mapping(sg.box(*bnds))
     else:
-        geom = d
+        if d.type == 'FeatureCollection':
+            nfeatures = len(d.features)
+            if nfeatures != 1:
+                raise AssertionError(
+                    'Expecting 1 feature in {}, found {}'.format(path_geojson, nfeatures))
+        elif d.type == 'Feature':
+            geom = d.geometry
+        else:
+            geom = d
 
-    if geom.type != 'Point':
-        errmsg = 'Point is the only supported geometry type, found {} in {}'
-        raise AssertionError(errmsg.format(geom.type, path_geojson))
-    else:
-        return geom
+    return geom
 
 
 def encode_utf8(path):
@@ -432,19 +484,89 @@ def encode_utf8(path):
         return path.encode('utf-8')
 
 
-# def encode_utf8(paths):
-#     """Modify paths to encode all strings in utf-8"""
-#     # see http://click.pocoo.org/5/python3/
-#     n = len(paths)
-#     for i in range(n):
-#         strarg = paths[i]
-#         # leave None intact
-#         if strarg is None:
-#             utfarg = strarg
-#         else:
-#             utfarg = strarg.encode('utf-8')
-#         paths[i] = utfarg
-#     return paths
+def outlets_coords(path_catchment, river_data_path):
+    """Get an array of X and list of Y coordinates of the outlets."""
+    
+    outlets = find_outlets(path_catchment, river_data_path, max_dist=0.02)
+    outlets = sg.mapping(outlets)['coordinates']
+   
+    outlets_x = np.array([c[0] for c in outlets])
+    outlets_y = np.array([c[1] for c in outlets])
+    return outlets_x, outlets_y
+
+
+def ne_coastal_zone(scale='medium', buffer=0.1):
+    """Get a MultiPolygon of the coastal zone from Natural Earth"""
+
+    scales = {'large': '10m', 'medium': '50m', 'small': '110m'}
+    res = scales[scale]
+    coastline_url = ('https://raw.githubusercontent.com/nvkelso/'
+                     'natural-earth-vector/master/geojson/ne_{}_coastline.geojson'.format(res))
+    r = requests.get(coastline_url)
+    r.raise_for_status()
+    js = r.json()
+
+    coasts = []
+
+    for f in js['features']:
+        linestring = sg.shape(f['geometry'])
+        polygon = linestring.buffer(buffer)
+        coasts.append(polygon)
+
+    # add an extra buffer of 0, to create a valid geometry
+    return sg.MultiPolygon(coasts).buffer(0.0)
+
+
+def find_outlets(catch_path, riv_path, max_dist=0.02):
+    """Find outlets by seeing how close rivers end to
+    coastal catchment boundaries."""
+    coastal_catch = catchment_coast_boundaries(catch_path)
+    rivnodes = river_ends(riv_path)
+
+    outlets = []
+    for p in rivnodes:
+        dist = p.distance(coastal_catch)
+        if dist <= max_dist:
+            outlets.append(p)
+    return sg.MultiPoint(outlets)
+
+
+def catchment_boundaries(catch_path):
+    """Collect all catchment boundaries into a MultiLineString"""
+    geoms = []
+    with fiona.open(catch_path) as c:
+        for f in c:
+            g = sg.shape(f['geometry']).boundary
+            geoms.append(g)
+
+    return unary_union(geoms)
+
+
+def catchment_coast_boundaries(catch_path, coastal_zone=None):
+    """Collect all coastal catchment boundaries into a MultiLineString"""
+    catchment_boundary = catchment_boundaries(catch_path)
+    if coastal_zone is None:
+        coastal_zone = ne_coastal_zone()
+    return catchment_boundary.intersection(coastal_zone)
+
+
+def river_ends(riv_path):
+    """Collect the ends of river LineStrings into a MultiPoint"""
+    # the hydrosheds rivers are split into many small segments
+    # so to get the true ends, we should eliminate the ends
+    # that connect to other ends
+    mp0 = []  # line start nodes
+    mp1 = []  # line end nodes
+    with fiona.open(riv_path) as c:
+        for f in c:
+            coords = f['geometry']['coordinates']
+            mp0.append(sg.Point(coords[0]))
+            mp1.append(sg.Point(coords[-1]))
+
+    mp0 = sg.MultiPoint(mp0)
+    mp1 = sg.MultiPoint(mp1)
+    # get rid of the connecting inner nodes
+    return mp0.symmetric_difference(mp1)
 
 
 if __name__ == '__main__':

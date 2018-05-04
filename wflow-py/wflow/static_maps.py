@@ -34,7 +34,7 @@ from osgeo import osr, gdal, ogr, gdalconst
 import wflow
 import pcraster as pcr
 import wflow.wflowtools_lib as wt
-
+import wflow.wflow_lib as tr
 
 import fiona
 from rasterio import features
@@ -59,9 +59,6 @@ def parse_args():
     parser.add_option('-s', '--source',
                       dest='source', default='wflow',
                       help='Source folder containing clone (default=./wflow)')
-    parser.add_option('-f', '--forceoutlet',
-                      dest='forceoutlet', default=False, action='store_true',
-                      help='Force the outlet to river cell closest to DEM-edge')
     parser.add_option('-d', '--destination',
                       dest='destination', default='staticmaps',
                       help='Destination folder (default=./staticmaps)')
@@ -102,7 +99,10 @@ def parse_args():
     (options, args) = parser.parse_args()
     return options
 
-def main(source,destination,inifile,dem_in,rivshp,catchshp,gaugeshp=None,landuse=None,soil=None,lai=None,other_maps=None,logfilename='wtools_static_maps.log',verbose=True,clean=True,alltouch=False,forceoutlet=False):
+def main(source, destination, inifile, dem_in, rivshp, catchshp, gaugeshp=None,
+         landuse=None, soil=None, lai=None, other_maps=None,
+         logfilename='wtools_static_maps.log', verbose=True, clean=True,
+         alltouch=False, outlets=([],[])):
     # parse other maps into an array
     if not other_maps == None:
         if type(other_maps) == str:
@@ -318,20 +318,19 @@ def main(source,destination,inifile,dem_in,rivshp,catchshp,gaugeshp=None,landuse
     riverdem = pcr.scalar(rivers) * pcr.readmap(os.path.join(destination, dem_map))
     pcr.setglobaloption("lddin")
     riverldd = pcr.lddcreate(riverdem, 1e35, 1e35, 1e35, 1e35)
-    if forceoutlet:
-        riverorder = pcr.streamorder(riverldd)
-        riverorder = pcr.ifthen(pcr.pcrnot(riverorder == pcr.mapmaximum(riverorder)),pcr.nominal(1))
-        riverorder = pcr.cover(riverorder,pcr.ifthen(pcr.scalar(riverldd) == 5,pcr.nominal(1)))
-        riverclump = pcr.clump(riverorder)
-        riverpitsus = pcr.ifthen(pcr.downstream(riverldd,pcr.scalar(riverldd)) == 5, pcr.scalar(1))
-        outsidedem = pcr.ifthen(pcr.pcrnot(pcr.defined(pcr.readmap(os.path.join(destination, dem_map)))),pcr.boolean(1))
-        dist2outside = pcr.spread(pcr.cover(outsidedem,0),0,1)
-        mindistselec = pcr.ifthen(pcr.areaminimum(dist2outside,riverclump) == dist2outside,pcr.scalar(1))
-        pitsectionselec = pcr.ifthen(pcr.areamaximum(pcr.cover(riverpitsus,0),riverclump) ==1,pcr.scalar(1))
-        riveroutlet = pcr.cover(mindistselec * pitsectionselec * 1000,0)
-        riverldd = pcr.lddcreate(riverdem - riveroutlet, 1e35, 1e35, 1e35, 1e35)
-    else: riveroutlet = pcr.cover(pcr.ifthen(pcr.scalar(riverldd) == 5, pcr.scalar(1000)),0)
-    burn_layer = pcr.cover((pcr.scalar(pcr.ifthen(pcr.streamorder(riverldd) > 1, pcr.streamorder(riverldd) ))-1 )*1000 + riveroutlet,0)
+
+    riveroutlet = pcr.cover(pcr.ifthen(pcr.scalar(riverldd) == 5, pcr.scalar(1000)),0)
+    burn_layer = pcr.cover((pcr.scalar(pcr.ifthen(pcr.streamorder(
+        riverldd) > 1, pcr.streamorder(riverldd))) - 1) * 1000 + riveroutlet, 0)
+
+    outlets_x, outlets_y = outlets
+    n_outlets = len(outlets_x)
+    logger.info('Number of outlets: {}'.format(n_outlets))
+    if n_outlets >= 1:
+        outlets_map_numbered = tr.points_to_map(pcr.scalar(0), outlets_x, outlets_y, 0.5)
+        outlets_map = pcr.boolean(outlets_map_numbered)
+        # snap outlets to closest river (max 1 cell closer to river)
+        outlets_map = pcr.boolean(pcr.cover(tr.snaptomap(pcr.ordinal(outlets_map), rivers), 0))
 
     ## create ldd per catchment
     logger.info('Calculating ldd')
@@ -346,9 +345,14 @@ def main(source,destination,inifile,dem_in,rivshp,catchshp,gaugeshp=None,landuse
         dem_burned_catchment = (pcr.readmap(os.path.join(destination, dem_map)) * pcr.scalar(catchment_domain) * catchment) - burn_layer
         ldddem_catchment = pcr.lddcreatedem(
             dem_burned_catchment, 1e35, 1e35, 1e35, 1e35)
-        ldddem=pcr.cover(ldddem, ldddem_catchment)
+        ldddem = pcr.cover(ldddem, ldddem_catchment)
 
-    wflow_ldd= pcr.lddcreate(ldddem, 1e35, 1e35, 1e35, 1e35)
+    wflow_ldd = pcr.lddcreate(ldddem, 1e35, 1e35, 1e35, 1e35)
+    if n_outlets >= 1:
+        # set outlets to pit
+        wflow_ldd = pcr.ifthenelse(outlets_map, pcr.ldd(5), wflow_ldd)
+        wflow_ldd = pcr.lddrepair(wflow_ldd)
+
     pcr.report(wflow_ldd, os.path.join(destination, 'wflow_ldd.map'))
 
     # compute stream order, identify river cells
