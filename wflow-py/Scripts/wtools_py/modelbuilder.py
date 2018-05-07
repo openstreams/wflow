@@ -467,6 +467,7 @@ def hydro_engine_geometry(path_geojson, region_filter):
             if nfeatures != 1:
                 raise AssertionError(
                     'Expecting 1 feature in {}, found {}'.format(path_geojson, nfeatures))
+            geom = d.features[0].geometry
         elif d.type == 'Feature':
             geom = d.geometry
         else:
