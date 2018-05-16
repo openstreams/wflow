@@ -637,49 +637,6 @@ class WflowModel(DynamicModel):
                                                           self.LandUse, subcatch, self.Soil,
                                                           0.1)
 
-        self.ReserVoirLocs = self.ZeroMap
-
-        if hasattr(self,'ReserVoirSimpleLocs'):
-            # Check if we have simple and or complex reservoirs
-            tt_simple = pcr2numpy(self.ReserVoirSimpleLocs, 0.0)
-            self.nrresSimple = tt_simple.max()
-            self.ReserVoirLocs = self.ReserVoirLocs + cover(scalar(self.ReserVoirSimpleLocs))
-        else:
-            self.nrresSimple = 0
-    
-    
-        if hasattr(self, 'ReserVoirComplexLocs'):
-            tt_complex = pcr2numpy(self.ReserVoirComplexLocs, 0.0)
-            self.nrresComplex = tt_complex.max()
-            self.ReserVoirLocs = self.ReserVoirLocs + cover(scalar(self.ReserVoirComplexLocs))
-            res_area = cover(scalar(self.ReservoirComplexAreas),0.0)
-            self.filter_P_PET = ifthenelse(res_area > 0, res_area*0.0, res_area*0.0 + 1.0)
-    
-            #read files
-            self.sh = {}
-            res_ids = ifthen(self.ResStorFunc == 2, self.ReserVoirComplexLocs)
-            np_res_ids = pcr2numpy(res_ids,0)
-            np_res_ids_u = np.unique(np_res_ids[nonzero(np_res_ids)])
-            if np.size(np_res_ids_u) > 0:
-                for item in nditer(np_res_ids_u):
-                    self.sh[int(item)] = loadtxt(self.Dir + "/" + self.intbl + "/Reservoir_SH_" + str(item) + ".tbl")
-            self.hq = {}
-            res_ids = ifthen(self.ResOutflowFunc == 1, self.ReserVoirComplexLocs)
-            np_res_ids = pcr2numpy(res_ids,0)
-            np_res_ids_u = np.unique(np_res_ids[nonzero(np_res_ids)])
-            if size(np_res_ids_u) > 0:
-                for item in nditer(np_res_ids_u):
-                    self.hq[int(item)] = loadtxt(self.Dir + "/" + self.intbl + "/Reservoir_HQ_" + str(item) + ".tbl", skiprows=3)
-    
-        else:
-            self.nrresComplex = 0
-    
-        if (self.nrresSimple + self.nrresComplex)  > 0:
-            self.ReserVoirLocs =ordinal(self.ReserVoirLocs)
-            self.logger.info("A total of " + str(self.nrresSimple) + " simple reservoirs and " + str(self.nrresComplex) + " complex reservoirs found.")
-            self.ReserVoirDownstreamLocs = downstream(self.TopoLdd, self.ReserVoirLocs)
-            self.TopoLddOrg = self.TopoLdd
-            self.TopoLdd = lddrepair(cover(ifthen(boolean(self.ReserVoirLocs), ldd(5)), self.TopoLdd))
         if hasattr(self,"LAI"):
             # Sl must also be defined
             if not hasattr(self,"Sl"):
@@ -818,6 +775,62 @@ class WflowModel(DynamicModel):
 
 
         self.N = ifthenelse(self.River, self.NRiver, self.N)
+
+        if (hasattr(self,'ReserVoirSimpleLocs') or hasattr(self,'ReserVoirComplexLocs')):
+            self.ReserVoirLocs = self.ZeroMap
+            self.filter_P_PET = self.ZeroMap + 1.0
+
+        if hasattr(self,'ReserVoirSimpleLocs'):
+            # Check if we have simple and or complex reservoirs
+            tt_simple = pcr2numpy(self.ReserVoirSimpleLocs, 0.0)
+            self.nrresSimple = tt_simple.max()
+            self.ReserVoirLocs = self.ReserVoirLocs + cover(scalar(self.ReserVoirSimpleLocs))
+            areamap = self.reallength * self.reallength
+            res_area = areatotal(spatial(areamap), self.ReservoirSimpleAreas)
+
+            resarea_pnt = ifthen(boolean(self.ReserVoirSimpleLocs), res_area)
+            self.ResSimpleArea = ifthenelse(cover(self.ResSimpleArea,scalar(0.0)) > 0, self.ResSimpleArea, cover(resarea_pnt,scalar(0.0)))
+            self.filter_P_PET = ifthenelse(boolean(cover(res_area,scalar(0.0))), res_area*0.0, self.filter_P_PET)
+        else:
+            self.nrresSimple = 0
+    
+    
+        if hasattr(self, 'ReserVoirComplexLocs'):
+            tt_complex = pcr2numpy(self.ReserVoirComplexLocs, 0.0)
+            self.nrresComplex = tt_complex.max()
+            self.ReserVoirLocs = self.ReserVoirLocs + cover(scalar(self.ReserVoirComplexLocs))
+            res_area = cover(scalar(self.ReservoirComplexAreas),0.0)
+            self.filter_P_PET = ifthenelse(res_area > 0, res_area*0.0, self.filter_P_PET)
+    
+            #read files
+            self.sh = {}
+            res_ids = ifthen(self.ResStorFunc == 2, self.ReserVoirComplexLocs)
+            np_res_ids = pcr2numpy(res_ids,0)
+            np_res_ids_u = np.unique(np_res_ids[nonzero(np_res_ids)])
+            if np.size(np_res_ids_u) > 0:
+                for item in nditer(np_res_ids_u):
+                    self.sh[int(item)] = loadtxt(self.Dir + "/" + self.intbl + "/Reservoir_SH_" + str(item) + ".tbl")
+            self.hq = {}
+            res_ids = ifthen(self.ResOutflowFunc == 1, self.ReserVoirComplexLocs)
+            np_res_ids = pcr2numpy(res_ids,0)
+            np_res_ids_u = np.unique(np_res_ids[nonzero(np_res_ids)])
+            if size(np_res_ids_u) > 0:
+                for item in nditer(np_res_ids_u):
+                    self.hq[int(item)] = loadtxt(self.Dir + "/" + self.intbl + "/Reservoir_HQ_" + str(item) + ".tbl", skiprows=3)
+    
+        else:
+            self.nrresComplex = 0
+
+    
+        if (self.nrresSimple + self.nrresComplex)  > 0:
+            self.ReserVoirLocs =ordinal(self.ReserVoirLocs)
+            self.logger.info("A total of " + str(self.nrresSimple) + " simple reservoirs and " + str(self.nrresComplex) + " complex reservoirs found.")
+            self.ReserVoirDownstreamLocs = downstream(self.TopoLdd, self.ReserVoirLocs)
+            self.TopoLddOrg = self.TopoLdd
+            self.TopoLdd = lddrepair(cover(ifthen(boolean(self.ReserVoirLocs), ldd(5)), self.TopoLdd))
+
+            tt_filter = pcr2numpy(self.filter_P_PET, 0.0)
+            self.filterResArea = tt_filter.min()
 
 
         # Determine river width from DEM, upstream area and yearly average discharge
@@ -1023,7 +1036,6 @@ class WflowModel(DynamicModel):
         self.wf_multparameters()
         # Save some summary maps
         self.logger.info("Saving summary maps...")
-        report(self.NRiver,'NRiver.map')
 
         #self.IF = self.ZeroMap
         self.logger.info("End of initial section")
@@ -1204,12 +1216,13 @@ class WflowModel(DynamicModel):
 
         self.wf_multparameters()
 
-        if hasattr(self, 'ReserVoirComplexLocs'):
+        if self.filterResArea == 0:
             self.ReserVoirPotEvap = self.PotenEvap
             self.ReserVoirPrecip = self.Precipitation
     
-            self.PotEvap = self.filter_P_PET * self.PotenEvap
-            self.Precipitation = self.filter_P_PET * self.Precipitation     
+            self.PotenEvap = self.filter_P_PET * self.PotenEvap
+            self.Precipitation = self.filter_P_PET * self.Precipitation
+
         self.OrgStorage = sum_list_cover(self.UStoreLayerDepth,self.ZeroMap) + self.SatWaterDepth
         self.OldCanopyStorage = self.CanopyStorage
         if self.nrpaddyirri > 0:
@@ -1707,29 +1720,29 @@ class WflowModel(DynamicModel):
                                  self.reinfiltwater - self.ActEvapOpenWater - ponding_add)
         self.Inwater = self.InwaterMM * self.ToCubic  # m3/s
 
+        
         #only run the reservoir module if needed
         if self.nrresSimple > 0:
-            self.ReservoirVolume, self.Outflow, self.ResPercFull,\
-            self.DemandRelease = simplereservoir(self.ReservoirVolume, self.SurfaceRunoff,\
+            self.ReservoirVolume, self.OutflowSR, self.ResPercFull, self.ResPrecipSR, self.ResEvapSR,\
+            self.DemandRelease = simplereservoir(self.ReservoirVolume, self.SurfaceRunoff,self.ResSimpleArea,\
                                                  self.ResMaxVolume, self.ResTargetFullFrac,
                                                  self.ResMaxRelease, self.ResDemand,
                                                  self.ResTargetMinFrac, self.ReserVoirSimpleLocs,
-                                                 timestepsecs=self.timestepsecs)
-            self.OutflowDwn = upstream(self.TopoLddOrg,cover(self.Outflow,scalar(0.0)))
+                                                 self.ReserVoirPrecip, self.ReserVoirPotEvap,
+                                                 self.ReservoirSimpleAreas, timestepsecs=self.timestepsecs)
+            self.OutflowDwn = upstream(self.TopoLddOrg, cover(self.OutflowSR,scalar(0.0)))
             self.Inflow = self.OutflowDwn + cover(self.Inflow,self.ZeroMap)
         elif self.nrresComplex > 0:
-            self.ReservoirWaterLevel, self.Outflow, self.ReservoirPrecipitation, self.ReservoirEvaporation,\
-            self.ReservoirVolume = complexreservoir(self.ReservoirWaterLevel, self.ReserVoirComplexLocs, self.LinkedReservoirLocs, self.ResArea,\
+            self.ReservoirWaterLevel, self.OutflowCR, self.ResPrecipCR, self.ResEvapCR,\
+            self.ReservoirVolumeCR = complexreservoir(self.ReservoirWaterLevel, self.ReserVoirComplexLocs, self.LinkedReservoirLocs, self.ResArea,\
                                                         self.ResThreshold, self.ResStorFunc, self.ResOutflowFunc, self.sh, self.hq, self.Res_b,
                                                         self.Res_e, self.SurfaceRunoff,self.ReserVoirPrecip, self.ReserVoirPotEvap,
-                                                        self.ReservoirComplexAreas, self.wf_supplyJulianDOY(), timestepsecs=self.timestepsecs)
-            self.OutflowDwn = upstream(self.TopoLddOrg,cover(self.Outflow,scalar(0.0)))
-            self.Inflow = self.OutflowDwn + cover(self.Inflow,self.ZeroMap)
-            self.InflowCheck = self.Inflow
-            self.OutflowDwnCheck = self.OutflowDwn
-            
+                                                        self.ReservoirComplexAreas, self.wf_supplyJulianDOY(), timestepsecs=self.timestepsecs)            
+            self.OutflowDwn = upstream(self.TopoLddOrg, cover(self.OutflowCR,scalar(0.0)))
+            self.Inflow = self.OutflowDwn + cover(self.Inflow,self.ZeroMap)     
         else:
             self.Inflow= cover(self.Inflow,self.ZeroMap)
+            
         self.ExfiltWaterCubic = self.ExfiltWater * self.ToCubic
         self.SubCellGWRunoffCubic = self.SubCellGWRunoff * self.ToCubic
         self.SubCellRunoffCubic = self.SubCellRunoff * self.ToCubic

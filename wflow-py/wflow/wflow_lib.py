@@ -107,7 +107,7 @@ def idtoid(sourceidmap, targetidmap,valuemap):
     return retmap
 
 
-def simplereservoir(storage, inflow, maxstorage, target_perc_full, maximum_Q, demand, minimum_full_perc, ReserVoirLocs, timestepsecs=86400):
+def simplereservoir(storage, inflow, ResArea, maxstorage, target_perc_full, maximum_Q, demand, minimum_full_perc, ReserVoirLocs, precip, pet, ReservoirSimpleAreas, timestepsecs=86400):
     """
 
     :param storage: initial storage m^3
@@ -123,8 +123,13 @@ def simplereservoir(storage, inflow, maxstorage, target_perc_full, maximum_Q, de
     """
 
     inflow = ifthen(boolean(ReserVoirLocs), inflow)
+
+    prec_av = cover(ifthen(boolean(ReserVoirLocs), areaaverage(precip, ReservoirSimpleAreas)),scalar(0.0))
+    pet_av = cover(ifthen(boolean(ReserVoirLocs), areaaverage(pet, ReservoirSimpleAreas)),scalar(0.0))
+
     oldstorage = storage
-    storage = storage + (inflow * timestepsecs)
+    storage = storage + (inflow * timestepsecs) + (prec_av/1000.0)*ResArea - (pet_av/1000.0)*ResArea
+
     percfull = ((storage + oldstorage) * 0.5) / maxstorage
     # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
     fac = sCurve(percfull, a=minimum_full_perc, c=30.0)
@@ -142,7 +147,7 @@ def simplereservoir(storage, inflow, maxstorage, target_perc_full, maximum_Q, de
     outflow = (torelease + demandRelease) / timestepsecs
     percfull = storage / maxstorage
 
-    return storage, outflow, percfull, demandRelease/timestepsecs
+    return storage, outflow, percfull, prec_av, pet_av, demandRelease/timestepsecs
 
 
 def lookupResRegMatr(ReserVoirLocs, values, hq, JDOY):
