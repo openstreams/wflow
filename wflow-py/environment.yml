@@ -23,3 +23,4 @@ dependencies:
   - requests>=2.18
   - click>=6.7
   - shapely>=1.6
+  - netcdftime
