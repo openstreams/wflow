@@ -164,7 +164,7 @@ def build_model(geojson_path, cellsize, model, timestep, name, case_template,
     if river_path is None:
         # download the global dataset
         river_data_path = os.path.join(case, 'data/rivers/rivers.geojson')
-        raise ValueError("User must supply river_path for now, see hydro-engine#14")
+        # raise ValueError("User must supply river_path for now, see hydro-engine#14")
         download_rivers(region, river_data_path,
                         filter_upstream_gt, region_filter=region_filter)
     else:
