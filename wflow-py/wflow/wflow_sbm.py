@@ -829,7 +829,7 @@ class WflowModel(DynamicModel):
             self.TopoLddOrg = self.TopoLdd
             self.TopoLdd = lddrepair(cover(ifthen(boolean(self.ReserVoirLocs), ldd(5)), self.TopoLdd))
 
-            tt_filter = pcr2numpy(self.filter_P_PET, 0.0)
+            tt_filter = pcr2numpy(self.filter_P_PET, 1.0)
             self.filterResArea = tt_filter.min()
 
 
@@ -1216,7 +1216,7 @@ class WflowModel(DynamicModel):
 
         self.wf_multparameters()
 
-        if self.filterResArea == 0:
+        if (self.nrresSimple + self.nrresComplex) > 0 and self.filterResArea == 0:
             self.ReserVoirPotEvap = self.PotenEvap
             self.ReserVoirPrecip = self.Precipitation
     
