@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # 
 
-from math import pi
+from   math import pi
 import math
 import numpy as np
 import os
@@ -9,9 +9,9 @@ import os.path
 import shutil, glob
 import getopt
 
-from wflow.wf_DynamicFramework import *
-from wflow.wflow_adapt import *
-from time import strftime
+from   wflow.wf_DynamicFramework import *
+from   wflow.wflow_adapt import *
+from   time import strftime
 import time
 
 """
@@ -29,7 +29,7 @@ wflow_lintul  -C case -R Runid -c inifile
 
     -c name of the config file (in the case directory)
 
-$Author: SanderCdeVries $
+$Author: SanderCdeVries, for Wageningen Plant Research, WUR, The Netherlands
 $Id: lintul1.py 2018-02-21 16:08:06Z
 $Rev: 001 $
 """
@@ -127,7 +127,6 @@ class Interpol_Obj(object):
                 string = '\n' + str(self.data[i]) + " " 
             temptablefile.write(string)
         temptablefile.close()
-        #print "method done"
     def lookup_linear(self, x):
         y = lookuplinear(self.filename, x)
         return y
@@ -342,13 +341,14 @@ class WflowModel(DynamicModel):
       # Simulation is mostly restricted to the rice area (to be checked), which saves calculation time. Todo
         wflow_ricemask     = configget(self.config, "model", "wflow_ricemask", "staticmaps/wflow_ricemask.map")
         self.ricemask      = self.wf_readmap(os.path.join(self.Dir,wflow_ricemask),0.0,fail=True)
+      # Create a PCRaster boolean map too:  
         self.ricemask_BOOL = boolean(self.ricemask)
         self.Pausedays     = self.Pause + 1
         
       # Calculate initial development stage (at the time of transplanting)
         self.DVSI          = self.TSUMI / self.TSUMAN
         
-        
+      # Turn all interpolation tables (model parameters) into instances of the Interpol_Obj class  
         self.RDRTB        = Interpol_Obj(self.RDRTB)
         self.PHOTTB       = Interpol_Obj(self.PHOTTB)
         self.SLACF        = Interpol_Obj(self.SLACF)        
@@ -357,7 +357,6 @@ class WflowModel(DynamicModel):
         self.FSTTB        = Interpol_Obj(self.FSTTB)
         self.FSOTB        = Interpol_Obj(self.FSOTB)
         
-
       # Calculate the initial leaf area correction function as a function of development stage, DVS. 
         SLACFI             = self.SLACF.lookup_linear(self.DVSI)
       # Multiply with specific leaf area constant => initial specific leaf area
@@ -419,13 +418,13 @@ class WflowModel(DynamicModel):
         self.enddate      = datetime.utcfromtimestamp(self.wf_supplyEndTime()) #wf_supplyEndTime() in wflow_dyamicframework? todo
         DOY               = self.wf_supplyJulianDOY() 
 
-      # Some Boolean PCRaster variables:
+      # Some Boolean PCRaster variables to check if crop is still developing, in terms of thermal time/phenology:
         TSUM_not_Finished = self.TSUM <= self.TTSUM
         DVS_not_Finished  = self.DVS <= 2.01
-        Not_Finished      = TSUM_not_Finished #& DVS_not_Finished
+        Not_Finished      = TSUM_not_Finished 
         
-      # Start calculating the accumulated preciptation from November one on, 
-      # to judge when there's enough water for crop establishment. 
+      # Start calculating the accumulated preciptation from a certain date on (defined by RainSumStart_Month, RainSumStart_Day), 
+      # to judge when there's enough water for rice crop establishment. 
         if (self.date.month == self.RainSumStart_Month and self.date.day == self.RainSumStart_Day):  
             Calc_RainSum     = True
             self.PSUM       += self.RAIN + TINY
@@ -434,11 +433,13 @@ class WflowModel(DynamicModel):
        
       # Check whether the precipitation sum is positive
         WeveGotRain       = self.PSUM > 0.
-      # Check whether the precipitation sum is still below the threshhold for crop establishment
+      # Check whether the precipitation sum is still below the threshhold for crop establishment (and hence calculation of the sum should still proceed): 
         NotEnoughRainYet  = self.PSUM <= self.RainSumReq
         EnoughRain        = self.PSUM >= self.RainSumReq
         KeepAddingRain    = WeveGotRain & NotEnoughRainYet
-      # The first season is defined here as starting on November 1
+        
+      # The first season is defined here as starting on November 1. The 2md and 3rd season are following the 1st with break periods of <self.Pausedays> days,
+      # to account for the time that the farmer needs for rice harvesting and crop establishment.   
         #self.Season      += ifthenelse(Calc_RainSum, self.ricemask, 0.)
         FirstSeason       = self.Season == 1
         SecondSeason      = self.Season == 2
@@ -462,8 +463,8 @@ class WflowModel(DynamicModel):
                 time.sleep(100)
             CropHarvNow            = HarvNow & self.ricemask_BOOL    
             
-            # Initializing crop growth, optionally from a single start day (CropStartDOY in the ini file),
-            # but normally from a crop profile forcing variable.
+          # Initializing crop growth, optionally from a single start day (CropStartDOY in the ini file),
+          # but normally from a crop profile forcing variable.
             StartNow           = DOY == self.CropStartDOY
             CropStartNow       = StartNow & self.ricemask_BOOL
             CropStartNow_scalar= scalar(CropStartNow)
@@ -483,7 +484,7 @@ class WflowModel(DynamicModel):
                     HarvNow            = self.STARTED == self.HarvestDAP
                     CropHarvNow        = HarvNow & self.ricemask_BOOL
                 print "Start date read from Crop Profile..."
-                # Two auxilliary variables:
+              # Two auxilliary variables:
                 CRPST_gt_0       = self.CRPST > 0.
                 CRPST_eq_STARTED = self.CRPST == self.STARTED
                 CropStartNow     = CRPST_gt_0 & CRPST_eq_STARTED & self.ricemask_BOOL
@@ -497,7 +498,7 @@ class WflowModel(DynamicModel):
                 elif self.HarvestDAP > 0:
                     HarvNow            = self.STARTED == self.HarvestDAP
                     CropHarvNow        = (HarvNow & self.ricemask_BOOL) | Calc_RainSum
-                # Two auxilliary variables:
+              # Two auxilliary variables:
                 Time2Plant1stCrop    = self.PSUM >= self.RainSumReq
                 StdMin1              = self.STARTED == -1
                 CropStartNow_Season1 = Time2Plant1stCrop & self.ricemask_BOOL
@@ -514,22 +515,22 @@ class WflowModel(DynamicModel):
                     CropStarted          = Started & self.ricemask_BOOL
                     SeasonOneHarvd       = self.STARTED < 0
                     SeasonOneHarvd_Scalar= scalar(SeasonOneHarvd)
-                    pcr_PrepareField_temp = scalar(self.Pausedays)
-                    pcr_PrepareField      = ifthenelse(FirstSeason, pcr_PrepareField_temp, 0.)
-                    self.STARTED         = (self.STARTED + CropStartNow_scalar + scalar(CropStarted)) * ifthenelse(CropHarvNow, scalar(0.), 1.) - ifthenelse(HarvSeasonOne, pcr_PrepareField, 0.) + SeasonOneHarvd_Scalar
-                elif self.Sim3rdSeason == True:   
+                    PrepareField_temp    = scalar(self.Pausedays)
+                    PrepareField         = ifthenelse(FirstSeason, PrepareField_temp, 0.)
+                    self.STARTED         = (self.STARTED + CropStartNow_scalar + scalar(CropStarted)) * ifthenelse(CropHarvNow, scalar(0.), 1.) - ifthenelse(HarvSeasonOne, PrepareField, 0.) + SeasonOneHarvd_Scalar
+                elif self.Sim3rdSeason  == True:   
                     HarvSeason12_temp    = FirstSeason | SecondSeason
                     HarvSeasonOneTwo     = HarvSeason12_temp & CropHarvNow
                     HarvSeasonThree      = (ThirdSeason & CropHarvNow) | (ThirdSeason & Calc_RainSum)
                     self.Season          = self.Season + ifthenelse(HarvSeasonOneTwo, scalar(1.), 0.) - ifthenelse(HarvSeasonThree, scalar(3.), 0.) # beware, this variable is also modified in another equation
                     Started              = self.STARTED > 0
                     CropStarted          = Started & self.ricemask_BOOL
-                    Season12Harvd       = self.STARTED < 0
-                    Season12Harvd_Scalar= scalar(Season12Harvd)
-                    pcr_PrepareField_temp = scalar(self.Pausedays)
-                    FirstorSecondSeason     = FirstSeason | SecondSeason
-                    pcr_PrepareField      = ifthenelse(FirstorSecondSeason, pcr_PrepareField_temp, 0.)
-                    self.STARTED         = (self.STARTED + CropStartNow_scalar + scalar(CropStarted)) * ifthenelse(CropHarvNow, scalar(0.), 1.) - ifthenelse(HarvSeasonOneTwo, pcr_PrepareField, 0.) + Season12Harvd_Scalar
+                    Season12Harvd        = self.STARTED < 0
+                    Season12Harvd_Scalar = scalar(Season12Harvd)
+                    PrepareField_temp    = scalar(self.Pausedays)
+                    FirstorSecondSeason  = FirstSeason | SecondSeason
+                    PrepareField         = ifthenelse(FirstorSecondSeason, PrepareField_temp, 0.)
+                    self.STARTED         = (self.STARTED + CropStartNow_scalar + scalar(CropStarted)) * ifthenelse(CropHarvNow, scalar(0.), 1.) - ifthenelse(HarvSeasonOneTwo, PrepareField, 0.) + Season12Harvd_Scalar
                 else: 
                     print self.Sim3rdSeason
                     time.sleep(10)
@@ -551,12 +552,14 @@ class WflowModel(DynamicModel):
             Enough_water      = True
             
         #self.T = (self.TMIN + self.TMAX)/2. # for testing with Wageningen weather files only - sdv
+      # Calculate thermal time (for TSUM and DVS): 
         Warm_Enough    = self.T >= self.TBASE
         DegreeDay      = self.T - self.TBASE
         DTEFF          = ifthenelse(Warm_Enough, DegreeDay, 0.)
+      # Check if leaves are present:
         Leaves_Present    = self.LAI > 0.
 
-      # Check when certain important decision moments are reached, in chronological order:
+      # Check whether certain critical moments, external circumstances or crop growth stages occur that influence crop growth and development:
         BeforeAnthesis        = self.TSUM < self.TSUMAN
         UntilAnthesis         = self.TSUM <= self.TSUMAN
         AtAndAfterAnthesis    = self.TSUM >= self.TSUMAN
@@ -572,48 +575,80 @@ class WflowModel(DynamicModel):
         Juvenile     = EarlyStages & SmallLeaves
         Adult        = LaterStages | BiggerLeaves
         
-      # Calculate daylength, based on latitude and day of year (assumed similar throughout the catchment area -> scalar, no array) - SdV
+      # Calculate daylength (assumed similar throughout the catchment area -> scalar, no array), based on latitude and Day Of Year (DOY) 
         DAYL = astro_py(DOY, self.LAT)
-        
+       
+      # Calculate the specific leaf area (m2 (leaf) g−1 (leaf)) by interpolation of development stage in SLAF, multiplication with self.SLACF
         SLA       = self.SLAC * self.SLACF.lookup_linear(self.DVS) 
+      # Obtain the fractions (-) of daily dry matter production allocated (in absence of water shortage) to, respectively, root growth (FRTWET), leaf growth (FLVT), 
+      # growth of stems (FSTT) and growth of storage organs (FSO, i.e. rice grains), as a function of development stage (DVS), by interpolation.   
         FRTWET   = self.FRTTB.lookup_linear(self.DVS)
         FLVT     = self.FLVTB.lookup_linear(self.DVS)
         FSTT     = self.FSTTB.lookup_linear(self.DVS)
         FSOT     = self.FSOTB.lookup_linear(self.DVS)
         RDRTMP    = self.RDRTB.lookup_linear(self.DVS)
-        PHOTT     = self.PHOTTB.lookup_linear(DAYL)
+        
+      # Many growth processes can only occur when EMERG = TRUE; this is the case when crop phenological development has started, soil water content is above 
+      # permanent wilting point, the crop has leaves and is not yet harvested or growth has otherwise been terminated:
         EMERG     = CropStarted & Enough_water & Leaves_Present & Not_Finished
+        
+      # Determine the influence of astronomical daylength on crop development (via thermal time - TSUM) by interpolation in the PHOTTB table  
+        PHOTT     = self.PHOTTB.lookup_linear(DAYL)
+      # Daylength only potentially has a  modifying influence on crop development (via thermal time, TSUM) before anthesis:
         PHOTPF    = ifthenelse(BeforeAnthesis, PHOTT, scalar(1.))
+      # Influence (if any) of daylength results in a modified daily change in thermal time (TSUM). 
         RTSUMP    = DTEFF * PHOTPF
+      # TSUM (state): at crop establishment TSUMI is added (the TSUM that was accumulated in the nursery in the case of transplanted rice);
+      # during crop growth, the daily rate of change RTSUMP is added if EMERG = TRUE. Upon crop harvest, TSUM is reset (i.e. multiplied with 0.).
         self.TSUM = (self.TSUM + ifthenelse(CropStartNow, scalar(self.TSUMI), 0.) + ifthenelse(EMERG, RTSUMP, 0.)) * ifthenelse(CropHarvNow, scalar(0.), 1.)  
 
-        TSUM_veg  = self.TSUM / self.TSUMAN * ifthenelse(CropHarvNow, scalar(0.), 1.)
-        TSUM_gen  = (1. + (self.TSUM - self.TSUMAN) / self.TSUMMT) * ifthenelse(CropHarvNow, scalar(0.), 1.)
-        self.DVS  = ifthenelse(Vegetative, TSUM_veg, 0.) + ifthenelse(Generative, TSUM_gen, 0.)
+      # Calculation of DVS (state).
+      # In LINTUL1 and LINTUL2, TSUM directly steered all processes influenced by crop phenological development. 
+      # However, Shibu et al. (2010) derived some code from ORYZA_2000 (Bouman et al., 2001), including the use DVS instead of TSUM. 
+      # Hence in LINTUL3, some processes are still controlled directly by TSUM and some are controlled by its derived variable DVS
+      # – a somewhat confusing situation that offers scope for future improvement.
+      # After anthesis DVS proceeds at a different rate (DVS_gen) than before (DVS_veg). Throughout crop development DVS is calculated as the DVS_veg + DVS_gen. 
+        DVS_veg  = self.TSUM / self.TSUMAN * ifthenelse(CropHarvNow, scalar(0.), 1.)
+        DVS_gen  = (1. + (self.TSUM - self.TSUMAN) / self.TSUMMT) * ifthenelse(CropHarvNow, scalar(0.), 1.)
+        self.DVS  = ifthenelse(Vegetative, DVS_veg, 0.) + ifthenelse(Generative, DVS_gen, 0.)
 
-      # Root depth growth:
+      # Root depth growth can occur as long as the maximum rooting depth has not yet been achieved:
         CanGrowDownward      = self.ROOTD_mm <= self.ROOTDM_mm
+      # Root growth occurs before anthesis if there is crop growth (EMERG = TRUE), enough water (already in EMERG - todo) and the maximum rooting depth has not yet been reached.   
         RootGrowth           = Enough_water & BeforeAnthesis & EMERG & CanGrowDownward
+      # If root growth occurs, it occurs at a fixed pace (mm/day):  
         RROOTD_mm            = ifthenelse(RootGrowth, self.RRDMAX_mm, scalar(0.))
+      # Rooting depth (state): at crop establishment ROOTDI_mm is added (the rooting depth at transplanting); during crop growth, the daily rate of change 
+      # self.ROOTDI_mm is added. Upon crop harvest, rooting depth is reset (i.e. multiplied with 0.).
         self.ROOTD_mm        = (self.ROOTD_mm + ifthenelse(CropStartNow, self.ROOTDI_mm, scalar(0.)) + RROOTD_mm) * ifthenelse(CropHarvNow, scalar(0.), 1.)
+      # By depth growth, roots explore deeper layers of soil that contain previously untapped water supplies, the assumption is.  
+      # In the case of irrigated rice, it seems reasonable to assume that those layers are saturated with water (WCST = volumetric soil water content at saturation).
+      # The volume of additional water that becomes available to the crop is then equal to EXPLOR:
         EXPLOR               = RROOTD_mm * WCST
         
         #############################################################################################################
       # Water Limitation: effects on partitioning
-        FRTMOD               = max(1., 1./(TRANRF + 0.5)) # was FRTMOD2
+      # If TRANRF falls below 0.5, root growth is accelerated:
+        FRTMOD               = max(1., 1./(TRANRF + 0.5)) 
         FRT                  = FRTWET * FRTMOD
+      # ... and shoot growth (i.e. growth of all aboveground parts) diminshed:  
         FSHMOD               = (1. -FRT)/(1 - FRT/FRTMOD)
         FLV                  = FLVT * FSHMOD
         FST                  = FSTT * FSHMOD
         FSO                  = FSOT * FSHMOD
 
-      # todo: incorporate effects of N stress - sdv 30-11-15
+      # Daily intercepted Photosynthetically Active Radiation (PAR), according to (Lambert-)Beer's law. 
+      # The factor 0.5 accounts for the fact that about 50% (in terms of energy) of the frequency spectrum of incident solar radiation 
+      # can be utilized for photosynthesis by green plants. 
         PARINT               = ifthenelse(Not_Finished, 0.5 * self.IRRAD * 0.001 * (1. - exp(-self.K * self.LAI)), 0.)
+      # The total growth rate is proportional to the intercepted PAR with a fixed Light Use Efficiency (LUE) - the core of the LINTUL apporach. 
         GTOTAL               = self.LUE * PARINT * TRANRF
 
-      # Rel. Death rate due to ageing:
+      # Leaf dying due to ageing occurs from anthesis on (actually that is already arranged in the interpolation table - double!), with a relative death rate RDRTMP:
         RDRDV                = ifthenelse(AtAndAfterAnthesis, RDRTMP, scalar(0.))
+      # Leaf dying due to mutual shading occurs when LAI > LAICR:  
         RDRSH                = max(0., self.RDRSHM * (self.LAI - self.LAICR)/self.LAICR)
+      # The largest of the two effects determines the relative death rate of foliage:  
         RDR                  = max(RDRDV, RDRSH)
 
       # Impact of leaf dying on leaf weight - N limitation stuff not (yet) implemented
@@ -625,7 +660,7 @@ class WflowModel(DynamicModel):
         self.WLVG            = (self.WLVG + ifthenelse(CropStartNow, self.WLVGI, scalar(0.)) + RWLVG) * (1. - scalar(CropHarvNow))
         self.WLVD            = (self.WLVD + DLV) * (1. - scalar(CropHarvNow))
 
-      # Leaf totalGrowthRate and LAI.
+      # Growth of leaves in terms of mass (GLV) and in terms of LAI (GLAI).
         GLV                 = FLV * GTOTAL
         Adt_or_Harv         = pcror(Adult, CropHarvNow)
         Juv_or_Harv         = pcror(Juvenile, CropHarvNow)
@@ -638,25 +673,41 @@ class WflowModel(DynamicModel):
                      ifthenelse(LetsGro, self.LAII/DELT, scalar(0.))
                  
       # (Abs.) impact of leaf dying on LAI
-      # Death of leaves due to ageing and shading:
+      # Daily decrease in LAI due to dying of leaves (if any), due to aging and/or mutual shading:
         DLAIS       = self.LAI * RDR
+      # Daily decrease in LAI due to nitrogen shortage (presently non-functional):  
         DLAINS      = ifthenelse(CropStarted, scalar(1.), 0.) * ifthenelse(N_Limitation, DLVNS * SLA, 0.)
-        DLAI        = (DLAIS + DLAINS) * scalar(Not_Finished)
-        
+      # Total daily decrease in LAI due to leaf death (aging, mutual shading, N shortage):  
+        DLAI        = (DLAIS + DLAINS) * scalar(Not_Finished)        
       # The initial LAI (LAII, transplanted rice) is added to GLAI at crop establishment, not in below state equation as done by Shibu et al. (2010).         
         self.LAI   = (self.LAI + GLAI - DLAI) * ifthenelse(CropHarvNow, scalar(0.), 1.)
+
         
-        # DRRT = np.greater_equal(np_DVS[:], np_DVSDR[:]) * np_WRT[:] * RDRRT
+      # Daily death rate of roots: if self.DVS >= self.DVSDR, a fraction self.DRRT of the roots is dying every day:
         DRRT        = ifthenelse(Roots_Dying, self.WRT * self.RDRRT, scalar(0.))
+      # Net daily change in root weight: if there is crop growth, this is equal to daily weight increase (GTOTAL * FRT) minus the daily decrease due to dying roots (if any). 
         RWRT        = ifthenelse(EMERG, GTOTAL * FRT - DRRT, scalar(0.))
+      # Calculation of the root weight (state): when the crop is planted, the initial root weight WRTLI is added. After that, the net (daily) rate of change RWRT is added.
+      # Upon crop harvest, RWRT is reset (i.e. multiplied with 0.) 
         self.WRT    = (self.WRT + ifthenelse(CropStartNow, self.WRTLI, scalar(0.)) + RWRT) * (1. - scalar(CropHarvNow))
+      # WDRT (state) is the total quantity of leaves that has died (mostly relevant for mass balance checking purposes). Simply calculated by adding the daily dying roots (if any);
+      # (the variable is reset upon crop harvest). 
         self.WDRT   = (self.WDRT + DRRT) * (1. - scalar(CropHarvNow))
-        
+       
+      # Daily change in the weight of the storage organs (rice grains) is fraction FSO of the total growth rate (GTOTAL). FSO is determined by phenology and moisture stress 
+      # (which can modify the root/shoort ratio)
         RWSO        = ifthenelse(EMERG, GTOTAL * FSO, scalar(0.))
+      # Weight of storage organs (state) is simply calculated by accumulating the daily growth RWSO. At crop harvest, it is reset to 0.   
         self.WSO    = (self.WSO + ifthenelse(CropStartNow, self.WSOI, scalar(0.)) + RWSO) * (1. - scalar(CropHarvNow))
+      # WSO in tons/ha:    
         WSOTHA      = self.WSO / 100.
+        
+      # Daily change in the weight of the stems is a fraction FST of the total growth rate (GTOTAL). FST is determined by phenology and moisture stress   
         RWST        = ifthenelse(EMERG, GTOTAL * FST, scalar (0.))
+      # Weight of storage organs (state) is simply calculated by accumulating the daily growth RWSO. At crop harvest, it is reset to 0.     
         self.WST    = (self.WST + ifthenelse(CropHarvNow, self.WSTI, scalar(0.)) + RWST) * (1. - scalar(CropHarvNow))
+        
+      # An additional state, handy for testing purposes: 
         self.Test  += 1.
         
        #For quickly getting point output (sdv). Works only with a wf_supplyEndTime() implemented in wf_dynamicframework... todo?
