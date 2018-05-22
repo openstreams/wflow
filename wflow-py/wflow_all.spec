@@ -20,10 +20,8 @@ scriptpaths = [
     'Scripts/wflow_prepare_step1.py',
     'Scripts/wflow_prepare_step2.py',
     'Scripts/wflow_sbm_rtc.py',
-    'Scripts/wtools_py/modelbuilder.py',
     'wflow/create_grid.py',
     'wflow/static_maps.py',
-    'wflow/wflow_adapt.py',
     'wflow/wflow_delwaq.py',
     'wflow/wflow_floodmap.py',
     'wflow/wflow_gr4.py',
@@ -31,11 +29,13 @@ scriptpaths = [
     'wflow/wflow_lintul.py',
     'wflow/wflow_pcrglobwb.py',
     'wflow/wflow_routing.py',
-    'wflow/wflow_sbm.py',
     'wflow/wflow_sphy.py',
     'wflow/wflow_topoflex.py',
     'wflow/wflow_w3ra.py',
     'wflow/wflow_wave.py',
+    'wflow/wflow_sbm.py',
+    'wflow/wflow_adapt.py',
+    'Scripts/wtools_py/modelbuilder.py',
 ]
 
 
