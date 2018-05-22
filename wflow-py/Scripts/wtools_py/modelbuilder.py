@@ -525,10 +525,12 @@ def find_outlets(catch_path, riv_path, max_dist=0.02):
     rivnodes = river_ends(riv_path)
 
     outlets = []
-    for p in rivnodes:
-        dist = p.distance(coastal_catch)
-        if dist <= max_dist:
-            outlets.append(p)
+    # if it is empty, all distances are 0
+    if not coastal_catch.is_empty:
+        for p in rivnodes:
+            dist = p.distance(coastal_catch)
+            if dist <= max_dist:
+                outlets.append(p)
     return sg.MultiPoint(outlets)
 
 
