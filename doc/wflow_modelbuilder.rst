@@ -95,6 +95,8 @@ Furthermore you can specify the following options:
 	--dem-path		Path to a local DEM if available
 
 	--river-path		Path to a local river shapefile if available
+	
+	--region-filter		Tell hydro-engine which model area to pick, by default this is everything upstream of the provided geometry, but it is also possible to get only the current catchment (catchments-intersection), or just exactly the provided geometry (region), like your own catchment polygon (options: catchments-upstream, catchments-intersection, region)(default=catchments-upstream)
 
 Example:
 
