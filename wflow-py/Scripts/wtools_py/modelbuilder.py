@@ -214,7 +214,7 @@ def build_model(geojson_path, cellsize, model, timestep, name, case_template,
         'FirstZoneKsatVer': 'KsatVer',
         'FirstZoneMinCapacity': 'SoilMinThickness',
         'FirstZoneCapacity': 'SoilThickness',
-        # 'landuse': 'wflow_landuse',  # restore after issues caused by values in this map are fixed
+        'landuse': 'wflow_landuse',
         'soil_type': 'wflow_soil'
     }
 
