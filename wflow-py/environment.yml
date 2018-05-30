@@ -23,3 +23,6 @@ dependencies:
   - requests>=2.18
   - click>=6.7
   - shapely>=1.6
+  - pip>=9.0.3
+  - pip:
+    - bmi-python
