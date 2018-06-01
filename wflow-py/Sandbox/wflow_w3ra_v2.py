@@ -45,9 +45,8 @@ from wflow.wflow_adapt import *
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args:
-        print msg
-    print __doc__
+    for msg in args: print(msg)
+    print(__doc__)
     sys.exit(0)
 
 
@@ -371,18 +370,19 @@ class WflowModel(DynamicModel):
     setup needed.
     
     """
-        self.logger.info("Reading initial conditions...")
-        #: It is advised to use the wf_resume() function
-        #: here which pick up the variable save by a call to wf_suspend()
-        try:
-            self.wf_resume(self.Dir + "/instate/")
-        except:
-            self.logger.warn("Cannot load initial states, setting to default")
-            for s in self.stateVariables():
-                exec "self." + s + " = cover(1.0)"
+    self.logger.info("Reading initial conditions...")
+    #: It is advised to use the wf_resume() function 
+    #: here which pick up the variable save by a call to wf_suspend()
+    try:
+        self.wf_resume(self.Dir + "/instate/")
+    except:
+        self.logger.warn("Cannot load initial states, setting to default")
+        for s in self.stateVariables():
+            exec("self." + s + " = cover(1.0)")
 
-    def default_summarymaps(self):
-        """
+
+  def default_summarymaps(self):
+      """
       *Optional*
       Return a default list of variables to report as summary maps in the outsum dir.
       """
@@ -528,6 +528,8 @@ class WflowModel(DynamicModel):
         # for i=1:par.Nhru
         ChannelSurface = min(0, (0.007 * self.Sr ** 0.75))
         OpenWaterFrac = max(ChannelSurface, self.OpenWaterFrac)
+        
+        # !! HANDometric functions go here !!
 
         # !! HANDometric functions go here !!
 
@@ -606,12 +608,12 @@ class WflowModel(DynamicModel):
         Umax = max(Usmax, max(Udmax, Ugmax))
 
         # Maximum transpiration (4.3)
-        Gsmax = self.Gs_scalar * self.cGsmax * self.Vc
-        VPD = max(0, pes - pe)
-        fD = self.Cg / (1 + VPD / self.D50)
-        gs = fveg * fD * Gsmax
-        ft = 1 / (1 + (keps / (1 + keps)) * ga / gs)
-        Etmax = ft * self.E0
+        Gsmax = self.Gs_scalar*self.cGsmax*self.Vc
+        VPD = max(0,pes-pe)
+        fD = self.Cg/(1+VPD/self.D50)
+        gs = fveg*fD*Gsmax
+        ft = 1/(1+(keps/(1+keps))*ga/gs)
+        Etmax = ft*self.E0
 
         # Actual transpiration (4.1)
         Et = min(Umax, Etmax)
@@ -631,8 +633,8 @@ class WflowModel(DynamicModel):
         Eg0 = max(0, fsat - fwater) * self.FsoilEmax * max(0, self.Eeq - Et)
         Es = Es0 + Eg0
         # Open water evaporation (4.7)
-        Erl = fw_local * self.FwaterE * self.Ept
-        Err = (fwater - fw_local) * self.FwaterE * self.Ept
+        Erl = fw_local*self.FwaterE*self.Ept
+        Err = (fwater-fw_local)*self.FwaterE*self.Ept
         Er = Erl + Err
 
         # Rainfall interception evaporation (4.2)
@@ -794,10 +796,10 @@ class WflowModel(DynamicModel):
         Dd = ifthenelse(imap, 0, Dd)
         IFd = ifthenelse(imap, 0, IFd)
         # saturation case
-        imap = (self.Sdmax - self.Sd - self.Kdsat) <= (Ds - Ud)
-        Dd = ifthenelse(imap, self.Kdsat, Dd)
-        IFd = ifthenelse(imap, self.Sd - self.Sdmax - self.Kdsat + Ds - Ud, IFd)
-        Sd = ifthenselse(imap, self.Sdmax, Sd)
+        imap   = (self.Sdmax-self.Sd-self.Kdsat)<=(Ds-Ud)
+        Dd = ifthenelse(imap,self.Kdsat,Dd)
+        IFd = ifthenelse(imap,self.Sd-self.Sdmax-self.Kdsat+Ds-Ud,IFd)
+        Sd = ifthenselse(imap,self.Sdmax,Sd)
         # enforce mass balance (for numerical & rounding errors
         Sd = max(0, min(Sd, self.Sdmax))
         massbal = self.Sd + Ds - Ud - Dd - IFd - Sd
@@ -913,15 +915,14 @@ def main(argv=None):
             _lastTimeStep = ts
             _firstTimeStep = 1
         else:
-            print "Failed to get timesteps from runinfo file: " + runinfoFile
+            print("Failed to get timesteps from runinfo file: " + runinfoFile)
             exit(2)
     else:
-        starttime = dt.datetime(1990, 01, 01)
+        starttime = dt.datetime(1990,0o1,0o1)
 
     if _lastTimeStep < _firstTimeStep:
-        print "The starttimestep (" + str(
-            _firstTimeStep
-        ) + ") is smaller than the last timestep (" + str(_lastTimeStep) + ")"
+        print("The starttimestep (" + str(_firstTimeStep) + ") is smaller than the last timestep (" + str(
+            _lastTimeStep) + ")")
         usage()
 
     myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile)

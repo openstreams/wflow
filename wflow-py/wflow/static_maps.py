@@ -21,7 +21,7 @@ import glob
 import numpy as np
 
 # import admin packages
-import ConfigParser
+import configparser
 from optparse import OptionParser
 
 # import general packages
@@ -182,10 +182,11 @@ def main(
     # parse other maps into an array
     if not other_maps == None:
         if type(other_maps) == str:
-            print other_maps
-            other_maps = (
-                other_maps.replace(" ", "").replace("[", "").replace("]", "").split(",")
-            )
+            print(other_maps)
+            other_maps = other_maps.replace(
+                ' ', '').replace('[', '').replace(']', '').split(',')
+
+
 
     source = os.path.abspath(source)
     clone_map = os.path.join(source, "mask.map")
@@ -202,16 +203,16 @@ def main(
         parser.print_help()
         sys.exit(1)
     if (inifile is not None) and (not os.path.exists(inifile)):
-        print "path to ini file cannot be found"
+        print('path to ini file cannot be found')
         sys.exit(1)
     if not os.path.exists(rivshp):
-        print "path to river shape cannot be found"
+        print('path to river shape cannot be found')
         sys.exit(1)
     if not os.path.exists(catchshp):
-        print "path to catchment shape cannot be found"
+        print('path to catchment shape cannot be found')
         sys.exit(1)
     if not os.path.exists(dem_in):
-        print "path to DEM cannot be found"
+        print('path to DEM cannot be found')
         sys.exit(1)
 
     # open a logger, dependent on verbose print to screen or not
@@ -249,7 +250,7 @@ def main(
     # READ CONFIG FILE
     # open config-file
     if inifile is None:
-        config = ConfigParser.SafeConfigParser()
+        config = configparser.SafeConfigParser()
         config.optionxform = str
     else:
         config = wt.OpenConf(inifile)
@@ -279,13 +280,8 @@ def main(
     burn_gauges = wt.configget(config, "parameters", "burn_gauges", 100, datatype="int")
     minorder = wt.configget(config, "parameters", "riverorder_min", 3, datatype="int")
     try:
-        percentiles = np.array(
-            config.get("parameters", "statisticmaps", "0, 100")
-            .replace(" ", "")
-            .split(","),
-            dtype="float",
-        )
-    except ConfigParser.NoOptionError:
+        percentiles = np.array(config.get('parameters', 'statisticmaps', '0, 100').replace(' ', '').split(','), dtype='float')
+    except configparser.NoOptionError:
         percentiles = [0.0, 100.0]
     # read the parameters for generating a temporary very high resolution grid
     if unit_clone == "degree":

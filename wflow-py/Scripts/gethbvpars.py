@@ -23,9 +23,8 @@ csvfile = "test.csv"
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args:
-        print msg
-    print __doc__
+    for msg in args: print(msg)
+    print(__doc__)
     sys.exit(0)
 
 
@@ -38,7 +37,7 @@ def readpar(fname, skip):
     f.close()
 
     for l in x:
-        ll = filter(lambda c: c not in "'", l).split()
+        ll = [c for c in l if c not in "'"].split()
         if len(ll) > 0:
             a[ll[0]] = ll[1]
 
@@ -53,7 +52,7 @@ def readbas(fname):
     f.close()
 
     for l in x:
-        ll = filter(lambda c: c not in "'\\", l).split()
+        ll = [c for c in l if c not in "'\\"].split()
         if len(ll) > 0:
             if ll[0] == "basindir":
                 a.append(ll[1])
@@ -65,8 +64,8 @@ basin = ""
 catch = {}
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "o:p:h")
-except getopt.error, msg:
+    opts, args = getopt.getopt(sys.argv[1:], 'o:p:h')
+except getopt.error as msg:
     usage(msg)
 
 for o, a in opts:
@@ -92,23 +91,23 @@ for ddri in basstruc:
 
 f = open(csvfile, "w")
 i = 0
-print >> f, "Id,Name",
+print("Id,Name", end=' ', file=f)
 for ppar in baspar:
-    print >> f, sep + ppar,
-print >> f, ""
+    print(sep + ppar, end=' ', file=f)
+print("", file=f)
 
 
 # for c in catch:
 for ii in range(0, len(basstruc) - 1):
     i = i + 1
     c = basstruc[ii]
-    print >> f, str(i) + sep + c,
+    print(str(i)+sep+c, end=' ', file=f)
     for ppar in baspar:
         if ppar in catch[c]:
-            print >> f, sep + catch[c][ppar],
+            print(sep+catch[c][ppar], end=' ', file=f)
         else:
-            print >> f, sep + baspar[ppar],
-    print >> f, ""
+            print(sep+baspar[ppar], end=' ', file=f)
+    print("", file=f)
 
 
 f.close()

@@ -27,6 +27,6 @@ a.write("__version__ = get_versions()['version']\n")
 a.write("del get_versions\n")
 
 
-print "============================================================================="
-print "Now install wflow using setup.py install and regenerate the documentation...."
-print "============================================================================="
+print("=============================================================================")
+print("Now install wflow using setup.py install and regenerate the documentation....")
+print("=============================================================================")

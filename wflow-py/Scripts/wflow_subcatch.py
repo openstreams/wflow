@@ -48,9 +48,8 @@ import subprocess
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args:
-        print msg
-    print __doc__
+    for msg in args: print(msg)
+    print(__doc__)
     sys.exit(0)
 
 
@@ -74,7 +73,7 @@ def runCommands(commands, maxCpu):
                 # failed
                 raise Exception("Command %s failed" % pollCmd)
             else:
-                print "Command %s completed successfully" % pollCmd
+                print("Command %s completed successfully" % pollCmd)
         return newProcs
 
     processes = []
@@ -93,14 +92,14 @@ def runCommands(commands, maxCpu):
     while len(processes) > 0:
         time.sleep(0.5)
         processes = removeFinishedProcesses(processes)
-    print "All processes in que (" + str(len(commands)) + ") completed."
+    print("All processes in que (" + str(len(commands)) + ") completed.")
 
 
 def main():
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "fhC:N:I:s:M:")
-    except getopt.error, msg:
+        opts, args = getopt.getopt(sys.argv[1:], 'fhC:N:I:s:M:')
+    except getopt.error as msg:
         usage(msg)
 
     factor = 1
@@ -139,13 +138,13 @@ def main():
     ]
     ext_to_copy = ["*.tss", "*.tbl", "*.col", "*.xml"]
     if os.path.isdir(caseNameNew) and not force:
-        print "Refusing to write into an existing directory:" + caseNameNew
+        print("Refusing to write into an existing directory:" + caseNameNew)
         exit()
 
     # ddir = []
     dirs = []
     for (path, thedirs, files) in os.walk(caseName):
-        print path
+        print(path)
         dirs.append(path)
 
     if not os.path.isdir(caseNameNew):
@@ -159,23 +158,21 @@ def main():
         os.path.join(caseName, "staticmaps", "wflow_subcatch.map"), "PCRaster"
     )
     for ddir in dirs:
-        print ddir
+        print(ddir)
         allcmd = []
         for mfile in glob.glob(ddir + "/*.map"):
             if not os.path.exists(mfile.replace(caseName, caseNameNew)):
                 x, y, data, FillVal = readMap(mfile, "PCRaster")
                 try:
                     good = 1
-                    xn, yn, datan = cutMapById(
-                        data, subcatchmap, subcatch, x, y, FillVal
-                    )
-                except Exception, e:
+                    xn, yn, datan = cutMapById(data,subcatchmap,subcatch,x,y,FillVal)
+                except Exception as e:
                     good = 0
-                    print "Skipping: " + mfile + " exception: " + str(e)
+                    print("Skipping: " + mfile + " exception: " + str(e))
 
                 if xn == None:
                     good = 0
-                    print "Skipping: " + mfile + " size does not match..."
+                    print("Skipping: " + mfile + " size does not match...")
 
                 if good:
                     ofile = mfile.replace(caseName, caseNameNew)
@@ -197,16 +194,14 @@ def main():
                 x, y, data, FillVal = readMap(mfile, "PCRaster")
                 try:
                     good = 1
-                    xn, yn, datan = cutMapById(
-                        data, subcatchmap, subcatch, x, y, FillVal
-                    )
-                except Exception, e:
+                    xn, yn, datan = cutMapById(data, subcatchmap, subcatch, x, y, FillVal)
+                except Exception as e:
                     good = 0
-                    print "Skipping: " + mfile + " exception: " + str(e)
+                    print("Skipping: " + mfile + " exception: " + str(e))
 
                 if xn == None:
                     good = 0
-                    print "Skipping: " + mfile + " size does not match..."
+                    print("Skipping: " + mfile + " size does not match...")
 
                 if good:
                     ofile = mfile.replace(caseName, caseNameNew)

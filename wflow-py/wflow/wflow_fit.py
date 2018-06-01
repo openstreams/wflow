@@ -90,7 +90,7 @@ def configget(config, section, var, default):
     try:
         ret = config.get(section, var)
     except:
-        print "returning default (" + default + ") for " + section + ":" + var
+        print("returning default (" + default + ") for " + section + ":" + var)
         ret = default
 
     return ret
@@ -177,6 +177,15 @@ class wfmodel_fit_API:
         self.AreaMap = self.WF.readmap(os.path.join(self.caseName, self.AreaMapName))
         exec "self.AreaCodeS = " + configget(self.conf, "fit", "areacode", "[1]")
 
+        
+        
+        exec("self.ColSimS  = " + configget(self.conf,"fit","ColSim","[1]"))
+        exec("self.ColMeasS = " + configget(self.conf,"fit","ColMeas","[1]"))
+        self.WarmUpSteps = int(configget(self.conf,"fit","WarmUpSteps","1"))
+        self.AreaMapName = configget(self.conf,"fit","areamap","wflow_catchment.map")
+        self.AreaMap = self.WF.readmap(os.path.join(self.caseName,self.AreaMapName))
+        exec("self.AreaCodeS = " + configget(self.conf,"fit","areacode","[1]"))
+        
         # Shift columns as the maps are one bases and the cols 0 based
         i = 0
         for a in self.ColSimS:
@@ -223,18 +232,8 @@ class wfmodel_fit_API:
         i = 0
         for j in self.pars:
             self.log.info("Saving parameter (initial values): " + self.calibpars[i])
-            strr_org = (
-                "self.WF.report(self.dynModelFw._userModel()."
-                + self.calibpars[i]
-                + ',"'
-                + self.caseName
-                + "/"
-                + self.runId
-                + "/"
-                + self.calibpars[i]
-                + '_org.map")'
-            )
-            exec strr_org
+            strr_org = "self.WF.report(self.dynModelFw._userModel()."  + self.calibpars[i] + ",\"" + self.caseName + "/"+self.runId +"/"+ self.calibpars[i] +"_org.map\")"
+            exec(strr_org)
             i = i + 1
 
     def run(self, pars):
@@ -272,40 +271,16 @@ class wfmodel_fit_API:
         # !!!!!!!!!! Not sure if the last version of the par is the best fit!!
         i = 0
         for j in pars:
-            self.log.log(45, "Saving parameter: " + self.calibpars[i])
-            exec "newmap = self.dynModelFw._userModel()." + self.calibpars[i]
-            newmap = self.WF.ifthenelse(
-                self.AreaMap == self.AreaCode, newmap * j, newmap
-            )
-            strr_new = (
-                "self.WF.report(newmap,"
-                + '"'
-                + self.caseName
-                + "/"
-                + self.runId
-                + "/"
-                + self.calibpars[i]
-                + "_"
-                + str(self.ColSim)
-                + "_"
-                + str(self.ColMeas)
-                + "_"
-                + str(self.AreaCode)
-                + '.map")'
-            )
+            self.log.log(45,"Saving parameter: " + self.calibpars[i])
+            exec("newmap = self.dynModelFw._userModel()." + self.calibpars[i])
+            newmap =  self.WF.ifthenelse(self.AreaMap == self.AreaCode,newmap * j, newmap)
+            strr_new = "self.WF.report(newmap," + "\""+ self.caseName + "/" + self.runId +"/" + self.calibpars[i] + "_" + str(self.ColSim) + "_" + str(self.ColMeas) + "_" + str(self.AreaCode)+ ".map\")"
             if savetoinput:
-                self.log.log(45, "Saving adjusted map to input!!")
-                str_save = (
-                    "self.WF.report(newmap,"
-                    + '"'
-                    + self.caseName
-                    + "/staticmaps/"
-                    + self.calibpars[i]
-                    + '.map")'
-                )
-                exec str_save
+                self.log.log(45,"Saving adjusted map to input!!")
+                str_save = "self.WF.report(newmap," + "\""+ self.caseName + "/staticmaps/" + self.calibpars[i] + ".map\")"
+                exec(str_save)
 
-            exec strr_new
+            exec(strr_new)
             i = i + 1
 
     def shutdown(self, pars):
@@ -353,9 +328,8 @@ def errfuncFIT(pars, qmeas, mimo, caseName, runId):
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args:
-        print msg
-    print __doc__
+    for msg in args: print(msg)
+    print(__doc__)
     sys.exit(0)
 
 
@@ -364,29 +338,29 @@ def printresults(pp, a, b, c, d, calibpars, fname, model):
     ff = open(fname, "w")
 
     i = 0
-    print >> ff, "Optimised parameter multiplication values:"
+    print("Optimised parameter multiplication values:", file=ff)
     if np.iterable(pp):
         for par in pp:
-            print >> ff, "Parameter " + calibpars[i] + " = " + str(par)
+            print("Parameter " + calibpars[i] + " = " + str(par), file=ff)
             i = i + 1
     else:
-        print >> ff, "Parameter " + calibpars[0] + " = " + str(pp)
-
-    print >> ff, "Estimate of the jacobian around the solution: " + str(a)
-    for dtc in b:
-        print >> ff, dtc + " = " + str(b[dtc])
-
-    if d in [1, 2, 3, 4]:
-        print >> ff, "A solution was found (" + str(d) + ")"
-        print >> ff, c
+        print("Parameter " + calibpars[0] + " = " + str(pp), file=ff)
+        
+    print("Estimate of the jacobian around the solution: " + str(a), file=ff)
+    for dtc in b:        
+        print(dtc + " = " + str(b[dtc]), file=ff)
+    
+    if d in [1,2,3,4]:
+        print("A solution was found (" + str(d) + ")", file=ff)    
+        print(c, file=ff)
     else:
-        print >> ff, "No solution was found (" + str(d) + ")"
-        print >> ff, c
-
-    print >> ff, "NS: " + str(model.NS)
-    print >> ff, "BIAS: " + str(model.BIAS)
-    print >> ff, "CORR: " + str(model.CORR)
-    print >> ff, "MABSE: " + str(model.MABSE)
+        print("No solution was found (" + str(d) + ")", file=ff)    
+        print(c, file=ff)
+    
+    print("NS: " +str(model.NS), file=ff)
+    print("BIAS: " +str(model.BIAS), file=ff)
+    print("CORR: " +str(model.CORR), file=ff)
+    print("MABSE: " +str(model.MABSE), file=ff)
     ff.close()
 
 

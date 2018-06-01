@@ -2,7 +2,7 @@
 import os
 import os.path
 import getopt
-import ConfigParser
+import configparser
 import sys
 
 """
@@ -49,7 +49,7 @@ os.system("gdal_rasterize -a ID -l " + nname + " " + shpfile + " subcatch.tif")
 os.system("gdal_translate -of PCRaster  subcatch.tif subcatch.map")
 
 for zz in pars:
-    print pars[zz]
+    print(pars[zz])
     os.system("gdal_translate -of GTiff nilmap.map " + pars[zz] + ".tif")
     os.system(
         "gdal_rasterize -a "

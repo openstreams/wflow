@@ -37,9 +37,8 @@ from wflow.wflow_adapt import *
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args:
-        print msg
-    print __doc__
+    for msg in args: print(msg)
+    print(__doc__)
     sys.exit(0)
 
 
@@ -206,7 +205,7 @@ class WflowModel(DynamicModel):
         except:
             self.logger.warn("Cannot load initial states, setting to default")
             for s in self.stateVariables():
-                exec "self." + s + " = cover(1.0)"
+                exec("self." + s + " = cover(1.0)")
 
     def default_summarymaps(self):
         """
@@ -232,27 +231,17 @@ class WflowModel(DynamicModel):
         """
         HRU 1
         """
-        print "HRU 1"
-        self.TSoil[name] = (
-            self.TSoil
-            + 0.1125
-            * (self.Temperature - self.TSoil)
-            * self.timestepsecs
-            / self.basetimestep
-        )
+        print("HRU 1")
+        self.TSoil[name] = self.TSoil + 0.1125 * (self.Temperature - self.TSoil) * self.timestepsecs/self.basetimestep
 
-    def unit2(self, name):
+
+    def unit2(self,name):
         """
         HRU 2
         """
-        print "HRU 2"
-        self.TSoil[name] = (
-            self.TSoil
-            + 0.1125
-            * (self.Temperature - self.TSoil)
-            * self.timestepsecs
-            / self.basetimestep
-        )
+        print("HRU 2")
+        self.TSoil[name] = self.TSoil + 0.1125 * (self.Temperature - self.TSoil) * self.timestepsecs/self.basetimestep
+
 
     def dynamic(self):
         """

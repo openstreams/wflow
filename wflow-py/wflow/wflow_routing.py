@@ -69,7 +69,7 @@ import getopt
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_funcs import *
 from wflow.wflow_adapt import *
-import ConfigParser
+import configparser
 
 
 wflow = "wflow_routing: "
@@ -79,9 +79,8 @@ updateCols = []
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args:
-        print msg
-    print __doc__
+    for msg in args: print(msg)
+    print(__doc__)
     sys.exit(0)
 
 
@@ -1034,34 +1033,27 @@ def main(argv=None):
     ## Process command-line options                                        #
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, "F:L:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:g:")
-    except getopt.error, msg:
+        opts, args = getopt.getopt(argv, 'F:L:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:g:')
+    except getopt.error as msg:
         pcrut.usage(msg)
 
     for o, a in opts:
-        if o == "-C":
-            caseName = a
-        if o == "-R":
-            runId = a
-        if o == "-c":
-            configfile = a
-        if o == "-L":
-            LogFileName = a
-        if o == "-s":
-            timestepsecs = int(a)
-        if o == "-h":
-            usage()
-        if o == "-f":
-            _NoOverWrite = 0
-        if o == "-l":
-            exec "loglevel = logging." + a
+        if o == '-C': caseName = a
+        if o == '-R': runId = a
+        if o == '-c': configfile = a
+        if o == '-L': LogFileName = a
+        if o == '-s': timestepsecs = int(a)
+        if o == '-h': usage()
+        if o == '-f': _NoOverWrite = 0
+        if o == '-l': exec("loglevel = logging." + a)
 
-    starttime = dt.datetime(1990, 01, 01)
+
+
+    starttime = dt.datetime(1990,0o1,0o1)
 
     if _lastTimeStep < _firstTimeStep:
-        print "The starttimestep (" + str(
-            _firstTimeStep
-        ) + ") is smaller than the last timestep (" + str(_lastTimeStep) + ")"
+        print("The starttimestep (" + str(_firstTimeStep) + ") is smaller than the last timestep (" + str(
+            _lastTimeStep) + ")")
         usage()
 
     myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile)
@@ -1076,26 +1068,19 @@ def main(argv=None):
     )
 
     for o, a in opts:
-        if o == "-X":
-            configset(myModel.config, "model", "OverWriteInit", "1", overwrite=True)
-        if o == "-I":
-            configset(myModel.config, "run", "reinit", "1", overwrite=True)
-        if o == "-i":
-            configset(myModel.config, "model", "intbl", a, overwrite=True)
-        if o == "-s":
-            configset(myModel.config, "model", "timestepsecs", a, overwrite=True)
-        if o == "-x":
-            configset(myModel.config, "model", "sCatch", a, overwrite=True)
-        if o == "-c":
-            configset(myModel.config, "model", "configfile", a, overwrite=True)
-        if o == "-g":
-            configset(myModel.config, "model", "instate", a, overwrite=True)
+        if o == '-X': configset(myModel.config, 'model', 'OverWriteInit', '1', overwrite=True)
+        if o == '-I': configset(myModel.config, 'run', 'reinit', '1', overwrite=True)
+        if o == '-i': configset(myModel.config, 'model', 'intbl', a, overwrite=True)
+        if o == '-s': configset(myModel.config, 'model', 'timestepsecs', a, overwrite=True)
+        if o == '-x': configset(myModel.config, 'model', 'sCatch', a, overwrite=True)
+        if o == '-c': configset(myModel.config, 'model', 'configfile', a, overwrite=True)
+        if o == '-g': configset(myModel.config,'model','instate',a,overwrite=True)
 
-        if o == "-U":
-            configset(myModel.config, "model", "updateFile", a, overwrite=True)
-            configset(myModel.config, "model", "updating", "1", overwrite=True)
-        if o == "-u":
-            exec "zz =" + a
+        if o == '-U':
+            configset(myModel.config, 'model', 'updateFile', a, overwrite=True)
+            configset(myModel.config, 'model', 'updating', "1", overwrite=True)
+        if o == '-u':
+            exec("zz =" + a)
             updateCols = zz
         if o == "-P":
             left = a.split("=")[0]

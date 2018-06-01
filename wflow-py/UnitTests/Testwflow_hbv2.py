@@ -19,17 +19,15 @@ class MyTest(unittest.TestCase):
 
         # set runid, clonemap and casename. Also define the ini file
         runId = "unittest"
-        configfile = "wflow_hbv_hr.ini"
-        wflow_cloneMap = "wflow_catchment.map"
-        caseName = "wflow_hbv"
-        starttime = starttime = datetime.datetime(1990, 01, 01)
+        configfile="wflow_hbv_hr.ini"
+        wflow_cloneMap = 'wflow_catchment.map'
+        caseName="wflow_hbv"
+        starttime = starttime = datetime.datetime(1990,0o1,0o1)
 
-        myModel = wf.WflowModel(wflow_cloneMap, caseName, runId, configfile)
-        # initialise the framework
-        dynModelFw = wf.wf_DynamicFramework(
-            myModel, stopTime, firstTimestep=startTime, datetimestart=starttime
-        )
-        print dynModelFw.DT
+        myModel = wf.WflowModel(wflow_cloneMap, caseName,runId,configfile)
+         # initialise the framework
+        dynModelFw = wf.wf_DynamicFramework(myModel, stopTime,firstTimestep=startTime,datetimestart=starttime)
+        print(dynModelFw.DT)
 
         # Load model config from files and check directory structure
         dynModelFw.createRunId(NoOverWrite=False, level=wf.logging.DEBUG)
@@ -56,9 +54,14 @@ class MyTest(unittest.TestCase):
 
         # nore read the csv results acn check of they match the first run
         # Sum should be approx c 4.569673676
-        my_data = wf.genfromtxt(
-            os.path.join(caseName, runId, "watbal.csv"), delimiter=","
-        )
+        my_data = wf.genfromtxt(os.path.join(caseName,runId,"watbal.csv"), delimiter=',')
+
+        print("Checking  water budget ....")
+        self.assertAlmostEqual( 0.0013141632080078125,my_data[:,2].sum(),places=4)
+
+        my_data = wf.genfromtxt(os.path.join(caseName,runId,"run.csv"), delimiter=',')
+        print("Checking  discharge ....")
+        self.assertAlmostEqual(1837.7918265024821 ,my_data[:,2].mean(),places=4)
 
         print ("Checking  water budget ....")
         self.assertAlmostEquals(0.0013141632080078125, my_data[:, 2].sum(), places=4)

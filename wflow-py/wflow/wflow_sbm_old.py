@@ -98,7 +98,7 @@ import getopt
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_funcs import *
 from wflow.wflow_adapt import *
-import ConfigParser
+import configparser
 
 
 wflow = "wflow_sbm: "
@@ -109,9 +109,8 @@ updateCols = []
 def usage(*args):
     sys.stdout = sys.stderr
     """Way"""
-    for msg in args:
-        print msg
-    print __doc__
+    for msg in args: print(msg)
+    print(__doc__)
     sys.exit(0)
 
 
@@ -2161,38 +2160,28 @@ def main(argv=None):
     ## Process command-line options                                        #
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, "XF:L:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:")
-    except getopt.error, msg:
+        opts, args = getopt.getopt(argv, 'XF:L:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:')
+    except getopt.error as msg:
         pcrut.usage(msg)
 
     for o, a in opts:
-        if o == "-C":
-            caseName = a
-        if o == "-R":
-            runId = a
-        if o == "-c":
-            configfile = a
-        if o == "-L":
-            LogFileName = a
-        if o == "-s":
-            timestepsecs = int(a)
-        if o == "-T":
-            _lastTimeStep = int(a)
-        if o == "-S":
-            _firstTimeStep = int(a)
-        if o == "-h":
-            usage()
-        if o == "-f":
-            _NoOverWrite = 0
-        if o == "-l":
-            exec "loglevel = logging." + a
+        if o == '-C': caseName = a
+        if o == '-R': runId = a
+        if o == '-c': configfile = a
+        if o == '-L': LogFileName = a
+        if o == '-s': timestepsecs = int(a)
+        if o == '-T': _lastTimeStep = int(a)
+        if o == '-S': _firstTimeStep = int(a)
+        if o == '-h': usage()
+        if o == '-f': _NoOverWrite = 0
+        if o == '-l': exec("loglevel = logging." + a)
 
-    starttime = dt.datetime(1990, 01, 01)
 
+    starttime = dt.datetime(1990,0o1,0o1)
+        
     if _lastTimeStep < _firstTimeStep:
-        print "The starttimestep (" + str(
-            _firstTimeStep
-        ) + ") is smaller than the last timestep (" + str(_lastTimeStep) + ")"
+        print("The starttimestep (" + str(_firstTimeStep) + ") is smaller than the last timestep (" + str(
+            _lastTimeStep) + ")")
         usage()
 
     myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile)
@@ -2241,7 +2230,7 @@ def main(argv=None):
             configset(myModel.config, "model", "updating", "1", overwrite=True)
         if o == "-u":
             zz = []
-            exec "zz =" + a
+            exec("zz =" + a)
             updateCols = zz
         if o == "-E":
             configset(myModel.config, "model", "reInfilt", "1", overwrite=True)

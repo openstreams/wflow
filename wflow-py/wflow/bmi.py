@@ -29,12 +29,10 @@ class BmiGridType(object):
     UNSTRUCTURED = 4
 
 
-class Bmi(object):
+class Bmi(object, metaclass=ABCMeta):
     """
     Interface (abstract base class) for a model that implements the CSDMS BMI (Basic Model Interface).
     """
-
-    __metaclass__ = ABCMeta
 
     """
     Model Control Functions

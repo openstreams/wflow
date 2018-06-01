@@ -11,8 +11,7 @@ def OpenDoc(url):
 
 
 def notimplemented():
-    print "Not implemented yet..."
-
+	print("Not implemented yet...")
 
 name = "Web Documentation"
 tabName = "Wflow-Tools"

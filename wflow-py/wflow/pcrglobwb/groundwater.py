@@ -33,8 +33,8 @@ import logging
 
 logger = logging.getLogger("wflow_pcrglobwb")
 
-import virtualOS as vos
-from ncConverter import *
+from . import virtualOS as vos
+from .ncConverter import *
 
 from wflow.wf_DynamicFramework import configsection
 from wflow.wf_DynamicFramework import configget
@@ -229,10 +229,8 @@ class Groundwater(object):
                 )
 
         # calculate the reccession coefficient based on the given parameters
-        if (
-            isinstance(self.recessionCoeff, types.NoneType)
-            and "recessionCoeff" not in iniItems._sections["groundwaterOptions"]
-        ):
+        if isinstance(self.recessionCoeff,type(None)) and\
+                          'recessionCoeff' not in iniItems._sections['groundwaterOptions']:
 
             msg = "Calculating the groundwater linear reccesion coefficient based on the given parameters."
             logger.info(msg)

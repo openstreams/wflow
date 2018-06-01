@@ -29,7 +29,7 @@ import wflow.wflow_lib as tr
 import os
 import os.path
 import getopt
-import ConfigParser
+import configparser
 import sys
 import numpy as np
 
@@ -38,9 +38,8 @@ tr.Verbose = 1
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args:
-        print msg
-    print __doc__
+    for msg in args: print(msg)
+    print(__doc__)
     sys.exit(0)
 
 
@@ -50,20 +49,20 @@ def configget(config, section, var, default):
     try:
         ret = config.get(section, var)
     except:
-        print "returning default (" + default + ") for " + section + ":" + var
+        print("returning default (" + default + ") for " + section + ":" + var)
         ret = default
 
     return ret
 
 
 def OpenConf(fn):
-    config = ConfigParser.SafeConfigParser()
+    config = configparser.SafeConfigParser()
     config.optionxform = str
 
     if os.path.exists(fn):
         config.read(fn)
     else:
-        print "Cannot open config file: " + fn
+        print("Cannot open config file: " + fn)
         sys.exit(1)
 
     return config
@@ -200,8 +199,8 @@ def main():
     inifile = "wflow_prepare.ini"
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "W:hI:f")
-    except getopt.error, msg:
+        opts, args = getopt.getopt(sys.argv[1:], 'W:hI:f')
+    except getopt.error as msg:
         usage(msg)
 
     for o, a in opts:
@@ -237,7 +236,7 @@ def main():
         Xlr = float(config.get("settings", "Xlr"))
         Ylr = float(config.get("settings", "Ylr"))
     except:
-        print "Xul, Xul, Xlr and  Ylr are required entries in the ini file"
+        print("Xul, Xul, Xlr and  Ylr are required entries in the ini file")
         sys.exit(1)
 
     csize = float(configget(config, "settings", "cellsize", "1"))
@@ -245,7 +244,7 @@ def main():
         gauges_x = config.get("settings", "gauges_x")
         gauges_y = config.get("settings", "gauges_y")
     except:
-        print "gauges_x and  gauges_y are required entries in the ini file"
+        print("gauges_x and  gauges_y are required entries in the ini file")
         sys.exit(1)
 
     strRiver = int(configget(config, "settings", "riverorder_step2", "4"))
@@ -310,9 +309,9 @@ def main():
     try:
         lumap = config.get("files", "landuse")
     except:
-        print "no landuse map...creating uniform map"
-        clone = tr.readmap(step2dir + "/cutout.map")
-        tr.report(tr.nominal(clone), step2dir + "/wflow_landuse.map")
+        print("no landuse map...creating uniform map")
+        clone=tr.readmap(step2dir + "/cutout.map")
+        tr.report(tr.nominal(clone),step2dir + "/wflow_landuse.map")
     else:
         os.system(
             "resample --clone "
@@ -327,9 +326,9 @@ def main():
     try:
         soilmap = config.get("files", "soil")
     except:
-        print "no soil map..., creating uniform map"
-        clone = tr.readmap(step2dir + "/cutout.map")
-        tr.report(tr.nominal(clone), step2dir + "/wflow_soil.map")
+        print("no soil map..., creating uniform map")
+        clone=tr.readmap(step2dir + "/cutout.map")
+        tr.report(tr.nominal(clone),step2dir + "/wflow_soil.map")  
     else:
         os.system(
             "resample --clone "
@@ -356,19 +355,13 @@ def main():
     try:
         rivshp = config.get("files", "river")
     except:
-        print "no river file specified"
+        print("no river file specified")
         riverburn = tr.readmap(step2dir + "/wflow_riverburnin.map")
     else:
-        print "river file speficied....."
-        # rivshpattr = config.get("files","riverattr")
-        tr.report(dem * 0.0, step2dir + "/nilmap.map")
-        thestr = (
-            "gdal_translate -of GTiff "
-            + step2dir
-            + "/nilmap.map "
-            + step2dir
-            + "/wflow_riverburnin.tif"
-        )
+        print("river file speficied.....")
+        #rivshpattr = config.get("files","riverattr")
+        tr.report(dem * 0.0,step2dir + "/nilmap.map")
+        thestr = "gdal_translate -of GTiff " + step2dir + "/nilmap.map " + step2dir + "/wflow_riverburnin.tif"
         os.system(thestr)
         rivshpattr = os.path.splitext(os.path.basename(rivshp))[0]
         os.system(
@@ -396,19 +389,15 @@ def main():
     # Now setup a very high wall around the catchment that is scale
     # based on the distance to the catchment so that it slopes away from the
     # catchment
-    if lddmethod != "river":
-        print "Burning in highres-river ..."
-        disttocatch = tr.spread(tr.nominal(catchcut), 0.0, 1.0)
-        demmax = tr.ifthenelse(
-            tr.scalar(catchcut) >= 1.0,
-            demmax,
-            demmax + (tr.celllength() * 100.0) / disttocatch,
-        )
-        tr.setglobaloption("unitcell")
-        # demregional=tr.windowaverage(demmin,100)
-        demburn = tr.cover(tr.ifthen(tr.boolean(riverburn), demmin - 100.0), demmax)
+    if lddmethod != 'river':
+        print("Burning in highres-river ...")
+        disttocatch = tr.spread(tr.nominal(catchcut),0.0,1.0)
+        demmax = tr.ifthenelse(tr.scalar(catchcut) >=1.0, demmax, demmax + (tr.celllength() * 100.0) /disttocatch)
+        tr.setglobaloption("unitcell")     
+        #demregional=tr.windowaverage(demmin,100)
+        demburn = tr.cover(tr.ifthen(tr.boolean(riverburn), demmin -100.0) ,demmax)
     else:
-        print "using average dem.."
+        print("using average dem..")
         demburn = dem
 
     ldd = tr.lddcreate_save(
@@ -435,19 +424,22 @@ def main():
     tr.report(river, step2dir + "/wflow_river.map")
 
     # make subcatchments
-    # os.system("col2map --clone " + step2dir + "/cutout.map gauges.col " + step2dir + "/wflow_gauges.map")
-    exec "X=np.array(" + gauges_x + ")"
-    exec "Y=np.array(" + gauges_y + ")"
+    #os.system("col2map --clone " + step2dir + "/cutout.map gauges.col " + step2dir + "/wflow_gauges.map")
+    exec("X=np.array(" + gauges_x + ")")
+    exec("Y=np.array(" + gauges_y + ")")
 
     tr.setglobaloption("unittrue")
 
-    outlmap = tr.points_to_map(dem, X, Y, 0.5)
-    tr.report(outlmap, step2dir + "/wflow_gauges_.map")
-
-    if snapgaugestoriver:
-        print "Snapping gauges to river"
-        tr.report(outlmap, step2dir + "/wflow_orggauges.map")
-        outlmap = tr.snaptomap(outlmap, river)
+    outlmap = tr.points_to_map(dem,X,Y,0.5)
+    tr.report(outlmap,step2dir + "/wflow_gauges_.map")
+      
+    if snapgaugestoriver:    
+        print("Snapping gauges to river")
+        tr.report(outlmap,step2dir + "/wflow_orggauges.map")
+        outlmap= tr.snaptomap(outlmap,river)
+        
+    outlmap = tr.ifthen(outlmap > 0, outlmap)    
+    tr.report(outlmap,step2dir + "/wflow_gauges.map")
 
     outlmap = tr.ifthen(outlmap > 0, outlmap)
     tr.report(outlmap, step2dir + "/wflow_gauges.map")

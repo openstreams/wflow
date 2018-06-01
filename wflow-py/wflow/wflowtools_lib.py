@@ -9,7 +9,7 @@ import os
 import copy
 import sys
 from subprocess import call
-import ConfigParser
+import configparser
 import logging
 import logging.handlers
 
@@ -48,7 +48,7 @@ def setlogger(logfilename, logReference, verbose=True):
         logger.debug("File logging to " + logfilename)
         return logger, ch
     except IOError:
-        print "ERROR: Failed to initialize logger with logfile: " + logfilename
+        print("ERROR: Failed to initialize logger with logfile: " + logfilename)
         sys.exit(1)
 
 
@@ -67,13 +67,13 @@ def close_with_error(logger, ch, msg):
 
 
 def OpenConf(fn):
-    config = ConfigParser.SafeConfigParser()
+    config = configparser.SafeConfigParser()
     config.optionxform = str
 
     if os.path.exists(fn):
         config.read(fn)
     else:
-        print "Cannot open config file: " + fn
+        print("Cannot open config file: " + fn)
         sys.exit(1)
 
     return config
@@ -192,7 +192,7 @@ def DeleteShapes(shapes):
     for shape in shapelist:
         if os.path.exists(shape):
             Driver.DeleteDataSource(shape)
-            print "shapefile deleted: " + shape
+            print("shapefile deleted: " + shape)
 
 
 def MergeShapes(shapesin, Layer):
@@ -221,7 +221,7 @@ def readMap(fileName, fileFormat):
     mapFormat.Register()
     ds = gdal.Open(fileName)
     if ds is None:
-        print "Could not open " + fileName + ". Something went wrong!! Shutting down"
+        print('Could not open ' + fileName + '. Something went wrong!! Shutting down')
         sys.exit(1)
         # Retrieve geoTransform info
     geotrans = ds.GetGeoTransform()
@@ -378,7 +378,7 @@ def ReachOrder(SHP, EPSG, toll, storedir):
         EndCoord.append([geometry.GetX(points - 1), geometry.GetY(points - 1)])
     EndCoord_np = np.array(EndCoord)
     reaches = copy.deepcopy(i) + 1
-    ReachIDs = range(reaches)
+    ReachIDs = list(range(reaches))
     ReachOrders = np.array([None] * len(ReachIDs))
 
     order = 1
@@ -426,7 +426,7 @@ def ReachOrder(SHP, EPSG, toll, storedir):
             order += 1
 
     if None in list(ReachOrders):
-        print "Conversion of river to orders failed. Try to use a smaller tollerance"
+        print("Conversion of river to orders failed. Try to use a smaller tollerance")
         # sys.exit(1)
 
     LYR.ResetReading()
@@ -484,14 +484,9 @@ def ReverseMap(MAP):
     )
     for i in range(MAX + 1):
         if i > 0:
-            print i
-            REV_MAP = pcr.cover(
-                pcr.ifthen(
-                    pcr.ordinal(MAP) == pcr.ordinal(i),
-                    pcr.ordinal(pcr.scalar(MAX + 1) - pcr.scalar(i)),
-                ),
-                REV_MAP,
-            )
+            print(i)
+            REV_MAP = pcr.cover(pcr.ifthen(pcr.ordinal(MAP) == pcr.ordinal(
+                i), pcr.ordinal(pcr.scalar(MAX + 1) - pcr.scalar(i))), REV_MAP)
     REV_MAP = pcr.cover(REV_MAP, pcr.ordinal(MAP))
     return REV_MAP
 
@@ -505,7 +500,7 @@ def DeleteList(itemlist, logger=logging):
 def Tiff2Point(TIFF):
     DS = gdal.Open(TIFF, GA_ReadOnly)
     if DS is None:
-        print "Could not open " + fn
+        print('Could not open ' + fn)
         sys.exit(1)
 
     cols = DS.RasterXSize
@@ -564,7 +559,7 @@ def Tiff2Point(TIFF):
 def GridDef(TIFF, XML):
     DS = gdal.Open(TIFF, GA_ReadOnly)
     if DS is None:
-        print "Could not open " + fn
+        print('Could not open ' + fn)
         sys.exit(1)
 
     cols = DS.RasterXSize
@@ -612,7 +607,7 @@ def PCR_river2Shape(
     xi, yi = np.meshgrid(x, y)
 
     # mesh of surrounding pixels
-    xi_window, yi_window = np.meshgrid(range(-1, 2), range(-1, 2))
+    xi_window, yi_window = np.meshgrid(list(range(-1, 2)), list(range(-1, 2)))
     # mesh of ldd grid values
     ldd_values = np.array([[7, 8, 9], [4, 5, 6], [1, 2, 3]])
     [iiy, iix] = np.where(riversid > 0)

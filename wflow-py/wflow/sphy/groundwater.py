@@ -1,4 +1,4 @@
-print "groundwater module imported"
+print('groundwater module imported')
 
 # -Function to calculate groundwater recharge
 def GroundWaterRecharge(pcr, deltagw, gwrecharge, subperc, glacperc):

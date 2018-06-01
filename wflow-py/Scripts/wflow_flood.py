@@ -342,7 +342,7 @@ def main():
     (options, args) = parser.parse_args()
 
     if not os.path.exists(options.inifile):
-        print "path to ini file cannot be found"
+        print('path to ini file cannot be found')
         sys.exit(1)
     options.dest_path = os.path.abspath(options.dest_path)
 
@@ -975,28 +975,19 @@ def main():
                         options.hand_file_prefix, hand_strahler
                     )
                 ds_hand, rasterband_hand = inun_lib.get_gdal_rasterband(hand_file)
-                hand = rasterband_hand.ReadAsArray(
-                    x_start - x_overlap_min,
-                    y_start - y_overlap_min,
-                    (x_end + x_overlap_max) - (x_start - x_overlap_min),
-                    (y_end + y_overlap_max) - (y_start - y_overlap_min),
-                )
-                print (
-                    "len x-ax: {:d} len y-ax {:d} x-shape {:d} y-shape {:d}".format(
-                        len(x_tile_ax), len(y_tile_ax), hand.shape[1], hand.shape[0]
-                    )
-                )
+                hand = rasterband_hand.ReadAsArray(x_start - x_overlap_min,
+                                             y_start - y_overlap_min,
+                                             (x_end + x_overlap_max) - (x_start - x_overlap_min),
+                                             (y_end + y_overlap_max) - (y_start - y_overlap_min)
+                                             )
+                print(('len x-ax: {:d} len y-ax {:d} x-shape {:d} y-shape {:d}'.format(len(x_tile_ax), len(y_tile_ax), hand.shape[1], hand.shape[0])))
 
-                inun_lib.gdal_writemap(
-                    hand_temp_file,
-                    "PCRaster",
-                    x_tile_ax,
-                    y_tile_ax,
-                    hand,
-                    rasterband_hand.GetNoDataValue(),
-                    gdal_type=gdal.GDT_Float32,
-                    logging=logger,
-                )
+                inun_lib.gdal_writemap(hand_temp_file, 'PCRaster',
+                          x_tile_ax,
+                          y_tile_ax,
+                          hand, rasterband_hand.GetNoDataValue(),
+                          gdal_type=gdal.GDT_Float32,
+                          logging=logger)
 
                 hand_pcr = pcr.readmap(hand_temp_file)
 

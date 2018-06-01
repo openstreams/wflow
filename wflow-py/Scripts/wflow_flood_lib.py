@@ -15,7 +15,7 @@ $Keywords: $
 
 import sys
 import os
-import ConfigParser
+import configparser
 import logging
 import logging.handlers
 
@@ -55,7 +55,7 @@ def setlogger(logfilename, logReference, verbose=True):
         logger.debug("File logging to " + logfilename)
         return logger, ch
     except IOError:
-        print "ERROR: Failed to initialize logger with logfile: " + logfilename
+        print("ERROR: Failed to initialize logger with logfile: " + logfilename)
         sys.exit(1)
 
 
@@ -74,13 +74,13 @@ def close_with_error(logger, ch, msg):
 
 
 def open_conf(fn):
-    config = ConfigParser.SafeConfigParser()
+    config = configparser.SafeConfigParser()
     config.optionxform = str
 
     if os.path.exists(fn):
         config.read(fn)
     else:
-        print "Cannot open config file: " + fn
+        print("Cannot open config file: " + fn)
         sys.exit(1)
 
     return config

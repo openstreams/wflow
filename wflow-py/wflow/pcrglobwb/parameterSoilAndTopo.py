@@ -25,7 +25,7 @@
 import os
 
 import pcraster as pcr
-import virtualOS as vos
+from . import virtualOS as vos
 
 from wflow.wflow_lib import configsection
 from wflow.wflow_lib import configget

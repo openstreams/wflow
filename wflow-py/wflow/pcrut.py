@@ -75,9 +75,8 @@ def detRealCellLength(ZeroMap, sizeinmetres):
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args:
-        print msg
-    print __doc__
+    for msg in args: print(msg)
+    print(__doc__)
     sys.exit(0)
 
 
@@ -110,7 +109,7 @@ def setlogger(logfilename, loggername, thelevel=logging.INFO):
         logger.debug("File logging to " + logfilename)
         return logger
     except IOError:
-        print "ERROR: Failed to initialize logger with logfile: " + logfilename
+        print("ERROR: Failed to initialize logger with logfile: " + logfilename)
         sys.exit(2)
 
 
@@ -163,8 +162,8 @@ def readtss(nname):
             # dumm[:] = 1E-31
             # return numpy.vstack((dumm,mat[1:])), head
     else:
-        print nname + " does not exists."
-
+        print(nname + " does not exists.")
+    
     return
 
 
@@ -233,19 +232,19 @@ def tableToMapSparse(step, table, map):
     fname_tbl = table + str(step) + ".tbl"
 
     if os.path.exists(fname_map):
-        print "found: " + fname_map
+        print("found: " + fname_map)
         tableToMapSparse._tableToMap_LastMap[map] = step
 
     if os.path.exists(fname_tbl):
-        print "found: " + fname_tbl
+        print("found: " + fname_tbl)
         tableToMapSparse._tableToMap_LastTbl[table] = step
 
-    if tableToMapSparse._tableToMap_LastTbl.has_key(table) == False:
+    if (table in tableToMapSparse._tableToMap_LastTbl) == False:
         fname_tbl = table + ".tbl"
     else:
         fname_tbl = table + str(tableToMapSparse._tableToMap_LastTbl[table]) + ".tbl"
 
-    if tableToMapSparse._tableToMap_LastMap.has_key(map) == False:
+    if (map in tableToMapSparse._tableToMap_LastMap) == False:
         fname_map = map + ".map"
     else:
         fname_map = map + str(tableToMapSparse._tableToMap_LastMap[map]) + ".map"
