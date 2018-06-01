@@ -22,7 +22,7 @@ class MyTest(unittest.TestCase):
         configfile="wflow_hbv_hr.ini"
         wflow_cloneMap = 'wflow_catchment.map'
         caseName="wflow_hbv"
-        starttime = starttime = datetime.datetime(1990,0o1,0o1)
+        starttime = starttime = datetime.datetime(1990,1,1)
 
         myModel = wf.WflowModel(wflow_cloneMap, caseName,runId,configfile)
          # initialise the framework

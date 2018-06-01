@@ -54,7 +54,7 @@ class runDateTimeInfo:
     an interval base method (each model timestep is the interval between two input timesteps)
 
     """
-    def __init__(self, datetimestart=dt.datetime(1990, 0o1, 0o1),datetimeend=dt.datetime(1990, 0o1, 0o5),
+    def __init__(self, datetimestart=dt.datetime(1990, 1, 1),datetimeend=dt.datetime(1990, 1, 5),
                  timestepsecs=86400,mode='steps'):
         self.runStartTime = datetimestart
         self.runEndTime = datetimeend
@@ -501,7 +501,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     # \param firstTimestep sets the starting timestep of the model (optional,
     #        default is 1)
     #
-    def __init__(self, userModel, lastTimeStep=0, firstTimestep=1, datetimestart=dt.datetime(1990, 0o1, 0o1),
+    def __init__(self, userModel, lastTimeStep=0, firstTimestep=1, datetimestart=dt.datetime(1990, 1, 1),
                  timestepsecs=86400):
         frameworkBase.FrameworkBase.__init__(self)
 

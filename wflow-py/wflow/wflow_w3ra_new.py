@@ -1026,7 +1026,7 @@ def main(argv=None):
         usage()
 
 
-    starttime = dt.datetime(1990,0o1,0o1)
+    starttime = dt.datetime(1990,1,1)
 
     if _lastTimeStep < _firstTimeStep:
         print("The starttimestep (" + str(_firstTimeStep) + ") is smaller than the last timestep (" + str(
