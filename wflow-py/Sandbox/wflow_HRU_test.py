@@ -203,7 +203,7 @@ class WflowModel(DynamicModel):
         try:
             self.wf_resume(self.Dir + "/instate/")
         except:
-            self.logger.warn("Cannot load initial states, setting to default")
+            self.logger.warning("Cannot load initial states, setting to default")
             for s in self.stateVariables():
                 exec("self." + s + " = cover(1.0)")
 

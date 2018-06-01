@@ -189,12 +189,7 @@ class WflowModel(DynamicModel):
                 rest = cover(lookupscalar(pathtotbl, landuse, subcatch, soil), default)
                 self.logger.info("Creating map from table: " + pathtotbl)
             else:
-                self.logger.warn(
-                    "tbl file not found ("
-                    + pathtotbl
-                    + ") returning default value: "
-                    + str(default)
-                )
+                self.logger.warning("tbl file not found (" + pathtotbl + ") returning default value: " + str(default))
                 rest = scalar(default)
 
         return rest

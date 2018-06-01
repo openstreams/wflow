@@ -243,26 +243,17 @@ class WflowModel(DynamicModel):
             self.logger.info("reading map parameter file: " + mapname)
             rest = cover(readmap(mapname), default)
         else:
-            if os.path.isfile(pathtotbl):
-                rest = lookupscalar(pathtotbl, landuse, subcatch, soil)  #
-                self.logger.info("Creating map from table: " + pathtotbl)
-            else:
-                self.logger.warn(
-                    "tbl file not found ("
-                    + pathtotbl
-                    + ") returning default value: "
-                    + str(default)
-                )
-                rest = scalar(default)
-
-        return rest
-
-    def suspend(self):
-
-        self.logger.info("Saving initial conditions...")
-        self.wf_suspend(self.SaveDir + "/outstate/")
-
-        if self.OverWriteInit:
+            self.logger.warning("tbl file not found (" + pathtotbl + ") returning default value: " + str(default))
+            rest = scalar(default)
+        
+    return rest
+    
+  def suspend(self):
+        
+      self.logger.info("Saving initial conditions...")
+      self.wf_suspend(self.SaveDir + "/outstate/")
+   
+      if self.OverWriteInit:            
             self.logger.info("Saving initial conditions over start conditions...")
             self.wf_suspend(self.SaveDir + "/instate/")
 
