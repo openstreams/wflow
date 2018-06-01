@@ -126,15 +126,15 @@ class Interpol_Obj(object):
     def __init__(self, name):
         self.data = name
         self.name = name[-1]
-        self.filename = self.name + ".tmp"
-
-        temptablefile = open(self.filename, "w")
-        index = range(0, len(self.data) - 1)
+        self.filename = self.name + ".tmp"        
+        
+        temptablefile = open(self.filename, 'w')
+        index = list(range(0, len(self.data)-1))
         for i in index:
             if i < (len(self.data) - 1):
                 if i >= i + 1:
-                    print "x values of lookuplinear table not sorted in strictly ascending order..."
-            if i // 2. - i / 2. <> 0.:
+                    print("x values of lookuplinear table not sorted in strictly ascending order...")
+            if i//2. - i/2. != 0.:
                 string = str(self.data[i]) + " "
             else:
                 string = "\n" + str(self.data[i]) + " "
@@ -167,9 +167,8 @@ def supplyCurrentTime(self):
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args:
-        print msg
-    print __doc__
+    for msg in args: print(msg)
+    print(__doc__)
     sys.exit(0)
 
 
@@ -542,7 +541,7 @@ class WflowModel(DynamicModel):
         if self.reinit == 1:
             self.logger.info("Setting initial conditions to default")
             for s in self.stateVariables():
-                exec "self." + s + " = cover(0.0)"
+                exec("self." + s + " = cover(0.0)")
         else:
             self.wf_resume(self.Dir + "/instate/")
 
@@ -624,28 +623,26 @@ class WflowModel(DynamicModel):
         if self.CropStartDOY > -1:
 
             if self.HarvestDAP > 0:
-                HarvNow = DOY >= (self.CropStartDOY + self.HarvestDAP)
-                print "Warning: harvest date read from ini file, not from Crop Profile map..."
-            elif self.HarvestDAP == 0:
-                HarvNow = Not_Finished == False
-                print "Harvest date not specified; crop harvest at crop maturity"
-            else:
-                print "Crop harvest not initialized, found strange values in ini file... CTRL + C to exit..."
+                HarvNow             = DOY >=  (self.CropStartDOY + self.HarvestDAP)
+                print("Warning: harvest date read from ini file, not from Crop Profile map...")
+            elif  self.HarvestDAP == 0:
+                HarvNow            = Not_Finished == False
+                print("Harvest date not specified; crop harvest at crop maturity")
+            else: 
+                print("Crop harvest not initialized, found strange values in ini file... CTRL + C to exit...")
                 time.sleep(100)
-            CropHarvNow = HarvNow & self.ricemask_BOOL
-
-            # Initializing crop growth, optionally from a single start day (CropStartDOY in the ini file),
-            # but normally from a crop profile forcing variable.
-            StartNow = DOY == self.CropStartDOY
-            CropStartNow = StartNow & self.ricemask_BOOL
-            CropStartNow_scalar = scalar(CropStartNow)
-            Started = self.STARTED > 0
-            CropStarted = Started & self.ricemask_BOOL
-            self.STARTED = (
-                self.STARTED + CropStartNow_scalar + scalar(CropStarted)
-            ) * ifthenelse(CropHarvNow, scalar(0.), 1.)
-            print "Warning: using start date from ini file, not read from Crop Profile..."
-
+            CropHarvNow            = HarvNow & self.ricemask_BOOL    
+            
+          # Initializing crop growth, optionally from a single start day (CropStartDOY in the ini file),
+          # but normally from a crop profile forcing variable.
+            StartNow           = DOY == self.CropStartDOY
+            CropStartNow       = StartNow & self.ricemask_BOOL
+            CropStartNow_scalar= scalar(CropStartNow)
+            Started            = self.STARTED > 0
+            CropStarted        = Started & self.ricemask_BOOL
+            self.STARTED       = (self.STARTED + CropStartNow_scalar + scalar(CropStarted)) * ifthenelse(CropHarvNow, scalar(0.), 1.) 
+            print("Warning: using start date from ini file, not read from Crop Profile...")
+                
         elif self.CropStartDOY == -1:
 
             if self.AutoStartStop == False:
@@ -654,11 +651,11 @@ class WflowModel(DynamicModel):
                     crpprfl_eq_zero = self.CRPST == 0.
                     CropHarvNow = Started & crpprfl_eq_zero & self.ricemask_BOOL
                 elif self.HarvestDAP > 0:
-                    HarvNow = self.STARTED == self.HarvestDAP
-                    CropHarvNow = HarvNow & self.ricemask_BOOL
-                print "Start date read from Crop Profile..."
-                # Two auxilliary variables:
-                CRPST_gt_0 = self.CRPST > 0.
+                    HarvNow            = self.STARTED == self.HarvestDAP
+                    CropHarvNow        = HarvNow & self.ricemask_BOOL
+                print("Start date read from Crop Profile...")
+              # Two auxilliary variables:
+                CRPST_gt_0       = self.CRPST > 0.
                 CRPST_eq_STARTED = self.CRPST == self.STARTED
                 CropStartNow = CRPST_gt_0 & CRPST_eq_STARTED & self.ricemask_BOOL
                 CropStarted = Started & self.ricemask_BOOL
@@ -717,26 +714,19 @@ class WflowModel(DynamicModel):
                     CropStarted = Started & self.ricemask_BOOL
                     Season12Harvd = self.STARTED < 0
                     Season12Harvd_Scalar = scalar(Season12Harvd)
-                    PrepareField_temp = scalar(self.Pausedays)
-                    FirstorSecondSeason = FirstSeason | SecondSeason
-                    PrepareField = ifthenelse(
-                        FirstorSecondSeason, PrepareField_temp, 0.
-                    )
-                    self.STARTED = (
-                        (self.STARTED + CropStartNow_scalar + scalar(CropStarted))
-                        * ifthenelse(CropHarvNow, scalar(0.), 1.)
-                        - ifthenelse(HarvSeasonOneTwo, PrepareField, 0.)
-                        + Season12Harvd_Scalar
-                    )
-                else:
-                    print self.Sim3rdSeason
+                    PrepareField_temp    = scalar(self.Pausedays)
+                    FirstorSecondSeason  = FirstSeason | SecondSeason
+                    PrepareField         = ifthenelse(FirstorSecondSeason, PrepareField_temp, 0.)
+                    self.STARTED         = (self.STARTED + CropStartNow_scalar + scalar(CropStarted)) * ifthenelse(CropHarvNow, scalar(0.), 1.) - ifthenelse(HarvSeasonOneTwo, PrepareField, 0.) + Season12Harvd_Scalar
+                else: 
+                    print(self.Sim3rdSeason)
                     time.sleep(10)
 
             else:
-                print "Strange value of variable AutoStartStop found... ctrl + c to exit..."
+                print("Strange value of variable AutoStartStop found... ctrl + c to exit...")
                 time.sleep(100)
         else:
-            print "Strange (negative?) value of variable CropStartDOY found... ctrl + c to exit..."
+            print("Strange (negative?) value of variable CropStartDOY found... ctrl + c to exit...")
             time.sleep(100)
 
         if self.WATERLIMITED == "True":
@@ -746,30 +736,30 @@ class WflowModel(DynamicModel):
                 CropStartNow, True, self.WA > WAWP
             )  # timestep delay...! todo
         else:
-            print "Warning, run without water effects on crop growth..."
-            TRANRF = scalar(1.)
-            Enough_water = True
+            print("Warning, run without water effects on crop growth...")
+            TRANRF        = scalar(1.)
+            Enough_water      = True
+            
+        #self.T = (self.TMIN + self.TMAX)/2. # for testing with Wageningen weather files only - sdv
+      # Calculate thermal time (for TSUM and DVS): 
+        Warm_Enough    = self.T >= self.TBASE
+        DegreeDay      = self.T - self.TBASE
+        DTEFF          = ifthenelse(Warm_Enough, DegreeDay, 0.)
+      # Check if leaves are present:
+        Leaves_Present    = self.LAI > 0.
 
-        # self.T = (self.TMIN + self.TMAX)/2. # for testing with Wageningen weather files only - sdv
-        # Calculate thermal time (for TSUM and DVS):
-        Warm_Enough = self.T >= self.TBASE
-        DegreeDay = self.T - self.TBASE
-        DTEFF = ifthenelse(Warm_Enough, DegreeDay, 0.)
-        # Check if leaves are present:
-        Leaves_Present = self.LAI > 0.
+      # Check whether certain critical moments, external circumstances or crop growth stages occur that influence crop growth and development:
+        BeforeAnthesis        = self.TSUM < self.TSUMAN
+        UntilAnthesis         = self.TSUM <= self.TSUMAN
+        AtAndAfterAnthesis    = self.TSUM >= self.TSUMAN
+        AfterAnthesis         = self.TSUM > self.TSUMAN
+        Roots_Dying           = self.DVS >= self.DVSDR
 
-        # Check whether certain critical moments, external circumstances or crop growth stages occur that influence crop growth and development:
-        BeforeAnthesis = self.TSUM < self.TSUMAN
-        UntilAnthesis = self.TSUM <= self.TSUMAN
-        AtAndAfterAnthesis = self.TSUM >= self.TSUMAN
-        AfterAnthesis = self.TSUM > self.TSUMAN
-        Roots_Dying = self.DVS >= self.DVSDR
-
-        Vegetative = CropStarted & UntilAnthesis
-        Generative = CropStarted & AfterAnthesis
-        EarlyStages = self.DVS < 0.2
-        LaterStages = self.DVS >= 0.2
-        SmallLeaves = self.LAI < 0.75
+        Vegetative   = CropStarted & UntilAnthesis
+        Generative   = CropStarted & AfterAnthesis
+        EarlyStages  = self.DVS < 0.2
+        LaterStages  = self.DVS >= 0.2
+        SmallLeaves  = self.LAI < 0.75
         BiggerLeaves = self.LAI >= 0.75
         Juvenile = EarlyStages & SmallLeaves
         Adult = LaterStages | BiggerLeaves
@@ -990,29 +980,21 @@ x
     ## Process command-line options                                        #
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, "F:C:S:T:c:s:R:l")
-    except getopt.error, msg:
+        opts, args = getopt.getopt(argv, 'F:C:S:T:c:s:R:l')
+    except getopt.error as msg:
         pcrut.usage(msg)
 
     for o, a in opts:
-        if o == "-C":
-            caseName = a
-        if o == "-R":
-            runId = a
-        if o == "-c":
-            configfile = a
-        if o == "-s":
-            timestepsecs = int(a)
-        if o == "-T":
-            _lastTimeStep = int(a)
-        if o == "-S":
-            _firstTimeStep = int(a)
-        if o == "-f":
-            _NoOverWrite = 0
-        if o == "-l":
-            exec "loglevel = logging." + a
+        if o == '-C': caseName = a
+        if o == '-R': runId = a
+        if o == '-c': configfile = a
+        if o == '-s': timestepsecs = int(a)
+        if o == '-T': _lastTimeStep = int(a)
+        if o == '-S': _firstTimeStep = int(a)
+        if o == '-f': _NoOverWrite = 0
+        if o == '-l': exec("loglevel = logging." + a)
 
-    if len(opts) <= 1:
+    if (len(opts) <= 1):
         usage()
 
     # starttime = dt.datetime(1990,01,01)

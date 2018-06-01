@@ -32,7 +32,7 @@ import logging
 
 logger = logging.getLogger("wflow_pcrglobwb")
 
-import virtualOS as vos
+from . import virtualOS as vos
 
 from wflow.wf_DynamicFramework import configsection
 from wflow.wf_DynamicFramework import configget
@@ -414,9 +414,9 @@ class WaterBodies(object):
         avgInflow = initial_condition["avgLakeReservoirInflowShort"]
         avgOutflow = initial_condition["avgLakeReservoirOutflowLong"]
         #
-        if not isinstance(initial_condition["waterBodyStorage"], types.NoneType):
-            # read directly
-            waterBodyStorage = initial_condition["waterBodyStorage"]
+        if not isinstance(initial_condition['waterBodyStorage'],type(None)):
+            # read directly 
+            waterBodyStorage = initial_condition['waterBodyStorage']
         else:
             # calculate waterBodyStorage at cells where lakes and/or reservoirs are defined
             #
@@ -543,15 +543,12 @@ class WaterBodies(object):
         downstreamDemand=None,
     ):
 
-        # outflow in volume from water bodies with lake type (m3):
-        lakeOutflow = self.getLakeOutflow(avgChannelDischarge, length_of_time_step)
-
-        # outflow in volume from water bodies with reservoir type (m3):
-        if isinstance(downstreamDemand, types.NoneType):
-            downstreamDemand = pcr.scalar(0.0)
-        reservoirOutflow = self.getReservoirOutflow(
-            avgChannelDischarge, length_of_time_step, downstreamDemand
-        )
+        # outflow in volume from water bodies with lake type (m3): 
+        lakeOutflow = self.getLakeOutflow(avgChannelDischarge,length_of_time_step)  
+             
+        # outflow in volume from water bodies with reservoir type (m3): 
+        if isinstance(downstreamDemand, type(None)): downstreamDemand = pcr.scalar(0.0)
+        reservoirOutflow = self.getReservoirOutflow(avgChannelDischarge,length_of_time_step,downstreamDemand)  
 
         # outgoing/release volume from lakes and/or reservoirs
         self.waterBodyOutflow = pcr.cover(reservoirOutflow, lakeOutflow)

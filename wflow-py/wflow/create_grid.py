@@ -95,7 +95,7 @@ def parse_args():
 
     (options, args) = parser.parse_args()
 
-    print options.__dict__.items()
+    print(list(options.__dict__.items()))
 
     if options.inputfile is None:
         parser.error("No input file (-f filename) given")
@@ -236,7 +236,7 @@ def main(
     yorg = extent_out[3]  # +cellsize
 
     # create clone raster
-    print ("rows: {0} cols: {1}".format(rows, cols))
+    print(('rows: {0} cols: {1}'.format(rows, cols)))
 
     dummy_raster = np.zeros((rows, cols)) - 9999.
     clone_file_map = os.path.abspath(os.path.join(destination, "mask.map"))

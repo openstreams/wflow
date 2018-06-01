@@ -1,4 +1,4 @@
-print "glacier module imported"
+print('glacier module imported')
 
 # -Function to calculate melt from clean ice or debris covered glaciers
 def GlacCDMelt(pcr, temp, ddf, glacfrac):

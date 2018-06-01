@@ -33,10 +33,10 @@ if dialog.ShowDialog() == DialogResult.OK:
 casename = os.path.dirname(os.path.dirname(thefile))
 csvfile = os.path.basename(thefile)
 
-print casename
+print(casename)
 
 runs = getrunids(casename)
 
-print runs
+print(runs)
 
 complot(runs, csvfile, [2])

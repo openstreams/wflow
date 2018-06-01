@@ -48,9 +48,8 @@ logging toevoegen, ervoor zorgen dat het ook 1 per x aantal stappen weggeschreve
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args:
-        print msg
-    print __doc__
+    for msg in args: print(msg)
+    print(__doc__)
     sys.exit(0)
 
 
@@ -1604,43 +1603,33 @@ def main(argv=None):
             return
 
     try:
-        opts, args = getopt.getopt(
-            argv, "C:S:T:Ic:s:R:fl:L:P:p:i:"
-        )  # 'XF:L:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:')
-    except getopt.error, msg:
+        opts, args = getopt.getopt(argv, 'C:S:T:Ic:s:R:fl:L:P:p:i:') #'XF:L:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:')
+    except getopt.error as msg:
         pcrut.usage(msg)
 
-    print opts
-    for o, a in opts:
-        if o == "-C":
-            caseName = a
-        if o == "-R":
-            runId = a
-        if o == "-c":
-            configfile = a
-            print configfile
-        if o == "-s":
-            timestepsecs = int(a)
-        if o == "-T":
-            _lastTimeStep = int(a)
-        if o == "-S":
-            _firstTimeStep = int(a)
-        if o == "-f":
-            NoOverWrite = 0
-        if o == "-L":
-            LogFileName = a
-        if o == "-l":
-            exec "loglevel = logging." + a
 
-    if len(argv) <= 1:
+    print(opts)    
+    for o, a in opts:
+        if o == '-C': 
+        	caseName = a
+        if o == '-R': runId = a
+        if o == '-c': 
+        	configfile = a
+        	print(configfile)
+        if o == '-s': timestepsecs = int(a)
+        if o == '-T': _lastTimeStep = int(a)
+        if o == '-S': _firstTimeStep = int(a)
+        if o == '-f': NoOverWrite = 0
+        if o == '-L': LogFileName = a 
+        if o == '-l': exec("loglevel = logging." + a)
+  
+    if (len(argv) <= 1):
         usage()
 
-    starttime = dt.datetime(1990, 01, 01)
-
+    starttime = dt.datetime(1990,0o1,0o1)
+       
     if _lastTimeStep < _firstTimeStep:
-        print "The starttimestep (" + str(
-            _firstTimeStep
-        ) + ") is smaller than the last timestep (" + str(_lastTimeStep) + ")"
+        print("The starttimestep (" + str(_firstTimeStep) +") is smaller than the last timestep (" + str(_lastTimeStep) + ")")
         usage()
 
     myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile)
@@ -1689,7 +1678,7 @@ def main(argv=None):
             configset(myModel.config, "model", "updating", "1", overwrite=True)
         if o == "-u":
             zz = []
-            exec "zz =" + a
+            exec("zz =" + a)
             updateCols = zz
         if o == "-E":
             configset(myModel.config, "model", "reInfilt", "1", overwrite=True)

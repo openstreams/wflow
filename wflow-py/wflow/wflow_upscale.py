@@ -55,9 +55,8 @@ import subprocess
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args:
-        print msg
-    print __doc__
+    for msg in args: print(msg)
+    print(__doc__)
     sys.exit(0)
 
 
@@ -81,7 +80,7 @@ def runCommands(commands, maxCpu):
                 # failed
                 raise Exception("Command %s failed" % pollCmd)
             else:
-                print "Command %s completed successfully" % pollCmd
+                print("Command %s completed successfully" % pollCmd)
         return newProcs
 
     processes = []
@@ -100,14 +99,14 @@ def runCommands(commands, maxCpu):
     while len(processes) > 0:
         time.sleep(0.5)
         processes = removeFinishedProcesses(processes)
-    print "All processes in que (" + str(len(commands)) + ") completed."
+    print("All processes in que (" + str(len(commands)) + ") completed.")
 
 
 def main():
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "fhC:N:Ir:M:")
-    except getopt.error, msg:
+        opts, args = getopt.getopt(sys.argv[1:], 'fhC:N:Ir:M:')
+    except getopt.error as msg:
         usage(msg)
 
     factor = 1
@@ -137,7 +136,7 @@ def main():
     dirs = ["/intbl/", "/inmaps/", "/staticmaps/", "/intss/", "/instate/", "/outstate/"]
     ext_to_copy = ["*.tss", "*.tbl", "*.col", "*.xml"]
     if os.path.isdir(caseNameNew) and not force:
-        print "Refusing to write into an existing directory:" + caseNameNew
+        print("Refusing to write into an existing directory:" + caseNameNew)
         sys.exit()
 
     if not os.path.isdir(caseNameNew):
@@ -179,8 +178,8 @@ def main():
                     allcmd.append(mstr)
                     # os.system(mstr)
                 else:
-                    print "skipping " + mfile.replace(caseName, caseNameNew)
-            runCommands(allcmd, maxcpu)
+                    print("skipping " + mfile.replace(caseName,caseNameNew))
+            runCommands(allcmd,maxcpu)
 
         for ext in ext_to_copy:
             for mfile in glob.glob(caseName + ddir + ext):
@@ -189,18 +188,16 @@ def main():
     # Because the ldd cannot be resampled this way we have to recreate
     # in including the subcatchments that are derived from it
 
-    print "recreating static maps ..."
+    print("recreating static maps ...")
     # Create new ldd using old river network
     dem = readmap(caseNameNew + "/staticmaps/wflow_dem.map")
     # orig low res river
     riverburn = readmap(caseNameNew + "/staticmaps/wflow_river.map")
     # save it
-    report(riverburn, caseNameNew + "/staticmaps/wflow_riverburnin.map")
-    demburn = cover(ifthen(boolean(riverburn), dem - 600), dem)
-    print "Creating ldd..."
-    ldd = lddcreate_save(
-        caseNameNew + "/staticmaps/wflow_ldd.map", demburn, True, 10.0E35
-    )
+    report(riverburn,caseNameNew + "/staticmaps/wflow_riverburnin.map")
+    demburn = cover(ifthen(boolean(riverburn), dem - 600) ,dem)
+    print("Creating ldd...")
+    ldd = lddcreate_save(caseNameNew + "/staticmaps/wflow_ldd.map",demburn, True, 10.0E35)
     ## Find catchment (overall)
     outlet = find_outlet(ldd)
     sub = subcatch(ldd, outlet)

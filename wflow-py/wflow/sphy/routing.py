@@ -1,5 +1,4 @@
-print "routing module imported"
-
+print('routing module imported')
 
 def ROUT(pcr, q, oldq, flowdir, kx):
     rr = (q * 0.001 * pcr.cellarea()) / (24 * 3600)

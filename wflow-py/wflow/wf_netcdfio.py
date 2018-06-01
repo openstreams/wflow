@@ -376,7 +376,7 @@ class netcdfoutput:
         miss = float(nc_var._FillValue)
         data = pcr2numpy(scalar(pcrdata), miss)
 
-        if self.bufflst.has_key(var):
+        if var in self.bufflst:
             self.bufflst[var][bufpos, :, :] = data
         else:
             self.bufflst[var] = self.timestepbuffer.copy()
@@ -551,7 +551,7 @@ class netcdfoutputstatic:
         miss = float(nc_var._FillValue)
         data = pcr2numpy(scalar(pcrdata), miss)
 
-        if self.bufflst.has_key(var):
+        if var in self.bufflst:
             self.bufflst[var][bufpos, :, :] = data
             self.buffdirty = True
         else:
@@ -780,28 +780,18 @@ class netcdfinput:
                 )
                 ncindex = pos
 
-        if self.alldat.has_key(var):
-            # if ncindex == self.lstep:  # Read new block of data in mem
-            #    logging.debug("reading new netcdf data block starting at: " + str(ncindex))
-            #    for vars in self.alldat:
-            #        self.alldat[vars] = self.dataset.variables[vars][ncindex:ncindex + self.maxsteps]
-            #
-            # self.fstep = ncindex
-            # self.lstep = ncindex + self.maxsteps
 
-            if len(self.alldat[var].dimensions) == 3:
-                np_step = self.alldat[var][
-                    ncindex - self.fstep,
-                    self.latidx.min() : self.latidx.max() + 1,
-                    self.lonidx.min() : self.lonidx.max() + 1,
-                ]
-            if len(self.alldat[var].dimensions) == 4:
-                np_step = self.alldat[var][
-                    ncindex - self.fstep,
-                    0,
-                    self.latidx.min() : self.latidx.max() + 1,
-                    self.lonidx.min() : self.lonidx.max() + 1,
-                ]
+        if var in self.alldat:
+            if ncindex == self.lstep:  # Read new block of data in mem
+                logging.debug("reading new netcdf data block starting at: " + str(ncindex))
+                for vars in self.alldat:
+                    self.alldat[vars] = reshape(self.dataset.variables[vars],(self.maxlentime,len(self.y),len(self.x)))[ncindex:ncindex + self.maxsteps]
+
+                self.fstep = ncindex
+                self.lstep = ncindex + self.maxsteps
+
+            np_step = self.alldat[var][ncindex - self.fstep,self.latidx.min():self.latidx.max()+1,
+                      self.lonidx.min():self.lonidx.max()+1]
 
             miss = float(self.dataset.variables[var]._FillValue)
             if self.flip:
@@ -1035,12 +1025,9 @@ class netcdfinputstatic:
         var: variable to get from the file
         """
 
-        if self.dataset.variables.has_key(var):
-            np_step = self.alldat[var][
-                timestep - 1,
-                self.latidx.min() : self.latidx.max() + 1,
-                self.lonidx.min() : self.lonidx.max() + 1,
-            ]
+        if var in self.dataset.variables:
+            np_step = self.alldat[var][timestep-1, self.latidx.min():self.latidx.max() + 1,
+                      self.lonidx.min():self.lonidx.max() + 1]
             miss = float(self.dataset.variables[var]._FillValue)
             return numpy2pcr(Scalar, np_step, miss), True
         else:

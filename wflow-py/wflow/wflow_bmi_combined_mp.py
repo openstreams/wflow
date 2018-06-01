@@ -5,7 +5,7 @@ import wflow
 import os
 from wflow.pcrut import setlogger
 from wflow.wflow_lib import configget
-import ConfigParser
+import configparser
 import logging
 from pcraster import *
 import multiprocessing
@@ -17,7 +17,7 @@ def iniFileSetUp(configfile):
 
 
     """
-    config = ConfigParser.SafeConfigParser()
+    config = configparser.SafeConfigParser()
     config.optionxform = str
     config.read(configfile)
     return config
@@ -122,9 +122,11 @@ class wflowbmi_csdms(bmi.Bmi):
             self.bmimodels[mod] = wfbmi.wflowbmi_csdms()
 
         # Initialize all bmi model objects
-        for key, value in self.bmimodels.iteritems():
-            modconf = os.path.join(self.datadir, self.config.get("models", key))
-            self.bmimodels[key].initialize_config(modconf, loglevel=loglevel)
+        for key, value in self.bmimodels.items():
+            modconf = os.path.join(self.datadir,self.config.get('models',key))
+            self.bmimodels[key].initialize_config(modconf,loglevel=loglevel)
+
+
 
     def initialize_model(self):
         """
@@ -136,11 +138,11 @@ class wflowbmi_csdms(bmi.Bmi):
         :return: nothing
         """
 
-        for key, value in self.bmimodels.iteritems():
+        for key, value in self.bmimodels.items():
             self.bmimodels[key].initialize_model()
 
         # Copy and set the variables to be exchanged for step 0
-        for key, value in self.bmimodels.iteritems():
+        for key, value in self.bmimodels.items():
             # step one update first model
             curmodel = self.bmimodels[key].get_component_name()
             for item in self.exchanges:
@@ -159,7 +161,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :param start_time: time in units (seconds) since the epoch
         :return: nothing
         """
-        for key, value in self.bmimodels.iteritems():
+        for key, value in self.bmimodels.items():
             self.bmimodels[key].set_start_time(start_time)
 
     def set_end_time(self, end_time):
@@ -169,7 +171,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :param end_time: time in units (seconds) since the epoch
         :return:
         """
-        for key, value in self.bmimodels.iteritems():
+        for key, value in self.bmimodels.items():
             self.bmimodels[key].set_end_time(end_time)
 
     def get_attribute_names(self):
@@ -179,7 +181,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :return: list of attributes
         """
         names = []
-        for key, value in self.bmimodels.iteritems():
+        for key, value in self.bmimodels.items():
             names.append(self.bmimodels[key].get_attribute_names())
             names[-1] = [
                 self.bmimodels[key].get_component_name() + self.comp_sep + s
@@ -225,7 +227,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
         The function iterates over all models
         """
-        for key, value in self.bmimodels.iteritems():
+        for key, value in self.bmimodels.items():
             # step one update model
             self.bmimodels[key].update()
             # do all exchanges
@@ -258,7 +260,7 @@ class wflowbmi_csdms(bmi.Bmi):
             nrstepsback = int(timespan / self.get_time_step())
             if nrstepsback > 1:
                 raise ValueError("Time more than one timestep before current time.")
-            for key, value in self.bmimodels.iteritems():
+            for key, value in self.bmimodels.items():
                 self.bmimodels[key].dynModel.wf_QuickResume()
 
         else:
@@ -286,7 +288,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
         :var destination_directory: the directory in which the state files should be written.
         """
-        for key, value in self.bmimodels.iteritems():
+        for key, value in self.bmimodels.items():
             self.bmimodels[key].save_state(destination_directory)
 
     def load_state(self, source_directory):
@@ -297,7 +299,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :var  source_directory: the directory from which the state files should be
         read.
         """
-        for key, value in self.bmimodels.iteritems():
+        for key, value in self.bmimodels.items():
             self.bmimodels[key].save_state(source_directory)
 
     def finalize(self):
@@ -305,7 +307,7 @@ class wflowbmi_csdms(bmi.Bmi):
         Shutdown the library and clean up the model.
         Uses the default (model configured) state location to also save states.
         """
-        for key, value in self.bmimodels.iteritems():
+        for key, value in self.bmimodels.items():
             self.bmimodels[key].finalize()
 
         self.bmilogger.info("finalize.")
@@ -315,7 +317,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :return:  identifier of the models separated by a comma (,)
         """
         names = []
-        for key, value in self.bmimodels.iteritems():
+        for key, value in self.bmimodels.items():
             names.append(self.bmimodels[key].get_component_name())
 
         return ",".join(names)
@@ -326,7 +328,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :return: List of String objects: identifiers of all input variables of the model:
         """
         names = []
-        for key, value in self.bmimodels.iteritems():
+        for key, value in self.bmimodels.items():
             names.append(self.bmimodels[key].get_input_var_names())
             names[-1] = [
                 self.bmimodels[key].get_component_name() + self.comp_sep + s
@@ -343,7 +345,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :return: List of String objects: identifiers of all output variables of the model:
         """
         names = []
-        for key, value in self.bmimodels.iteritems():
+        for key, value in self.bmimodels.items():
             names.append(self.bmimodels[key].get_output_var_names())
             names[-1] = [
                 self.bmimodels[key].get_component_name() + self.comp_sep + s
@@ -363,7 +365,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
         # first part should be the component name
         cname = long_var_name.split(self.comp_sep)
-        for key, value in self.bmimodels.iteritems():
+        for key, value in self.bmimodels.items():
             nn = self.bmimodels[key].get_component_name()
             if nn == cname[0]:
                 ret = self.bmimodels[key].get_var_type(cname[1])
@@ -379,7 +381,7 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         # first part should be the component name
         cname = long_var_name.split(self.comp_sep)
-        for key, value in self.bmimodels.iteritems():
+        for key, value in self.bmimodels.items():
             nn = self.bmimodels[key].get_component_name()
             if nn == cname[0]:
                 ret = self.bmimodels[key].get_var_rank(cname[1])
@@ -395,7 +397,7 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         # first part should be the component name
         cname = long_var_name.split(self.comp_sep)
-        for key, value in self.bmimodels.iteritems():
+        for key, value in self.bmimodels.items():
             nn = self.bmimodels[key].get_component_name()
             if nn == cname[0]:
                 ret = self.bmimodels[key].get_var_size(cname[1])
@@ -411,7 +413,7 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         # first part should be the component name
         cname = long_var_name.split(self.comp_sep)
-        for key, value in self.bmimodels.iteritems():
+        for key, value in self.bmimodels.items():
             nn = self.bmimodels[key].get_component_name()
             if nn == cname[0]:
                 ret = self.bmimodels[key].get_var_nbytes(cname[1])
@@ -425,7 +427,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :return: start time of last model in the list. Tiem sare assumed to be identical
         """
         st = []
-        for key, value in self.bmimodels.iteritems():
+        for key, value in self.bmimodels.items():
             st.append(self.bmimodels[key].get_start_time())
 
         return numpy.array(st).max()
@@ -438,7 +440,7 @@ class wflowbmi_csdms(bmi.Bmi):
         """
 
         st = []
-        for key, value in self.bmimodels.iteritems():
+        for key, value in self.bmimodels.items():
             st.append(self.bmimodels[key].get_current_time())
 
         return st[-1]
@@ -450,7 +452,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :return: end time of simulation n the units and epoch returned by the function get_time_units
         """
         st = []
-        for key, value in self.bmimodels.iteritems():
+        for key, value in self.bmimodels.items():
             st.append(self.bmimodels[key].get_end_time())
 
         return numpy.array(st).min()
@@ -462,7 +464,7 @@ class wflowbmi_csdms(bmi.Bmi):
         :return: duration of one time step of the model with the largest! timestep.
         """
         st = []
-        for key, value in self.bmimodels.iteritems():
+        for key, value in self.bmimodels.items():
             st.append(self.bmimodels[key].get_time_step())
 
         return max(st)[0]
@@ -475,7 +477,7 @@ class wflowbmi_csdms(bmi.Bmi):
         (http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/build/cf-conventions.html#time-coordinate)
         """
         st = []
-        for key, value in self.bmimodels.iteritems():
+        for key, value in self.bmimodels.items():
             st.append(self.bmimodels[key].get_time_units())
 
         return st[-1]
@@ -490,7 +492,7 @@ class wflowbmi_csdms(bmi.Bmi):
         # first part should be the component name
         self.bmilogger.debug("get_value: " + long_var_name)
         cname = long_var_name.split(self.comp_sep)
-        if self.bmimodels.has_key(cname[0]):
+        if cname[0] in self.bmimodels:
             tmp = self.bmimodels[cname[0]].get_value(cname[1])
             if self.wrtodisk:
                 report(
@@ -513,8 +515,8 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         cname = long_var_name.split(self.comp_sep)
 
-        if self.bmimodels.has_key(cname[0]):
-            return self.bmimodels[cname[0]].get_value_at_indices(cname[1], inds)
+        if cname[0] in self.bmimodels:
+            return self.bmimodels[cname[0]].get_value_at_indices(cname[1],inds)
         else:
             return None
 
@@ -529,8 +531,9 @@ class wflowbmi_csdms(bmi.Bmi):
         :var src: Numpy array of values. one value to set for each of the indicated elements:
         """
         cname = long_var_name.split(self.comp_sep)
-        if self.bmimodels.has_key(cname[0]):
-            self.bmimodels[cname[0]].set_value_at_indices(cname[1], inds, src)
+        if cname[0] in self.bmimodels:
+            self.bmimodels[cname[0]].set_value_at_indices(cname[1], inds,src)
+
 
     def get_grid_type(self, long_var_name):
         """
@@ -542,7 +545,7 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         cname = long_var_name.split(self.comp_sep)
 
-        if self.bmimodels.has_key(cname[0]):
+        if cname[0] in self.bmimodels:
             return self.bmimodels[cname[0]].get_grid_type(cname[1])
         else:
             return None
@@ -557,7 +560,7 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         cname = long_var_name.split(self.comp_sep)
 
-        if self.bmimodels.has_key(cname[0]):
+        if cname[0] in self.bmimodels:
             return self.bmimodels[cname[0]].get_grid_shape(cname[1])
         else:
             return None
@@ -572,7 +575,7 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         cname = long_var_name.split(self.comp_sep)
 
-        if self.bmimodels.has_key(cname[0]):
+        if cname[0] in self.bmimodels:
             return self.bmimodels[cname[0]].get_grid_spacing(cname[1])
         else:
             return None
@@ -587,7 +590,7 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         cname = long_var_name.split(self.comp_sep)
 
-        if self.bmimodels.has_key(cname[0]):
+        if cname[0] in self.bmimodels:
             return self.bmimodels[cname[0]].get_grid_origin(cname[1])
         else:
             return None
@@ -603,7 +606,7 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         cname = long_var_name.split(self.comp_sep)
 
-        if self.bmimodels.has_key(cname[0]):
+        if cname[0] in self.bmimodels:
             return self.bmimodels[cname[0]].get_grid_x(cname[1])
         else:
             return None
@@ -620,7 +623,7 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         cname = long_var_name.split(self.comp_sep)
 
-        if self.bmimodels.has_key(cname[0]):
+        if cname[0] in self.bmimodels:
             return self.bmimodels[cname[0]].get_grid_y(cname[1])
         else:
             return None
@@ -635,7 +638,7 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         cname = long_var_name.split(self.comp_sep)
 
-        if self.bmimodels.has_key(cname[0]):
+        if cname[0] in self.bmimodels:
             return self.bmimodels[cname[0]].get_grid_z(cname[1])
         else:
             return None
@@ -652,7 +655,7 @@ class wflowbmi_csdms(bmi.Bmi):
 
         cname = long_var_name.split(self.comp_sep)
 
-        if self.bmimodels.has_key(cname[0]):
+        if cname[0] in self.bmimodels:
             return self.bmimodels[cname[0]].get_var_units(cname[1])
         else:
             return None
@@ -668,8 +671,8 @@ class wflowbmi_csdms(bmi.Bmi):
         # first part should be the component name
         self.bmilogger.debug("set_value: " + long_var_name)
         cname = long_var_name.split(self.comp_sep)
-        if self.bmimodels.has_key(cname[0]):
-            self.bmimodels[cname[0]].set_value(cname[1], src)
+        if cname[0] in self.bmimodels:
+            self.bmimodels[cname[0]].set_value(cname[1],src)
             if self.wrtodisk:
                 report(
                     numpy2pcr(Scalar, src, -999),

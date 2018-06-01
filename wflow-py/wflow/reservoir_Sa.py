@@ -21,9 +21,9 @@ from copy import copy as copylist
 try:
     from wflow.wf_DynamicFramework import *
 except ImportError:
-    from wf_DynamicFramework import *
+    from  .wf_DynamicFramework import *
 import scipy
-import JarvisCoefficients
+from . import JarvisCoefficients
 
 
 def selectSaR(i):

@@ -34,10 +34,10 @@ import logging
 
 logger = logging.getLogger("wflow_pcrglobwb")
 
-import virtualOS as vos
-from ncConverter import *
+from . import virtualOS as vos
+from .ncConverter import *
 
-import waterBodies
+from . import waterBodies
 
 from wflow.wf_DynamicFramework import configsection
 from wflow.wf_DynamicFramework import configget
@@ -413,11 +413,10 @@ class Routing(object):
                 )
             else:
                 msg = "The bankfull channel storage capacity is NOT defined in the configuration file. "
-
-                if isinstance(
-                    self.predefinedChannelWidth, types.NoneType
-                ) or isinstance(self.predefinedChannelDepth, types.NoneType):
-
+            
+                if isinstance(self.predefinedChannelWidth, type(None)) or\
+                   isinstance(self.predefinedChannelDepth, type(None)):
+            
                     msg += "The bankfull capacity is estimated from average discharge (5 year long term average)."
 
                 else:
@@ -609,10 +608,8 @@ class Routing(object):
 
         self.avgInflow = pcr.ifthen(self.landmask, pcr.cover(self.avgInflow, 0.0))
         self.avgOutflow = pcr.ifthen(self.landmask, pcr.cover(self.avgOutflow, 0.0))
-        if not isinstance(self.waterBodyStorage, types.NoneType):
-            self.waterBodyStorage = pcr.ifthen(
-                self.landmask, pcr.cover(self.waterBodyStorage, 0.0)
-            )
+        if not isinstance(self.waterBodyStorage, type(None)):
+            self.waterBodyStorage = pcr.ifthen(self.landmask, pcr.cover(self.waterBodyStorage, 0.0))
 
     def estimateBankfullDischarge(self, bankfullWidth, factor=4.8):
 
@@ -672,11 +669,8 @@ class Routing(object):
                 iniItems.get("globalOptions", "inputDir"),
             )
 
-            # a dictionary contains areaFractions (dimensionless): fractions of flooded/innundated areas
-            areaFractions = map(
-                float,
-                iniItems.get("routingOptions", "relativeElevationLevels").split(","),
-            )
+            # a dictionary contains areaFractions (dimensionless): fractions of flooded/innundated areas  
+            areaFractions = list(map(float, iniItems.get("routingOptions","relativeElevationLevels").split(',')))
             # number of levels/intervals
             nrZLevels = len(areaFractions)
             # - TODO: Read areaFractions and nrZLevels automatically.
@@ -798,8 +792,8 @@ class Routing(object):
         yMean = pcr.cover(yMean, 0.01)
 
         # option to use constant channel width (m)
-        if not isinstance(self.predefinedChannelWidth, types.NoneType):
-            wMean = pcr.cover(self.predefinedChannelWidth, wMean)
+        if not isinstance(self.predefinedChannelWidth,type(None)):\
+           wMean = pcr.cover(self.predefinedChannelWidth, wMean)
         #
         # minimum channel width (m)
         wMean = pcr.max(self.minChannelWidth, wMean)
@@ -1207,10 +1201,8 @@ class Routing(object):
         self.channelDepth = pcr.max(0.0, self.yMean)
         #
         # option to use constant channel depth (m)
-        if not isinstance(self.predefinedChannelDepth, types.NoneType):
-            self.channelDepth = pcr.cover(
-                self.predefinedChannelDepth, self.channelDepth
-            )
+        if not isinstance(self.predefinedChannelDepth, type(None)):\
+           self.channelDepth = pcr.cover(self.predefinedChannelDepth, self.channelDepth)
 
         # channel bankfull capacity (unit: m3)
         if self.floodPlain:

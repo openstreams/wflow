@@ -1,4 +1,4 @@
-from wflow_hbv import *
+from .wflow_hbv import *
 
 
 class wflow_model:

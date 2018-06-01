@@ -39,7 +39,7 @@ import os
 import os.path
 import sys
 
-import ConfigParser
+import configparser
 import osgeo.gdal as gdal
 from osgeo.gdalconst import *
 from pcraster import *
@@ -345,11 +345,11 @@ def lddcreate_save(
     """
     if os.path.exists(lddname) and not force:
         if Verbose:
-            print ("Returning existing ldd", lddname)
+            print(("Returning existing ldd", lddname))
             return readmap(lddname)
     else:
         if Verbose:
-            print ("Creating ldd", lddname)
+            print(("Creating ldd", lddname))
             LDD = lddcreate(dem, 10.0E35, outflowdepth, 10.0E35, 10.0E35)
             report(LDD, lddname)
             return LDD
@@ -1262,7 +1262,7 @@ def readMap(fileName, fileFormat):
     mapFormat.Register()
     ds = gdal.Open(fileName)
     if ds is None:
-        print "Could not open " + fileName + ". Something went wrong!! Shutting down"
+        print('Could not open ' + fileName + '. Something went wrong!! Shutting down')
         sys.exit(1)
         # Retrieve geoTransform info
     geotrans = ds.GetGeoTransform()
@@ -1332,7 +1332,7 @@ def writeMap(fileName, fileFormat, x, y, data, FillVal):
 
     # Processing
     if verbose:
-        print "Writing to temporary file " + fileName + ".tif"
+        print('Writing to temporary file ' + fileName + '.tif')
     # Create Output filename from (FEWS) product name and data and open for writing
 
     if data.dtype == np.int32:
@@ -1355,13 +1355,14 @@ def writeMap(fileName, fileFormat, x, y, data, FillVal):
     TempBand.SetNoDataValue(FillVal)
     # Create data to write to correct format (supported by 'CreateCopy')
     if verbose:
-        print "Writing to " + fileName + ".map"
+        print('Writing to ' + fileName + '.map')
     outDataset = driver2.CreateCopy(fileName, TempDataset, 0)
     TempDataset = None
     outDataset = None
     if verbose:
-        print "Removing temporary file " + fileName + ".tif"
-    os.remove(fileName + ".tif")
+        print('Removing temporary file ' + fileName + '.tif')
+    os.remove(fileName + '.tif');
 
     if verbose:
-        print "Writing to " + fileName + " is done!"
+        print('Writing to ' + fileName + ' is done!')
+

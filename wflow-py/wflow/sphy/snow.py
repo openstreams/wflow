@@ -1,4 +1,4 @@
-print "snow module imported"
+print('snow module imported')
 
 # -Function to calculate the potential snow melt
 def PotSnowMelt(pcr, temp, ddfs):

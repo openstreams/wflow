@@ -59,9 +59,9 @@ class MyTest(unittest.TestCase):
         tmean = np.ma.masked_invalid(data.astype(np.float64)).mean()
         tmax = np.ma.masked_invalid(data.astype(np.float64)).max()
         tmin = np.ma.masked_invalid(data.astype(np.float64)).min()
-        self.assertAlmostEquals(266.18075561523438, tmax)
-        self.assertAlmostEquals(-7.8522729383405979e+37, tmean)
-        self.assertAlmostEquals(-3.4028234663852886e+38, tmin)
+        self.assertAlmostEqual(266.18075561523438, tmax)
+        self.assertAlmostEqual(-7.8522729383405979e+37, tmean)
+        self.assertAlmostEqual(-3.4028234663852886e+38, tmin)
 
 
 if __name__ == "__main__":

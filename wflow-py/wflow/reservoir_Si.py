@@ -13,8 +13,8 @@ from copy import copy as copylist
 try:
     from wflow.wf_DynamicFramework import *
 except ImportError:
-    from wf_DynamicFramework import *
-import JarvisCoefficients
+    from  .wf_DynamicFramework import *
+from . import JarvisCoefficients
 
 
 def selectSiR(i):

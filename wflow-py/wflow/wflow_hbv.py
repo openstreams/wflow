@@ -110,9 +110,8 @@ def usage(*args):
     -  *args: command line arguments given
     """
     sys.stdout = sys.stderr
-    for msg in args:
-        print msg
-    print __doc__
+    for msg in args: print(msg)
+    print(__doc__)
     sys.exit(0)
 
 
@@ -1527,8 +1526,8 @@ def main(argv=None):
     ## Main model starts here
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, "c:QXS:F:hC:Ii:T:R:u:s:P:p:Xx:U:fl:L:")
-    except getopt.error, msg:
+        opts, args = getopt.getopt(argv, 'c:QXS:F:hC:Ii:T:R:u:s:P:p:Xx:U:fl:L:')
+    except getopt.error as msg:
         pcrut.usage(msg)
 
     for o, a in opts:
@@ -1536,22 +1535,16 @@ def main(argv=None):
             runinfoFile = a
             fewsrun = True
 
-        if o == "-C":
-            caseName = a
-        if o == "-R":
-            runId = a
-        if o == "-L":
-            LogFileName = a
-        if o == "-l":
-            exec "loglevel = logging." + a
-        if o == "-c":
-            configfile = a
-        if o == "-s":
-            timestepsecs = int(a)
-        if o == "-h":
-            usage()
-        if o == "-f":
-            NoOverWrite = 0
+        if o == '-C': caseName = a
+        if o == '-R': runId = a
+        if o == '-L': LogFileName = a
+        if o == '-l': exec("loglevel = logging." + a)
+        if o == '-c': configfile = a
+        if o == '-s': timestepsecs = int(a)
+        if o == '-h': usage()
+        if o == '-f': NoOverWrite = 0
+
+
 
     if fewsrun:
         ts = getTimeStepsfromRuninfo(runinfoFile, timestepsecs)
@@ -1560,15 +1553,13 @@ def main(argv=None):
             _lastTimeStep = ts  # * 86400/timestepsecs
             _firstTimeStep = 1
         else:
-            print "Failed to get timesteps from runinfo file: " + runinfoFile
+            print("Failed to get timesteps from runinfo file: " + runinfoFile)
             sys.exit(2)
     else:
-        starttime = dt.datetime(1990, 01, 01)
+        starttime = dt.datetime(1990,0o1,0o1)
 
     if _lastTimeStep < _firstTimeStep:
-        print "The starttimestep (" + str(
-            _firstTimeStep
-        ) + ") is smaller than the last timestep (" + str(_lastTimeStep) + ")"
+        print("The starttimestep (" + str(_firstTimeStep) +") is smaller than the last timestep (" + str(_lastTimeStep) + ")")
         usage()
 
     myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile)
@@ -1583,39 +1574,27 @@ def main(argv=None):
     )
 
     for o, a in opts:
-        if o == "-P":
-            left = a.split("=")[0]
-            right = a.split("=")[1]
-            configset(
-                myModel.config, "variable_change_once", left, right, overwrite=True
-            )
-        if o == "-p":
-            left = a.split("=")[0]
-            right = a.split("=")[1]
-            configset(
-                myModel.config, "variable_change_timestep", left, right, overwrite=True
-            )
-        if o == "-X":
-            configset(myModel.config, "model", "OverWriteInit", "1", overwrite=True)
-        if o == "-I":
-            configset(myModel.config, "run", "reinit", "1", overwrite=True)
-        if o == "-i":
-            configset(myModel.config, "model", "intbl", a, overwrite=True)
-        if o == "-s":
-            configset(myModel.config, "model", "timestepsecs", a, overwrite=True)
-        if o == "-x":
-            configset(myModel.config, "model", "sCatch", a, overwrite=True)
-        if o == "-c":
-            configset(myModel.config, "model", "configfile", a, overwrite=True)
-        if o == "-M":
-            configset(myModel.config, "model", "MassWasting", "0", overwrite=True)
-        if o == "-Q":
-            configset(myModel.config, "model", "ExternalQbase", "1", overwrite=True)
-        if o == "-U":
-            configset(myModel.config, "model", "updateFile", a, overwrite=True)
-            configset(myModel.config, "model", "updating", "1", overwrite=True)
-        if o == "-u":
-            exec "zz =" + a
+        if o == '-P':
+            left = a.split('=')[0]
+            right = a.split('=')[1]
+            configset(myModel.config,'variable_change_once',left,right,overwrite=True)
+        if o == '-p':
+            left = a.split('=')[0]
+            right = a.split('=')[1]
+            configset(myModel.config,'variable_change_timestep',left,right,overwrite=True)
+        if o == '-X': configset(myModel.config,'model','OverWriteInit','1',overwrite=True)
+        if o == '-I': configset(myModel.config,'run','reinit','1',overwrite=True)
+        if o == '-i': configset(myModel.config,'model','intbl',a,overwrite=True)
+        if o == '-s': configset(myModel.config,'model','timestepsecs',a,overwrite=True)
+        if o == '-x': configset(myModel.config,'model','sCatch',a,overwrite=True)
+        if o == '-c': configset(myModel.config,'model','configfile', a,overwrite=True)
+        if o == '-M': configset(myModel.config,'model','MassWasting',"0",overwrite=True)
+        if o == '-Q': configset(myModel.config,'model','ExternalQbase','1',overwrite=True)
+        if o == '-U':
+            configset(myModel.config,'model','updateFile',a,overwrite=True)
+            configset(myModel.config,'model','updating',"1",overwrite=True)
+        if o == '-u':
+            exec("zz =" +  a)
             updateCols = zz
         if o == "-T":
             configset(myModel.config, "run", "endtime", a, overwrite=True)

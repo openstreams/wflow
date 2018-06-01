@@ -45,9 +45,8 @@ import getopt
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args:
-        print msg
-    print __doc__
+    for msg in args: print(msg)
+    print(__doc__)
     sys.exit(0)
 
 
@@ -87,7 +86,7 @@ def main(argv=None):
 
     dirs = ["/intbl/", "/inmaps/", "/staticmaps/", "/intss/", "/instate/", "/outstate/"]
     if os.path.isdir(caseNameNew) and not force:
-        print "Refusing to write into an existing directory:" + caseNameNew
+        print("Refusing to write into an existing directory:" + caseNameNew)
         sys.exit()
 
     if not os.path.isdir(caseNameNew):
@@ -97,51 +96,35 @@ def main(argv=None):
             shutil.copy(inifile, inifile.replace(caseName, caseNameNew))
 
     for ddir in dirs:
-        for mfile in glob.glob(caseName + ddir + "/*.map"):
-            mstr = (
-                "resample --clone "
-                + cloneMap
-                + " "
-                + mfile
-                + " "
-                + mfile.replace(caseName, caseNameNew)
-            )
-            print mstr
+        for mfile in glob.glob(caseName + ddir + '/*.map'):
+            mstr = "resample --clone " + cloneMap + ' ' + mfile + " " + mfile.replace(caseName,caseNameNew)
+            print(mstr)
             os.system(mstr)
         if inmaps:
-            for mfile in glob.glob(caseName + ddir + "/*.[0-9][0-9][0-9]"):
-                mstr = (
-                    "resample --clone "
-                    + cloneMap
-                    + " "
-                    + mfile
-                    + " "
-                    + mfile.replace(caseName, caseNameNew)
-                )
-                if not os.path.exists(mfile.replace(caseName, caseNameNew)):
-                    print mstr
+            for mfile in glob.glob(caseName + ddir + '/*.[0-9][0-9][0-9]'):
+                mstr = "resample --clone " + cloneMap + ' ' + mfile + " " + mfile.replace(caseName,caseNameNew)
+                if not os.path.exists(mfile.replace(caseName,caseNameNew)):
+                    print(mstr)
                     os.system(mstr)
                 else:
-                    print "skipping " + mfile.replace(caseName, caseNameNew)
-        for mfile in glob.glob(caseName + ddir + "*.tbl"):
-            shutil.copy(mfile, mfile.replace(caseName, caseNameNew))
-        for mfile in glob.glob(caseName + ddir + "*.col"):
-            shutil.copy(mfile, mfile.replace(caseName, caseNameNew))
-        for mfile in glob.glob(caseName + ddir + "*.tss"):
-            shutil.copy(mfile, mfile.replace(caseName, caseNameNew))
+                    print("skipping " + mfile.replace(caseName,caseNameNew))
+        for mfile in glob.glob(caseName + ddir + '*.tbl'):
+            shutil.copy(mfile, mfile.replace(caseName,caseNameNew))
+        for mfile in glob.glob(caseName + ddir + '*.col'):
+            shutil.copy(mfile, mfile.replace(caseName,caseNameNew))
+        for mfile in glob.glob(caseName + ddir + '*.tss'):
+            shutil.copy(mfile, mfile.replace(caseName,caseNameNew))
 
-    print "recreating static maps ..."
+    print("recreating static maps ...")
     # Create new ldd using old river network
     dem = readmap(caseNameNew + "/staticmaps/wflow_dem.map")
     # orig low res river
     riverburn = readmap(caseNameNew + "/staticmaps/wflow_river.map")
     # save it
-    report(riverburn, caseNameNew + "/staticmaps/wflow_riverburnin.map")
-    demburn = cover(ifthen(boolean(riverburn), dem - 600), dem)
-    print "Creating ldd..."
-    ldd = lddcreate_save(
-        caseNameNew + "/staticmaps/wflow_ldd.map", demburn, True, 10.0E35
-    )
+    report(riverburn,caseNameNew + "/staticmaps/wflow_riverburnin.map")
+    demburn = cover(ifthen(boolean(riverburn), dem - 600) ,dem)
+    print("Creating ldd...")
+    ldd = lddcreate_save(caseNameNew + "/staticmaps/wflow_ldd.map",demburn, True, 10.0E35)
     #
     ## Find catchment (overall)
     outlet = find_outlet(ldd)

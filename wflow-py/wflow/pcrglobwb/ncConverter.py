@@ -32,7 +32,7 @@ import subprocess
 import netCDF4 as nc
 import numpy as np
 import pcraster as pcr
-import virtualOS as vos
+from . import virtualOS as vos
 
 # TODO: defined the dictionary (e.g. filecache = dict()) to avoid open and closing files
 
@@ -52,12 +52,8 @@ class PCR2netCDF:
 
         # Let users decide what their preference regarding latitude order.
         self.netcdf_y_orientation_follow_cf_convention = False
-        if (
-            "netcdf_y_orientation_follow_cf_convention"
-            in iniItems.reportingOptions.keys()
-            and iniItems.reportingOptions["netcdf_y_orientation_follow_cf_convention"]
-            == "True"
-        ):
+        if 'netcdf_y_orientation_follow_cf_convention' in list(iniItems.reportingOptions.keys()) and\
+            iniItems.reportingOptions['netcdf_y_orientation_follow_cf_convention'] == "True":
             msg = "Latitude (y) orientation for output netcdf files start from the bottom to top."
             self.netcdf_y_orientation_follow_cf_convention = True
             self.latitudes = np.unique(pcr.pcr2numpy(pcr.ycoordinate(cloneMap), vos.MV))
@@ -68,15 +64,15 @@ class PCR2netCDF:
         # netcdf format and zlib setup
         self.format = "NETCDF3_CLASSIC"
         self.zlib = False
-        if "formatNetCDF" in iniItems.reportingOptions.keys():
-            self.format = str(iniItems.reportingOptions["formatNetCDF"])
-        if "zlib" in iniItems.reportingOptions.keys():
-            if iniItems.reportingOptions["zlib"] == "True":
-                self.zlib = True
+        if "formatNetCDF" in list(iniItems.reportingOptions.keys()):
+            self.format = str(iniItems.reportingOptions['formatNetCDF'])
+        if "zlib" in list(iniItems.reportingOptions.keys()):
+            if iniItems.reportingOptions['zlib'] == "True": self.zlib = True
+        
 
         # if given in the ini file, use the netcdf as given in the section 'specific_attributes_for_netcdf_output_files'
-        if "specific_attributes_for_netcdf_output_files" in iniItems.allSections:
-            for key in iniItems.specific_attributes_for_netcdf_output_files.keys():
+        if 'specific_attributes_for_netcdf_output_files' in iniItems.allSections:
+            for key in list(iniItems.specific_attributes_for_netcdf_output_files.keys()):
 
                 self.attributeDictionary[
                     key
@@ -163,8 +159,7 @@ class PCR2netCDF:
         var.units = varUnits
 
         attributeDictionary = self.attributeDictionary
-        for k, v in attributeDictionary.items():
-            setattr(rootgrp, k, v)
+        for k, v in list(attributeDictionary.items()): setattr(rootgrp,k,v)
 
         rootgrp.sync()
         rootgrp.close()
@@ -173,8 +168,7 @@ class PCR2netCDF:
 
         rootgrp = nc.Dataset(ncFileName, "a")
 
-        for k, v in attributeDictionary.items():
-            setattr(rootgrp, k, v)
+        for k, v in list(attributeDictionary.items()): setattr(rootgrp,k,v)
 
         rootgrp.sync()
         rootgrp.close()

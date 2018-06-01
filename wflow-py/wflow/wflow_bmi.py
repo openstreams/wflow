@@ -6,11 +6,11 @@ import datetime
 import parser
 
 import wflow.bmi as bmi
-import wflow_lib
+from . import wflow_lib
 import numpy as np
 from wflow.pcrut import setlogger
 from pcraster import *
-import ConfigParser
+import configparser
 
 
 def iniFileSetUp(configfile):
@@ -19,7 +19,7 @@ def iniFileSetUp(configfile):
 
 
     """
-    config = ConfigParser.SafeConfigParser()
+    config = configparser.SafeConfigParser()
     config.optionxform = str
     ret = config.read(configfile)
     return config
@@ -169,22 +169,18 @@ class wflowbmi_light(object):
         maxNrSteps = 10000
         maxNrSteps = 0
         try:
-            exec "import wflow." + self.name + " as wf"
+            exec("import wflow." + self.name + " as wf")
         except:
             if "wflow" in configfile and "sbm" in configfile and ".ini" in configfile:
-                import wflow_sbm as wf
-
+                from . import wflow_sbm as wf
                 self.name = "wflow_sbm"
             elif "wflow" in configfile and "hbv" in configfile and ".ini" in configfile:
-                import wflow_hbv as wf
-
+                from . import wflow_hbv as wf
                 self.name = "wflow_hbv"
-            elif (
-                "wflow" in configfile
-                and "routing" in configfile
-                and ".ini" in configfile
-            ):
-                import wflow_routing as wf
+            elif "wflow" in configfile and "routing" in configfile and ".ini" in configfile:
+                from . import wflow_routing as wf
+                self.name = "wflow_routing"
+
 
                 self.name = "wflow_routing"
 
@@ -606,8 +602,8 @@ class wflowbmi_csdms(bmi.Bmi):
             self.bmilogger.warn("Assuming " + self.name + " as model type.")
 
         try:
-            exec "import wflow." + self.name + " as wf"
-        except:  # old method, shoudl not be used
+            exec("import wflow." + self.name + " as wf")
+        except: # old method, shoudl not be used
             if "wflow_sbm" in inifile:
                 import wflow.wflow_sbm as wf
 
@@ -630,7 +626,7 @@ class wflowbmi_csdms(bmi.Bmi):
                 self.name = "wflow_lintul"
             else:
                 modname = os.path.splitext(os.path.basename(filename))[0]
-                exec "import wflow." + modname + " as wf"
+                exec("import wflow." + modname + " as wf")
                 self.name = modname
 
         self.bmilogger.info(
