@@ -695,14 +695,14 @@ class WflowModel(DynamicModel):
                 "Applying the original topog_sbm lateral transfer formulation"
             )
         elif self.LateralMethod == 2:
-            self.logger.warn("Using alternate wflow lateral transfer formulation")
+            self.logger.warning("Using alternate wflow lateral transfer formulation")
 
         if self.TransferMethod == 1:
             self.logger.info(
                 "Applying the original topog_sbm vertical transfer formulation"
             )
         elif self.TransferMethod == 2:
-            self.logger.warn("Using alternate wflow vertical transfer formulation")
+            self.logger.warning("Using alternate wflow vertical transfer formulation")
 
         self.sCatch = int(configget(self.config, "model", "sCatch", "0"))
         self.intbl = configget(self.config, "model", "intbl", "intbl")

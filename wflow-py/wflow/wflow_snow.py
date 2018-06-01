@@ -178,22 +178,14 @@ class WflowModel(DynamicModel):
             self.logger.info("reading map parameter file: " + mapname)
             rest = cover(readmap(mapname), default)
         else:
-            if os.path.isfile(pathtotbl):
-                rest = cover(lookupscalar(pathtotbl, landuse, subcatch, soil), default)
-                self.logger.info("Creating map from table: " + pathtotbl)
-            else:
-                self.logger.warn(
-                    "tbl file not found ("
-                    + pathtotbl
-                    + ") returning default value: "
-                    + str(default)
-                )
-                rest = scalar(default)
-
-        return rest
-
-    def suspend(self):
-        """
+            self.logger.warning("tbl file not found (" + pathtotbl + ") returning default value: " + str(default))
+            rest = scalar(default)
+        
+    return rest
+    
+    
+  def suspend(self):
+    """
       Suspens the model to disk. All variables needed to restart the model
       are save to disk as pcraster maps. Use resume() to re-read them
     """

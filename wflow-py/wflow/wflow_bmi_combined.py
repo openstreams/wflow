@@ -92,7 +92,8 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         )
         self.bmilogger.info("__init__: wflow_bmi_combined object initialised.")
         if self.wrtodisk:
-            self.bmilogger.warn("Will write all bmi set- and get- grids to disk!...")
+            self.bmilogger.warning('Will write all bmi set- and get- grids to disk!...')
+
 
     def __getmodulenamefromvar__(self, long_var_name):
         """

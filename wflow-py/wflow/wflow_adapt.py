@@ -673,7 +673,7 @@ def main():
                     workdir + "/" + case + "/" + runId + "/outmaps/LAI00000.000",
                 )
             except:
-                logger.warn("Cannot copy Surfacerunoff and/or level")
+                logger.warning("Cannot copy Surfacerunoff and/or level")
 
         # Step 3:
         # now check for tss files in the ini file and convert to XML
