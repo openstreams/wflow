@@ -997,7 +997,7 @@ x
     if (len(opts) <= 1):
         usage()
 
-    # starttime = dt.datetime(1990,01,01)
+    # starttime = dt.datetime(1990, 1, 1)
     starttime = dt.datetime(1981, 9, 27)
 
     myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile)
