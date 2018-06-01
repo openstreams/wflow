@@ -2047,7 +2047,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         """
 
-        config = configparser.SafeConfigParser()
+        config = configparser.ConfigParser()
         config.optionxform = str
         if os.path.exists(os.path.join(caseName, configfile)):
             config.read(os.path.join(caseName, configfile))

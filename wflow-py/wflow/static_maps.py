@@ -250,7 +250,7 @@ def main(
     # READ CONFIG FILE
     # open config-file
     if inifile is None:
-        config = configparser.SafeConfigParser()
+        config = configparser.ConfigParser()
         config.optionxform = str
     else:
         config = wt.OpenConf(inifile)

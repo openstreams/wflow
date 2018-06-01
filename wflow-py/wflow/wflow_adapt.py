@@ -599,7 +599,7 @@ def main():
             assert False, "unhandled option"
 
     # Try and read config file and set default options
-    config = configparser.SafeConfigParser()
+    config = configparser.ConfigParser()
     config.optionxform = str
     config.read(workdir + "/" + case + "/" + iniFile)
 

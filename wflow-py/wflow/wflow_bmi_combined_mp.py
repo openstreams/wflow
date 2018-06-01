@@ -17,7 +17,7 @@ def iniFileSetUp(configfile):
 
 
     """
-    config = configparser.SafeConfigParser()
+    config = configparser.ConfigParser()
     config.optionxform = str
     config.read(configfile)
     return config
