@@ -35,6 +35,7 @@ setup(
     packages=['wflow', 'wflow.pcrglobwb',
               'wflow.sphy', 'wflow.wrappers.rtc'],
     package_dir={'wflow': 'wflow'},
+    test_suite='UnitTests',
     zip_safe=False,
     scripts=['Scripts/pcr2netcdf.py', 'Scripts/tss2xml.py', 'Scripts/wflow_subcatch.py',
             'wflow/wflow_extract.py', 'wflow/wflow_sceleton.py',
