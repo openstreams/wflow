@@ -67,7 +67,7 @@ def close_with_error(logger, ch, msg):
 
 
 def OpenConf(fn):
-    config = configparser.SafeConfigParser()
+    config = configparser.ConfigParser()
     config.optionxform = str
 
     if os.path.exists(fn):
