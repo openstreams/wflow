@@ -116,36 +116,6 @@ def build_model(
 ):
     """Prepare a simple WFlow model, anywhere, based on global datasets."""
 
-    # lists below need to stay synchronized, not sure of a better way
-    [
-        geojson_path,
-        model,
-        timestep,
-        name,
-        case_template,
-        case_path,
-        fews_config_path,
-        dem_path,
-        river_path,
-        outlet_path,
-        region_filter,
-    ] = [
-        encode_utf8(p)
-        for p in [
-            geojson_path,
-            model,
-            timestep,
-            name,
-            case_template,
-            case_path,
-            fews_config_path,
-            dem_path,
-            river_path,
-            outlet_path,
-            region_filter,
-        ]
-    ]
-
     # fill in the dependent defaults
     if name is None:
         name = "wflow_{}_case".format(model)
