@@ -9,8 +9,24 @@ import wflow.bmi as bmi
 from . import wflow_lib
 import numpy as np
 from wflow.pcrut import setlogger
+
+# wflow models we want to support, keep up to date with wflow_modeldict
+import wflow.wflow_sbm
+import wflow.wflow_hbv
+import wflow.wflow_routing
+import wflow.wflow_floodmap
+import wflow.wflow_lintul
+
 from pcraster import *
 import configparser
+
+wflow_modeldict = {
+    "wflow_sbm": wflow.wflow_sbm,
+    "wflow_hbv": wflow.wflow_hbv,
+    "wflow_routing": wflow.wflow_routing,
+    "wflow_floodmap": wflow.wflow_floodmap,
+    "wflow_lintul": wflow.wflow_lintul,
+}
 
 
 def iniFileSetUp(configfile):
@@ -166,25 +182,9 @@ class wflowbmi_light(object):
 
         maxNrSteps = 10000
         maxNrSteps = 0
-        try:
-            exec("import wflow." + self.name + " as wf")
-        except:
-            if "wflow" in configfile and "sbm" in configfile and ".ini" in configfile:
-                from . import wflow_sbm as wf
-                self.name = "wflow_sbm"
-            elif "wflow" in configfile and "hbv" in configfile and ".ini" in configfile:
-                from . import wflow_hbv as wf
-                self.name = "wflow_hbv"
-            elif "wflow" in configfile and "routing" in configfile and ".ini" in configfile:
-                from . import wflow_routing as wf
-                self.name = "wflow_routing"
 
-
-                self.name = "wflow_routing"
-
-        self.bmilogger.info(
-            "initialize: Initialising wflow bmi with ini: " + configfile
-        )
+        wf = wflow_modeldict[self.name]
+        self.bmilogger.info("initialize: Initialising wflow bmi with ini: " + configfile)
         myModel = wf.WflowModel(wflow_cloneMap, datadir, runid, inifile)
 
         self.dynModel = wf.wf_DynamicFramework(myModel, maxNrSteps, firstTimestep=0)
@@ -598,40 +598,8 @@ class wflowbmi_csdms(bmi.Bmi):
             self.bmilogger.warning("Please specify modeltype in the model section of file: " + fullpathname)
             self.bmilogger.warning("Assuming " + self.name + " as model type.")
 
-        try:
-            exec("import wflow." + self.name + " as wf")
-        except: # old method, shoudl not be used
-            if "wflow_sbm" in inifile:
-                import wflow.wflow_sbm as wf
-
-                self.name = "wflow_sbm"
-            elif "wflow_hbv" in inifile:
-                import wflow.wflow_hbv as wf
-
-                self.name = "wflow_hbv"
-            elif "wflow_routing" in inifile:
-                import wflow.wflow_routing as wf
-
-                self.name = "wflow_routing"
-            elif "wflow_floodmap" in inifile:
-                import wflow.wflow_floodmap as wf
-
-                self.name = "wflow_floodmap"
-            elif "wflow_lintul" in inifile:
-                import wflow.wflow_lintul as wf
-
-                self.name = "wflow_lintul"
-            else:
-                modname = os.path.splitext(os.path.basename(filename))[0]
-                exec("import wflow." + modname + " as wf")
-                self.name = modname
-
-        self.bmilogger.info(
-            "initialize_config: Initialising wflow bmi with ini: "
-            + filename
-            + " Component name: "
-            + self.name
-        )
+        wf = wflow_modeldict[self.name]
+        self.bmilogger.info("initialize_config: Initialising wflow bmi with ini: " + filename + " Component name: " + self.name)
         self.myModel = wf.WflowModel(wflow_cloneMap, self.datadir, runid, inifile)
 
         self.dynModel = wf.wf_DynamicFramework(
