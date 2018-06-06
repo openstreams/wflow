@@ -544,12 +544,12 @@ def download_raster(
     dst_tfw = path_name + ".tfw"
     if os.path.exists(dst_tfw):
         os.remove(dst_tfw)
-    os.rename(src_tfw, dst_tfw)
+    shutil.move(src_tfw, dst_tfw)
 
     src_tif = os.path.join(temp_dir, items[1])
     if os.path.exists(path):
         os.remove(path)
-    os.rename(src_tif, path)
+    shutil.move(src_tif, path)
 
     # clean-up
     os.rmdir(temp_dir)
