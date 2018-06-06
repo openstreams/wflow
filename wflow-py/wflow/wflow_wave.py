@@ -112,7 +112,8 @@ from wflow.wflow_adapt import *
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args: print(msg)
+    for msg in args:
+        print(msg)
     print(__doc__)
     sys.exit(0)
 
@@ -569,14 +570,21 @@ def main(argv=None):
     opts, args = getopt.getopt(argv, "C:S:T:c:s:R:fIs:hl:")
 
     for o, a in opts:
-        if o == '-C': caseName = a
-        if o == '-R': runId = a
-        if o == '-c': configfile = a
-        if o == '-s': timestepsecs = int(a)
-        if o == '-T': _lastTimeStep=int(a)
-        if o == '-S': _firstTimeStep=int(a)
-        if o == '-l': exec("loglevel = logging." + a)            
-        if o == '-h': 
+        if o == "-C":
+            caseName = a
+        if o == "-R":
+            runId = a
+        if o == "-c":
+            configfile = a
+        if o == "-s":
+            timestepsecs = int(a)
+        if o == "-T":
+            _lastTimeStep = int(a)
+        if o == "-S":
+            _firstTimeStep = int(a)
+        if o == "-l":
+            exec("loglevel = logging." + a)
+        if o == "-h":
             usage()
             return
 
@@ -584,7 +592,13 @@ def main(argv=None):
         usage()
 
     if _lastTimeStep < _firstTimeStep:
-        print("The starttimestep (" + str(_firstTimeStep) +") is smaller than the last timestep (" + str(_lastTimeStep) + ")")
+        print(
+            "The starttimestep ("
+            + str(_firstTimeStep)
+            + ") is smaller than the last timestep ("
+            + str(_lastTimeStep)
+            + ")"
+        )
         usage()
 
     myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile)

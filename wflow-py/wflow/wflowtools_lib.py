@@ -221,7 +221,7 @@ def readMap(fileName, fileFormat):
     mapFormat.Register()
     ds = gdal.Open(fileName)
     if ds is None:
-        print('Could not open ' + fileName + '. Something went wrong!! Shutting down')
+        print("Could not open " + fileName + ". Something went wrong!! Shutting down")
         sys.exit(1)
         # Retrieve geoTransform info
     geotrans = ds.GetGeoTransform()
@@ -485,8 +485,13 @@ def ReverseMap(MAP):
     for i in range(MAX + 1):
         if i > 0:
             print(i)
-            REV_MAP = pcr.cover(pcr.ifthen(pcr.ordinal(MAP) == pcr.ordinal(
-                i), pcr.ordinal(pcr.scalar(MAX + 1) - pcr.scalar(i))), REV_MAP)
+            REV_MAP = pcr.cover(
+                pcr.ifthen(
+                    pcr.ordinal(MAP) == pcr.ordinal(i),
+                    pcr.ordinal(pcr.scalar(MAX + 1) - pcr.scalar(i)),
+                ),
+                REV_MAP,
+            )
     REV_MAP = pcr.cover(REV_MAP, pcr.ordinal(MAP))
     return REV_MAP
 
@@ -500,7 +505,7 @@ def DeleteList(itemlist, logger=logging):
 def Tiff2Point(TIFF):
     DS = gdal.Open(TIFF, GA_ReadOnly)
     if DS is None:
-        print('Could not open ' + fn)
+        print("Could not open " + fn)
         sys.exit(1)
 
     cols = DS.RasterXSize
@@ -559,7 +564,7 @@ def Tiff2Point(TIFF):
 def GridDef(TIFF, XML):
     DS = gdal.Open(TIFF, GA_ReadOnly)
     if DS is None:
-        print('Could not open ' + fn)
+        print("Could not open " + fn)
         sys.exit(1)
 
     cols = DS.RasterXSize

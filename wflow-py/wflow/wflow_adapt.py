@@ -204,7 +204,7 @@ def pixml_state_updateTime(inxml, outxml, DT):
 
     else:
         print((inxml + " does not exists."))
-        
+
 
 def pixml_totss_dates(nname, outputdir):
     """ 
@@ -244,7 +244,7 @@ def pixml_totss_dates(nname, outputdir):
                     i += 1
     else:
         print((nname + " does not exists."))
-    
+
 
 def pixml_totss(nname, outputdir):
     """
@@ -297,33 +297,28 @@ def pixml_totss(nname, outputdir):
             i = 0
             for ev in events:
                 parlocs[par] = 1
-                if (i,par) in val:
-                    theval = val[i,par] + '\t' + ev.attrib['value']
-                    val[i,par] = theval
-                    parlocs[par] = parlocs[par] + 1            
-                else:        
-                    val[i,par] = ev.attrib['value']
+                if (i, par) in val:
+                    theval = val[i, par] + "\t" + ev.attrib["value"]
+                    val[i, par] = theval
+                    parlocs[par] = parlocs[par] + 1
+                else:
+                    val[i, par] = ev.attrib["value"]
                 i += 1
         nrevents = i
 
         for par in uniqueParList:
             with open(outputdir + "/" + par + ".tss", "w") as f:
                 # write the header
-                f.write('Parameter ' + par + ' taken from ' + nname + '\n')
-                f.write(str(colsinfile + 1) + '\n')
-                f.write('Timestep\n')
-                for i in range(0,colsinfile):
-                    f.write('Data column ' + str(i) + '\n')
-                for i in range(0,nrevents):
-                    f.write(str(i+1) + '\t' + val[i,par] + '\n')
-                        
+                f.write("Parameter " + par + " taken from " + nname + "\n")
+                f.write(str(colsinfile + 1) + "\n")
+                f.write("Timestep\n")
+                for i in range(0, colsinfile):
+                    f.write("Data column " + str(i) + "\n")
+                for i in range(0, nrevents):
+                    f.write(str(i + 1) + "\t" + val[i, par] + "\n")
+
     else:
         print((nname + " does not exists."))
-
-
-
-    else:
-        print (nname + " does not exists.")
 
 
 def tss_topixml(tssfile, xmlfile, locationname, parametername, Sdate, timestep):
@@ -472,7 +467,6 @@ def getTimeStepsfromRuninfo(xmlfile, timestepsecs):
         print((xmlfile + " does not exists."))
 
 
-
 def getEndTimefromRuninfo(xmlfile):
     """ 
     Gets the endtime of the run from the FEWS runinfo file
@@ -527,7 +521,7 @@ def getMapStacksFromRuninfo(xmlfile):
         )
     else:
         print((xmlfile + " does not exists."))
-        
+
     return ed
 
 
@@ -541,9 +535,9 @@ def pre_adapter(INxmlTimeSeries, logger):
 
 
 def usage():
-    print ("wflow_adapter -M Pre -t InputTimeseriesXml -I inifile")
-    print ("wflow_adapter -M Post -t InputTimeseriesXml -s inputStateFile -I inifile")
-    print ("              -o outputStateFile -r runinfofile -w workdir -C case")
+    print("wflow_adapter -M Pre -t InputTimeseriesXml -I inifile")
+    print("wflow_adapter -M Post -t InputTimeseriesXml -s inputStateFile -I inifile")
+    print("              -o outputStateFile -r runinfofile -w workdir -C case")
 
 
 def main():
@@ -562,7 +556,7 @@ def main():
         opts, _ = getopt.getopt(sys.argv[1:], "-M:-t:-s:-o:-r:-w:-C:-I:R:")
     except getopt.GetoptError as err:
         # print help information and exit:
-        print(str(err)) 
+        print(str(err))
         usage()
         sys.exit(2)
 

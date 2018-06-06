@@ -67,7 +67,7 @@ def main():
 
     dd = dynModelFw.wf_supplyVariableNamesAndRoles()
     print(dd)
-    dynModelFw.wf_setValueLdd("TopoLdd",5.0,6.46823,51.6821)
+    dynModelFw.wf_setValueLdd("TopoLdd", 5.0, 6.46823, 51.6821)
     npmap0 = dynModelFw.wf_supplyMapAsNumpy("TopoLdd")
     ltt = dynModelFw.wf_supplyMapAsList("SurfaceRunoff")
 

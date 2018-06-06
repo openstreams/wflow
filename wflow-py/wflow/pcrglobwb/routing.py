@@ -44,6 +44,7 @@ from wflow.wf_DynamicFramework import configget
 from wflow.wflow_lib import getgridparams
 
 
+
 class Routing(object):
 
     # TODO: remove
@@ -124,9 +125,6 @@ class Routing(object):
         self.inputDir = os.path.join(
             os.path.abspath(Dir), staticmaps
         )  # iniItems.globalOptions['inputDir']
-        self.stateDir = os.path.join(
-            os.path.abspath(Dir), 'instate'
-        )
 
         # option to activate water balance check
         self.debugWaterBalance = True
@@ -185,8 +183,7 @@ class Routing(object):
         )
 
         # model resolution in arc-degree unit
-        #self.cellSizeInArcDeg = vos.getMapAttributes(self.cloneMap, "cellsize")
-        self.cellSizeInArcDeg = round(getgridparams()[2] * 360000.) / 360000.        
+        self.cellSizeInArcDeg = vos.getMapAttributes(self.cloneMap, "cellsize")
 
         # maximum number of days (timesteps) to calculate long term average flow values (default: 5 years = 5 * 365 days = 1825)
         self.maxTimestepsToAvgDischargeLong = 1825.
@@ -412,16 +409,23 @@ class Routing(object):
                     self.inputDir,
                 )
             else:
-                msg = "The bankfull channel storage capacity is NOT defined in the configuration file. "
-            
-                if isinstance(self.predefinedChannelWidth, type(None)) or\
-                   isinstance(self.predefinedChannelDepth, type(None)):
-            
-                    msg += "The bankfull capacity is estimated from average discharge (5 year long term average)."
+                msg = (
+                    "The bankfull channel storage capacity is NOT defined in the configuration file. "
+                )
+
+                if isinstance(self.predefinedChannelWidth, type(None)) or isinstance(
+                    self.predefinedChannelDepth, type(None)
+                ):
+
+                    msg += (
+                        "The bankfull capacity is estimated from average discharge (5 year long term average)."
+                    )
 
                 else:
 
-                    msg += "The bankfull capacity is estimated from the given channel depth and channel width."
+                    msg += (
+                        "The bankfull capacity is estimated from the given channel depth and channel width."
+                    )
                     self.usingFixedBankfullCapacity = True
                     self.predefinedBankfullCapacity = self.estimateBankfullCapacity(
                         self.predefinedChannelWidth, self.predefinedChannelDepth
@@ -452,44 +456,44 @@ class Routing(object):
                 iniItems.get("routingOptions", "timestepsToAvgDischargeIni"),
                 self.cloneMap,
                 self.tmpDir,
-                self.stateDir,
+                self.inputDir,
             )
 
             self.channelStorage = vos.readPCRmapClone(
                 iniItems.get("routingOptions", "channelStorageIni"),
                 self.cloneMap,
                 self.tmpDir,
-                self.stateDir,
+                self.inputDir,
             )
             self.readAvlChannelStorage = vos.readPCRmapClone(
                 iniItems.get("routingOptions", "readAvlChannelStorageIni"),
                 self.cloneMap,
                 self.tmpDir,
-                self.stateDir,
+                self.inputDir,
             )
             self.avgDischarge = vos.readPCRmapClone(
                 iniItems.get("routingOptions", "avgDischargeLongIni"),
                 self.cloneMap,
                 self.tmpDir,
-                self.stateDir,
+                self.inputDir,
             )
             self.m2tDischarge = vos.readPCRmapClone(
                 iniItems.get("routingOptions", "m2tDischargeLongIni"),
                 self.cloneMap,
                 self.tmpDir,
-                self.stateDir,
+                self.inputDir,
             )
             self.avgBaseflow = vos.readPCRmapClone(
                 iniItems.get("routingOptions", "avgBaseflowLongIni"),
                 self.cloneMap,
                 self.tmpDir,
-                self.stateDir,
+                self.inputDir,
             )
             self.riverbedExchange = vos.readPCRmapClone(
                 iniItems.get("routingOptions", "riverbedExchangeIni"),
                 self.cloneMap,
                 self.tmpDir,
-                self.stateDir,
+                self.inputDir,
             )
 
             # New initial condition variable introduced in the version 2.0.2: avgDischargeShort
@@ -497,7 +501,7 @@ class Routing(object):
                 iniItems.get("routingOptions", "avgDischargeShortIni"),
                 self.cloneMap,
                 self.tmpDir,
-                self.stateDir,
+                self.inputDir,
             )
 
             # Initial conditions needed for kinematic wave methods
@@ -505,7 +509,7 @@ class Routing(object):
                 configget(iniItems, "routingOptions", "subDischargeIni", "0.0"),
                 self.cloneMap,
                 self.tmpDir,
-                self.stateDir,
+                self.inputDir,
             )
 
         else:
@@ -575,7 +579,7 @@ class Routing(object):
                 ),
                 self.cloneMap,
                 self.tmpDir,
-                self.stateDir,
+                self.inputDir,
             )
             self.avgOutflow = vos.readPCRmapClone(
                 configget(
@@ -583,7 +587,7 @@ class Routing(object):
                 ),
                 self.cloneMap,
                 self.tmpDir,
-                self.stateDir,
+                self.inputDir,
             )
             if (
                 configget(iniItems, "routingOptions", "waterBodyStorageIni", "None")
@@ -593,7 +597,7 @@ class Routing(object):
                     iniItems.get("routingOptions", "waterBodyStorageIni"),
                     self.cloneMap,
                     self.tmpDir,
-                    self.stateDir,
+                    self.inputDir,
                 )
                 self.waterBodyStorage = pcr.ifthen(
                     self.landmask, pcr.cover(self.waterBodyStorage, 0.0)
@@ -609,7 +613,9 @@ class Routing(object):
         self.avgInflow = pcr.ifthen(self.landmask, pcr.cover(self.avgInflow, 0.0))
         self.avgOutflow = pcr.ifthen(self.landmask, pcr.cover(self.avgOutflow, 0.0))
         if not isinstance(self.waterBodyStorage, type(None)):
-            self.waterBodyStorage = pcr.ifthen(self.landmask, pcr.cover(self.waterBodyStorage, 0.0))
+            self.waterBodyStorage = pcr.ifthen(
+                self.landmask, pcr.cover(self.waterBodyStorage, 0.0)
+            )
 
     def estimateBankfullDischarge(self, bankfullWidth, factor=4.8):
 
@@ -669,8 +675,15 @@ class Routing(object):
                 iniItems.get("globalOptions", "inputDir"),
             )
 
-            # a dictionary contains areaFractions (dimensionless): fractions of flooded/innundated areas  
-            areaFractions = list(map(float, iniItems.get("routingOptions","relativeElevationLevels").split(',')))
+            # a dictionary contains areaFractions (dimensionless): fractions of flooded/innundated areas
+            areaFractions = list(
+                map(
+                    float,
+                    iniItems.get("routingOptions", "relativeElevationLevels").split(
+                        ","
+                    ),
+                )
+            )
             # number of levels/intervals
             nrZLevels = len(areaFractions)
             # - TODO: Read areaFractions and nrZLevels automatically.
@@ -792,8 +805,8 @@ class Routing(object):
         yMean = pcr.cover(yMean, 0.01)
 
         # option to use constant channel width (m)
-        if not isinstance(self.predefinedChannelWidth,type(None)):\
-           wMean = pcr.cover(self.predefinedChannelWidth, wMean)
+        if not isinstance(self.predefinedChannelWidth, type(None)):
+            wMean = pcr.cover(self.predefinedChannelWidth, wMean)
         #
         # minimum channel width (m)
         wMean = pcr.max(self.minChannelWidth, wMean)
@@ -1201,8 +1214,10 @@ class Routing(object):
         self.channelDepth = pcr.max(0.0, self.yMean)
         #
         # option to use constant channel depth (m)
-        if not isinstance(self.predefinedChannelDepth, type(None)):\
-           self.channelDepth = pcr.cover(self.predefinedChannelDepth, self.channelDepth)
+        if not isinstance(self.predefinedChannelDepth, type(None)):
+            self.channelDepth = pcr.cover(
+                self.predefinedChannelDepth, self.channelDepth
+            )
 
         # channel bankfull capacity (unit: m3)
         if self.floodPlain:
@@ -1729,7 +1744,9 @@ class Routing(object):
 
         if self.floodPlain:
 
-            msg = "Calculate channel inundated fraction and flood inundation depth above the floodplain."
+            msg = (
+                "Calculate channel inundated fraction and flood inundation depth above the floodplain."
+            )
             logger.info(msg)
 
             # given the flood channel volume: channelStorage

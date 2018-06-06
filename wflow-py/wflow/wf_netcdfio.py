@@ -408,7 +408,9 @@ class netcdfoutput:
         """
         if hasattr(self, "nc_trg"):
             if self.bufferdirty:
-                self.logger.warning("Finishing before expected run-length exceeded. Buffer not flushed")
+                self.logger.warning(
+                    "Finishing before expected run-length exceeded. Buffer not flushed"
+                )
             self.nc_trg.sync()
             self.nc_trg.close()
 
@@ -714,11 +716,14 @@ class netcdfinput:
         for var in vars:
             try:
                 # self.alldat[var] = self.dataset.variables[var][self.fstep:self.maxsteps]
-                self.alldat[var] = self.dataset.variables[var]
+                self.alldat[var] = reshape(
+                    self.dataset.variables[var], (self.maxlentime, len(y), len(x))
+                )
             except:
                 self.alldat.pop(var, None)
-                logging.warning("Variable " + var + " not found in netcdf file: " + netcdffile)
-
+                logging.warning(
+                    "Variable " + var + " not found in netcdf file: " + netcdffile
+                )
 
     def gettimestep(self, timestep, logging, tsdatetime=None, var="P", shifttime=False):
         """
@@ -747,32 +752,55 @@ class netcdfinput:
             ncindex = self.datetimelist.size - 1
 
         if tsdatetime != None:
-            if tsdatetime.replace(tzinfo=None) != self.datetimelist[ncindex].replace(tzinfo=None):
-                logging.warning("Date/time does not match. Wanted " + str(tsdatetime) + " got " + str(self.datetimelist[ncindex]))
+            if tsdatetime.replace(tzinfo=None) != self.datetimelist[ncindex].replace(
+                tzinfo=None
+            ):
+                logging.warning(
+                    "Date/time does not match. Wanted "
+                    + str(tsdatetime)
+                    + " got "
+                    + str(self.datetimelist[ncindex])
+                )
                 import bisect
 
                 pos = bisect.bisect_left(
                     self.datetimelist, tsdatetime.replace(tzinfo=None)
                 )
                 if pos >= self.datetimelist.size:
-                    pos = self.datetimelist.size -1
-                    logging.warning("No matching date/time found using last date/time again...")
+                    pos = self.datetimelist.size - 1
+                    logging.warning(
+                        "No matching date/time found using last date/time again..."
+                    )
                 self.offset = pos - ncindex
-                logging.warning("Adjusting to the date/time at index and setting offset: " + str(pos) + ":" + str(self.offset) + ":"  + str(self.datetimelist[pos]))
+                logging.warning(
+                    "Adjusting to the date/time at index and setting offset: "
+                    + str(pos)
+                    + ":"
+                    + str(self.offset)
+                    + ":"
+                    + str(self.datetimelist[pos])
+                )
                 ncindex = pos
-
 
         if var in self.alldat:
             if ncindex == self.lstep:  # Read new block of data in mem
-                logging.debug("reading new netcdf data block starting at: " + str(ncindex))
+                logging.debug(
+                    "reading new netcdf data block starting at: " + str(ncindex)
+                )
                 for vars in self.alldat:
-                    self.alldat[vars] = reshape(self.dataset.variables[vars],(self.maxlentime,len(self.y),len(self.x)))[ncindex:ncindex + self.maxsteps]
+                    self.alldat[vars] = reshape(
+                        self.dataset.variables[vars],
+                        (self.maxlentime, len(self.y), len(self.x)),
+                    )[ncindex : ncindex + self.maxsteps]
 
                 self.fstep = ncindex
                 self.lstep = ncindex + self.maxsteps
 
-            np_step = self.alldat[var][ncindex - self.fstep,self.latidx.min():self.latidx.max()+1,
-                      self.lonidx.min():self.lonidx.max()+1]
+            np_step = self.alldat[var][
+                ncindex - self.fstep,
+                self.latidx.min() : self.latidx.max() + 1,
+                self.lonidx.min() : self.lonidx.max() + 1,
+            ]
 
             miss = float(self.dataset.variables[var]._FillValue)
             if self.flip:
@@ -914,7 +942,9 @@ class netcdfinputstates:
                 ]
             except:
                 self.alldat.pop(var, None)
-                logging.warning("Variable " + var + " not found in netcdf file: " + netcdffile)
+                logging.warning(
+                    "Variable " + var + " not found in netcdf file: " + netcdffile
+                )
 
     def gettimestep(self, timestep, logging, var="P", tsdatetime=None):
         """
@@ -928,11 +958,25 @@ class netcdfinputstates:
 
         if var in self.dataset.variables:
             if tsdatetime != None:
-                if tsdatetime.replace(tzinfo=None) != self.datetimelist[ncindex].replace(tzinfo=None):
-                    logging.warning("Date/time of state (" + var + " in " + self.fname + ")does not match. Wanted " + str(tsdatetime) + " got " + str(self.datetimelist[ncindex]))
+                if tsdatetime.replace(tzinfo=None) != self.datetimelist[
+                    ncindex
+                ].replace(tzinfo=None):
+                    logging.warning(
+                        "Date/time of state ("
+                        + var
+                        + " in "
+                        + self.fname
+                        + ")does not match. Wanted "
+                        + str(tsdatetime)
+                        + " got "
+                        + str(self.datetimelist[ncindex])
+                    )
 
-            np_step = self.dataset.variables[var][ncindex, self.latidx.min():self.latidx.max() + 1,
-                          self.lonidx.min():self.lonidx.max() + 1]
+            np_step = self.dataset.variables[var][
+                ncindex,
+                self.latidx.min() : self.latidx.max() + 1,
+                self.lonidx.min() : self.lonidx.max() + 1,
+            ]
 
             miss = float(self.dataset.variables[var]._FillValue)
             return numpy2pcr(Scalar, np_step, miss), True
@@ -991,8 +1035,11 @@ class netcdfinputstatic:
         """
 
         if var in self.dataset.variables:
-            np_step = self.alldat[var][timestep-1, self.latidx.min():self.latidx.max() + 1,
-                      self.lonidx.min():self.lonidx.max() + 1]
+            np_step = self.alldat[var][
+                timestep - 1,
+                self.latidx.min() : self.latidx.max() + 1,
+                self.lonidx.min() : self.lonidx.max() + 1,
+            ]
             miss = float(self.dataset.variables[var]._FillValue)
             return numpy2pcr(Scalar, np_step, miss), True
         else:

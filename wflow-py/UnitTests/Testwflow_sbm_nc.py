@@ -57,14 +57,15 @@ class MyTest(unittest.TestCase):
         )
 
         print("Checking surface water budget ....")
-        self.assertAlmostEqual(3.574188167654313e-09,my_data[:,2].sum(),places=4)
-        my_data = wf.genfromtxt(os.path.join(caseName,runId,"wbsoil.csv"), delimiter=',')
+        self.assertAlmostEqual(3.574188167654313e-09, my_data[:, 2].sum(), places=4)
+        my_data = wf.genfromtxt(
+            os.path.join(caseName, runId, "wbsoil.csv"), delimiter=","
+        )
         print("Checking soil water budget ....")
-        self.assertAlmostEqual(0.002721056049267645,my_data[:,2].sum(),places=4)
+        self.assertAlmostEqual(0.002721056049267645, my_data[:, 2].sum(), places=4)
         print("Checking precip sum ....")
-        my_data = wf.genfromtxt(os.path.join(caseName,runId,"P.csv"), delimiter=',')
-        self.assertAlmostEqual(sump,my_data[:,2].sum())
-
+        my_data = wf.genfromtxt(os.path.join(caseName, runId, "P.csv"), delimiter=",")
+        self.assertAlmostEqual(sump, my_data[:, 2].sum())
 
 
 if __name__ == "__main__":

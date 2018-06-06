@@ -23,34 +23,42 @@ Driver = ogr.GetDriverByName("ESRI Shapefile")
 
 
 def usage():
-    print('')
-    print('Usage: CatchRiver [-d dem (raster)] [-l burn_line (shape)] [-p burn_point (shape)] [-a burn_area (shape)]\n '
-          '[-R riverout (shape)] [-C catchmentout (shape)]  [-O min strahler order (integer)] -B -S -K')
-    print('-d   digital elevation model (GeoTiff)')
-    print('-l   polylines (rivers) to be burned in the DEM (optional) (ESRI Shapefile)')
-    print('-p   points (outlets) to be burned in the DEM (optional) (ESRI Shapefile)')
-    print('-F   factor by which the cell-size should be scaled (default=1)')
-    print('-O   minimal strahler order in river shapefile (optional, default=3) (integer)')
-    print('-s   option to snap points (-p) to lines (-l) (default=no)')
-    print('-R   name of output river (optional, default = river.shp) (ESRI Shapefile)')
-    print('-C   name of output catchment (optional, default = catchment.shp) (ESRI Shapefile)')
-    print('-B   burn value by which DEM will be lowered if burned (optional, default=1000) (integer)')
-    print('-S   option to skip generation of LDD (default=no)')
-    print('-K   option to keep all catchments and river networks (default=no)')
+    print("")
+    print(
+        "Usage: CatchRiver [-d dem (raster)] [-l burn_line (shape)] [-p burn_point (shape)] [-a burn_area (shape)]\n "
+        "[-R riverout (shape)] [-C catchmentout (shape)]  [-O min strahler order (integer)] -B -S -K"
+    )
+    print("-d   digital elevation model (GeoTiff)")
+    print("-l   polylines (rivers) to be burned in the DEM (optional) (ESRI Shapefile)")
+    print("-p   points (outlets) to be burned in the DEM (optional) (ESRI Shapefile)")
+    print("-F   factor by which the cell-size should be scaled (default=1)")
+    print(
+        "-O   minimal strahler order in river shapefile (optional, default=3) (integer)"
+    )
+    print("-s   option to snap points (-p) to lines (-l) (default=no)")
+    print("-R   name of output river (optional, default = river.shp) (ESRI Shapefile)")
+    print(
+        "-C   name of output catchment (optional, default = catchment.shp) (ESRI Shapefile)"
+    )
+    print(
+        "-B   burn value by which DEM will be lowered if burned (optional, default=1000) (integer)"
+    )
+    print("-S   option to skip generation of LDD (default=no)")
+    print("-K   option to keep all catchments and river networks (default=no)")
     print('-I   option to force "lddin" (default=no)')
 
-    print('')
+    print("")
 
 
 def removeshp(shapein, directory):
     if os.path.exists(directory + shapein):
-        print(shapein + ' exists and will be deleted')
+        print(shapein + " exists and will be deleted")
         Driver.DeleteDataSource(directory + shapein)
         shapein = directory + shapein
     else:
         shapein = directory + shapein
     if os.path.exists(directory + shapein):
-        print('failed to remove ' + directory + shapein)
+        print("failed to remove " + directory + shapein)
         counter = 1
         stopcounting = False
         shp_att = os.path.splitext(os.path.basename(shapein))[0]
@@ -61,7 +69,7 @@ def removeshp(shapein, directory):
                 stopcounting = True
             else:
                 counter += 1
-        print('filename used: ' + shapein)
+        print("filename used: " + shapein)
     return shapein
 
 
@@ -77,7 +85,7 @@ argv = sys.argv
 try:
     opts, args = getopt.getopt(argv[1:], "d:l:p:F:a:R:C:O:B:SsKI")
 except getopt.error:
-    print('error')
+    print("error")
     usage()
     sys.exit(1)
 
@@ -126,58 +134,58 @@ for o, a in opts:
 """ check if files exist """
 if dem_in == None:
     if not skipldd:
-        print('please provide dem')
+        print("please provide dem")
         usage()
         sys.exit(1)
 else:
     if not os.path.exists(dem_in):
-        print('file ' + dem_in)
-        print('Your DEM does not exist in the file-system')
-        print('')
+        print("file " + dem_in)
+        print("Your DEM does not exist in the file-system")
+        print("")
         sys.exit(1)
 if not pointshp == None:
     if not os.path.exists(pointshp):
-        print('file ' + pointshp)
-        print('Your point-shape does not exist in the file-system')
-        print('')
+        print("file " + pointshp)
+        print("Your point-shape does not exist in the file-system")
+        print("")
         sys.exit(1)
 if not lineshp == None:
     if not os.path.exists(lineshp):
-        print('file ' + lineshp)
-        print('Your line-shape does not exist in the file-system')
-        print('')
+        print("file " + lineshp)
+        print("Your line-shape does not exist in the file-system")
+        print("")
         sys.exit(1)
 
 """ set property values """
 if minorder == None:
-    print('no minimum strahler order specified')
-    print('default will be used: 5')
+    print("no minimum strahler order specified")
+    print("default will be used: 5")
     minorder = int(5)
 
 if burnvalue == None:
-    print('no value for burning defined')
-    print('default will be used: 1000 (map units)')
-    print('pits will be filled till 500 (map units)')
+    print("no value for burning defined")
+    print("default will be used: 1000 (map units)")
+    print("pits will be filled till 500 (map units)")
     burnvalue = float(1000)
 
 if rivshp == None:
-    print('default name for river shape will be used: river.shp')
-    rivshp = 'river.shp'
+    print("default name for river shape will be used: river.shp")
+    rivshp = "river.shp"
 
 if catchshp == None:
-    print('default name for river shape will be used: catchment.shp')
-    catchshp = 'catchments.shp'
+    print("default name for river shape will be used: catchment.shp")
+    catchshp = "catchments.shp"
 
 if not dem_in == None:
     ds = gdal.Open(dem_in)
     if ds == None:
-        print('Input file specified not available or not a raster')
+        print("Input file specified not available or not a raster")
         sys.exit(1)
     else:
         spatialref = ds.GetProjection()
         srs = osr.SpatialReference()
-        if (srs == None) or (spatialref == ''):
-            print('Your DEM is not projected')
+        if (srs == None) or (spatialref == ""):
+            print("Your DEM is not projected")
             sys.exit(1)
         print(srs)
         srs.ImportFromWkt(spatialref)
@@ -187,7 +195,7 @@ if not dem_in == None:
         # transform = ds.GetGeoTransform()
     # ds = None
 else:
-    print('no DEM provided, no projection will be assigned to output')
+    print("no DEM provided, no projection will be assigned to output")
 
 """ create directories """
 if not skipldd:
@@ -195,8 +203,8 @@ if not skipldd:
         try:
             shutil.rmtree(workdir)
         except:
-            print('cannot remove work directory')
-            print('probably blocked by other process')
+            print("cannot remove work directory")
+            print("probably blocked by other process")
             sys.exit(1)
     os.makedirs(workdir)
 
@@ -349,17 +357,17 @@ catchments_tif = workdir + "catchments.tif"
 generateldd = True
 
 if skipldd:
-    print('Option -S is set')
-    print('ldd will be read from ' + ldd_map)
+    print("Option -S is set")
+    print("ldd will be read from " + ldd_map)
     if os.path.exists(ldd_map):
         ldd = pcr.ldd(pcr.readmap(ldd_map))
         generateldd = False
     else:
-        print('file ' + ldd_map + ' does not exist')
-        print('new ldd will be generated')
+        print("file " + ldd_map + " does not exist")
+        print("new ldd will be generated")
 
 if generateldd:
-    print('Generating ldd...')
+    print("Generating ldd...")
     if burndem:
         linescover = pcr.ifthen(lines == 1, pcr.scalar(0))
         pointscover = pcr.ifthen(pcr.scalar(points) == 1, pcr.scalar(0))
@@ -461,8 +469,9 @@ if not keepall:
 pcr.report(riversid, riversid_map)
 pcr.report(drain, drain_map)
 
-print('converting river map-file to shape-file...')
-wt.PCR_river2Shape(riversid_map, drain_map, streamorder_map,
-                   ldd_map, rivshp, catchments_map, srs)
+print("converting river map-file to shape-file...")
+wt.PCR_river2Shape(
+    riversid_map, drain_map, streamorder_map, ldd_map, rivshp, catchments_map, srs
+)
 # if __name__ == "__main__":
 #    main()

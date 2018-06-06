@@ -20,7 +20,7 @@ class MyTest(unittest.TestCase):
         bmiobj = bmi.wflowbmi_csdms()
         bmiobj.initialize("bmirunner.ini", loglevel=logging.INFO)
 
-        print(bmiobj.get_component_name().split(','))
+        print(bmiobj.get_component_name().split(","))
         print(bmiobj.get_input_var_names())
         print(bmiobj.get_output_var_names())
         print(bmiobj.get_start_time())
@@ -30,7 +30,7 @@ class MyTest(unittest.TestCase):
         print(curtime)
         print(bmiobj.get_time_step())
         print(bmiobj.get_attribute_names())
-        steps =  0
+        steps = 0
         print(steps)
         while curtime < endtime:
             bmiobj.update()

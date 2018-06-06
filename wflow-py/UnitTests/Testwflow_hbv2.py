@@ -19,14 +19,16 @@ class MyTest(unittest.TestCase):
 
         # set runid, clonemap and casename. Also define the ini file
         runId = "unittest"
-        configfile="wflow_hbv_hr.ini"
-        wflow_cloneMap = 'wflow_catchment.map'
-        caseName="wflow_hbv"
-        starttime = starttime = datetime.datetime(1990,1,1)
+        configfile = "wflow_hbv_hr.ini"
+        wflow_cloneMap = "wflow_catchment.map"
+        caseName = "wflow_hbv"
+        starttime = starttime = datetime.datetime(1990, 1, 1)
 
-        myModel = wf.WflowModel(wflow_cloneMap, caseName,runId,configfile)
-         # initialise the framework
-        dynModelFw = wf.wf_DynamicFramework(myModel, stopTime,firstTimestep=startTime,datetimestart=starttime)
+        myModel = wf.WflowModel(wflow_cloneMap, caseName, runId, configfile)
+        # initialise the framework
+        dynModelFw = wf.wf_DynamicFramework(
+            myModel, stopTime, firstTimestep=startTime, datetimestart=starttime
+        )
         print(dynModelFw.DT)
 
         # Load model config from files and check directory structure
@@ -54,21 +56,16 @@ class MyTest(unittest.TestCase):
 
         # nore read the csv results acn check of they match the first run
         # Sum should be approx c 4.569673676
-        my_data = wf.genfromtxt(os.path.join(caseName,runId,"watbal.csv"), delimiter=',')
+        my_data = wf.genfromtxt(
+            os.path.join(caseName, runId, "watbal.csv"), delimiter=","
+        )
 
         print("Checking  water budget ....")
-        self.assertAlmostEqual( 0.0013141632080078125,my_data[:,2].sum(),places=4)
-
-        my_data = wf.genfromtxt(os.path.join(caseName,runId,"run.csv"), delimiter=',')
-        print("Checking  discharge ....")
-        self.assertAlmostEqual(1837.7918265024821 ,my_data[:,2].mean(),places=4)
-
-        print ("Checking  water budget ....")
-        self.assertAlmostEquals(0.0013141632080078125, my_data[:, 2].sum(), places=4)
+        self.assertAlmostEqual(0.0013141632080078125, my_data[:, 2].sum(), places=4)
 
         my_data = wf.genfromtxt(os.path.join(caseName, runId, "run.csv"), delimiter=",")
-        print ("Checking  discharge ....")
-        self.assertAlmostEquals(1811.1795542081197, my_data[:, 2].mean(), places=4)
+        print("Checking  discharge ....")
+        self.assertAlmostEqual(1837.7918265024821, my_data[:, 2].mean(), places=4)
 
 
 if __name__ == "__main__":

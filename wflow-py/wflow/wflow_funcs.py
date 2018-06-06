@@ -174,29 +174,31 @@ def rainfall_interception_modrut(
 
 
 def bf_oneparam(discharge, k):
-    bf = list(range(0,len(discharge)))
-    for i in range(1,len(discharge)):
-        bf[i] = (k*bf[i-1]/(2.0-k)) + ((1.0-k)*discharge[i]/(2.0-k))
+    bf = list(range(0, len(discharge)))
+    for i in range(1, len(discharge)):
+        bf[i] = (k * bf[i - 1] / (2.0 - k)) + ((1.0 - k) * discharge[i] / (2.0 - k))
         if bf[i] > discharge[i]:
             bf[i] = discharge[i]
 
     return bf
 
 
-def bf_twoparam(discharge, k,C):
-    bf = list(range(0,len(discharge)))
-    for i in range(1,len(discharge)):
-        bf[i] = (k*bf[i-1]/(1.0+C)) + ((C)*discharge[i]/(1.0+C))
+def bf_twoparam(discharge, k, C):
+    bf = list(range(0, len(discharge)))
+    for i in range(1, len(discharge)):
+        bf[i] = (k * bf[i - 1] / (1.0 + C)) + ((C) * discharge[i] / (1.0 + C))
         if bf[i] > discharge[i]:
             bf[i] = discharge[i]
 
     return bf
 
 
-def bf_threeparam(discharge, k,C,a):
-    bf = list(range(0,len(discharge)))
-    for i in range(1,len(discharge)):
-        bf[i] = (k*bf[i-1]/(1.0+C)) + ((C)*discharge[i] + a*discharge[i-1]/(1.0+C))
+def bf_threeparam(discharge, k, C, a):
+    bf = list(range(0, len(discharge)))
+    for i in range(1, len(discharge)):
+        bf[i] = (k * bf[i - 1] / (1.0 + C)) + (
+            (C) * discharge[i] + a * discharge[i - 1] / (1.0 + C)
+        )
         if bf[i] > discharge[i]:
             bf[i] = discharge[i]
 

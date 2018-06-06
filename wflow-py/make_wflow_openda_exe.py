@@ -58,10 +58,9 @@ gdaldata = os.getenv("GDAL_DATA")
 data_files.append(("./gdal-data", glob.glob(gdaldata + "/*.*")))
 
 
-
 print("Copying extra data files...")
 for dirr in data_files:
-    timake = os.path.join(thename ,dirr[0])
+    timake = os.path.join(thename, dirr[0])
     print(timake)
     if not os.path.exists(timake):
         os.makedirs(timake)

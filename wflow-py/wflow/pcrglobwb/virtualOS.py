@@ -62,7 +62,7 @@ netcdf_suffixes = (".nc4", ".nc")
 
 
 def getFileList(inputDir, filePattern):
-    """creates a dictionary of	files meeting the pattern specified"""
+    """creates a dictionary of files meeting the pattern specified"""
     fileNameList = glob.glob(os.path.join(inputDir, filePattern))
     ll = {}
     for fileName in fileNameList:
@@ -79,8 +79,6 @@ def checkVariableInNC(ncFile, varName):
         + str(ncFile)
     )
 
-    logger.debug('Check whether the variable: '+str(varName)+' is defined in the file: '+str(ncFile))
-    
     if ncFile in list(filecache.keys()):
         f = filecache[ncFile]
         # ~ print "Cached: ", ncFile
@@ -90,7 +88,7 @@ def checkVariableInNC(ncFile, varName):
         # ~ print "New: ", ncFile
 
     varName = str(varName)
-    
+
     return varName in list(f.variables.keys())
 
 
@@ -221,11 +219,11 @@ def netcdf2PCRobjClone(
     #     Only works if cells are 'square'.
     #     Only works if cellsizeClone <= cellsizeInput
     # Get netCDF file and variable name:
-    
-    #~ print ncFile
-    
-    logger.debug('reading variable: '+str(varName)+' from the file: '+str(ncFile))
-    
+
+    # ~ print ncFile
+
+    logger.debug("reading variable: " + str(varName) + " from the file: " + str(ncFile))
+
     if ncFile in list(filecache.keys()):
         f = filecache[ncFile]
         # ~ print "Cached: ", ncFile
@@ -569,11 +567,11 @@ def netcdf2PCRobjCloneJOYCE(
     #     Only works if cells are 'square'.
     #     Only works if cellsizeClone <= cellsizeInput
     # Get netCDF file and variable name:
-    
-    #~ print ncFile
-    
-    logger.debug('reading variable: '+str(varName)+' from the file: '+str(ncFile))
-    
+
+    # ~ print ncFile
+
+    logger.debug("reading variable: " + str(varName) + " from the file: " + str(ncFile))
+
     if ncFile in list(filecache.keys()):
         f = filecache[ncFile]
         # ~ print "Cached: ", ncFile
@@ -1421,26 +1419,54 @@ def isLastDayOfMonth(date):
         return False
 
 
-    if err !=None or cOut == []:
-        print("Something wrong with mattattr in virtualOS, maybe clone Map does not exist ? ")
+def getMapAttributesALL(cloneMap, arcDegree=True):
+    cOut, err = subprocess.Popen(
+        str("mapattr -p %s " % (cloneMap)),
+        stdout=subprocess.PIPE,
+        stderr=open(os.devnull),
+        shell=True,
+    ).communicate()
+
+    if err != None or cOut == []:
+        print(
+            "Something wrong with mattattr in virtualOS, maybe clone Map does not exist ? "
+        )
         sys.exit()
     cellsize = float(cOut.split()[7])
-    if arcDegree == True: cellsize = round(cellsize * 360000.)/360000.
-    mapAttr = {'cellsize': float(cellsize)        ,\
-               'rows'    : float(cOut.split()[3]) ,\
-               'cols'    : float(cOut.split()[5]) ,\
-               'xUL'     : float(cOut.split()[17]),\
-               'yUL'     : float(cOut.split()[19])}
-    co = None; cOut = None; err = None
-    del co; del cOut; del err
-    n = gc.collect() ; del gc.garbage[:] ; n = None ; del n
-    return mapAttr 
+    if arcDegree == True:
+        cellsize = round(cellsize * 360000.) / 360000.
+    mapAttr = {
+        "cellsize": float(cellsize),
+        "rows": float(cOut.split()[3]),
+        "cols": float(cOut.split()[5]),
+        "xUL": float(cOut.split()[17]),
+        "yUL": float(cOut.split()[19]),
+    }
+    co = None
+    cOut = None
+    err = None
+    del co
+    del cOut
+    del err
+    n = gc.collect()
+    del gc.garbage[:]
+    n = None
+    del n
+    return mapAttr
 
-def getMapAttributes(cloneMap,attribute,arcDegree=True):
-    cOut,err = subprocess.Popen(str('mapattr -p %s ' %(cloneMap)), stdout=subprocess.PIPE,stderr=open(os.devnull),shell=True).communicate()
-    #print cOut
-    if err !=None or cOut == []:
-        print("Something wrong with mattattr in virtualOS, maybe clone Map does not exist ? ")
+
+def getMapAttributes(cloneMap, attribute, arcDegree=True):
+    cOut, err = subprocess.Popen(
+        str("mapattr -p %s " % (cloneMap)),
+        stdout=subprocess.PIPE,
+        stderr=open(os.devnull),
+        shell=True,
+    ).communicate()
+    # print cOut
+    if err != None or cOut == []:
+        print(
+            "Something wrong with mattattr in virtualOS, maybe clone Map does not exist ? "
+        )
         sys.exit()
     # print cOut.split()
     co = None
@@ -1551,36 +1577,38 @@ def getMapVolume(mapFile, cellareaFile):
 
 def secondsPerDay():
     return float(3600 * 24)
-    
-def getValDivZero(x,y,y_lim=smallNumber,z_def= 0.):
-  #-returns the result of a division that possibly involves a zero
-  # denominator; in which case, a default value is substituted:
-  # x/y= z in case y > y_lim,
-  # x/y= z_def in case y <= y_lim, where y_lim -> 0.
-  # z_def is set to zero if not otherwise specified
-  return pcr.ifthenelse(y > y_lim,x/pcr.max(y_lim,y),z_def)
-
-def getValFloatDivZero(x,y,y_lim,z_def= 0.):
-  #-returns the result of a division that possibly involves a zero
-  # denominator; in which case, a default value is substituted:
-  # x/y= z in case y > y_lim,
-  # x/y= z_def in case y <= y_lim, where y_lim -> 0.
-  # z_def is set to zero if not otherwise specified
-  if y > y_lim:
-    return x / max(y_lim,y)
-  else:
-    return z_def
 
 
-def retrieveMapValue(pcrX,coordinates):
-    #-retrieves values from a map and returns an array conform the IDs stored in properties
-    nrRows= coordinates.shape[0]
-    x= np.ones((nrRows))* MV
-    tmpIDArray= pcr.pcr2numpy(pcrX,MV)
+def getValDivZero(x, y, y_lim=smallNumber, z_def=0.):
+    # -returns the result of a division that possibly involves a zero
+    # denominator; in which case, a default value is substituted:
+    # x/y= z in case y > y_lim,
+    # x/y= z_def in case y <= y_lim, where y_lim -> 0.
+    # z_def is set to zero if not otherwise specified
+    return pcr.ifthenelse(y > y_lim, x / pcr.max(y_lim, y), z_def)
+
+
+def getValFloatDivZero(x, y, y_lim, z_def=0.):
+    # -returns the result of a division that possibly involves a zero
+    # denominator; in which case, a default value is substituted:
+    # x/y= z in case y > y_lim,
+    # x/y= z_def in case y <= y_lim, where y_lim -> 0.
+    # z_def is set to zero if not otherwise specified
+    if y > y_lim:
+        return x / max(y_lim, y)
+    else:
+        return z_def
+
+
+def retrieveMapValue(pcrX, coordinates):
+    # -retrieves values from a map and returns an array conform the IDs stored in properties
+    nrRows = coordinates.shape[0]
+    x = np.ones((nrRows)) * MV
+    tmpIDArray = pcr.pcr2numpy(pcrX, MV)
     for iCnt in range(nrRows):
-      row,col= coordinates[iCnt,:]
-      if row != MV and col != MV:
-        x[iCnt]= tmpIDArray[row,col]
+        row, col = coordinates[iCnt, :]
+        if row != MV and col != MV:
+            x[iCnt] = tmpIDArray[row, col]
     return x
 
 
@@ -1589,16 +1617,16 @@ def returnMapValue(pcrX, x, coord):
     if x.ndim == 1:
         nrRows = 1
 
-    tempIDArray= pcr.pcr2numpy(pcrX,MV)
-    #print tempIDArray
-    temporary= tempIDArray
-    nrRows= coord.shape[0]
+    tempIDArray = pcr.pcr2numpy(pcrX, MV)
+    # print tempIDArray
+    temporary = tempIDArray
+    nrRows = coord.shape[0]
     for iCnt in range(nrRows):
-      row,col= coord[iCnt,:]
-      if row != MV and col != MV:
-        tempIDArray[row,col]= (x[iCnt])
-       # print iCnt,row,col,x[iCnt]
-    pcrX= pcr.numpy2pcr(pcr.Scalar,tempIDArray,MV)
+        row, col = coord[iCnt, :]
+        if row != MV and col != MV:
+            tempIDArray[row, col] = x[iCnt]
+        # print iCnt,row,col,x[iCnt]
+    pcrX = pcr.numpy2pcr(pcr.Scalar, tempIDArray, MV)
     return pcrX
 
 
@@ -1705,22 +1733,26 @@ def waterBalanceCheck(
     if abs(a) > threshold or abs(b) > threshold:
         if PrintOnlyErrors:
 
-            #msg = "\n"
-            #msg += "\n"
-            #msg = "\n"
-            #msg += "\n"
-            #msg += "##############################################################################################################################################\n"
-            msg = "WARNING !!!!!!!! Water Balance Error %s Min %f Max %f Mean %f" % (
+            msg = "\n"
+            msg += "\n"
+            msg = "\n"
+            msg += "\n"
+            msg += (
+                "##############################################################################################################################################\n"
+            )
+            msg += "WARNING !!!!!!!! Water Balance Error %s Min %f Max %f Mean %f" % (
                 processName,
                 a,
                 b,
                 c,
             )
-            #msg += "\n"
-            #msg += "##############################################################################################################################################\n"
-            #msg += "\n"
-            #msg += "\n"
-            #msg += "\n"
+            msg += "\n"
+            msg += (
+                "##############################################################################################################################################\n"
+            )
+            msg += "\n"
+            msg += "\n"
+            msg += "\n"
 
             logger.error(msg)
 
@@ -1771,7 +1803,7 @@ def waterBalance(
     # if abs(a) > 1e-5 or abs(b) > 1e-5:
     # if abs(a) > 1e-4 or abs(b) > 1e-4:
     if abs(a) > threshold or abs(b) > threshold:
-        print("WBError %s Min %f Max %f Mean %f" %(processName,a,b,c))
+        print("WBError %s Min %f Max %f Mean %f" % (processName, a, b, c))
     #    if abs(inflow + deltaS - outflow) > 1e-5:
     #        print "Water balance Error for %s on %s: in = %f\tout=%f\tdeltaS=%f\tBalance=%f" \
     #        %(processName,dateStr,inflow,outflow,deltaS,inflow + deltaS - outflow)
@@ -1880,14 +1912,27 @@ def waterAbstractionAndAllocationHighPrecision_NEEDMORETEST(
         )
 
         # water balance check
-        if debug_water_balance and not isinstance(zone_area,type(None)):
-            waterBalanceCheck([pcr.cover(pcr.areatotal(cellAbstraction, allocation_zones)/zone_area, 0.0)],\
-                              [pcr.cover(pcr.areatotal(cellAllocation , allocation_zones)/zone_area, 0.0)],\
-                              [pcr.scalar(0.0)],\
-                              [pcr.scalar(0.0)],\
-                              'abstraction - allocation per zone/segment (with high precision) - loop (power number): ' + str(power_number) ,\
-                               True,\
-                               extra_info_for_water_balance_reporting, threshold = 1e-5)
+        if debug_water_balance and not isinstance(zone_area, type(None)):
+            waterBalanceCheck(
+                [
+                    pcr.cover(
+                        pcr.areatotal(cellAbstraction, allocation_zones) / zone_area,
+                        0.0,
+                    )
+                ],
+                [
+                    pcr.cover(
+                        pcr.areatotal(cellAllocation, allocation_zones) / zone_area, 0.0
+                    )
+                ],
+                [pcr.scalar(0.0)],
+                [pcr.scalar(0.0)],
+                "abstraction - allocation per zone/segment (with high precision) - loop (power number): "
+                + str(power_number),
+                True,
+                extra_info_for_water_balance_reporting,
+                threshold=1e-5,
+            )
 
         # actual water abstraction and allocation in this current loop (power number)
         cell_abstrac_for_every_power_number[str(power_number)] = cellAbstraction
@@ -1905,15 +1950,26 @@ def waterAbstractionAndAllocationHighPrecision_NEEDMORETEST(
         sumCellAllocation += cell_allocat_for_every_power_number[str(power_number)]
 
     # water balance check
-    if debug_water_balance and not isinstance(zone_area,type(None)):
-        waterBalanceCheck([pcr.cover(pcr.areatotal(sumCellAbstraction, allocation_zones)/zone_area, 0.0)],\
-                          [pcr.cover(pcr.areatotal(sumCellAllocation , allocation_zones)/zone_area, 0.0)],\
-                          [pcr.scalar(0.0)],\
-                          [pcr.scalar(0.0)],\
-                          'abstraction - allocation per zone/segment (with high precision) - sum after loop' ,\
-                           True,\
-                           extra_info_for_water_balance_reporting, threshold = 1e-5)
-    
+    if debug_water_balance and not isinstance(zone_area, type(None)):
+        waterBalanceCheck(
+            [
+                pcr.cover(
+                    pcr.areatotal(sumCellAbstraction, allocation_zones) / zone_area, 0.0
+                )
+            ],
+            [
+                pcr.cover(
+                    pcr.areatotal(sumCellAllocation, allocation_zones) / zone_area, 0.0
+                )
+            ],
+            [pcr.scalar(0.0)],
+            [pcr.scalar(0.0)],
+            "abstraction - allocation per zone/segment (with high precision) - sum after loop",
+            True,
+            extra_info_for_water_balance_reporting,
+            threshold=1e-5,
+        )
+
     return sumCellAbstraction, sumCellAllocation
 
 
@@ -1953,8 +2009,8 @@ def waterAbstractionAndAllocation(
         cellAvlWater = pcr.max(0.0, available_water_volume)
 
     # total available water volume in each zone/segment (unit: m3)
-    # - to minimize numerical errors, separating cellAvlWater 
-    if not isinstance(high_volume_treshold,type(None)):
+    # - to minimize numerical errors, separating cellAvlWater
+    if not isinstance(high_volume_treshold, type(None)):
         # mask: 0 for small volumes ; 1 for large volumes (e.g. in lakes and reservoirs)
         mask = pcr.cover(
             pcr.ifthen(cellAvlWater > high_volume_treshold, pcr.boolean(1)),
@@ -1980,8 +2036,8 @@ def waterAbstractionAndAllocation(
     cellAbstraction = pcr.min(cellAbstraction, cellAvlWater)
     if ignore_small_values:  # ignore small values to avoid runding error
         cellAbstraction = pcr.rounddown(pcr.max(0.00, cellAbstraction))
-    # to minimize numerical errors, separating cellAbstraction 
-    if not isinstance(high_volume_treshold,type(None)):
+    # to minimize numerical errors, separating cellAbstraction
+    if not isinstance(high_volume_treshold, type(None)):
         # mask: 0 for small volumes ; 1 for large volumes (e.g. in lakes and reservoirs)
         mask = pcr.cover(
             pcr.ifthen(cellAbstraction > high_volume_treshold, pcr.boolean(1)),
@@ -2021,21 +2077,33 @@ def waterAbstractionAndAllocation(
         - pcr.areatotal(cellAllocation, allocation_zones),
     )
     remainingCellDemand = pcr.max(0.0, cellVolDemand - cellAllocation)
-    cellAllocation     += zoneDeficitAllocation * getValDivZero(\
-                          remainingCellDemand, 
-                          pcr.areatotal(remainingCellDemand, allocation_zones), 
-                          smallNumber)                        
-    
-    if debug_water_balance and not isinstance(zone_area,type(None)):
+    cellAllocation += zoneDeficitAllocation * getValDivZero(
+        remainingCellDemand,
+        pcr.areatotal(remainingCellDemand, allocation_zones),
+        smallNumber,
+    )
 
-        waterBalanceCheck([pcr.cover(pcr.areatotal(cellAbstraction, allocation_zones)/zone_area, 0.0)],\
-                          [pcr.cover(pcr.areatotal(cellAllocation , allocation_zones)/zone_area, 0.0)],\
-                          [pcr.scalar(0.0)],\
-                          [pcr.scalar(0.0)],\
-                          'abstraction - allocation per zone/segment (PS: Error here may be caused by rounding error.)' ,\
-                           True,\
-                           extra_info_for_water_balance_reporting,threshold=1e-4)
-    
+    if debug_water_balance and not isinstance(zone_area, type(None)):
+
+        waterBalanceCheck(
+            [
+                pcr.cover(
+                    pcr.areatotal(cellAbstraction, allocation_zones) / zone_area, 0.0
+                )
+            ],
+            [
+                pcr.cover(
+                    pcr.areatotal(cellAllocation, allocation_zones) / zone_area, 0.0
+                )
+            ],
+            [pcr.scalar(0.0)],
+            [pcr.scalar(0.0)],
+            "abstraction - allocation per zone/segment (PS: Error here may be caused by rounding error.)",
+            True,
+            extra_info_for_water_balance_reporting,
+            threshold=1e-4,
+        )
+
     return cellAbstraction, cellAllocation
 
 

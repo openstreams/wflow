@@ -55,7 +55,8 @@ import subprocess
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args: print(msg)
+    for msg in args:
+        print(msg)
     print(__doc__)
     sys.exit(0)
 
@@ -105,7 +106,7 @@ def runCommands(commands, maxCpu):
 def main():
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'fhC:N:Ir:M:')
+        opts, args = getopt.getopt(sys.argv[1:], "fhC:N:Ir:M:")
     except getopt.error as msg:
         usage(msg)
 
@@ -178,8 +179,8 @@ def main():
                     allcmd.append(mstr)
                     # os.system(mstr)
                 else:
-                    print("skipping " + mfile.replace(caseName,caseNameNew))
-            runCommands(allcmd,maxcpu)
+                    print("skipping " + mfile.replace(caseName, caseNameNew))
+            runCommands(allcmd, maxcpu)
 
         for ext in ext_to_copy:
             for mfile in glob.glob(caseName + ddir + ext):
@@ -194,10 +195,12 @@ def main():
     # orig low res river
     riverburn = readmap(caseNameNew + "/staticmaps/wflow_river.map")
     # save it
-    report(riverburn,caseNameNew + "/staticmaps/wflow_riverburnin.map")
-    demburn = cover(ifthen(boolean(riverburn), dem - 600) ,dem)
+    report(riverburn, caseNameNew + "/staticmaps/wflow_riverburnin.map")
+    demburn = cover(ifthen(boolean(riverburn), dem - 600), dem)
     print("Creating ldd...")
-    ldd = lddcreate_save(caseNameNew + "/staticmaps/wflow_ldd.map",demburn, True, 10.0E35)
+    ldd = lddcreate_save(
+        caseNameNew + "/staticmaps/wflow_ldd.map", demburn, True, 10.0E35
+    )
     ## Find catchment (overall)
     outlet = find_outlet(ldd)
     sub = subcatch(ldd, outlet)

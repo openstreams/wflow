@@ -107,7 +107,8 @@ updateCols = []
 def usage(*args):
     sys.stdout = sys.stderr
     """Way"""
-    for msg in args: print(msg)
+    for msg in args:
+        print(msg)
     print(__doc__)
     sys.exit(0)
 
@@ -256,9 +257,9 @@ def soilevap_SBM(
         * min(
             1.0,
             ifthenelse(
-                zi >= UStoreLayerThickness[0],
+                zi <= UStoreLayerThickness[0],
                 UStoreLayerDepth[0] / (UStoreLayerThickness[0] * (thetaS - thetaR)),
-                UStoreLayerDepth[0] / ((zi + 1.0) * (thetaS - thetaR)),
+                zi / ((zi + 1.0) * (thetaS - thetaR)),
             ),
         ),
     )
@@ -833,7 +834,7 @@ class WflowModel(DynamicModel):
         # Temperature correction poer cell to add
 
         self.TempCor = self.wf_readmap(
-            self.Dir + "\\"
+            self.Dir
             + configget(
                 self.config,
                 "model",
@@ -1975,12 +1976,13 @@ class WflowModel(DynamicModel):
 
         # Determine Open Water EVAP based on waterfrac. Later subtract this from water that
         # enters the Kinematic wave
+        self.RestEvap = self.potsoilopenwaterevap
+        # self.RestEvap = (self.PotTrans - self.Transpiration) + self.potsoilopenwaterevap
         self.ActEvapOpenWater = min(
-            self.WaterLevel * 1000.0 * self.WaterFrac, self.WaterFrac *  self.PotTransSoil
+            self.WaterLevel * 1000.0 * self.WaterFrac, self.WaterFrac * self.RestEvap
         )
-        
-        self.RestEvap = self.PotTransSoil - self.ActEvapOpenWater
-
+        self.RestEvap = self.RestEvap - self.ActEvapOpenWater
+        self.RE = self.RestEvap
 
         self.ActEvapPond = self.ZeroMap
         if self.nrpaddyirri > 0:
@@ -2001,9 +2003,8 @@ class WflowModel(DynamicModel):
             self.SumThickness = self.UStoreLayerThickness[n] + self.SumThickness
 
         self.SaturationDeficit = self.SoilWaterCapacity - self.SatWaterDepth
-        
-        # evap available for soil evaporation
-        self.RestEvap = self.RestEvap * self.CanopyGapFraction
+
+        # self.RestPotEvap, self.SatWaterDepth, self.ActEvapSat = actEvap_sat_SBM(self.ActRootingDepth, self.zi, self.SatWaterDepth, self.PotTrans, self.rootdistpar)
 
         self.ActEvapUStore = self.ZeroMap
 
@@ -2053,8 +2054,6 @@ class WflowModel(DynamicModel):
                     self.soilevap = min(self.soilevap, self.UStoreLayerDepth[n])
 
                 self.UStoreLayerDepth[n] = self.UStoreLayerDepth[n] - self.soilevap
-                
-                #evap available for transpiration
                 self.PotTrans = (
                     self.PotTransSoil - self.soilevap - self.ActEvapOpenWater
                 )
@@ -2893,15 +2892,11 @@ class WflowModel(DynamicModel):
             Runoff = self.SurfaceRunoff
 
         # Determine Soil moisture profile
-        # self.vwc, self.vwcRoot: volumetric water content [m3/m3] per soil layer and root zone (including thetaR and saturated store)
-        # self.vwc_perc, self.vwc_percRoot: volumetric water content [%] per soil layer and root zone (including thetaR and saturated store)
-        # self.RootStore_sat: root water storage [mm] in saturated store (excluding thetaR)
-        # self.RootStore_unsat: root water storage [mm] in unsaturated store (excluding thetaR)
-        # self.RootStore: total root water storage [mm] (excluding thetaR)
-
-        self.RootStore_sat = max(0.0, self.ActRootingDepth - self.zi) * (
-            self.thetaS - self.thetaR
-        )
+        # 1: average volumetric soil in total unsat store
+        # self.SMVol = (cover(self.UStoreDepth/self.zi,0.0) + self.thetaR) * (self. thetaS - self.thetaR)
+        # self.SMRootVol = (cover(self.UStoreDepth/min(self.ActRootingDepth,self.zi),0.0) + self.thetaR) * (self. thetaS - self.thetaR)
+        RootStore_sat = max(0.0, self.ActRootingDepth - self.zi) * self.thetaS
+        RootStore_unsat = self.ZeroMap
 
         self.RootStore_unsat = self.ZeroMap
         self.SumThickness = self.ZeroMap
@@ -2909,27 +2904,10 @@ class WflowModel(DynamicModel):
         self.vwc_perc = []
 
         for n in arange(len(self.UStoreLayerThickness)):
-
-            fracRoot = ifthenelse(
-                self.ZiLayer > n,
-                min(
-                    1.0,
-                    max(
-                        0.0,
-                        (min(self.ActRootingDepth, self.zi) - self.SumThickness)
-                        / self.UStoreLayerThickness[n],
-                    ),
-                ),
-                min(
-                    1.0,
-                    max(
-                        0.0,
-                        (self.ActRootingDepth - self.SumThickness)
-                        / (self.zi + 1 - self.SumThickness),
-                    ),
-                ),
-            )
-
+            RootStore_unsat = RootStore_unsat + (
+                max(0.0, (self.ActRootingDepth - self.SumThickness))
+                / (self.UStoreLayerThickness[n])
+            ) * (cover(self.UStoreLayerDepth[n] + self.thetaR, 0.0))
             self.SumThickness = self.UStoreLayerThickness[n] + self.SumThickness
 
             self.vwc.append(
@@ -3067,26 +3045,38 @@ def main(argv=None):
     ## Process command-line options                                        #
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, 'XL:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:')
+        opts, args = getopt.getopt(argv, "XL:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:")
     except getopt.error as msg:
         pcrut.usage(msg)
 
     for o, a in opts:
-        if o == '-C': caseName = a
-        if o == '-R': runId = a
-        if o == '-c': configfile = a
-        if o == '-L': LogFileName = a
-        if o == '-s': timestepsecs = int(a)
-        if o == '-h': usage()
-        if o == '-f': _NoOverWrite = 0
-        if o == '-l': exec("loglevel = logging." + a)
+        if o == "-C":
+            caseName = a
+        if o == "-R":
+            runId = a
+        if o == "-c":
+            configfile = a
+        if o == "-L":
+            LogFileName = a
+        if o == "-s":
+            timestepsecs = int(a)
+        if o == "-h":
+            usage()
+        if o == "-f":
+            _NoOverWrite = 0
+        if o == "-l":
+            exec("loglevel = logging." + a)
 
-
-    starttime = dt.datetime(1990,1,1)
+    starttime = dt.datetime(1990, 1, 1)
 
     if _lastTimeStep < _firstTimeStep:
-        print("The starttimestep (" + str(_firstTimeStep) + ") is smaller than the last timestep (" + str(
-            _lastTimeStep) + ")")
+        print(
+            "The starttimestep ("
+            + str(_firstTimeStep)
+            + ") is smaller than the last timestep ("
+            + str(_lastTimeStep)
+            + ")"
+        )
         usage()
 
     myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile)

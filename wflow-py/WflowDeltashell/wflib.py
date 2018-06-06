@@ -23,7 +23,7 @@ def GetModelByPartialName(modelName):
 def readwfcsv(fname):
     """
     read csv file in a list of lists
-    
+
     """
     with open(fname) as csvfile:  # open the file test2.csv
         lines = csv.reader(csvfile, delimiter=",")  # read lines as collection of arrays
@@ -43,18 +43,18 @@ def readwfcsv(fname):
 
 def getrunids(casedir):
     """
-	Ugly method to get the run ids. This is absolutely not failsave
-	"""
-	from glob import glob
-	dirs =  glob(casedir + "/*/")
-	
-	ret = []
-	
-	for dir in dirs:
-		dn = os.path.basename(os.path.dirname(dir))
-		if dn not in "intbl staticmaps inmaps instate intss outstate":
-			ret.append(dir)
-			print(dn)
-			
-	return ret			
-	
+    Ugly method to get the run ids. This is absolutely not failsave
+    """
+    from glob import glob
+
+    dirs = glob(casedir + "/*/")
+
+    ret = []
+
+    for dir in dirs:
+        dn = os.path.basename(os.path.dirname(dir))
+        if dn not in "intbl staticmaps inmaps instate intss outstate":
+            ret.append(dir)
+            print(dn)
+
+    return ret

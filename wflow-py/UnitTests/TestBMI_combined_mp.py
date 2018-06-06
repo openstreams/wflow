@@ -20,7 +20,7 @@ class MyTest(unittest.TestCase):
         bmiobj = bmi.wflowbmi_csdms()
         bmiobj.initialize("bmirunner.ini")
 
-        print(bmiobj.get_component_name().split(','))
+        print(bmiobj.get_component_name().split(","))
         print(bmiobj.get_input_var_names())
         print(bmiobj.get_output_var_names())
         print(bmiobj.get_start_time())
@@ -28,9 +28,11 @@ class MyTest(unittest.TestCase):
         print(bmiobj.get_current_time())
         print(bmiobj.get_time_step())
         print(bmiobj.get_attribute_names())
-        steps =  (bmiobj.get_end_time() -  bmiobj.get_start_time())/bmiobj.get_time_step() + 1
+        steps = (
+            bmiobj.get_end_time() - bmiobj.get_start_time()
+        ) / bmiobj.get_time_step() + 1
         print(steps)
-        for a in range(0,steps):
+        for a in range(0, steps):
             bmiobj.update()
 
         atn = bmiobj.get_attribute_names()

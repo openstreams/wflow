@@ -38,7 +38,8 @@ tr.Verbose = 1
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args: print(msg)
+    for msg in args:
+        print(msg)
     print(__doc__)
     sys.exit(0)
 
@@ -199,7 +200,7 @@ def main():
     inifile = "wflow_prepare.ini"
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'W:hI:f')
+        opts, args = getopt.getopt(sys.argv[1:], "W:hI:f")
     except getopt.error as msg:
         usage(msg)
 
@@ -310,8 +311,8 @@ def main():
         lumap = config.get("files", "landuse")
     except:
         print("no landuse map...creating uniform map")
-        clone=tr.readmap(step2dir + "/cutout.map")
-        tr.report(tr.nominal(clone),step2dir + "/wflow_landuse.map")
+        clone = tr.readmap(step2dir + "/cutout.map")
+        tr.report(tr.nominal(clone), step2dir + "/wflow_landuse.map")
     else:
         os.system(
             "resample --clone "
@@ -327,8 +328,8 @@ def main():
         soilmap = config.get("files", "soil")
     except:
         print("no soil map..., creating uniform map")
-        clone=tr.readmap(step2dir + "/cutout.map")
-        tr.report(tr.nominal(clone),step2dir + "/wflow_soil.map")  
+        clone = tr.readmap(step2dir + "/cutout.map")
+        tr.report(tr.nominal(clone), step2dir + "/wflow_soil.map")
     else:
         os.system(
             "resample --clone "
@@ -359,9 +360,15 @@ def main():
         riverburn = tr.readmap(step2dir + "/wflow_riverburnin.map")
     else:
         print("river file speficied.....")
-        #rivshpattr = config.get("files","riverattr")
-        tr.report(dem * 0.0,step2dir + "/nilmap.map")
-        thestr = "gdal_translate -of GTiff " + step2dir + "/nilmap.map " + step2dir + "/wflow_riverburnin.tif"
+        # rivshpattr = config.get("files","riverattr")
+        tr.report(dem * 0.0, step2dir + "/nilmap.map")
+        thestr = (
+            "gdal_translate -of GTiff "
+            + step2dir
+            + "/nilmap.map "
+            + step2dir
+            + "/wflow_riverburnin.tif"
+        )
         os.system(thestr)
         rivshpattr = os.path.splitext(os.path.basename(rivshp))[0]
         os.system(
@@ -389,13 +396,17 @@ def main():
     # Now setup a very high wall around the catchment that is scale
     # based on the distance to the catchment so that it slopes away from the
     # catchment
-    if lddmethod != 'river':
+    if lddmethod != "river":
         print("Burning in highres-river ...")
-        disttocatch = tr.spread(tr.nominal(catchcut),0.0,1.0)
-        demmax = tr.ifthenelse(tr.scalar(catchcut) >=1.0, demmax, demmax + (tr.celllength() * 100.0) /disttocatch)
-        tr.setglobaloption("unitcell")     
-        #demregional=tr.windowaverage(demmin,100)
-        demburn = tr.cover(tr.ifthen(tr.boolean(riverburn), demmin -100.0) ,demmax)
+        disttocatch = tr.spread(tr.nominal(catchcut), 0.0, 1.0)
+        demmax = tr.ifthenelse(
+            tr.scalar(catchcut) >= 1.0,
+            demmax,
+            demmax + (tr.celllength() * 100.0) / disttocatch,
+        )
+        tr.setglobaloption("unitcell")
+        # demregional=tr.windowaverage(demmin,100)
+        demburn = tr.cover(tr.ifthen(tr.boolean(riverburn), demmin - 100.0), demmax)
     else:
         print("using average dem..")
         demburn = dem
@@ -424,22 +435,19 @@ def main():
     tr.report(river, step2dir + "/wflow_river.map")
 
     # make subcatchments
-    #os.system("col2map --clone " + step2dir + "/cutout.map gauges.col " + step2dir + "/wflow_gauges.map")
+    # os.system("col2map --clone " + step2dir + "/cutout.map gauges.col " + step2dir + "/wflow_gauges.map")
     exec("X=np.array(" + gauges_x + ")")
     exec("Y=np.array(" + gauges_y + ")")
 
     tr.setglobaloption("unittrue")
 
-    outlmap = tr.points_to_map(dem,X,Y,0.5)
-    tr.report(outlmap,step2dir + "/wflow_gauges_.map")
-      
-    if snapgaugestoriver:    
+    outlmap = tr.points_to_map(dem, X, Y, 0.5)
+    tr.report(outlmap, step2dir + "/wflow_gauges_.map")
+
+    if snapgaugestoriver:
         print("Snapping gauges to river")
-        tr.report(outlmap,step2dir + "/wflow_orggauges.map")
-        outlmap= tr.snaptomap(outlmap,river)
-        
-    outlmap = tr.ifthen(outlmap > 0, outlmap)    
-    tr.report(outlmap,step2dir + "/wflow_gauges.map")
+        tr.report(outlmap, step2dir + "/wflow_orggauges.map")
+        outlmap = tr.snaptomap(outlmap, river)
 
     outlmap = tr.ifthen(outlmap > 0, outlmap)
     tr.report(outlmap, step2dir + "/wflow_gauges.map")

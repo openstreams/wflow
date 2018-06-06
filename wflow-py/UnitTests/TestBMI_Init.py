@@ -39,7 +39,7 @@ class MyTest(unittest.TestCase):
 
         print("Init model...")
         bmiobj.initialize_model()
-        print((bmiobj.dynModel._userModel().config.get("run",'starttime')))
+        print((bmiobj.dynModel._userModel().config.get("run", "starttime")))
 
         nstime = datetime.datetime.utcfromtimestamp(bmiobj.get_start_time())
 

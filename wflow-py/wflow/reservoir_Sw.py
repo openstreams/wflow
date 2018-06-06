@@ -1,15 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Feb 04 14:52:30 2015
-
-@author: teuser
-"""
-
-# -*- coding: utf-8 -*-
-"""
 Created on Thu Apr 03 16:31:35 2014
 
-@author: TEuser
+@author: Teuser
 
 List all function versions
 """
@@ -21,7 +14,7 @@ from copy import copy as copylist
 try:
     from wflow.wf_DynamicFramework import *
 except ImportError:
-    from  .wf_DynamicFramework import *
+    from .wf_DynamicFramework import *
 import scipy
 from . import JarvisCoefficients
 
@@ -44,11 +37,11 @@ def snow_no_reservoir(self, k):
     Ew = 0.
     Storage in snow zone = 0.
 
-    !!!still needs a final check!!!    
-	
-	k is the class indication
+    !!!still needs a final check!!!
+
+    k is the class indication
     self contains all the variables of the model
-    
+
     """
     try:
         JarvisCoefficients.calcEpSnow(self, k)
@@ -67,8 +60,8 @@ def snow_no_reservoir(self, k):
 
 def snow(self, k):
     """
-    - snow melt based on degree day factor and 
-    - 
+    - snow melt based on degree day factor and
+    -
     - Code for ini-file: 1
     """
     JarvisCoefficients.calcEpSnow(self, k)
@@ -109,7 +102,7 @@ def snow_rain(self, k):
     """
     - snow melt based on degree day factor and minimum surface temperature
     - meltfactor increases with temperature
-    - 
+    -
     - Code for ini-file: 6
     """
 
@@ -152,7 +145,7 @@ def snow_rain_hourlyEp(self, k):
     """
     - snow melt based on degree day factor and minimum surface temperature
     - meltfactor increases with temperature
-    - 
+    -
     - Code for ini-file: 6
     """
 
@@ -194,7 +187,7 @@ def snow_rain_Tsurf(self, k):
     """
     - snow melt based on degree day factor and minimum surface temperature
     - meltfactor increases with temperature
-    - 
+    -
     - Code for ini-file: 3
     """
 
@@ -237,7 +230,7 @@ def snow_rain_TsurfAir(self, k):
     """
     - snow melt based on degree day factor and minimum surface temperature
     - meltfactor increases with temperature
-    - 
+    -
     - Code for ini-file: 4
     """
     JarvisCoefficients.calcEpSnow(self, k)
@@ -280,7 +273,7 @@ def snow_rain_Tsurf_noEw(self, k):
     """
     - snow melt based on degree day factor and minimum surface temperature
     - meltfactor increases with temperature
-    - 
+    -
     - Code for ini-file: 5
     """
     JarvisCoefficients.calcEpSnow(self, k)
@@ -320,7 +313,7 @@ def snow_rain_Tsurf_noEw(self, k):
 
 def snowHour(self, k):
     """
-    - snow melt based on degree day factor and 
+    - snow melt based on degree day factor and
     - for hourly input  data
     - Code for ini-file: 2
     """

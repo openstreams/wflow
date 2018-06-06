@@ -102,10 +102,10 @@ def get_median(values, N="", NoData=NoDataVal):
 
 
 def get_var(values, N="", mean="", NoData=NoDataVal):
-    """This function computes the variance of an array of values after 
-       filtering out the NoData values.  The mean value of the array 
+    """This function computes the variance of an array of values after
+       filtering out the NoData values.  The mean value of the array
        must be provided to the routine.  It returns both the variance
-       value and the number of valid data points used.  The variance 
+       value and the number of valid data points used.  The variance
        is set to the NoData value if there are no valid data points."""
     if not N:
         N = len(values)
@@ -125,11 +125,11 @@ def get_var(values, N="", mean="", NoData=NoDataVal):
 
 
 def get_stdev(values, N="", mean="", NoData=NoDataVal):
-    """This function computes the standard deviation of an array of 
+    """This function computes the standard deviation of an array of
        values after filtering out the NoData values.  The mean of the
-       array must be provided to the routine.  It returns both 
-       the standard deviation value and the number of valid data 
-       points used.  The standard deviation is set to the NoData value 
+       array must be provided to the routine.  It returns both
+       the standard deviation value and the number of valid data
+       points used.  The standard deviation is set to the NoData value
        if there are no valid data points."""
     if not N:
         N = len(values)
@@ -150,9 +150,9 @@ def get_stdev(values, N="", mean="", NoData=NoDataVal):
 
 
 def get_skew(values, N="", mean="", stdev="", NoData=NoDataVal):
-    """This function computes the skewness of an array of values after 
+    """This function computes the skewness of an array of values after
        filtering out the NoData values.  The mean and standard deviation
-       of the array must be provided to the routine.  It returns both 
+       of the array must be provided to the routine.  It returns both
        the skewness value and the number of valid data points used.  The
        skewness is set to the NoData value if there are no valid data
        points."""
@@ -176,9 +176,9 @@ def get_skew(values, N="", mean="", stdev="", NoData=NoDataVal):
 
 
 def get_sum(values, N="", NoData=NoDataVal):
-    """This function computes the sum of an array of values after 
-       filtering out the NoData values.  It returns both the sum value 
-       and the number of valid data points used.  The sum is set to 
+    """This function computes the sum of an array of values after
+       filtering out the NoData values.  It returns both the sum value
+       and the number of valid data points used.  The sum is set to
        the NoData value if there are no valid data points."""
     if not N:
         N = len(values)
@@ -194,10 +194,10 @@ def get_sum(values, N="", NoData=NoDataVal):
 
 
 def get_min(values, N="", NoData=NoDataVal):
-    """This function finds the minimum value of an array after 
-       filtering out the NoData values.  It returns both the 
-       minimum value and the number of valid data points used.  
-       The minimum is set to the NoData value if there are no 
+    """This function finds the minimum value of an array after
+       filtering out the NoData values.  It returns both the
+       minimum value and the number of valid data points used.
+       The minimum is set to the NoData value if there are no
        valid data points."""
     if not N:
         N = len(values)
@@ -224,10 +224,10 @@ def get_min(values, N="", NoData=NoDataVal):
 
 
 def get_max(values, N="", NoData=NoDataVal):
-    """This function finds the maximum value of an array after 
-       filtering out the NoData values.  It returns both the 
-       maximum value and the number of valid data points used.  
-       The maximum is set to the NoData value if there are no 
+    """This function finds the maximum value of an array after
+       filtering out the NoData values.  It returns both the
+       maximum value and the number of valid data points used.
+       The maximum is set to the NoData value if there are no
        valid data points."""
     if not N:
         N = len(values)
@@ -256,7 +256,7 @@ def get_max(values, N="", NoData=NoDataVal):
 def get_count_over_threshold(values, threshold, N="", NoData=NoDataVal):
     """This function determines the number of values that are equal to
     or exceed the given threshold.  Values equal to NoData are not
-    included in the count and the number of valid values is returned 
+    included in the count and the number of valid values is returned
     along with the over threshold count."""
     if not N:
         N = len(values)
@@ -703,9 +703,18 @@ def get_box_plot_parameters(values, N="", NoData=NoDataVal):
         while tmpvalues[0] == NoData and len(tmpvalues) > 0:
             del tmpvalues[0]
     except IndexError as errstr:
-	return ( NoData, NoData, NoData, NoData, NoData, NoData, NoData,
-                 [NoData], [NoData] )            
-            
+        return (
+            NoData,
+            NoData,
+            NoData,
+            NoData,
+            NoData,
+            NoData,
+            NoData,
+            [NoData],
+            [NoData],
+        )
+
     Nact = len(values)
     # get median
     SubSetVals = [0] * 2

@@ -92,8 +92,7 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         )
         self.bmilogger.info("__init__: wflow_bmi_combined object initialised.")
         if self.wrtodisk:
-            self.bmilogger.warning('Will write all bmi set- and get- grids to disk!...')
-
+            self.bmilogger.warning("Will write all bmi set- and get- grids to disk!...")
 
     def __getmodulenamefromvar__(self, long_var_name):
         """
@@ -123,7 +122,7 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
 
         # mappingdir = self.datadir + '\\bmi_mapping\\'
         mappingdir = (
-            os.path.join(self.datadir, wfbmi.configget(self.config,"IdMapping", "folder", "bmi_mapping")[0]) + "\\"
+            os.path.join(self.datadir, self.config.get("IdMapping", "folder")) + "\\"
         )
 
         self.models = configsection(self.config, "models")
@@ -176,26 +175,27 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
 
         # Initialize rtc bmi model object
         for mod in self.models:
-            if mod.startswith('RTC'):
-                bin_rtc = os.path.join(self.datadir,self.config.get('RTC wrapper engine','bin_rtc'))
+            if mod.startswith("RTC"):
+                bin_rtc = os.path.join(
+                    self.datadir, self.config.get("RTC wrapper engine", "bin_rtc")
+                )
                 print(bin_rtc)
                 os.chdir(bin_rtc)
                 import wflow.rtc_wflow_bmi as rtcwfbmi
+
                 print(bin_rtc)
-                self.bmimodels[mod] = rtcwfbmi.rtcbmi_csdms(os.path.join(bin_rtc,"RTCTools_BMI"))
-            
+                self.bmimodels[mod] = rtcwfbmi.rtcbmi_csdms(
+                    os.path.join(bin_rtc, "RTCTools_BMI")
+                )
+
             else:
                 self.bmimodels[mod] = wfbmi.wflowbmi_csdms()
 
         # Initialize all wflow bmi model objects
         for key, value in self.bmimodels.items():
-            if key.startswith('wflow'):
-                modconf = os.path.join(self.datadir,self.config.get('models',key))
-                self.bmimodels[key].initialize_config(modconf,loglevel=loglevel)
-        
-        
-
-
+            if key.startswith("wflow"):
+                modconf = os.path.join(self.datadir, self.config.get("models", key))
+                self.bmimodels[key].initialize_config(modconf, loglevel=loglevel)
 
     def initialize_model(self):
         """
@@ -267,7 +267,7 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         :return: nothing
         """
         for key, value in self.bmimodels.items():
-            if key.startswith('wflow'):
+            if key.startswith("wflow"):
                 self.bmimodels[key].set_start_time(start_time)
 
     def set_end_time(self, end_time):
@@ -278,7 +278,7 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         :return:
         """
         for key, value in self.bmimodels.items():
-            if key.startswith('wflow'):
+            if key.startswith("wflow"):
                 self.bmimodels[key].set_end_time(end_time)
 
     def get_attribute_names(self):
@@ -669,7 +669,7 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         cname = long_var_name.split(self.comp_sep)
 
         if cname[0] in self.bmimodels:
-            self.bmimodels[cname[0]].set_value_at_indices(cname[1], inds,src)
+            self.bmimodels[cname[0]].set_value_at_indices(cname[1], inds, src)
             if self.wrtodisk:
                 npmap = self.bmimodels[cname[0]].getnumpy(cname[1], inds, src)
                 report(
@@ -814,7 +814,7 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         self.bmilogger.debug("set_value: " + long_var_name)
         cname = long_var_name.split(self.comp_sep)
         if cname[0] in self.bmimodels:
-            self.bmimodels[cname[0]].set_value(cname[1],src)
+            self.bmimodels[cname[0]].set_value(cname[1], src)
             if self.wrtodisk:
                 report(
                     numpy2pcr(Scalar, src, -999),

@@ -269,7 +269,8 @@ def GenRadMaps(
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args: print(msg)
+    for msg in args:
+        print(msg)
     print(__doc__)
     sys.exit(0)
 
@@ -286,7 +287,7 @@ def main(argv=None):
             return
 
     try:
-        opts, args = getopt.getopt(argv, 'hD:Mx:y:l:O:S:E:T:s:e:')
+        opts, args = getopt.getopt(argv, "hD:Mx:y:l:O:S:E:T:s:e:")
     except getopt.error as msg:
         usage(msg)
 
@@ -303,21 +304,34 @@ def main(argv=None):
     ehour = 23
 
     for o, a in opts:
-        if o == '-h': usage()
-        if o == '-O': outputdir = a
-        if o == '-D': thedem = a
-        if o == '-M': xymetres = true
-        if o == '-x': lat = int(a)
-        if o == '-y': lon = int(a)
-        if o == '-S': startday = int(a)
-        if o == '-E': endday = int(a)
-        if o == '-T': calc_interval = int(a)
-        if o == '-l': exec("thelevel = logging." + a)
-        if o == '-s': shour = int(a)
-        if o == '-e': ehour = int(a)
+        if o == "-h":
+            usage()
+        if o == "-O":
+            outputdir = a
+        if o == "-D":
+            thedem = a
+        if o == "-M":
+            xymetres = true
+        if o == "-x":
+            lat = int(a)
+        if o == "-y":
+            lon = int(a)
+        if o == "-S":
+            startday = int(a)
+        if o == "-E":
+            endday = int(a)
+        if o == "-T":
+            calc_interval = int(a)
+        if o == "-l":
+            exec("thelevel = logging." + a)
+        if o == "-s":
+            shour = int(a)
+        if o == "-e":
+            ehour = int(a)
 
-
-    logger = pcr.setlogger("wflow_prepare_rad.log","wflow_prepare_rad",thelevel=loglevel)
+    logger = pcr.setlogger(
+        "wflow_prepare_rad.log", "wflow_prepare_rad", thelevel=loglevel
+    )
     if not os.path.exists(thedem):
         logger.error("Cannot find dem: " + thedem + " exiting.")
         sys.exit(1)
