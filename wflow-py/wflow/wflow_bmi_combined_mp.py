@@ -87,9 +87,7 @@ class wflowbmi_csdms(bmi.Bmi):
         )
         self.bmilogger.info("__init__: wflow_bmi_combined object initialised.")
         if self.wrtodisk:
-            self.bmilogger.warning('Will write all bmi set- and get- grids to disk!...')
-
-
+            self.bmilogger.warning("Will write all bmi set- and get- grids to disk!...")
 
     def __getmodulenamefromvar__(self, long_var_name):
         """
@@ -125,10 +123,8 @@ class wflowbmi_csdms(bmi.Bmi):
 
         # Initialize all bmi model objects
         for key, value in self.bmimodels.items():
-            modconf = os.path.join(self.datadir,self.config.get('models',key))
-            self.bmimodels[key].initialize_config(modconf,loglevel=loglevel)
-
-
+            modconf = os.path.join(self.datadir, self.config.get("models", key))
+            self.bmimodels[key].initialize_config(modconf, loglevel=loglevel)
 
     def initialize_model(self):
         """
@@ -518,7 +514,7 @@ class wflowbmi_csdms(bmi.Bmi):
         cname = long_var_name.split(self.comp_sep)
 
         if cname[0] in self.bmimodels:
-            return self.bmimodels[cname[0]].get_value_at_indices(cname[1],inds)
+            return self.bmimodels[cname[0]].get_value_at_indices(cname[1], inds)
         else:
             return None
 
@@ -534,8 +530,7 @@ class wflowbmi_csdms(bmi.Bmi):
         """
         cname = long_var_name.split(self.comp_sep)
         if cname[0] in self.bmimodels:
-            self.bmimodels[cname[0]].set_value_at_indices(cname[1], inds,src)
-
+            self.bmimodels[cname[0]].set_value_at_indices(cname[1], inds, src)
 
     def get_grid_type(self, long_var_name):
         """
@@ -674,7 +669,7 @@ class wflowbmi_csdms(bmi.Bmi):
         self.bmilogger.debug("set_value: " + long_var_name)
         cname = long_var_name.split(self.comp_sep)
         if cname[0] in self.bmimodels:
-            self.bmimodels[cname[0]].set_value(cname[1],src)
+            self.bmimodels[cname[0]].set_value(cname[1], src)
             if self.wrtodisk:
                 report(
                     numpy2pcr(Scalar, src, -999),

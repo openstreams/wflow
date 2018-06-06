@@ -11,6 +11,19 @@ def julian(self):
 # -Function to calculate the number of timesteps for the model run
 def timesteps(self):
     nrTimeSteps = (self.enddate - self.startdate).days + 1
-    print('Running SPHY for '+str(self.startdate.day)+'-'+str(self.startdate.month)+'-'+str(self.startdate.year)+' through '+str(self.enddate.day)+'-'+str(self.enddate.month)+'-'+str(self.enddate.year))
-    print('with '+str(nrTimeSteps)+' daily timesteps')
+    print(
+        "Running SPHY for "
+        + str(self.startdate.day)
+        + "-"
+        + str(self.startdate.month)
+        + "-"
+        + str(self.startdate.year)
+        + " through "
+        + str(self.enddate.day)
+        + "-"
+        + str(self.enddate.month)
+        + "-"
+        + str(self.enddate.year)
+    )
+    print("with " + str(nrTimeSteps) + " daily timesteps")
     return nrTimeSteps

@@ -48,7 +48,8 @@ import numpy as np
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args: print(msg)
+    for msg in args:
+        print(msg)
     print(__doc__)
     sys.exit(0)
 
@@ -99,7 +100,7 @@ def main():
     snapgaugestoriver = False
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'W:hI:f')
+        opts, args = getopt.getopt(sys.argv[1:], "W:hI:f")
     except getopt.error as msg:
         usage(msg)
 
@@ -166,10 +167,18 @@ def main():
 
     if initialscale > 1:
         print("Initial scaling of DEM...")
-        os.system("resample -r " + str(initialscale) + " "  + masterdem + " " + step1dir + "/dem_scaled.map")
+        os.system(
+            "resample -r "
+            + str(initialscale)
+            + " "
+            + masterdem
+            + " "
+            + step1dir
+            + "/dem_scaled.map"
+        )
         print("Reading dem...")
-        dem = tr.readmap(step1dir + "/dem_scaled.map") 
-        ldddem=dem
+        dem = tr.readmap(step1dir + "/dem_scaled.map")
+        ldddem = dem
     else:
         print ("Reading dem...")
         dem = tr.readmap(masterdem)
@@ -181,24 +190,24 @@ def main():
         print("No catchment mask...")
     else:
         print("clipping DEM with mask.....")
-        mask=tr.readmap(catchmask)
-        ldddem = tr.ifthen(tr.boolean(mask),ldddem)
-        dem = tr.ifthen(tr.boolean(mask),dem)
+        mask = tr.readmap(catchmask)
+        ldddem = tr.ifthen(tr.boolean(mask), ldddem)
+        dem = tr.ifthen(tr.boolean(mask), dem)
 
     # See if there is a shape file of the river to burn in
     try:
         rivshp = config.get("files", "river")
     except:
         print("no river file specified")
-        outletpointX = float(configget(config,"settings","outflowpointX","0.0"))
-        outletpointY = float(configget(config,"settings","outflowpointY","0.0"))       
+        outletpointX = float(configget(config, "settings", "outflowpointX", "0.0"))
+        outletpointY = float(configget(config, "settings", "outflowpointY", "0.0"))
     else:
         print("river file specified.....")
         try:
             outletpointX = float(configget(config, "settings", "outflowpointX", "0.0"))
             outletpointY = float(configget(config, "settings", "outflowpointY", "0.0"))
         except:
-            print (
+            print(
                 "Need to specify the river outletpoint (a point at the end of the river within the current map)"
             )
             exit(1)
@@ -243,7 +252,7 @@ def main():
     tr.setglobaloption("unittrue")
     upscalefactor = int(csize / tr.celllength())
 
-    print ("Creating ldd...")
+    print("Creating ldd...")
     ldd = tr.lddcreate_save(
         step1dir + "/ldd.map",
         ldddem,
@@ -254,7 +263,7 @@ def main():
         corearea=corearea,
     )
 
-    print ("Determining streamorder...")
+    print("Determining streamorder...")
     stro = tr.streamorder(ldd)
     tr.report(stro, step1dir + "/streamorder.map")
     strdir = tr.ifthen(stro >= strRiver, stro)
@@ -264,15 +273,14 @@ def main():
     tr.setglobaloption("unittrue")
     # outlet (and other gauges if given)
     # TODO: check is x/y set if not skip this
-    print ("Outlet...")
+    print("Outlet...")
 
     outlmap = tr.points_to_map(dem, X, Y, 0.5)
 
     if snapgaugestoriver:
         print("Snapping gauges to nearest river cells...")
-        tr.report(outlmap,step1dir + "/orggauges.map")
-        outlmap= tr.snaptomap(outlmap,strdir)
-
+        tr.report(outlmap, step1dir + "/orggauges.map")
+        outlmap = tr.snaptomap(outlmap, strdir)
 
     # noutletmap = tr.points_to_map(dem,XX,YY,0.5)
     # tr.report(noutletmap,'noutlet.map')
@@ -290,23 +298,31 @@ def main():
         tr.report(sub, step1dir + "/catchment_overall.map")
     else:
         print("reading and converting catchment mask.....")
-        os.system("resample -r " + str(initialscale) + " "  + catchmask + " " + step1dir + "/catchment_overall.map")
+        os.system(
+            "resample -r "
+            + str(initialscale)
+            + " "
+            + catchmask
+            + " "
+            + step1dir
+            + "/catchment_overall.map"
+        )
         sub = tr.readmap(step1dir + "/catchment_overall.map")
 
-    print ("Scatch...")
+    print("Scatch...")
     sd = tr.subcatch(ldd, tr.ifthen(outlmap > 0, outlmap))
     tr.report(sd, step1dir + "/scatch.map")
 
     tr.setglobaloption("unitcell")
     print("Upscalefactor: " + str(upscalefactor))
-          
+
     if upscalefactor > 1:
         gc.collect()
-        print ("upscale river length1 (checkerboard map)...")
+        print("upscale river length1 (checkerboard map)...")
         ck = tr.checkerboard(dem, upscalefactor)
         tr.report(ck, step1dir + "/ck.map")
         tr.report(dem, step1dir + "/demck.map")
-        print ("upscale river length2...")
+        print("upscale river length2...")
         fact = tr.area_riverlength_factor(ldd, ck, upscalefactor)
         tr.report(fact, step1dir + "/riverlength_fact.map")
 
@@ -314,7 +330,7 @@ def main():
         dem_ = tr.areaaverage(dem, ck)
         tr.report(dem_, step1dir + "/demavg.map")
 
-        print ("Create DEM statistics...")
+        print("Create DEM statistics...")
         dem_ = tr.areaminimum(dem, ck)
         tr.report(dem_, step1dir + "/demmin.map")
         dem_ = tr.areamaximum(dem, ck)
@@ -338,53 +354,109 @@ def main():
         perc = tr.area_percentile(dem, ck, n, order, 90.0)
         tr.report(perc, step1dir + "/dem90.map")
     else:
-         print("No fancy scaling done. Going strait to step2....")
-         tr.report(dem,step1dir + "/demavg.map")
-         Xul = float(config.get("settings","Xul"))
-         Yul = float(config.get("settings","Yul"))
-         Xlr = float(config.get("settings","Xlr"))
-         Ylr = float(config.get("settings","Ylr"))
-         gdalstr = "gdal_translate  -projwin " + str(Xul) + " " + str(Yul) + " " +str(Xlr) + " " +str(Ylr) + " -of PCRaster  " 
-         #gdalstr = "gdal_translate  -a_ullr " + str(Xul) + " " + str(Yul) + " " +str(Xlr) + " " +str(Ylr) + " -of PCRaster  " 
-         print(gdalstr)
-         tr.report(tr.cover(1.0),step1dir + "/wflow_riverlength_fact.map")
-         # Now us gdat tp convert the maps
-         os.system(gdalstr + step1dir + "/wflow_riverlength_fact.map" + " " + step2dir + "/wflow_riverlength_fact.map")
-         os.system(gdalstr + step1dir + "/demavg.map" + " " + step2dir + "/wflow_dem.map")
-         os.system(gdalstr + step1dir + "/demavg.map" + " " + step2dir + "/wflow_demmin.map")
-         os.system(gdalstr + step1dir + "/demavg.map" + " " + step2dir + "/wflow_demmax.map")
-         os.system(gdalstr + step1dir + "/gauges.map" + " " + step2dir + "/wflow_gauges.map")
-         os.system(gdalstr + step1dir + "/rivers.map" + " " + step2dir + "/wflow_river.map")
-         os.system(gdalstr + step1dir + "/streamorder.map" + " " + step2dir + "/wflow_streamorder.map")
-         os.system(gdalstr + step1dir + "/gauges.map" + " " + step2dir + "/wflow_outlet.map")
-         os.system(gdalstr + step1dir + "/scatch.map" + " " + step2dir + "/wflow_catchment.map")
-         os.system(gdalstr + step1dir + "/ldd.map" + " " + step2dir + "/wflow_ldd.map")
-         os.system(gdalstr + step1dir + "/scatch.map" + " " + step2dir + "/wflow_subcatch.map")
-         
-         if lu_water:
-             os.system(gdalstr + lu_water + " " + step2dir + "/WaterFrac.map")
+        print("No fancy scaling done. Going strait to step2....")
+        tr.report(dem, step1dir + "/demavg.map")
+        Xul = float(config.get("settings", "Xul"))
+        Yul = float(config.get("settings", "Yul"))
+        Xlr = float(config.get("settings", "Xlr"))
+        Ylr = float(config.get("settings", "Ylr"))
+        gdalstr = (
+            "gdal_translate  -projwin "
+            + str(Xul)
+            + " "
+            + str(Yul)
+            + " "
+            + str(Xlr)
+            + " "
+            + str(Ylr)
+            + " -of PCRaster  "
+        )
+        # gdalstr = "gdal_translate  -a_ullr " + str(Xul) + " " + str(Yul) + " " +str(Xlr) + " " +str(Ylr) + " -of PCRaster  "
+        print(gdalstr)
+        tr.report(tr.cover(1.0), step1dir + "/wflow_riverlength_fact.map")
+        # Now us gdat tp convert the maps
+        os.system(
+            gdalstr
+            + step1dir
+            + "/wflow_riverlength_fact.map"
+            + " "
+            + step2dir
+            + "/wflow_riverlength_fact.map"
+        )
+        os.system(
+            gdalstr + step1dir + "/demavg.map" + " " + step2dir + "/wflow_dem.map"
+        )
+        os.system(
+            gdalstr + step1dir + "/demavg.map" + " " + step2dir + "/wflow_demmin.map"
+        )
+        os.system(
+            gdalstr + step1dir + "/demavg.map" + " " + step2dir + "/wflow_demmax.map"
+        )
+        os.system(
+            gdalstr + step1dir + "/gauges.map" + " " + step2dir + "/wflow_gauges.map"
+        )
+        os.system(
+            gdalstr + step1dir + "/rivers.map" + " " + step2dir + "/wflow_river.map"
+        )
+        os.system(
+            gdalstr
+            + step1dir
+            + "/streamorder.map"
+            + " "
+            + step2dir
+            + "/wflow_streamorder.map"
+        )
+        os.system(
+            gdalstr + step1dir + "/gauges.map" + " " + step2dir + "/wflow_outlet.map"
+        )
+        os.system(
+            gdalstr + step1dir + "/scatch.map" + " " + step2dir + "/wflow_catchment.map"
+        )
+        os.system(gdalstr + step1dir + "/ldd.map" + " " + step2dir + "/wflow_ldd.map")
+        os.system(
+            gdalstr + step1dir + "/scatch.map" + " " + step2dir + "/wflow_subcatch.map"
+        )
 
-         if lu_paved:
-             os.system(gdalstr + lu_paved + " " + step2dir + "/PathFrac.map")
+        if lu_water:
+            os.system(gdalstr + lu_water + " " + step2dir + "/WaterFrac.map")
 
-         try:
-            lumap = config.get("files","landuse")
-         except:
+        if lu_paved:
+            os.system(gdalstr + lu_paved + " " + step2dir + "/PathFrac.map")
+
+        try:
+            lumap = config.get("files", "landuse")
+        except:
             print("no landuse map...creating uniform map")
-            #clone=tr.readmap(step2dir + "/wflow_dem.map")
+            # clone=tr.readmap(step2dir + "/wflow_dem.map")
             tr.setclone(step2dir + "/wflow_dem.map")
-            tr.report(tr.nominal(1),step2dir + "/wflow_landuse.map")
-         else:
-            os.system("resample --clone " + step2dir + "/wflow_dem.map " + lumap + " " + step2dir + "/wflow_landuse.map")
+            tr.report(tr.nominal(1), step2dir + "/wflow_landuse.map")
+        else:
+            os.system(
+                "resample --clone "
+                + step2dir
+                + "/wflow_dem.map "
+                + lumap
+                + " "
+                + step2dir
+                + "/wflow_landuse.map"
+            )
 
-         try:
-             soilmap = config.get("files","soil")
-         except:
-             print("no soil map..., creating uniform map")
-             tr.setclone(step2dir + "/wflow_dem.map")
-             tr.report(tr.nominal(1),step2dir + "/wflow_soil.map")  
-         else:
-             os.system("resample --clone " + step2dir + "/wflow_dem.map " + soilmap + " " + step2dir + "/wflow_soil.map")
+        try:
+            soilmap = config.get("files", "soil")
+        except:
+            print("no soil map..., creating uniform map")
+            tr.setclone(step2dir + "/wflow_dem.map")
+            tr.report(tr.nominal(1), step2dir + "/wflow_soil.map")
+        else:
+            os.system(
+                "resample --clone "
+                + step2dir
+                + "/wflow_dem.map "
+                + soilmap
+                + " "
+                + step2dir
+                + "/wflow_soil.map"
+            )
 
 
 if __name__ == "__main__":

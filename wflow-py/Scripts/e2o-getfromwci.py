@@ -18,7 +18,9 @@ http://'http://wci.earth2observe.eu/thredds/dodsC/ecmwf/met_forcing_v0/1980/Tair
 
 """
 
-baseurl = "http://wci.earth2observe.eu/thredds/dodsC/ecmwf/met_forcing_v0/%d/Rainf_daily_E2OBS_%d%02d.nc"
+baseurl = (
+    "http://wci.earth2observe.eu/thredds/dodsC/ecmwf/met_forcing_v0/%d/Rainf_daily_E2OBS_%d%02d.nc"
+)
 # baseurl =  'http://wci.earth2observe.eu/thredds/dodsC/ecmwf/met_forcing_v0/%d/Tair_daily_E2OBS_%d%02d.nc'
 
 months = arange(1, 13, 1)
@@ -43,7 +45,7 @@ def writeMap(fileName, fileFormat, x, y, data, FillVal):
 
     # Processing
     if verbose:
-        print('Writing to temporary file ' + fileName + '.tif')
+        print("Writing to temporary file " + fileName + ".tif")
     # Create Output filename from (FEWS) product name and date and open for writing
     TempDataset = driver1.Create(
         fileName + ".tif", data.shape[1], data.shape[0], 1, gdal.GDT_Float32
@@ -54,7 +56,7 @@ def writeMap(fileName, fileFormat, x, y, data, FillVal):
 
     print(xul)
     print(yul)
-    TempDataset.SetGeoTransform( [ xul, x[1]-x[0], 0, yul, 0, y[1]-y[0] ] )
+    TempDataset.SetGeoTransform([xul, x[1] - x[0], 0, yul, 0, y[1] - y[0]])
     # get rasterband entry
     TempBand = TempDataset.GetRasterBand(1)
     # fill rasterband with array
@@ -63,17 +65,16 @@ def writeMap(fileName, fileFormat, x, y, data, FillVal):
     TempBand.SetNoDataValue(FillVal)
     # Create data to write to correct format (supported by 'CreateCopy')
     if verbose:
-        print('Writing to ' + fileName + '.map')
+        print("Writing to " + fileName + ".map")
     outDataset = driver2.CreateCopy(fileName, TempDataset, 0)
     TempDataset = None
     outDataset = None
     if verbose:
-        print('Removing temporary file ' + fileName + '.tif')
-    os.remove(fileName + '.tif');
+        print("Removing temporary file " + fileName + ".tif")
+    os.remove(fileName + ".tif")
 
     if verbose:
-        print('Writing to ' + fileName + ' is done!')
-
+        print("Writing to " + fileName + " is done!")
 
 
 tot = []
@@ -81,7 +82,7 @@ cnt = 0
 for year in years:
     for mon in months:
         rainurl = baseurl % (year, year, mon)
-        print("processing: " + rainurl)    
+        print("processing: " + rainurl)
         # create a dataset object
         ncdataset = netCDF4.Dataset(rainurl)
         lat = ncdataset.variables["lat"][:]
@@ -143,10 +144,26 @@ for year in years:
             cnt = cnt + 1
             below_thousand = cnt % 1000
             above_thousand = cnt / 1000
-            mapname  = str(mapstackname + '%0' + str(8-len(mapstackname)) + '.f.%03.f') % (above_thousand, below_thousand)
-            print("saving map: " + os.path.join(lowresout,mapname))
-            writeMap(os.path.join(lowresout,mapname),"PCRaster",lon,lat[::-1],flipud(p_select[arcnt,:,:]),-999.0)
+            mapname = str(
+                mapstackname + "%0" + str(8 - len(mapstackname)) + ".f.%03.f"
+            ) % (above_thousand, below_thousand)
+            print("saving map: " + os.path.join(lowresout, mapname))
+            writeMap(
+                os.path.join(lowresout, mapname),
+                "PCRaster",
+                lon,
+                lat[::-1],
+                flipud(p_select[arcnt, :, :]),
+                -999.0,
+            )
             arcnt = arcnt + 1
-            execstr = "resample --clone " + clonemap + " " + os.path.join(lowresout,mapname) + " " + os.path.join(finalout,mapname)
+            execstr = (
+                "resample --clone "
+                + clonemap
+                + " "
+                + os.path.join(lowresout, mapname)
+                + " "
+                + os.path.join(finalout, mapname)
+            )
             print("resampling map: " + execstr)
             os.system(execstr)

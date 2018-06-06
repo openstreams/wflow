@@ -124,7 +124,8 @@ multdynapars = {}
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args: print(msg)
+    for msg in args:
+        print(msg)
     print(__doc__)
     sys.exit(0)
 
@@ -243,17 +244,26 @@ class WflowModel(DynamicModel):
             self.logger.info("reading map parameter file: " + mapname)
             rest = cover(readmap(mapname), default)
         else:
-            self.logger.warning("tbl file not found (" + pathtotbl + ") returning default value: " + str(default))
-            rest = scalar(default)
-        
-    return rest
-    
-  def suspend(self):
-        
-      self.logger.info("Saving initial conditions...")
-      self.wf_suspend(self.SaveDir + "/outstate/")
-   
-      if self.OverWriteInit:            
+            if os.path.isfile(pathtotbl):
+                rest = lookupscalar(pathtotbl, landuse, subcatch, soil)  #
+                self.logger.info("Creating map from table: " + pathtotbl)
+            else:
+                self.logger.warning(
+                    "tbl file not found ("
+                    + pathtotbl
+                    + ") returning default value: "
+                    + str(default)
+                )
+                rest = scalar(default)
+
+        return rest
+
+    def suspend(self):
+
+        self.logger.info("Saving initial conditions...")
+        self.wf_suspend(self.SaveDir + "/outstate/")
+
+        if self.OverWriteInit:
             self.logger.info("Saving initial conditions over start conditions...")
             self.wf_suspend(self.SaveDir + "/instate/")
 
@@ -682,10 +692,10 @@ class WflowModel(DynamicModel):
         Terrain_angle = scalar(atan(self.Slope))
 
         # Multiply parameters with a factor (for calibration etc) -P option in command line
-        for k, v in multpars.iteritems():
+        for k, v in multpars.items():
             estr = k + "=" + k + "*" + str(v)
             self.logger.info("Parameter multiplication: " + estr)
-            exec estr
+            exec(estr)
 
         self.N = ifthenelse(self.River, self.NRiver, self.N)
 
@@ -932,192 +942,9 @@ class WflowModel(DynamicModel):
             self.TSoil = self.ZeroMap + 10.0
             self.CanopyStorage = self.ZeroMap
 
-        
-    # static maps to use (normally default)
-    wflow_subcatch = configget(self.config,"model","wflow_subcatch","staticmaps/wflow_subcatch.map")
-    wflow_dem  = configget(self.config,"model","wflow_dem","staticmaps/wflow_dem.map")
-    wflow_ldd = configget(self.config,"model","wflow_ldd","staticmaps/wflow_ldd.map")
-    wflow_river  = configget(self.config,"model","wflow_river","staticmaps/wflow_river.map")
-    wflow_riverlength  = configget(self.config,"model","wflow_riverlength","staticmaps/wflow_riverlength.map")
-    wflow_riverlength_fact  = configget(self.config,"model","wflow_riverlength_fact","staticmaps/wflow_riverlength_fact.map")
-    wflow_landuse  = configget(self.config,"model","wflow_landuse","staticmaps/wflow_landuse.map")
-    wflow_soil  = configget(self.config,"model","wflow_soil","staticmaps/wflow_soil.map")
-    wflow_gauges  = configget(self.config,"model","wflow_gauges","staticmaps/wflow_gauges.map")
-    wflow_inflow  = configget(self.config,"model","wflow_inflow","staticmaps/wflow_inflow.map")
-    wflow_mgauges  = configget(self.config,"model","wflow_mgauges","staticmaps/wflow_mgauges.map")
-    
-    
-    # 2: Input base maps ########################################################  
-    subcatch=ordinal(readmap(self.Dir + wflow_subcatch)) # Determines the area of calculations (all cells > 0)
-    subcatch = ifthen(subcatch > 0, subcatch)
-    if self.sCatch > 0:
-    	subcatch = ifthen(subcatch == sCatch,subcatch)
-    
-    self.Altitude=readmap(self.Dir + wflow_dem)# * scalar(defined(subcatch)) # DEM
-    self.TopoLdd=readmap(self.Dir + wflow_ldd)        # Local
-    self.TopoId=ordinal(readmap(self.Dir + wflow_subcatch))        # area map  
-    self.River=cover(boolean(readmap(self.Dir + wflow_river)),0)
-    self.RiverLength=pcrut.readmapSave(self.Dir + wflow_riverlength,0.0)
-    # Factor to multiply riverlength with (defaults to 1.0)    
-    self.RiverLengthFac=pcrut.readmapSave(self.Dir + wflow_riverlength_fact,1.0)
-
-    # read landuse and soilmap and make sure there are no missing points related to the
-    # subcatchment map. Currently sets the lu and soil type  type to 1
-    self.LandUse=readmap(self.Dir + wflow_landuse)
-    self.LandUse=cover(self.LandUse,nominal(ordinal(subcatch) > 0))
-    self.Soil=readmap(self.Dir + wflow_soil)
-    self.Soil=cover(self.Soil,nominal(ordinal(subcatch) > 0))
-    self.OutputLoc=ordinal(readmap(self.Dir + wflow_gauges))        # location of output gauge(s)
-    self.InflowLoc=pcrut.readmapSave(self.Dir + wflow_inflow,0.0)  # location abstractions/inflows.
-    self.SeepageLoc=pcrut.readmapSave(self.Dir + wflow_inflow,0.0)  # location abstractions/inflows.
- 
-
-    # Experimental
-    self.RunoffGenSigmaFunction = int(configget(self.config,'model','RunoffGenSigmaFunction','0'))
-    self.RunoffGeneratingGWPerc = float(configget(self.config,'defaultfortbl','RunoffGeneratingGWPerc','0.1'))
-    self.RunoffGeneratingThickness = float(configget(self.config,'defaultfortbl','RunoffGeneratingThickness','0.0'))
-                             
-    if self.scalarInput:
-        self.gaugesMap=readmap(self.Dir + wflow_mgauges)        # location of rainfall/evap/temp gauge(s)
-    self.OutputId=ordinal(readmap(self.Dir + wflow_subcatch))       # location of subcatchment
-    # Temperature correction poer cell to add
-
-    self.TempCor=pcrut.readmapSave(self.Dir + configget(self.config,"model","TemperatureCorrectionMap","staticmaps/wflow_tempcor.map"),0.0)
-  
-    self.ZeroMap=0.0*scalar(subcatch)                    #map with only zero's
-  
-    # 3: Input time series ###################################################
-    self.P_mapstack=self.Dir + configget(self.config,"inputmapstacks","Precipitation","/inmaps/P") # timeseries for rainfall
-    self.PET_mapstack=self.Dir + configget(self.config,"inputmapstacks","EvapoTranspiration","/inmaps/PET") # timeseries for rainfall"/inmaps/PET"          # potential evapotranspiration
-    self.TEMP_mapstack=self.Dir + configget(self.config,"inputmapstacks","Temperature","/inmaps/TEMP") # timeseries for rainfall "/inmaps/TEMP"          # global radiation
-    self.Inflow_mapstack=self.Dir + configget(self.config,"inputmapstacks","Inflow","/inmaps/IF") # timeseries for rainfall "/inmaps/IF" # in/outflow locations (abstractions)
-    self.RH_mapstack=self.Dir + configget(self.config,"inputmapstacks","RH","/inmaps/RH") # timeseries for rainfall "/inmaps/SE" # in/outflow locations (abstractions)
-    self.WindSpeed_mapstack=self.Dir + configget(self.config,"inputmapstacks","WindSpeed","/inmaps/wins") # timeseries for rainfall "/inmaps/SE" # in/outflow locations (abstractions)
-    self.RAD_mapstack=self.Dir + configget(self.config,"inputmapstacks","Radiation","/inmaps/RAD") # timeseries for rainfall "/inmaps/SE" # in/outflow locations (abstractions)
-    self.Seepage_mapstack=self.Dir + configget(self.config,"inputmapstacks","Seepage","/inmaps/SE") # timeseries for rainfall "/inmaps/SE" # in/outflow locations (abstractions)
-    self.HP_mapstack=self.Dir + configget(self.config,"inputmapstacks","HP","/inmaps/HP") # timeseries for rainfall "/inmaps/SE" # in/outflow locations (abstractions)
-    self.WaterCatch_mapstack=self.Dir + configget(self.config,"inputmapstacks","WaterCatch","/inmaps/WC") # timeseries for rainfall "/inmaps/SE" # in/outflow locations (abstractions)
-    # 3: Input time series ###################################################
- 
-
-    # Set static initial values here #########################################   
-    self.SoilAlbedo = 0.1         # Not used at the moment
-    self.pi = 3.1416
-    self.e = 2.7183
-    self.SScale = 100.0
-    
-    self.Latitude  =  ycoordinate(boolean(self.Altitude))
-    self.Longitude =  xcoordinate(boolean(self.Altitude))
-  
-    self.logger.info("Linking parameters to landuse, catchment and soil...")
-    self.RunoffGeneratingGWPerc=self.readtblDefault(self.Dir + "/" + self.intbl + "/RunoffGeneratingGWPerc.tbl",self.LandUse,subcatch,self.Soil,self.RunoffGeneratingGWPerc)
-    self.RunoffGeneratingThickness=self.readtblDefault(self.Dir + "/" + self.intbl + "/RunoffGeneratingThickness.tbl",self.LandUse,subcatch,self.Soil,self.RunoffGeneratingThickness)
-    self.Cmax=self.readtblDefault(self.Dir + "/" + self.intbl + "/MaxCanopyStorage.tbl",self.LandUse,subcatch,self.Soil,1.0)
-    self.EoverR=self.readtblDefault(self.Dir + "/" + self.intbl + "/EoverR.tbl",self.LandUse,subcatch,self.Soil,0.1)
-    # self.Albedo=lookupscalar(self.Dir + "\intbl\Albedo.tbl",self.LandUse) # Not used anymore
-    self.CanopyGapFraction=self.readtblDefault(self.Dir + "/" + self.intbl + "/CanopyGapFraction.tbl",self.LandUse,subcatch,self.Soil,0.1)
-    self.RootingDepth=self.readtblDefault(self.Dir + "/" + self.intbl + "/RootingDepth.tbl",self.LandUse,subcatch,self.Soil,750.0) #rooting depth
-    #: rootdistpar determien how roots are linked to water table.The number shoudl be negative. A high number means that all roots are wet if
-    #: the water table is above the lowest part of the roots. A lower number smooths this.
-    self.rootdistpar=self.readtblDefault(self.Dir + "/" + self.intbl + "/rootdistpar.tbl",self.LandUse,subcatch,self.Soil,-80000.0) #rrootdistpar
-
-    # Soil parameters
-    # infiltration capacity if the soil [mm/day]
-    self.InfiltCapSoil=self.readtblDefault(self.Dir + "/" + self.intbl + "/InfiltCapSoil.tbl",self.LandUse,subcatch,self.Soil,100.0) * self.timestepsecs/self.basetimestep
-    self.CapScale=self.readtblDefault(self.Dir + "/" + self.intbl + "/CapScale.tbl",self.LandUse,subcatch,self.Soil,100.0) #
-    # infiltration capacity of the compacted 
-    self.InfiltCapPath=self.readtblDefault(self.Dir + "/" + self.intbl + "/InfiltCapPath.tbl",self.LandUse,subcatch,self.Soil,10.0) * self.timestepsecs/self.basetimestep
-    self.MaxLeakage=self.readtblDefault(self.Dir + "/" + self.intbl + "/MaxLeakage.tbl",self.LandUse,subcatch,self.Soil,0.0) * self.timestepsecs/self.basetimestep
-    # areas (paths) in [mm/day]
-    # Fraction area with compacted soil (Paths etc.)
-    self.PathFrac=self.readtblDefault(self.Dir + "/" + self.intbl + "/PathFrac.tbl",self.LandUse,subcatch,self.Soil,0.01)
-    # thickness of the soil
-    self.FirstZoneThickness = self.readtblDefault(self.Dir + "/" + self.intbl + "/FirstZoneCapacity.tbl",self.LandUse,subcatch,self.Soil,2000.0)
-    self.thetaR = self.readtblDefault(self.Dir + "/" + self.intbl + "/thetaR.tbl",self.LandUse,subcatch,self.Soil,0.01)
-    self.thetaS = self.readtblDefault(self.Dir + "/" + self.intbl + "/thetaS.tbl",self.LandUse,subcatch,self.Soil,0.6)
-    # minimum thickness of soild
-    self.FirstZoneMinCapacity = self.readtblDefault(self.Dir + "/" + self.intbl + "/FirstZoneMinCapacity.tbl",self.LandUse,subcatch,self.Soil,500.0)
-
-    # FirstZoneKsatVer = $2\inmaps\FirstZoneKsatVer.map
-    self.FirstZoneKsatVer=self.readtblDefault(self.Dir + "/" + self.intbl + "/FirstZoneKsatVer.tbl",self.LandUse,subcatch,self.Soil,3000.0) * self.timestepsecs/self.basetimestep
-    self.Beta = scalar(0.6) # For sheetflow
-    
-    self.M=self.readtblDefault(self.Dir + "/" + self.intbl + "/M.tbl" ,self.LandUse,subcatch,self.Soil,300.0) # Decay parameter in Topog_cqf    
-    self.N=self.readtblDefault(self.Dir + "/" + self.intbl + "/N.tbl",self.LandUse,subcatch,self.Soil,0.072)  # Manning overland flow
-    self.NRiver=self.readtblDefault(self.Dir + "/" + self.intbl + "/N_River.tbl",self.LandUse,subcatch,self.Soil,0.036)  # Manning river
-    self.WaterFrac=self.readtblDefault(self.Dir + "/" + self.intbl + "/WaterFrac.tbl",self.LandUse,subcatch,self.Soil,0.0)  # Fraction Open water
-    
-    #cqflow specific stuff
-    self.Albedo=self.readtblDefault(self.Dir + "/" + self.intbl + "/Albedo.tbl",self.LandUse,subcatch,self.Soil,0.18) #
-    self.LeafAreaIndex=self.readtblDefault(self.Dir + "/" + self.intbl + "/LeafAreaIndex.tbl",self.LandUse,subcatch,self.Soil,4.0) #
-    self.WindSpeedHeigth=self.readtblDefault(self.Dir + "/" + self.intbl + "/WindSpeedHeigth.tbl",self.LandUse,subcatch,self.Soil,4.0) #
-    self.VegetationHeigth=self.readtblDefault(self.Dir + "/" + self.intbl + "/VegetationHeigth.tbl",self.LandUse,subcatch,self.Soil,4.0) #
-    
-    self.xl,self.yl,self.reallength = pcrut.detRealCellLength(self.ZeroMap,sizeinmetres)
-    self.Slope= slope(self.Altitude)
-    #self.Slope=ifthen(boolean(self.TopoId),max(0.001,self.Slope*celllength()/self.reallength))
-    self.Slope=max(0.001,self.Slope*celllength()/self.reallength)
-    Terrain_angle=scalar(atan(self.Slope))
-
-   
-    # Multiply parameters with a factor (for calibration etc) -P option in command line
-    for k, v in multpars.items():
-        estr = k + "=" + k + "*" + str(v)
-        self.logger.info("Parameter multiplication: " +  estr)
-        exec(estr)
-    
-    self.N=ifthenelse(self.River, self.NRiver, self.N)
-    
-    # Determine river width from DEM, upstream area and yearly average discharge
-    # Scale yearly average Q at outlet with upstream are to get Q over whole catchment
-    # Alf ranges from 5 to > 60. 5 for hardrock. large values for sediments
-    # "Noah J. Finnegan et al 2005 Controls on the channel width of rivers: 
-    # Implications for modeling fluvial incision of bedrock"
-
-    upstr = catchmenttotal(1, self.TopoLdd)
-    Qscale = upstr/mapmaximum(upstr) * Qmax
-    W = (alf * (alf + 2.0)**(0.6666666667))**(0.375) * Qscale**(0.375) * (max(0.0001,windowaverage(self.Slope,celllength() * 4.0)))**(-0.1875) * self.N **(0.375)
-    RiverWidth = W
-    
-
-    # soil thickness based on topographical index (see Environmental modelling: finding simplicity in complexity)
-    # 1: calculate wetness index
-    # 2: Scale the capacity (now actually a max capacity) based on the index, also apply a minmum capacity
-    WI = ln(accuflux(self.TopoLdd,1)/self.Slope) # Topographical wetnesss. Scale WI by zone/subcatchment assuming these ara also geological units
-    WIMax = areamaximum(WI, self.TopoId) * WIMaxScale
-    self.FirstZoneThickness = max(min(self.FirstZoneThickness,(WI/WIMax) * self.FirstZoneThickness),    self.FirstZoneMinCapacity)
-    
-    self.FirstZoneCapacity = self.FirstZoneThickness * (self.thetaS -self.thetaR)
-    
-    # limit roots to top 99% of first zone
-    self.RootingDepth = min(self.FirstZoneThickness * 0.99,self.RootingDepth)
-
-    # subgrid runoff generation
-    self.DemMax=readmap(self.Dir + "/staticmaps/wflow_demmax")  
-    self.DrainageBase=readmap(self.Dir + "/staticmaps/wflow_demmin")        
-    self.CC = min(100.0,-log(1.0/0.1 - 1)/min(-0.1,self.DrainageBase - self.Altitude))
-    
-    #if maptotal(self.RunoffGeneratingThickness <= 0.0):
-    self.GWScale = (self.DemMax-self.DrainageBase)/self.FirstZoneThickness / self.RunoffGeneratingGWPerc
-    #else:
-    #    self.GWScale = (self.DemMax-self.DrainageBase)/min(self.RunoffGeneratingThickness, self.FirstZoneThickness)
-
-                
-    # Which columns/gauges to use/ignore in updating   
-    self.UpdateMap = self.ZeroMap 
-    
-    if self.updating:        
-        touse = numpy.zeros(gaugear.shape,dtype='int')    
-        
-        for thecol in updateCols:
-            idx = (gaugear == thecol).nonzero()
-            touse[idx] = thecol
-            
-            
-        self.UpdateMap = numpy2pcr(Nominal,touse,0.0)
-        # Calulate distance to updating points (upstream) annd use to scale the correction
-        # ldddist returns zero for cell at the gauges so add 1.0 tp result
-        self.DistToUpdPt = cover(min(ldddist(self.TopoLdd,boolean(cover(self.UpdateMap,0)),1) * self.reallength/celllength(),self.UpdMaxDist),self.UpdMaxDist)
+        else:
+            self.logger.info("Setting initial conditions from state files")
+            self.wf_resume(self.Dir + "/instate/")
 
         P = self.Bw + (2.0 * self.WaterLevel)
         self.Alpha = self.AlpTerm * pow(P, self.AlpPow)
@@ -1170,32 +997,6 @@ class WflowModel(DynamicModel):
     :var self.DLC: length of the river within a cell [m]
     :var self.ToCubic: Mutiplier to convert mm to m^3/s for fluxes
     """
-   
-    self.logger.debug("Step: "+str(int(self.thestep + self._d_firstTimeStep))+"/"+str(int(self._d_nrTimeSteps)))
-    self.thestep = self.thestep + 1
-    
- 
-                
-    self.Precipitation=cover(self.wf_readmap(self.P_mapstack,0.0),0)
-    self.HP=cover(self.wf_readmap(self.HP_mapstack,0.0),0)
-    #self.PotenEvap=cover(self.wf_readmap(self.PET_mapstack,0.0),0)
-    self.Radiation=cover(self.wf_readmap(self.RAD_mapstack,0.0),0)
-    #Inflow=cover(self.readmap(self.Inflow),0)
-    self.Inflow=pcrut.readmapSave(self.Inflow_mapstack,0.0)
-    self.Seepage=pcrut.readmapSave(self.Seepage_mapstack,0.0)
-    #Inflow=spatial(scalar(0.0))
-    self.Temperature=cover(self.wf_readmap(self.TEMP_mapstack,0.0),0)
-    self.RH=cover(self.wf_readmap(self.RH_mapstack,0.0),0)
-    self.WindSpeed=cover(self.wf_readmap(self.WindSpeed_mapstack,0.0),0)
-    self.WaterCatch=cover(self.wf_readmap(self.WaterCatch_mapstack,0.0),0)
-    
-    for k, v in multdynapars.items():
-        estr = k + "=" + k + "*" + str(v)
-        self.logger.debug("Dynamic Parameter multiplication: " +  estr)
-        exec(estr)  
-
-
-    #PotEvap = self.PotenEvap #
 
         self.logger.debug(
             "Step: "
@@ -1218,10 +1019,10 @@ class WflowModel(DynamicModel):
         self.WindSpeed = cover(self.wf_readmap(self.WindSpeed_mapstack, 0.0), 0)
         self.WaterCatch = cover(self.wf_readmap(self.WaterCatch_mapstack, 0.0), 0)
 
-        for k, v in multdynapars.iteritems():
+        for k, v in multdynapars.items():
             estr = k + "=" + k + "*" + str(v)
             self.logger.debug("Dynamic Parameter multiplication: " + estr)
-            exec estr
+            exec(estr)
 
         # PotEvap = self.PotenEvap #
 
@@ -1755,27 +1556,34 @@ def main():
     ## Main model starts here
     ########################################################################
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'XF:L:hC:Ii:v:S:T:WNR:u:s:EP:p:Xx:U:fOc:')
+        opts, args = getopt.getopt(
+            sys.argv[1:], "XF:L:hC:Ii:v:S:T:WNR:u:s:EP:p:Xx:U:fOc:"
+        )
     except getopt.error as msg:
         pcrut.usage(msg)
 
     for o, a in opts:
-        if o == '-P':
-            exec ("multpars =" + a,globals(), globals())
-        if o == '-p': 
+        if o == "-P":
+            exec("multpars =" + a, globals(), globals())
+        if o == "-p":
             exec("multdynapars =" + a)
-            exec ("multdynapars =" + a,globals(), globals())
-        if o == '-C': caseName = a
-        if o == '-R': runId = a
-        if o == '-c': configfile = a
-        if o == '-s': timestepsecs = int(a)
-        if o == '-T': _lastTimeStep=int(a)
-        if o == '-S': _firstTimeStep=int(a)
-        if o == '-h': usage()
-        if o == '-f': NoOverWrite = 0
-            
- 
-
+            exec("multdynapars =" + a, globals(), globals())
+        if o == "-C":
+            caseName = a
+        if o == "-R":
+            runId = a
+        if o == "-c":
+            configfile = a
+        if o == "-s":
+            timestepsecs = int(a)
+        if o == "-T":
+            _lastTimeStep = int(a)
+        if o == "-S":
+            _firstTimeStep = int(a)
+        if o == "-h":
+            usage()
+        if o == "-f":
+            NoOverWrite = 0
 
     if _lastTimeStep < _firstTimeStep:
         usage()
@@ -1787,24 +1595,36 @@ def main():
     dynModelFw.createRunId(NoOverWrite=NoOverWrite)
 
     for o, a in opts:
-        if o == '-X': configset(myModel.config,'model','OverWriteInit','1',overwrite=True) 
-        if o == '-I': configset(myModel.config,'model','reinit','1',overwrite=True) 
-        if o == '-i': configset(myModel.config,'model','intbl',a,overwrite=True)
-        if o == '-s': configset(myModel.config,'model','timestepsecs',a,overwrite=True)
-        if o == '-x': configset(myModel.config,'model','sCatch',a,overwrite=True)
-        if o == '-c': configset(myModel.config,'model','configfile', a,overwrite=True)
-        if o == '-M': configset(myModel.config,'model','MassWasting',"1",overwrite=True)
-        if o == '-N': configset(myModel.config,'model','nolateral','1',overwrite=True) 
-        if o == '-Q': configset(myModel.config,'model','ExternalQbase','1',overwrite=True)
-        if o == '-U': 
-            configset(myModel.config,'model','updateFile',a,overwrite=True)
-            configset(myModel.config,'model','updating',"1",overwrite=True)
-        if o == '-u': 
+        if o == "-X":
+            configset(myModel.config, "model", "OverWriteInit", "1", overwrite=True)
+        if o == "-I":
+            configset(myModel.config, "model", "reinit", "1", overwrite=True)
+        if o == "-i":
+            configset(myModel.config, "model", "intbl", a, overwrite=True)
+        if o == "-s":
+            configset(myModel.config, "model", "timestepsecs", a, overwrite=True)
+        if o == "-x":
+            configset(myModel.config, "model", "sCatch", a, overwrite=True)
+        if o == "-c":
+            configset(myModel.config, "model", "configfile", a, overwrite=True)
+        if o == "-M":
+            configset(myModel.config, "model", "MassWasting", "1", overwrite=True)
+        if o == "-N":
+            configset(myModel.config, "model", "nolateral", "1", overwrite=True)
+        if o == "-Q":
+            configset(myModel.config, "model", "ExternalQbase", "1", overwrite=True)
+        if o == "-U":
+            configset(myModel.config, "model", "updateFile", a, overwrite=True)
+            configset(myModel.config, "model", "updating", "1", overwrite=True)
+        if o == "-u":
             print(a)
-            exec("updateCols =" +  a)
-        if o == '-E': configset(myModel.config,'model','reInfilt','1',overwrite=True) 
-        if o == '-R': runId = a
-        if o == '-W': configset(myModel.config,'model','waterdem','1',overwrite=True) 
+            exec("updateCols =" + a)
+        if o == "-E":
+            configset(myModel.config, "model", "reInfilt", "1", overwrite=True)
+        if o == "-R":
+            runId = a
+        if o == "-W":
+            configset(myModel.config, "model", "waterdem", "1", overwrite=True)
 
     dynModelFw._runInitial()
     dynModelFw._runResume()

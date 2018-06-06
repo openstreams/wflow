@@ -236,7 +236,7 @@ def main(
     yorg = extent_out[3]  # +cellsize
 
     # create clone raster
-    print(('rows: {0} cols: {1}'.format(rows, cols)))
+    print(("rows: {0} cols: {1}".format(rows, cols)))
 
     dummy_raster = np.zeros((rows, cols)) - 9999.
     clone_file_map = os.path.abspath(os.path.join(destination, "mask.map"))
@@ -266,24 +266,24 @@ def main(
     )
 
     # create grid.xml
-    root = ElementTree.Element('regular', locationId=locationid)
-    ElementTree.SubElement(root, 'rows').text = str(rows)
-    ElementTree.SubElement(root, 'columns').text = str(cols)
-    ElementTree.SubElement(root, 'geoDatum').text = geodatum
-    ElementTree.SubElement(root, 'firstCellCenter')
-    ElementTree.SubElement(root[3], 'x').text = str(xorg + 0.5 * cellsize)
-    ElementTree.SubElement(root[3], 'y').text = str(yorg - 0.5 * cellsize)
-    ElementTree.SubElement(root, 'xCellSize').text = str(cellsize)
-    ElementTree.SubElement(root, 'yCellSize').text = str(cellsize)
-    xml_file = os.path.abspath(os.path.join(destination, 'grid.xml'))
-    logger.info('Writing Delft-FEWS grid definition to {:s}'.format(xml_file))
-    with open(xml_file, 'w+') as f:
-        f.write(ElementTree.tostring(root, encoding='unicode'))
+    root = ElementTree.Element("regular", locationId=locationid)
+    ElementTree.SubElement(root, "rows").text = str(rows)
+    ElementTree.SubElement(root, "columns").text = str(cols)
+    ElementTree.SubElement(root, "geoDatum").text = geodatum
+    ElementTree.SubElement(root, "firstCellCenter")
+    ElementTree.SubElement(root[3], "x").text = str(xorg + 0.5 * cellsize)
+    ElementTree.SubElement(root[3], "y").text = str(yorg - 0.5 * cellsize)
+    ElementTree.SubElement(root, "xCellSize").text = str(cellsize)
+    ElementTree.SubElement(root, "yCellSize").text = str(cellsize)
+    xml_file = os.path.abspath(os.path.join(destination, "grid.xml"))
+    logger.info("Writing Delft-FEWS grid definition to {:s}".format(xml_file))
+    with open(xml_file, "w+") as f:
+        f.write(ElementTree.tostring(root, encoding="unicode"))
 
     # create shape file
     Driver = ogr.GetDriverByName("ESRI Shapefile")
-    shp_file = os.path.abspath(os.path.join(destination, 'mask.shp'))
-    logger.info('Writing shape of clone to {:s}'.format(shp_file))
+    shp_file = os.path.abspath(os.path.join(destination, "mask.shp"))
+    logger.info("Writing shape of clone to {:s}".format(shp_file))
     shp_att = os.path.splitext(os.path.basename(shp_file))[0]
     shp = Driver.CreateDataSource(shp_file)
     lyr = shp.CreateLayer(shp_att, srs, geom_type=ogr.wkbPolygon)

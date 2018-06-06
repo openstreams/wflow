@@ -84,7 +84,8 @@ import glob
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args: print(msg)
+    for msg in args:
+        print(msg)
     print(__doc__)
     sys.exit(0)
 
@@ -110,7 +111,7 @@ def writeMap(fileName, fileFormat, x, y, data, FillVal):
     data[isnan(data)] = FillVal
     # Processing
     if verbose:
-        print('Writing to temporary file ' + fileName + '.tif')
+        print("Writing to temporary file " + fileName + ".tif")
         print("Output format: " + fileFormat)
     # Create Output filename from (FEWS) product name and date and open for writing
     TempDataset = driver1.Create(
@@ -130,19 +131,21 @@ def writeMap(fileName, fileFormat, x, y, data, FillVal):
 
     # Create data to write to correct format (supported by 'CreateCopy')
     if verbose:
-        print('Writing to ' + fileName + '.map')
-    if fileFormat == 'GTiff':
-        outDataset = driver2.CreateCopy(fileName, TempDataset, 0 ,options = ['COMPRESS=LZW'])
+        print("Writing to " + fileName + ".map")
+    if fileFormat == "GTiff":
+        outDataset = driver2.CreateCopy(
+            fileName, TempDataset, 0, options=["COMPRESS=LZW"]
+        )
     else:
         outDataset = driver2.CreateCopy(fileName, TempDataset, 0)
     TempDataset = None
     outDataset = None
     if verbose:
-        print('Removing temporary file ' + fileName + '.tif')
-    os.remove(fileName + '.tif');
+        print("Removing temporary file " + fileName + ".tif")
+    os.remove(fileName + ".tif")
 
     if verbose:
-        print('Writing to ' + fileName + ' is done!')
+        print("Writing to " + fileName + " is done!")
 
 
 def readMap(fileName, fileFormat, logger, unzipcmd="pigz -d -k"):
@@ -229,7 +232,7 @@ def getnetcdfmetafromini(inifile):
     if os.path.exists(inifile):
         config.read(inifile)
     else:
-        print(("Cannot open ini file: " +  inifile))
+        print(("Cannot open ini file: " + inifile))
         exit(1)
 
     metadata = dict(config.items("metadata"))
@@ -251,7 +254,7 @@ def getvarmetadatafromini(inifile, var):
     if os.path.exists(inifile):
         config.read(inifile)
     else:
-        print(("Cannot open ini file: " +  inifile))
+        print(("Cannot open ini file: " + inifile))
         exit(1)
 
     metadata = dict(config.items(var))
@@ -529,7 +532,7 @@ def main(argv=None):
     ## Main model starts here
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, 'c:S:E:N:I:O:b:t:F:zs:d:YP:Mi:C:')
+        opts, args = getopt.getopt(argv, "c:S:E:N:I:O:b:t:F:zs:d:YP:Mi:C:")
     except getopt.error as msg:
         usage(msg)
 

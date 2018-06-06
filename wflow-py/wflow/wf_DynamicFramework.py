@@ -21,7 +21,7 @@ import wflow
 from . import pcrut
 import glob
 import traceback
-from . import  wflow_adapt
+from . import wflow_adapt
 from collections import namedtuple
 
 import logging
@@ -33,8 +33,10 @@ import calendar
 
 from wflow import __version__
 from functools import reduce
-#from wflow import __release__
-#from wflow import __build__
+
+# from wflow import __release__
+# from wflow import __build__
+
 
 def log_uncaught_exceptions(ex_cls, ex, tb):
     global logging
@@ -54,8 +56,14 @@ class runDateTimeInfo:
     an interval base method (each model timestep is the interval between two input timesteps)
 
     """
-    def __init__(self, datetimestart=dt.datetime(1990, 1, 1),datetimeend=dt.datetime(1990, 1, 5),
-                 timestepsecs=86400,mode='steps'):
+
+    def __init__(
+        self,
+        datetimestart=dt.datetime(1990, 1, 1),
+        datetimeend=dt.datetime(1990, 1, 5),
+        timestepsecs=86400,
+        mode="steps",
+    ):
         self.runStartTime = datetimestart
         self.runEndTime = datetimeend
         self.timeStepSecs = timestepsecs
@@ -463,7 +471,7 @@ class wf_OutputTimeSeriesArea:
                 for idd in self.flatarea:
                     self.ofile[-1].write(str(idd) + "\n")
             else:
-                print ("Not implemented yet")
+                print("Not implemented yet")
 
         self.steps = self.steps + 1
         tmpvar = scalar(spatial(variable))
@@ -501,8 +509,14 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
     # \param firstTimestep sets the starting timestep of the model (optional,
     #        default is 1)
     #
-    def __init__(self, userModel, lastTimeStep=0, firstTimestep=1, datetimestart=dt.datetime(1990, 1, 1),
-                 timestepsecs=86400):
+    def __init__(
+        self,
+        userModel,
+        lastTimeStep=0,
+        firstTimestep=1,
+        datetimestart=dt.datetime(1990, 1, 1),
+        timestepsecs=86400,
+    ):
         frameworkBase.FrameworkBase.__init__(self)
 
         self.ParamType = namedtuple(
@@ -735,7 +749,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
                 if par.type == "hourlyclim":
                     if not hasattr(self._userModel(), par.name):
-                        self._userModel().logger.info("Adding " + par.name + " to model.")
+                        self._userModel().logger.info(
+                            "Adding " + par.name + " to model."
+                        )
                     print("hourlyclim has " + par.name + par.stack)
                     print("not been implemented yet")
 
@@ -894,7 +910,12 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 rest = lookupscalar(pathtotbl, landuse, subcatch, soil)
                 self.logger.info("Creating map from table: " + pathtotbl)
             else:
-                self.logger.warning("tbl file not found (" + pathtotbl + ") returning default value: " + str(default))
+                self.logger.warning(
+                    "tbl file not found ("
+                    + pathtotbl
+                    + ") returning default value: "
+                    + str(default)
+                )
                 rest = spatial(cover(scalar(default)))
 
             cmask = self._userModel().TopoId
@@ -962,7 +983,12 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 rest = lookupscalar(pathtotbl, landuse, subcatch, soil, cover(0.0) + n)
                 self.logger.info("Creating map from table: " + pathtotbl)
             else:
-                self.logger.warning("tbl file not found (" + pathtotbl + ") returning default value: " + str(default))
+                self.logger.warning(
+                    "tbl file not found ("
+                    + pathtotbl
+                    + ") returning default value: "
+                    + str(default)
+                )
                 rest = spatial(cover(scalar(default)))
 
             cmask = self._userModel().TopoId
@@ -972,8 +998,14 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             resttotal = pcr2numpy(maptotal(scalar(defined(rest))), 0)
 
             if resttotal[0, 0] < totalzeromap[0, 0]:
-                self.logger.warning("Not all catchment cells have a value for [" + pathtotbl + "] : " + str(
-                    resttotal[0, 0]) + "!=" + str(totalzeromap[0, 0]))
+                self.logger.warning(
+                    "Not all catchment cells have a value for ["
+                    + pathtotbl
+                    + "] : "
+                    + str(resttotal[0, 0])
+                    + "!="
+                    + str(totalzeromap[0, 0])
+                )
 
         # Apply multiplication table if present
         multname = os.path.dirname(pathtotbl) + ".mult"
@@ -1103,7 +1135,13 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         else:
             if os.path.exists(caseName + "/" + runId + "/run.tss"):
                 if NoOverWrite:
-                    print("ERROR: refusing to overwrite an existing run: " + caseName + "/" + runId + "/run.tss")
+                    print(
+                        "ERROR: refusing to overwrite an existing run: "
+                        + caseName
+                        + "/"
+                        + runId
+                        + "/run.tss"
+                    )
                     sys.exit(1)
 
         for file in glob.glob(caseName + "/" + intbl + "/*.tbl"):
@@ -1134,16 +1172,31 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             self._userModel().config, "model", "modeltype", "not set"
         )
 
-        if self.modelname == 'not set':
-            self.logger.warning('Ini file does not contain model name, assuming ' + modelnamefromobject)
+        if self.modelname == "not set":
+            self.logger.warning(
+                "Ini file does not contain model name, assuming " + modelnamefromobject
+            )
             self.modelname = modelnamefromobject
 
         if modelnamefromobject != self.modelname:
-            self.logger.warning("Ini file made for " + self.modelname + " but found " + modelnamefromobject + " in code.")
+            self.logger.warning(
+                "Ini file made for "
+                + self.modelname
+                + " but found "
+                + modelnamefromobject
+                + " in code."
+            )
 
-        self.runlengthdetermination = configget(self._userModel().config, 'run', 'runlengthdetermination', "steps")
-        self.DT.update(timestepsecs=int(configget(self._userModel().config, 'run', 'timestepsecs', "86400")),
-                       mode=self.runlengthdetermination,runTimeSteps=self.DT.runTimeSteps)
+        self.runlengthdetermination = configget(
+            self._userModel().config, "run", "runlengthdetermination", "steps"
+        )
+        self.DT.update(
+            timestepsecs=int(
+                configget(self._userModel().config, "run", "timestepsecs", "86400")
+            ),
+            mode=self.runlengthdetermination,
+            runTimeSteps=self.DT.runTimeSteps,
+        )
         self._update_time_from_DT()
 
         if doSetupFramework:
@@ -1594,7 +1647,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         checktss = configsection(self._userModel().config, "outputtss")
         if len(checktss) > 0:
             self.logger.warning(
-                "Found a outputtss section. This is NOT used anymore in this version. Please use outputtss_0 .. n")
+                "Found a outputtss section. This is NOT used anymore in this version. Please use outputtss_0 .. n"
+            )
 
         self.oscv = {}
         self.samplenamecsv = {}
@@ -1638,7 +1692,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                             + areafunction
                         )
                     except:
-                        self.logger.warning("Could not read sample id-map for timeseries: " + samplemapname)
+                        self.logger.warning(
+                            "Could not read sample id-map for timeseries: "
+                            + samplemapname
+                        )
                         self.logger.warning(sys.exc_info())
                     for a in toprint:
                         if (
@@ -1743,7 +1800,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         for a in toprint:
             b = a.replace("self.", "")
             try:
-                exec('pcrmap = self._userModel().' +  b)
+                exec("pcrmap = self._userModel()." + b)
                 # report( pcrmap , os.path.join(self._userModel().Dir, self._userModel().runId, "outsum", self._userModel().config.get("summary",a)) )
                 self.reportStatic(
                     pcrmap,
@@ -1757,7 +1814,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 )
 
             except:
-                self._userModel().logger.warning("Could not find or save the configured summary map:" + a)
+                self._userModel().logger.warning(
+                    "Could not find or save the configured summary map:" + a
+                )
 
         # Check of the usermodel has a list of summary maps defined and save those
         if hasattr(self._userModel(), "default_summarymaps"):
@@ -1906,7 +1965,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 name = os.path.join(directory, var + "_" + str(nr) + ".map").replace(
                     "\\", "/"
                 )
-                if os.path.exists(name):
+
+                try:
                     tvar = self.wf_readmap(
                         name,
                         0.0,
@@ -1968,7 +2028,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         for var in allvars:
             try:
-                exec("self._userModel()." + var + "_laststep = self._userModel()." + var)
+                exec(
+                    "self._userModel()." + var + "_laststep = self._userModel()." + var
+                )
             except:
                 self.logger.warning("Problem saving state variable: " + var)
 
@@ -1982,7 +2044,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         allvars = self._userModel().stateVariables()
 
         for var in allvars:
-            exec("self._userModel()." + var + " = self._userModel()." + var + "_laststep")
+            exec(
+                "self._userModel()." + var + " = self._userModel()." + var + "_laststep"
+            )
 
         ts = self._userModel().currentTimeStep()
         self._userModel()._setCurrentTimeStep(ts)
@@ -2074,7 +2138,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             exec("self._userModel()." + mapname + " = arpcr")
             return 1
         else:
-            self.logger.debug(mapname + " is not defined in the usermodel: setting anyway")
+            self.logger.debug(
+                mapname + " is not defined in the usermodel: setting anyway"
+            )
             exec("self._userModel()." + mapname + " = arpcr")
             return 0
 
@@ -2105,7 +2171,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             exec("self._userModel()." + mapname + " = arpcr")
             return 1
         else:
-            self.logger.debug(mapname + " is not defined in the usermodel: setting anyway")
+            self.logger.debug(
+                mapname + " is not defined in the usermodel: setting anyway"
+            )
             exec("self._userModel()." + mapname + " = arpcr")
             return 0
 
@@ -2209,7 +2277,13 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         arpcr = cover(value)
         self.setviaAPI[mapname] = 1
         if hasattr(self._userModel(), mapname):
-            exec("self._userModel()." + mapname + " = arpcr * " + "self._userModel()." + mapname)
+            exec(
+                "self._userModel()."
+                + mapname
+                + " = arpcr * "
+                + "self._userModel()."
+                + mapname
+            )
             return 1
         else:
             self.logger.debug(
@@ -2237,8 +2311,19 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self.setviaAPI[mapname] = 1
         if hasattr(self._userModel(), mapname):
             # exec "self._userModel()." + mapname + " = arpcr * " + "self._userModel()." + mapname
-            exec("self._userModel()." + mapname + " = ifthenelse(self._userModel()." + areamapname + " == " + str(
-                areacode) + " arpcr *  self._userModel()." + areamapname + ", self._userModel()." + areamapname + " )")
+            exec(
+                "self._userModel()."
+                + mapname
+                + " = ifthenelse(self._userModel()."
+                + areamapname
+                + " == "
+                + str(areacode)
+                + " arpcr *  self._userModel()."
+                + areamapname
+                + ", self._userModel()."
+                + areamapname
+                + " )"
+            )
             return 1
         else:
             self.logger.debug(
@@ -2322,7 +2407,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
             return retval.flatten().tolist()
         else:
-            self.logger.warning(mapname + " is not defined in the usermodel, returning empty list")
+            self.logger.warning(
+                mapname + " is not defined in the usermodel, returning empty list"
+            )
             return []
 
     def wf_supplyMapAsNumpy(self, mapname):
@@ -2354,7 +2441,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             if self.APIDebug:
                 self.logger.debug("wf_supplyMapAsNumpy returning: " + mapname)
         else:
-            self.logger.warning(mapname + " is not defined in the usermodel, returning empty array")
+            self.logger.warning(
+                mapname + " is not defined in the usermodel, returning empty array"
+            )
             return []
 
         return retval
@@ -2399,7 +2488,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
             return flipud(pcr2numpy(retval, -999)).copy()
         else:
-            self.logger.warning("Altitude is not defined in the usermodel, returning empty list")
+            self.logger.warning(
+                "Altitude is not defined in the usermodel, returning empty list"
+            )
             return []
 
     def wf_supplyMapOrigin(self):
@@ -2434,7 +2525,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             if self.APIDebug:
                 self.logger.debug("wf_supplyMapAsNumpy returning: " + mapname)
         else:
-            self.logger.warning(mapname + " is not defined in the usermodel, returning empty list")
+            self.logger.warning(
+                mapname + " is not defined in the usermodel, returning empty list"
+            )
             return []
 
         return retval
@@ -2972,7 +3065,11 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             else:
                 if verbose:
                     self.logger.warning(
-                        "Climatology data (" + path + ") for timestep not present, returning " + str(default))
+                        "Climatology data ("
+                        + path
+                        + ") for timestep not present, returning "
+                        + str(default)
+                    )
 
                 return scalar(default)
         elif kind == 2:
@@ -2985,7 +3082,11 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             else:
                 if verbose:
                     self.logger.warning(
-                        "Climatology data (" + path + ") for timestep not present, returning " + str(default))
+                        "Climatology data ("
+                        + path
+                        + ") for timestep not present, returning "
+                        + str(default)
+                    )
 
                 return scalar(default)
 
@@ -3241,13 +3342,21 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 exec("retval = cover(self._userModel()." + name + ",scalar(default))")
                 return retval
             else:
-                self.logger.warning("Variable: " + name + " not set by API, returning default")
+                self.logger.warning(
+                    "Variable: " + name + " not set by API, returning default"
+                )
                 exec("self._userModel()." + name + " = cover(scalar(default))")
                 # setattr(self._userModel(),name,clone())
                 exec("retval = self._userModel()." + name)
                 return retval
         else:
-            self.logger.warning("Unknown style (" + str(style) + ") for variable: " + name + ", returning default")
+            self.logger.warning(
+                "Unknown style ("
+                + str(style)
+                + ") for variable: "
+                + name
+                + ", returning default"
+            )
             return self.TheClone + default
 
     ## \brief testing the requirements for the dynamic framework

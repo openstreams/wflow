@@ -280,15 +280,11 @@ def complexreservoir(
         np_outflow = pcr2numpy(outflow, np.nan)
         np_outflow_linked = np_reslocs * 0.0
 
-        with np.errstate(invalid='ignore'):
-            if np_outflow[np_outflow < 0] is not None:
-                    np_outflow_linked[
-                        np.in1d(np_reslocs, np_linkedreslocs[np_outflow < 0]).reshape(
-                            np_linkedreslocs.shape
-                        )
-                    ] = np_outflow[np_outflow < 0]
-
-
+        np_outflow_linked[
+            np.in1d(np_reslocs, np_linkedreslocs[np_outflow < 0]).reshape(
+                np_linkedreslocs.shape
+            )
+        ] = np_outflow[np_outflow < 0]
         outflow_linked = numpy2pcr(Scalar, np_outflow_linked, 0.0)
 
         storage = (
@@ -307,8 +303,7 @@ def complexreservoir(
         )
 
         np_outflow_nz = np_outflow * 0.0
-        with np.errstate(invalid='ignore'):
-            np_outflow_nz[np_outflow > 0] = np_outflow[np_outflow > 0]
+        np_outflow_nz[np_outflow > 0] = np_outflow[np_outflow > 0]
         _outflow.append(np_outflow_nz)
 
     outflow_av_temp = np.average(_outflow, 0)
@@ -1262,7 +1257,7 @@ def readMap(fileName, fileFormat):
     mapFormat.Register()
     ds = gdal.Open(fileName)
     if ds is None:
-        print('Could not open ' + fileName + '. Something went wrong!! Shutting down')
+        print("Could not open " + fileName + ". Something went wrong!! Shutting down")
         sys.exit(1)
         # Retrieve geoTransform info
     geotrans = ds.GetGeoTransform()
@@ -1332,7 +1327,7 @@ def writeMap(fileName, fileFormat, x, y, data, FillVal):
 
     # Processing
     if verbose:
-        print('Writing to temporary file ' + fileName + '.tif')
+        print("Writing to temporary file " + fileName + ".tif")
     # Create Output filename from (FEWS) product name and data and open for writing
 
     if data.dtype == np.int32:
@@ -1355,14 +1350,13 @@ def writeMap(fileName, fileFormat, x, y, data, FillVal):
     TempBand.SetNoDataValue(FillVal)
     # Create data to write to correct format (supported by 'CreateCopy')
     if verbose:
-        print('Writing to ' + fileName + '.map')
+        print("Writing to " + fileName + ".map")
     outDataset = driver2.CreateCopy(fileName, TempDataset, 0)
     TempDataset = None
     outDataset = None
     if verbose:
-        print('Removing temporary file ' + fileName + '.tif')
-    os.remove(fileName + '.tif');
+        print("Removing temporary file " + fileName + ".tif")
+    os.remove(fileName + ".tif")
 
     if verbose:
-        print('Writing to ' + fileName + ' is done!')
-
+        print("Writing to " + fileName + " is done!")

@@ -183,10 +183,9 @@ def main(
     if not other_maps == None:
         if type(other_maps) == str:
             print(other_maps)
-            other_maps = other_maps.replace(
-                ' ', '').replace('[', '').replace(']', '').split(',')
-
-
+            other_maps = (
+                other_maps.replace(" ", "").replace("[", "").replace("]", "").split(",")
+            )
 
     source = os.path.abspath(source)
     clone_map = os.path.join(source, "mask.map")
@@ -203,16 +202,16 @@ def main(
         parser.print_help()
         sys.exit(1)
     if (inifile is not None) and (not os.path.exists(inifile)):
-        print('path to ini file cannot be found')
+        print("path to ini file cannot be found")
         sys.exit(1)
     if not os.path.exists(rivshp):
-        print('path to river shape cannot be found')
+        print("path to river shape cannot be found")
         sys.exit(1)
     if not os.path.exists(catchshp):
-        print('path to catchment shape cannot be found')
+        print("path to catchment shape cannot be found")
         sys.exit(1)
     if not os.path.exists(dem_in):
-        print('path to DEM cannot be found')
+        print("path to DEM cannot be found")
         sys.exit(1)
 
     # open a logger, dependent on verbose print to screen or not
@@ -280,11 +279,11 @@ def main(
     burn_gauges = wt.configget(config, "parameters", "burn_gauges", 100, datatype="int")
     minorder = wt.configget(config, "parameters", "riverorder_min", 3, datatype="int")
     try:
-        percentiles_str = wt.configget(config, 'parameters',
-            'statisticmaps', '0, 100',
-            datatype='str')
-        percentiles_split = percentiles_str.replace(' ', '').split(',')
-        percentiles = np.array(percentiles_split, dtype='float')
+        percentiles_str = wt.configget(
+            config, "parameters", "statisticmaps", "0, 100", datatype="str"
+        )
+        percentiles_split = percentiles_str.replace(" ", "").split(",")
+        percentiles = np.array(percentiles_split, dtype="float")
     except configparser.NoOptionError:
         percentiles = [0.0, 100.0]
     # read the parameters for generating a temporary very high resolution grid
@@ -449,11 +448,10 @@ def main(
             * pcr.scalar(catchment_domain)
             * catchment
         ) - burn_layer
-        # ldddem_catchment = pcr.lddcreatedem(
-        #    dem_burned_catchment, 1e35, 1e35, 1e35, 1e35)
-        ldddem = pcr.cover(ldddem, dem_burned_catchment)
-
-    pcr.report(ldddem, os.path.join(destination, "ldddem.map"))
+        ldddem_catchment = pcr.lddcreatedem(
+            dem_burned_catchment, 1e35, 1e35, 1e35, 1e35
+        )
+        ldddem = pcr.cover(ldddem, ldddem_catchment)
 
     wflow_ldd = pcr.lddcreate(ldddem, 1e35, 1e35, 1e35, 1e35)
     if n_outlets >= 1:

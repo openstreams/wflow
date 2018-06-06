@@ -31,7 +31,7 @@ import docopt
 
 
 def call_functionality(arguments):
-    print('hello')
+    print("hello")
     print(arguments)
     mmi.runner.runner(arguments)
 

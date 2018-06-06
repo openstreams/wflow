@@ -75,7 +75,8 @@ def detRealCellLength(ZeroMap, sizeinmetres):
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args: print(msg)
+    for msg in args:
+        print(msg)
     print(__doc__)
     sys.exit(0)
 
@@ -163,7 +164,7 @@ def readtss(nname):
             # return numpy.vstack((dumm,mat[1:])), head
     else:
         print(nname + " does not exists.")
-    
+
     return
 
 

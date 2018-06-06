@@ -177,14 +177,18 @@ class wflowbmi_light(object):
             os.path.splitext(os.path.basename(configfile))[0],
         )
         if useddef:
-            self.bmilogger.warning("Please specify modeltype in the model section of file: " + configfile)
+            self.bmilogger.warning(
+                "Please specify modeltype in the model section of file: " + configfile
+            )
             self.bmilogger.warning("Assuming " + self.name + " as model type.")
 
         maxNrSteps = 10000
         maxNrSteps = 0
 
         wf = wflow_modeldict[self.name]
-        self.bmilogger.info("initialize: Initialising wflow bmi with ini: " + configfile)
+        self.bmilogger.info(
+            "initialize: Initialising wflow bmi with ini: " + configfile
+        )
         myModel = wf.WflowModel(wflow_cloneMap, datadir, runid, inifile)
 
         self.dynModel = wf.wf_DynamicFramework(myModel, maxNrSteps, firstTimestep=0)
@@ -560,8 +564,7 @@ class wflowbmi_csdms(bmi.Bmi):
         )
         self.bmilogger.info("__init__: wflow_bmi object initialised.")
         if self.wrtodisk:
-            self.bmilogger.warning('Will write all bmi set and get grids to disk!...')
-
+            self.bmilogger.warning("Will write all bmi set and get grids to disk!...")
 
     def initialize_config(self, filename, loglevel=logging.DEBUG):
         """
@@ -595,11 +598,18 @@ class wflowbmi_csdms(bmi.Bmi):
             os.path.splitext(os.path.basename(filename))[0],
         )
         if useddef:
-            self.bmilogger.warning("Please specify modeltype in the model section of file: " + fullpathname)
+            self.bmilogger.warning(
+                "Please specify modeltype in the model section of file: " + fullpathname
+            )
             self.bmilogger.warning("Assuming " + self.name + " as model type.")
 
         wf = wflow_modeldict[self.name]
-        self.bmilogger.info("initialize_config: Initialising wflow bmi with ini: " + filename + " Component name: " + self.name)
+        self.bmilogger.info(
+            "initialize_config: Initialising wflow bmi with ini: "
+            + filename
+            + " Component name: "
+            + self.name
+        )
         self.myModel = wf.WflowModel(wflow_cloneMap, self.datadir, runid, inifile)
 
         self.dynModel = wf.wf_DynamicFramework(
@@ -737,7 +747,9 @@ class wflowbmi_csdms(bmi.Bmi):
                 attrpath[0], attrpath[1], attribute_value
             )
         else:
-            self.bmilogger.warning("Attributes should follow the name:option  convention")
+            self.bmilogger.warning(
+                "Attributes should follow the name:option  convention"
+            )
             raise Warning("attributes should follow the name:option  convention")
 
     def initialize(self, filename, loglevel=logging.DEBUG):

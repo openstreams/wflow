@@ -79,7 +79,8 @@ updateCols = []
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args: print(msg)
+    for msg in args:
+        print(msg)
     print(__doc__)
     sys.exit(0)
 
@@ -204,10 +205,7 @@ class WflowModel(DynamicModel):
         :var self.SurfaceRunoff: Surface runoff in the kin-wave resrvoir [m^3/s]
         :var self.WaterLevel: Water level in the kin-wave resrvoir [m]
         """
-        states = ["SurfaceRunoff", "WaterLevelCH", "WaterLevelFP"]
-        
-        if hasattr(self, "ReserVoirSimpleLocs"):
-            states.append("ReservoirVolume")
+        states = ["SurfaceRunoff", "WaterLevelCH", "WaterLevelFP", "ReservoirVolume"]
 
         return states
 
@@ -408,27 +406,15 @@ class WflowModel(DynamicModel):
         self.wf_updateparameters()
 
         # Check if we have reservoirs
-        if hasattr(self, "ReserVoirSimpleLocs"):
-            tt = pcr2numpy(self.ReserVoirSimpleLocs, 0.0)
-            self.nrresSimple = tt.max()
-            self.logger.info("A total of " + str(self.nrresSimple) + " reservoirs found.")
-            areamap = self.reallength * self.reallength
-            res_area = areatotal(spatial(areamap), self.ReservoirSimpleAreas)
-
-            resarea_pnt = ifthen(boolean(self.ReserVoirSimpleLocs), res_area)
-            self.ResSimpleArea = ifthenelse(
-                cover(self.ResSimpleArea, scalar(0.0)) > 0,
-                self.ResSimpleArea,
-                cover(resarea_pnt, scalar(0.0)),
-            )
-
-            self.ReserVoirDownstreamLocs = downstream(self.TopoLdd, self.ReserVoirSimpleLocs)
+        tt = pcr2numpy(self.ReserVoirLocs, 0.0)
+        self.nrres = tt.max()
+        if self.nrres > 0:
+            self.logger.info("A total of " + str(self.nrres) + " reservoirs found.")
+            self.ReserVoirDownstreamLocs = downstream(self.TopoLdd, self.ReserVoirLocs)
             self.TopoLddOrg = self.TopoLdd
             self.TopoLdd = lddrepair(
-                cover(ifthen(boolean(self.ReserVoirSimpleLocs), ldd(5)), self.TopoLdd)
+                cover(ifthen(boolean(self.ReserVoirLocs), ldd(5)), self.TopoLdd)
             )
-        else:
-            self.nrresSimple = 0
 
         # Check if we have irrigation areas
         tt = pcr2numpy(self.IrrigationAreas, 0.0)
@@ -622,14 +608,6 @@ class WflowModel(DynamicModel):
         self.Inflow_mapstack = self.Dir + configget(
             self.config, "inputmapstacks", "Inflow", "/inmaps/IF"
         )  # timeseries for rainfall "/inmaps/IF" # in/outflow locations (abstractions)
-      
-        self.P_mapstack = self.Dir + configget(
-            self.config, "inputmapstacks", "Precipitation", "/inmaps/P"
-        )  # timeseries for rainfall
-        
-        self.PET_mapstack = self.Dir + configget(
-            self.config, "inputmapstacks", "EvapoTranspiration", "/inmaps/PET"
-        )  # timeseries for rainfall"/inmaps/PET"          # potential evapotranspiration
 
         # Meteo and other forcing
         modelparameters.append(
@@ -654,22 +632,62 @@ class WflowModel(DynamicModel):
         )
         modelparameters.append(
             self.ParamType(
-                name="Precipitation",
-                stack=self.P_mapstack,
-                type="timeseries",
+                name="ReserVoirLocs",
+                stack="staticmaps/wflow_reservoirlocs.map",
+                type="staticmap",
                 default=0.0,
-                verbose=True,
+                verbose=False,
                 lookupmaps=[],
             )
         )
         modelparameters.append(
             self.ParamType(
-                name="PotenEvap",
-                stack=self.PET_mapstack,
-                type="timeseries",
+                name="ResTargetFullFrac",
+                stack="intbl/ResTargetFullFrac.tbl",
+                type="tblsparse",
+                default=0.8,
+                verbose=False,
+                lookupmaps=["staticmaps/wflow_reservoirlocs.map"],
+            )
+        )
+        modelparameters.append(
+            self.ParamType(
+                name="ResTargetMinFrac",
+                stack="intbl/ResTargetMinFrac.tbl",
+                type="tblsparse",
+                default=0.4,
+                verbose=False,
+                lookupmaps=["staticmaps/wflow_reservoirlocs.map"],
+            )
+        )
+        modelparameters.append(
+            self.ParamType(
+                name="ResMaxVolume",
+                stack="intbl/ResMaxVolume.tbl",
+                type="tblsparse",
                 default=0.0,
-                verbose=True,
-                lookupmaps=[],
+                verbose=False,
+                lookupmaps=["staticmaps/wflow_reservoirlocs.map"],
+            )
+        )
+        modelparameters.append(
+            self.ParamType(
+                name="ResMaxRelease",
+                stack="intbl/ResMaxRelease.tbl",
+                type="tblsparse",
+                default=1.0,
+                verbose=False,
+                lookupmaps=["staticmaps/wflow_reservoirlocs.map"],
+            )
+        )
+        modelparameters.append(
+            self.ParamType(
+                name="ResDemand",
+                stack="intbl/ResDemand.tbl",
+                type="tblsparse",
+                default=1.0,
+                verbose=False,
+                lookupmaps=["staticmaps/wflow_reservoirlocs.map"],
             )
         )
         modelparameters.append(
@@ -789,24 +807,18 @@ class WflowModel(DynamicModel):
         # The MAx here may lead to watbal error. However, if inwaterMMM becomes < 0, the kinematic wave becomes very slow......
         self.InwaterMM = max(0.0, self.InwaterForcing)
         self.Inwater = self.InwaterMM * self.ToCubic  # m3/s
-        
-        self.Precipitation = max(0.0, self.Precipitation)
 
         # only run the reservoir module if needed
-        if self.nrresSimple > 0:
-            self.ReservoirVolume, self.OutflowSR, self.ResPercFull, self.ResPrecipSR, self.ResEvapSR, self.DemandRelease = simplereservoir(
+        if self.nrres > 0:
+            self.ReservoirVolume, self.Outflow, self.ResPercFull, self.DemandRelease = simplereservoir(
                 self.ReservoirVolume,
                 self.SurfaceRunoff,
-                self.ResSimpleArea,
                 self.ResMaxVolume,
                 self.ResTargetFullFrac,
                 self.ResMaxRelease,
                 self.ResDemand,
                 self.ResTargetMinFrac,
-                self.ReserVoirSimpleLocs,
-                self.Precipitation,
-                self.PotenEvap,
-                self.ReservoirSimpleAreas,
+                self.ReserVoirLocs,
                 timestepsecs=self.timestepsecs,
             )
             self.OutflowDwn = upstream(
@@ -1033,27 +1045,38 @@ def main(argv=None):
     ## Process command-line options                                        #
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, 'F:L:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:g:')
+        opts, args = getopt.getopt(argv, "F:L:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:g:")
     except getopt.error as msg:
         pcrut.usage(msg)
 
     for o, a in opts:
-        if o == '-C': caseName = a
-        if o == '-R': runId = a
-        if o == '-c': configfile = a
-        if o == '-L': LogFileName = a
-        if o == '-s': timestepsecs = int(a)
-        if o == '-h': usage()
-        if o == '-f': _NoOverWrite = 0
-        if o == '-l': exec("loglevel = logging." + a)
+        if o == "-C":
+            caseName = a
+        if o == "-R":
+            runId = a
+        if o == "-c":
+            configfile = a
+        if o == "-L":
+            LogFileName = a
+        if o == "-s":
+            timestepsecs = int(a)
+        if o == "-h":
+            usage()
+        if o == "-f":
+            _NoOverWrite = 0
+        if o == "-l":
+            exec("loglevel = logging." + a)
 
-
-
-    starttime = dt.datetime(1990,1,1)
+    starttime = dt.datetime(1990, 1, 1)
 
     if _lastTimeStep < _firstTimeStep:
-        print("The starttimestep (" + str(_firstTimeStep) + ") is smaller than the last timestep (" + str(
-            _lastTimeStep) + ")")
+        print(
+            "The starttimestep ("
+            + str(_firstTimeStep)
+            + ") is smaller than the last timestep ("
+            + str(_lastTimeStep)
+            + ")"
+        )
         usage()
 
     myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile)
@@ -1068,18 +1091,25 @@ def main(argv=None):
     )
 
     for o, a in opts:
-        if o == '-X': configset(myModel.config, 'model', 'OverWriteInit', '1', overwrite=True)
-        if o == '-I': configset(myModel.config, 'run', 'reinit', '1', overwrite=True)
-        if o == '-i': configset(myModel.config, 'model', 'intbl', a, overwrite=True)
-        if o == '-s': configset(myModel.config, 'model', 'timestepsecs', a, overwrite=True)
-        if o == '-x': configset(myModel.config, 'model', 'sCatch', a, overwrite=True)
-        if o == '-c': configset(myModel.config, 'model', 'configfile', a, overwrite=True)
-        if o == '-g': configset(myModel.config,'model','instate',a,overwrite=True)
+        if o == "-X":
+            configset(myModel.config, "model", "OverWriteInit", "1", overwrite=True)
+        if o == "-I":
+            configset(myModel.config, "run", "reinit", "1", overwrite=True)
+        if o == "-i":
+            configset(myModel.config, "model", "intbl", a, overwrite=True)
+        if o == "-s":
+            configset(myModel.config, "model", "timestepsecs", a, overwrite=True)
+        if o == "-x":
+            configset(myModel.config, "model", "sCatch", a, overwrite=True)
+        if o == "-c":
+            configset(myModel.config, "model", "configfile", a, overwrite=True)
+        if o == "-g":
+            configset(myModel.config, "model", "instate", a, overwrite=True)
 
-        if o == '-U':
-            configset(myModel.config, 'model', 'updateFile', a, overwrite=True)
-            configset(myModel.config, 'model', 'updating', "1", overwrite=True)
-        if o == '-u':
+        if o == "-U":
+            configset(myModel.config, "model", "updateFile", a, overwrite=True)
+            configset(myModel.config, "model", "updating", "1", overwrite=True)
+        if o == "-u":
             exec("zz =" + a)
             updateCols = zz
         if o == "-P":

@@ -48,7 +48,8 @@ import subprocess
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args: print(msg)
+    for msg in args:
+        print(msg)
     print(__doc__)
     sys.exit(0)
 
@@ -98,7 +99,7 @@ def runCommands(commands, maxCpu):
 def main():
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'fhC:N:I:s:M:')
+        opts, args = getopt.getopt(sys.argv[1:], "fhC:N:I:s:M:")
     except getopt.error as msg:
         usage(msg)
 
@@ -165,7 +166,9 @@ def main():
                 x, y, data, FillVal = readMap(mfile, "PCRaster")
                 try:
                     good = 1
-                    xn, yn, datan = cutMapById(data,subcatchmap,subcatch,x,y,FillVal)
+                    xn, yn, datan = cutMapById(
+                        data, subcatchmap, subcatch, x, y, FillVal
+                    )
                 except Exception as e:
                     good = 0
                     print("Skipping: " + mfile + " exception: " + str(e))
@@ -194,7 +197,9 @@ def main():
                 x, y, data, FillVal = readMap(mfile, "PCRaster")
                 try:
                     good = 1
-                    xn, yn, datan = cutMapById(data, subcatchmap, subcatch, x, y, FillVal)
+                    xn, yn, datan = cutMapById(
+                        data, subcatchmap, subcatch, x, y, FillVal
+                    )
                 except Exception as e:
                     good = 0
                     print("Skipping: " + mfile + " exception: " + str(e))

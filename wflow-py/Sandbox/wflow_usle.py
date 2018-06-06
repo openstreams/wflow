@@ -55,7 +55,8 @@ from wflow.wflow_adapt import *
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args: print(msg)
+    for msg in args:
+        print(msg)
     print(__doc__)
     sys.exit(0)
 
@@ -470,19 +471,18 @@ class WflowModel(DynamicModel):
     setup needed.
     
     """
-    self.logger.info("Reading initial conditions...")
-    #: It is advised to use the wf_resume() function
-    #: here which pick up the variable save by a call to wf_suspend()
-    try:
-        self.wf_resume(self.Dir + "/instate/")
-    except:
-        self.logger.warning("Cannot load initial states, setting to default")
-        for s in self.stateVariables():
-            exec("self." + s + " = cover(1.0)")
+        self.logger.info("Reading initial conditions...")
+        #: It is advised to use the wf_resume() function
+        #: here which pick up the variable save by a call to wf_suspend()
+        try:
+            self.wf_resume(self.Dir + "/instate/")
+        except:
+            self.logger.warning("Cannot load initial states, setting to default")
+            for s in self.stateVariables():
+                exec("self." + s + " = cover(1.0)")
 
-
-  def default_summarymaps(self):
-      """
+    def default_summarymaps(self):
+        """
       *Optional*
 
       Return a default list of variables to report as summary maps in the outsum dir.

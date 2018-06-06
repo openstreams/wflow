@@ -89,7 +89,8 @@ def usage(*args):
     
     """
     sys.stdout = sys.stderr
-    for msg in args: print(msg)
+    for msg in args:
+        print(msg)
     print(__doc__)
     sys.exit(0)
 
@@ -178,14 +179,22 @@ class WflowModel(DynamicModel):
             self.logger.info("reading map parameter file: " + mapname)
             rest = cover(readmap(mapname), default)
         else:
-            self.logger.warning("tbl file not found (" + pathtotbl + ") returning default value: " + str(default))
-            rest = scalar(default)
-        
-    return rest
-    
-    
-  def suspend(self):
-    """
+            if os.path.isfile(pathtotbl):
+                rest = cover(lookupscalar(pathtotbl, landuse, subcatch, soil), default)
+                self.logger.info("Creating map from table: " + pathtotbl)
+            else:
+                self.logger.warning(
+                    "tbl file not found ("
+                    + pathtotbl
+                    + ") returning default value: "
+                    + str(default)
+                )
+                rest = scalar(default)
+
+        return rest
+
+    def suspend(self):
+        """
       Suspens the model to disk. All variables needed to restart the model
       are save to disk as pcraster maps. Use resume() to re-read them
     """
@@ -272,96 +281,163 @@ class WflowModel(DynamicModel):
         )  #: Map with locations of output gauge(s)
 
         # Temperature correction poer cell to add
-    self.TempCor=pcrut.readmapSave(self.Dir + "/staticmaps/wflow_tempcor.map",0.0)
- 
-                      
-    if self.scalarInput:
-        self.gaugesMap=readmap(self.Dir + "/staticmaps/wflow_mgauges.map") #: Map with locations of rainfall/evap/temp gauge(s). Only needed if the input to the model is not in maps
-    self.OutputId=readmap(self.Dir + "/staticmaps/wflow_subcatch.map")       # location of subcatchment
-  
-    self.ZeroMap=0.0*scalar(subcatch)                    #map with only zero's
-  
-    # 3: Input time series ###################################################
-    self.Rain_=self.Dir + "/inmaps/P" #: timeseries for rainfall
-    self.Temp_=self.Dir + "/inmaps/TEMP"          #: temperature
+        self.TempCor = pcrut.readmapSave(
+            self.Dir + "/staticmaps/wflow_tempcor.map", 0.0
+        )
 
+        if self.scalarInput:
+            self.gaugesMap = readmap(
+                self.Dir + "/staticmaps/wflow_mgauges.map"
+            )  #: Map with locations of rainfall/evap/temp gauge(s). Only needed if the input to the model is not in maps
+        self.OutputId = readmap(
+            self.Dir + "/staticmaps/wflow_subcatch.map"
+        )  # location of subcatchment
 
-    # Set static initial values here #########################################
-   
-    
-    self.Latitude  =  ycoordinate(boolean(self.Altitude))
-    self.Longitude =  xcoordinate(boolean(self.Altitude))
-  
-    self.logger.info("Linking parameters to landuse, catchment and soil...")
-    
-    #HBV Soil params
-    self.CFR=self.readtblDefault(self.Dir + "/" + self.intbl + "/CFR.tbl",self.LandUse,subcatch,self.Soil, 0.05000)        # refreezing efficiency constant in refreezing of freewater in snow 
-    #self.FoCfmax=self.readtblDefault(self.Dir + "/" + self.intbl + "/FoCfmax.tbl",self.LandUse,subcatch,self.Soil, 0.6000)  # correcton factor for snow melt/refreezing in forested and non-forested areas
-    self.Pcorr=self.readtblDefault(self.Dir + "/" + self.intbl + "/Pcorr.tbl",self.LandUse,subcatch,self.Soil, 1.0)      # correction factor for precipitation
-    self.RFCF=self.readtblDefault(self.Dir + "/" + self.intbl + "/RFCF.tbl",self.LandUse,subcatch,self.Soil,1.0)      # correction factor for rainfall
-    self.SFCF=self.readtblDefault(self.Dir + "/" + self.intbl + "/SFCF.tbl",self.LandUse,subcatch,self.Soil, 1.0)     # correction factor for snowfall
-    self.Cflux= self.readtblDefault(self.Dir + "/" + self.intbl + "/Cflux.tbl",self.LandUse,subcatch,self.Soil, 2.0)        # maximum capillary rise from runoff response routine to soil moisture routine    
-    
-   
-    # HBV Snow parameters    
-    # critical temperature for snowmelt and refreezing:  TTI= 1.000
-    self.TTI=self.readtblDefault(self.Dir + "/" + self.intbl + "/TTI.tbl" ,self.LandUse,subcatch,self.Soil,1.0)        
-    # TT = -1.41934 # defines interval in which precipitation falls as rainfall and snowfall
-    self.TT=self.readtblDefault(self.Dir + "/" + self.intbl + "/TT.tbl" ,self.LandUse,subcatch,self.Soil,-1.41934)
-    #Cfmax = 3.75653 # meltconstant in temperature-index
-    self.Cfmax=self.readtblDefault(self.Dir + "/" + self.intbl + "/Cfmax.tbl" ,self.LandUse,subcatch,self.Soil,3.75653)
-    # WHC= 0.10000        # fraction of Snowvolume that can store water
-    self.WHC=self.readtblDefault(self.Dir + "/" + self.intbl + "/WHC.tbl" ,self.LandUse,subcatch,self.Soil,0.1)
-    
-    # Determine real slope and cell length
-    sizeinmetres = int(configget(self.config,"layout","sizeinmetres","0"))
-    self.xl,self.yl,self.reallength = pcrut.detRealCellLength(self.ZeroMap,sizeinmetres)
-    self.Slope= slope(self.Altitude)
-    self.Slope=ifthen(boolean(self.TopoId),max(0.001,self.Slope*celllength()/self.reallength))
-    
-    # Multiply parameters with a factor (for calibration etc) -P option in command line
-    for k, v in multpars.items():
-        estr = k + "=" + k + "*" + str(v)
-        self.logger.info("Parameter multiplication: " +  estr)
-        exec(estr)
+        self.ZeroMap = 0.0 * scalar(subcatch)  # map with only zero's
 
-    self.SnowWater = self.ZeroMap 
-    
+        # 3: Input time series ###################################################
+        self.Rain_ = self.Dir + "/inmaps/P"  #: timeseries for rainfall
+        self.Temp_ = self.Dir + "/inmaps/TEMP"  #: temperature
 
-    # Initializing of variables
-    self.logger.info("Initializing of model variables..")
-    self.TopoLdd=lddmask(self.TopoLdd,boolean(self.TopoId))   
-    catchmentcells=maptotal(scalar(self.TopoId))
- 
-    # Used to seperate output per LandUse/management classes
-    #OutZones = self.LandUse
-    #report(self.reallength,"rl.map")
-    #report(catchmentcells,"kk.map")
-    self.QMMConv = self.timestepsecs/(self.reallength * self.reallength * 0.001) #m3/s --> mm
-    
-    self.sumprecip=self.ZeroMap #: accumulated rainfall for water balance 
-    self.sumtemp=self.ZeroMap                          #accumulated runoff for water balance
+        # Set static initial values here #########################################
 
-      
-    self.logger.info("Create timeseries outputs...")
-    toprinttss = configsection(self.config,'outputtss')
-    
+        self.Latitude = ycoordinate(boolean(self.Altitude))
+        self.Longitude = xcoordinate(boolean(self.Altitude))
 
-    # Save some summary maps
-    self.logger.info("Saving summary maps...")
-    report(self.Cfmax,self.Dir + "/" + self.runId + "/outsum/Cfmax.map")
-    report(self.TTI,self.Dir + "/" + self.runId + "/outsum/TTI.map")
-    report(self.TT,self.Dir + "/" + self.runId + "/outsum/TT.map")
-    report(self.WHC,self.Dir + "/" + self.runId + "/outsum/WHC.map")       
-    report(self.xl,self.Dir + "/" + self.runId + "/outsum/xl.map")
-    report(self.yl,self.Dir + "/" + self.runId + "/outsum/yl.map")
-    report(self.reallength,self.Dir + "/" + self.runId + "/outsum/rl.map")
-    
-    
+        self.logger.info("Linking parameters to landuse, catchment and soil...")
 
-    self.SaveDir = self.Dir + "/" + self.runId + "/"
-    self.logger.info("Starting Dynamic run...")
+        # HBV Soil params
+        self.CFR = self.readtblDefault(
+            self.Dir + "/" + self.intbl + "/CFR.tbl",
+            self.LandUse,
+            subcatch,
+            self.Soil,
+            0.05000,
+        )  # refreezing efficiency constant in refreezing of freewater in snow
+        # self.FoCfmax=self.readtblDefault(self.Dir + "/" + self.intbl + "/FoCfmax.tbl",self.LandUse,subcatch,self.Soil, 0.6000)  # correcton factor for snow melt/refreezing in forested and non-forested areas
+        self.Pcorr = self.readtblDefault(
+            self.Dir + "/" + self.intbl + "/Pcorr.tbl",
+            self.LandUse,
+            subcatch,
+            self.Soil,
+            1.0,
+        )  # correction factor for precipitation
+        self.RFCF = self.readtblDefault(
+            self.Dir + "/" + self.intbl + "/RFCF.tbl",
+            self.LandUse,
+            subcatch,
+            self.Soil,
+            1.0,
+        )  # correction factor for rainfall
+        self.SFCF = self.readtblDefault(
+            self.Dir + "/" + self.intbl + "/SFCF.tbl",
+            self.LandUse,
+            subcatch,
+            self.Soil,
+            1.0,
+        )  # correction factor for snowfall
+        self.Cflux = self.readtblDefault(
+            self.Dir + "/" + self.intbl + "/Cflux.tbl",
+            self.LandUse,
+            subcatch,
+            self.Soil,
+            2.0,
+        )  # maximum capillary rise from runoff response routine to soil moisture routine
 
+        # HBV Snow parameters
+        # critical temperature for snowmelt and refreezing:  TTI= 1.000
+        self.TTI = self.readtblDefault(
+            self.Dir + "/" + self.intbl + "/TTI.tbl",
+            self.LandUse,
+            subcatch,
+            self.Soil,
+            1.0,
+        )
+        # TT = -1.41934 # defines interval in which precipitation falls as rainfall and snowfall
+        self.TT = self.readtblDefault(
+            self.Dir + "/" + self.intbl + "/TT.tbl",
+            self.LandUse,
+            subcatch,
+            self.Soil,
+            -1.41934,
+        )
+        # Cfmax = 3.75653 # meltconstant in temperature-index
+        self.Cfmax = self.readtblDefault(
+            self.Dir + "/" + self.intbl + "/Cfmax.tbl",
+            self.LandUse,
+            subcatch,
+            self.Soil,
+            3.75653,
+        )
+        # WHC= 0.10000        # fraction of Snowvolume that can store water
+        self.WHC = self.readtblDefault(
+            self.Dir + "/" + self.intbl + "/WHC.tbl",
+            self.LandUse,
+            subcatch,
+            self.Soil,
+            0.1,
+        )
+
+        # Determine real slope and cell length
+        sizeinmetres = int(configget(self.config, "layout", "sizeinmetres", "0"))
+        self.xl, self.yl, self.reallength = pcrut.detRealCellLength(
+            self.ZeroMap, sizeinmetres
+        )
+        self.Slope = slope(self.Altitude)
+        self.Slope = ifthen(
+            boolean(self.TopoId),
+            max(0.001, self.Slope * celllength() / self.reallength),
+        )
+
+        # Multiply parameters with a factor (for calibration etc) -P option in command line
+        for k, v in multpars.items():
+            estr = k + "=" + k + "*" + str(v)
+            self.logger.info("Parameter multiplication: " + estr)
+            exec(estr)
+
+        self.SnowWater = self.ZeroMap
+
+        # Initializing of variables
+        self.logger.info("Initializing of model variables..")
+        self.TopoLdd = lddmask(self.TopoLdd, boolean(self.TopoId))
+        catchmentcells = maptotal(scalar(self.TopoId))
+
+        # Used to seperate output per LandUse/management classes
+        # OutZones = self.LandUse
+        # report(self.reallength,"rl.map")
+        # report(catchmentcells,"kk.map")
+        self.QMMConv = self.timestepsecs / (
+            self.reallength * self.reallength * 0.001
+        )  # m3/s --> mm
+
+        self.sumprecip = self.ZeroMap  #: accumulated rainfall for water balance
+        self.sumtemp = self.ZeroMap  # accumulated runoff for water balance
+
+        self.logger.info("Create timeseries outputs...")
+        toprinttss = configsection(self.config, "outputtss")
+
+        # Save some summary maps
+        self.logger.info("Saving summary maps...")
+        report(self.Cfmax, self.Dir + "/" + self.runId + "/outsum/Cfmax.map")
+        report(self.TTI, self.Dir + "/" + self.runId + "/outsum/TTI.map")
+        report(self.TT, self.Dir + "/" + self.runId + "/outsum/TT.map")
+        report(self.WHC, self.Dir + "/" + self.runId + "/outsum/WHC.map")
+        report(self.xl, self.Dir + "/" + self.runId + "/outsum/xl.map")
+        report(self.yl, self.Dir + "/" + self.runId + "/outsum/yl.map")
+        report(self.reallength, self.Dir + "/" + self.runId + "/outsum/rl.map")
+
+        self.SaveDir = self.Dir + "/" + self.runId + "/"
+        self.logger.info("Starting Dynamic run...")
+
+    def resume(self):
+        """ read initial state maps (they are output of a previous call to suspend()) """
+
+        if self.reinit == 1:
+            self.logger.info("Setting initial conditions to default (zero!)")
+            self.FreeWater = cover(0.0)  #: Water on surface (state variable [mm])
+            self.DrySnow = cover(0.0)  #: Snow amount (state variable [mm])
+        else:
+            self.wf_resume(self.Dir + "/instate/")
 
     def dynamic(self):
 
@@ -389,57 +465,70 @@ class WflowModel(DynamicModel):
             # These ar ALWAYS 0 at present!!!
             Temperature = self.readmap(self.Temp_, 0.0, self.TEMP_style)
             Temperature = Temperature + self.TempCor
-            #Inflow=spatial(scalar(0.0))
-    
-    # Multiply input parameters with a factor (for calibration etc) -p option in command line
-    for k, v in multdynapars.items():
-        estr = k + "=" + k + "*" + str(v)
-        self.logger.debug("Dynamic Parameter multiplication: " +  estr)
-        exec(estr)    
-    
-    # Snow pack modelling degree day methods
-    RainFrac=ifthenelse(1.0*self.TTI == 0.0,ifthenelse(Temperature <= self.TT,scalar(0.0),scalar(1.0)),min((Temperature-(self.TT-self.TTI/2.0))/self.TTI,scalar(1.0)))  
-    RainFrac=max(RainFrac,scalar(0.0))               #fraction of precipitation which falls as rain 
-    SnowFrac=1.0-RainFrac                    #fraction of precipitation which falls as snow
-    Precipitation=self.SFCF*SnowFrac*Precipitation+self.RFCF*RainFrac*Precipitation # different correction for rainfall and snowfall
-  
-    SnowFall=SnowFrac*Precipitation  #: snowfall depth 
-    RainFall=RainFrac*Precipitation  #: rainfall depth
-    PotSnowMelt=ifthenelse(Temperature > self.TT,self.Cfmax*(Temperature-self.TT),scalar(0.0)) #Potential snow melt, based on temperature
-    PotRefreezing=ifthenelse(Temperature < self.TT, self.Cfmax*self.CFR*(self.TT-Temperature),0.0)    #Potential refreezing, based on temperature
-    
-    
-    #PotSnowMelt=self.FoCfmax*PotSnowMelt     	#correction for forest zones 0.6)
-    #PotRefreezing=self.FoCfmax*PotRefreezing
-    Refreezing=ifthenelse(Temperature < self.TT,min(PotRefreezing,self.FreeWater),0.0)   	#actual refreezing    
-    SnowMelt=min(PotSnowMelt,self.DrySnow)          #actual snow melt
-    self.DrySnow=self.DrySnow+SnowFall+Refreezing-SnowMelt     #dry snow content 
-    self.FreeWater=self.FreeWater-Refreezing               #free water content in snow
-    MaxFreeWater=self.DrySnow*self.WHC                     
-    self.FreeWater=self.FreeWater+SnowMelt+RainFall
-    InSoil = max(self.FreeWater-MaxFreeWater,0.0)   #abundant water in snow pack which goes into soil
-    self.FreeWater=self.FreeWater-InSoil 
-    self.Melt = InSoil
-    
-    MaxSnowPack = 10000.0
-    if self.MassWasting:
-        # Masswasting of snow
-        # 5.67 = tan 80 graden
-        SnowFluxFrac = min(0.5,self.Slope/5.67) * min(1.0,self.DrySnow/MaxSnowPack)
-        MaxFlux = SnowFluxFrac * self.DrySnow
-        self.DrySnow = accucapacitystate(self.TopoLdd,self.DrySnow, MaxFlux)
-        self.FreeWater = accucapacitystate(self.TopoLdd,self.FreeWater,SnowFluxFrac * self.FreeWater )
-    else:
-        SnowFluxFrac = self.ZeroMap
-        MaxFlux= self.ZeroMap
+            # Inflow=spatial(scalar(0.0))
 
-        
- 
-    self.sumprecip=self.sumprecip  +  Precipitation                     #accumulated rainfall for water balance
-   
-    
-    # Get rest from ini file
-    
+        # Multiply input parameters with a factor (for calibration etc) -p option in command line
+        for k, v in multdynapars.items():
+            estr = k + "=" + k + "*" + str(v)
+            self.logger.debug("Dynamic Parameter multiplication: " + estr)
+            exec(estr)
+
+        # Snow pack modelling degree day methods
+        RainFrac = ifthenelse(
+            1.0 * self.TTI == 0.0,
+            ifthenelse(Temperature <= self.TT, scalar(0.0), scalar(1.0)),
+            min((Temperature - (self.TT - self.TTI / 2.0)) / self.TTI, scalar(1.0)),
+        )
+        RainFrac = max(
+            RainFrac, scalar(0.0)
+        )  # fraction of precipitation which falls as rain
+        SnowFrac = 1.0 - RainFrac  # fraction of precipitation which falls as snow
+        Precipitation = (
+            self.SFCF * SnowFrac * Precipitation + self.RFCF * RainFrac * Precipitation
+        )  # different correction for rainfall and snowfall
+
+        SnowFall = SnowFrac * Precipitation  #: snowfall depth
+        RainFall = RainFrac * Precipitation  #: rainfall depth
+        PotSnowMelt = ifthenelse(
+            Temperature > self.TT, self.Cfmax * (Temperature - self.TT), scalar(0.0)
+        )  # Potential snow melt, based on temperature
+        PotRefreezing = ifthenelse(
+            Temperature < self.TT, self.Cfmax * self.CFR * (self.TT - Temperature), 0.0
+        )  # Potential refreezing, based on temperature
+
+        # PotSnowMelt=self.FoCfmax*PotSnowMelt     	#correction for forest zones 0.6)
+        # PotRefreezing=self.FoCfmax*PotRefreezing
+        Refreezing = ifthenelse(
+            Temperature < self.TT, min(PotRefreezing, self.FreeWater), 0.0
+        )  # actual refreezing
+        SnowMelt = min(PotSnowMelt, self.DrySnow)  # actual snow melt
+        self.DrySnow = (
+            self.DrySnow + SnowFall + Refreezing - SnowMelt
+        )  # dry snow content
+        self.FreeWater = self.FreeWater - Refreezing  # free water content in snow
+        MaxFreeWater = self.DrySnow * self.WHC
+        self.FreeWater = self.FreeWater + SnowMelt + RainFall
+        InSoil = max(
+            self.FreeWater - MaxFreeWater, 0.0
+        )  # abundant water in snow pack which goes into soil
+        self.FreeWater = self.FreeWater - InSoil
+        self.Melt = InSoil
+
+        MaxSnowPack = 10000.0
+        if self.MassWasting:
+            # Masswasting of snow
+            # 5.67 = tan 80 graden
+            SnowFluxFrac = min(0.5, self.Slope / 5.67) * min(
+                1.0, self.DrySnow / MaxSnowPack
+            )
+            MaxFlux = SnowFluxFrac * self.DrySnow
+            self.DrySnow = accucapacitystate(self.TopoLdd, self.DrySnow, MaxFlux)
+            self.FreeWater = accucapacitystate(
+                self.TopoLdd, self.FreeWater, SnowFluxFrac * self.FreeWater
+            )
+        else:
+            SnowFluxFrac = self.ZeroMap
+            MaxFlux = self.ZeroMap
 
         self.sumprecip = (
             self.sumprecip + Precipitation
@@ -468,30 +557,38 @@ def main():
     ## Main model starts here
     ########################################################################
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'Mc:QXS:hC:Ii:T:NR:u:s:P:p:Xx:U:f')
+        opts, args = getopt.getopt(sys.argv[1:], "Mc:QXS:hC:Ii:T:NR:u:s:P:p:Xx:U:f")
     except getopt.error as msg:
         pcrut.usage(msg)
 
     for o, a in opts:
-        if o == '-P': 
+        if o == "-P":
             exec("multpars =" + a)
             print("WARN: -P Does not work at the moment")
-        if o == '-p': 
+        if o == "-p":
             exec("multdynapars =" + a)
             print("WARN: -p Does not work at the moment")
-        if o == '-C': caseName = a
-        if o == '-R': runId = a
-        if o == '-c': configfile = a
-        if o == '-s': timestepsecs = int(a)
-        if o == '-T': _lastTimeStep=int(a)
-        if o == '-S': _firstTimeStep=int(a)
-        if o == '-h': usage()
-        if o == '-f': NoOverWrite = 1
-    
+        if o == "-C":
+            caseName = a
+        if o == "-R":
+            runId = a
+        if o == "-c":
+            configfile = a
+        if o == "-s":
+            timestepsecs = int(a)
+        if o == "-T":
+            _lastTimeStep = int(a)
+        if o == "-S":
+            _firstTimeStep = int(a)
+        if o == "-h":
+            usage()
+        if o == "-f":
+            NoOverWrite = 1
 
-        
-    myModel = WflowModel(wflow_cloneMap, caseName,runId,configfile)
-    dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep,firstTimestep=_firstTimeStep)
+    myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile)
+    dynModelFw = wf_DynamicFramework(
+        myModel, _lastTimeStep, firstTimestep=_firstTimeStep
+    )
     dynModelFw.createRunId()
 
     for o, a in opts:

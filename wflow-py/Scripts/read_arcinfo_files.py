@@ -22,30 +22,30 @@ def read_ARCINFO_ASCII_grid(
     INTflag=0,
     Extent={"North": 0, "South": 0, "East": 0, "West": 0},
 ):
-    """This routine reads a standard Arc/Info ASCII grid file and 
-    returns the coordinates and values in a data dictionary.  An 
-    optional flag passed to the routine determines if values for 
-    the entire grid are returned (UNFILTERED: default) or if only 
-    the cells containing data are returned (FILTERED).  Filtering 
+    """This routine reads a standard Arc/Info ASCII grid file and
+    returns the coordinates and values in a data dictionary.  An
+    optional flag passed to the routine determines if values for
+    the entire grid are returned (UNFILTERED: default) or if only
+    the cells containing data are returned (FILTERED).  Filtering
     is based of the NODATA_value defined in the file.  Extent defines
     the boundaries of a smaller sub-grid that will be extracted."""
 
     try:
-	f = open(filename,"r")
+        f = open(filename, "r")
     except IOError as E:
-	print("ERROR: Unable to open or read the ArcInfo grid file %s" % filename)
+        print("ERROR: Unable to open or read the ArcInfo grid file %s" % filename)
         print(E)
-	fileTable = { "Ncells" : 0 }
-	return ( fileTable )
+        fileTable = {"Ncells": 0}
+        return fileTable
 
     fileTable = {
-	"ncols"        : atoi(split(f.readline())[1]),
-	"nrows"        : atoi(split(f.readline())[1]),
-	"xllcorner"    : atof(split(f.readline())[1]),
-	"yllcorner"    : atof(split(f.readline())[1]),
-	"cellsize"     : atof(split(f.readline())[1]),
-	"NODATA_value" : atoi(split(f.readline())[1]),
-	}
+        "ncols": atoi(split(f.readline())[1]),
+        "nrows": atoi(split(f.readline())[1]),
+        "xllcorner": atof(split(f.readline())[1]),
+        "yllcorner": atof(split(f.readline())[1]),
+        "cellsize": atof(split(f.readline())[1]),
+        "NODATA_value": atoi(split(f.readline())[1]),
+    }
     print(fileTable)
 
     if Extent["North"] and Extent["South"] and Extent["East"] and Extent["West"]:
@@ -67,9 +67,17 @@ def read_ARCINFO_ASCII_grid(
     # compute number of cells required
     fileTable["Ncells"] = nrows * ncols
     # allocate memory for all cells
-    fileTable["cell"] = [ fileTable["NODATA_value"] ]*fileTable["Ncells"]
+    fileTable["cell"] = [fileTable["NODATA_value"]] * fileTable["Ncells"]
 
-    print("North %f, South %f, East %f, West %f" % ( fileTable["yllcorner"] + fileTable["cellsize"]*fileTable["nrows"], fileTable["yllcorner"], fileTable["xllcorner"] + fileTable["cellsize"]*fileTable["ncols"], fileTable["xllcorner"] ))
+    print(
+        "North %f, South %f, East %f, West %f"
+        % (
+            fileTable["yllcorner"] + fileTable["cellsize"] * fileTable["nrows"],
+            fileTable["yllcorner"],
+            fileTable["xllcorner"] + fileTable["cellsize"] * fileTable["ncols"],
+            fileTable["xllcorner"],
+        )
+    )
     print(Extent)
     print(fileTable["nrows"], nrows)
     print(fileTable["ncols"], ncols)
@@ -89,52 +97,59 @@ def read_ARCINFO_ASCII_grid(
         if lat >= Extent["South"] and lat <= Extent["North"]:
             tmprcnt = tmprcnt + 1
             # if latitude falls within defined extent, split lines to get column values
-            if ( INTflag ): tmpvals = list(map(atoi,split(line)))
-            else: tmpvals = list(map(atof,split(line)))
-            if ( len(tmpvals) != fileTable["ncols"] ):
-                print("ERROR: Number of items in row %i (%i) does not match the number of defined columns (%i)." % (i, len(tmpvals), fileTable["ncols"]))
-   	    for j in range(fileTable["ncols"]):
-                # compute longitude for current cell
-                lng = (
-                    fileTable["xllcorner"]
-                    + (j) * fileTable["cellsize"]
-                    + fileTable["cellsize"] / 2.
+            if INTflag:
+                tmpvals = list(map(atoi, split(line)))
+            else:
+                tmpvals = list(map(atof, split(line)))
+            if len(tmpvals) != fileTable["ncols"]:
+                print(
+                    "ERROR: Number of items in row %i (%i) does not match the number of defined columns (%i)."
+                    % (i, len(tmpvals), fileTable["ncols"])
                 )
-                if lng >= Extent["West"] and lng <= Extent["East"]:
-                    if tmprcnt == 1:
-                        tmpccnt = tmpccnt + 1
-                    # if longitude within extent boundaries, store current location
-                    try:
-                        fileTable["cell"][cellidx] = {
-                            "lat": lat,
-                            "lng": lng,
-                            "value": tmpvals[j],
-                        }
-                        cellidx = cellidx + 1
-                    except IndexError as errstr:
-                        # did not allocate enough memory, add additional cells
-                        fileTable["cell"] = fileTable["cell"] + [
-                            {"lat": lat, "lng": lng, "value": tmpvals[j]}
-                        ]
-                        cellidx = cellidx + 1
-        del(line)
+        for j in range(fileTable["ncols"]):
+            # compute longitude for current cell
+            lng = (
+                fileTable["xllcorner"]
+                + (j) * fileTable["cellsize"]
+                + fileTable["cellsize"] / 2.
+            )
+            if lng >= Extent["West"] and lng <= Extent["East"]:
+                if tmprcnt == 1:
+                    tmpccnt = tmpccnt + 1
+                # if longitude within extent boundaries, store current location
+                try:
+                    fileTable["cell"][cellidx] = {
+                        "lat": lat,
+                        "lng": lng,
+                        "value": tmpvals[j],
+                    }
+                    cellidx = cellidx + 1
+                except IndexError as errstr:
+                    # did not allocate enough memory, add additional cells
+                    fileTable["cell"] = fileTable["cell"] + [
+                        {"lat": lat, "lng": lng, "value": tmpvals[j]}
+                    ]
+                    cellidx = cellidx + 1
+        del (line)
 
-    print("Number of rows filled: %i of %i" % ( tmprcnt, nrows ))
-    print("Number of cols filled: %i of %i" % ( tmpccnt, ncols ))
-    print("Number of cells filled: %i of %i" % ( cellidx, fileTable["Ncells"] ))
-    if tmprcnt != nrows: nrows = tmprcnt
-    if tmpccnt != ncols: ncols = tmpccnt
+    print("Number of rows filled: %i of %i" % (tmprcnt, nrows))
+    print("Number of cols filled: %i of %i" % (tmpccnt, ncols))
+    print("Number of cells filled: %i of %i" % (cellidx, fileTable["Ncells"]))
+    if tmprcnt != nrows:
+        nrows = tmprcnt
+    if tmpccnt != ncols:
+        ncols = tmpccnt
     if cellidx < fileTable["Ncells"]:
         fileTable["cell"] = fileTable["cell"][:cellidx]
     if cellidx != fileTable["Ncells"]:
         fileTable["Ncells"] = cellidx
 
     if FLAG == "FILTERED":
-	if fileTable["NODATA_value"] == 0:
-	    fileTable["cell"] = [x for x in fileTable["cell"] if x["value"] != 0]
-	else:
-	    fileTable["cell"] = [x for x in fileTable["cell"] if x["value"] != -9999]
-	fileTable["Ncells"] = len(fileTable["cell"])
+        if fileTable["NODATA_value"] == 0:
+            fileTable["cell"] = [x for x in fileTable["cell"] if x["value"] != 0]
+        else:
+            fileTable["cell"] = [x for x in fileTable["cell"] if x["value"] != -9999]
+        fileTable["Ncells"] = len(fileTable["cell"])
 
         # reset grid boundaries to agree with defined extent
     fileTable["ncols"] = ncols
@@ -151,10 +166,10 @@ def write_ARCINFO_ASCII_grid(filename, gridTable, INTflag=0):
     of which are stored in a data dictionary."""
 
     try:
-	f = open(filename,"w")
+        f = open(filename, "w")
     except IOError as E:
-	print("ERROR: Unable to open or write the ArcInfo grid file %s" % filename)
-	return ( 0 )
+        print("ERROR: Unable to open or write the ArcInfo grid file %s" % filename)
+        return 0
 
     f.write("ncols\t%i\n" % gridTable["ncols"])
     f.write("nrows\t%i\n" % gridTable["nrows"])
@@ -199,7 +214,9 @@ def write_ARCINFO_ASCII_grid(filename, gridTable, INTflag=0):
 
     f.close()
 
-    print("%s: %i cells of %i contain data." % ( filename, CellsWritten,
-                                                 gridTable["ncols"]*gridTable["nrows"] ))
+    print(
+        "%s: %i cells of %i contain data."
+        % (filename, CellsWritten, gridTable["ncols"] * gridTable["nrows"])
+    )
 
     return 1

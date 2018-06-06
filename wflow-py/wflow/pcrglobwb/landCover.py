@@ -50,7 +50,6 @@ class LandCover(object):
         cloneMap,
         inputDir,
         tmpDir,
-        stateDir,
         usingAllocSegments=False,
     ):
         object.__init__(self)
@@ -58,7 +57,6 @@ class LandCover(object):
         self.cloneMap = cloneMap  # iniItems.cloneMap
         self.tmpDir = tmpDir  # iniItems.tmpDir
         self.inputDir = inputDir  # iniItems.globalOptions['inputDir']
-        self.stateDir = stateDir
         self.landmask = landmask
 
         # number of soil layers:
@@ -105,8 +103,10 @@ class LandCover(object):
         # - "Modified" is with a modification by Edwin Sutanudjaja: extending interception definition, using totalPotET for the available energy
         self.interceptionModuleType = "Original"
         if "interceptionModuleType" in list(self.iniItemsLC.keys()):
-            if self.iniItemsLC['interceptionModuleType'] == "Modified":
-                msg = 'Using the "Modified" version of the interception module (i.e. extending interception definition, using totalPotET for the available energy for the interception process).'
+            if self.iniItemsLC["interceptionModuleType"] == "Modified":
+                msg = (
+                    'Using the "Modified" version of the interception module (i.e. extending interception definition, using totalPotET for the available energy for the interception process).'
+                )
                 logger.info(msg)
                 self.interceptionModuleType = "Modified"
             else:
@@ -122,8 +122,12 @@ class LandCover(object):
 
         # minimum interception capacity (only used if interceptionModuleType == "Modified", extended interception definition)
         self.minInterceptCap = 0.0
-        if self.interceptionModuleType == "Original" and "minInterceptCap" in list(self.iniItemsLC.keys()):
-            msg = 'As the "Original" interceptionModuleType is used, the "minInterceptCap" value is ignored. The interception scope is only "canopy".'
+        if self.interceptionModuleType == "Original" and "minInterceptCap" in list(
+            self.iniItemsLC.keys()
+        ):
+            msg = (
+                'As the "Original" interceptionModuleType is used, the "minInterceptCap" value is ignored. The interception scope is only "canopy".'
+            )
             logger.warning(msg)
         if self.interceptionModuleType == "Modified":
             self.minInterceptCap = vos.readPCRmapClone(
@@ -157,18 +161,36 @@ class LandCover(object):
         # In the original oldcalc script of Rens (2 layer model), the percolation percUpp (P1) can be negative
         # - To avoid this, Edwin changed few lines (see the method updateSoilStates)
         self.allowNegativePercolation = False
-        if 'allowNegativePercolation' in list(self.iniItemsLC.keys()) and self.iniItemsLC['allowNegativePercolation'] == "True":
-            msg  = 'Allowing negative values of percolation percUpp (P1), as done in the oldcalc script of PCR-GLOBWB 1.0. ' #\n'
-            msg += 'Note that this option is only relevant for the two layer soil model.'
+        if (
+            "allowNegativePercolation" in list(self.iniItemsLC.keys())
+            and self.iniItemsLC["allowNegativePercolation"] == "True"
+        ):
+            msg = (
+                "Allowing negative values of percolation percUpp (P1), as done in the oldcalc script of PCR-GLOBWB 1.0. "
+            )  # \n'
+            msg += (
+                "Note that this option is only relevant for the two layer soil model."
+            )
             logger.warning(msg)
             self.allowNegativePercolation = True
 
         # In the original oldcalc script of Rens, there is a possibility that rootFraction/transpiration is only defined in the bottom layer, while no root in upper layer(s)
         # - To avoid this, Edwin changed few lines (see the methods 'scaleRootFractionsFromTwoLayerSoilParameters' and 'estimateTranspirationAndBareSoilEvap')
         self.usingOriginalOldCalcRootTranspirationPartitioningMethod = False
-        if 'usingOriginalOldCalcRootTranspirationPartitioningMethod' in list(self.iniItemsLC.keys()) and self.iniItemsLC['usingOriginalOldCalcRootTranspirationPartitioningMethod'] == "True":
-            msg  = 'Using the original rootFraction/transpiration as defined in the oldcalc script of PCR-GLOBWB 1.0. '#\n'
-            msg += 'There is a possibility that rootFraction/transpiration is only defined in the bottom layer, while no root in upper layer(s).'
+        if (
+            "usingOriginalOldCalcRootTranspirationPartitioningMethod"
+            in list(self.iniItemsLC.keys())
+            and self.iniItemsLC[
+                "usingOriginalOldCalcRootTranspirationPartitioningMethod"
+            ]
+            == "True"
+        ):
+            msg = (
+                "Using the original rootFraction/transpiration as defined in the oldcalc script of PCR-GLOBWB 1.0. "
+            )  # \n'
+            msg += (
+                "There is a possibility that rootFraction/transpiration is only defined in the bottom layer, while no root in upper layer(s)."
+            )
             logger.warning(msg)
             self.usingOriginalOldCalcRootTranspirationPartitioningMethod = True
 
@@ -312,18 +334,24 @@ class LandCover(object):
         # ~ self.iniItemsLC['coverFractionNC'], self.inputDir)
 
         # get the file names of interceptCap and coverFraction files:
-        if 'interceptCapNC' in list(self.iniItemsLC.keys()) and 'coverFractionNC' in list(self.iniItemsLC.keys()):
-            self.interceptCapNC = vos.getFullPath(\
-                       self.iniItemsLC['interceptCapNC'], self.inputDir)
-            self.coverFractionNC = vos.getFullPath(\
-                      self.iniItemsLC['coverFractionNC'], self.inputDir)
+        if "interceptCapNC" in list(
+            self.iniItemsLC.keys()
+        ) and "coverFractionNC" in list(self.iniItemsLC.keys()):
+            self.interceptCapNC = vos.getFullPath(
+                self.iniItemsLC["interceptCapNC"], self.inputDir
+            )
+            self.coverFractionNC = vos.getFullPath(
+                self.iniItemsLC["coverFractionNC"], self.inputDir
+            )
         else:
             msg = (
                 "The netcdf files for interceptCapNC (interception capacity) and/or coverFraction (canopy cover fraction) are NOT defined for the landCover type: "
                 + self.name
                 + " "
             )  # '\n'
-            msg = "This run assumes zero canopy interception capacity for this run, UNLESS minInterceptCap (minimum interception capacity) is bigger than zero."  # + '\n'
+            msg = (
+                "This run assumes zero canopy interception capacity for this run, UNLESS minInterceptCap (minimum interception capacity) is bigger than zero."
+            )  # + '\n'
             logger.warning(msg)
             self.coverFractionNC = None
             self.interceptCapNC = None
@@ -441,7 +469,9 @@ class LandCover(object):
         # get parameters that are fixed for the entire simulation:
         if date_in_string == None:
 
-            msg = "Obtaining the land cover parameters that are fixed for the entire simulation."
+            msg = (
+                "Obtaining the land cover parameters that are fixed for the entire simulation."
+            )
             logger.debug(msg)
 
             if self.iniItemsLC["landCoverMapsNC"] == str(None):
@@ -473,8 +503,12 @@ class LandCover(object):
             #   2. included in the netcdf file (i.e. self.iniItemsLC['landCoverMapsNC'])
             #   3. approximated from the minSoilDepthFrac and maxSoilDepthFrac
 
-            lc_parameters['arnoBeta'] = None
-            if 'arnoBeta' not in list(self.iniItemsLC.keys()) and get_only_fracVegCover == False: self.iniItemsLC['arnoBeta'] = "None" 
+            lc_parameters["arnoBeta"] = None
+            if (
+                "arnoBeta" not in list(self.iniItemsLC.keys())
+                and get_only_fracVegCover == False
+            ):
+                self.iniItemsLC["arnoBeta"] = "None"
 
             # - option one (top priority): using a pcraster file
             if self.iniItemsLC["arnoBeta"] != "None" and get_only_fracVegCover == False:
@@ -490,8 +524,12 @@ class LandCover(object):
                 )
 
             # - option two: included in the netcdf file
-            if isinstance(lc_parameters['arnoBeta'], type(None)) and landCoverPropertiesNC != None and get_only_fracVegCover == False:   
-                                    
+            if (
+                isinstance(lc_parameters["arnoBeta"], type(None))
+                and landCoverPropertiesNC != None
+                and get_only_fracVegCover == False
+            ):
+
                 if vos.checkVariableInNC(landCoverPropertiesNC, "arnoBeta"):
 
                     logger.debug(
@@ -503,10 +541,15 @@ class LandCover(object):
                     )
 
             # - option three: approximated from the minSoilDepthFrac and maxSoilDepthFrac
-            if isinstance(lc_parameters['arnoBeta'], type(None)) and get_only_fracVegCover == False:
-   
-                logger.debug("The parameter arnoBeta is approximated from the minSoilDepthFrac and maxSoilDepthFrac values.")
-                
+            if (
+                isinstance(lc_parameters["arnoBeta"], type(None))
+                and get_only_fracVegCover == False
+            ):
+
+                logger.debug(
+                    "The parameter arnoBeta is approximated from the minSoilDepthFrac and maxSoilDepthFrac values."
+                )
+
                 # make sure that maxSoilDepthFrac >= minSoilDepthFrac:
                 # - Note that maxSoilDepthFrac is needed only for calculating arnoBeta,
                 #   while minSoilDepthFrac is needed not only for arnoBeta, but also for rootZoneWaterStorageMin
@@ -575,8 +618,9 @@ class LandCover(object):
                         )
 
             # if not defined, arnoBeta would be approximated from the minSoilDepthFrac and maxSoilDepthFrac
-            if get_only_fracVegCover == False and\
-               isinstance(lc_parameters['arnoBeta'], type(None)):
+            if get_only_fracVegCover == False and isinstance(
+                lc_parameters["arnoBeta"], type(None)
+            ):
 
                 logger.debug(
                     "The parameter arnoBeta is approximated from the minSoilDepthFrac and maxSoilDepthFrac values."
@@ -681,12 +725,26 @@ class LandCover(object):
         min_percolation_loss = 0.006
         max_percolation_loss = 0.008
         # - Minimum and maximum percolation loss values given in the ini or configuration file:
-        if 'minPercolationLoss' in list(iniPaddyOptions.keys()) and iniPaddyOptions['minPercolationLoss'] != "None":
-            min_percolation_loss = vos.readPCRmapClone(iniPaddyOptions['minPercolationLoss'], self.cloneMap, 	
-                                                       self.tmpDir, self.inputDir)
-        if 'maxPercolationLoss' in list(iniPaddyOptions.keys()) and iniPaddyOptions['maxPercolationLoss'] != "None":
-            min_percolation_loss = vos.readPCRmapClone(iniPaddyOptions['maxPercolationLoss'], self.cloneMap, 	
-                                                       self.tmpDir, self.inputDir)
+        if (
+            "minPercolationLoss" in list(iniPaddyOptions.keys())
+            and iniPaddyOptions["minPercolationLoss"] != "None"
+        ):
+            min_percolation_loss = vos.readPCRmapClone(
+                iniPaddyOptions["minPercolationLoss"],
+                self.cloneMap,
+                self.tmpDir,
+                self.inputDir,
+            )
+        if (
+            "maxPercolationLoss" in list(iniPaddyOptions.keys())
+            and iniPaddyOptions["maxPercolationLoss"] != "None"
+        ):
+            min_percolation_loss = vos.readPCRmapClone(
+                iniPaddyOptions["maxPercolationLoss"],
+                self.cloneMap,
+                self.tmpDir,
+                self.inputDir,
+            )
         # - percolation loss at paddy fields (m/day)
         design_percolation_loss = pcr.max(
             min_percolation_loss, pcr.min(max_percolation_loss, design_percolation_loss)
@@ -826,9 +884,9 @@ class LandCover(object):
 
             # original Rens's line: # weighed root fractions
             #                        RFW1[TYPE]= if(RFRAC1[TYPE]+RFRAC2[TYPE] > 0,
-            #                        	min(1.0,RFRAC1[TYPE]/(RFRAC1[TYPE]+RFRAC2[TYPE])),0.0);
+            #                            min(1.0,RFRAC1[TYPE]/(RFRAC1[TYPE]+RFRAC2[TYPE])),0.0);
             #                        RFW2[TYPE]= if(RFRAC1[TYPE]+RFRAC2[TYPE] > 0.0,
-            #                        	min(1.0,RFRAC2[TYPE]/(RFRAC1[TYPE]+RFRAC2[TYPE])),0.0);
+            #                            min(1.0,RFRAC2[TYPE]/(RFRAC1[TYPE]+RFRAC2[TYPE])),0.0);
 
         if self.numberOfLayers == 3:
             # root fractions
@@ -1184,7 +1242,7 @@ class LandCover(object):
                 if iniConditions == None:
                     input = self.iniItemsLC[str(var) + "Ini"]
                     vars(self)[var] = vos.readPCRmapClone(
-                        input, self.cloneMap, self.tmpDir, self.stateDir
+                        input, self.cloneMap, self.tmpDir, self.inputDir
                     )
                     vars(self)[var] = pcr.cover(vars(self)[var], 0.0)
                 else:
@@ -1208,7 +1266,7 @@ class LandCover(object):
                 if iniConditions == None:
                     input = self.iniItemsLC[str(var) + "Ini"]
                     vars(self)[var] = vos.readPCRmapClone(
-                        input, self.cloneMap, self.tmpDir, self.stateDir, cover=0.0
+                        input, self.cloneMap, self.tmpDir, self.inputDir, cover=0.0
                     )
                     vars(self)[var] = pcr.cover(vars(self)[var], 0.0)
                 else:
@@ -3063,9 +3121,15 @@ class LandCover(object):
 
                 # Note: If limitFossilGroundwaterAbstraction == False,
                 #       allocation of fossil groundwater abstraction is not needed.
-                msg = "Fossil groundwater abstractions are without limit for satisfying local demand. "
-                msg = "Allocation for fossil groundwater abstraction is NOT needed/implemented. "
-                msg += "However, the fossil groundwater abstraction rate still consider the maximumDailyGroundwaterAbstraction."
+                msg = (
+                    "Fossil groundwater abstractions are without limit for satisfying local demand. "
+                )
+                msg = (
+                    "Allocation for fossil groundwater abstraction is NOT needed/implemented. "
+                )
+                msg += (
+                    "However, the fossil groundwater abstraction rate still consider the maximumDailyGroundwaterAbstraction."
+                )
                 logger.debug(msg)
 
                 # fossil groundwater abstraction (unit: m/day)
@@ -3376,12 +3440,12 @@ class LandCover(object):
         #
         # WMIN = root zone water storage capacity, minimum values
         # WMAX = root zone water storage capacity, area-averaged values
-        # W	   = actual water storage in root zone
+        # W       = actual water storage in root zone
         # WRANGE  = WMAX - WMIN
         # DW      = WMAX-W
         # WFRAC   = DW/WRANGE ; WFRAC capped at 1
         # WFRACB  = DW/WRANGE raised to the power (1/(b+1))
-        # SATFRAC =	fractional saturated area
+        # SATFRAC =    fractional saturated area
         # WACT    = actual water storage within rootzone
 
         self.satAreaFracOld = self.satAreaFrac

@@ -110,7 +110,8 @@ def usage(*args):
     -  *args: command line arguments given
     """
     sys.stdout = sys.stderr
-    for msg in args: print(msg)
+    for msg in args:
+        print(msg)
     print(__doc__)
     sys.exit(0)
 
@@ -1091,211 +1092,318 @@ class WflowModel(DynamicModel):
         self.wf_updateparameters()  # read forcing an dynamic parameters
         self.Precipitation = max(0.0, self.Precipitation) * self.Pcorr
 
-    #Water onto the canopy
-    Interception=min(self.Precipitation,self.ICF-self.InterceptionStorage)#: Interception in mm/timestep
-    self.InterceptionStorage=self.InterceptionStorage+Interception #: Current interception storage
-    self.Precipitation=self.Precipitation-Interception
+        # self.Precipitation=cover(self.wf_readmap(self.P_mapstack,0.0),0.0) * self.Pcorr
+        # self.PotEvaporation=cover(self.wf_readmap(self.PET_mapstack,0.0),0.0)
+        # self.Inflow=cover(self.wf_readmap(self.Inflow_mapstack,0.0,verbose=False),0.0)
+        # These ar ALWAYS 0 at present!!!
+        # self.Inflow=pcrut.readmapSave(self.Inflow_mapstack,0.0)
+        if self.ExternalQbase:
+            self.Seepage = cover(self.wf_readmap(self.Seepage_mapstack, 0.0), 0.0)
+        else:
+            self.Seepage = cover(0.0)
+        self.Temperature = cover(self.wf_readmap(self.TEMP_mapstack, 10.0), 10.0)
+        self.Temperature = self.Temperature + self.TempCor
 
+        # Multiply input parameters with a factor (for calibration etc) -p option in command line (no also in ini)
 
-    self.PotEvaporation=exp(-self.EPF*self.Precipitation)*self.ECORR * self.PotEvaporation  # correction for potential evaporation on wet days
-    self.PotEvaporation=self.CEVPF*self.PotEvaporation  # Correct per landuse
+        self.wf_multparameters()
 
-    self.IntEvap=min(self.InterceptionStorage,self.PotEvaporation)  #: Evaporation from interception storage
-    self.InterceptionStorage=self.InterceptionStorage-self.IntEvap
+        RainFrac = ifthenelse(
+            1.0 * self.TTI == 0.0,
+            ifthenelse(self.Temperature <= self.TT, scalar(0.0), scalar(1.0)),
+            min(
+                (self.Temperature - (self.TT - self.TTI / 2.0)) / self.TTI, scalar(1.0)
+            ),
+        )
+        RainFrac = max(
+            RainFrac, scalar(0.0)
+        )  # fraction of precipitation which falls as rain
+        SnowFrac = 1.0 - RainFrac  # fraction of self.Precipitation which falls as snow
 
-    # I nthe origal HBV code
-    RestEvap = max(0.0,self.PotEvaporation-self.IntEvap)
+        self.Precipitation = (
+            self.SFCF * SnowFrac * self.Precipitation
+            + self.RFCF * RainFrac * self.Precipitation
+        )  # different correction for rainfall and snowfall
 
-    if hasattr(self, 'ReserVoirComplexLocs'):
-        self.ReserVoirPotEvap = self.PotEvaporation
-        self.ReserVoirPrecip = self.Precipitation
+        # Water onto the canopy
+        Interception = min(
+            self.Precipitation, self.ICF - self.InterceptionStorage
+        )  #: Interception in mm/timestep
+        self.InterceptionStorage = (
+            self.InterceptionStorage + Interception
+        )  #: Current interception storage
+        self.Precipitation = self.Precipitation - Interception
 
-        self.PotEvaporation = self.filter_P_PET * self.PotEvaporation
-        self.Precipitation = self.filter_P_PET * self.Precipitation
+        self.PotEvaporation = (
+            exp(-self.EPF * self.Precipitation) * self.ECORR * self.PotEvaporation
+        )  # correction for potential evaporation on wet days
+        self.PotEvaporation = self.CEVPF * self.PotEvaporation  # Correct per landuse
 
+        self.IntEvap = min(
+            self.InterceptionStorage, self.PotEvaporation
+        )  #: Evaporation from interception storage
+        self.InterceptionStorage = self.InterceptionStorage - self.IntEvap
 
-    SnowFall=SnowFrac*self.Precipitation  #: snowfall depth
-    RainFall=RainFrac*self.Precipitation  #: rainfall depth
-    PotSnowMelt=ifthenelse(self.Temperature > self.TT,self.Cfmax*(self.Temperature-self.TT),scalar(0.0)) #Potential snow melt, based on temperature
-    PotRefreezing=ifthenelse(self.Temperature < self.TT, self.Cfmax*self.CFR*(self.TT-self.Temperature),0.0)    #Potential refreezing, based on temperature
+        # I nthe origal HBV code
+        RestEvap = max(0.0, self.PotEvaporation - self.IntEvap)
 
-    Refreezing=ifthenelse(self.Temperature < self.TT,min(PotRefreezing,self.FreeWater),0.0)  #actual refreezing
-    self.SnowMelt=min(PotSnowMelt,self.DrySnow)          #actual snow melt
-    self.DrySnow=self.DrySnow+SnowFall+Refreezing-self.SnowMelt     #dry snow content
-    self.FreeWater=self.FreeWater-Refreezing               #free water content in snow
-    MaxFreeWater=self.DrySnow*self.WHC
-    self.FreeWater=self.FreeWater+self.SnowMelt+RainFall
-    InSoil = max(self.FreeWater-MaxFreeWater,0.0)   #abundant water in snow pack which goes into soil
-    self.FreeWater=self.FreeWater-InSoil
-    RainAndSnowmelt = RainFall + self.SnowMelt
+        if hasattr(self, "ReserVoirComplexLocs"):
+            self.ReserVoirPotEvap = self.PotEvaporation
+            self.ReserVoirPrecip = self.Precipitation
 
-    self.SnowCover = ifthenelse(self.DrySnow >0, scalar(1), scalar(0))
-    self.NrCell= areatotal(self.SnowCover,self.TopoId)
+            self.PotEvaporation = self.filter_P_PET * self.PotEvaporation
+            self.Precipitation = self.filter_P_PET * self.Precipitation
 
-    #first part of precipitation is intercepted
-    #Interception=min(InSoil,self.ICF-self.InterceptionStorage)#: Interception in mm/timestep
-    #self.InterceptionStorage=self.InterceptionStorage+Interception #: Current interception storage
-    #NetInSoil=InSoil-Interception
-    NetInSoil=InSoil
+        SnowFall = SnowFrac * self.Precipitation  #: snowfall depth
+        RainFall = RainFrac * self.Precipitation  #: rainfall depth
+        PotSnowMelt = ifthenelse(
+            self.Temperature > self.TT,
+            self.Cfmax * (self.Temperature - self.TT),
+            scalar(0.0),
+        )  # Potential snow melt, based on temperature
+        PotRefreezing = ifthenelse(
+            self.Temperature < self.TT,
+            self.Cfmax * self.CFR * (self.TT - self.Temperature),
+            0.0,
+        )  # Potential refreezing, based on temperature
 
-    self.SoilMoisture=self.SoilMoisture+NetInSoil
-    DirectRunoff=max(self.SoilMoisture-self.FieldCapacity,0.0)  #if soil is filled to capacity: abundant water runs of directly
-    self.SoilMoisture=self.SoilMoisture-DirectRunoff
-    NetInSoil=NetInSoil-DirectRunoff  #net water which infiltrates into soil
+        Refreezing = ifthenelse(
+            self.Temperature < self.TT, min(PotRefreezing, self.FreeWater), 0.0
+        )  # actual refreezing
+        self.SnowMelt = min(PotSnowMelt, self.DrySnow)  # actual snow melt
+        self.DrySnow = (
+            self.DrySnow + SnowFall + Refreezing - self.SnowMelt
+        )  # dry snow content
+        self.FreeWater = self.FreeWater - Refreezing  # free water content in snow
+        MaxFreeWater = self.DrySnow * self.WHC
+        self.FreeWater = self.FreeWater + self.SnowMelt + RainFall
+        InSoil = max(
+            self.FreeWater - MaxFreeWater, 0.0
+        )  # abundant water in snow pack which goes into soil
+        self.FreeWater = self.FreeWater - InSoil
+        RainAndSnowmelt = RainFall + self.SnowMelt
 
-    MaxSnowPack = 10000.0
-    if self.MassWasting:
-        # Masswasting of snow
-        # 5.67 = tan 80 graden
-        SnowFluxFrac = min(0.5,self.Slope/5.67) * min(1.0,self.DrySnow/MaxSnowPack)
-        MaxFlux = SnowFluxFrac * self.DrySnow
-        self.DrySnow = accucapacitystate(self.TopoLdd,self.DrySnow, MaxFlux)
-        self.FreeWater = accucapacitystate(self.TopoLdd,self.FreeWater,SnowFluxFrac * self.FreeWater )
-    else:
-        SnowFluxFrac = self.ZeroMap
-        MaxFlux= self.ZeroMap
+        self.SnowCover = ifthenelse(self.DrySnow > 0, scalar(1), scalar(0))
+        self.NrCell = areatotal(self.SnowCover, self.TopoId)
 
+        # first part of precipitation is intercepted
+        # Interception=min(InSoil,self.ICF-self.InterceptionStorage)#: Interception in mm/timestep
+        # self.InterceptionStorage=self.InterceptionStorage+Interception #: Current interception storage
+        # NetInSoil=InSoil-Interception
+        NetInSoil = InSoil
 
-    #IntEvap=min(self.InterceptionStorage,self.PotEvaporation)  #: Evaporation from interception storage
-    #self.InterceptionStorage=self.InterceptionStorage-IntEvap
+        self.SoilMoisture = self.SoilMoisture + NetInSoil
+        DirectRunoff = max(
+            self.SoilMoisture - self.FieldCapacity, 0.0
+        )  # if soil is filled to capacity: abundant water runs of directly
+        self.SoilMoisture = self.SoilMoisture - DirectRunoff
+        NetInSoil = NetInSoil - DirectRunoff  # net water which infiltrates into soil
 
-    # I nthe origal HBV code
-    #RestEvap = max(0.0,self.PotEvaporation-IntEvap)
+        MaxSnowPack = 10000.0
+        if self.MassWasting:
+            # Masswasting of snow
+            # 5.67 = tan 80 graden
+            SnowFluxFrac = min(0.5, self.Slope / 5.67) * min(
+                1.0, self.DrySnow / MaxSnowPack
+            )
+            MaxFlux = SnowFluxFrac * self.DrySnow
+            self.DrySnow = accucapacitystate(self.TopoLdd, self.DrySnow, MaxFlux)
+            self.FreeWater = accucapacitystate(
+                self.TopoLdd, self.FreeWater, SnowFluxFrac * self.FreeWater
+            )
+        else:
+            SnowFluxFrac = self.ZeroMap
+            MaxFlux = self.ZeroMap
 
-    self.SoilEvap=ifthenelse(self.SoilMoisture > self.Treshold,min(self.SoilMoisture,RestEvap),\
-                        min(self.SoilMoisture,min(RestEvap,self.PotEvaporation*(self.SoilMoisture/self.Treshold))))
-    #: soil evapotranspiration
-    self.SoilMoisture=self.SoilMoisture-self.SoilEvap           #evaporation from soil moisture storage
+        # IntEvap=min(self.InterceptionStorage,self.PotEvaporation)  #: Evaporation from interception storage
+        # self.InterceptionStorage=self.InterceptionStorage-IntEvap
 
+        # I nthe origal HBV code
+        # RestEvap = max(0.0,self.PotEvaporation-IntEvap)
 
-    self.ActEvap=self.IntEvap+self.SoilEvap           #: Sum of evaporation components (IntEvap+SoilEvap)
-    self.HBVSeepage=((min(self.SoilMoisture/self.FieldCapacity,1))**self.BetaSeepage)*NetInSoil  #runoff water from soil
-    self.SoilMoisture=self.SoilMoisture-self.HBVSeepage
+        self.SoilEvap = ifthenelse(
+            self.SoilMoisture > self.Treshold,
+            min(self.SoilMoisture, RestEvap),
+            min(
+                self.SoilMoisture,
+                min(
+                    RestEvap, self.PotEvaporation * (self.SoilMoisture / self.Treshold)
+                ),
+            ),
+        )
+        #: soil evapotranspiration
+        self.SoilMoisture = (
+            self.SoilMoisture - self.SoilEvap
+        )  # evaporation from soil moisture storage
 
-    Backtosoil=min(self.FieldCapacity-self.SoilMoisture,DirectRunoff)  #correction for extremely wet periods: soil is filled to capacity
-    self.DirectRunoff=DirectRunoff-Backtosoil
-    self.SoilMoisture=self.SoilMoisture+Backtosoil
-    self.InUpperZone=self.DirectRunoff+self.HBVSeepage  # total water available for runoff
+        self.ActEvap = (
+            self.IntEvap + self.SoilEvap
+        )  #: Sum of evaporation components (IntEvap+SoilEvap)
+        self.HBVSeepage = (
+            (min(self.SoilMoisture / self.FieldCapacity, 1)) ** self.BetaSeepage
+        ) * NetInSoil  # runoff water from soil
+        self.SoilMoisture = self.SoilMoisture - self.HBVSeepage
 
-    # Steps is always 1 at the moment
-    # calculations for Upper zone
-    self.UpperZoneStorage=self.UpperZoneStorage+self.InUpperZone  #incoming water from soil
-    self.Percolation=min(self.PERC,self.UpperZoneStorage-self.InUpperZone/2)  #Percolation
-    self.UpperZoneStorage=self.UpperZoneStorage-self.Percolation
-    self.CapFlux=self.Cflux*(((self.FieldCapacity-self.SoilMoisture)/self.FieldCapacity))   #: Capillary flux flowing back to soil
-    self.CapFlux=min(self.UpperZoneStorage,self.CapFlux)
-    self.CapFlux=min(self.FieldCapacity-self.SoilMoisture,self.CapFlux)
-    self.UpperZoneStorage=self.UpperZoneStorage-self.CapFlux
-    self.SoilMoisture=self.SoilMoisture+self.CapFlux
+        Backtosoil = min(
+            self.FieldCapacity - self.SoilMoisture, DirectRunoff
+        )  # correction for extremely wet periods: soil is filled to capacity
+        self.DirectRunoff = DirectRunoff - Backtosoil
+        self.SoilMoisture = self.SoilMoisture + Backtosoil
+        self.InUpperZone = (
+            self.DirectRunoff + self.HBVSeepage
+        )  # total water available for runoff
 
-    if not self.SetKquickFlow:
-        self.QuickFlow=min(ifthenelse(self.Percolation<self.PERC,0,self.KQuickFlow*((self.UpperZoneStorage-min(self.InUpperZone/2,self.UpperZoneStorage))**(1.0+self.AlphaNL))),self.UpperZoneStorage)
-        self.UpperZoneStorage=max(ifthenelse(self.Percolation<self.PERC,self.UpperZoneStorage,self.UpperZoneStorage-self.QuickFlow),0)
-        #QuickFlow_temp = max(0,self.KQuickFlow*(self.UpperZoneStorage**(1.0+self.AlphaNL)))
-        #self.QuickFlow = min(QuickFlow_temp,self.UpperZoneStorage)
-        self.RealQuickFlow = self.ZeroMap
-    else:
-        self.QuickFlow = self.KQuickFlow*self.UpperZoneStorage
-        self.RealQuickFlow = max(0,self.K0*(self.UpperZoneStorage - self.SUZ))
-    self.UpperZoneStorage=self.UpperZoneStorage-self.QuickFlow-self.RealQuickFlow
-    """Quickflow volume in mm/timestep"""
-    #self.UpperZoneStorage=self.UpperZoneStorage-self.QuickFlow-self.RealQuickFlow
+        # Steps is always 1 at the moment
+        # calculations for Upper zone
+        self.UpperZoneStorage = (
+            self.UpperZoneStorage + self.InUpperZone
+        )  # incoming water from soil
+        self.Percolation = min(
+            self.PERC, self.UpperZoneStorage - self.InUpperZone / 2
+        )  # Percolation
+        self.UpperZoneStorage = self.UpperZoneStorage - self.Percolation
+        self.CapFlux = self.Cflux * (
+            ((self.FieldCapacity - self.SoilMoisture) / self.FieldCapacity)
+        )  #: Capillary flux flowing back to soil
+        self.CapFlux = min(self.UpperZoneStorage, self.CapFlux)
+        self.CapFlux = min(self.FieldCapacity - self.SoilMoisture, self.CapFlux)
+        self.UpperZoneStorage = self.UpperZoneStorage - self.CapFlux
+        self.SoilMoisture = self.SoilMoisture + self.CapFlux
 
-    # calculations for Lower zone
-    self.LowerZoneStorage=self.LowerZoneStorage+self.Percolation
-    self.BaseFlow=min(self.LowerZoneStorage,self.K4*self.LowerZoneStorage) #: Baseflow in mm/timestep
-    self.LowerZoneStorage=self.LowerZoneStorage-self.BaseFlow
-    # Direct runoff generation
-    if self.ExternalQbase:
-        DirectRunoffStorage=self.QuickFlow+self.Seepage+self.RealQuickFlow
-    else:
-        DirectRunoffStorage=self.QuickFlow+self.BaseFlow+self.RealQuickFlow
+        if not self.SetKquickFlow:
+            self.QuickFlow = min(
+                ifthenelse(
+                    self.Percolation < self.PERC,
+                    0,
+                    self.KQuickFlow
+                    * (
+                        (
+                            self.UpperZoneStorage
+                            - min(self.InUpperZone / 2, self.UpperZoneStorage)
+                        )
+                        ** (1.0 + self.AlphaNL)
+                    ),
+                ),
+                self.UpperZoneStorage,
+            )
+            self.UpperZoneStorage = max(
+                ifthenelse(
+                    self.Percolation < self.PERC,
+                    self.UpperZoneStorage,
+                    self.UpperZoneStorage - self.QuickFlow,
+                ),
+                0,
+            )
+            # QuickFlow_temp = max(0,self.KQuickFlow*(self.UpperZoneStorage**(1.0+self.AlphaNL)))
+            # self.QuickFlow = min(QuickFlow_temp,self.UpperZoneStorage)
+            self.RealQuickFlow = self.ZeroMap
+        else:
+            self.QuickFlow = self.KQuickFlow * self.UpperZoneStorage
+            self.RealQuickFlow = max(0, self.K0 * (self.UpperZoneStorage - self.SUZ))
+        self.UpperZoneStorage = (
+            self.UpperZoneStorage - self.QuickFlow - self.RealQuickFlow
+        )
+        """Quickflow volume in mm/timestep"""
+        # self.UpperZoneStorage=self.UpperZoneStorage-self.QuickFlow-self.RealQuickFlow
 
-    self.InSoil = InSoil
-    self.RainAndSnowmelt = RainAndSnowmelt
-    self.NetInSoil = NetInSoil
-    self.InwaterMM=max(0.0,DirectRunoffStorage)
-    self.Inwater=self.InwaterMM * self.ToCubic
+        # calculations for Lower zone
+        self.LowerZoneStorage = self.LowerZoneStorage + self.Percolation
+        self.BaseFlow = min(
+            self.LowerZoneStorage, self.K4 * self.LowerZoneStorage
+        )  #: Baseflow in mm/timestep
+        self.LowerZoneStorage = self.LowerZoneStorage - self.BaseFlow
+        # Direct runoff generation
+        if self.ExternalQbase:
+            DirectRunoffStorage = self.QuickFlow + self.Seepage + self.RealQuickFlow
+        else:
+            DirectRunoffStorage = self.QuickFlow + self.BaseFlow + self.RealQuickFlow
 
-    #only run the reservoir module if needed
+        self.InSoil = InSoil
+        self.RainAndSnowmelt = RainAndSnowmelt
+        self.NetInSoil = NetInSoil
+        self.InwaterMM = max(0.0, DirectRunoffStorage)
+        self.Inwater = self.InwaterMM * self.ToCubic
 
-    if self.nrresSimple > 0:
-            self.ReservoirVolume, self.Outflow, self.ResPercFull,\
-            self.DemandRelease = simplereservoir(self.ReservoirVolume, self.SurfaceRunoff,\
-                                                 self.ResMaxVolume, self.ResTargetFullFrac,
-                                                 self.ResMaxRelease, self.ResDemand,
-                                                 self.ResTargetMinFrac, self.ReserVoirSimpleLocs,
-                                                 timestepsecs=self.timestepsecs)
-            self.OutflowDwn = upstream(self.TopoLddOrg,cover(self.Outflow,scalar(0.0)))
-            self.Inflow = self.OutflowDwn + cover(self.Inflow,self.ZeroMap)
-    #else:
-    #    self.Inflow= cover(self.Inflow,self.ZeroMap)
+        # only run the reservoir module if needed
 
-    elif self.nrresComplex > 0:
-        self.ReservoirWaterLevel, self.Outflow, self.ReservoirPrecipitation, self.ReservoirEvaporation,\
-        self.ReservoirVolume = complexreservoir(self.ReservoirWaterLevel, self.ReserVoirComplexLocs, self.LinkedReservoirLocs, self.ResArea,\
-                                                    self.ResThreshold, self.ResStorFunc, self.ResOutflowFunc, self.sh, self.hq, self.Res_b,
-                                                    self.Res_e, self.SurfaceRunoff,self.ReserVoirPrecip, self.ReserVoirPotEvap,
-                                                    self.ReservoirComplexAreas, self.wf_supplyJulianDOY(), timestepsecs=self.timestepsecs)
-        self.OutflowDwn = upstream(self.TopoLddOrg,cover(self.Outflow,scalar(0.0)))
-        self.Inflow = self.OutflowDwn + cover(self.Inflow,self.ZeroMap)
-    else:
-        self.Inflow= cover(self.Inflow,self.ZeroMap)
+        if self.nrresSimple > 0:
+            self.ReservoirVolume, self.Outflow, self.ResPercFull, self.DemandRelease = simplereservoir(
+                self.ReservoirVolume,
+                self.SurfaceRunoff,
+                self.ResMaxVolume,
+                self.ResTargetFullFrac,
+                self.ResMaxRelease,
+                self.ResDemand,
+                self.ResTargetMinFrac,
+                self.ReserVoirSimpleLocs,
+                timestepsecs=self.timestepsecs,
+            )
+            self.OutflowDwn = upstream(
+                self.TopoLddOrg, cover(self.Outflow, scalar(0.0))
+            )
+            self.Inflow = self.OutflowDwn + cover(self.Inflow, self.ZeroMap)
+        # else:
+        #    self.Inflow= cover(self.Inflow,self.ZeroMap)
 
-    self.QuickFlowCubic = (self.QuickFlow + self.RealQuickFlow) * self.ToCubic
-    self.BaseFlowCubic = self.BaseFlow * self.ToCubic
+        elif self.nrresComplex > 0:
+            self.ReservoirWaterLevel, self.Outflow, self.ReservoirPrecipitation, self.ReservoirEvaporation, self.ReservoirVolume = complexreservoir(
+                self.ReservoirWaterLevel,
+                self.ReserVoirComplexLocs,
+                self.LinkedReservoirLocs,
+                self.ResArea,
+                self.ResThreshold,
+                self.ResStorFunc,
+                self.ResOutflowFunc,
+                self.sh,
+                self.hq,
+                self.Res_b,
+                self.Res_e,
+                self.SurfaceRunoff,
+                self.ReserVoirPrecip,
+                self.ReserVoirPotEvap,
+                self.ReservoirComplexAreas,
+                self.wf_supplyJulianDOY(),
+                timestepsecs=self.timestepsecs,
+            )
+            self.OutflowDwn = upstream(
+                self.TopoLddOrg, cover(self.Outflow, scalar(0.0))
+            )
+            self.Inflow = self.OutflowDwn + cover(self.Inflow, self.ZeroMap)
+        else:
+            self.Inflow = cover(self.Inflow, self.ZeroMap)
 
-    self.SurfaceWaterSupply = ifthenelse (self.Inflow < 0.0 , max(-1.0 * self.Inwater,self.SurfaceRunoff), self.ZeroMap)
-    self.Inwater = self.Inwater + ifthenelse(self.SurfaceWaterSupply> 0, -1.0 * self.SurfaceWaterSupply,self.Inflow)
+        self.QuickFlowCubic = (self.QuickFlow + self.RealQuickFlow) * self.ToCubic
+        self.BaseFlowCubic = self.BaseFlow * self.ToCubic
 
+        self.SurfaceWaterSupply = ifthenelse(
+            self.Inflow < 0.0,
+            max(-1.0 * self.Inwater, self.SurfaceRunoff),
+            self.ZeroMap,
+        )
+        self.Inwater = self.Inwater + ifthenelse(
+            self.SurfaceWaterSupply > 0, -1.0 * self.SurfaceWaterSupply, self.Inflow
+        )
 
-    ##########################################################################
-    # Runoff calculation via Kinematic wave ##################################
-    ##########################################################################
-    # per distance along stream
-    q=self.Inwater/self.DCL + self.ForecQ_qmec/self.DCL
-    self.OldSurfaceRunoff=self.SurfaceRunoff
+        ##########################################################################
+        # Runoff calculation via Kinematic wave ##################################
+        ##########################################################################
+        # per distance along stream
+        q = self.Inwater / self.DCL + self.ForecQ_qmec / self.DCL
+        self.OldSurfaceRunoff = self.SurfaceRunoff
 
-    self.SurfaceRunoff = kinematic(self.TopoLdd, self.SurfaceRunoff,q,self.Alpha, self.Beta,self.Tslice,self.timestepsecs,self.DCL) # m3/s
-    self.SurfaceRunoffMM=self.SurfaceRunoff*self.QMMConv # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
-
-
-    self.updateRunOff()
-    InflowKinWaveCell=upstream(self.TopoLdd,self.SurfaceRunoff)
-    self.MassBalKinWave = (self.KinWaveVolume - self.OldKinWaveVolume)/self.timestepsecs  + InflowKinWaveCell + self.Inwater - self.SurfaceRunoff
-    Runoff=self.SurfaceRunoff
-
-    # Updating
-    # --------
-    # Assume a tss file with as many columns as outpulocs. Start updating for each non-missing value and start with the
-    # first column (nr 1). Assumes that outputloc and columns match!
-
-    if self.updating:
-        QM = timeinputscalar(self.updateFile, self.UpdateMap) * self.QMMConv
-
-        # Now update the state. Just add to the Ustore
-        # self.UStoreDepth =  result
-        # No determine multiplication ratio for each gauge influence area.
-        # For missing gauges 1.0 is assumed (no change).
-        # UpDiff = areamaximum(QM,  self.UpdateMap) - areamaximum(self.SurfaceRunoffMM, self.UpdateMap)
-        UpRatio = areamaximum(QM,  self.UpdateMap)/areamaximum(self.SurfaceRunoffMM, self.UpdateMap)
-
-        UpRatio = cover(areaaverage(UpRatio,self.TopoId),1.0)
-        # Now split between Soil and Kyn  wave
-        self.UpRatioKyn = min(self.MaxUpdMult,max(self.MinUpdMult,(UpRatio - 1.0) * self.UpFrac + 1.0))
-        UpRatioSoil = min(self.MaxUpdMult,max(self.MinUpdMult,(UpRatio - 1.0) * (1.0 - self.UpFrac) + 1.0))
-
-        # update/nudge self.UStoreDepth for the whole upstream area,
-        # not sure how much this helps or worsens things
-        UpdSoil = True
-        if UpdSoil:
-            toadd = (self.UpperZoneStorage * UpRatioSoil) - self.UpperZoneStorage
-            self.UpperZoneStorage = self.UpperZoneStorage + toadd
-
-        # Update the kinematic wave reservoir up to a maximum upstream distance
-        # TODO:  add (much smaller) downstream updating also?
-        MM = (1.0 - self.UpRatioKyn)/self.UpdMaxDist
-        self.UpRatioKyn = MM * self.DistToUpdPt + self.UpRatioKyn
+        self.SurfaceRunoff = kinematic(
+            self.TopoLdd,
+            self.SurfaceRunoff,
+            q,
+            self.Alpha,
+            self.Beta,
+            self.Tslice,
+            self.timestepsecs,
+            self.DCL,
+        )  # m3/s
+        self.SurfaceRunoffMM = (
+            self.SurfaceRunoff * self.QMMConv
+        )  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
 
         self.updateRunOff()
         InflowKinWaveCell = upstream(self.TopoLdd, self.SurfaceRunoff)
@@ -1419,7 +1527,7 @@ def main(argv=None):
     ## Main model starts here
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, 'c:QXS:F:hC:Ii:T:R:u:s:P:p:Xx:U:fl:L:')
+        opts, args = getopt.getopt(argv, "c:QXS:F:hC:Ii:T:R:u:s:P:p:Xx:U:fl:L:")
     except getopt.error as msg:
         pcrut.usage(msg)
 
@@ -1428,16 +1536,22 @@ def main(argv=None):
             runinfoFile = a
             fewsrun = True
 
-        if o == '-C': caseName = a
-        if o == '-R': runId = a
-        if o == '-L': LogFileName = a
-        if o == '-l': exec("loglevel = logging." + a)
-        if o == '-c': configfile = a
-        if o == '-s': timestepsecs = int(a)
-        if o == '-h': usage()
-        if o == '-f': NoOverWrite = 0
-
-
+        if o == "-C":
+            caseName = a
+        if o == "-R":
+            runId = a
+        if o == "-L":
+            LogFileName = a
+        if o == "-l":
+            exec("loglevel = logging." + a)
+        if o == "-c":
+            configfile = a
+        if o == "-s":
+            timestepsecs = int(a)
+        if o == "-h":
+            usage()
+        if o == "-f":
+            NoOverWrite = 0
 
     if fewsrun:
         ts = getTimeStepsfromRuninfo(runinfoFile, timestepsecs)
@@ -1449,10 +1563,16 @@ def main(argv=None):
             print("Failed to get timesteps from runinfo file: " + runinfoFile)
             sys.exit(2)
     else:
-        starttime = dt.datetime(1990,1,1)
+        starttime = dt.datetime(1990, 1, 1)
 
     if _lastTimeStep < _firstTimeStep:
-        print("The starttimestep (" + str(_firstTimeStep) +") is smaller than the last timestep (" + str(_lastTimeStep) + ")")
+        print(
+            "The starttimestep ("
+            + str(_firstTimeStep)
+            + ") is smaller than the last timestep ("
+            + str(_lastTimeStep)
+            + ")"
+        )
         usage()
 
     myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile)
@@ -1467,27 +1587,39 @@ def main(argv=None):
     )
 
     for o, a in opts:
-        if o == '-P':
-            left = a.split('=')[0]
-            right = a.split('=')[1]
-            configset(myModel.config,'variable_change_once',left,right,overwrite=True)
-        if o == '-p':
-            left = a.split('=')[0]
-            right = a.split('=')[1]
-            configset(myModel.config,'variable_change_timestep',left,right,overwrite=True)
-        if o == '-X': configset(myModel.config,'model','OverWriteInit','1',overwrite=True)
-        if o == '-I': configset(myModel.config,'run','reinit','1',overwrite=True)
-        if o == '-i': configset(myModel.config,'model','intbl',a,overwrite=True)
-        if o == '-s': configset(myModel.config,'model','timestepsecs',a,overwrite=True)
-        if o == '-x': configset(myModel.config,'model','sCatch',a,overwrite=True)
-        if o == '-c': configset(myModel.config,'model','configfile', a,overwrite=True)
-        if o == '-M': configset(myModel.config,'model','MassWasting',"0",overwrite=True)
-        if o == '-Q': configset(myModel.config,'model','ExternalQbase','1',overwrite=True)
-        if o == '-U':
-            configset(myModel.config,'model','updateFile',a,overwrite=True)
-            configset(myModel.config,'model','updating',"1",overwrite=True)
-        if o == '-u':
-            exec("zz =" +  a)
+        if o == "-P":
+            left = a.split("=")[0]
+            right = a.split("=")[1]
+            configset(
+                myModel.config, "variable_change_once", left, right, overwrite=True
+            )
+        if o == "-p":
+            left = a.split("=")[0]
+            right = a.split("=")[1]
+            configset(
+                myModel.config, "variable_change_timestep", left, right, overwrite=True
+            )
+        if o == "-X":
+            configset(myModel.config, "model", "OverWriteInit", "1", overwrite=True)
+        if o == "-I":
+            configset(myModel.config, "run", "reinit", "1", overwrite=True)
+        if o == "-i":
+            configset(myModel.config, "model", "intbl", a, overwrite=True)
+        if o == "-s":
+            configset(myModel.config, "model", "timestepsecs", a, overwrite=True)
+        if o == "-x":
+            configset(myModel.config, "model", "sCatch", a, overwrite=True)
+        if o == "-c":
+            configset(myModel.config, "model", "configfile", a, overwrite=True)
+        if o == "-M":
+            configset(myModel.config, "model", "MassWasting", "0", overwrite=True)
+        if o == "-Q":
+            configset(myModel.config, "model", "ExternalQbase", "1", overwrite=True)
+        if o == "-U":
+            configset(myModel.config, "model", "updateFile", a, overwrite=True)
+            configset(myModel.config, "model", "updating", "1", overwrite=True)
+        if o == "-u":
+            exec("zz =" + a)
             updateCols = zz
         if o == "-T":
             configset(myModel.config, "run", "endtime", a, overwrite=True)

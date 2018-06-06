@@ -22,15 +22,15 @@ Port to Python/PCRaster: Deltares
 Usage:
 wflow_W3RA  -C case -R Runid -c inifile
     -C: set the name  of the case (directory) to run
-    
+
     -R: set the name runId within the current case
-    
+
     -c name of the config file (in the case directory)
 
     -T: Set end time of the run: yyyy-mm-dd hh:mm:ss
 
     -S: Set start time of the run: yyyy-mm-dd hh:mm:ss
-    
+
 $Author: schelle $
 $Id: wflow_sceleton.py 898 2014-01-09 14:47:06Z schelle $
 $Rev: 898 $
@@ -51,7 +51,8 @@ from wflow.wflow_adapt import *
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args: print(msg)
+    for msg in args:
+        print(msg)
     print(__doc__)
     sys.exit(0)
 
@@ -64,10 +65,10 @@ class WflowModel(DynamicModel):
     def __init__(self, cloneMap, Dir, RunDir, configfile):
         """
       *Required*
-      
+
       The init function **must** contain what is shown below. Other functionality
       may be added by you if needed.
-      
+
       """
         DynamicModel.__init__(self)
         setclone(Dir + "/staticmaps/" + cloneMap)
@@ -78,12 +79,12 @@ class WflowModel(DynamicModel):
         self.SaveDir = self.Dir + "/" + self.runId + "/"
 
     def stateVariables(self):
-        """ 
+        """
       *Required*
-      
-      Returns a list of state variables that are essential to the model. 
+
+      Returns a list of state variables that are essential to the model.
       This list is essential for the resume and suspend functions to work.
-      
+
       This function is specific for each model and **must** be present. This is
       where you specify the state variables of you model. If your model is stateless
       this function must return and empty array (states = [])
@@ -115,12 +116,12 @@ class WflowModel(DynamicModel):
     def suspend(self):
         """
       *Required*
-      
+
       Suspends the model to disk. All variables needed to restart the model
       are saved to disk as pcraster maps. Use resume() to re-read them
-      
-      This function is required. 
-      
+
+      This function is required.
+
     """
 
         self.logger.info("Saving initial conditions...")
@@ -133,14 +134,14 @@ class WflowModel(DynamicModel):
 
         """
     *Required*
-    
+
     Initial part of the model, executed only once. It reads all static model
     information (parameters) and sets-up the variables used in modelling.
-    
+
     This function is required. The contents is free. However, in order to
     easily connect to other models it is advised to adhere to the directory
     structure used in the other models.
-    
+
     """
         #: pcraster option to calculate with units or cells. Not really an issue
         #: in this model but always good to keep in mind.
@@ -416,26 +417,25 @@ class WflowModel(DynamicModel):
         self.logger.info("Starting Dynamic run...")
 
     def resume(self):
-        """ 
+        """
     *Required*
-    This function is required. Read initial state maps (they are output of a 
+    This function is required. Read initial state maps (they are output of a
     previous call to suspend()). The implementation shown here is the most basic
     setup needed.
-    
+
     """
-    self.logger.info("Reading initial conditions...")
-    #: It is advised to use the wf_resume() function 
-    #: here which pick up the variable save by a call to wf_suspend()
-    try:
-        self.wf_resume(self.Dir + "/instate/")
-    except:
-        self.logger.warning("Cannot load initial states, setting to default")
-        for s in self.stateVariables():
-            exec("self." + s + " = cover(1.0)")
+        self.logger.info("Reading initial conditions...")
+        #: It is advised to use the wf_resume() function
+        #: here which pick up the variable save by a call to wf_suspend()
+        try:
+            self.wf_resume(self.Dir + "/instate/")
+        except:
+            self.logger.warning("Cannot load initial states, setting to default")
+            for s in self.stateVariables():
+                exec("self." + s + " = cover(1.0)")
 
-
-  def default_summarymaps(self):
-      """
+    def default_summarymaps(self):
+        """
       *Optional*
       Return a default list of variables to report as summary maps in the outsum dir.
       """
@@ -979,10 +979,10 @@ class WflowModel(DynamicModel):
 def main(argv=None):
     """
     *Optional*
-    
+
     Perform command line execution of the model. This example uses the getopt
     module to parse the command line options.
-    
+
     The user can set the caseName, the runDir, the timestep and the configfile.
     """
     global multpars
@@ -1025,12 +1025,16 @@ def main(argv=None):
     # if (len(opts) <=1):
     #    usage()
 
-
-    starttime = dt.datetime(1990,1,1)
+    starttime = dt.datetime(1990, 1, 1)
 
     if _lastTimeStep < _firstTimeStep:
-        print("The starttimestep (" + str(_firstTimeStep) + ") is smaller than the last timestep (" + str(
-            _lastTimeStep) + ")")
+        print(
+            "The starttimestep ("
+            + str(_firstTimeStep)
+            + ") is smaller than the last timestep ("
+            + str(_lastTimeStep)
+            + ")"
+        )
         usage()
 
     myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile)

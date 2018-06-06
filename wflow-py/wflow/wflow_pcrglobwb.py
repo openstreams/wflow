@@ -120,7 +120,8 @@ def usage(*args):
     -  *args: command line arguments given
     """
     sys.stdout = sys.stderr
-    for msg in args: print(msg)
+    for msg in args:
+        print(msg)
     print(__doc__)
     sys.exit(0)
 
@@ -329,9 +330,6 @@ class WflowModel(DynamicModel):
             "routing.riverbedExchange",
             "routing.avgDischargeShort",
             "routing.subDischarge",
-            "routing.waterBodyStorage",
-            "routing.avgInflow",
-            "routing.avgOutflow",
         ]
 
         if (
@@ -667,27 +665,40 @@ def main(argv=None):
     ## Process command-line options                                        #
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, 'XL:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:d:')
+        opts, args = getopt.getopt(argv, "XL:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:d:")
     except getopt.error as msg:
         pcrut.usage(msg)
 
     for o, a in opts:
-        if o == '-C': caseName = a
-        if o == '-R': runId = a
-        if o == '-c': configfile = a
-        if o == '-L': LogFileName = a
-        if o == '-s': timestepsecs = int(a)
-        if o == '-h': usage()
-        if o == '-f': _NoOverWrite = 0
-        if o == '-l': exec("loglevel = logging." + a)
-        if o == '-d': staticmaps = a
+        if o == "-C":
+            caseName = a
+        if o == "-R":
+            runId = a
+        if o == "-c":
+            configfile = a
+        if o == "-L":
+            LogFileName = a
+        if o == "-s":
+            timestepsecs = int(a)
+        if o == "-h":
+            usage()
+        if o == "-f":
+            _NoOverWrite = 0
+        if o == "-l":
+            exec("loglevel = logging." + a)
+        if o == "-d":
+            staticmaps = a
 
-
-    starttime = dt.datetime(1990,1,1)
+    starttime = dt.datetime(1990, 1, 1)
 
     if _lastTimeStep < _firstTimeStep:
-        print("The starttimestep (" + str(_firstTimeStep) + ") is smaller than the last timestep (" + str(
-            _lastTimeStep) + ")")
+        print(
+            "The starttimestep ("
+            + str(_firstTimeStep)
+            + ") is smaller than the last timestep ("
+            + str(_lastTimeStep)
+            + ")"
+        )
         usage()
 
     myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile, staticmaps)
@@ -751,7 +762,7 @@ def main(argv=None):
 
     dynModelFw.setupFramework()
     dynModelFw._runInitial()
-    #dynModelFw._runResume()
+    dynModelFw._runResume()
     # dynModelFw._runDynamic(0, 0)
     dynModelFw._runDynamic(_firstTimeStep, _lastTimeStep)
     dynModelFw._runSuspend()

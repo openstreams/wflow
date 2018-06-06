@@ -295,7 +295,7 @@ def main(args=None, progress_func=TermProgress, progress_data=None):
             elif EQUAL(args[iArg + 1], "MULTIPOLYGON25D"):
                 eGType = ogr.wkbMultiPolygon25D
             else:
-                print(("-nlt %s: type not recognised." % args[iArg+1]))
+                print(("-nlt %s: type not recognised." % args[iArg + 1]))
                 return False
 
             iArg = iArg + 1
@@ -304,7 +304,7 @@ def main(args=None, progress_func=TermProgress, progress_data=None):
 
             nCoordDim = int(args[iArg + 1])
             if nCoordDim != 2 and nCoordDim != 3:
-                print(("-dim %s: value not handled." % args[iArg+1]))
+                print(("-dim %s: value not handled." % args[iArg + 1]))
                 return False
             iArg = iArg + 1
 
@@ -546,8 +546,12 @@ def main(args=None, progress_func=TermProgress, progress_data=None):
         if poSpatialFilter is not None:
             poClipSrc = poSpatialFilter.Clone()
         if poClipSrc is None:
-            print(("FAILURE: -clipsrc must be used with -spat option or a\n" + \
-                  "bounding box, WKT string or datasource must be specified\n"))
+            print(
+                (
+                    "FAILURE: -clipsrc must be used with -spat option or a\n"
+                    + "bounding box, WKT string or datasource must be specified\n"
+                )
+            )
             return Usage()
 
     if pszClipDstDS is not None:
@@ -567,11 +571,16 @@ def main(args=None, progress_func=TermProgress, progress_data=None):
     #      Report failure
     # --------------------------------------------------------------------
     if poDS is None:
-        print(("FAILURE:\n" + \
-                "Unable to open datasource `%s' with the following drivers." % pszDataSource))
+        print(
+            (
+                "FAILURE:\n"
+                + "Unable to open datasource `%s' with the following drivers."
+                % pszDataSource
+            )
+        )
 
         for iDriver in range(ogr.GetDriverCount()):
-            print(("  ->  " + ogr.GetDriver(iDriver).GetName() ))
+            print(("  ->  " + ogr.GetDriver(iDriver).GetName()))
 
         return False
 
@@ -595,13 +604,22 @@ def main(args=None, progress_func=TermProgress, progress_data=None):
                     poODS = None
 
             if bUpdate:
-                print(("FAILURE:\n" +
-                        "Unable to open existing output datasource `%s'." % pszDestDataSource))
+                print(
+                    (
+                        "FAILURE:\n"
+                        + "Unable to open existing output datasource `%s'."
+                        % pszDestDataSource
+                    )
+                )
                 return False
 
         elif len(papszDSCO) > 0:
-            print(("WARNING: Datasource creation options ignored since an existing datasource\n" + \
-                    "         being updated." ))
+            print(
+                (
+                    "WARNING: Datasource creation options ignored since an existing datasource\n"
+                    + "         being updated."
+                )
+            )
 
         if poODS is not None:
             poDriver = poODS.GetDriver()
@@ -613,15 +631,15 @@ def main(args=None, progress_func=TermProgress, progress_data=None):
         poDriver = ogr.GetDriverByName(pszFormat)
         if poDriver is None:
             print(("Unable to find driver `%s'." % pszFormat))
-            print( "The following drivers are available:" )
+            print("The following drivers are available:")
 
             for iDriver in range(ogr.GetDriverCount()):
-                print(("  ->  %s" % ogr.GetDriver(iDriver).GetName() ))
+                print(("  ->  %s" % ogr.GetDriver(iDriver).GetName()))
 
             return False
 
-        if poDriver.TestCapability( ogr.ODrCCreateDataSource ) == False:
-            print(( "%s driver does not support data source creation." % pszFormat))
+        if poDriver.TestCapability(ogr.ODrCCreateDataSource) == False:
+            print(("%s driver does not support data source creation." % pszFormat))
             return False
 
         # --------------------------------------------------------------------
@@ -651,8 +669,12 @@ def main(args=None, progress_func=TermProgress, progress_data=None):
                     # this syntax is only supported by Python >= 2.6
                     os.mkdir(pszDestDataSource, 493)
                 except:
-                    print(("Failed to create directory %s\n"
-                          "for shapefile datastore.\n" % pszDestDataSource ))
+                    print(
+                        (
+                            "Failed to create directory %s\n"
+                            "for shapefile datastore.\n" % pszDestDataSource
+                        )
+                    )
                     return False
 
         # --------------------------------------------------------------------
@@ -660,7 +682,7 @@ def main(args=None, progress_func=TermProgress, progress_data=None):
         # --------------------------------------------------------------------
         poODS = poDriver.CreateDataSource(pszDestDataSource, options=papszDSCO)
         if poODS is None:
-            print(( "%s driver failed to create %s" % (pszFormat, pszDestDataSource )))
+            print(("%s driver failed to create %s" % (pszFormat, pszDestDataSource)))
             return False
 
     # --------------------------------------------------------------------
@@ -668,8 +690,8 @@ def main(args=None, progress_func=TermProgress, progress_data=None):
     # --------------------------------------------------------------------
     if pszOutputSRSDef is not None:
         poOutputSRS = osr.SpatialReference()
-        if poOutputSRS.SetFromUserInput( pszOutputSRSDef ) != 0:
-            print(( "Failed to process SRS definition: %s" % pszOutputSRSDef ))
+        if poOutputSRS.SetFromUserInput(pszOutputSRSDef) != 0:
+            print(("Failed to process SRS definition: %s" % pszOutputSRSDef))
             return False
 
     # --------------------------------------------------------------------
@@ -677,8 +699,8 @@ def main(args=None, progress_func=TermProgress, progress_data=None):
     # --------------------------------------------------------------------
     if pszSourceSRSDef is not None:
         poSourceSRS = osr.SpatialReference()
-        if poSourceSRS.SetFromUserInput( pszSourceSRSDef ) != 0:
-            print(( "Failed to process SRS definition: %s" % pszSourceSRSDef ))
+        if poSourceSRS.SetFromUserInput(pszSourceSRSDef) != 0:
+            print(("Failed to process SRS definition: %s" % pszSourceSRSDef))
             return False
 
     # --------------------------------------------------------------------
@@ -758,18 +780,33 @@ def main(args=None, progress_func=TermProgress, progress_data=None):
 
             poResultSet.ResetReading()
 
-            if psInfo is None or not TranslateLayer( psInfo, poDS, poResultSet, poODS, \
-                                poOutputSRS, bNullifyOutputSRS, \
-                                eGType, bPromoteToMulti, nCoordDim, \
-                                eGeomOp, dfGeomOpParam, \
-                                nCountLayerFeatures, \
-                                poClipSrc, poClipDst, \
-                                bExplodeCollections, \
-                                nSrcFileSize, None, \
-                                pfnProgress, pProgressArg ):
-                print((
-                        "Terminating translation prematurely after failed\n" + \
-                        "translation from sql statement." ))
+            if psInfo is None or not TranslateLayer(
+                psInfo,
+                poDS,
+                poResultSet,
+                poODS,
+                poOutputSRS,
+                bNullifyOutputSRS,
+                eGType,
+                bPromoteToMulti,
+                nCoordDim,
+                eGeomOp,
+                dfGeomOpParam,
+                nCountLayerFeatures,
+                poClipSrc,
+                poClipDst,
+                bExplodeCollections,
+                nSrcFileSize,
+                None,
+                pfnProgress,
+                pProgressArg,
+            ):
+                print(
+                    (
+                        "Terminating translation prematurely after failed\n"
+                        + "translation from sql statement."
+                    )
+                )
 
                 return False
 
@@ -850,8 +887,13 @@ def main(args=None, progress_func=TermProgress, progress_data=None):
 
             if CSLFindString(papszLayers, poLayer.GetName()) >= 0:
                 if pszWHERE is not None:
-                    if poLayer.SetAttributeFilter( pszWHERE ) != 0:
-                        print(("FAILURE: SetAttributeFilter(%s) on layer '%s' failed.\n" % (pszWHERE, poLayer.GetName()) ))
+                    if poLayer.SetAttributeFilter(pszWHERE) != 0:
+                        print(
+                            (
+                                "FAILURE: SetAttributeFilter(%s) on layer '%s' failed.\n"
+                                % (pszWHERE, poLayer.GetName())
+                            )
+                        )
                         if not bSkipFailures:
                             return False
 
@@ -901,20 +943,38 @@ def main(args=None, progress_func=TermProgress, progress_data=None):
                 anReadFeatureCount = [0]
 
                 if psInfo is not None:
-                    if not TranslateLayer(psInfo, poDS, poLayer, poODS, \
-                                        poOutputSRS, bNullifyOutputSRS,  \
-                                        eGType, bPromoteToMulti, nCoordDim, \
-                                        eGeomOp, dfGeomOpParam,  \
-                                        0,  \
-                                        poClipSrc, poClipDst,  \
-                                        bExplodeCollections,  \
-                                        nSrcFileSize,  \
-                                        anReadFeatureCount, \
-                                        pfnProgress, pProgressArg ) \
-                        and not bSkipFailures:
-                        print((
-                                "Terminating translation prematurely after failed\n" + \
-                                "translation of layer " + poLayer.GetName() + " (use -skipfailures to skip errors)"))
+                    if (
+                        not TranslateLayer(
+                            psInfo,
+                            poDS,
+                            poLayer,
+                            poODS,
+                            poOutputSRS,
+                            bNullifyOutputSRS,
+                            eGType,
+                            bPromoteToMulti,
+                            nCoordDim,
+                            eGeomOp,
+                            dfGeomOpParam,
+                            0,
+                            poClipSrc,
+                            poClipDst,
+                            bExplodeCollections,
+                            nSrcFileSize,
+                            anReadFeatureCount,
+                            pfnProgress,
+                            pProgressArg,
+                        )
+                        and not bSkipFailures
+                    ):
+                        print(
+                            (
+                                "Terminating translation prematurely after failed\n"
+                                + "translation of layer "
+                                + poLayer.GetName()
+                                + " (use -skipfailures to skip errors)"
+                            )
+                        )
 
                         return False
                 else:
@@ -978,7 +1038,7 @@ def main(args=None, progress_func=TermProgress, progress_data=None):
             poLayer = papoLayers[iLayer]
 
             if pszWHERE is not None:
-                if poLayer.SetAttributeFilter( pszWHERE ) != 0:
+                if poLayer.SetAttributeFilter(pszWHERE) != 0:
                     print(("FAILURE: SetAttributeFilter(%s) failed." % pszWHERE))
                     if not bSkipFailures:
                         return False
@@ -1059,20 +1119,38 @@ def main(args=None, progress_func=TermProgress, progress_data=None):
 
             poLayer.ResetReading()
 
-            if (psInfo is None or \
-                not TranslateLayer( psInfo, poDS, poLayer, poODS, \
-                                    poOutputSRS, bNullifyOutputSRS, \
-                                    eGType, bPromoteToMulti, nCoordDim, \
-                                    eGeomOp, dfGeomOpParam, \
-                                    panLayerCountFeatures[iLayer], \
-                                    poClipSrc, poClipDst, \
-                                    bExplodeCollections, \
-                                    nSrcFileSize, None, \
-                                    pfnProgress, pProgressArg )) \
-                and not bSkipFailures:
-                print((
-                        "Terminating translation prematurely after failed\n" + \
-                        "translation of layer " + poLayer.GetLayerDefn().GetName() + " (use -skipfailures to skip errors)"))
+            if (
+                psInfo is None
+                or not TranslateLayer(
+                    psInfo,
+                    poDS,
+                    poLayer,
+                    poODS,
+                    poOutputSRS,
+                    bNullifyOutputSRS,
+                    eGType,
+                    bPromoteToMulti,
+                    nCoordDim,
+                    eGeomOp,
+                    dfGeomOpParam,
+                    panLayerCountFeatures[iLayer],
+                    poClipSrc,
+                    poClipDst,
+                    bExplodeCollections,
+                    nSrcFileSize,
+                    None,
+                    pfnProgress,
+                    pProgressArg,
+                )
+            ) and not bSkipFailures:
+                print(
+                    (
+                        "Terminating translation prematurely after failed\n"
+                        + "translation of layer "
+                        + poLayer.GetLayerDefn().GetName()
+                        + " (use -skipfailures to skip errors)"
+                    )
+                )
 
                 return False
 
@@ -1094,54 +1172,65 @@ def main(args=None, progress_func=TermProgress, progress_data=None):
 
 def Usage():
 
-    print(( "Usage: ogr2ogr [--help-general] [-skipfailures] [-append] [-update] [-gt n]\n" + \
-            "               [-select field_list] [-where restricted_where] \n" + \
-            "               [-progress] [-sql <sql statement>] \n" + \
-            "               [-spat xmin ymin xmax ymax] [-preserve_fid] [-fid FID]\n" + \
-            "               [-a_srs srs_def] [-t_srs srs_def] [-s_srs srs_def]\n" + \
-            "               [-f format_name] [-overwrite] [[-dsco NAME=VALUE] ...]\n" + \
-            "               [-simplify tolerance]\n" + \
-            #// "               [-segmentize max_dist] [-fieldTypeToString All|(type1[,type2]*)]\n" + \
-            "               [-fieldTypeToString All|(type1[,type2]*)] [-explodecollections] \n" + \
-            "               dst_datasource_name src_datasource_name\n" + \
-            "               [-lco NAME=VALUE] [-nln name] [-nlt type] [-dim 2|3] [layer [layer ...]]\n" + \
-            "\n" + \
-            " -f format_name: output file format name, possible values are:"))
+    print(
+        (
+            "Usage: ogr2ogr [--help-general] [-skipfailures] [-append] [-update] [-gt n]\n"
+            + "               [-select field_list] [-where restricted_where] \n"
+            + "               [-progress] [-sql <sql statement>] \n"
+            + "               [-spat xmin ymin xmax ymax] [-preserve_fid] [-fid FID]\n"
+            + "               [-a_srs srs_def] [-t_srs srs_def] [-s_srs srs_def]\n"
+            + "               [-f format_name] [-overwrite] [[-dsco NAME=VALUE] ...]\n"
+            + "               [-simplify tolerance]\n"
+            +
+            # // "               [-segmentize max_dist] [-fieldTypeToString All|(type1[,type2]*)]\n" + \
+            "               [-fieldTypeToString All|(type1[,type2]*)] [-explodecollections] \n"
+            + "               dst_datasource_name src_datasource_name\n"
+            + "               [-lco NAME=VALUE] [-nln name] [-nlt type] [-dim 2|3] [layer [layer ...]]\n"
+            + "\n"
+            + " -f format_name: output file format name, possible values are:"
+        )
+    )
 
     for iDriver in range(ogr.GetDriverCount()):
         poDriver = ogr.GetDriver(iDriver)
 
-        if poDriver.TestCapability( ogr.ODrCCreateDataSource ):
-            print(( "     -f \"" + poDriver.GetName() + "\"" ))
+        if poDriver.TestCapability(ogr.ODrCCreateDataSource):
+            print(('     -f "' + poDriver.GetName() + '"'))
 
-    print(( " -append: Append to existing layer instead of creating new if it exists\n" + \
-            " -overwrite: delete the output layer and recreate it empty\n" + \
-            " -update: Open existing output datasource in update mode\n" + \
-            " -progress: Display progress on terminal. Only works if input layers have the \"fast feature count\" capability\n" + \
-            " -select field_list: Comma-delimited list of fields from input layer to\n" + \
-            "                     copy to the new layer (defaults to all)\n" + \
-            " -where restricted_where: Attribute query (like SQL WHERE)\n" + \
-            " -sql statement: Execute given SQL statement and save result.\n" + \
-            " -skipfailures: skip features or layers that fail to convert\n" + \
-            " -gt n: group n features per transaction (default 200)\n" + \
-            " -spat xmin ymin xmax ymax: spatial query extents\n" + \
-            " -simplify tolerance: distance tolerance for simplification.\n" + \
-            #//" -segmentize max_dist: maximum distance between 2 nodes.\n" + \
-            #//"                       Used to create intermediate points\n" + \
-            " -dsco NAME=VALUE: Dataset creation option (format specific)\n" + \
-            " -lco  NAME=VALUE: Layer creation option (format specific)\n" + \
-            " -nln name: Assign an alternate name to the new layer\n" + \
-            " -nlt type: Force a geometry type for new layer.  One of NONE, GEOMETRY,\n" + \
-            "      POINT, LINESTRING, POLYGON, GEOMETRYCOLLECTION, MULTIPOINT,\n" + \
-            "      MULTIPOLYGON, or MULTILINESTRING.  Add \"25D\" for 3D layers.\n" + \
-            "      Default is type of source layer.\n" + \
-            " -dim dimension: Force the coordinate dimension to the specified value.\n" + \
-            " -fieldTypeToString type1,...: Converts fields of specified types to\n" + \
-            "      fields of type string in the new layer. Valid types are : \n" + \
-            "      Integer, Real, String, Date, Time, DateTime, Binary, IntegerList, RealList,\n" + \
-            "      StringList. Special value All can be used to convert all fields to strings."))
+    print(
+        (
+            " -append: Append to existing layer instead of creating new if it exists\n"
+            + " -overwrite: delete the output layer and recreate it empty\n"
+            + " -update: Open existing output datasource in update mode\n"
+            + ' -progress: Display progress on terminal. Only works if input layers have the "fast feature count" capability\n'
+            + " -select field_list: Comma-delimited list of fields from input layer to\n"
+            + "                     copy to the new layer (defaults to all)\n"
+            + " -where restricted_where: Attribute query (like SQL WHERE)\n"
+            + " -sql statement: Execute given SQL statement and save result.\n"
+            + " -skipfailures: skip features or layers that fail to convert\n"
+            + " -gt n: group n features per transaction (default 200)\n"
+            + " -spat xmin ymin xmax ymax: spatial query extents\n"
+            + " -simplify tolerance: distance tolerance for simplification.\n"
+            +
+            # //" -segmentize max_dist: maximum distance between 2 nodes.\n" + \
+            # //"                       Used to create intermediate points\n" + \
+            " -dsco NAME=VALUE: Dataset creation option (format specific)\n"
+            + " -lco  NAME=VALUE: Layer creation option (format specific)\n"
+            + " -nln name: Assign an alternate name to the new layer\n"
+            + " -nlt type: Force a geometry type for new layer.  One of NONE, GEOMETRY,\n"
+            + "      POINT, LINESTRING, POLYGON, GEOMETRYCOLLECTION, MULTIPOINT,\n"
+            + '      MULTIPOLYGON, or MULTILINESTRING.  Add "25D" for 3D layers.\n'
+            + "      Default is type of source layer.\n"
+            + " -dim dimension: Force the coordinate dimension to the specified value.\n"
+            + " -fieldTypeToString type1,...: Converts fields of specified types to\n"
+            + "      fields of type string in the new layer. Valid types are : \n"
+            + "      Integer, Real, String, Date, Time, DateTime, Binary, IntegerList, RealList,\n"
+            + "      StringList. Special value All can be used to convert all fields to strings."
+        )
+    )
 
-    print(" -a_srs srs_def: Assign an output SRS\n"
+    print(
+        " -a_srs srs_def: Assign an output SRS\n"
         " -t_srs srs_def: Reproject/transform to this SRS on output\n"
         " -s_srs srs_def: Override source SRS\n"
         "\n"
@@ -1297,8 +1386,12 @@ def SetupTargetLayer(
             poSourceSRS = poSrcLayer.GetSpatialRef()
 
         if poSourceSRS is None:
-            print(("Can't transform coordinates, source layer has no\n" + \
-                    "coordinate system.  Use -s_srs to set one." ))
+            print(
+                (
+                    "Can't transform coordinates, source layer has no\n"
+                    + "coordinate system.  Use -s_srs to set one."
+                )
+            )
             return None
 
         poCT = osr.CoordinateTransformation(poSourceSRS, poOutputSRS)
@@ -1308,16 +1401,20 @@ def SetupTargetLayer(
         if poCT is None:
             pszWKT = None
 
-            print(("Failed to create coordinate transformation between the\n" + \
-                "following coordinate systems.  This may be because they\n" + \
-                "are not transformable, or because projection services\n" + \
-                "(PROJ.4 DLL/.so) could not be loaded." ))
+            print(
+                (
+                    "Failed to create coordinate transformation between the\n"
+                    + "following coordinate systems.  This may be because they\n"
+                    + "are not transformable, or because projection services\n"
+                    + "(PROJ.4 DLL/.so) could not be loaded."
+                )
+            )
 
-            pszWKT = poSourceSRS.ExportToPrettyWkt( 0 )
-            print(( "Source:\n" + pszWKT ))
+            pszWKT = poSourceSRS.ExportToPrettyWkt(0)
+            print(("Source:\n" + pszWKT))
 
-            pszWKT = poOutputSRS.ExportToPrettyWkt( 0 )
-            print(( "Target:\n" + pszWKT ))
+            pszWKT = poOutputSRS.ExportToPrettyWkt(0)
+            print(("Target:\n" + pszWKT))
             return None
 
     # --------------------------------------------------------------------
@@ -1399,8 +1496,14 @@ def SetupTargetLayer(
         elif nCoordDim == 3:
             eGType = eGType | ogr.wkb25DBit
 
-        if poDstDS.TestCapability( ogr.ODsCCreateLayer ) == False:
-            print(("Layer " + pszNewLayerName + "not found, and CreateLayer not supported by driver."))
+        if poDstDS.TestCapability(ogr.ODsCCreateLayer) == False:
+            print(
+                (
+                    "Layer "
+                    + pszNewLayerName
+                    + "not found, and CreateLayer not supported by driver."
+                )
+            )
             return None
 
         gdal.ErrorReset()
@@ -1416,20 +1519,30 @@ def SetupTargetLayer(
     #      Otherwise we will append to it, if append was requested.
     # --------------------------------------------------------------------
     elif not bAppend:
-        print(("FAILED: Layer " + pszNewLayerName + "already exists, and -append not specified.\n" + \
-                            "        Consider using -append, or -overwrite."))
+        print(
+            (
+                "FAILED: Layer "
+                + pszNewLayerName
+                + "already exists, and -append not specified.\n"
+                + "        Consider using -append, or -overwrite."
+            )
+        )
         return None
     else:
         if len(papszLCO) > 0:
-            print(("WARNING: Layer creation options ignored since an existing layer is\n" + \
-                    "         being appended to." ))
+            print(
+                (
+                    "WARNING: Layer creation options ignored since an existing layer is\n"
+                    + "         being appended to."
+                )
+            )
 
-# --------------------------------------------------------------------
-#      Add fields.  Default to copy all field.
-#      If only a subset of all fields requested, then output only
-#      the selected fields, and in the order that they were
-#      selected.
-# --------------------------------------------------------------------
+    # --------------------------------------------------------------------
+    #      Add fields.  Default to copy all field.
+    #      If only a subset of all fields requested, then output only
+    #      the selected fields, and in the order that they were
+    #      selected.
+    # --------------------------------------------------------------------
 
     # Initialize the index-to-index map to -1's
     nSrcFieldCount = poSrcFDefn.GetFieldCount()
@@ -1477,15 +1590,28 @@ def SetupTargetLayer(
                         poDstFDefn = poDstLayer.GetLayerDefn()
 
                     # Sanity check : if it fails, the driver is buggy
-                    if poDstFDefn is not None and \
-                        poDstFDefn.GetFieldCount() != nDstFieldCount + 1:
-                        print(("The output driver has claimed to have added the %s field, but it did not!" %  oFieldDefn.GetNameRef() ))
+                    if (
+                        poDstFDefn is not None
+                        and poDstFDefn.GetFieldCount() != nDstFieldCount + 1
+                    ):
+                        print(
+                            (
+                                "The output driver has claimed to have added the %s field, but it did not!"
+                                % oFieldDefn.GetNameRef()
+                            )
+                        )
                     else:
                         panMap[iSrcField] = nDstFieldCount
                         nDstFieldCount = nDstFieldCount + 1
 
             else:
-                print(("Field '" + papszSelFields[iField] + "' not found in source layer."))
+                print(
+                    (
+                        "Field '"
+                        + papszSelFields[iField]
+                        + "' not found in source layer."
+                    )
+                )
                 if not bSkipFailures:
                     return None
 
@@ -1553,9 +1679,16 @@ def SetupTargetLayer(
                     poDstFDefn = poDstLayer.GetLayerDefn()
 
                 # Sanity check : if it fails, the driver is buggy
-                if poDstFDefn is not None and \
-                    poDstFDefn.GetFieldCount() != nDstFieldCount + 1:
-                    print(("The output driver has claimed to have added the %s field, but it did not!" %  oFieldDefn.GetNameRef() ))
+                if (
+                    poDstFDefn is not None
+                    and poDstFDefn.GetFieldCount() != nDstFieldCount + 1
+                ):
+                    print(
+                        (
+                            "The output driver has claimed to have added the %s field, but it did not!"
+                            % oFieldDefn.GetNameRef()
+                        )
+                    )
                 else:
                     panMap[iField] = nDstFieldCount
                     nDstFieldCount = nDstFieldCount + 1
@@ -1692,7 +1825,12 @@ def TranslateLayer(
                 if nGroupTransactions > 0:
                     poDstLayer.CommitTransaction()
 
-                print(("Unable to translate feature %d from layer %s" % (poFeature.GetFID() , poSrcLayer.GetName() )))
+                print(
+                    (
+                        "Unable to translate feature %d from layer %s"
+                        % (poFeature.GetFID(), poSrcLayer.GetName())
+                    )
+                )
 
                 return False
 
@@ -1751,7 +1889,12 @@ def TranslateLayer(
                         if nGroupTransactions > 0:
                             poDstLayer.CommitTransaction()
 
-                        print(("Failed to reproject feature %d (geometry probably out of source or destination SRS)." % poFeature.GetFID()))
+                        print(
+                            (
+                                "Failed to reproject feature %d (geometry probably out of source or destination SRS)."
+                                % poFeature.GetFID()
+                            )
+                        )
                         if not bSkipFailures:
                             return False
 

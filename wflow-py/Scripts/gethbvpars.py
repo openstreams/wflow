@@ -23,7 +23,8 @@ csvfile = "test.csv"
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args: print(msg)
+    for msg in args:
+        print(msg)
     print(__doc__)
     sys.exit(0)
 
@@ -64,7 +65,7 @@ basin = ""
 catch = {}
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'o:p:h')
+    opts, args = getopt.getopt(sys.argv[1:], "o:p:h")
 except getopt.error as msg:
     usage(msg)
 
@@ -91,9 +92,9 @@ for ddri in basstruc:
 
 f = open(csvfile, "w")
 i = 0
-print("Id,Name", end=' ', file=f)
+print("Id,Name", end=" ", file=f)
 for ppar in baspar:
-    print(sep + ppar, end=' ', file=f)
+    print(sep + ppar, end=" ", file=f)
 print("", file=f)
 
 
@@ -101,12 +102,12 @@ print("", file=f)
 for ii in range(0, len(basstruc) - 1):
     i = i + 1
     c = basstruc[ii]
-    print(str(i)+sep+c, end=' ', file=f)
+    print(str(i) + sep + c, end=" ", file=f)
     for ppar in baspar:
         if ppar in catch[c]:
-            print(sep+catch[c][ppar], end=' ', file=f)
+            print(sep + catch[c][ppar], end=" ", file=f)
         else:
-            print(sep+baspar[ppar], end=' ', file=f)
+            print(sep + baspar[ppar], end=" ", file=f)
     print("", file=f)
 
 
