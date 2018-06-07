@@ -10,23 +10,33 @@ from . import wflow_lib
 import numpy as np
 from wflow.pcrut import setlogger
 
-# wflow models we want to support, keep up to date with wflow_modeldict
+# wflow models we want to support, keep up to date with wflow_model
 import wflow.wflow_sbm
 import wflow.wflow_hbv
 import wflow.wflow_routing
 import wflow.wflow_floodmap
 import wflow.wflow_lintul
+import wflow.wflow_sceleton
 
 from pcraster import *
 import configparser
 
-wflow_modeldict = {
-    "wflow_sbm": wflow.wflow_sbm,
-    "wflow_hbv": wflow.wflow_hbv,
-    "wflow_routing": wflow.wflow_routing,
-    "wflow_floodmap": wflow.wflow_floodmap,
-    "wflow_lintul": wflow.wflow_lintul,
-}
+wflow_models = [
+    wflow.wflow_sbm,
+    wflow.wflow_hbv,
+    wflow.wflow_routing,
+    wflow.wflow_floodmap,
+    wflow.wflow_lintul,
+    wflow.wflow_sceleton,
+]
+
+
+def wflow_model(name):
+    for model in wflow_models:
+        if name in model.__name__:
+            return model
+    model_names = [model.__name__ for model in wflow_models]
+    raise ValueError("Model {} not recognized as one of {}".format(name, model_names))
 
 
 def iniFileSetUp(configfile):
@@ -185,7 +195,7 @@ class wflowbmi_light(object):
         maxNrSteps = 10000
         maxNrSteps = 0
 
-        wf = wflow_modeldict[self.name]
+        wf = wflow_model(self.name)
         self.bmilogger.info(
             "initialize: Initialising wflow bmi with ini: " + configfile
         )
@@ -603,7 +613,7 @@ class wflowbmi_csdms(bmi.Bmi):
             )
             self.bmilogger.warning("Assuming " + self.name + " as model type.")
 
-        wf = wflow_modeldict[self.name]
+        wf = wflow_model(self.name)
         self.bmilogger.info(
             "initialize_config: Initialising wflow bmi with ini: "
             + filename
