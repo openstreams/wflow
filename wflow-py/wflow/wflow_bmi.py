@@ -33,7 +33,8 @@ wflow_models = [
 
 def wflow_model(name):
     for model in wflow_models:
-        if name in model.__name__:
+        model_name = model.__name__.replace("wflow.wflow_", "", 1)
+        if model_name in name:
             return model
     model_names = [model.__name__ for model in wflow_models]
     raise ValueError("Model {} not recognized as one of {}".format(name, model_names))
