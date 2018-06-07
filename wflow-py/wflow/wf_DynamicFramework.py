@@ -26,6 +26,7 @@ from collections import namedtuple
 
 import logging
 
+import pcraster
 from pcraster.framework import *
 from .wflow_lib import *
 import time
