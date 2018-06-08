@@ -3340,16 +3340,14 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             # first get basename (last bit of path)
             name = os.path.basename(name)
             if hasattr(self._userModel(), name):
-                exec("retval = cover(self._userModel()." + name + ",scalar(default))")
-                return retval
+                return exec("cover(self._userModel()." + name + ",scalar(default))")
             else:
                 self.logger.warning(
                     "Variable: " + name + " not set by API, returning default"
                 )
                 exec("self._userModel()." + name + " = cover(scalar(default))")
                 # setattr(self._userModel(),name,clone())
-                exec("retval = self._userModel()." + name)
-                return retval
+                return exec("self._userModel()." + name)
         else:
             self.logger.warning(
                 "Unknown style ("
