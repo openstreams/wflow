@@ -715,10 +715,7 @@ class netcdfinput:
 
         for var in vars:
             try:
-                # self.alldat[var] = self.dataset.variables[var][self.fstep:self.maxsteps]
-                self.alldat[var] = reshape(
-                    self.dataset.variables[var], (self.maxlentime, len(y), len(x))
-                )
+                self.alldat[var] = self.dataset.variables[var]
             except:
                 self.alldat.pop(var, None)
                 logging.warning(
@@ -788,10 +785,14 @@ class netcdfinput:
                     "reading new netcdf data block starting at: " + str(ncindex)
                 )
                 for vars in self.alldat:
-                    self.alldat[vars] = reshape(
-                        self.dataset.variables[vars],
-                        (self.maxlentime, len(self.y), len(self.x)),
-                    )[ncindex : ncindex + self.maxsteps]
+                    if len(vars) == 3:
+                        self.alldat[vars] = self.dataset.variables[vars][
+                            ncindex : ncindex + self.maxsteps
+                        ]
+                    elif len(vars) == 4:
+                        self.alldat[vars] = self.dataset.variables[vars][
+                            ncindex : ncindex + self.maxsteps, 0
+                        ]
 
                 self.fstep = ncindex
                 self.lstep = ncindex + self.maxsteps
