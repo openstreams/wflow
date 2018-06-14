@@ -547,8 +547,11 @@ class netcdfinput():
         :var shifttime: is True start at 1 in the NC file (instead of 0)
         :var tsdatetime: Assumed date/time of this timestep
 
-
+            without ensembles (dims = 3)
             window = data[dpos,latidx.min():latidx.max()+1,lonidx.min():lonidx.max()+1]
+            
+            with ensembles from Delft-FEWS (dims = 4):
+            window = data[dpos,realization,latidx.min():latidx.max()+1,lonidx.min():lonidx.max()+1]
         """
         if shifttime:
             ncindex = timestep
@@ -575,19 +578,20 @@ class netcdfinput():
 
 
         if self.alldat.has_key(var):
-            if ncindex == self.lstep:  # Read new block of data in mem
-                logging.debug("reading new netcdf data block starting at: " + str(ncindex))
-                for vars in self.alldat:
-                    if len(vars) == 3:
-                        self.alldat[vars] = self.dataset.variables[vars][ncindex:ncindex + self.maxsteps]
-                    elif len(vars) == 4:
-                        self.alldat[vars] = self.dataset.variables[vars][ncindex:ncindex + self.maxsteps,0]
-
-                self.fstep = ncindex
-                self.lstep = ncindex + self.maxsteps
-
-            np_step = self.alldat[var][ncindex - self.fstep,self.latidx.min():self.latidx.max()+1,
+            #if ncindex == self.lstep:  # Read new block of data in mem
+            #    logging.debug("reading new netcdf data block starting at: " + str(ncindex))
+            #    for vars in self.alldat:
+            #        self.alldat[vars] = self.dataset.variables[vars][ncindex:ncindex + self.maxsteps]
+            #
+                #self.fstep = ncindex
+                #self.lstep = ncindex + self.maxsteps
+            
+            if len(self.alldat[var].dimensions) == 3:
+                np_step = self.alldat[var][ncindex - self.fstep,self.latidx.min():self.latidx.max()+1,
                       self.lonidx.min():self.lonidx.max()+1]
+            if len(self.alldat[var].dimensions) == 4:
+                np_step = self.alldat[var][ncindex - self.fstep,0,self.latidx.min():self.latidx.max()+1,
+                      self.lonidx.min():self.lonidx.max()+1]                
 
             miss = float(self.dataset.variables[var]._FillValue)
             if self.flip:
