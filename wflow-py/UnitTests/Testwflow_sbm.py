@@ -1,7 +1,8 @@
 __author__ = 'schelle'
 
 import unittest
-import wflow.wflow_sbm as wf
+# import wflow.wflow_sbm as wf
+import wflow.wflow_sbm_f2py as wf
 import os
 
 """

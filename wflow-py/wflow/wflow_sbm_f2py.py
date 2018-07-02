@@ -96,13 +96,17 @@ from wflow.wf_DynamicFramework import *
 from wflow.wflow_funcs import *
 from wflow.wflow_adapt import *
 import ConfigParser
-
+from wflow.snow import snow as fsnow
+import pcraster as pcr
 
 wflow = "wflow_sbm: "
 
 updateCols = []
 
-
+def db(name, arr):
+    nmissing = np.isnan(arr).sum()
+    pct_missing = float(nmissing) / arr.size
+    print("{} min: {}, max: {}, nan: {} ({}%)".format(name, np.nanmin(arr), np.nanmax(arr), nmissing, pct_missing))
 
 def usage(*args):
     sys.stdout = sys.stderr
@@ -111,6 +115,21 @@ def usage(*args):
     print __doc__
     sys.exit(0)
 
+
+def float64_1d_copy(pcrmap):
+    """Prepare the PCRaster map to send to f2py
+    
+    Since the Fortran library expects float64 we have to make a copy,
+    as PCRaster scalar maps are float32. It will be better to run all
+    floating point calculations in float64 precision."""
+    arr = pcr.pcr_as_numpy(pcrmap)  # no copy made yet
+    arr1d = arr.ravel().astype(np.float64)  # this makes a copy
+    return arr1d
+
+def scalarmap_copy(arr):
+    shape = (pcr.clone().nrRows(), pcr.clone().nrCols())
+    arr2d = arr.reshape(shape)
+    return pcr.numpy2pcr(pcr.Scalar, arr2d, np.nan)
 
 def actEvap_sat_SBM(RootingDepth, WTable, FirstZoneDepth, PotTrans, smoothpar):
     # Step 1 from saturated zone, use rootingDepth as a limiting factor
@@ -403,6 +422,64 @@ class WflowModel(DynamicModel):
             self.wf_suspend(self.SaveDir + "/instate/")
 
 
+    def snowpack_hbv(self):
+        """Wrapper around the f2py function call.
+        
+        Since in this class all parameters are float32 pcraster maps,
+        we cannot call the fortran code without making a copy, since it needs float64.
+        As long as the class doesn't switch to all float64 numpy arrays, we need to
+        convert back and forth."""
+
+        # convert all to float64 numpy arrays
+        precipitation = float64_1d_copy(self.Precipitation)
+        temperature = float64_1d_copy(self.Temperature)
+        tti = float64_1d_copy(self.TTI)
+        tt = float64_1d_copy(self.TT)
+        ttm = float64_1d_copy(self.TTM)
+        cfmax = float64_1d_copy(self.Cfmax)
+        whc = float64_1d_copy(self.WHC)
+        snow = float64_1d_copy(self.Snow)
+        snowwater = float64_1d_copy(self.SnowWater)
+        snowmelt = float64_1d_copy(self.SnowMelt)
+        precipitationplusmelt = float64_1d_copy(self.PrecipitationPlusMelt)  # named rainfall in fortran code
+        snowfall = float64_1d_copy(self.Snowfall)
+
+        print("### pre")
+        db("snow", snow)
+        db("snowwater", snowwater)
+        db("snowmelt", snowmelt)
+        db("precipitationplusmelt", precipitationplusmelt)
+        db("snowfall", snowfall)
+
+        # call the fortran function
+        fsnow.snowpack_hbv(
+            precipitation,
+            temperature,
+            tti,
+            tt,
+            ttm,
+            cfmax,
+            whc,
+            snow,
+            snowwater,
+            snowmelt,
+            precipitationplusmelt,
+            snowfall,
+        )
+
+        print("### post")
+        db("snow", snow)
+        db("snowwater", snowwater)
+        db("snowmelt", snowmelt)
+        db("precipitationplusmelt", precipitationplusmelt)
+        db("snowfall", snowfall)
+
+        # convert all modified arrays back to pcraster scalar maps
+        self.Snow = scalarmap_copy(snow)
+        self.SnowWater = scalarmap_copy(snowwater)
+        self.SnowMelt = scalarmap_copy(snowmelt)
+        self.PrecipitationPlusMelt = scalarmap_copy(precipitationplusmelt)
+        self.Snowfall = scalarmap_copy(snowfall)
 
     def parameters(self):
         """
@@ -975,6 +1052,8 @@ class WflowModel(DynamicModel):
         self.sumsnowmelt = self.ZeroMap
         self.CumRad = self.ZeroMap
         self.SnowMelt = self.ZeroMap
+        self.PrecipitationPlusMelt = self.ZeroMap
+        self.Snowfall = self.ZeroMap
         self.CumPrec = self.ZeroMap
         self.CumInwaterMM = self.ZeroMap
         self.CumInfiltExcess = self.ZeroMap
@@ -1232,10 +1311,18 @@ class WflowModel(DynamicModel):
         if self.modelSnow:
             self.TSoil = self.TSoil + self.w_soil * (self.Temperature - self.TSoil)
             # return Snow,SnowWater,SnowMelt,RainFall
-            self.Snow, self.SnowWater, self.SnowMelt, self.PrecipitationPlusMelt,self.SnowFall = SnowPackHBV(self.Snow, self.SnowWater,
-                                                                                       self.Precipitation,
-                                                                                       self.Temperature, self.TTI,
-                                                                                       self.TT, self.TTM, self.Cfmax, self.WHC)
+            # self.Snow, self.SnowWater, self.SnowMelt, self.PrecipitationPlusMelt,self.SnowFall = SnowPackHBV(self.Snow, self.SnowWater,
+            #                                                                            self.Precipitation,
+            #                                                                            self.Temperature, self.TTI,
+            #                                                                            self.TT, self.TTM, self.Cfmax, self.WHC)
+
+            # preallocate
+            # self.Snowmelt = self.ZeroMap
+            # self.PrecipitationPlusMelt = self.ZeroMap
+            # self.Snowfall = self.ZeroMap
+
+            self.snowpack_hbv()
+
             MaxSnowPack = 10000.0
             if self.MassWasting:
                 # Masswasting of dry snow
