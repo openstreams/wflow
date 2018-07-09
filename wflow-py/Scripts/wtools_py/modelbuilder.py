@@ -84,6 +84,11 @@ SERVER_URL = "http://hydro-engine.appspot.com"
     "to use instead of the default global one.",
 )
 @click.option(
+    "--outlet-path",
+    help="Optionally provide a point layer with outlets "
+    "to use instead of the automatically generated one.",
+)
+@click.option(
     "--region-filter",
     type=click.Choice(["catchments-upstream", "catchments-intersection", "region"]),
     default="catchments-upstream",
@@ -106,6 +111,7 @@ def build_model(
     fews_config_path,
     dem_path,
     river_path,
+    outlet_path,
     region_filter,
 ):
     """Prepare a simple WFlow model, anywhere, based on global datasets."""
@@ -318,9 +324,40 @@ def build_model(
         dir_run = os.path.join(case, "run_default", d)
         ensure_dir_exists(dir_run)
 
-    # this is for coastal catchments only, if it is not coastal and no outlets
-    # are found, then it will just be the pit of the ldd
-    outlets = outlets_coords(path_catchment, river_data_path)
+    if outlet_path is None:
+        # this is for coastal catchments only, if it is not coastal and no outlets
+        # are found, then it will just be the pit of the ldd
+        outlets = outlets_coords(path_catchment, river_data_path)
+    else:
+        # take the local dataset, reproject and clip
+        outlet_data_path = os.path.join(case, "data/rivers/outlets.gpkg")
+        ogr2ogr.main(
+            [
+                "",
+                "-t_srs",
+                "EPSG:4326",
+                "-f",
+                "GPKG",
+                "-overwrite",
+                "-clipdst",
+                str(bbox.left),
+                str(bbox.bottom),
+                str(bbox.right),
+                str(bbox.top),
+                outlet_data_path,
+                outlet_path,
+            ]
+        )
+        x = []
+        y = []
+        with fiona.open(outlet_data_path) as c:
+            for f in c:
+                coords = f["geometry"]["coordinates"]
+                x.append(coords[0])
+                y.append(coords[1])
+            outlets_x = np.array(x)
+            outlets_y = np.array(y)
+        outlets = outlets_x, outlets_y
 
     sm.main(
         dir_mask,
@@ -602,7 +639,7 @@ def encode_utf8(path):
 
 
 def outlets_coords(path_catchment, river_data_path):
-    """Get an array of X and list of Y coordinates of the outlets."""
+    """Get an array of X and Y coordinates of the outlets."""
 
     outlets = find_outlets(path_catchment, river_data_path, max_dist=0.02)
     outlets = sg.mapping(outlets)["coordinates"]
