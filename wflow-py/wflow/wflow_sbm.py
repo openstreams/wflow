@@ -2892,11 +2892,15 @@ class WflowModel(DynamicModel):
             Runoff = self.SurfaceRunoff
 
         # Determine Soil moisture profile
-        # 1: average volumetric soil in total unsat store
-        # self.SMVol = (cover(self.UStoreDepth/self.zi,0.0) + self.thetaR) * (self. thetaS - self.thetaR)
-        # self.SMRootVol = (cover(self.UStoreDepth/min(self.ActRootingDepth,self.zi),0.0) + self.thetaR) * (self. thetaS - self.thetaR)
-        RootStore_sat = max(0.0, self.ActRootingDepth - self.zi) * self.thetaS
-        RootStore_unsat = self.ZeroMap
+        # self.vwc, self.vwcRoot: volumetric water content [m3/m3] per soil layer and root zone (including thetaR and saturated store)
+        # self.vwc_perc, self.vwc_percRoot: volumetric water content [%] per soil layer and root zone (including thetaR and saturated store)
+        # self.RootStore_sat: root water storage [mm] in saturated store (excluding thetaR)
+        # self.RootStore_unsat: root water storage [mm] in unsaturated store (excluding thetaR)
+        # self.RootStore: total root water storage [mm] (excluding thetaR)
+
+        self.RootStore_sat = max(0.0, self.ActRootingDepth - self.zi) * (
+            self.thetaS - self.thetaR
+        )
 
         self.RootStore_unsat = self.ZeroMap
         self.SumThickness = self.ZeroMap
@@ -2904,10 +2908,27 @@ class WflowModel(DynamicModel):
         self.vwc_perc = []
 
         for n in arange(len(self.UStoreLayerThickness)):
-            RootStore_unsat = RootStore_unsat + (
-                max(0.0, (self.ActRootingDepth - self.SumThickness))
-                / (self.UStoreLayerThickness[n])
-            ) * (cover(self.UStoreLayerDepth[n] + self.thetaR, 0.0))
+
+            fracRoot = ifthenelse(
+                self.ZiLayer > n,
+                min(
+                    1.0,
+                    max(
+                        0.0,
+                        (min(self.ActRootingDepth, self.zi) - self.SumThickness)
+                        / self.UStoreLayerThickness[n],
+                    ),
+                ),
+                min(
+                    1.0,
+                    max(
+                        0.0,
+                        (self.ActRootingDepth - self.SumThickness)
+                        / (self.zi + 1 - self.SumThickness),
+                    ),
+                ),
+            )
+
             self.SumThickness = self.UStoreLayerThickness[n] + self.SumThickness
 
             self.vwc.append(
