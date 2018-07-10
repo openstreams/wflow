@@ -860,7 +860,6 @@ class WflowModel(DynamicModel):
         self.SoilThickness = max(min(self.SoilThickness, (WI / WIMax) * self.SoilThickness),
                                       self.SoilMinThickness)
 
-
         self.SoilWaterCapacity = self.SoilThickness * (self.thetaS - self.thetaR)
 
         # determine number of layers based on total soil thickness
@@ -890,9 +889,9 @@ class WflowModel(DynamicModel):
                 UstoreThick_temp = float(UStoreLayerThickness.split(',')[n])+self.ZeroMap
                 UstoreThick = min(UstoreThick_temp,max(self.SoilThickness-self.SumLayer,0.0))
             else:
-                UstoreThick = self.SoilThickness
-                UstoreThick_temp = self.SoilThickness
-
+                UstoreThick_temp = mapmaximum(self.SoilThickness) - self.SumLayer
+                UstoreThick = min(UstoreThick_temp,max(self.SoilThickness-self.SumLayer,0.0))
+                
             self.SumThickness = UstoreThick_temp + self.SumThickness
             self.nrLayersMap = ifthenelse((self.SoilThickness>=self.SumThickness) | (self.SoilThickness-self.SumLayer>self.ZeroMap) , self.nrLayersMap + 1 ,self.nrLayersMap)
 
@@ -1871,18 +1870,38 @@ class WflowModel(DynamicModel):
 
 
         # Determine Soil moisture profile
-        # 1: average volumetric soil in total unsat store
-        #self.SMVol = (cover(self.UStoreDepth/self.zi,0.0) + self.thetaR) * (self. thetaS - self.thetaR)
-        #self.SMRootVol = (cover(self.UStoreDepth/min(self.ActRootingDepth,self.zi),0.0) + self.thetaR) * (self. thetaS - self.thetaR)
-        RootStore_sat = max(0.0,self.ActRootingDepth-self.zi)*self.thetaS
-        RootStore_unsat = self.ZeroMap
-
+        # self.vwc, self.vwcRoot: volumetric water content [m3/m3] per soil layer and root zone (including thetaR and saturated store)
+        # self.vwc_perc, self.vwc_percRoot: volumetric water content [%] per soil layer and root zone (including thetaR and saturated store)
+        # self.RootStore_sat: root water storage [mm] in saturated store (excluding thetaR)
+        # self.RootStore_unsat: root water storage [mm] in unsaturated store (excluding thetaR) 
+        # self.RootStore: total root water storage [mm] (excluding thetaR) 
+              
+        self.RootStore_sat = max(0.0,self.ActRootingDepth-self.zi)*(self.thetaS-self.thetaR)
+        
+        self.RootStore_unsat = self.ZeroMap
         self.SumThickness = self.ZeroMap
+        self.vwc = []
+        self.vwc_perc = []
+        
         for n in arange(len(self.UStoreLayerThickness)):
-            RootStore_unsat = RootStore_unsat + (max(0.0,(self.ActRootingDepth-self.SumThickness))/(self.UStoreLayerThickness[n]))*(cover(self.UStoreLayerDepth[n]+self.thetaR,0.0))
+             
+            fracRoot = ifthenelse(self.ZiLayer > n, min(1.0,max(0.0,(min(self.ActRootingDepth,self.zi)-self.SumThickness)/self.UStoreLayerThickness[n])),
+                                  min(1.0,max(0.0, (self.ActRootingDepth-self.SumThickness) /(self.zi + 1 - self.SumThickness))))
+           
             self.SumThickness = self.UStoreLayerThickness[n] + self.SumThickness
 
-        self.RootStore = RootStore_sat + RootStore_unsat
+            self.vwc.append(ifthenelse(self.ZiLayer > n, self.UStoreLayerDepth[n]/self.UStoreLayerThickness[n] + self.thetaR, 
+                                       (((self.UStoreLayerDepth[n] + (self.thetaS-self.thetaR) * min(self.UStoreLayerThickness[n],(self.SumThickness-self.zi)))/self.UStoreLayerThickness[n]) + self.thetaR)))
+                
+            self.vwc_perc.append((self.vwc[n]/self.thetaS) * 100.0)
+            
+            self.RootStore_unsat = self.RootStore_unsat + cover(fracRoot*self.UStoreLayerDepth[n],0.0)
+            
+
+        self.RootStore = self.RootStore_sat + self.RootStore_unsat
+        self.vwcRoot = self.RootStore/self.ActRootingDepth + self.thetaR
+        self.vwc_percRoot = (self.vwcRoot/self.thetaS) * 100.0
+                        
 
         # 2:
         ##########################################################################
