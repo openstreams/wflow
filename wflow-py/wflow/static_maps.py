@@ -343,9 +343,11 @@ def main(source, destination, inifile, dem_in, rivshp, catchshp, gaugeshp=None,
         image = features.rasterize([shape],out_shape=src.shape,all_touched=True,transform=src.transform)
         catchment = pcr.numpy2pcr(pcr.Scalar,image.copy(),0)
         dem_burned_catchment = (pcr.readmap(os.path.join(destination, dem_map)) * pcr.scalar(catchment_domain) * catchment) - burn_layer
-        ldddem_catchment = pcr.lddcreatedem(
-            dem_burned_catchment, 1e35, 1e35, 1e35, 1e35)
-        ldddem = pcr.cover(ldddem, ldddem_catchment)
+        #ldddem_catchment = pcr.lddcreatedem(
+        #    dem_burned_catchment, 1e35, 1e35, 1e35, 1e35)
+        ldddem = pcr.cover(ldddem, dem_burned_catchment)
+        
+    pcr.report(ldddem, os.path.join(destination, 'ldddem.map'))
 
     wflow_ldd = pcr.lddcreate(ldddem, 1e35, 1e35, 1e35, 1e35)
     if n_outlets >= 1:
