@@ -1,4 +1,4 @@
-__author__ = 'schelle'
+__author__ = "schelle"
 
 import unittest
 import logging
@@ -6,16 +6,19 @@ import wflow.wflow_bmi as bmi
 import time
 import os
 import datetime
+
 """
 Simple test for wflow bmi framework
 """
 
-class MyTest(unittest.TestCase):
 
+class MyTest(unittest.TestCase):
     def testbmiinitfuncs(self):
         bmiobj = bmi.wflowbmi_csdms()
 
-        bmiobj.initialize_config('wflow_sceleton/wflow_sceleton_notime.ini',loglevel=logging.INFO)
+        bmiobj.initialize_config(
+            "wflow_sceleton/wflow_sceleton_notime.ini", loglevel=logging.INFO
+        )
         print("-------------- Time units: ")
         print(bmiobj.get_time_units())
         print("-------------- Default current time: ")
@@ -34,10 +37,9 @@ class MyTest(unittest.TestCase):
         print("-------------- Updated end time: ")
         etime = datetime.datetime.utcfromtimestamp(bmiobj.get_end_time())
 
-
         print("Init model...")
         bmiobj.initialize_model()
-        print(bmiobj.dynModel._userModel().config.get("run",'starttime'))
+        print(bmiobj.dynModel._userModel().config.get("run", "starttime"))
 
         nstime = datetime.datetime.utcfromtimestamp(bmiobj.get_start_time())
 
@@ -64,5 +66,5 @@ class MyTest(unittest.TestCase):
         bmiobj.finalize()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

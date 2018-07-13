@@ -12,41 +12,40 @@ supported targets:
 
 from cx_Freeze import setup, Executable, hooks
 
-import ctypes,glob,os,shutil
+import ctypes, glob, os, shutil
 import matplotlib
 import scipy
 import sys
 import versioneer
 import json
 
-target = 'normal'
+target = "normal"
 # Filter out wflow specific options
 if "--openda" in sys.argv:
-    target = 'openda'
+    target = "openda"
     sys.argv.remove("--openda")
 if "--normal" in sys.argv:
-    target = 'normal'
+    target = "normal"
     sys.argv.remove("--normal")
 if "--deltashell" in sys.argv:
-    target = 'deltashell'
+    target = "deltashell"
     sys.argv.remove("--deltashell")
 
 
 pdir = os.path.dirname(sys.executable) + "/"
 
-if sys.platform == 'win32':
+if sys.platform == "win32":
     mkl_file = glob.glob(pdir + "conda-meta" + "/" + "mkl-[!service]*.json")[0]
     data = json.load(open(mkl_file))
 
 
-MKL_files = [(pdir + s) for s in data['files']]
+MKL_files = [(pdir + s) for s in data["files"]]
 
 
 os.system("python mkversion.py")
 
 
-
-data_files=[]
+data_files = []
 scipy_path = os.path.dirname(scipy.__file__)
 data_files.append(scipy_path)
 
@@ -58,9 +57,11 @@ def load_scipy_patched(finder, module):
     finder.IncludePackage("scipy._lib")  # Changed include from scipy.lib to scipy._lib
     finder.IncludePackage("scipy.misc")
 
+
 hooks.load_scipy = load_scipy_patched
 
-def mkdatatuples(thelist,destdir="."):
+
+def mkdatatuples(thelist, destdir="."):
     """
     input list of input files output lis list of tuples including destination
     :param list:
@@ -68,29 +69,30 @@ def mkdatatuples(thelist,destdir="."):
     """
     ret = []
     for item in thelist:
-        destfile = os.path.join(destdir,os.path.basename(item))
-        ret.append((item,destfile))
+        destfile = os.path.join(destdir, os.path.basename(item))
+        ret.append((item, destfile))
     return ret
 
-data_files.append('packages.txt')
-#os.system('conda list' + ">" + os.path.join('packages.txt'))
+
+data_files.append("packages.txt")
+# os.system('conda list' + ">" + os.path.join('packages.txt'))
 # matplolib data files
 
 
-mpl =  matplotlib.get_py2exe_datafiles()
+mpl = matplotlib.get_py2exe_datafiles()
 
 mplfiles = []
 for mpldir in mpl:
-    ddir = os.path.join('mpl-data',os.path.basename(mpldir[0]))
-    data_files.extend(mkdatatuples(mpldir[1],destdir=ddir))
+    ddir = os.path.join("mpl-data", os.path.basename(mpldir[0]))
+    data_files.extend(mkdatatuples(mpldir[1], destdir=ddir))
 
-if sys.platform == 'win32':
+if sys.platform == "win32":
     # MKL files
-    data_files.extend(mkdatatuples(MKL_files,destdir="."))
+    data_files.extend(mkdatatuples(MKL_files, destdir="."))
     # pcraster dll's
-    #ddir = "c:/pcraster/lib/"
+    # ddir = "c:/pcraster/lib/"
     ddir = "d:\pcraster-4.0.1_x86-64"
-    data_files.extend(mkdatatuples(glob.glob(ddir + "/*.dll"),destdir='.'))
+    data_files.extend(mkdatatuples(glob.glob(ddir + "/*.dll"), destdir="."))
 
 # GDAL data files
 gdaldata = os.getenv("GDAL_DATA")
@@ -98,122 +100,159 @@ gdaldata = os.getenv("GDAL_DATA")
 if gdaldata == None:
     gdaldata = "c:\Anaconda\Library\share\gdal"
 
-data_files.extend(mkdatatuples(glob.glob(gdaldata + "/*.*"),destdir='gdal-data'))
+data_files.extend(mkdatatuples(glob.glob(gdaldata + "/*.*"), destdir="gdal-data"))
 
 
 nrbits = str(ctypes.sizeof(ctypes.c_voidp) * 8)
-#includes = ['wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined','bmi','bmi.wrapper',"pcraster","osgeo.ogr"]
+# includes = ['wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined','bmi','bmi.wrapper',"pcraster","osgeo.ogr"]
 
 versions = versioneer.get_versions()
-MVERSION = versions['version']
+MVERSION = versions["version"]
 
-thename = "wflow-bin/Wflow"+MVERSION+'-'+target+'-'+sys.platform+'-'+nrbits
+thename = (
+    "wflow-bin/Wflow" + MVERSION + "-" + target + "-" + sys.platform + "-" + nrbits
+)
 
 packages = ["osgeo"]
 
-if target == 'openda':
+if target == "openda":
     import thrift.protocol.TBinaryProtocol as TBinaryProtocol
     import thrift.transport.THttpClient as THttpClient
     import thrift.protocol.TBinaryProtocol as TBinaryProtocol
     import thrift.transport.THttpClient as THttpClient
-    includes = ['wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined','lxml.etree', 'lxml._elementpath', 'gzip']
-    packages.append('openda_bmi')
-elif target == 'deltashell':
+
+    includes = [
+        "wflow.wflow_bmi",
+        "wflow.wflow_w3ra",
+        "wflow.wflow_bmi_combined",
+        "lxml.etree",
+        "lxml._elementpath",
+        "gzip",
+    ]
+    packages.append("openda_bmi")
+elif target == "deltashell":
     import zmq.libzmq
-    data_files.extend([zmq.libzmq.__file__, ])
-    includes = ["zmq.backend.cython","zmq.utils.garbage","requests","zmq.eventloop.zmqstream",
-                 'wflow.wflow_bmi','wflow.wflow_w3ra','wflow.wflow_bmi_combined','lxml.etree', 'lxml._elementpath', 'gzip']
-    packages.append('zmq.backend.cython')
-    packages.append('bmi')
-    #packages.append('pkg_resources')
+
+    data_files.extend([zmq.libzmq.__file__])
+    includes = [
+        "zmq.backend.cython",
+        "zmq.utils.garbage",
+        "requests",
+        "zmq.eventloop.zmqstream",
+        "wflow.wflow_bmi",
+        "wflow.wflow_w3ra",
+        "wflow.wflow_bmi_combined",
+        "lxml.etree",
+        "lxml._elementpath",
+        "gzip",
+    ]
+    packages.append("zmq.backend.cython")
+    packages.append("bmi")
+    # packages.append('pkg_resources')
 else:
-    includes = ["matplotlib.backends.backend_qt4agg", 'wflow.pcrglobwb.landCover', 'wflow.wflow_bmi', 'wflow.wflow_w3ra', 'wflow.wflow_bmi_combined','lxml.etree', 'lxml._elementpath', 'gzip', 'numpy.core._methods', 'numpy.lib.format']
+    includes = [
+        "matplotlib.backends.backend_qt4agg",
+        "wflow.pcrglobwb.landCover",
+        "wflow.wflow_bmi",
+        "wflow.wflow_w3ra",
+        "wflow.wflow_bmi_combined",
+        "lxml.etree",
+        "lxml._elementpath",
+        "gzip",
+        "numpy.core._methods",
+        "numpy.lib.format",
+    ]
 
 #  "include_msvcr": True,
-options = {"includes": includes, "packages": packages,'include_files': data_files, "build_exe": thename,
-            'excludes': ['collections.abc']}
-base=None
+options = {
+    "includes": includes,
+    "packages": packages,
+    "include_files": data_files,
+    "build_exe": thename,
+    "excludes": ["collections.abc"],
+}
+base = None
 
 
-
-
-if target == 'openda':
+if target == "openda":
     import thrift
+
     executables = [
-        Executable('Scripts/wtools_py/CatchRiver.py', base=base),
-        Executable('wflow/create_grid.py', base=base),
-        Executable('wflow/static_maps.py', base=base),
-        Executable('Scripts/pcr2netcdf.py', base=base),
-        Executable('Scripts/bmi2runner.py', base=base),
-        Executable('openda_bmi/opendapy.py', base=base),
-        Executable('Scripts/wflow_prepare_step2.py', base=base),
-        Executable('Scripts/wflow_prepare_step1.py', base=base),
-        Executable('Scripts/wflow_sbm_rtc.py', base=base),
-        Executable('wflow/wflow_topoflex.py', base=base),
-        Executable('wflow/wflow_sbm.py', base=base),
-        Executable('wflow/wflow_adapt.py', base=base),
-        Executable('wflow/wflow_w3ra.py', base=base),
-        Executable('wflow/wflow_delwaq.py', base=base),
-        Executable('wflow/wflow_wave.py', base=base),
-        Executable('wflow/wflow_gr4.py', base=base),
-        Executable('wflow/wflow_floodmap.py', base=base),
-        Executable('wflow/wflow_routing.py', base=base),
-        Executable('wflow/wflow_hbv.py', base=base),
-        Executable('wflow/wflow_sphy.py', base=base),
-        Executable('wflow/wflow_pcrglobwb.py', base=base)
+        Executable("Scripts/wtools_py/CatchRiver.py", base=base),
+        Executable("wflow/create_grid.py", base=base),
+        Executable("wflow/static_maps.py", base=base),
+        Executable("Scripts/pcr2netcdf.py", base=base),
+        Executable("Scripts/bmi2runner.py", base=base),
+        Executable("openda_bmi/opendapy.py", base=base),
+        Executable("Scripts/wflow_prepare_step2.py", base=base),
+        Executable("Scripts/wflow_prepare_step1.py", base=base),
+        Executable("Scripts/wflow_sbm_rtc.py", base=base),
+        Executable("wflow/wflow_topoflex.py", base=base),
+        Executable("wflow/wflow_sbm.py", base=base),
+        Executable("wflow/wflow_adapt.py", base=base),
+        Executable("wflow/wflow_w3ra.py", base=base),
+        Executable("wflow/wflow_delwaq.py", base=base),
+        Executable("wflow/wflow_wave.py", base=base),
+        Executable("wflow/wflow_gr4.py", base=base),
+        Executable("wflow/wflow_floodmap.py", base=base),
+        Executable("wflow/wflow_routing.py", base=base),
+        Executable("wflow/wflow_hbv.py", base=base),
+        Executable("wflow/wflow_sphy.py", base=base),
+        Executable("wflow/wflow_pcrglobwb.py", base=base),
     ]
-elif target == 'deltashell':
+elif target == "deltashell":
     executables = [
-        Executable('Scripts/wtools_py/CatchRiver.py', base=base),
-        Executable('wflow/create_grid.py', base=base),
-        Executable('wflow/static_maps.py', base=base),
-        Executable('Scripts/pcr2netcdf.py', base=base),
-        Executable('Scripts/bmi2runner.py', base=base),
-        Executable('Scripts/wfds_core.py', base=base),
-        Executable('Scripts/wflow_prepare_step2.py', base=base),
-        Executable('Scripts/wflow_prepare_step1.py', base=base),
-        Executable('Scripts/wflow_sbm_rtc.py', base=base),
-        Executable('wflow/wflow_topoflex.py', base=base),
-        Executable('wflow/wflow_routing.py', base=base),
-        Executable('wflow/wflow_sbm.py', base=base),
-        Executable('wflow/wflow_adapt.py', base=base),
-        Executable('wflow/wflow_w3ra.py', base=base),
-        Executable('wflow/wflow_delwaq.py', base=base),
-        Executable('wflow/wflow_wave.py', base=base),
-        Executable('wflow/wflow_gr4.py', base=base),
-        Executable('wflow/wflow_floodmap.py', base=base),
-        Executable('wflow/wflow_hbv.py', base=base),
-        Executable('wflow/wflow_sphy.py', base=base),
-        Executable('wflow/wflow_pcrglobwb.py', base=base)
+        Executable("Scripts/wtools_py/CatchRiver.py", base=base),
+        Executable("wflow/create_grid.py", base=base),
+        Executable("wflow/static_maps.py", base=base),
+        Executable("Scripts/pcr2netcdf.py", base=base),
+        Executable("Scripts/bmi2runner.py", base=base),
+        Executable("Scripts/wfds_core.py", base=base),
+        Executable("Scripts/wflow_prepare_step2.py", base=base),
+        Executable("Scripts/wflow_prepare_step1.py", base=base),
+        Executable("Scripts/wflow_sbm_rtc.py", base=base),
+        Executable("wflow/wflow_topoflex.py", base=base),
+        Executable("wflow/wflow_routing.py", base=base),
+        Executable("wflow/wflow_sbm.py", base=base),
+        Executable("wflow/wflow_adapt.py", base=base),
+        Executable("wflow/wflow_w3ra.py", base=base),
+        Executable("wflow/wflow_delwaq.py", base=base),
+        Executable("wflow/wflow_wave.py", base=base),
+        Executable("wflow/wflow_gr4.py", base=base),
+        Executable("wflow/wflow_floodmap.py", base=base),
+        Executable("wflow/wflow_hbv.py", base=base),
+        Executable("wflow/wflow_sphy.py", base=base),
+        Executable("wflow/wflow_pcrglobwb.py", base=base),
     ]
 else:
     executables = [
-        Executable('Scripts/wtools_py/CatchRiver.py', base=base),
-        Executable('wflow/create_grid.py', base=base),
-        Executable('wflow/static_maps.py', base=base),
-        Executable('Scripts/pcr2netcdf.py', base=base),
-        Executable('Scripts/bmi2runner.py', base=base),
-        Executable('Scripts/wflow_prepare_step2.py', base=base),
-        Executable('Scripts/wflow_prepare_step1.py', base=base),
-        Executable('Scripts/wflow_sbm_rtc.py', base=base),
-        Executable('wflow/wflow_topoflex.py', base=base),
-        Executable('wflow/wflow_sbm.py', base=base),
-        Executable('wflow/wflow_lintul.py', base=base),
-        Executable('wflow/wflow_routing.py', base=base),
-        Executable('wflow/wflow_adapt.py', base=base),
-        Executable('wflow/wflow_w3ra.py', base=base),
-        Executable('wflow/wflow_delwaq.py', base=base),
-        Executable('wflow/wflow_wave.py', base=base),
-        Executable('wflow/wflow_gr4.py', base=base),
-        Executable('wflow/wflow_floodmap.py', base=base),
-        Executable('wflow/wflow_hbv.py', base=base),
-        Executable('wflow/wflow_sphy.py', base=base),
-        Executable('wflow/wflow_pcrglobwb.py', base=base)
+        Executable("Scripts/wtools_py/CatchRiver.py", base=base),
+        Executable("wflow/create_grid.py", base=base),
+        Executable("wflow/static_maps.py", base=base),
+        Executable("Scripts/pcr2netcdf.py", base=base),
+        Executable("Scripts/bmi2runner.py", base=base),
+        Executable("Scripts/wflow_prepare_step2.py", base=base),
+        Executable("Scripts/wflow_prepare_step1.py", base=base),
+        Executable("Scripts/wflow_sbm_rtc.py", base=base),
+        Executable("wflow/wflow_topoflex.py", base=base),
+        Executable("wflow/wflow_sbm.py", base=base),
+        Executable("wflow/wflow_lintul.py", base=base),
+        Executable("wflow/wflow_routing.py", base=base),
+        Executable("wflow/wflow_adapt.py", base=base),
+        Executable("wflow/wflow_w3ra.py", base=base),
+        Executable("wflow/wflow_delwaq.py", base=base),
+        Executable("wflow/wflow_wave.py", base=base),
+        Executable("wflow/wflow_gr4.py", base=base),
+        Executable("wflow/wflow_floodmap.py", base=base),
+        Executable("wflow/wflow_hbv.py", base=base),
+        Executable("wflow/wflow_sphy.py", base=base),
+        Executable("wflow/wflow_pcrglobwb.py", base=base),
     ]
 
-setup(name='wflow',
-      version=MVERSION.split('+')[0],
-      description='Wflow',
-      options={"build_exe" : options},
-      executables=executables,
-      )
+setup(
+    name="wflow",
+    version=MVERSION.split("+")[0],
+    description="Wflow",
+    options={"build_exe": options},
+    executables=executables,
+)

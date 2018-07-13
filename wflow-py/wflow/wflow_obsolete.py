@@ -1,17 +1,17 @@
 from wflow_hbv import *
 
-class wflow_model():
-    
+
+class wflow_model:
     def initialize(self, timeStepsToRun, timeStepInSeconds, dataDirectory, iniFile):
         self.currentTime = 1
         runId = "run_default"
-        configfile=iniFile
-        wflow_cloneMap = 'wflow_subcatch.map' 
-        # Initializes the model class     
-        myModel = WflowModel(wflow_cloneMap, dataDirectory, runId,configfile)
+        configfile = iniFile
+        wflow_cloneMap = "wflow_subcatch.map"
+        # Initializes the model class
+        myModel = WflowModel(wflow_cloneMap, dataDirectory, runId, configfile)
         myModel.timestepsecs = timeStepInSeconds
-        self.dynModelFw = wf_DynamicFramework(myModel, timeStepsToRun, firstTimestep = 1)
-        self.dynModelFw.createRunId(NoOverWrite=0) 
+        self.dynModelFw = wf_DynamicFramework(myModel, timeStepsToRun, firstTimestep=1)
+        self.dynModelFw.createRunId(NoOverWrite=0)
         self.dynModelFw._runInitial()
         self.dynModelFw._runResume()
 
@@ -23,7 +23,6 @@ class wflow_model():
         self.currentTime = self.currentTime - 1
         self.dynModelFw._runDynamic(self.currentTime, self.currentTime)
         self.currentTime = self.currentTime + 1
-        
 
     def get_grid_parameters(self):
         """
@@ -46,13 +45,11 @@ class wflow_model():
         return self.dynModelFw.wf_supplyVariableUnits()
 
     def set_variable_values(self, name, values):
-        self.dynModelFw.wf_setValues(name,values)
+        self.dynModelFw.wf_setValues(name, values)
 
     def run_time_step(self):
         self.dynModelFw._runDynamic(self.currentTime, self.currentTime)
         self.currentTime = self.currentTime + 1
-        
+
     def finalize(self):
         self.dynModelFw._runSuspend()
-    
-

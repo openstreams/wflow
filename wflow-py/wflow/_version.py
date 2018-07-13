@@ -6,7 +6,7 @@
 
 import json
 
-version_json = '''
+version_json = """
 {
  "date": "2018-03-30T08:42:06+0200",
  "dirty": false,
@@ -14,7 +14,7 @@ version_json = '''
  "full-revisionid": "4cfef1af4528cf5a50095f81ed30ba193809adc2",
  "version": "2017.01+216.g4cfef1a"
 }
-'''  # END VERSION_JSON
+"""  # END VERSION_JSON
 
 
 def get_versions():
