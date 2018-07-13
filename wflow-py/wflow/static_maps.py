@@ -448,10 +448,7 @@ def main(
             * pcr.scalar(catchment_domain)
             * catchment
         ) - burn_layer
-        ldddem_catchment = pcr.lddcreatedem(
-            dem_burned_catchment, 1e35, 1e35, 1e35, 1e35
-        )
-        ldddem = pcr.cover(ldddem, ldddem_catchment)
+        ldddem = pcr.cover(ldddem, dem_burned_catchment)
 
     wflow_ldd = pcr.lddcreate(ldddem, 1e35, 1e35, 1e35, 1e35)
     if n_outlets >= 1:
