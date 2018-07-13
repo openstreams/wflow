@@ -34,11 +34,13 @@ def setlogger(logfilename, logReference, verbose=True):
         logger = logging.getLogger(logReference)
         logger.setLevel(logging.DEBUG)
         ch = logging.handlers.RotatingFileHandler(
-            logfilename, maxBytes=10 * 1024 * 1024, backupCount=5)
+            logfilename, maxBytes=10 * 1024 * 1024, backupCount=5
+        )
         ch.setLevel(logging.DEBUG)
         # create formatter
         formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(module)s - %(levelname)s - %(message)s")
+            "%(asctime)s - %(name)s - %(module)s - %(levelname)s - %(message)s"
+        )
         # add formatter to ch
         ch.setFormatter(formatter)
         # add ch to logger
@@ -77,7 +79,7 @@ def OpenConf(fn):
     return config
 
 
-def configget(config, section, var, default, datatype='str'):
+def configget(config, section, var, default, datatype="str"):
     """
 
     Gets a string from a config file (.ini) and returns a default value if
@@ -98,11 +100,11 @@ def configget(config, section, var, default, datatype='str'):
     """
     Def = False
     try:
-        if datatype == 'int':
+        if datatype == "int":
             ret = config.getint(section, var)
-        elif datatype == 'float':
+        elif datatype == "float":
             ret = config.getfloat(section, var)
-        elif datatype == 'boolean':
+        elif datatype == "boolean":
             ret = config.getboolean(section, var)
         else:
             ret = config.get(section, var)
@@ -144,14 +146,14 @@ def configset(config, section, var, value, overwrite=False):
 
 
 def get_geotransform(filename):
-    ''' Return geotransform of dataset'''
+    """ Return geotransform of dataset"""
     ds = gdal.Open(filename, GA_ReadOnly)
     gt = ds.GetGeoTransform()
     return gt
 
 
 def get_extent(filename):
-    ''' Return list of corner coordinates from a dataset'''
+    """ Return list of corner coordinates from a dataset"""
     ds = gdal.Open(filename, GA_ReadOnly)
     gt = ds.GetGeoTransform()
     # 'top left x', 'w-e pixel resolution', '0', 'top left y', '0', 'n-s pixel resolution (negative value)'
@@ -171,6 +173,7 @@ def get_projection(filename):
     srs.ImportFromWkt(WktString)
     ds = None
     return srs
+
 
 def round_extent(extent, snap, prec):
     """Increases the extent until all sides lie on a coordinate
@@ -218,7 +221,7 @@ def readMap(fileName, fileFormat):
     mapFormat.Register()
     ds = gdal.Open(fileName)
     if ds is None:
-        print 'Could not open ' + fileName + '. Something went wrong!! Shutting down'
+        print "Could not open " + fileName + ". Something went wrong!! Shutting down"
         sys.exit(1)
         # Retrieve geoTransform info
     geotrans = ds.GetGeoTransform()
@@ -228,10 +231,8 @@ def readMap(fileName, fileFormat):
     resY = geotrans[5]
     cols = ds.RasterXSize
     rows = ds.RasterYSize
-    x = np.linspace(originX + resX / 2, originX +
-                    resX / 2 + resX * (cols - 1), cols)
-    y = np.linspace(originY + resY / 2, originY +
-                    resY / 2 + resY * (rows - 1), rows)
+    x = np.linspace(originX + resX / 2, originX + resX / 2 + resX * (cols - 1), cols)
+    y = np.linspace(originY + resY / 2, originY + resY / 2 + resY * (rows - 1), rows)
     # Retrieve raster
     RasterBand = ds.GetRasterBand(1)  # there's only 1 band, starting from 1
     data = RasterBand.ReadAsArray(0, 0, cols, rows)
@@ -266,8 +267,7 @@ def Reach2Nodes(SHP, EPSG, toll, storedir):
     START_out = Driver.CreateDataSource(START_SHP)
     START_ATT = os.path.splitext(os.path.basename(START_SHP))[0]
     if not EPSG == None:
-        START_LYR = START_out.CreateLayer(
-            START_ATT, srs, geom_type=ogr.wkbPoint)
+        START_LYR = START_out.CreateLayer(START_ATT, srs, geom_type=ogr.wkbPoint)
     else:
         START_LYR = START_out.CreateLayer(START_ATT, geom_type=ogr.wkbPoint)
     START_LYR.CreateField(fieldDef)
@@ -299,8 +299,10 @@ def Reach2Nodes(SHP, EPSG, toll, storedir):
     Connections = [[np.nan, np.nan], [np.nan, np.nan]]
 
     for i in range(len(StartCoord)):
-        if not True in np.all(np.isclose(StartCoord[i], EndCoord, rtol=0, atol=toll), axis=1):
-            #point is startpoint
+        if not True in np.all(
+            np.isclose(StartCoord[i], EndCoord, rtol=0, atol=toll), axis=1
+        ):
+            # point is startpoint
             point = ogr.Geometry(ogr.wkbPoint)
             point.AddPoint(StartCoord[i][0], StartCoord[i][1])
             feature = ogr.Feature(START_LYR.GetLayerDefn())
@@ -308,15 +310,19 @@ def Reach2Nodes(SHP, EPSG, toll, storedir):
             START_LYR.CreateFeature(feature)
         else:
             # point is a connection
-            if not True in np.all(np.isclose(StartCoord[i], Connections, rtol=0, atol=toll), axis=1):
+            if not True in np.all(
+                np.isclose(StartCoord[i], Connections, rtol=0, atol=toll), axis=1
+            ):
                 Connections.append(StartCoord[i])
                 point = ogr.Geometry(ogr.wkbPoint)
                 point.AddPoint(StartCoord[i][0], StartCoord[i][1])
                 feature = ogr.Feature(CONN_LYR.GetLayerDefn())
                 feature.SetGeometry(point)
                 CONN_LYR.CreateFeature(feature)
-        if not True in np.all(np.isclose(EndCoord[i], StartCoord, rtol=0, atol=toll), axis=1):
-            #point is end
+        if not True in np.all(
+            np.isclose(EndCoord[i], StartCoord, rtol=0, atol=toll), axis=1
+        ):
+            # point is end
             point = ogr.Geometry(ogr.wkbPoint)
             point.AddPoint(EndCoord[i][0], EndCoord[i][1])
             feature = ogr.Feature(END_LYR.GetLayerDefn())
@@ -324,7 +330,9 @@ def Reach2Nodes(SHP, EPSG, toll, storedir):
             END_LYR.CreateFeature(feature)
         else:
             # point is a connection
-            if not True in np.all(np.isclose(EndCoord[i], Connections, rtol=0, atol=toll), axis=1):
+            if not True in np.all(
+                np.isclose(EndCoord[i], Connections, rtol=0, atol=toll), axis=1
+            ):
                 Connections.append(EndCoord[i])
                 point = ogr.Geometry(ogr.wkbPoint)
                 point.AddPoint(EndCoord[i][0], EndCoord[i][1])
@@ -380,10 +388,14 @@ def ReachOrder(SHP, EPSG, toll, storedir):
     for i in ReachIDs:
         ReachStart = StartCoord[i]
         ReachEnd = EndCoord[i]
-        if not True in np.all(np.isclose(ReachStart, ordercoord, rtol=0, atol=toll), axis=1):
+        if not True in np.all(
+            np.isclose(ReachStart, ordercoord, rtol=0, atol=toll), axis=1
+        ):
             ReachOrders[i] = order
             tempcoord.append(ReachEnd)
-        if not True in np.all(np.isclose(ReachEnd, StartCoord, rtol=0, atol=toll), axis=1):
+        if not True in np.all(
+            np.isclose(ReachEnd, StartCoord, rtol=0, atol=toll), axis=1
+        ):
             endpoints += 1
     ordercoord = copy.deepcopy(tempcoord)
     order += 1
@@ -396,10 +408,16 @@ def ReachOrder(SHP, EPSG, toll, storedir):
             if ReachOrders[i] == None:
                 ReachStart = StartCoord[i]
                 ReachEnd = EndCoord[i]
-                OrderSelect = ReachOrders[np.all(np.isclose(
-                    ReachStart, EndCoord_np, rtol=0, atol=toll), axis=1)]
+                OrderSelect = ReachOrders[
+                    np.all(
+                        np.isclose(ReachStart, EndCoord_np, rtol=0, atol=toll), axis=1
+                    )
+                ]
                 if not None in list(OrderSelect):
-                    if all(x == list(OrderSelect)[0] for x in list(OrderSelect)) == True:
+                    if (
+                        all(x == list(OrderSelect)[0] for x in list(OrderSelect))
+                        == True
+                    ):
                         OrderMove = True
                         ReachOrders[i] = order
                     else:
@@ -423,10 +441,10 @@ def ReachOrder(SHP, EPSG, toll, storedir):
         ORDER_ATT = os.path.splitext(os.path.basename(ORDER_SHP))[0]
         if not EPSG == None:
             ORDER_LYR = ORDER_out.CreateLayer(
-                ORDER_ATT, srs, geom_type=ogr.wkbLineString)
+                ORDER_ATT, srs, geom_type=ogr.wkbLineString
+            )
         else:
-            ORDER_LYR = ORDER_out.CreateLayer(
-                ORDER_ATT, geom_type=ogr.wkbLineString)
+            ORDER_LYR = ORDER_out.CreateLayer(ORDER_ATT, geom_type=ogr.wkbLineString)
         ORDER_LYR.CreateField(IDField)
         ORDER_LYR.CreateField(OrderField)
         for j in range(LYR.GetFeatureCount()):
@@ -447,33 +465,47 @@ def ReachOrder(SHP, EPSG, toll, storedir):
 def Burn2Tif(shapes, attribute, TIFF):
     for shape in shapes:
         shape_att = os.path.splitext(os.path.basename(shape))[0]
-        os.system("gdal_rasterize -a " + str(attribute) +
-                  " -l " + shape_att + " " + shape + " " + TIFF)
+        os.system(
+            "gdal_rasterize -a "
+            + str(attribute)
+            + " -l "
+            + shape_att
+            + " "
+            + shape
+            + " "
+            + TIFF
+        )
 
 
 def ReverseMap(MAP):
     MAX = int(np.max(pcr.pcr2numpy(MAP, np.NAN)))
-    REV_MAP = pcr.ordinal(pcr.ifthen(pcr.scalar(
-        MAP) == pcr.scalar(-9999), pcr.scalar(0)))
+    REV_MAP = pcr.ordinal(
+        pcr.ifthen(pcr.scalar(MAP) == pcr.scalar(-9999), pcr.scalar(0))
+    )
     for i in range(MAX + 1):
         if i > 0:
             print i
-            REV_MAP = pcr.cover(pcr.ifthen(pcr.ordinal(MAP) == pcr.ordinal(
-                i), pcr.ordinal(pcr.scalar(MAX + 1) - pcr.scalar(i))), REV_MAP)
+            REV_MAP = pcr.cover(
+                pcr.ifthen(
+                    pcr.ordinal(MAP) == pcr.ordinal(i),
+                    pcr.ordinal(pcr.scalar(MAX + 1) - pcr.scalar(i)),
+                ),
+                REV_MAP,
+            )
     REV_MAP = pcr.cover(REV_MAP, pcr.ordinal(MAP))
     return REV_MAP
 
 
 def DeleteList(itemlist, logger=logging):
     for item in itemlist:
-        logger.info('Deleting file: ' + item)
+        logger.info("Deleting file: " + item)
         os.remove(item)
 
 
 def Tiff2Point(TIFF):
     DS = gdal.Open(TIFF, GA_ReadOnly)
     if DS is None:
-        print 'Could not open ' + fn
+        print "Could not open " + fn
         sys.exit(1)
 
     cols = DS.RasterXSize
@@ -532,7 +564,7 @@ def Tiff2Point(TIFF):
 def GridDef(TIFF, XML):
     DS = gdal.Open(TIFF, GA_ReadOnly)
     if DS is None:
-        print 'Could not open ' + fn
+        print "Could not open " + fn
         sys.exit(1)
 
     cols = DS.RasterXSize
@@ -543,21 +575,23 @@ def GridDef(TIFF, XML):
     pixelWidth = geotransform[1]
     pixelHeight = geotransform[5]
     DS = None
-    Grid_xml = open(XML, 'w+')
+    Grid_xml = open(XML, "w+")
     Grid_xml.write('<regular locationId="GRID_NAME">\n')
-    Grid_xml.write('\t<rows>' + str(rows) + '</rows>\n')
-    Grid_xml.write('\t<columns>' + str(cols) + '</columns>\n')
-    Grid_xml.write('\t<geoDatum>GEODATUM</geoDatum>\n')
-    Grid_xml.write('\t<firstCellCenter>\n')
-    Grid_xml.write('\t\t<x>' + str(originX + 0.5 * pixelWidth) + '</x>\n')
-    Grid_xml.write('\t\t<y>' + str(originY + 0.5 * pixelHeight) + '</y>\n')
-    Grid_xml.write('\t</firstCellCenter>\n')
-    Grid_xml.write('\t<xCellSize>' + str(pixelWidth) + '</xCellSize>\n')
-    Grid_xml.write('\t<yCellSize>' + str(pixelWidth) + '</yCellSize>\n')
-    Grid_xml.write('</regular>\n')
+    Grid_xml.write("\t<rows>" + str(rows) + "</rows>\n")
+    Grid_xml.write("\t<columns>" + str(cols) + "</columns>\n")
+    Grid_xml.write("\t<geoDatum>GEODATUM</geoDatum>\n")
+    Grid_xml.write("\t<firstCellCenter>\n")
+    Grid_xml.write("\t\t<x>" + str(originX + 0.5 * pixelWidth) + "</x>\n")
+    Grid_xml.write("\t\t<y>" + str(originY + 0.5 * pixelHeight) + "</y>\n")
+    Grid_xml.write("\t</firstCellCenter>\n")
+    Grid_xml.write("\t<xCellSize>" + str(pixelWidth) + "</xCellSize>\n")
+    Grid_xml.write("\t<yCellSize>" + str(pixelWidth) + "</yCellSize>\n")
+    Grid_xml.write("</regular>\n")
 
 
-def PCR_river2Shape(rivermap, drainmap, ordermap, lddmap, SHP_FILENAME, catchmentmap, srs=None):
+def PCR_river2Shape(
+    rivermap, drainmap, ordermap, lddmap, SHP_FILENAME, catchmentmap, srs=None
+):
     #    rivermap = riversid_map
     #    drainmap = drain_map
     #    ordermap = streamorder_map
@@ -566,15 +600,15 @@ def PCR_river2Shape(rivermap, drainmap, ordermap, lddmap, SHP_FILENAME, catchmen
     counter = 0.
     percentage = 0.
     file_att = os.path.splitext(os.path.basename(SHP_FILENAME))[0]
-    x, y, riversid, FillVal = readMap(rivermap, 'PCRaster')
+    x, y, riversid, FillVal = readMap(rivermap, "PCRaster")
     riversid[riversid == FillVal] = -1
-    x, y, strahlerorder, FillVal = readMap(ordermap, 'PCRaster')
+    x, y, strahlerorder, FillVal = readMap(ordermap, "PCRaster")
     strahlerorder[strahlerorder == FillVal] = -1
-    x, y, catchment, FillVal = readMap(catchmentmap, 'PCRaster')
+    x, y, catchment, FillVal = readMap(catchmentmap, "PCRaster")
     catchment[catchment == FillVal] = -1
-    x, y, drain, FillVal = readMap(drainmap, 'PCRaster')
+    x, y, drain, FillVal = readMap(drainmap, "PCRaster")
     drain[drain == FillVal] = np.nan
-    x, y, ldd, FillVal = readMap(lddmap, 'PCRaster')
+    x, y, ldd, FillVal = readMap(lddmap, "PCRaster")
     xi, yi = np.meshgrid(x, y)
 
     # mesh of surrounding pixels
@@ -587,17 +621,17 @@ def PCR_river2Shape(rivermap, drainmap, ordermap, lddmap, SHP_FILENAME, catchmen
 
     # Create new shapefile
     ogr.UseExceptions()
-    ds = ogr.GetDriverByName('ESRI Shapefile').CreateDataSource(SHP_FILENAME)
+    ds = ogr.GetDriverByName("ESRI Shapefile").CreateDataSource(SHP_FILENAME)
     layer_line = ds.CreateLayer(file_att, srs, ogr.wkbLineString)
 
     river_ID = ogr.FieldDefn()
-    river_ID.SetName('ORDER')
+    river_ID.SetName("ORDER")
     river_ID.SetType(ogr.OFTInteger)
     river_ID.SetWidth(6)
     layer_line.CreateField(river_ID)
 
     river_ID = ogr.FieldDefn()
-    river_ID.SetName('CATCHMENT')
+    river_ID.SetName("CATCHMENT")
     river_ID.SetType(ogr.OFTInteger)
     river_ID.SetWidth(6)
     layer_line.CreateField(river_ID)
@@ -620,16 +654,13 @@ def PCR_river2Shape(rivermap, drainmap, ordermap, lddmap, SHP_FILENAME, catchmen
         line = ogr.Geometry(type=ogr.wkbLineString)
         # add points sequentially to line segment
         for nr in range(0, len(lat_select)):
-            #line_latlon.AddPoint(np.float64(lon_select[nr]), np.float64(lat_select[nr]))
-            line.AddPoint(np.float64(
-                lon_select[nr]), np.float64(lat_select[nr]))
+            # line_latlon.AddPoint(np.float64(lon_select[nr]), np.float64(lat_select[nr]))
+            line.AddPoint(np.float64(lon_select[nr]), np.float64(lat_select[nr]))
         # now find the point downstream of the last pixel from the ldd, which
         # is connected with the downstream river
         try:
-            xi_select = xi[y_idx[order][-1] +
-                           yi_window, x_idx[order][-1] + xi_window]
-            yi_select = yi[y_idx[order][-1] +
-                           yi_window, x_idx[order][-1] + xi_window]
+            xi_select = xi[y_idx[order][-1] + yi_window, x_idx[order][-1] + xi_window]
+            yi_select = yi[y_idx[order][-1] + yi_window, x_idx[order][-1] + xi_window]
             ldd_at_pos = ldd[y_idx[order][-1], x_idx[order][-1]]
             ldd_y, ldd_x = np.where(ldd_values == ldd_at_pos)
             downstream_y = yi_select[ldd_y, ldd_x]
@@ -642,11 +673,11 @@ def PCR_river2Shape(rivermap, drainmap, ordermap, lddmap, SHP_FILENAME, catchmen
         # Add line as a new feature to the shapefiles
         feature = ogr.Feature(feature_def=layer_line.GetLayerDefn())
         feature.SetGeometryDirectly(line)
-        feature.SetField('ORDER', int(strahlerorder_select[0]))
-        feature.SetField('CATCHMENT', int(catchment_select[0]))
+        feature.SetField("ORDER", int(strahlerorder_select[0]))
+        feature.SetField("CATCHMENT", int(catchment_select[0]))
         counter = counter + 1
         if (float(id) / float(maxRiverId)) * 100. > percentage:
-            #logger.info(' ' + str(int(percentage)) + '% completed')
+            # logger.info(' ' + str(int(percentage)) + '% completed')
             percentage = percentage + 10.
         # print 'Writing polyline ' + str(id) + ' of ' + str(maxRiverId)
         layer_line.CreateFeature(feature)
@@ -670,8 +701,7 @@ def snaptomap(points, mmap):
     """
     points = pcr.cover(points, 0)
     # Create unique id map of mmap cells
-    unq = pcr.nominal(pcr.cover(pcr.uniqueid(
-        pcr.defined(mmap)), pcr.scalar(0.0)))
+    unq = pcr.nominal(pcr.cover(pcr.uniqueid(pcr.defined(mmap)), pcr.scalar(0.0)))
     # Now fill holes in mmap map with lues indicating the closes mmap cell.
     dist_cellid = pcr.scalar(pcr.spreadzone(unq, 0, 1))
     # Get map with values at location in points with closes mmap cell
@@ -688,7 +718,7 @@ def snaptomap(points, mmap):
     return nptorg
 
 
-def Raster2Pol(rasterin, shapeout, srs=None, ID='ID'):
+def Raster2Pol(rasterin, shapeout, srs=None, ID="ID"):
     #    rasterin = catchments_tif
     #    shapeout = catchments_shp
     #    ID = 'ID'
@@ -708,7 +738,17 @@ def Raster2Pol(rasterin, shapeout, srs=None, ID='ID'):
     sourceRaster = None
 
 
-def windowstats(rasterin, t_rows, t_columns, t_geotransform, t_srs, resultdir, stat=np.array([50]), transform=False, logger=logging):
+def windowstats(
+    rasterin,
+    t_rows,
+    t_columns,
+    t_geotransform,
+    t_srs,
+    resultdir,
+    stat=np.array([50]),
+    transform=False,
+    logger=logging,
+):
     """
     :param rasterin: original DEM data
     :param t_rows: number of rows in the final maps
@@ -722,18 +762,18 @@ def windowstats(rasterin, t_rows, t_columns, t_geotransform, t_srs, resultdir, s
     :return:
     """
 
-#    activate this if you want to write a window shapefile
-#    if os.path.exists("windows.shp"):
-#        Driver.DeleteDataSource("windows.shp")
-#    window_out = Driver.CreateDataSource("windows.shp")
-#    window_lyr  = window_out.CreateLayer("windows", geom_type=ogr.wkbLineString)
-#    fieldDef = ogr.FieldDefn("ID", ogr.OFTString)
-#    fieldDef.SetWidth(12)
-#    window_lyr.CreateField(fieldDef)
+    #    activate this if you want to write a window shapefile
+    #    if os.path.exists("windows.shp"):
+    #        Driver.DeleteDataSource("windows.shp")
+    #    window_out = Driver.CreateDataSource("windows.shp")
+    #    window_lyr  = window_out.CreateLayer("windows", geom_type=ogr.wkbLineString)
+    #    fieldDef = ogr.FieldDefn("ID", ogr.OFTString)
+    #    fieldDef.SetWidth(12)
+    #    window_lyr.CreateField(fieldDef)
 
     # read properties of input raster
     # print transform
-    #transform = True
+    # transform = True
     if isinstance(stat, str):
         stat = np.array([stat])
     ds_in = gdal.Open(rasterin, GA_ReadOnly)
@@ -749,17 +789,16 @@ def windowstats(rasterin, t_rows, t_columns, t_geotransform, t_srs, resultdir, s
     # compute statistics to new data set
     band_in = ds_in.GetRasterBand(1)
     nodata = band_in.GetNoDataValue()
-    array_out = np.ones((t_rows, t_columns, len(stat)),
-                        dtype=np.float) * nodata
+    array_out = np.ones((t_rows, t_columns, len(stat)), dtype=np.float) * nodata
     blocks = t_rows * t_columns
     counter = 0
     percentage = 0.
     for row in range(t_rows):
-        #print 'doing row ' + str(row + 1) + '/' + str(t_rows)
+        # print 'doing row ' + str(row + 1) + '/' + str(t_rows)
         for col in range(t_columns):
             counter = counter + 1
             if (float(counter) / float(blocks)) * 100. > percentage:
-                logger.info(' ' + str(int(percentage)) + '% completed')
+                logger.info(" " + str(int(percentage)) + "% completed")
                 percentage = percentage + 10.
             # determine window boundaries
             xl = xorg + (col * cellsize_out)
@@ -783,69 +822,67 @@ def windowstats(rasterin, t_rows, t_columns, t_geotransform, t_srs, resultdir, s
             data_block = data_block.astype(np.float)
             data_block[data_block == float(nodata)] = np.nan
             # print data_block
-            #data_block = data_block.astype(int)
+            # data_block = data_block.astype(int)
             # print data_block
             for idx, perc in enumerate(stat):
-                if perc == 'fact':
+                if perc == "fact":
                     array_out[row, col, idx] = np.max(
-                        [(np.sum(data_block) * cellsize_in) / cellsize_out, 1])
-                elif perc == 'sum':
+                        [(np.sum(data_block) * cellsize_in) / cellsize_out, 1]
+                    )
+                elif perc == "sum":
                     array_out[row, col, idx] = np.sum(data_block)
                 else:
-                    array_out[row, col, idx] = np.percentile(
-                        data_block, int(perc))
+                    array_out[row, col, idx] = np.percentile(data_block, int(perc))
 
-#    activate this if you want to write a window shapefile
-#            line = ogr.Geometry(ogr.wkbLineString)
-#            line.AddPoint(xl,yt)
-#            line.AddPoint(xr,yt)
-#            line.AddPoint(xr,yb)
-#            line.AddPoint(xl,yb)
-#            line.AddPoint(xl,yt)
-#            feature = ogr.Feature(window_lyr.GetLayerDefn())
-#            feature.SetGeometry(line)
-#            feature.SetField("ID",str(counter))
-#            window_lyr.CreateFeature(feature)
+    #    activate this if you want to write a window shapefile
+    #            line = ogr.Geometry(ogr.wkbLineString)
+    #            line.AddPoint(xl,yt)
+    #            line.AddPoint(xr,yt)
+    #            line.AddPoint(xr,yb)
+    #            line.AddPoint(xl,yb)
+    #            line.AddPoint(xl,yt)
+    #            feature = ogr.Feature(window_lyr.GetLayerDefn())
+    #            feature.SetGeometry(line)
+    #            feature.SetField("ID",str(counter))
+    #            window_lyr.CreateFeature(feature)
 
-#    activate this if you want to write a window shapefile
-#    window_out.Destroy()
+    #    activate this if you want to write a window shapefile
+    #    window_out.Destroy()
 
     array_out[np.isnan(array_out)] = nodata
     names = []
     # write rasters
-    logger.info('writing rasters')
+    logger.info("writing rasters")
     for idx, perc in enumerate(stat):
         if perc == 100:
-            name = 'max'
+            name = "max"
             # print 'computing window maximum'
-            name_map = os.path.join(
-                resultdir, 'wflow_dem{:s}.map'.format(name))
-            logger.info('wflow_dem{:s}.map'.format(name))
+            name_map = os.path.join(resultdir, "wflow_dem{:s}.map".format(name))
+            logger.info("wflow_dem{:s}.map".format(name))
         elif perc == 0:
-            name = 'min'
+            name = "min"
             # print 'computing window minimum'
-            name_map = os.path.join(
-                resultdir, 'wflow_dem{:s}.map'.format(name))
-            logger.info('wflow_dem{:s}.map'.format(name))
-        elif perc == 'fact':
-            name = 'fact'
+            name_map = os.path.join(resultdir, "wflow_dem{:s}.map".format(name))
+            logger.info("wflow_dem{:s}.map".format(name))
+        elif perc == "fact":
+            name = "fact"
             # print 'computing window fraction'
-            name_map = os.path.join(resultdir, 'wflow_riverlength_fact.map')
-            logger.info('wflow_riverlength_fact.map')
-        elif perc == 'sum':
-            name = 'sum'
+            name_map = os.path.join(resultdir, "wflow_riverlength_fact.map")
+            logger.info("wflow_riverlength_fact.map")
+        elif perc == "sum":
+            name = "sum"
             # print 'computing window sum'
-            name_map = os.path.join(resultdir, 'windowsum.map')
-            logger.info('wflow_dem{:s}.map'.format(name))
+            name_map = os.path.join(resultdir, "windowsum.map")
+            logger.info("wflow_dem{:s}.map".format(name))
         else:
-            name_map = os.path.join(
-                resultdir, 'wflow_dem{:02d}.map'.format(int(perc)))
-            logger.info('wflow_dem{:02d}.map'.format(int(perc)))
+            name_map = os.path.join(resultdir, "wflow_dem{:02d}.map".format(int(perc)))
+            logger.info("wflow_dem{:02d}.map".format(int(perc)))
         names.append(name)
 
         # name_tif = 'work\\dem_' + name + '.tif'
-        ds_out = gdal.GetDriverByName('MEM').Create(
-            '', t_columns, t_rows, 1, GDT_Float32)
+        ds_out = gdal.GetDriverByName("MEM").Create(
+            "", t_columns, t_rows, 1, GDT_Float32
+        )
         ds_out.SetGeoTransform(t_geotransform)
         ds_out.SetProjection(t_srs.ExportToWkt())
         band_out = ds_out.GetRasterBand(1)
@@ -855,15 +892,12 @@ def windowstats(rasterin, t_rows, t_columns, t_geotransform, t_srs, resultdir, s
         if histogram is not None:
             band_out.SetDefaultHistogram(histogram[0], histogram[1], histogram[3])
         ds_in = None
-        gdal.GetDriverByName('PCRaster').CreateCopy(name_map, ds_out, 0)
+        gdal.GetDriverByName("PCRaster").CreateCopy(name_map, ds_out, 0)
         ds_out = None
 
 
-
-
 def CreateTif(TIF, rows, columns, geotransform, srs, fill=-9999):
-    ds = gdal.GetDriverByName('GTiff').Create(
-        TIF, columns, rows, 1, GDT_Float32)
+    ds = gdal.GetDriverByName("GTiff").Create(TIF, columns, rows, 1, GDT_Float32)
     ds.SetGeoTransform(geotransform)
     ds.SetProjection(srs.ExportToWkt())
     band = ds.GetRasterBand(1)
@@ -883,12 +917,25 @@ def GetRasterTranform(rasterin, srsout):
         srsin = osr.SpatialReference()
         srsin.ImportFromWkt(spatialref)
         srsin.AutoIdentifyEPSG()
-        EPSG = 'EPSG:' + srsin.GetAuthorityCode(None)
+        EPSG = "EPSG:" + srsin.GetAuthorityCode(None)
         transform = osr.CoordinateTransformation(srsin, srsout)
     return transform, EPSG
 
-def gdal_writemap(file_name, file_format, x, y, data, fill_val, zlib=False,
-                  gdal_type=gdal.GDT_Float32, resolution=None, srs=None, logging=logging, metadata=None):
+
+def gdal_writemap(
+    file_name,
+    file_format,
+    x,
+    y,
+    data,
+    fill_val,
+    zlib=False,
+    gdal_type=gdal.GDT_Float32,
+    resolution=None,
+    srs=None,
+    logging=logging,
+    metadata=None,
+):
     """ Write geographical file from numpy array
     Dependencies are osgeo.gdal and numpy
     Input:
@@ -910,18 +957,18 @@ def gdal_writemap(file_name, file_format, x, y, data, fill_val, zlib=False,
     """
     # make the geotransform
     # Give georeferences
-    if hasattr(x, '__len__'):
+    if hasattr(x, "__len__"):
         # x is the full axes
-        xul = x[0]-(x[1]-x[0])/2
-        xres = x[1]-x[0]
+        xul = x[0] - (x[1] - x[0]) / 2
+        xres = x[1] - x[0]
     else:
         # x is the top-left corner
         xul = x
         xres = resolution
-    if hasattr(y, '__len__'):
+    if hasattr(y, "__len__"):
         # y is the full axes
-        yul = y[0]+(y[0]-y[1])/2
-        yres = y[1]-y[0]
+        yul = y[0] + (y[0] - y[1]) / 2
+        yres = y[1] - y[0]
     else:
         # y is the top-left corner
         yul = y
@@ -929,18 +976,24 @@ def gdal_writemap(file_name, file_format, x, y, data, fill_val, zlib=False,
     geotrans = [xul, xres, 0, yul, 0, yres]
 
     gdal.AllRegister()
-    driver1 = gdal.GetDriverByName('GTiff')
+    driver1 = gdal.GetDriverByName("GTiff")
     driver2 = gdal.GetDriverByName(file_format)
     # Processing
-    temp_file_name = str('{:s}.tif').format(file_name)
-    logging.info(str('Writing to temporary file {:s}').format(temp_file_name))
+    temp_file_name = str("{:s}.tif").format(file_name)
+    logging.info(str("Writing to temporary file {:s}").format(temp_file_name))
     if zlib:
-        TempDataset = driver1.Create(temp_file_name, data.shape[1],
-                                     data.shape[0], 1, gdal_type,
-                                     ['COMPRESS=DEFLATE'])
+        TempDataset = driver1.Create(
+            temp_file_name,
+            data.shape[1],
+            data.shape[0],
+            1,
+            gdal_type,
+            ["COMPRESS=DEFLATE"],
+        )
     else:
-        TempDataset = driver1.Create(temp_file_name, data.shape[1],
-                                     data.shape[0], 1, gdal_type)
+        TempDataset = driver1.Create(
+            temp_file_name, data.shape[1], data.shape[0], 1, gdal_type
+        )
     TempDataset.SetGeoTransform(geotrans)
     if srs:
         TempDataset.SetProjection(srs.ExportToWkt())
@@ -954,13 +1007,14 @@ def gdal_writemap(file_name, file_format, x, y, data, fill_val, zlib=False,
         TempDataset.SetMetadata(metadata)
 
     # Create data to write to correct format (supported by 'CreateCopy')
-    logging.info(str('Writing to {:s}').format(file_name))
+    logging.info(str("Writing to {:s}").format(file_name))
     if zlib:
-        driver2.CreateCopy(file_name, TempDataset, 0, ['COMPRESS=DEFLATE'])
+        driver2.CreateCopy(file_name, TempDataset, 0, ["COMPRESS=DEFLATE"])
     else:
         driver2.CreateCopy(file_name, TempDataset, 0)
     TempDataset = None
     os.remove(temp_file_name)
+
 
 def gdal_readmap(file_name, file_format, give_geotrans=False):
     """ Read geographical file into memory
@@ -987,7 +1041,7 @@ def gdal_readmap(file_name, file_format, give_geotrans=False):
     mapFormat.Register()
     ds = gdal.Open(file_name)
     if ds is None:
-        logging.warning('Could not open {:s} Shutting down'.format(file_name))
+        logging.warning("Could not open {:s} Shutting down".format(file_name))
         sys.exit(1)
         # Retrieve geoTransform info
     geotrans = ds.GetGeoTransform()
@@ -997,22 +1051,31 @@ def gdal_readmap(file_name, file_format, give_geotrans=False):
     resY = geotrans[5]
     cols = ds.RasterXSize
     rows = ds.RasterYSize
-    x = np.linspace(originX+resX/2, originX+resX/2+resX*(cols-1), cols)
-    y = np.linspace(originY+resY/2, originY+resY/2+resY*(rows-1), rows)
+    x = np.linspace(originX + resX / 2, originX + resX / 2 + resX * (cols - 1), cols)
+    y = np.linspace(originY + resY / 2, originY + resY / 2 + resY * (rows - 1), rows)
     # Retrieve raster
-    RasterBand = ds.GetRasterBand(1)   # there's only 1 band, starting from 1
+    RasterBand = ds.GetRasterBand(1)  # there's only 1 band, starting from 1
     data = RasterBand.ReadAsArray(0, 0, cols, rows)
     fill_val = RasterBand.GetNoDataValue()
     RasterBand = None
     ds = None
-    if give_geotrans==True:
+    if give_geotrans == True:
         return geotrans, (ds.RasterXSize, ds.RasterYSize), data, fill_val
 
     else:
         return x, y, data, fill_val
 
-def gdal_warp(src_filename, clone_filename, dst_filename, gdal_type=gdalconst.GDT_Float32,
-              gdal_interp=gdalconst.GRA_Bilinear, format='GTiff', ds_in=None, override_src_proj=None):
+
+def gdal_warp(
+    src_filename,
+    clone_filename,
+    dst_filename,
+    gdal_type=gdalconst.GDT_Float32,
+    gdal_interp=gdalconst.GRA_Bilinear,
+    format="GTiff",
+    ds_in=None,
+    override_src_proj=None,
+):
     """
     Equivalent of the gdalwarp executable, commonly used on command line.
     The function prepares from a source file, a new file, that has the same
@@ -1059,26 +1122,27 @@ def gdal_warp(src_filename, clone_filename, dst_filename, gdal_type=gdalconst.GD
     wide = clone_ds.RasterXSize
     high = clone_ds.RasterYSize
     # Output / destination
-    dst_mem = gdal.GetDriverByName('MEM').Create('', wide, high, 1, gdal_type)
+    dst_mem = gdal.GetDriverByName("MEM").Create("", wide, high, 1, gdal_type)
     dst_mem.SetGeoTransform(clone_geotrans)
     dst_mem.SetProjection(clone_proj)
-    if not(src_nodata is None):
+    if not (src_nodata is None):
         dst_mem.GetRasterBand(1).SetNoDataValue(src_nodata)
-
 
     # Do the work, UUUUUUGGGGGHHHH: first make a nearest neighbour interpolation with the nodata values
     # as actual values and determine which indexes have nodata values. This is needed because there is a bug in
     # gdal.ReprojectImage, nodata values are not included and instead replaced by zeros! This is not ideal and if
     # a better solution comes up, it should be replaced.
 
-    gdal.ReprojectImage(src, dst_mem, src_proj, clone_proj, gdalconst.GRA_NearestNeighbour)
+    gdal.ReprojectImage(
+        src, dst_mem, src_proj, clone_proj, gdalconst.GRA_NearestNeighbour
+    )
     data = dst_mem.GetRasterBand(1).ReadAsArray(0, 0)
-    idx = np.where(data==src_nodata)
+    idx = np.where(data == src_nodata)
     # now remove the dataset
     del data
 
     # now do the real transformation and replace the values that are covered by NaNs by the missing value
-    if not(src_nodata is None):
+    if not (src_nodata is None):
         src.GetRasterBand(1).SetNoDataValue(src_nodata)
 
     gdal.ReprojectImage(src, dst_mem, src_proj, clone_proj, gdal_interp)
@@ -1086,7 +1150,7 @@ def gdal_warp(src_filename, clone_filename, dst_filename, gdal_type=gdalconst.GD
     data[idx] = src_nodata
     dst_mem.GetRasterBand(1).WriteArray(data, 0, 0)
 
-    if format=='MEM':
+    if format == "MEM":
         return dst_mem
     else:
         # retrieve numpy array of interpolated values
@@ -1096,7 +1160,9 @@ def gdal_warp(src_filename, clone_filename, dst_filename, gdal_type=gdalconst.GD
 
 # Check if this can fully replace the gdal_warp defined above.
 # This initializes with nodata instead of 0.
-def warp_like(input, output, like, format=None, co={}, resampling=warp.Resampling.nearest):
+def warp_like(
+    input, output, like, format=None, co={}, resampling=warp.Resampling.nearest
+):
     """Warp a raster to lie on top op of an existing dataset.
 
     This function is meant to be similar to the ``rio warp --like`` CLI,
@@ -1132,39 +1198,39 @@ def warp_like(input, output, like, format=None, co={}, resampling=warp.Resamplin
 
     with rasterio.open(input) as src:
         out_kwargs = src.profile.copy()
-        out_kwargs.update({
-            'crs': dst_crs,
-            'transform': dst_transform,
-            'width': dst_width,
-            'height': dst_height
-        })
+        out_kwargs.update(
+            {
+                "crs": dst_crs,
+                "transform": dst_transform,
+                "width": dst_width,
+                "height": dst_height,
+            }
+        )
 
         # else the format is equal to the input format
         if format is not None:
-            out_kwargs['driver'] = format
+            out_kwargs["driver"] = format
 
         # Adjust block size if necessary.
-        if ('blockxsize' in out_kwargs and
-                dst_width < out_kwargs['blockxsize']):
-            del out_kwargs['blockxsize']
-        if ('blockysize' in out_kwargs and
-                dst_height < out_kwargs['blockysize']):
-            del out_kwargs['blockysize']
+        if "blockxsize" in out_kwargs and dst_width < out_kwargs["blockxsize"]:
+            del out_kwargs["blockxsize"]
+        if "blockysize" in out_kwargs and dst_height < out_kwargs["blockysize"]:
+            del out_kwargs["blockysize"]
 
         out_kwargs.update(co)
 
-        with rasterio.open(output, 'w', **out_kwargs) as dst:
+        with rasterio.open(output, "w", **out_kwargs) as dst:
             warp.reproject(
                 source=rasterio.band(src, list(range(1, src.count + 1))),
-                destination=rasterio.band(
-                    dst, list(range(1, src.count + 1))),
+                destination=rasterio.band(dst, list(range(1, src.count + 1))),
                 src_transform=src.transform,
                 src_crs=src.crs,
                 src_nodata=src.nodata,
-                dst_transform=out_kwargs['transform'],
-                dst_crs=out_kwargs['crs'],
+                dst_transform=out_kwargs["transform"],
+                dst_crs=out_kwargs["crs"],
                 dst_nodata=dst.nodata,
-                resampling=resampling)
+                resampling=resampling,
+            )
 
 
 def _like(src):
@@ -1176,8 +1242,16 @@ def _like(src):
             return ds.crs, ds.transform, ds.height, ds.width
 
 
-def ogr_burn(lyr, clone, burn_value, file_out='',
-              gdal_type=gdal.GDT_Byte, format='MEM', fill_value=255, attribute=None):
+def ogr_burn(
+    lyr,
+    clone,
+    burn_value,
+    file_out="",
+    gdal_type=gdal.GDT_Byte,
+    format="MEM",
+    fill_value=255,
+    attribute=None,
+):
     """
     ogr_burn burns polygons, points or lines from a geographical source (e.g. shapefile) onto a raster.
     Inputs:
@@ -1223,7 +1297,7 @@ def ogr_burn(lyr, clone, burn_value, file_out='',
     band = ds.GetRasterBand(1)
 
     band.SetNoDataValue(fill_value)
-    if format == 'MEM':
+    if format == "MEM":
         return ds
     else:
 

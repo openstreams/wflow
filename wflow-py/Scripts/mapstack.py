@@ -21,39 +21,40 @@ import getopt
 
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
-#import scipy
 
+# import scipy
 
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args: print msg
+    for msg in args:
+        print msg
     print __doc__
     sys.exit(0)
 
-class WflowModel(DynamicModel):  
-  """
+
+class WflowModel(DynamicModel):
+    """
   The user defined model class. This is your work!
   """
-  
-  def __init__(self, cloneMap,Dir,RunDir,configfile):
-      """
+
+    def __init__(self, cloneMap, Dir, RunDir, configfile):
+        """
       *Required*
       
       The init function **must** contain what is shown below. Other functionality
       may be added by you if needed.
       
       """
-      DynamicModel.__init__(self)   
-      setclone(os.path.join(Dir,cloneMap))
-      self.runId=RunDir      
-      self.caseName=Dir
-      self.Dir = Dir
-      self.configfile = configfile
-     
+        DynamicModel.__init__(self)
+        setclone(os.path.join(Dir, cloneMap))
+        self.runId = RunDir
+        self.caseName = Dir
+        self.Dir = Dir
+        self.configfile = configfile
 
-  def parameters(self):
-      """
+    def parameters(self):
+        """
       List all the parameters (both static and forcing here). Use the wf_updateparameters()
       function to update them in the initial section (static) and the dynamic section for
       dynamic parameters and forcing date.
@@ -70,14 +71,14 @@ class WflowModel(DynamicModel):
 
       :return: List of modelparameters
       """
-      modelparameters = []
+        modelparameters = []
 
-      #modelparameters.append(self.ParamType(name="locMap",stack='inLoc.map',type="staticmap",default=0.0,verbose=True,lookupmaps=[]))
+        # modelparameters.append(self.ParamType(name="locMap",stack='inLoc.map',type="staticmap",default=0.0,verbose=True,lookupmaps=[]))
 
-      return modelparameters
+        return modelparameters
 
-  def stateVariables(self):
-      """ 
+    def stateVariables(self):
+        """ 
       *Required*
       
       Returns a list of state variables that are essential to the model. 
@@ -91,13 +92,12 @@ class WflowModel(DynamicModel):
       for the model.
 
       """
-      states = []
-      
-      return states
-      
-      
-  def supplyCurrentTime(self):
-      """
+        states = []
+
+        return states
+
+    def supplyCurrentTime(self):
+        """
       *Optional*
       
       Supplies the current time in seconds after the start of the run
@@ -109,13 +109,14 @@ class WflowModel(DynamicModel):
           - time in seconds since the start of the model run
           
       """
-      
-      return self.currentTimeStep() * int(configget(self.config,'model','timestepsecs','86400'))
 
-      
-  def initial(self):
-      
-    """
+        return self.currentTimeStep() * int(
+            configget(self.config, "model", "timestepsecs", "86400")
+        )
+
+    def initial(self):
+
+        """
     *Required*
     
     Initial part of the model, executed only once. It reads all static model
@@ -126,22 +127,21 @@ class WflowModel(DynamicModel):
     structure used in the other models.
     
     """
-    #: pcraster option to calculate with units or cells. Not really an issue
-    #: in this model but always good to keep in mind.
-    setglobaloption("unittrue")
+        #: pcraster option to calculate with units or cells. Not really an issue
+        #: in this model but always good to keep in mind.
+        setglobaloption("unittrue")
 
+        self.timestepsecs = int(
+            configget(self.config, "model", "timestepsecs", "86400")
+        )
+        self.basetimestep = 86400
+        self.inTSS = configget(self.config, "model", "intss", "intss.tss")
+        self.interpolmethod = configget(self.config, "model", "interpolmethod", "pol")
+        # Reads all parameter from disk
+        self.wf_updateparameters()
 
-    self.timestepsecs = int(configget(self.config,'model','timestepsecs','86400'))
-    self.basetimestep=86400
-    self.inTSS = configget(self.config,'model','intss','intss.tss')
-    self.interpolmethod = configget(self.config,'model','interpolmethod','pol')
-    # Reads all parameter from disk
-    self.wf_updateparameters()
-
-
-
-  def resume(self):
-    """ 
+    def resume(self):
+        """ 
     *Required*
 
     This function is required. Read initial state maps (they are output of a 
@@ -149,10 +149,10 @@ class WflowModel(DynamicModel):
     setup needed.
     
     """
-    pass
+        pass
 
-  def suspend(self):
-    """
+    def suspend(self):
+        """
       *Required*
 
       Suspends the model to disk. All variables needed to restart the model
@@ -162,28 +162,30 @@ class WflowModel(DynamicModel):
 
     """
 
-    self.wf_suspend(self.Dir)
+        self.wf_suspend(self.Dir)
 
-  def dynamic(self):
-      """
+    def dynamic(self):
+        """
       *Required*
       
       This is where all the time dependent functions are executed. Time dependent
       output should also be saved here.
       """
-      self.logger.debug("Processing step: " + str(self.currentTimeStep()))
-      self.wf_updateparameters() # read the temperature map for each step (see parameters())
+        self.logger.debug("Processing step: " + str(self.currentTimeStep()))
+        self.wf_updateparameters()  # read the temperature map for each step (see parameters())
 
-      if hasattr(self,'locMap'):
-        self.MapStack = timeinputscalar(os.path.join(self.caseName, self.inTSS),self.locMap)
-        self.MapStack = pcrut.interpolategauges(self.MapStack,self.interpolmethod)
-      #self.MapStack = ifthen(self.locMap >= 1,self.MapStack)
-
+        if hasattr(self, "locMap"):
+            self.MapStack = timeinputscalar(
+                os.path.join(self.caseName, self.inTSS), self.locMap
+            )
+            self.MapStack = pcrut.interpolategauges(self.MapStack, self.interpolmethod)
+        # self.MapStack = ifthen(self.locMap >= 1,self.MapStack)
 
 
 # The main function is used to run the program from the command line
 
-def main(argv=None):  
+
+def main(argv=None):
     """
     *Optional but needed it you want to run the model from the command line*
     
@@ -191,48 +193,57 @@ def main(argv=None):
     module to parse the command line options.
     
     The user can set the caseName, the runDir, the timestep and the configfile.
-    """      
+    """
     global multpars
     caseName = "default"
     runId = "run_default"
-    configfile="mapstack.ini"
+    configfile = "mapstack.ini"
     _lastTimeStep = 10
     _firstTimeStep = 1
-    timestepsecs=86400
-    wflow_cloneMap = 'clone.map'
-    
-    # This allows us to use the model both on the command line and to call 
+    timestepsecs = 86400
+    wflow_cloneMap = "clone.map"
+
+    # This allows us to use the model both on the command line and to call
     # the model usinge main function from another python script.
-    
+
     if argv is None:
         argv = sys.argv[1:]
         if len(argv) == 0:
             usage()
-            return     
+            return
 
-    opts, args = getopt.getopt(argv, 'C:S:T:c:s:R:',['clone='])
+    opts, args = getopt.getopt(argv, "C:S:T:c:s:R:", ["clone="])
 
     for o, a in opts:
-        if o == '-C': caseName = a
-        if o == '-R': runId = a
-        if o == '-c': configfile = a
-        if o == '-s': timestepsecs = int(a)
-        if o == '-T': _lastTimeStep=int(a)
-        if o == '-S': _firstTimeStep=int(a)
-        if o == '--clone': wflow_cloneMap= a
+        if o == "-C":
+            caseName = a
+        if o == "-R":
+            runId = a
+        if o == "-c":
+            configfile = a
+        if o == "-s":
+            timestepsecs = int(a)
+        if o == "-T":
+            _lastTimeStep = int(a)
+        if o == "-S":
+            _firstTimeStep = int(a)
+        if o == "--clone":
+            wflow_cloneMap = a
 
-    if (len(opts) <=1):
+    if len(opts) <= 1:
         usage()
-        
-    myModel = WflowModel(wflow_cloneMap, caseName,runId,configfile)
-    dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep,firstTimestep=_firstTimeStep)
-    dynModelFw.createRunId(NoOverWrite=False,level=logging.DEBUG)    
+
+    myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile)
+    dynModelFw = wf_DynamicFramework(
+        myModel, _lastTimeStep, firstTimestep=_firstTimeStep
+    )
+    dynModelFw.createRunId(NoOverWrite=False, level=logging.DEBUG)
     dynModelFw._runInitial()
     dynModelFw._runResume()
-    dynModelFw._runDynamic(_firstTimeStep,_lastTimeStep)
+    dynModelFw._runDynamic(_firstTimeStep, _lastTimeStep)
     dynModelFw._runSuspend()
     dynModelFw._wf_shutdown()
-    
+
 
 if __name__ == "__main__":
     main()

@@ -9,7 +9,7 @@ import numpy
 from math import *
 import sys
 import csv
-from pcraster import*
+from pcraster import *
 
 
 from pcraster import *
@@ -17,8 +17,6 @@ from pcraster.framework import *
 import logging
 import logging.handlers
 
-  
-    
 
 def lattometres(lat):
     """"
@@ -27,81 +25,86 @@ def lattometres(lat):
     Input: map with lattitude values for each cell
     Returns: length of a cell lat, length of a cell long
     """
-    #radlat = spatial(lat * ((2.0 * math.pi)/360.0))
-    #radlat = lat * (2.0 * math.pi)/360.0
-    setglobaloption('degrees')
-    radlat = spatial(lat) # pcraster cos/sin work in degrees!
-    
-    
-    m1 = 111132.92        # latitude calculation term 1
-    m2 = -559.82        # latitude calculation term 2
-    m3 = 1.175            # latitude calculation term 3
-    m4 = -0.0023        # latitude calculation term 4
-    p1 = 111412.84        # longitude calculation term 1
-    p2 = -93.5            # longitude calculation term 2
-    p3 = 0.118            # longitude calculation term 3
+    # radlat = spatial(lat * ((2.0 * math.pi)/360.0))
+    # radlat = lat * (2.0 * math.pi)/360.0
+    setglobaloption("degrees")
+    radlat = spatial(lat)  # pcraster cos/sin work in degrees!
+
+    m1 = 111132.92  # latitude calculation term 1
+    m2 = -559.82  # latitude calculation term 2
+    m3 = 1.175  # latitude calculation term 3
+    m4 = -0.0023  # latitude calculation term 4
+    p1 = 111412.84  # longitude calculation term 1
+    p2 = -93.5  # longitude calculation term 2
+    p3 = 0.118  # longitude calculation term 3
     # # Calculate the length of a degree of latitude and longitude in meters
-    
-    latlen = m1 + (m2 * cos(2.0 * radlat)) + (m3 * cos(4.0 * radlat)) + (m4 * cos(6.0 * radlat))
+
+    latlen = (
+        m1
+        + (m2 * cos(2.0 * radlat))
+        + (m3 * cos(4.0 * radlat))
+        + (m4 * cos(6.0 * radlat))
+    )
     longlen = (p1 * cos(radlat)) + (p2 * cos(3.0 * radlat)) + (p3 * cos(5.0 * radlat))
-        
-    return latlen, longlen  
-    
-def detRealCellLength(ZeroMap,sizeinmetres):
+
+    return latlen, longlen
+
+
+def detRealCellLength(ZeroMap, sizeinmetres):
     """
     Determine cellength. Always returns the length
     in meters.
     """
-    
+
     if sizeinmetres:
-            reallength = celllength()
-            xl = celllength()
-            yl = celllength()
+        reallength = celllength()
+        xl = celllength()
+        yl = celllength()
     else:
-        aa = ycoordinate(boolean(cover(ZeroMap + 1,1)))
+        aa = ycoordinate(boolean(cover(ZeroMap + 1, 1)))
         yl, xl = lattometres(aa)
-           
+
         xl = xl * celllength()
         yl = yl * celllength()
-        # Average length for surface area calculations. 
-        
+        # Average length for surface area calculations.
+
         reallength = (xl + yl) * 0.5
-        
-    return xl,yl,reallength
+
+    return xl, yl, reallength
 
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args: print msg
+    for msg in args:
+        print msg
     print __doc__
     sys.exit(0)
 
 
-
-
-def setlogger(logfilename,loggername, thelevel=logging.INFO):
+def setlogger(logfilename, loggername, thelevel=logging.INFO):
     """
     Set-up the logging system and return a logger object. Exit if this fails
     """
 
-    try:    
-        #create logger
+    try:
+        # create logger
         logger = logging.getLogger(loggername)
         if not isinstance(thelevel, int):
             logger.setLevel(logging.DEBUG)
         else:
             logger.setLevel(thelevel)
-        ch = logging.FileHandler(logfilename,mode='w')
+        ch = logging.FileHandler(logfilename, mode="w")
         console = logging.StreamHandler()
         console.setLevel(logging.DEBUG)
         ch.setLevel(logging.DEBUG)
-        #create formatter
+        # create formatter
         formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(module)s - %(levelname)s - %(message)s")
-        #add formatter to ch
+            "%(asctime)s - %(name)s - %(module)s - %(levelname)s - %(message)s"
+        )
+        # add formatter to ch
         ch.setFormatter(formatter)
         console.setFormatter(formatter)
-        #add ch to logger
+        # add ch to logger
         logger.addHandler(ch)
         logger.addHandler(console)
         logger.debug("File logging to " + logfilename)
@@ -109,7 +112,8 @@ def setlogger(logfilename,loggername, thelevel=logging.INFO):
     except IOError:
         print "ERROR: Failed to initialize logger with logfile: " + logfilename
         sys.exit(2)
-    
+
+
 def readmapSave(pathtomap, default):
     """
     Adpatation of readmap that returns a default map if the map cannot be found
@@ -118,7 +122,8 @@ def readmapSave(pathtomap, default):
         return readmap(pathtomap)
     else:
         return scalar(default)
-        
+
+
 def readtss(nname):
     """Reads a RCraster .tss file into a numpy array. 
     Error handling is minimal. The first column that
@@ -127,12 +132,12 @@ def readtss(nname):
         matrix with data
         header
     """
-    
+
     head = []
     if os.path.exists(nname):
         # determine the number of header lines to skip from
         # the second line in the tss file
-        ifile = open(nname,"r")
+        ifile = open(nname, "r")
         line = ifile.readline()
         line = ifile.readline()
         toskip = int(line) + 2
@@ -141,29 +146,29 @@ def readtss(nname):
         for i in range(toskip - 3):
             line = ifile.readline()
             head.append(line.strip())
-            
+
         ifile.close()
-        
-        
-        mat = numpy.loadtxt(nname,skiprows=toskip)
+
+        mat = numpy.loadtxt(nname, skiprows=toskip)
         mis = mat == 1e+31
         mat[mis] = numpy.nan
-        
+
         if len(mat.shape) > 1:
-            return mat[:,1:], head
-            #dumm = mat[:,1:].copy()
-            #return numpy.vstack((dumm,mat[:,1:])), head
+            return mat[:, 1:], head
+            # dumm = mat[:,1:].copy()
+            # return numpy.vstack((dumm,mat[:,1:])), head
         else:
             return mat[1:], head
-            #dumm = mat[1:].copy()
-            #dumm[:] = 1E-31
-            #return numpy.vstack((dumm,mat[1:])), head
+            # dumm = mat[1:].copy()
+            # dumm[:] = 1E-31
+            # return numpy.vstack((dumm,mat[1:])), head
     else:
         print nname + " does not exists."
-    
+
     return
 
-def interpolategauges(inputmap,method):
+
+def interpolategauges(inputmap, method):
     """"
     Interpolate time series gauge data onto a grid using different methods
     inputmap: map with points data for a single timestep
@@ -173,28 +178,23 @@ def interpolategauges(inputmap,method):
         
     input: inputmap, method
     returns: interpolated map
-    """   
-     
+    """
+
     if method == "inv":
-        result = inversedistance(1,inputmap,3,0,0)
+        result = inversedistance(1, inputmap, 3, 0, 0)
     elif method == "pol":
-        Unq = uniqueid(boolean(inputmap+1))
-        result = spreadzone(ordinal(cover(Unq,0)),0,1)
-        result = areaaverage(inputmap,result); 
+        Unq = uniqueid(boolean(inputmap + 1))
+        result = spreadzone(ordinal(cover(Unq, 0)), 0, 1)
+        result = areaaverage(inputmap, result)
     else:
-        Unq = uniqueid(boolean(inputmap+1))
-        result = spreadzone(ordinal(cover(Unq,0)),0,1)
-        result = areaaverage(inputmap,result);
-    
+        Unq = uniqueid(boolean(inputmap + 1))
+        result = spreadzone(ordinal(cover(Unq, 0)), 0, 1)
+        result = areaaverage(inputmap, result)
+
     return result
 
 
-
-
-
-
-
-def tableToMapSparse (step, table, map):
+def tableToMapSparse(step, table, map):
     """Reads a pcraster.tbl file for step and assigns using the map in map.
     The behaviour of is a bit similar to the timeinputSparse
     command but in this case for both the tbl file and the map file.
@@ -224,14 +224,13 @@ def tableToMapSparse (step, table, map):
     """
     global debug
 
-    if not hasattr(tableToMapSparse,"_tableToMap_LastTbl"):
+    if not hasattr(tableToMapSparse, "_tableToMap_LastTbl"):
         _tableToMap_LastTbl = {}
         _tableToMap_LastMap = {}
 
     # construct filenames
     fname_map = map + str(step) + ".map"
     fname_tbl = table + str(step) + ".tbl"
-
 
     if os.path.exists(fname_map):
         print "found: " + fname_map
@@ -251,8 +250,6 @@ def tableToMapSparse (step, table, map):
     else:
         fname_map = map + str(tableToMapSparse._tableToMap_LastMap[map]) + ".map"
 
-
-    rmat = lookupscalar(str(fname_tbl),str(fname_map))
+    rmat = lookupscalar(str(fname_tbl), str(fname_map))
 
     return rmat
-

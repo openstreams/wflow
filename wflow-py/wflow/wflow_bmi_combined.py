@@ -12,6 +12,7 @@ import numpy as np
 import json
 from pcraster import *
 
+
 def iniFileSetUp(configfile):
     """
     Reads .ini file and returns a config object.
@@ -24,7 +25,7 @@ def iniFileSetUp(configfile):
     return config
 
 
-def configsection(config,section):
+def configsection(config, section):
     """
     gets the list of lesy in a section
 
@@ -70,28 +71,30 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         self.indices_to = []
         self.comp_sep = "@"
         self.wrtodisk = False
-        if os.getenv("wflow_bmi_combined_writetodisk",'False') in 'True':
+        if os.getenv("wflow_bmi_combined_writetodisk", "False") in "True":
             self.wrtodisk = True
 
         self.loggingmode = logging.ERROR
-        logstr = os.getenv('wflow_bmi_loglevel', 'ERROR')
-        if logstr in 'ERROR':
+        logstr = os.getenv("wflow_bmi_loglevel", "ERROR")
+        if logstr in "ERROR":
             self.loggingmode = logging.ERROR
-        if logstr in 'WARNING':
+        if logstr in "WARNING":
             self.loggingmode = logging.WARNING
-        if logstr in 'INFO':
+        if logstr in "INFO":
             self.loggingmode = logging.INFO
-        if logstr in 'DEBUG':
+        if logstr in "DEBUG":
             self.loggingmode = logging.DEBUG
 
-        self.bmilogger = setlogger('wflow_bmi_combined.log','wflow_bmi_combined_logging',thelevel=self.loggingmode)
+        self.bmilogger = setlogger(
+            "wflow_bmi_combined.log",
+            "wflow_bmi_combined_logging",
+            thelevel=self.loggingmode,
+        )
         self.bmilogger.info("__init__: wflow_bmi_combined object initialised.")
         if self.wrtodisk:
-            self.bmilogger.warn('Will write all bmi set- and get- grids to disk!...')
+            self.bmilogger.warn("Will write all bmi set- and get- grids to disk!...")
 
-
-
-    def __getmodulenamefromvar__(self,long_var_name):
+    def __getmodulenamefromvar__(self, long_var_name):
         """
 
         :param long_var_name:
@@ -116,81 +119,83 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         self.config = iniFileSetUp(fullpathname)
         self.datadir = os.path.dirname(fullpathname)
         inifile = os.path.basename(filename)
-        
-        #mappingdir = self.datadir + '\\bmi_mapping\\'
-        mappingdir = os.path.join(self.datadir,self.config.get('IdMapping','folder')) + '\\'
 
-        self.models = configsection(self.config,'models')
-        self.exchanges= configsection(self.config,'exchanges')
-        
+        # mappingdir = self.datadir + '\\bmi_mapping\\'
+        mappingdir = (
+            os.path.join(self.datadir, self.config.get("IdMapping", "folder")) + "\\"
+        )
+
+        self.models = configsection(self.config, "models")
+        self.exchanges = configsection(self.config, "exchanges")
+
         for item in self.exchanges:
             exchange_from = item.split(self.comp_sep)
 
-            if len(exchange_from)==3:
-                if exchange_from[2].startswith('['):
+            if len(exchange_from) == 3:
+                if exchange_from[2].startswith("["):
                     ind = json.loads(mappingdir + exchange_from[2])
-                elif exchange_from[2].endswith('id'):
-                    ind_temp = np.loadtxt(mappingdir + exchange_from[2],delimiter=',',dtype=int)
+                elif exchange_from[2].endswith("id"):
+                    ind_temp = np.loadtxt(
+                        mappingdir + exchange_from[2], delimiter=",", dtype=int
+                    )
                     if ind_temp.size == 2:
-                        ind = [[ind_temp[0]],[ind_temp[1]]]
+                        ind = [[ind_temp[0]], [ind_temp[1]]]
                     else:
-                        ind = [list(ind_temp[0]),list(ind_temp[1])]
-                elif exchange_from[2].endswith('map'):
+                        ind = [list(ind_temp[0]), list(ind_temp[1])]
+                elif exchange_from[2].endswith("map"):
                     map_temp = readmap(mappingdir + exchange_from[2])
-                    map_flip = np.flipud(pcr2numpy(map_temp,0))
+                    map_flip = np.flipud(pcr2numpy(map_temp, 0))
                     ind_temp = np.where(map_flip == 1)
-                    ind = [list(ind_temp[0]),list(ind_temp[1])]                                       
+                    ind = [list(ind_temp[0]), list(ind_temp[1])]
                 self.indices_from.append(ind)
             else:
                 self.indices_from.append([])
-            
-            exchange_to = self.config.get('exchanges',item).split(self.comp_sep)
 
-            
-            if len(exchange_to)==3:
-                if exchange_to[2].startswith('['):
+            exchange_to = self.config.get("exchanges", item).split(self.comp_sep)
+
+            if len(exchange_to) == 3:
+                if exchange_to[2].startswith("["):
                     ind = json.loads(mappingdir + exchange_to[2])
-                elif exchange_to[2].endswith('id'):
-                    ind_temp = np.loadtxt(mappingdir + exchange_to[2],delimiter=',',dtype=int)
+                elif exchange_to[2].endswith("id"):
+                    ind_temp = np.loadtxt(
+                        mappingdir + exchange_to[2], delimiter=",", dtype=int
+                    )
                     if ind_temp.size == 2:
-                        ind = [[ind_temp[0]],[ind_temp[1]]]
+                        ind = [[ind_temp[0]], [ind_temp[1]]]
                     else:
-                        ind = [list(ind_temp[0]),list(ind_temp[1])]
-                elif exchange_to[2].endswith('map'):
+                        ind = [list(ind_temp[0]), list(ind_temp[1])]
+                elif exchange_to[2].endswith("map"):
                     map_temp = readmap(mappingdir + exchange_to[2])
-                    map_flip = np.flipud(pcr2numpy(map_temp,0))
+                    map_flip = np.flipud(pcr2numpy(map_temp, 0))
                     ind_temp = np.where(map_flip == 1)
-                    ind = [list(ind_temp[0]),list(ind_temp[1])]                  
+                    ind = [list(ind_temp[0]), list(ind_temp[1])]
                 self.indices_to.append(ind)
             else:
                 self.indices_to.append([])
-                
-            
-            
+
         # Initialize rtc bmi model object
         for mod in self.models:
-            if mod.startswith('RTC'):
-                bin_rtc = os.path.join(self.datadir,self.config.get('RTC wrapper engine','bin_rtc'))
+            if mod.startswith("RTC"):
+                bin_rtc = os.path.join(
+                    self.datadir, self.config.get("RTC wrapper engine", "bin_rtc")
+                )
                 print bin_rtc
                 os.chdir(bin_rtc)
                 import wflow.rtc_wflow_bmi as rtcwfbmi
+
                 print bin_rtc
-                self.bmimodels[mod] = rtcwfbmi.rtcbmi_csdms(os.path.join(bin_rtc,"RTCTools_BMI"))
-            
+                self.bmimodels[mod] = rtcwfbmi.rtcbmi_csdms(
+                    os.path.join(bin_rtc, "RTCTools_BMI")
+                )
+
             else:
                 self.bmimodels[mod] = wfbmi.wflowbmi_csdms()
-        
-            
 
         # Initialize all wflow bmi model objects
         for key, value in self.bmimodels.iteritems():
-            if key.startswith('wflow'):
-                modconf = os.path.join(self.datadir,self.config.get('models',key))
-                self.bmimodels[key].initialize_config(modconf,loglevel=loglevel)
-        
-        
-
-
+            if key.startswith("wflow"):
+                modconf = os.path.join(self.datadir, self.config.get("models", key))
+                self.bmimodels[key].initialize_config(modconf, loglevel=loglevel)
 
     def initialize_model(self):
         """
@@ -204,33 +209,33 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
 
         for key, value in self.bmimodels.iteritems():
             self.bmimodels[key].initialize_model()
-   
+
         # Copy and set the variables to be exchanged for step 0
         for key, value in self.bmimodels.iteritems():
             # step one update first model
             curmodel = self.bmimodels[key].get_component_name()
-            for (item,idfrom,idto) in zip(self.exchanges,self.indices_from,self.indices_to):
+            for (item, idfrom, idto) in zip(
+                self.exchanges, self.indices_from, self.indices_to
+            ):
                 supplymodel = self.__getmodulenamefromvar__(item)
                 if curmodel == supplymodel:
-                    if (len(idfrom)>0 and len(idto)==0):                      
-                        sum_ind = np.sum(self.get_value_at_indices(item,idfrom))
-                        outofmodel = np.ndarray(shape=(1,1))
+                    if len(idfrom) > 0 and len(idto) == 0:
+                        sum_ind = np.sum(self.get_value_at_indices(item, idfrom))
+                        outofmodel = np.ndarray(shape=(1, 1))
                         outofmodel[0][0] = sum_ind
-                    
-                    elif len(idfrom)>0 and len(idto)>0:
-                        outofmodel = self.get_value_at_indices(item,idfrom).copy()
-                        
+
+                    elif len(idfrom) > 0 and len(idto) > 0:
+                        outofmodel = self.get_value_at_indices(item, idfrom).copy()
+
                     else:
                         outofmodel = self.get_value(item).copy()
-                    
-                    tomodel = self.config.get('exchanges',item)
 
-                    if len(idto)>0:
-                        self.set_value_at_indices(tomodel,idto,outofmodel)
+                    tomodel = self.config.get("exchanges", item)
+
+                    if len(idto) > 0:
+                        self.set_value_at_indices(tomodel, idto, outofmodel)
                     else:
-                        self.set_value(tomodel,outofmodel)
-            
-                        
+                        self.set_value(tomodel, outofmodel)
 
         self.bmilogger.info(self.bmimodels)
 
@@ -262,7 +267,7 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         :return: nothing
         """
         for key, value in self.bmimodels.iteritems():
-            if key.startswith('wflow'):
+            if key.startswith("wflow"):
                 self.bmimodels[key].set_start_time(start_time)
 
     def set_end_time(self, end_time):
@@ -273,10 +278,8 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         :return:
         """
         for key, value in self.bmimodels.iteritems():
-            if key.startswith('wflow'):
+            if key.startswith("wflow"):
                 self.bmimodels[key].set_end_time(end_time)
-
-
 
     def get_attribute_names(self):
         """
@@ -287,7 +290,10 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         names = []
         for key, value in self.bmimodels.iteritems():
             names.append(self.bmimodels[key].get_attribute_names())
-            names[-1] = [self.bmimodels[key].get_component_name() + self.comp_sep + s for s in names[-1]]
+            names[-1] = [
+                self.bmimodels[key].get_component_name() + self.comp_sep + s
+                for s in names[-1]
+            ]
 
         ret = [item for sublist in names for item in sublist]
         return ret
@@ -303,7 +309,6 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         cname = attribute_name.split(self.comp_sep)
         return self.bmimodels[cname[0]].get_attribute_value(cname[1])
 
-
     def set_attribute_value(self, attribute_name, attribute_value):
         """
         :param attribute_name: name using the model_name@section:option notation
@@ -311,20 +316,17 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         :return:
         """
         cname = attribute_name.split(self.comp_sep)
-        self.bmimodels[cname[0]].set_attribute_value(cname[1],attribute_value)
+        self.bmimodels[cname[0]].set_attribute_value(cname[1], attribute_value)
 
-
-    def initialize(self, filename,loglevel=logging.DEBUG):
+    def initialize(self, filename, loglevel=logging.DEBUG):
         """
         Initialise the model. Should be called before any other method.
 
         :var filename: full path to the combined model ini file
         """
 
-        self.initialize_config(filename,loglevel=loglevel)
+        self.initialize_config(filename, loglevel=loglevel)
         self.initialize_model()
-
-
 
     def update(self):
         """
@@ -332,42 +334,39 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
 
         The function iterates over all models
         """
-        
 
         for key, value in self.bmimodels.iteritems():
 
             self.bmimodels[key].update()
 
-
             # do all exchanges
             # step one update first model
             curmodel = self.bmimodels[key].get_component_name()
-            
-            
-            for (item,idfrom,idto) in zip(self.exchanges,self.indices_from,self.indices_to):
+
+            for (item, idfrom, idto) in zip(
+                self.exchanges, self.indices_from, self.indices_to
+            ):
                 supplymodel = self.__getmodulenamefromvar__(item)
 
                 if curmodel == supplymodel:
 
-                    if (len(idfrom)>0 and len(idto)==0):                      
-                        sum_ind = np.sum(self.get_value_at_indices(item,idfrom))
-                        outofmodel = np.ndarray(shape=(1,1))
+                    if len(idfrom) > 0 and len(idto) == 0:
+                        sum_ind = np.sum(self.get_value_at_indices(item, idfrom))
+                        outofmodel = np.ndarray(shape=(1, 1))
                         outofmodel[0][0] = sum_ind
-                    
-                    elif (len(idfrom)>0 and len(idto)>0):
-                        outofmodel = self.get_value_at_indices(item,idfrom).copy()
-                        
+
+                    elif len(idfrom) > 0 and len(idto) > 0:
+                        outofmodel = self.get_value_at_indices(item, idfrom).copy()
+
                     else:
                         outofmodel = self.get_value(item).copy()
-                    
-                    tomodel = self.config.get('exchanges',item)
 
-                    if len(idto)>0:
-                        self.set_value_at_indices(tomodel,idto,outofmodel)
+                    tomodel = self.config.get("exchanges", item)
+
+                    if len(idto) > 0:
+                        self.set_value_at_indices(tomodel, idto, outofmodel)
                     else:
-                        self.set_value(tomodel,outofmodel)
-            
-                        
+                        self.set_value(tomodel, outofmodel)
 
         self.currenttimestep = self.currenttimestep + 1
 
@@ -382,12 +381,12 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         """
         curtime = self.get_current_time()
 
-        if abs(time - curtime)% self.get_time_step() != 0:
+        if abs(time - curtime) % self.get_time_step() != 0:
             raise ValueError("Update in time not a multiple of timestep")
 
         if curtime > time:
             timespan = curtime - time
-            nrstepsback = int(timespan/self.get_time_step())
+            nrstepsback = int(timespan / self.get_time_step())
             if nrstepsback > 1:
                 raise ValueError("Time more than one timestep before current time.")
             for key, value in self.bmimodels.iteritems():
@@ -395,14 +394,14 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
 
         else:
             timespan = time - curtime
-            nrsteps = int(timespan/self.get_time_step())
+            nrsteps = int(timespan / self.get_time_step())
 
-            #self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps -1)
-            for st in range(0,nrsteps):
-                #for key, value in self.bmimodels.iteritems():
+            # self.dynModel._runDynamic(self.currenttimestep, self.currenttimestep + nrsteps -1)
+            for st in range(0, nrsteps):
+                # for key, value in self.bmimodels.iteritems():
                 self.update()
 
-            #self.currenttimestep = self.currenttimestep + nrsteps
+            # self.currenttimestep = self.currenttimestep + nrsteps
 
     def update_frac(self, time_frac):
         """
@@ -420,7 +419,6 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         """
         for key, value in self.bmimodels.iteritems():
             self.bmimodels[key].save_state(destination_directory)
-
 
     def load_state(self, source_directory):
         """
@@ -453,7 +451,6 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
 
         return ",".join(names)
 
-
     def get_input_var_names(self):
         """
 
@@ -462,7 +459,10 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         names = []
         for key, value in self.bmimodels.iteritems():
             names.append(self.bmimodels[key].get_input_var_names())
-            names[-1] = [self.bmimodels[key].get_component_name() + self.comp_sep + s for s in names[-1]]
+            names[-1] = [
+                self.bmimodels[key].get_component_name() + self.comp_sep + s
+                for s in names[-1]
+            ]
 
         ret = [item for sublist in names for item in sublist]
         return ret
@@ -476,7 +476,10 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         names = []
         for key, value in self.bmimodels.iteritems():
             names.append(self.bmimodels[key].get_output_var_names())
-            names[-1] = [self.bmimodels[key].get_component_name() + self.comp_sep + s for s in names[-1]]
+            names[-1] = [
+                self.bmimodels[key].get_component_name() + self.comp_sep + s
+                for s in names[-1]
+            ]
 
         ret = [item for sublist in names for item in sublist]
 
@@ -513,7 +516,6 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
                 ret = self.bmimodels[key].get_var_rank(cname[1])
 
         return ret
-
 
     def get_var_size(self, long_var_name):
         """
@@ -571,7 +573,7 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
             st.append(self.bmimodels[key].get_current_time())
 
         return st[-1]
-        #return numpy.array(st).max()
+        # return numpy.array(st).max()
 
     def get_end_time(self):
         """
@@ -610,8 +612,6 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
 
         return st[-1]
 
-
-
     def get_value(self, long_var_name):
         """
         Get the value(s) of a variable as a numpy array
@@ -620,17 +620,19 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         :return: a np array of long_var_name
         """
         # first part should be the component name
-        self.bmilogger.debug('get_value: ' + long_var_name)
+        self.bmilogger.debug("get_value: " + long_var_name)
         cname = long_var_name.split(self.comp_sep)
         if self.bmimodels.has_key(cname[0]):
             tmp = self.bmimodels[cname[0]].get_value(cname[1])
             if self.wrtodisk:
-                report(numpy2pcr(Scalar,tmp, -999),long_var_name + "_get_" + str(self.get_current_time()) + '.map')
+                report(
+                    numpy2pcr(Scalar, tmp, -999),
+                    long_var_name + "_get_" + str(self.get_current_time()) + ".map",
+                )
             return tmp
         else:
-            self.bmilogger.error('get_value: ' + long_var_name + ' returning None!!!!')
+            self.bmilogger.error("get_value: " + long_var_name + " returning None!!!!")
             return None
-
 
     def get_value_at_indices(self, long_var_name, inds):
         """
@@ -646,11 +648,13 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         if self.bmimodels.has_key(cname[0]):
             tmp = self.bmimodels[cname[0]].get_value(cname[1])
             if self.wrtodisk:
-                report(numpy2pcr(Scalar,tmp, -999),long_var_name + "_get_" + str(self.get_current_time()) + '.map')
-            return self.bmimodels[cname[0]].get_value_at_indices(cname[1],inds)                
-        #else:
+                report(
+                    numpy2pcr(Scalar, tmp, -999),
+                    long_var_name + "_get_" + str(self.get_current_time()) + ".map",
+                )
+            return self.bmimodels[cname[0]].get_value_at_indices(cname[1], inds)
+        # else:
         return None
-
 
     def set_value_at_indices(self, long_var_name, inds, src):
         """
@@ -665,12 +669,13 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         cname = long_var_name.split(self.comp_sep)
 
         if self.bmimodels.has_key(cname[0]):
-            self.bmimodels[cname[0]].set_value_at_indices(cname[1], inds,src)
+            self.bmimodels[cname[0]].set_value_at_indices(cname[1], inds, src)
             if self.wrtodisk:
-                npmap = self.bmimodels[cname[0]].getnumpy(cname[1], inds,src)
-                report(self.bmimodels[cname[0]].get_value(cname[1]),long_var_name + "_set_" + str(self.get_current_time()) + '.map')
-  
-
+                npmap = self.bmimodels[cname[0]].getnumpy(cname[1], inds, src)
+                report(
+                    self.bmimodels[cname[0]].get_value(cname[1]),
+                    long_var_name + "_set_" + str(self.get_current_time()) + ".map",
+                )
 
     def get_grid_type(self, long_var_name):
         """
@@ -702,7 +707,6 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         else:
             return None
 
-
     def get_grid_spacing(self, long_var_name):
         """
         Only return something for variables with a uniform grid. Otherwise raise ValueError.
@@ -717,7 +721,6 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
             return self.bmimodels[cname[0]].get_grid_spacing(cname[1])
         else:
             return None
-
 
     def get_grid_origin(self, long_var_name):
         """
@@ -734,7 +737,6 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         else:
             return None
 
-
     def get_grid_x(self, long_var_name):
         """
         Give X coordinates of point in the model grid
@@ -750,7 +752,6 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
             return self.bmimodels[cname[0]].get_grid_x(cname[1])
         else:
             return None
-
 
     def get_grid_y(self, long_var_name):
         """
@@ -784,7 +785,6 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         else:
             return None
 
-
     def get_var_units(self, long_var_name):
         """
         Supply units as defined in the API section of the ini file
@@ -811,15 +811,15 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
                   is present a uniform map will be set in the wflow model.
         """
         # first part should be the component name
-        self.bmilogger.debug('set_value: ' + long_var_name)
+        self.bmilogger.debug("set_value: " + long_var_name)
         cname = long_var_name.split(self.comp_sep)
         if self.bmimodels.has_key(cname[0]):
-            self.bmimodels[cname[0]].set_value(cname[1],src)
+            self.bmimodels[cname[0]].set_value(cname[1], src)
             if self.wrtodisk:
-                report(numpy2pcr(Scalar,src, -999),long_var_name + "_set_" + str(self.get_current_time()) + '.map')
-
-
-
+                report(
+                    numpy2pcr(Scalar, src, -999),
+                    long_var_name + "_set_" + str(self.get_current_time()) + ".map",
+                )
 
     def get_grid_connectivity(self, long_var_name):
         """

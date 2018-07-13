@@ -2,7 +2,7 @@
 
 #
 # Wflow is Free software, see below:
-# 
+#
 # Copyright (c) J. Schellekens 2005-2013
 #
 # This program is free software: you can redistribute it and/or modify
@@ -36,63 +36,65 @@ import getopt
 from pylab import *
 
 
-
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args: print msg
+    for msg in args:
+        print msg
     print __doc__
     sys.exit(0)
 
 
-
 def main(argv=None):
-    
-    
+
     makelegend = True
     subplots = False
-    cols =":"
-    
+    cols = ":"
+
     if argv is None:
         argv = sys.argv[1:]
         if len(argv) == 0:
             usage()
-            return     
-    
-    plottitle = ""
-    opts, args = getopt.getopt(argv, 'T:LSC:')
-    
-    for o, a in opts:
-        if o == '-T': plottitle = a  
-        if o == '-L': makelegend = False
-        if o == '-S': subplots = True
-        if o == '-C': cols = a
+            return
 
+    plottitle = ""
+    opts, args = getopt.getopt(argv, "T:LSC:")
+
+    for o, a in opts:
+        if o == "-T":
+            plottitle = a
+        if o == "-L":
+            makelegend = False
+        if o == "-S":
+            subplots = True
+        if o == "-C":
+            cols = a
 
     nrplotfiles = len(args)
-    
+
     if subplots:
         # Two subplots, the axes array is 1-d
         f, axarr = plt.subplots(nrplotfiles, sharex=True)
         plotnr = 0
-        for plotfile in args:    
+        for plotfile in args:
             dat, x = readtss(plotfile)
-            axarr[plotnr].plot(eval("dat[" + cols +"]"),label=plotfile)
+            axarr[plotnr].plot(eval("dat[" + cols + "]"), label=plotfile)
 
             if makelegend:
                 axarr[plotnr].legend()
             plotnr = plotnr + 1
     else:
         f, axarr = plt.subplots()
-        for plotfile in args:    
+        for plotfile in args:
             dat, x = readtss(plotfile)
-            axarr.plot(eval("dat[" + cols +"]"),label=plotfile)
+            axarr.plot(eval("dat[" + cols + "]"), label=plotfile)
         if makelegend:
             legend()
-        
+
     title(plottitle)
     xlabel("Time")
     ylabel("Value")
     show()
-    
+
+
 if __name__ == "__main__":
     main()

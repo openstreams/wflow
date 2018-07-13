@@ -20,7 +20,8 @@ import sys
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args: print msg
+    for msg in args:
+        print msg
     print __doc__
     sys.exit(0)
 
@@ -29,13 +30,12 @@ def main(argv=None):
     """
     Perform command line execution of the script.
     """
-    tssfile ="input.tss"
-    xmlfile=tssfile + ".xml"
+    tssfile = "input.tss"
+    xmlfile = tssfile + ".xml"
     timestepsecs = 86400
     parameter = tssfile.split(".")[0]
-    startdatestr = '1970-01-01 00:00:00'
-    startdate =  wf.datetime.strptime(startdatestr,'%Y-%m-%d %H:%M:%S')
-
+    startdatestr = "1970-01-01 00:00:00"
+    startdate = wf.datetime.strptime(startdatestr, "%Y-%m-%d %H:%M:%S")
 
     if argv is None:
         argv = sys.argv[1:]
@@ -43,24 +43,24 @@ def main(argv=None):
             usage()
             return
 
-
     try:
-        opts, args = getopt.getopt(argv, 'X:I:S')
+        opts, args = getopt.getopt(argv, "X:I:S")
     except getopt.error, msg:
         pcrut.usage(msg)
 
     for o, a in opts:
-        if o == '-X': xmlfile = a
-        if o == '-I':
+        if o == "-X":
+            xmlfile = a
+        if o == "-I":
             tssfile = a
-            xmlfile=tssfile + ".xml"
-        if o == '-s': timestepsecs = a
-        if o == '-s': timestepsecs = a
+            xmlfile = tssfile + ".xml"
+        if o == "-s":
+            timestepsecs = a
+        if o == "-s":
+            timestepsecs = a
 
+    wf.tss_topixml(tssfile, xmlfile, "wflow", parameter, startdate, timestepsecs)
 
-    wf.tss_topixml(tssfile,xmlfile,"wflow",parameter,startdate,timestepsecs)
 
 if __name__ == "__main__":
     main()
-
-

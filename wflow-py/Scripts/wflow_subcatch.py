@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 # Wflow is Free software, see below:
-# 
+#
 # Copyright (c) J. Schellekens 2005-2011
 #
 # This program is free software: you can redistribute it and/or modify
@@ -38,7 +38,7 @@ Usage::
 from wflow.wflow_lib import *
 import wflow.pcrut as pcrut
 
-    
+
 import os, sys, shlex, time
 import os.path
 import glob
@@ -46,15 +46,12 @@ import getopt
 import subprocess
 
 
-
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args: print msg
+    for msg in args:
+        print msg
     print __doc__
     sys.exit(0)
-    
-
-
 
 
 def runCommands(commands, maxCpu):
@@ -70,10 +67,10 @@ def runCommands(commands, maxCpu):
         newProcs = []
         for pollCmd, pollProc in processes:
             retCode = pollProc.poll()
-            if retCode==None:
+            if retCode == None:
                 # still running
                 newProcs.append((pollCmd, pollProc))
-            elif retCode!=0:
+            elif retCode != 0:
                 # failed
                 raise Exception("Command %s failed" % pollCmd)
             else:
@@ -82,8 +79,10 @@ def runCommands(commands, maxCpu):
 
     processes = []
     for command in commands:
-        command = command.replace('\\','/') # otherwise shlex.split removes all path separators
-        proc =  subprocess.Popen(shlex.split(command))
+        command = command.replace(
+            "\\", "/"
+        )  # otherwise shlex.split removes all path separators
+        proc = subprocess.Popen(shlex.split(command))
         procTuple = (command, proc)
         processes.append(procTuple)
         while len(processes) >= maxCpu:
@@ -91,21 +90,21 @@ def runCommands(commands, maxCpu):
             processes = removeFinishedProcesses(processes)
 
     # wait for all processes
-    while len(processes)>0:
+    while len(processes) > 0:
         time.sleep(0.5)
         processes = removeFinishedProcesses(processes)
     print "All processes in que (" + str(len(commands)) + ") completed."
 
 
 def main():
-    
+
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'fhC:N:I:s:M:')
+        opts, args = getopt.getopt(sys.argv[1:], "fhC:N:I:s:M:")
     except getopt.error, msg:
         usage(msg)
 
     factor = 1
-    Verbose=1
+    Verbose = 1
     inmaps = True
     force = False
     caseName = "thecase"
@@ -113,21 +112,37 @@ def main():
     maxcpu = 4
 
     for o, a in opts:
-        if o == '-C': caseName = a
-        if o == '-N': caseNameNew = a
-        if o == '-s': subcatch = int(a)
-        if o == '-I': inmaps = False
-        if o == '-h': usage()
-        if o == '-f': force = True
-        if o == '-M': maxcpu = int(a)
+        if o == "-C":
+            caseName = a
+        if o == "-N":
+            caseNameNew = a
+        if o == "-s":
+            subcatch = int(a)
+        if o == "-I":
+            inmaps = False
+        if o == "-h":
+            usage()
+        if o == "-f":
+            force = True
+        if o == "-M":
+            maxcpu = int(a)
 
-    dirs = ['/intbl/',  '/staticmaps/', '/intss/', '/instate/', '/outstate/','/inmaps/' ,'/inmaps/clim/', '/intbl/clim/']
-    ext_to_copy = ['*.tss','*.tbl','*.col','*.xml']
+    dirs = [
+        "/intbl/",
+        "/staticmaps/",
+        "/intss/",
+        "/instate/",
+        "/outstate/",
+        "/inmaps/",
+        "/inmaps/clim/",
+        "/intbl/clim/",
+    ]
+    ext_to_copy = ["*.tss", "*.tbl", "*.col", "*.xml"]
     if os.path.isdir(caseNameNew) and not force:
         print "Refusing to write into an existing directory:" + caseNameNew
         exit()
 
-    #ddir = []
+    # ddir = []
     dirs = []
     for (path, thedirs, files) in os.walk(caseName):
         print path
@@ -135,50 +150,25 @@ def main():
 
     if not os.path.isdir(caseNameNew):
         for ddir in dirs:
-            os.makedirs(ddir.replace(caseName,caseNameNew))
+            os.makedirs(ddir.replace(caseName, caseNameNew))
         for inifile in glob.glob(caseName + "/*.ini"):
-            shutil.copy(inifile, inifile.replace(caseName,caseNameNew))
-
+            shutil.copy(inifile, inifile.replace(caseName, caseNameNew))
 
     # read subcatchment map
-    x, y, subcatchmap, FillVal = readMap(os.path.join(caseName,'staticmaps','wflow_subcatch.map'), 'PCRaster')
+    x, y, subcatchmap, FillVal = readMap(
+        os.path.join(caseName, "staticmaps", "wflow_subcatch.map"), "PCRaster"
+    )
     for ddir in dirs:
         print ddir
         allcmd = []
-        for mfile in glob.glob(ddir + '/*.map'):
-            if not os.path.exists(mfile.replace(caseName,caseNameNew)):
-                x, y, data, FillVal = readMap(mfile,'PCRaster')
-                try:
-                    good = 1
-                    xn, yn, datan = cutMapById(data,subcatchmap,subcatch,x,y,FillVal)
-                except Exception,e:
-                    good = 0
-                    print "Skipping: " + mfile + " exception: " + str(e)
-
-                if xn == None:
-                    good = 0
-                    print "Skipping: " + mfile + " size does not match..."
-
-
-                if good:
-                    ofile = mfile.replace(caseName,caseNameNew)
-                    if data.dtype == np.int32 or  data.dtype == np.uint8:
-                        writeMap(ofile,'PCRaster',xn,yn,datan.astype(np.int32),FillVal)
-                    else:
-                        writeMap(ofile, 'PCRaster', xn, yn, datan, FillVal)
-
-                    # Assume ldd and repair
-                    if data.dtype == np.uint8:
-                        myldd = ldd(readmap(ofile))
-                        myldd = lddrepair(myldd)
-                        report(myldd,ofile)
-
-        for mfile in glob.glob(ddir + '/*.[0-9][0-9][0-9]'):
+        for mfile in glob.glob(ddir + "/*.map"):
             if not os.path.exists(mfile.replace(caseName, caseNameNew)):
-                x, y, data, FillVal = readMap(mfile,'PCRaster')
+                x, y, data, FillVal = readMap(mfile, "PCRaster")
                 try:
                     good = 1
-                    xn, yn, datan = cutMapById(data, subcatchmap, subcatch, x, y, FillVal)
+                    xn, yn, datan = cutMapById(
+                        data, subcatchmap, subcatch, x, y, FillVal
+                    )
                 except Exception, e:
                     good = 0
                     print "Skipping: " + mfile + " exception: " + str(e)
@@ -188,23 +178,52 @@ def main():
                     print "Skipping: " + mfile + " size does not match..."
 
                 if good:
-                    ofile = mfile.replace(caseName,caseNameNew)
-                    if data.dtype == np.int32 or  data.dtype == np.uint8:
-                        writeMap(ofile,'PCRaster',xn,yn,datan.astype(np.int32),FillVal)
+                    ofile = mfile.replace(caseName, caseNameNew)
+                    if data.dtype == np.int32 or data.dtype == np.uint8:
+                        writeMap(
+                            ofile, "PCRaster", xn, yn, datan.astype(np.int32), FillVal
+                        )
                     else:
-                        writeMap(ofile, 'PCRaster', xn, yn, datan, FillVal)
+                        writeMap(ofile, "PCRaster", xn, yn, datan, FillVal)
 
+                    # Assume ldd and repair
+                    if data.dtype == np.uint8:
+                        myldd = ldd(readmap(ofile))
+                        myldd = lddrepair(myldd)
+                        report(myldd, ofile)
+
+        for mfile in glob.glob(ddir + "/*.[0-9][0-9][0-9]"):
+            if not os.path.exists(mfile.replace(caseName, caseNameNew)):
+                x, y, data, FillVal = readMap(mfile, "PCRaster")
+                try:
+                    good = 1
+                    xn, yn, datan = cutMapById(
+                        data, subcatchmap, subcatch, x, y, FillVal
+                    )
+                except Exception, e:
+                    good = 0
+                    print "Skipping: " + mfile + " exception: " + str(e)
+
+                if xn == None:
+                    good = 0
+                    print "Skipping: " + mfile + " size does not match..."
+
+                if good:
+                    ofile = mfile.replace(caseName, caseNameNew)
+                    if data.dtype == np.int32 or data.dtype == np.uint8:
+                        writeMap(
+                            ofile, "PCRaster", xn, yn, datan.astype(np.int32), FillVal
+                        )
+                    else:
+                        writeMap(ofile, "PCRaster", xn, yn, datan, FillVal)
 
         for ext in ext_to_copy:
             for mfile in glob.glob(os.path.join(ddir, ext)):
-                shutil.copy(mfile, mfile.replace(caseName,caseNameNew))
+                shutil.copy(mfile, mfile.replace(caseName, caseNameNew))
 
         # Copy ini files
-        for mfile in glob.glob(os.path.join(caseName,'*.ini')):
+        for mfile in glob.glob(os.path.join(caseName, "*.ini")):
             shutil.copy(mfile, mfile.replace(caseName, caseNameNew))
-
-
-
 
 
 if __name__ == "__main__":
