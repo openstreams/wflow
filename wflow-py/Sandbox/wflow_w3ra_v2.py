@@ -377,7 +377,7 @@ class WflowModel(DynamicModel):
         ChannelSurface =   min(0,(0.007*self.Sr**0.75))
         OpenWaterFrac = max(ChannelSurface, self.OpenWaterFrac)
         
-         !! HANDometric functions go here !!
+        # !! HANDometric functions go here !!
 
         #fsat =   min(1.0,max(min(0.005,0.007*self.Sr**0.75),Sgfree/self.Sgref))
         #Sghru =   self.Sg
@@ -445,7 +445,7 @@ class WflowModel(DynamicModel):
         # Maximum transpiration (4.3)
         Gsmax = self.Gs_scalar*self.cGsmax*self.Vc
         VPD = max(0,pes-pe)
-        fD = self.Cg./(1+VPD/self.D50)
+        fD = self.Cg/(1+VPD/self.D50)
         gs = fveg*fD*Gsmax
         ft = 1/(1+(keps/(1+keps))*ga/gs)
         Etmax = ft*self.E0
@@ -468,8 +468,8 @@ class WflowModel(DynamicModel):
         Eg0 = max(0,fsat-fwater)*self.FsoilEmax*max(0,self.Eeq-Et)
         Es = Es0 + Eg0
         # Open water evaporation (4.7)
-        Erl = fw_local*self.FwaterE.*self.Ept
-        Err = (fwater-fw_local)*self.FwaterE.*self.Ept
+        Erl = fw_local*self.FwaterE*self.Ept
+        Err = (fwater-fw_local)*self.FwaterE*self.Ept
         Er = Erl + Err
 
         # Rainfall interception evaporation (4.2)
@@ -600,7 +600,7 @@ class WflowModel(DynamicModel):
         # saturation case
         imap   = (self.Sdmax-self.Sd-self.Kdsat)<=(Ds-Ud)
         Dd = ifthenelse(imap,self.Kdsat,Dd)
-        IFd = ifthenelse(imap,self.Sd-self.Sdmax-self.Kdsat+Ds-Ud),IFd)
+        IFd = ifthenelse(imap,self.Sd-self.Sdmax-self.Kdsat+Ds-Ud,IFd)
         Sd = ifthenselse(imap,self.Sdmax,Sd)
         # enforce mass balance (for numerical & rounding errors
         Sd = max(0, min(Sd,self.Sdmax))
