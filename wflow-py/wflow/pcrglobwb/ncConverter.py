@@ -36,129 +36,165 @@ import virtualOS as vos
 
 # TODO: defined the dictionary (e.g. filecache = dict()) to avoid open and closing files
 
-class PCR2netCDF():
-    
-    def __init__(self,iniItems,specificAttributeDictionary=None):
-        		
+
+class PCR2netCDF:
+    def __init__(self, iniItems, specificAttributeDictionary=None):
+
         # cloneMap
         pcr.setclone(iniItems.cloneMap)
         cloneMap = pcr.boolean(1.0)
-        
+
         # latitudes and longitudes
-        self.latitudes  = np.unique(pcr.pcr2numpy(pcr.ycoordinate(cloneMap), vos.MV))[::-1]
+        self.latitudes = np.unique(pcr.pcr2numpy(pcr.ycoordinate(cloneMap), vos.MV))[
+            ::-1
+        ]
         self.longitudes = np.unique(pcr.pcr2numpy(pcr.xcoordinate(cloneMap), vos.MV))
-        
-        # Let users decide what their preference regarding latitude order. 
+
+        # Let users decide what their preference regarding latitude order.
         self.netcdf_y_orientation_follow_cf_convention = False
-        if 'netcdf_y_orientation_follow_cf_convention' in iniItems.reportingOptions.keys() and\
-            iniItems.reportingOptions['netcdf_y_orientation_follow_cf_convention'] == "True":
+        if (
+            "netcdf_y_orientation_follow_cf_convention"
+            in iniItems.reportingOptions.keys()
+            and iniItems.reportingOptions["netcdf_y_orientation_follow_cf_convention"]
+            == "True"
+        ):
             msg = "Latitude (y) orientation for output netcdf files start from the bottom to top."
             self.netcdf_y_orientation_follow_cf_convention = True
-            self.latitudes  = np.unique(pcr.pcr2numpy(pcr.ycoordinate(cloneMap), vos.MV))
-        
-        # set the general netcdf attributes (based on the information given in the ini/configuration file) 
+            self.latitudes = np.unique(pcr.pcr2numpy(pcr.ycoordinate(cloneMap), vos.MV))
+
+        # set the general netcdf attributes (based on the information given in the ini/configuration file)
         self.set_general_netcdf_attributes(iniItems, specificAttributeDictionary)
-        
-        # netcdf format and zlib setup 
-        self.format = 'NETCDF3_CLASSIC'
+
+        # netcdf format and zlib setup
+        self.format = "NETCDF3_CLASSIC"
         self.zlib = False
         if "formatNetCDF" in iniItems.reportingOptions.keys():
-            self.format = str(iniItems.reportingOptions['formatNetCDF'])
+            self.format = str(iniItems.reportingOptions["formatNetCDF"])
         if "zlib" in iniItems.reportingOptions.keys():
-            if iniItems.reportingOptions['zlib'] == "True": self.zlib = True
-        
+            if iniItems.reportingOptions["zlib"] == "True":
+                self.zlib = True
 
         # if given in the ini file, use the netcdf as given in the section 'specific_attributes_for_netcdf_output_files'
-        if 'specific_attributes_for_netcdf_output_files' in iniItems.allSections:
+        if "specific_attributes_for_netcdf_output_files" in iniItems.allSections:
             for key in iniItems.specific_attributes_for_netcdf_output_files.keys():
 
-                self.attributeDictionary[key] = iniItems.specific_attributes_for_netcdf_output_files[key]
-                
-                if self.attributeDictionary[key] == "None": self.attributeDictionary[key] = ""
+                self.attributeDictionary[
+                    key
+                ] = iniItems.specific_attributes_for_netcdf_output_files[key]
+
+                if self.attributeDictionary[key] == "None":
+                    self.attributeDictionary[key] = ""
 
                 if key == "history" and self.attributeDictionary[key] == "Default":
-                    self.attributeDictionary[key] = \
-                                    'created on ' + datetime.datetime.today().isoformat(' ')
-                if self.attributeDictionary[key] == "Default" and\
-                  (key == "date_created" or key == "date_issued"):
-                    self.attributeDictionary[key] = datetime.datetime.today().isoformat(' ')
- 
-                    
-    def set_general_netcdf_attributes(self,iniItems,specificAttributeDictionary=None):
+                    self.attributeDictionary[
+                        key
+                    ] = "created on " + datetime.datetime.today().isoformat(" ")
+                if self.attributeDictionary[key] == "Default" and (
+                    key == "date_created" or key == "date_issued"
+                ):
+                    self.attributeDictionary[key] = datetime.datetime.today().isoformat(
+                        " "
+                    )
+
+    def set_general_netcdf_attributes(self, iniItems, specificAttributeDictionary=None):
 
         # netCDF attributes (based on the configuration file or specificAttributeDictionary):
         self.attributeDictionary = {}
         if specificAttributeDictionary == None:
-            self.attributeDictionary['institution'] = iniItems.globalOptions['institution']
-            self.attributeDictionary['title'      ] = iniItems.globalOptions['title'      ]
-            self.attributeDictionary['description'] = iniItems.globalOptions['description']
+            self.attributeDictionary["institution"] = iniItems.globalOptions[
+                "institution"
+            ]
+            self.attributeDictionary["title"] = iniItems.globalOptions["title"]
+            self.attributeDictionary["description"] = iniItems.globalOptions[
+                "description"
+            ]
         else:
-            self.attributeDictionary['institution'] = specificAttributeDictionary['institution']
-            self.attributeDictionary['title'      ] = specificAttributeDictionary['title'      ]
-            self.attributeDictionary['description'] = specificAttributeDictionary['description']
+            self.attributeDictionary["institution"] = specificAttributeDictionary[
+                "institution"
+            ]
+            self.attributeDictionary["title"] = specificAttributeDictionary["title"]
+            self.attributeDictionary["description"] = specificAttributeDictionary[
+                "description"
+            ]
 
-    def createNetCDF(self, ncFileName, varName, varUnits, longName = None):
+    def createNetCDF(self, ncFileName, varName, varUnits, longName=None):
 
-        rootgrp = nc.Dataset(ncFileName,'w',format= self.format)
+        rootgrp = nc.Dataset(ncFileName, "w", format=self.format)
 
-        #-create dimensions - time is unlimited, others are fixed
-        rootgrp.createDimension('time',None)
-        rootgrp.createDimension('lat',len(self.latitudes))
-        rootgrp.createDimension('lon',len(self.longitudes))
+        # -create dimensions - time is unlimited, others are fixed
+        rootgrp.createDimension("time", None)
+        rootgrp.createDimension("lat", len(self.latitudes))
+        rootgrp.createDimension("lon", len(self.longitudes))
 
-        date_time = rootgrp.createVariable('time','f4',('time',))
-        date_time.standard_name = 'time'
-        date_time.long_name = 'Days since 1901-01-01'
+        date_time = rootgrp.createVariable("time", "f4", ("time",))
+        date_time.standard_name = "time"
+        date_time.long_name = "Days since 1901-01-01"
 
-        date_time.units = 'Days since 1901-01-01' 
-        date_time.calendar = 'standard'
+        date_time.units = "Days since 1901-01-01"
+        date_time.calendar = "standard"
 
-        lat= rootgrp.createVariable('lat','f4',('lat',))
-        lat.long_name = 'latitude'
-        lat.units = 'degrees_north'
-        lat.standard_name = 'latitude'
+        lat = rootgrp.createVariable("lat", "f4", ("lat",))
+        lat.long_name = "latitude"
+        lat.units = "degrees_north"
+        lat.standard_name = "latitude"
 
-        lon= rootgrp.createVariable('lon','f4',('lon',))
-        lon.standard_name = 'longitude'
-        lon.long_name = 'longitude'
-        lon.units = 'degrees_east'
+        lon = rootgrp.createVariable("lon", "f4", ("lon",))
+        lon.standard_name = "longitude"
+        lon.long_name = "longitude"
+        lon.units = "degrees_east"
 
-        lat[:]= self.latitudes
-        lon[:]= self.longitudes
+        lat[:] = self.latitudes
+        lon[:] = self.longitudes
 
         shortVarName = varName
-        longVarName  = varName
-        if longName != None: longVarName = longName
+        longVarName = varName
+        if longName != None:
+            longVarName = longName
 
-        var = rootgrp.createVariable(shortVarName,'f4',('time','lat','lon',) ,fill_value=vos.MV,zlib=self.zlib)
+        var = rootgrp.createVariable(
+            shortVarName,
+            "f4",
+            ("time", "lat", "lon"),
+            fill_value=vos.MV,
+            zlib=self.zlib,
+        )
         var.standard_name = varName
         var.long_name = longVarName
         var.units = varUnits
 
         attributeDictionary = self.attributeDictionary
-        for k, v in attributeDictionary.items(): setattr(rootgrp,k,v)
+        for k, v in attributeDictionary.items():
+            setattr(rootgrp, k, v)
 
         rootgrp.sync()
         rootgrp.close()
 
     def changeAtrribute(self, ncFileName, attributeDictionary):
 
-        rootgrp = nc.Dataset(ncFileName,'a')
+        rootgrp = nc.Dataset(ncFileName, "a")
 
-        for k, v in attributeDictionary.items(): setattr(rootgrp,k,v)
+        for k, v in attributeDictionary.items():
+            setattr(rootgrp, k, v)
 
         rootgrp.sync()
         rootgrp.close()
 
-    def addNewVariable(self, ncFileName, varName, varUnits, longName = None):
+    def addNewVariable(self, ncFileName, varName, varUnits, longName=None):
 
-        rootgrp = nc.Dataset(ncFileName,'a')
+        rootgrp = nc.Dataset(ncFileName, "a")
 
         shortVarName = varName
-        longVarName  = varName
-        if longName != None: longVarName = longName
+        longVarName = varName
+        if longName != None:
+            longVarName = longName
 
-        var = rootgrp.createVariable(shortVarName,'f4',('time','lat','lon',) ,fill_value=vos.MV,zlib=self.zlib)
+        var = rootgrp.createVariable(
+            shortVarName,
+            "f4",
+            ("time", "lat", "lon"),
+            fill_value=vos.MV,
+            zlib=self.zlib,
+        )
         var.standard_name = varName
         var.long_name = longVarName
         var.units = varUnits
@@ -166,45 +202,53 @@ class PCR2netCDF():
         rootgrp.sync()
         rootgrp.close()
 
-    def data2NetCDF(self, ncFileName, shortVarName, varField, timeStamp, posCnt = None):
+    def data2NetCDF(self, ncFileName, shortVarName, varField, timeStamp, posCnt=None):
 
-        rootgrp = nc.Dataset(ncFileName,'a')
+        rootgrp = nc.Dataset(ncFileName, "a")
 
-        date_time = rootgrp.variables['time']
-        if posCnt == None: posCnt = len(date_time)
-        date_time[posCnt] = nc.date2num(timeStamp,date_time.units,date_time.calendar)
+        date_time = rootgrp.variables["time"]
+        if posCnt == None:
+            posCnt = len(date_time)
+        date_time[posCnt] = nc.date2num(timeStamp, date_time.units, date_time.calendar)
 
         # flip variable if necessary (to follow cf_convention)
-        if self.netcdf_y_orientation_follow_cf_convention: varField = np.flipud(varField)
-        
-        rootgrp.variables[shortVarName][posCnt,:,:] = varField
+        if self.netcdf_y_orientation_follow_cf_convention:
+            varField = np.flipud(varField)
+
+        rootgrp.variables[shortVarName][posCnt, :, :] = varField
 
         rootgrp.sync()
         rootgrp.close()
 
-    def dataList2NetCDF(self, ncFileName, shortVarNameList, varFieldList, timeStamp, posCnt = None):
+    def dataList2NetCDF(
+        self, ncFileName, shortVarNameList, varFieldList, timeStamp, posCnt=None
+    ):
 
-        rootgrp = nc.Dataset(ncFileName,'a')
+        rootgrp = nc.Dataset(ncFileName, "a")
 
-        date_time = rootgrp.variables['time']
-        if posCnt == None: posCnt = len(date_time)
+        date_time = rootgrp.variables["time"]
+        if posCnt == None:
+            posCnt = len(date_time)
 
         for shortVarName in shortVarNameList:
-            
-            date_time[posCnt] = nc.date2num(timeStamp,date_time.units,date_time.calendar)
+
+            date_time[posCnt] = nc.date2num(
+                timeStamp, date_time.units, date_time.calendar
+            )
             varField = varFieldList[shortVarName]
-            
+
             # flip variable if necessary (to follow cf_convention)
-            if self.netcdf_y_orientation_follow_cf_convention: varField = np.flipud(varField)
-            
-            rootgrp.variables[shortVarName][posCnt,:,:] = varField
+            if self.netcdf_y_orientation_follow_cf_convention:
+                varField = np.flipud(varField)
+
+            rootgrp.variables[shortVarName][posCnt, :, :] = varField
 
         rootgrp.sync()
         rootgrp.close()
 
     def close(self, ncFileName):
 
-        rootgrp = nc.Dataset(ncFileName,'w')
+        rootgrp = nc.Dataset(ncFileName, "w")
 
-        # closing the file 
+        # closing the file
         rootgrp.close()

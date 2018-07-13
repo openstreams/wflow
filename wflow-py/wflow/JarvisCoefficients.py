@@ -21,69 +21,83 @@ import pdb
 from copy import copy as copylist
 
 try:
-    from  wflow.wf_DynamicFramework import *
+    from wflow.wf_DynamicFramework import *
 except ImportError:
-    from  wf_DynamicFramework import *
+    from wf_DynamicFramework import *
 import scipy
 
 
-def calcEp(self,k):
+def calcEp(self, k):
     """
     REQUIRED INPUT:
     """
-#    resistenceAeroD(self)
-#    potential_evaporation(self,k)
-    self.EpDay = ifthenelse(self.Sw_t[k] > 0, self.EpDaySnow2, self.EpDay2)           #EpDaySnow added on 18-02-2016
-    downscale_evaporation(self,k)
-    
-def calcEpSnow(self,k):
+    #    resistenceAeroD(self)
+    #    potential_evaporation(self,k)
+    self.EpDay = ifthenelse(
+        self.Sw_t[k] > 0, self.EpDaySnow2, self.EpDay2
+    )  # EpDaySnow added on 18-02-2016
+    downscale_evaporation(self, k)
+
+
+def calcEpSnow(self, k):
     """
     REQUIRED INPUT:
 	daily input data
     """
-#    resistenceAeroD(self)
-#    potential_evaporation(self,k)
-    self.EpDaySnow = ifthenelse(self.Sw_t[k] > 0, self.EpDaySnow2 * self.lamda / self.lamdaS, self.EpDay2 * self.lamda / self.lamdaS)           #EpDaySnow added on 18-02-2016
-#    self.EpDaySnow = self.EpDay * self.lamda / self.lamdaS
-    downscale_evaporation_snow(self,k)
+    #    resistenceAeroD(self)
+    #    potential_evaporation(self,k)
+    self.EpDaySnow = ifthenelse(
+        self.Sw_t[k] > 0,
+        self.EpDaySnow2 * self.lamda / self.lamdaS,
+        self.EpDay2 * self.lamda / self.lamdaS,
+    )  # EpDaySnow added on 18-02-2016
+    #    self.EpDaySnow = self.EpDay * self.lamda / self.lamdaS
+    downscale_evaporation_snow(self, k)
 
-def calcEpSnowHour(self,k):
+
+def calcEpSnowHour(self, k):
     """
     REQUIRED INPUT:
 	hourly input data
     """
-#    resistenceAeroD(self)
-#    potential_evaporation(self,k)
-    self.EpHour = ifthenelse(self.Sw_t[k] > 0, self.EpDaySnow2 * self.lamda / self.lamdaS, self.EpDay2 * self.lamda / self.lamdaS)           #EpDaySnow added on 31-03-2016
-    
-def calcEu_laiFixed(self,k):
+    #    resistenceAeroD(self)
+    #    potential_evaporation(self,k)
+    self.EpHour = ifthenelse(
+        self.Sw_t[k] > 0,
+        self.EpDaySnow2 * self.lamda / self.lamdaS,
+        self.EpDay2 * self.lamda / self.lamdaS,
+    )  # EpDaySnow added on 31-03-2016
+
+
+def calcEu_laiFixed(self, k):
     """
     REQUIRED INPUT:
     """
-    JC_temperature(self,k)
-    JC_vapourDeficit(self,k)
-    JC_LAIeffective(self,k)
-    JC_solarRadiation(self,k)
-    JC_soilMoisture(self,k)
+    JC_temperature(self, k)
+    JC_vapourDeficit(self, k)
+    JC_LAIeffective(self, k)
+    JC_solarRadiation(self, k)
+    JC_soilMoisture(self, k)
     resistenceAeroD(self)
-    resistenceTotal(self,k)
-#    potential_evaporation(self,k)
-    downscale_evaporation(self,k)
+    resistenceTotal(self, k)
+    #    potential_evaporation(self,k)
+    downscale_evaporation(self, k)
     self.EupHour = self.EpHour - self.Ei_[k]
     self.Eu = self.EupHour * self.k
-    
-def calcEu(self,k,n):
+
+
+def calcEu(self, k, n):
     """
     REQUIRED INPUT:
     n = number of evaporation fluxes above the reservoir to be calculated (to decrease Ep)
     """
-    JC_temperature(self,k)
-    JC_vapourDeficit(self,k)
-    JC_solarRadiation(self,k)
-    JC_soilMoisture(self,k)
+    JC_temperature(self, k)
+    JC_vapourDeficit(self, k)
+    JC_solarRadiation(self, k)
+    JC_soilMoisture(self, k)
     resistenceAeroD(self)
-    resistenceTotal_laiHRU(self,k)
-    downscale_evaporation(self,k)
+    resistenceTotal_laiHRU(self, k)
+    downscale_evaporation(self, k)
     if n == 1:
         self.EupHour = self.EpHour - self.Ei_[k]
     elif n == 2:
@@ -91,19 +105,28 @@ def calcEu(self,k,n):
     self.Eu = self.EupHour * self.k
 
 
-def JC_temperature(self,k):
+def JC_temperature(self, k):
     """
     REQUIRED INPUT:
         - mean daily temperature (K)
     PARAMETERS:
         - Topt (optimum temperature for transpiration, based on elevation and latitude (Cui et al, 2012))
     """
-    self.JC_ToptC = self.JC_Topt - 273.15   # changed on 9/4/2015, before Topt in K 
-    JC_temp1 = ifthenelse(self.Tmean < 273.15, 0, ifthenelse(pcrand(self.Tmean >= self.JC_Topt - 1, self.Tmean <= self.JC_Topt + 1), 1, 1 - self.JC_Topt ** -2 * (self.Tmean - self.JC_Topt) ** 2))
+    self.JC_ToptC = self.JC_Topt - 273.15  # changed on 9/4/2015, before Topt in K
+    JC_temp1 = ifthenelse(
+        self.Tmean < 273.15,
+        0,
+        ifthenelse(
+            pcrand(self.Tmean >= self.JC_Topt - 1, self.Tmean <= self.JC_Topt + 1),
+            1,
+            1 - self.JC_Topt ** -2 * (self.Tmean - self.JC_Topt) ** 2,
+        ),
+    )
     self.JC_temp = ifthenelse(JC_temp1 < 0, 0, JC_temp1)
     self.JC_temp_[k] = self.JC_temp
 
-def JC_vapourDeficit(self,k):
+
+def JC_vapourDeficit(self, k):
     """
     REQUIRED INPUT:
         - vapour pressure deficit (kPa)
@@ -112,37 +135,41 @@ def JC_vapourDeficit(self,k):
         - Cd1 (first vapour pressure parameter, fixed at 3 (Matsumoto et al. 2008))
         - Cd2 (second vapour pressure parameter, fixed at 0.1 (Matsumoto et al. 2008))
         """
-    
+
     denom = 1 + (self.vpd / self.JC_D05[k]) ** self.JC_cd1[k]
-    JC_vpd1 = (1 / denom) * (1 - self.JC_cd2[k]) + self.JC_cd2[k]    
-    self.JC_vpd = ifthenelse(JC_vpd1 < 0, 0, JC_vpd1)   
+    JC_vpd1 = (1 / denom) * (1 - self.JC_cd2[k]) + self.JC_cd2[k]
+    self.JC_vpd = ifthenelse(JC_vpd1 < 0, 0, JC_vpd1)
     self.JC_vpd_[k] = self.JC_vpd
-   
-def JC_LAIeffective(self,k):
+
+
+def JC_LAIeffective(self, k):
     """
     REQUIRED INPUT:
         - LAI (-)
     PARAMETERS:
         - none (Allen et al., 2006 & Zhou et al., 2006)   
     """
-    
-    self.JC_laiEff = self.LAI / (0.2 * self.LAI + 1)        
 
-    
-def JC_solarRadiation(self,k):
+    self.JC_laiEff = self.LAI / (0.2 * self.LAI + 1)
+
+
+def JC_solarRadiation(self, k):
     """
     REQUIRED INPUT:
         - incoming short wave radiation (W/m2)
     PARAMETERS:
         - Cr (radiation stress parameter, fixed at 100 (Zhou et al. 2006))
-    """    
-    
+    """
+
     rad_si_Wm2 = self.rad_si / 86400
-    JC_rad1 = rad_si_Wm2 * (1 + self.JC_cr[k]/1000) * (1 / (self.JC_cr[k] + rad_si_Wm2))
-    self.JC_rad = ifthenelse(JC_rad1 < 0, 0, JC_rad1) 
+    JC_rad1 = (
+        rad_si_Wm2 * (1 + self.JC_cr[k] / 1000) * (1 / (self.JC_cr[k] + rad_si_Wm2))
+    )
+    self.JC_rad = ifthenelse(JC_rad1 < 0, 0, JC_rad1)
     self.JC_rad_[k] = self.JC_rad
-    
-def JC_soilMoisture(self,k):
+
+
+def JC_soilMoisture(self, k):
     """
     REQUIRED INPUT:
         - storage unsaturated zone
@@ -151,11 +178,21 @@ def JC_soilMoisture(self,k):
         - SuFC (level of saturation in soil at field capacity)
         - SuWP (level of saturation in soil at wilting point)
     """
-    SuN = self.Su[k] / self.sumax[k]   
-    JC_sm1 = ifthenelse(SuN < self.SuWP[k], 0, ifthenelse(SuN > self.SuFC[k], 1,\
-        (SuN - self.SuWP[k]) * (self.SuFC[k] - self.SuWP[k] + self.JC_cuz[k]) / ((self.SuFC[k] - self.SuWP[k]) * (SuN - self.SuWP[k] + self.JC_cuz[k]))))
+    SuN = self.Su[k] / self.sumax[k]
+    JC_sm1 = ifthenelse(
+        SuN < self.SuWP[k],
+        0,
+        ifthenelse(
+            SuN > self.SuFC[k],
+            1,
+            (SuN - self.SuWP[k])
+            * (self.SuFC[k] - self.SuWP[k] + self.JC_cuz[k])
+            / ((self.SuFC[k] - self.SuWP[k]) * (SuN - self.SuWP[k] + self.JC_cuz[k])),
+        ),
+    )
     self.JC_sm = ifthenelse(JC_sm1 < 0, 0, JC_sm1)
     self.JC_sm_[k] = self.JC_sm
+
 
 def resistenceAeroD(self):
     """
@@ -169,7 +206,8 @@ def resistenceAeroD(self):
     """
     self.aeroRes = 245 / (86400 * (0.54 * self.wind2m + 0.5))
 
-def resistenceTotal(self,k):
+
+def resistenceTotal(self, k):
     """
     REQUIRED INPUT:
         - all Jarvis stress functions
@@ -182,12 +220,15 @@ def resistenceTotal(self,k):
     JC_all = self.JC_laiEff * self.JC_rad * self.JC_vpd * self.JC_temp * self.JC_sm
     stomRes1 = ifthenelse(JC_all == 0, 50000, self.JC_rstmin[k] / JC_all)
     stomRes2 = ifthenelse(stomRes1 > 50000, 50000, stomRes1)
-    self.stomRes = stomRes2 / (3600*24)
-    
-    self.k = 1 / (1 + self.stomRes * self.gamma / (self.aeroRes * (self.sgamma + self.gamma)))    
-    self.JC_k_[k] = self.k 
-    
-def resistenceTotal_laiHRU(self,k):
+    self.stomRes = stomRes2 / (3600 * 24)
+
+    self.k = 1 / (
+        1 + self.stomRes * self.gamma / (self.aeroRes * (self.sgamma + self.gamma))
+    )
+    self.JC_k_[k] = self.k
+
+
+def resistenceTotal_laiHRU(self, k):
     """
     REQUIRED INPUT:
         - all Jarvis stress functions
@@ -200,12 +241,15 @@ def resistenceTotal_laiHRU(self,k):
     JC_all = self.JC_rad * self.JC_vpd * self.JC_temp * self.JC_sm
     stomRes1 = ifthenelse(JC_all == 0, 50000, self.rst_lai[k] / JC_all)
     stomRes2 = ifthenelse(stomRes1 > 50000, 50000, stomRes1)
-    self.stomRes = stomRes2 / (3600*24)
-    
-    self.k = 1 / (1 + self.stomRes * self.gamma / (self.aeroRes * (self.sgamma + self.gamma)))    
-    self.JC_k_[k] = self.k 
+    self.stomRes = stomRes2 / (3600 * 24)
 
-def potential_evaporation(self,k):
+    self.k = 1 / (
+        1 + self.stomRes * self.gamma / (self.aeroRes * (self.sgamma + self.gamma))
+    )
+    self.JC_k_[k] = self.k
+
+
+def potential_evaporation(self, k):
     """
     REQUIRED INPUT:
         - net radiation
@@ -219,13 +263,13 @@ def potential_evaporation(self,k):
         - rhoW (density of water)
         - lamda (latent heat of vaporisation)
     """
-    nom = self.sgamma * self.Rn + self.rhoA * self.Cp * self.vpd / self.aeroRes 
+    nom = self.sgamma * self.Rn + self.rhoA * self.Cp * self.vpd / self.aeroRes
     denom = self.rhoW * self.lamda * (self.sgamma + self.gamma)
     self.EpDay = (nom / denom) * 1000
     self.EpD_[k] = self.EpDay
-    
 
-def downscale_evaporation(self,k):
+
+def downscale_evaporation(self, k):
     """
     REQUIRED INPUT:
         daily evaporation (EpDay)
@@ -235,21 +279,30 @@ def downscale_evaporation(self,k):
     PARAMETERS:
     - 
     """
-    
-    #teller = numpy.nanmax(pcr2numpy(self.thestep,nan))
-    teller = pcr2numpy(self.thestep,nan)[0,0]
-    x = teller - floor(teller/24) * 24 * scalar(self.catchArea)
+
+    # teller = numpy.nanmax(pcr2numpy(self.thestep,nan))
+    teller = pcr2numpy(self.thestep, nan)[0, 0]
+    x = teller - floor(teller / 24) * 24 * scalar(self.catchArea)
     DL = self.DE - self.DS + 1
-    P = 2 * pi / (2 * DL)                              # period
-    SH = DL - 12                                        #horizontal shift of new signal
-    aN = -1 * self.EpDay * P                       # nominator of the amplitude
-    aDN = sin((P * (self.DE + SH)) * 180 / pi) - sin((P * (self.DS + SH)) * 180 / pi)     # denominator of the amplitude
-    ampl = aN / aDN                                     # amplitude of new signal
+    P = 2 * pi / (2 * DL)  # period
+    SH = DL - 12  # horizontal shift of new signal
+    aN = -1 * self.EpDay * P  # nominator of the amplitude
+    aDN = sin((P * (self.DE + SH)) * 180 / pi) - sin(
+        (P * (self.DS + SH)) * 180 / pi
+    )  # denominator of the amplitude
+    ampl = aN / aDN  # amplitude of new signal
 
-    self.EpHour = max(ifthenelse(pcrand(x >= self.DS, x <= self.DE), -1 * ampl * cos((P * (x + SH)) * 180 / pi), 0), 0)
-    
+    self.EpHour = max(
+        ifthenelse(
+            pcrand(x >= self.DS, x <= self.DE),
+            -1 * ampl * cos((P * (x + SH)) * 180 / pi),
+            0,
+        ),
+        0,
+    )
 
-def downscale_evaporation_snow(self,k):
+
+def downscale_evaporation_snow(self, k):
     """
     REQUIRED INPUT:
         daily evaporation (EpDay)
@@ -259,20 +312,23 @@ def downscale_evaporation_snow(self,k):
     PARAMETERS:
     - 
     """
-    
-    teller = pcr2numpy(self.thestep,nan)[0,0]
-    x = teller - floor(teller/24) * 24 * scalar(self.catchArea)
+
+    teller = pcr2numpy(self.thestep, nan)[0, 0]
+    x = teller - floor(teller / 24) * 24 * scalar(self.catchArea)
     DL = self.DE - self.DS + 1
-    P = 2 * pi / (2 * DL)                              # period
-    SH = DL - 12                                         #horizontal shift of new signal  
-    aN = -1 * self.EpDaySnow * P                       # nominator of the amplitude
-    aDN = sin((P * (self.DE + SH)) * 180 / pi) - sin((P * (self.DS + SH)) * 180 / pi)     # denominator of the amplitude
-    ampl = aN / aDN                                     # amplitude of new signal
-    
-    self.EpHour = max(ifthenelse(pcrand(x >= self.DS, x <= self.DE), -1 * ampl * cos((P * (x + SH)) * 180 / pi), 0), 0)    
-    
-      
-    
-    
-    
-    
+    P = 2 * pi / (2 * DL)  # period
+    SH = DL - 12  # horizontal shift of new signal
+    aN = -1 * self.EpDaySnow * P  # nominator of the amplitude
+    aDN = sin((P * (self.DE + SH)) * 180 / pi) - sin(
+        (P * (self.DS + SH)) * 180 / pi
+    )  # denominator of the amplitude
+    ampl = aN / aDN  # amplitude of new signal
+
+    self.EpHour = max(
+        ifthenelse(
+            pcrand(x >= self.DS, x <= self.DE),
+            -1 * ampl * cos((P * (x + SH)) * 180 / pi),
+            0,
+        ),
+        0,
+    )

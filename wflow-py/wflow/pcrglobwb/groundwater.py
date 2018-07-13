@@ -30,7 +30,8 @@ from pcraster.framework import *
 import pcraster as pcr
 
 import logging
-logger = logging.getLogger('wflow_pcrglobwb')
+
+logger = logging.getLogger("wflow_pcrglobwb")
 
 import virtualOS as vos
 from ncConverter import *
@@ -38,21 +39,27 @@ from ncConverter import *
 from wflow.wf_DynamicFramework import configsection
 from wflow.wf_DynamicFramework import configget
 
+
 class Groundwater(object):
-    
     def getState(self):
         result = {}
-        result['storGroundwater']                        = self.storGroundwater                # unit: m
-        result['storGroundwaterFossil']                  = self.storGroundwaterFossil          # unit: m
-        result['avgTotalGroundwaterAbstraction']         = self.avgAbstraction                 # unit: m/day
-        result['avgTotalGroundwaterAllocationLong']      = self.avgAllocation                  # unit: m/day
-        result['avgTotalGroundwaterAllocationShort']     = self.avgAllocationShort             # unit: m/day
-        result['avgNonFossilGroundwaterAllocationLong']  = self.avgNonFossilAllocation         # unit: m/day
-        result['avgNonFossilGroundwaterAllocationShort'] = self.avgNonFossilAllocationShort    # unit: m/day
+        result["storGroundwater"] = self.storGroundwater  # unit: m
+        result["storGroundwaterFossil"] = self.storGroundwaterFossil  # unit: m
+        result["avgTotalGroundwaterAbstraction"] = self.avgAbstraction  # unit: m/day
+        result["avgTotalGroundwaterAllocationLong"] = self.avgAllocation  # unit: m/day
+        result[
+            "avgTotalGroundwaterAllocationShort"
+        ] = self.avgAllocationShort  # unit: m/day
+        result[
+            "avgNonFossilGroundwaterAllocationLong"
+        ] = self.avgNonFossilAllocation  # unit: m/day
+        result[
+            "avgNonFossilGroundwaterAllocationShort"
+        ] = self.avgNonFossilAllocationShort  # unit: m/day
 
         # states that needed for the coupling between PCR-GLOBWB and MODFLOW:
-        result['relativeGroundwaterHead'] = self.relativeGroundwaterHead                       # unit: m
-        result['baseflow']                = self.baseflow                                      # unit: m/day
+        result["relativeGroundwaterHead"] = self.relativeGroundwaterHead  # unit: m
+        result["baseflow"] = self.baseflow  # unit: m/day
 
         return result
 
@@ -61,12 +68,14 @@ class Groundwater(object):
 
         return result
 
-    def __init__(self, iniItems,landmask,spinUp,Dir, staticmaps, cloneMap):
+    def __init__(self, iniItems, landmask, spinUp, Dir, staticmaps, cloneMap):
         object.__init__(self)
 
-        self.cloneMap = cloneMap #iniItems.cloneMap
-        self.tmpDir   = os.path.join(os.path.abspath(Dir),"tmp") #iniItems.tmpDir
-        self.inputDir = os.path.join(os.path.abspath(Dir),staticmaps) #iniItems.globalOptions['inputDir']
+        self.cloneMap = cloneMap  # iniItems.cloneMap
+        self.tmpDir = os.path.join(os.path.abspath(Dir), "tmp")  # iniItems.tmpDir
+        self.inputDir = os.path.join(
+            os.path.abspath(Dir), staticmaps
+        )  # iniItems.globalOptions['inputDir']
         self.landmask = landmask
 
         # configuration from the ini file
@@ -74,20 +83,36 @@ class Groundwater(object):
 
         # option to activate a water balance check
         self.debugWaterBalance = True
-        if configget(iniItems,"routingOptions","debugWaterBalance","True") == "False": self.debugWaterBalance = False
+        if (
+            configget(iniItems, "routingOptions", "debugWaterBalance", "True")
+            == "False"
+        ):
+            self.debugWaterBalance = False
 
         self.useMODFLOW = False
-        if configget(iniItems,"groundwaterOptions","useMODFLOW","False") == "True": self.useMODFLOW = True
-
+        if configget(iniItems, "groundwaterOptions", "useMODFLOW", "False") == "True":
+            self.useMODFLOW = True
 
         #####################################################################################################################################################
         # limitAbstraction options
         self.limitAbstraction = False
-        if configget(iniItems,"landSurfaceOptions","limitAbstraction","False") == "True": self.limitAbstraction = True
+        if (
+            configget(iniItems, "landSurfaceOptions", "limitAbstraction", "False")
+            == "True"
+        ):
+            self.limitAbstraction = True
 
         # option for limitting fossil groundwater abstractions:
         self.limitFossilGroundwaterAbstraction = False
-        if configget(iniItems,"groundwaterOptions","limitFossilGroundWaterAbstraction","False") == "True":
+        if (
+            configget(
+                iniItems,
+                "groundwaterOptions",
+                "limitFossilGroundWaterAbstraction",
+                "False",
+            )
+            == "True"
+        ):
             self.limitFossilGroundwaterAbstraction = True
 
         # if using MODFLOW, limitAbstraction must be True (the abstraction cannot exceed storGroundwater, the concept of fossil groundwater is abandoned)
@@ -96,119 +121,203 @@ class Groundwater(object):
             self.limitFossilGroundwaterAbstraction = False
 
         # option for limitting regional groundwater abstractions
-        if configget(iniItems,"groundwaterOptions","pumpingCapacityNC","None") != "None":
-            logger.info('Limit for annual regional groundwater abstraction is used.')
+        if (
+            configget(iniItems, "groundwaterOptions", "pumpingCapacityNC", "None")
+            != "None"
+        ):
+            logger.info("Limit for annual regional groundwater abstraction is used.")
             self.limitRegionalAnnualGroundwaterAbstraction = True
-            self.pumpingCapacityNC = vos.getFullPath(\
-                                     iniItems.get("groundwaterOptions","pumpingCapacityNC"),self.inputDir,False)
+            self.pumpingCapacityNC = vos.getFullPath(
+                iniItems.get("groundwaterOptions", "pumpingCapacityNC"),
+                self.inputDir,
+                False,
+            )
         else:
-            logger.warning('NO LIMIT for regional groundwater (annual) pumping. It may result too high groundwater abstraction.')
+            logger.warning(
+                "NO LIMIT for regional groundwater (annual) pumping. It may result too high groundwater abstraction."
+            )
             self.limitRegionalAnnualGroundwaterAbstraction = False
         #####################################################################################################################################################
 
-
         ######################################################################################
         # a netcdf file containing the groundwater properties
-        if configget(iniItems,"groundwaterOptions","groundwaterPropertiesNC","None") != "None":
-            groundwaterPropertiesNC = vos.getFullPath(\
-                                      iniItems.get("groundwaterOptions"\
-                                      ,"groundwaterPropertiesNC"),self.inputDir)
+        if (
+            configget(iniItems, "groundwaterOptions", "groundwaterPropertiesNC", "None")
+            != "None"
+        ):
+            groundwaterPropertiesNC = vos.getFullPath(
+                iniItems.get("groundwaterOptions", "groundwaterPropertiesNC"),
+                self.inputDir,
+            )
         ######################################################################################
-
 
         #####################################################################################################################################################
         # assign aquifer specific yield (dimensionless)
-        if configget(iniItems,"groundwaterOptions","groundwaterPropertiesNC","None") == "None" or 'specificYield' in iniItems._sections["groundwaterOptions"]:
-            self.specificYield  = vos.readPCRmapClone(\
-               iniItems.get("groundwaterOptions","specificYield"),self.cloneMap,self.tmpDir,self.inputDir)
+        if (
+            configget(iniItems, "groundwaterOptions", "groundwaterPropertiesNC", "None")
+            == "None"
+            or "specificYield" in iniItems._sections["groundwaterOptions"]
+        ):
+            self.specificYield = vos.readPCRmapClone(
+                iniItems.get("groundwaterOptions", "specificYield"),
+                self.cloneMap,
+                self.tmpDir,
+                self.inputDir,
+            )
         else:
-            self.specificYield = vos.netcdf2PCRobjCloneWithoutTime(\
-                                 groundwaterPropertiesNC,'specificYield',self.cloneMap)
-        self.specificYield = pcr.cover(self.specificYield,0.0)
-        self.specificYield = pcr.max(0.010,self.specificYield)          # TODO: Set the minimum values of specific yield.
-        self.specificYield = pcr.min(1.000,self.specificYield)
+            self.specificYield = vos.netcdf2PCRobjCloneWithoutTime(
+                groundwaterPropertiesNC, "specificYield", self.cloneMap
+            )
+        self.specificYield = pcr.cover(self.specificYield, 0.0)
+        self.specificYield = pcr.max(
+            0.010, self.specificYield
+        )  # TODO: Set the minimum values of specific yield.
+        self.specificYield = pcr.min(1.000, self.specificYield)
         #####################################################################################################################################################
-
 
         #####################################################################################################################################################
         # assign aquifer hydraulic conductivity (unit: m/day)
-        if configget(iniItems,"groundwaterOptions","groundwaterPropertiesNC","None") == "None" or 'kSatAquifer' in iniItems._sections['groundwaterOptions']:
-            self.kSatAquifer = vos.readPCRmapClone(\
-               iniItems.get("groundwaterOptions","kSatAquifer"),self.cloneMap,self.tmpDir,self.inputDir)
+        if (
+            configget(iniItems, "groundwaterOptions", "groundwaterPropertiesNC", "None")
+            == "None"
+            or "kSatAquifer" in iniItems._sections["groundwaterOptions"]
+        ):
+            self.kSatAquifer = vos.readPCRmapClone(
+                iniItems.get("groundwaterOptions", "kSatAquifer"),
+                self.cloneMap,
+                self.tmpDir,
+                self.inputDir,
+            )
         else:
-            self.kSatAquifer = vos.netcdf2PCRobjCloneWithoutTime(\
-                               groundwaterPropertiesNC,'kSatAquifer',self.cloneMap)
-        self.kSatAquifer = pcr.cover(self.kSatAquifer,0.0)
-        self.kSatAquifer = pcr.max(0.010,self.kSatAquifer)
+            self.kSatAquifer = vos.netcdf2PCRobjCloneWithoutTime(
+                groundwaterPropertiesNC, "kSatAquifer", self.cloneMap
+            )
+        self.kSatAquifer = pcr.cover(self.kSatAquifer, 0.0)
+        self.kSatAquifer = pcr.max(0.010, self.kSatAquifer)
         #####################################################################################################################################################
-
 
         #####################################################################################################################################################
         # try to assign the reccesion coefficient (unit: day-1) from the netcdf file of groundwaterPropertiesNC
         try:
-            self.recessionCoeff = vos.netcdf2PCRobjCloneWithoutTime(\
-                                  groundwaterPropertiesNC,'recessionCoeff',\
-                                  cloneMapFileName = self.cloneMap)
+            self.recessionCoeff = vos.netcdf2PCRobjCloneWithoutTime(
+                groundwaterPropertiesNC,
+                "recessionCoeff",
+                cloneMapFileName=self.cloneMap,
+            )
         except:
             self.recessionCoeff = None
-            msg = "The 'recessionCoeff' cannot be read from the file: "+groundwaterPropertiesNC
+            msg = (
+                "The 'recessionCoeff' cannot be read from the file: "
+                + groundwaterPropertiesNC
+            )
             logger.warning(msg)
 
         # assign the reccession coefficient based on the given pcraster file
-        if 'recessionCoeff' in iniItems._sections['groundwaterOptions']:
-            if configget(iniItems,"groundwaterOptions","recessionCoeff","None") != "None":\
-               self.recessionCoeff = vos.readPCRmapClone(iniItems.get("groundwaterOptions","recessionCoeff"),self.cloneMap,self.tmpDir,self.inputDir)
+        if "recessionCoeff" in iniItems._sections["groundwaterOptions"]:
+            if (
+                configget(iniItems, "groundwaterOptions", "recessionCoeff", "None")
+                != "None"
+            ):
+                self.recessionCoeff = vos.readPCRmapClone(
+                    iniItems.get("groundwaterOptions", "recessionCoeff"),
+                    self.cloneMap,
+                    self.tmpDir,
+                    self.inputDir,
+                )
 
         # calculate the reccession coefficient based on the given parameters
-        if isinstance(self.recessionCoeff,types.NoneType) and\
-                          'recessionCoeff' not in iniItems._sections['groundwaterOptions']:
+        if (
+            isinstance(self.recessionCoeff, types.NoneType)
+            and "recessionCoeff" not in iniItems._sections["groundwaterOptions"]
+        ):
 
             msg = "Calculating the groundwater linear reccesion coefficient based on the given parameters."
             logger.info(msg)
 
             # reading the 'aquiferWidth' value from the landSurfaceOptions (slopeLength)
-            if configget(iniItems,"landSurfaceOptions","topographyNC","None") == None:
-                aquiferWidth = vos.readPCRmapClone(iniItems.get("landSurfaceOptions","slopeLength"),self.cloneMap,self.tmpDir,self.inputDir)
+            if (
+                configget(iniItems, "landSurfaceOptions", "topographyNC", "None")
+                == None
+            ):
+                aquiferWidth = vos.readPCRmapClone(
+                    iniItems.get("landSurfaceOptions", "slopeLength"),
+                    self.cloneMap,
+                    self.tmpDir,
+                    self.inputDir,
+                )
             else:
-                topoPropertiesNC = vos.getFullPath(iniItems.get("landSurfaceOptions","topographyNC"),self.inputDir)
-                aquiferWidth = vos.netcdf2PCRobjCloneWithoutTime(topoPropertiesNC,'slopeLength',self.cloneMap)
+                topoPropertiesNC = vos.getFullPath(
+                    iniItems.get("landSurfaceOptions", "topographyNC"), self.inputDir
+                )
+                aquiferWidth = vos.netcdf2PCRobjCloneWithoutTime(
+                    topoPropertiesNC, "slopeLength", self.cloneMap
+                )
             # covering aquiferWidth with its maximum value
-            aquiferWidth = pcr.ifthen(self.landmask, pcr.cover(aquiferWidth, pcr.mapmaximum(aquiferWidth)))
+            aquiferWidth = pcr.ifthen(
+                self.landmask, pcr.cover(aquiferWidth, pcr.mapmaximum(aquiferWidth))
+            )
 
             # aquifer thickness (unit: m) for recession coefficient
-            aquiferThicknessForRecessionCoeff = vos.readPCRmapClone(iniItems.get("groundwaterOptions","aquiferThicknessForRecessionCoeff"),\
-                                                                    self.cloneMap,self.tmpDir,self.inputDir)
+            aquiferThicknessForRecessionCoeff = vos.readPCRmapClone(
+                iniItems.get("groundwaterOptions", "aquiferThicknessForRecessionCoeff"),
+                self.cloneMap,
+                self.tmpDir,
+                self.inputDir,
+            )
 
             # calculate recessionCoeff (unit; day-1)
-            self.recessionCoeff = (math.pi**2.) * aquiferThicknessForRecessionCoeff / \
-                                  (4.*self.specificYield*(aquiferWidth**2.))
+            self.recessionCoeff = (
+                (math.pi ** 2.)
+                * aquiferThicknessForRecessionCoeff
+                / (4. * self.specificYield * (aquiferWidth ** 2.))
+            )
 
         # assign the reccession coefficient based on the given pcraster file
-        if 'recessionCoeff' in iniItems._sections['groundwaterOptions']:
-            if configget(iniItems,"groundwaterOptions","recessionCoeff","None") != "None":\
-               self.recessionCoeff = vos.readPCRmapClone(iniItems.get("groundwaterOptions","recessionCoeff"),self.cloneMap,self.tmpDir,self.inputDir)
+        if "recessionCoeff" in iniItems._sections["groundwaterOptions"]:
+            if (
+                configget(iniItems, "groundwaterOptions", "recessionCoeff", "None")
+                != "None"
+            ):
+                self.recessionCoeff = vos.readPCRmapClone(
+                    iniItems.get("groundwaterOptions", "recessionCoeff"),
+                    self.cloneMap,
+                    self.tmpDir,
+                    self.inputDir,
+                )
 
         # minimum and maximum values for groundwater recession coefficient (day-1)
-        self.recessionCoeff = pcr.cover(self.recessionCoeff,0.00)
-        self.recessionCoeff = pcr.min(0.9999,self.recessionCoeff)
-        if 'minRecessionCoeff' in iniItems._sections['groundwaterOptions']:
-            minRecessionCoeff = float(iniItems.get("groundwaterOptions","minRecessionCoeff"))
+        self.recessionCoeff = pcr.cover(self.recessionCoeff, 0.00)
+        self.recessionCoeff = pcr.min(0.9999, self.recessionCoeff)
+        if "minRecessionCoeff" in iniItems._sections["groundwaterOptions"]:
+            minRecessionCoeff = float(
+                iniItems.get("groundwaterOptions", "minRecessionCoeff")
+            )
         else:
-            minRecessionCoeff = 1.0e-4                                               # This is the minimum value used in Van Beek et al. (2011).
-        self.recessionCoeff = pcr.max(minRecessionCoeff,self.recessionCoeff)
+            minRecessionCoeff = (
+                1.0e-4
+            )  # This is the minimum value used in Van Beek et al. (2011).
+        self.recessionCoeff = pcr.max(minRecessionCoeff, self.recessionCoeff)
         #####################################################################################################################################################
-
 
         #####################################################################################################################################################
         # assign the river/stream/surface water bed conductivity
         # - the default value is equal to kSatAquifer
         self.riverBedConductivity = self.kSatAquifer
         # - assign riverBedConductivity coefficient based on the given pcraster file
-        if 'riverBedConductivity' in iniItems._sections['groundwaterOptions']:
-            if configget(iniItems,"groundwaterOptions","riverBedConductivity","None") != "None":\
-               self.riverBedConductivity = vos.readPCRmapClone(iniItems.get("groundwaterOptions","riverBedConductivity"),self.cloneMap,self.tmpDir,self.inputDir)
+        if "riverBedConductivity" in iniItems._sections["groundwaterOptions"]:
+            if (
+                configget(
+                    iniItems, "groundwaterOptions", "riverBedConductivity", "None"
+                )
+                != "None"
+            ):
+                self.riverBedConductivity = vos.readPCRmapClone(
+                    iniItems.get("groundwaterOptions", "riverBedConductivity"),
+                    self.cloneMap,
+                    self.tmpDir,
+                    self.inputDir,
+                )
         #####################################################################################################################################################
-
 
         #####################################################################################################################################################
         # total groundwater thickness (unit: m)
@@ -217,40 +326,79 @@ class Groundwater(object):
         #   - to determine productive aquifer areas (where capillary rise can occur and groundwater depletion can occur) (for runs with/without MODFLOW)
         # - Note that for runs with MODFLOW, ideally, we want to minimize enormous drawdown in non-productive aquifer areas
         totalGroundwaterThickness = None
-        if 'estimateOfTotalGroundwaterThickness' in iniItems._sections['groundwaterOptions'] and\
-           (self.limitFossilGroundwaterAbstraction or self.useMODFLOW):
+        if "estimateOfTotalGroundwaterThickness" in iniItems._sections[
+            "groundwaterOptions"
+        ] and (self.limitFossilGroundwaterAbstraction or self.useMODFLOW):
 
-            totalGroundwaterThickness = vos.readPCRmapClone(iniItems.get("groundwaterOptions","estimateOfTotalGroundwaterThickness"),
-                                                            self.cloneMap, self.tmpDir, self.inputDir)
+            totalGroundwaterThickness = vos.readPCRmapClone(
+                iniItems.get(
+                    "groundwaterOptions", "estimateOfTotalGroundwaterThickness"
+                ),
+                self.cloneMap,
+                self.tmpDir,
+                self.inputDir,
+            )
 
             # extrapolation of totalGroundwaterThickness
             # - TODO: Make a general extrapolation option as a function in the virtualOS.py
-            totalGroundwaterThickness = pcr.cover(totalGroundwaterThickness,
-                                        pcr.windowaverage(totalGroundwaterThickness, 0.75))
-            totalGroundwaterThickness = pcr.cover(totalGroundwaterThickness,
-                                        pcr.windowaverage(totalGroundwaterThickness, 0.75))
-            totalGroundwaterThickness = pcr.cover(totalGroundwaterThickness,
-                                        pcr.windowaverage(totalGroundwaterThickness, 0.75))
-            totalGroundwaterThickness = pcr.cover(totalGroundwaterThickness,
-                                        pcr.windowaverage(totalGroundwaterThickness, 1.00))
+            totalGroundwaterThickness = pcr.cover(
+                totalGroundwaterThickness,
+                pcr.windowaverage(totalGroundwaterThickness, 0.75),
+            )
+            totalGroundwaterThickness = pcr.cover(
+                totalGroundwaterThickness,
+                pcr.windowaverage(totalGroundwaterThickness, 0.75),
+            )
+            totalGroundwaterThickness = pcr.cover(
+                totalGroundwaterThickness,
+                pcr.windowaverage(totalGroundwaterThickness, 0.75),
+            )
+            totalGroundwaterThickness = pcr.cover(
+                totalGroundwaterThickness,
+                pcr.windowaverage(totalGroundwaterThickness, 1.00),
+            )
             totalGroundwaterThickness = pcr.cover(totalGroundwaterThickness, 0.0)
 
             # set minimum thickness
-            if 'minimumTotalGroundwaterThickness' in iniItems._sections['groundwaterOptions']:
-                minimumThickness = pcr.scalar(float(\
-                                   iniItems.get("groundwaterOptions","minimumTotalGroundwaterThickness")))
-                totalGroundwaterThickness = pcr.max(minimumThickness, totalGroundwaterThickness)
+            if (
+                "minimumTotalGroundwaterThickness"
+                in iniItems._sections["groundwaterOptions"]
+            ):
+                minimumThickness = pcr.scalar(
+                    float(
+                        iniItems.get(
+                            "groundwaterOptions", "minimumTotalGroundwaterThickness"
+                        )
+                    )
+                )
+                totalGroundwaterThickness = pcr.max(
+                    minimumThickness, totalGroundwaterThickness
+                )
 
             # set maximum thickness
-            if 'maximumTotalGroundwaterThickness' in iniItems._sections['groundwaterOptions'] and\
-                                                    (configget(iniItems,"groundwaterOptions","maximumTotalGroundwaterThickness","None") != "None"):
-                maximumThickness = float(iniItems.get("groundwaterOptions","maximumTotalGroundwaterThickness"))
-                totalGroundwaterThickness = pcr.min(maximumThickness, totalGroundwaterThickness)
+            if "maximumTotalGroundwaterThickness" in iniItems._sections[
+                "groundwaterOptions"
+            ] and (
+                configget(
+                    iniItems,
+                    "groundwaterOptions",
+                    "maximumTotalGroundwaterThickness",
+                    "None",
+                )
+                != "None"
+            ):
+                maximumThickness = float(
+                    iniItems.get(
+                        "groundwaterOptions", "maximumTotalGroundwaterThickness"
+                    )
+                )
+                totalGroundwaterThickness = pcr.min(
+                    maximumThickness, totalGroundwaterThickness
+                )
 
             # estimate of total groundwater thickness (unit: m)
             self.totalGroundwaterThickness = totalGroundwaterThickness
         #####################################################################################################################################################
-
 
         #####################################################################################################################################################
         # extent of the productive aquifer (a boolean map)
@@ -259,324 +407,549 @@ class Groundwater(object):
         self.productive_aquifer = pcr.ifthen(self.landmask, pcr.boolean(1.0))
         excludeUnproductiveAquifer = True
         if excludeUnproductiveAquifer:
-            if 'minimumTransmissivityForProductiveAquifer' in iniItems._sections['groundwaterOptions'] and\
-                                                             (configget(iniItems,"groundwaterOptions","minimumTransmissivityForProductiveAquifer","None") != "None" or\
-                                                              configget(iniItems,"groundwaterOptions","minimumTransmissivityForProductiveAquifer","False") != "False"):
-                minimumTransmissivityForProductiveAquifer = \
-                                          vos.readPCRmapClone(iniItems.get("groundwaterOptions","minimumTransmissivityForProductiveAquifer"),\
-                                                              self.cloneMap, self.tmpDir, self.inputDir)
-                self.productive_aquifer = pcr.cover(\
-                 pcr.ifthen(self.kSatAquifer * totalGroundwaterThickness > minimumTransmissivityForProductiveAquifer, pcr.boolean(1.0)), pcr.boolean(0.0))
+            if "minimumTransmissivityForProductiveAquifer" in iniItems._sections[
+                "groundwaterOptions"
+            ] and (
+                configget(
+                    iniItems,
+                    "groundwaterOptions",
+                    "minimumTransmissivityForProductiveAquifer",
+                    "None",
+                )
+                != "None"
+                or configget(
+                    iniItems,
+                    "groundwaterOptions",
+                    "minimumTransmissivityForProductiveAquifer",
+                    "False",
+                )
+                != "False"
+            ):
+                minimumTransmissivityForProductiveAquifer = vos.readPCRmapClone(
+                    iniItems.get(
+                        "groundwaterOptions",
+                        "minimumTransmissivityForProductiveAquifer",
+                    ),
+                    self.cloneMap,
+                    self.tmpDir,
+                    self.inputDir,
+                )
+                self.productive_aquifer = pcr.cover(
+                    pcr.ifthen(
+                        self.kSatAquifer * totalGroundwaterThickness
+                        > minimumTransmissivityForProductiveAquifer,
+                        pcr.boolean(1.0),
+                    ),
+                    pcr.boolean(0.0),
+                )
         self.productive_aquifer = pcr.cover(self.productive_aquifer, pcr.boolean(0.0))
         # - TODO: Check and re-calculate the GLHYMPS map to confirm the kSatAquifer value in groundwaterPropertiesNC (e.g. we miss some parts of HPA).
         #####################################################################################################################################################
 
-
         #####################################################################################################################################################
         # estimate of fossil groundwater capacity (based on the aquifer thickness and specific yield)
-        if configget(iniItems,"groundwaterOptions","limitFossilGroundWaterAbstraction","False") == "True" and self.limitAbstraction == False:
+        if (
+            configget(
+                iniItems,
+                "groundwaterOptions",
+                "limitFossilGroundWaterAbstraction",
+                "False",
+            )
+            == "True"
+            and self.limitAbstraction == False
+        ):
 
-            logger.info('Fossil groundwater abstractions are allowed with LIMIT.')
+            logger.info("Fossil groundwater abstractions are allowed with LIMIT.")
 
-            logger.info('Estimating fossil groundwater capacities based on aquifer thicknesses and specific yield.')
+            logger.info(
+                "Estimating fossil groundwater capacities based on aquifer thicknesses and specific yield."
+            )
             # TODO: Make the following aquifer thickness information can be used to define the extent of productive aquifer.
 
             # estimate of capacity (unit: m) of renewable groundwater (to correct the initial estimate of fossil groundwater capacity)
             # - this value is NOT relevant, but requested in the IWMI project
-            if 'estimateOfRenewableGroundwaterCapacity' not in iniItems._sections['groundwaterOptions']:\
-                configset(iniItems,"groundwaterOptions","estimateOfRenewableGroundwaterCapacity","0.0")
-            storGroundwaterCap =  pcr.cover(
-                                  vos.readPCRmapClone(\
-                                  float(iniItems.get("groundwaterOptions","estimateOfRenewableGroundwaterCapacity")),
-                                  self.cloneMap,self.tmpDir,self.inputDir), 0.0)
+            if (
+                "estimateOfRenewableGroundwaterCapacity"
+                not in iniItems._sections["groundwaterOptions"]
+            ):
+                configset(
+                    iniItems,
+                    "groundwaterOptions",
+                    "estimateOfRenewableGroundwaterCapacity",
+                    "0.0",
+                )
+            storGroundwaterCap = pcr.cover(
+                vos.readPCRmapClone(
+                    float(
+                        iniItems.get(
+                            "groundwaterOptions",
+                            "estimateOfRenewableGroundwaterCapacity",
+                        )
+                    ),
+                    self.cloneMap,
+                    self.tmpDir,
+                    self.inputDir,
+                ),
+                0.0,
+            )
             # fossil groundwater capacity (unit: m)
-            self.fossilWaterCap = pcr.ifthen(self.landmask,\
-                                  pcr.max(0.0,\
-                                  totalGroundwaterThickness*self.specificYield - storGroundwaterCap))
+            self.fossilWaterCap = pcr.ifthen(
+                self.landmask,
+                pcr.max(
+                    0.0,
+                    totalGroundwaterThickness * self.specificYield - storGroundwaterCap,
+                ),
+            )
         #####################################################################################################################################################
-
 
         #####################################################################################################################################################
         # zones at which groundwater allocations are determined
         self.usingAllocSegments = False
         # - by default, it is consistent with the one defined in the landSurfaceOptions
-        if configget(iniItems,"landSurfaceOptions","allocationSegmentsForGroundSurfaceWater","None") not in ["None", "False"]:
+        if configget(
+            iniItems,
+            "landSurfaceOptions",
+            "allocationSegmentsForGroundSurfaceWater",
+            "None",
+        ) not in ["None", "False"]:
             self.usingAllocSegments = True
-            groundwaterAllocationSegments = iniItems.get("landSurfaceOptions","allocationSegmentsForGroundSurfaceWater")
+            groundwaterAllocationSegments = iniItems.get(
+                "landSurfaceOptions", "allocationSegmentsForGroundSurfaceWater"
+            )
         # - yet, we can also define a specific one for groundwater
-        if "allocationSegmentsForGroundwater" in iniItems._sections['groundwaterOptions']:
-            if configget(iniItems,"groundwaterOptions","allocationSegmentsForGroundwater","None") not in ["None", "False"]:
+        if (
+            "allocationSegmentsForGroundwater"
+            in iniItems._sections["groundwaterOptions"]
+        ):
+            if configget(
+                iniItems,
+                "groundwaterOptions",
+                "allocationSegmentsForGroundwater",
+                "None",
+            ) not in ["None", "False"]:
                 self.usingAllocSegments = True
-                groundwaterAllocationSegments = iniItems.get("groundwaterOptions","allocationSegmentsForGroundwater")
+                groundwaterAllocationSegments = iniItems.get(
+                    "groundwaterOptions", "allocationSegmentsForGroundwater"
+                )
             else:
                 self.usingAllocSegments = False
         else:
             self.usingAllocSegments = False
         #####################################################################################################################################################
 
-
         #####################################################################################################################################################
         # incorporating groundwater distribution network:
         if self.usingAllocSegments:
 
-            self.allocSegments = vos.readPCRmapClone(\
-             groundwaterAllocationSegments,
-             self.cloneMap,self.tmpDir,self.inputDir,isLddMap=False,cover=None,isNomMap=True)
+            self.allocSegments = vos.readPCRmapClone(
+                groundwaterAllocationSegments,
+                self.cloneMap,
+                self.tmpDir,
+                self.inputDir,
+                isLddMap=False,
+                cover=None,
+                isNomMap=True,
+            )
             self.allocSegments = pcr.ifthen(self.landmask, self.allocSegments)
 
-            cellArea = vos.readPCRmapClone(\
-              iniItems.get("routingOptions","cellAreaMap"),
-              self.cloneMap,self.tmpDir,self.inputDir)
-            cellArea = pcr.ifthen(self.landmask, cellArea)              # TODO: integrate this one with the one coming from the routing module
+            cellArea = vos.readPCRmapClone(
+                iniItems.get("routingOptions", "cellAreaMap"),
+                self.cloneMap,
+                self.tmpDir,
+                self.inputDir,
+            )
+            cellArea = pcr.ifthen(
+                self.landmask, cellArea
+            )  # TODO: integrate this one with the one coming from the routing module
 
-            self.segmentArea = pcr.areatotal(pcr.cover(cellArea, 0.0), self.allocSegments)
+            self.segmentArea = pcr.areatotal(
+                pcr.cover(cellArea, 0.0), self.allocSegments
+            )
             self.segmentArea = pcr.ifthen(self.landmask, self.segmentArea)
         #####################################################################################################################################################
 
-
         #####################################################################################################################################################
         # maximumDailyGroundwaterAbstraction (unit: m/day) - in order to avoid over-abstraction of groundwater source
-        self.maximumDailyGroundwaterAbstraction = vos.readPCRmapClone(configget(iniItems,"groundwaterOptions","maximumDailyGroundwaterAbstraction","0.050"),
-                                                                      self.cloneMap,self.tmpDir,self.inputDir)
+        self.maximumDailyGroundwaterAbstraction = vos.readPCRmapClone(
+            configget(
+                iniItems,
+                "groundwaterOptions",
+                "maximumDailyGroundwaterAbstraction",
+                "0.050",
+            ),
+            self.cloneMap,
+            self.tmpDir,
+            self.inputDir,
+        )
         #####################################################################################################################################################
-
 
         #####################################################################################################################################################
         # maximumDailyFossilGroundwaterAbstraction (unit: m/day) - in order to avoid over-abstraction of groundwater source
-        self.maximumDailyFossilGroundwaterAbstraction = vos.readPCRmapClone(configget(iniItems,"groundwaterOptions","maximumDailyFossilGroundwaterAbstraction","0.020"),
-                                                                      self.cloneMap,self.tmpDir,self.inputDir)
+        self.maximumDailyFossilGroundwaterAbstraction = vos.readPCRmapClone(
+            configget(
+                iniItems,
+                "groundwaterOptions",
+                "maximumDailyFossilGroundwaterAbstraction",
+                "0.020",
+            ),
+            self.cloneMap,
+            self.tmpDir,
+            self.inputDir,
+        )
         #####################################################################################################################################################
 
-
         # get the initial conditions
-        self.getICs(iniItems,spinUp)
+        self.getICs(iniItems, spinUp)
 
         # initiate old style reporting (this is useful for debugging)
         self.initiate_old_style_groundwater_reporting(iniItems)
 
-    def initiate_old_style_groundwater_reporting(self,iniItems):
+    def initiate_old_style_groundwater_reporting(self, iniItems):
 
         self.report = True
         try:
-            self.outDailyTotNC = iniItems.get("groundwaterOptions","outDailyTotNC").split(",")
-            self.outMonthTotNC = iniItems.get("groundwaterOptions","outMonthTotNC").split(",")
-            self.outMonthAvgNC = iniItems.get("groundwaterOptions","outMonthAvgNC").split(",")
-            self.outMonthEndNC = iniItems.get("groundwaterOptions","outMonthEndNC").split(",")
-            self.outAnnuaTotNC = iniItems.get("groundwaterOptions","outAnnuaTotNC").split(",")
-            self.outAnnuaAvgNC = iniItems.get("groundwaterOptions","outAnnuaAvgNC").split(",")
-            self.outAnnuaEndNC = iniItems.get("groundwaterOptions","outAnnuaEndNC").split(",")
+            self.outDailyTotNC = iniItems.get(
+                "groundwaterOptions", "outDailyTotNC"
+            ).split(",")
+            self.outMonthTotNC = iniItems.get(
+                "groundwaterOptions", "outMonthTotNC"
+            ).split(",")
+            self.outMonthAvgNC = iniItems.get(
+                "groundwaterOptions", "outMonthAvgNC"
+            ).split(",")
+            self.outMonthEndNC = iniItems.get(
+                "groundwaterOptions", "outMonthEndNC"
+            ).split(",")
+            self.outAnnuaTotNC = iniItems.get(
+                "groundwaterOptions", "outAnnuaTotNC"
+            ).split(",")
+            self.outAnnuaAvgNC = iniItems.get(
+                "groundwaterOptions", "outAnnuaAvgNC"
+            ).split(",")
+            self.outAnnuaEndNC = iniItems.get(
+                "groundwaterOptions", "outAnnuaEndNC"
+            ).split(",")
         except:
             self.report = False
         if self.report == True:
-            #include self.outNCDir in wflow_pcrgobwb?
-            self.outNCDir  = vos.getFullPath("netcdf/", \
-                                         iniItems.get("globalOptions","outputDir")) #iniItems.outNCDir
+            # include self.outNCDir in wflow_pcrgobwb?
+            self.outNCDir = vos.getFullPath(
+                "netcdf/", iniItems.get("globalOptions", "outputDir")
+            )  # iniItems.outNCDir
             self.netcdfObj = PCR2netCDF(iniItems)
             #
             # daily output in netCDF files:
             if self.outDailyTotNC[0] != "None":
                 for var in self.outDailyTotNC:
                     # creating the netCDF files:
-                    self.netcdfObj.createNetCDF(str(self.outNCDir)+"/"+ \
-                                                str(var)+"_dailyTot.nc",\
-                                                    var,"undefined")
+                    self.netcdfObj.createNetCDF(
+                        str(self.outNCDir) + "/" + str(var) + "_dailyTot.nc",
+                        var,
+                        "undefined",
+                    )
             # MONTHly output in netCDF files:
             # - cummulative
             if self.outMonthTotNC[0] != "None":
                 for var in self.outMonthTotNC:
                     # initiating monthlyVarTot (accumulator variable):
-                    vars(self)[var+'MonthTot'] = None
+                    vars(self)[var + "MonthTot"] = None
                     # creating the netCDF files:
-                    self.netcdfObj.createNetCDF(str(self.outNCDir)+"/"+ \
-                                                str(var)+"_monthTot.nc",\
-                                                    var,"undefined")
+                    self.netcdfObj.createNetCDF(
+                        str(self.outNCDir) + "/" + str(var) + "_monthTot.nc",
+                        var,
+                        "undefined",
+                    )
             # - average
             if self.outMonthAvgNC[0] != "None":
                 for var in self.outMonthAvgNC:
                     # initiating monthlyTotAvg (accumulator variable)
-                    vars(self)[var+'MonthTot'] = None
+                    vars(self)[var + "MonthTot"] = None
                     # initiating monthlyVarAvg:
-                    vars(self)[var+'MonthAvg'] = None
-                     # creating the netCDF files:
-                    self.netcdfObj.createNetCDF(str(self.outNCDir)+"/"+ \
-                                                str(var)+"_monthAvg.nc",\
-                                                    var,"undefined")
+                    vars(self)[var + "MonthAvg"] = None
+                    # creating the netCDF files:
+                    self.netcdfObj.createNetCDF(
+                        str(self.outNCDir) + "/" + str(var) + "_monthAvg.nc",
+                        var,
+                        "undefined",
+                    )
             # - last day of the month
             if self.outMonthEndNC[0] != "None":
                 for var in self.outMonthEndNC:
-                     # creating the netCDF files:
-                    self.netcdfObj.createNetCDF(str(self.outNCDir)+"/"+ \
-                                                str(var)+"_monthEnd.nc",\
-                                                    var,"undefined")
+                    # creating the netCDF files:
+                    self.netcdfObj.createNetCDF(
+                        str(self.outNCDir) + "/" + str(var) + "_monthEnd.nc",
+                        var,
+                        "undefined",
+                    )
             # YEARly output in netCDF files:
             # - cummulative
             if self.outAnnuaTotNC[0] != "None":
                 for var in self.outAnnuaTotNC:
                     # initiating yearly accumulator variable:
-                    vars(self)[var+'AnnuaTot'] = None
+                    vars(self)[var + "AnnuaTot"] = None
                     # creating the netCDF files:
-                    self.netcdfObj.createNetCDF(str(self.outNCDir)+"/"+ \
-                                                str(var)+"_annuaTot.nc",\
-                                                    var,"undefined")
+                    self.netcdfObj.createNetCDF(
+                        str(self.outNCDir) + "/" + str(var) + "_annuaTot.nc",
+                        var,
+                        "undefined",
+                    )
             # - average
             if self.outAnnuaAvgNC[0] != "None":
                 for var in self.outAnnuaAvgNC:
                     # initiating annualyVarAvg:
-                    vars(self)[var+'AnnuaAvg'] = None
+                    vars(self)[var + "AnnuaAvg"] = None
                     # initiating annualyTotAvg (accumulator variable)
-                    vars(self)[var+'AnnuaTot'] = None
-                     # creating the netCDF files:
-                    self.netcdfObj.createNetCDF(str(self.outNCDir)+"/"+ \
-                                                str(var)+"_annuaAvg.nc",\
-                                                    var,"undefined")
+                    vars(self)[var + "AnnuaTot"] = None
+                    # creating the netCDF files:
+                    self.netcdfObj.createNetCDF(
+                        str(self.outNCDir) + "/" + str(var) + "_annuaAvg.nc",
+                        var,
+                        "undefined",
+                    )
             # - last day of the year
             if self.outAnnuaEndNC[0] != "None":
                 for var in self.outAnnuaEndNC:
-                     # creating the netCDF files:
-                    self.netcdfObj.createNetCDF(str(self.outNCDir)+"/"+ \
-                                                str(var)+"_annuaEnd.nc",\
-                                                    var,"undefined")
+                    # creating the netCDF files:
+                    self.netcdfObj.createNetCDF(
+                        str(self.outNCDir) + "/" + str(var) + "_annuaEnd.nc",
+                        var,
+                        "undefined",
+                    )
 
-    def getICs(self,iniItems,iniConditions = None):
+    def getICs(self, iniItems, iniConditions=None):
 
         self.initialize_states(iniItems, iniConditions)
 
     def initialize_states(self, iniItems, iniConditions):
 
         # initial conditions (unit: m)
-        if iniConditions == None: # when the model just start (reading the initial conditions from file)
+        if (
+            iniConditions == None
+        ):  # when the model just start (reading the initial conditions from file)
 
-
-            self.storGroundwater         = vos.readPCRmapClone(\
-                                           configget(iniItems,"groundwaterOptions","storGroundwaterIni","0.0"),
-                                           self.cloneMap,self.tmpDir,self.inputDir)
-            self.avgAbstraction          = vos.readPCRmapClone(\
-                                           configget(iniItems,"groundwaterOptions","avgTotalGroundwaterAbstractionIni","0.0"),
-                                           self.cloneMap,self.tmpDir,self.inputDir)
-            self.avgAllocation           = vos.readPCRmapClone(\
-                                           configget(iniItems,"groundwaterOptions","avgTotalGroundwaterAllocationLongIni","0.0"),
-                                           self.cloneMap,self.tmpDir,self.inputDir)
-            self.avgAllocationShort      = vos.readPCRmapClone(\
-                                           configget(iniItems,"groundwaterOptions","avgTotalGroundwaterAllocationShortIni","0.0"),
-                                           self.cloneMap,self.tmpDir,self.inputDir)
-            self.avgNonFossilAllocation   = vos.readPCRmapClone(\
-                                            configget(iniItems,"groundwaterOptions","avgNonFossilGroundwaterAllocationLongIni","0.0"),
-                                            self.cloneMap,self.tmpDir,self.inputDir)
-            self.avgNonFossilAllocationShort = vos.readPCRmapClone(\
-                                               configget(iniItems,"groundwaterOptions","avgNonFossilGroundwaterAllocationShortIni","0.0"),
-                                               self.cloneMap,self.tmpDir,self.inputDir)
+            self.storGroundwater = vos.readPCRmapClone(
+                configget(iniItems, "groundwaterOptions", "storGroundwaterIni", "0.0"),
+                self.cloneMap,
+                self.tmpDir,
+                self.inputDir,
+            )
+            self.avgAbstraction = vos.readPCRmapClone(
+                configget(
+                    iniItems,
+                    "groundwaterOptions",
+                    "avgTotalGroundwaterAbstractionIni",
+                    "0.0",
+                ),
+                self.cloneMap,
+                self.tmpDir,
+                self.inputDir,
+            )
+            self.avgAllocation = vos.readPCRmapClone(
+                configget(
+                    iniItems,
+                    "groundwaterOptions",
+                    "avgTotalGroundwaterAllocationLongIni",
+                    "0.0",
+                ),
+                self.cloneMap,
+                self.tmpDir,
+                self.inputDir,
+            )
+            self.avgAllocationShort = vos.readPCRmapClone(
+                configget(
+                    iniItems,
+                    "groundwaterOptions",
+                    "avgTotalGroundwaterAllocationShortIni",
+                    "0.0",
+                ),
+                self.cloneMap,
+                self.tmpDir,
+                self.inputDir,
+            )
+            self.avgNonFossilAllocation = vos.readPCRmapClone(
+                configget(
+                    iniItems,
+                    "groundwaterOptions",
+                    "avgNonFossilGroundwaterAllocationLongIni",
+                    "0.0",
+                ),
+                self.cloneMap,
+                self.tmpDir,
+                self.inputDir,
+            )
+            self.avgNonFossilAllocationShort = vos.readPCRmapClone(
+                configget(
+                    iniItems,
+                    "groundwaterOptions",
+                    "avgNonFossilGroundwaterAllocationShortIni",
+                    "0.0",
+                ),
+                self.cloneMap,
+                self.tmpDir,
+                self.inputDir,
+            )
 
             # additional initial conditions (needed ONLY for the online coupling between PCR-GLOBWB and MODFLOW))
-            if configget(iniItems,"groundwaterOptions","relativeGroundwaterHeadIni","None") != "None":\
-                self.relativeGroundwaterHead = vos.readPCRmapClone(\
-                                               iniItems.get("groundwaterOptions","relativeGroundwaterHeadIni"),
-                                               self.cloneMap,self.tmpDir,self.inputDir)
+            if (
+                configget(
+                    iniItems, "groundwaterOptions", "relativeGroundwaterHeadIni", "None"
+                )
+                != "None"
+            ):
+                self.relativeGroundwaterHead = vos.readPCRmapClone(
+                    iniItems.get("groundwaterOptions", "relativeGroundwaterHeadIni"),
+                    self.cloneMap,
+                    self.tmpDir,
+                    self.inputDir,
+                )
             else:
                 self.relativeGroundwaterHead = self.storGroundwater / self.specificYield
-            self.baseflow = vos.readPCRmapClone(\
-                            configget(iniItems,"groundwaterOptions","baseflowIni","0.0"),
-                            self.cloneMap,self.tmpDir,self.inputDir)
+            self.baseflow = vos.readPCRmapClone(
+                configget(iniItems, "groundwaterOptions", "baseflowIni", "0.0"),
+                self.cloneMap,
+                self.tmpDir,
+                self.inputDir,
+            )
 
-        else:                     # during/after spinUp
-            self.storGroundwater             = iniConditions['groundwater']['storGroundwater']
-            self.avgAbstraction              = iniConditions['groundwater']['avgTotalGroundwaterAbstraction']
-            self.avgAllocation               = iniConditions['groundwater']['avgTotalGroundwaterAllocationLong']
-            self.avgAllocationShort          = iniConditions['groundwater']['avgTotalGroundwaterAllocationShort']
-            self.avgNonFossilAllocation      = iniConditions['groundwater']['avgNonFossilGroundwaterAllocationLong']
-            self.avgNonFossilAllocationShort = iniConditions['groundwater']['avgNonFossilGroundwaterAllocationShort']
+        else:  # during/after spinUp
+            self.storGroundwater = iniConditions["groundwater"]["storGroundwater"]
+            self.avgAbstraction = iniConditions["groundwater"][
+                "avgTotalGroundwaterAbstraction"
+            ]
+            self.avgAllocation = iniConditions["groundwater"][
+                "avgTotalGroundwaterAllocationLong"
+            ]
+            self.avgAllocationShort = iniConditions["groundwater"][
+                "avgTotalGroundwaterAllocationShort"
+            ]
+            self.avgNonFossilAllocation = iniConditions["groundwater"][
+                "avgNonFossilGroundwaterAllocationLong"
+            ]
+            self.avgNonFossilAllocationShort = iniConditions["groundwater"][
+                "avgNonFossilGroundwaterAllocationShort"
+            ]
 
-            self.relativeGroundwaterHead     = iniConditions['groundwater']['relativeGroundwaterHead']
-            self.baseflow                    = iniConditions['groundwater']['baseflow']
+            self.relativeGroundwaterHead = iniConditions["groundwater"][
+                "relativeGroundwaterHead"
+            ]
+            self.baseflow = iniConditions["groundwater"]["baseflow"]
 
         # initial condition for storGroundwaterFossil (unit: m)
         #
         # Note that storGroundwaterFossil should not be depleted during the spin-up.
         #
-        if configget(iniItems,"groundwaterOptions","storGroundwaterFossilIni","0.0") == "Maximum" and\
-           self.limitFossilGroundwaterAbstraction and self.limitAbstraction == False:
-            logger.info("Assuming 'full' fossilWaterCap as the initial condition for fossil groundwater storage.")
+        if (
+            configget(iniItems, "groundwaterOptions", "storGroundwaterFossilIni", "0.0")
+            == "Maximum"
+            and self.limitFossilGroundwaterAbstraction
+            and self.limitAbstraction == False
+        ):
+            logger.info(
+                "Assuming 'full' fossilWaterCap as the initial condition for fossil groundwater storage."
+            )
             self.storGroundwaterFossil = self.fossilWaterCap
         #
-        if configget(iniItems,"groundwaterOptions","storGroundwaterFossilIni","0.0") != "Maximum":
-            logger.info("Using a pre-defined initial condition for fossil groundwater storage.")
-            self.storGroundwaterFossil = vos.readPCRmapClone(\
-                                         iniItems.get("groundwaterOptions","storGroundwaterFossilIni"),
-                                         self.cloneMap,self.tmpDir,self.inputDir)
+        if (
+            configget(iniItems, "groundwaterOptions", "storGroundwaterFossilIni", "0.0")
+            != "Maximum"
+        ):
+            logger.info(
+                "Using a pre-defined initial condition for fossil groundwater storage."
+            )
+            self.storGroundwaterFossil = vos.readPCRmapClone(
+                iniItems.get("groundwaterOptions", "storGroundwaterFossilIni"),
+                self.cloneMap,
+                self.tmpDir,
+                self.inputDir,
+            )
         #
-        if configget(iniItems,"groundwaterOptions","storGroundwaterFossilIni","0.0") != "Maximum" and\
-           self.limitFossilGroundwaterAbstraction and self.limitAbstraction == False:
-            logger.info("The pre-defined initial condition for fossil groundwater is limited by fossilWaterCap (full capacity).")
-            self.storGroundwaterFossil = pcr.min(self.storGroundwaterFossil, self.fossilWaterCap)
+        if (
+            configget(iniItems, "groundwaterOptions", "storGroundwaterFossilIni", "0.0")
+            != "Maximum"
+            and self.limitFossilGroundwaterAbstraction
+            and self.limitAbstraction == False
+        ):
+            logger.info(
+                "The pre-defined initial condition for fossil groundwater is limited by fossilWaterCap (full capacity)."
+            )
+            self.storGroundwaterFossil = pcr.min(
+                self.storGroundwaterFossil, self.fossilWaterCap
+            )
             self.storGroundwaterFossil = pcr.max(0.0, self.storGroundwaterFossil)
 
         # make sure that active storGroundwater, avgAbstraction and avgNonFossilAllocation cannot be negative
         #
-        self.storGroundwater = pcr.cover( self.storGroundwater,0.0)
-        self.storGroundwater = pcr.max(0.,self.storGroundwater)
-        self.storGroundwater = pcr.ifthen(self.landmask,\
-                                          self.storGroundwater)
+        self.storGroundwater = pcr.cover(self.storGroundwater, 0.0)
+        self.storGroundwater = pcr.max(0., self.storGroundwater)
+        self.storGroundwater = pcr.ifthen(self.landmask, self.storGroundwater)
         #
-        self.avgAbstraction  = pcr.cover( self.avgAbstraction,0.0)
-        self.avgAbstraction  = pcr.max(0.,self.avgAbstraction)
-        self.avgAbstraction  = pcr.ifthen(self.landmask,\
-                                          self.avgAbstraction)
+        self.avgAbstraction = pcr.cover(self.avgAbstraction, 0.0)
+        self.avgAbstraction = pcr.max(0., self.avgAbstraction)
+        self.avgAbstraction = pcr.ifthen(self.landmask, self.avgAbstraction)
         #
-        self.avgAllocation   = pcr.cover( self.avgAllocation,0.0)
-        self.avgAllocation   = pcr.max(0.,self.avgAllocation)
-        self.avgAllocation   = pcr.ifthen(self.landmask,\
-                                          self.avgAllocation)
+        self.avgAllocation = pcr.cover(self.avgAllocation, 0.0)
+        self.avgAllocation = pcr.max(0., self.avgAllocation)
+        self.avgAllocation = pcr.ifthen(self.landmask, self.avgAllocation)
         #
-        self.avgAllocationShort = pcr.cover( self.avgAllocationShort,0.0)
-        self.avgAllocationShort = pcr.max(0.,self.avgAllocationShort)
-        self.avgAllocationShort = pcr.ifthen(self.landmask,\
-                                             self.avgAllocationShort)
+        self.avgAllocationShort = pcr.cover(self.avgAllocationShort, 0.0)
+        self.avgAllocationShort = pcr.max(0., self.avgAllocationShort)
+        self.avgAllocationShort = pcr.ifthen(self.landmask, self.avgAllocationShort)
         #
-        self.avgNonFossilAllocation   = pcr.cover( self.avgNonFossilAllocation,0.0)
-        self.avgNonFossilAllocation   = pcr.max(0.,self.avgNonFossilAllocation)
-        self.avgNonFossilAllocation   = pcr.ifthen(self.landmask,\
-                                                   self.avgNonFossilAllocation)
+        self.avgNonFossilAllocation = pcr.cover(self.avgNonFossilAllocation, 0.0)
+        self.avgNonFossilAllocation = pcr.max(0., self.avgNonFossilAllocation)
+        self.avgNonFossilAllocation = pcr.ifthen(
+            self.landmask, self.avgNonFossilAllocation
+        )
         #
-        self.avgNonFossilAllocationShort = pcr.cover( self.avgNonFossilAllocationShort,0.0)
-        self.avgNonFossilAllocationShort = pcr.max(0.,self.avgNonFossilAllocationShort)
-        self.avgNonFossilAllocationShort = pcr.ifthen(self.landmask,\
-                                                      self.avgNonFossilAllocationShort)
+        self.avgNonFossilAllocationShort = pcr.cover(
+            self.avgNonFossilAllocationShort, 0.0
+        )
+        self.avgNonFossilAllocationShort = pcr.max(0., self.avgNonFossilAllocationShort)
+        self.avgNonFossilAllocationShort = pcr.ifthen(
+            self.landmask, self.avgNonFossilAllocationShort
+        )
 
         self.relativeGroundwaterHead = pcr.cover(self.relativeGroundwaterHead, 0.0)
-        self.relativeGroundwaterHead = pcr.ifthen(self.landmask, self.relativeGroundwaterHead)
+        self.relativeGroundwaterHead = pcr.ifthen(
+            self.landmask, self.relativeGroundwaterHead
+        )
 
         self.baseflow = pcr.cover(self.baseflow, 0.0)
         self.baseflow = pcr.ifthen(self.landmask, self.baseflow)
 
         # storGroundwaterFossil can be negative (particularly if limitFossilGroundwaterAbstraction == False)
-        self.storGroundwaterFossil = pcr.cover( self.storGroundwaterFossil, 0.0)
-        self.storGroundwaterFossil = pcr.ifthen(self.landmask,\
-                                                self.storGroundwaterFossil)
+        self.storGroundwaterFossil = pcr.cover(self.storGroundwaterFossil, 0.0)
+        self.storGroundwaterFossil = pcr.ifthen(
+            self.landmask, self.storGroundwaterFossil
+        )
 
     def perturb(self, name, **parameters):
 
         if name == "groundwater":
 
             # factor for perturbing the initial storGroundwater
-            self.storGroundwater = self.storGroundwater * (mapnormal()*parameters['standard_deviation']+1)
-            self.storGroundwater = pcr.max(0.,self.storGroundwater)
+            self.storGroundwater = self.storGroundwater * (
+                mapnormal() * parameters["standard_deviation"] + 1
+            )
+            self.storGroundwater = pcr.max(0., self.storGroundwater)
 
         else:
             print("Error: only groundwater may be updated at this time")
             return -1
 
-    def update(self,landSurface,routing,currTimeStep):
+    def update(self, landSurface, routing, currTimeStep):
 
         if self.useMODFLOW:
-            self.update_with_MODFLOW(landSurface,routing,currTimeStep)
+            self.update_with_MODFLOW(landSurface, routing, currTimeStep)
         else:
-            self.update_without_MODFLOW(landSurface,routing,currTimeStep)
+            self.update_without_MODFLOW(landSurface, routing, currTimeStep)
 
         self.calculate_statistics(routing)
 
         # old-style reporting
-        self.old_style_groundwater_reporting(currTimeStep)              # TODO: remove this one
+        self.old_style_groundwater_reporting(currTimeStep)  # TODO: remove this one
 
-    def update_with_MODFLOW(self,landSurface,routing,currTimeStep):
+    def update_with_MODFLOW(self, landSurface, routing, currTimeStep):
 
         logger.info("Updating groundwater based on the MODFLOW output.")
 
@@ -588,20 +961,38 @@ class Groundwater(object):
         if currTimeStep.day == 1 and currTimeStep.timeStepPCR > 1:
 
             # for online coupling, we will read files from pcraster maps, using the previous day values
-            directory = self.iniItems.get("globalOptions","outputDir") + "/modflow/transient/maps/"
+            directory = (
+                self.iniItems.get("globalOptions", "outputDir")
+                + "/modflow/transient/maps/"
+            )
             yesterday = str(currTimeStep.yesterday())
 
             # - relative groundwater head from MODFLOW
             filename = directory + "relativeGroundwaterHead_" + str(yesterday) + ".map"
-            self.relativeGroundwaterHead = pcr.ifthen(self.landmask, pcr.cover(vos.readPCRmapClone(filename, self.cloneMap, self.tmpDir), 0.0))
+            self.relativeGroundwaterHead = pcr.ifthen(
+                self.landmask,
+                pcr.cover(
+                    vos.readPCRmapClone(filename, self.cloneMap, self.tmpDir), 0.0
+                ),
+            )
 
             # - storGroundwater from MODFLOW
             filename = directory + "storGroundwater_" + str(yesterday) + ".map"
-            self.storGroundwater = pcr.ifthen(self.landmask, pcr.cover(vos.readPCRmapClone(filename, self.cloneMap, self.tmpDir), 0.0))
+            self.storGroundwater = pcr.ifthen(
+                self.landmask,
+                pcr.cover(
+                    vos.readPCRmapClone(filename, self.cloneMap, self.tmpDir), 0.0
+                ),
+            )
 
             # - baseflow from MODFLOW
             filename = directory + "baseflow_" + str(yesterday) + ".map"
-            self.baseflow = pcr.ifthen(self.landmask, pcr.cover(vos.readPCRmapClone(filename, self.cloneMap, self.tmpDir), 0.0))
+            self.baseflow = pcr.ifthen(
+                self.landmask,
+                pcr.cover(
+                    vos.readPCRmapClone(filename, self.cloneMap, self.tmpDir), 0.0
+                ),
+            )
 
         # river bed exchange has been accomodated in baseflow (via MODFLOW, river and drain packages)
         self.surfaceWaterInf = pcr.scalar(0.0)
@@ -614,47 +1005,46 @@ class Groundwater(object):
 
         # groundwater allocation (Note: This is done in the landSurface module)
         self.allocNonFossilGroundwater = landSurface.allocNonFossilGroundwater
-        self.fossilGroundwaterAlloc    = landSurface.fossilGroundwaterAlloc
+        self.fossilGroundwaterAlloc = landSurface.fossilGroundwaterAlloc
 
         # groundwater allocation (Note: This is done in the landSurface module)
         self.allocNonFossilGroundwater = landSurface.allocNonFossilGroundwater
-        self.fossilGroundwaterAlloc    = landSurface.fossilGroundwaterAlloc
+        self.fossilGroundwaterAlloc = landSurface.fossilGroundwaterAlloc
 
         # Note: The following variable (unmetDemand) is a bad name and used in the past.
         #       Its definition is actually as follows: (the amount of demand that is satisfied/allocated from fossil groundwater)
         #
         self.unmetDemand = self.fossilGroundwaterAlloc
 
-
-    def update_without_MODFLOW(self,landSurface,routing,currTimeStep):
+    def update_without_MODFLOW(self, landSurface, routing, currTimeStep):
 
         logger.info("Updating groundwater")
 
         if self.debugWaterBalance:
-            preStorGroundwater       = self.storGroundwater
+            preStorGroundwater = self.storGroundwater
             preStorGroundwaterFossil = self.storGroundwaterFossil
 
         # get riverbed infiltration from the previous time step (from routing)
-        self.surfaceWaterInf  = routing.riverbedExchange/\
-                                routing.cellArea               # unit: m
+        self.surfaceWaterInf = routing.riverbedExchange / routing.cellArea  # unit: m
         self.storGroundwater += self.surfaceWaterInf
 
         # get net recharge (percolation-capRise) and update storage:
-        self.storGroundwater  = pcr.max(0.,\
-                                self.storGroundwater + landSurface.gwRecharge)
+        self.storGroundwater = pcr.max(
+            0., self.storGroundwater + landSurface.gwRecharge
+        )
 
         # non fossil groundwater abstraction
         self.nonFossilGroundwaterAbs = landSurface.nonFossilGroundwaterAbs
-        self.storGroundwater         = pcr.max(0.,\
-                                       self.storGroundwater - self.nonFossilGroundwaterAbs)
+        self.storGroundwater = pcr.max(
+            0., self.storGroundwater - self.nonFossilGroundwaterAbs
+        )
 
         # baseflow
-        self.baseflow         = pcr.max(0.,\
-                                pcr.min(self.storGroundwater,\
-                                        self.recessionCoeff* \
-                                        self.storGroundwater))
-        self.storGroundwater  = pcr.max(0.,\
-                                self.storGroundwater - self.baseflow)
+        self.baseflow = pcr.max(
+            0.,
+            pcr.min(self.storGroundwater, self.recessionCoeff * self.storGroundwater),
+        )
+        self.storGroundwater = pcr.max(0., self.storGroundwater - self.baseflow)
         # PS: baseflow must be calculated at the end (to ensure the availability of storGroundwater to support nonFossilGroundwaterAbs)
 
         # fossil groundwater abstraction:
@@ -667,7 +1057,7 @@ class Groundwater(object):
 
         # groundwater allocation (Note: This is done in the landSurface module)
         self.allocNonFossilGroundwater = landSurface.allocNonFossilGroundwater
-        self.fossilGroundwaterAlloc    = landSurface.fossilGroundwaterAlloc
+        self.fossilGroundwaterAlloc = landSurface.fossilGroundwaterAlloc
 
         # Note: The following variable (unmetDemand) is a bad name and used in the past.
         #       Its definition is actually as follows: (the amount of demand that is satisfied/allocated from fossil groundwater)
@@ -675,96 +1065,117 @@ class Groundwater(object):
 
         # calculate relative groundwater head above the minimum level (unit: m)
         # - needed to estimate areas influenced by capillary rise
-        self.relativeGroundwaterHead = self.storGroundwater/self.specificYield
+        self.relativeGroundwaterHead = self.storGroundwater / self.specificYield
 
         if self.debugWaterBalance:
-            vos.waterBalanceCheck([self.surfaceWaterInf,\
-                                   landSurface.gwRecharge],\
-                                  [self.baseflow,\
-                                   self.nonFossilGroundwaterAbs],\
-                                  [  preStorGroundwater],\
-                                  [self.storGroundwater],\
-                                       'storGroundwater',\
-                                   True,\
-                                   currTimeStep.fulldate,threshold=1e-4)
+            vos.waterBalanceCheck(
+                [self.surfaceWaterInf, landSurface.gwRecharge],
+                [self.baseflow, self.nonFossilGroundwaterAbs],
+                [preStorGroundwater],
+                [self.storGroundwater],
+                "storGroundwater",
+                True,
+                currTimeStep.fulldate,
+                threshold=1e-4,
+            )
 
         if self.debugWaterBalance:
-            vos.waterBalanceCheck([pcr.scalar(0.0)],\
-                                  [self.fossilGroundwaterAbstr],\
-                                  [  preStorGroundwaterFossil],\
-                                  [self.storGroundwaterFossil],\
-                                       'storGroundwaterFossil',\
-                                   True,\
-                                   currTimeStep.fulldate,threshold=1e-3)
+            vos.waterBalanceCheck(
+                [pcr.scalar(0.0)],
+                [self.fossilGroundwaterAbstr],
+                [preStorGroundwaterFossil],
+                [self.storGroundwaterFossil],
+                "storGroundwaterFossil",
+                True,
+                currTimeStep.fulldate,
+                threshold=1e-3,
+            )
 
         if self.debugWaterBalance:
-            vos.waterBalanceCheck([landSurface.desalinationAllocation,\
-                                   self.unmetDemand, \
-                                   self.allocNonFossilGroundwater, \
-                                   landSurface.allocSurfaceWaterAbstract],\
-                                  [landSurface.totalPotentialGrossDemand],\
-                                  [pcr.scalar(0.)],\
-                                  [pcr.scalar(0.)],\
-                                  'demand allocation (desalination, surface water, groundwater & unmetDemand. Error here may be due to rounding error.',\
-                                   True,\
-                                   currTimeStep.fulldate,threshold=1e-3)
-                                   
+            vos.waterBalanceCheck(
+                [
+                    landSurface.desalinationAllocation,
+                    self.unmetDemand,
+                    self.allocNonFossilGroundwater,
+                    landSurface.allocSurfaceWaterAbstract,
+                ],
+                [landSurface.totalPotentialGrossDemand],
+                [pcr.scalar(0.)],
+                [pcr.scalar(0.)],
+                "demand allocation (desalination, surface water, groundwater & unmetDemand. Error here may be due to rounding error.",
+                True,
+                currTimeStep.fulldate,
+                threshold=1e-3,
+            )
 
     def calculate_statistics(self, routing):
 
         # calculate the average total groundwater abstraction (m/day) from the last 365 days:
-        totalAbstraction    = self.fossilGroundwaterAbstr + self.nonFossilGroundwaterAbs
-        deltaAbstraction    = totalAbstraction - self.avgAbstraction
-        self.avgAbstraction = self.avgAbstraction +\
-                                 deltaAbstraction/\
-                              pcr.min(365., pcr.max(1.0, routing.timestepsToAvgDischarge))
+        totalAbstraction = self.fossilGroundwaterAbstr + self.nonFossilGroundwaterAbs
+        deltaAbstraction = totalAbstraction - self.avgAbstraction
+        self.avgAbstraction = self.avgAbstraction + deltaAbstraction / pcr.min(
+            365., pcr.max(1.0, routing.timestepsToAvgDischarge)
+        )
         self.avgAbstraction = pcr.max(0.0, self.avgAbstraction)
 
         # calculate the average non fossil groundwater allocation (m/day)
         # - from the last 365 days:
-        deltaAllocation     = self.allocNonFossilGroundwater  - self.avgNonFossilAllocation
-        self.avgNonFossilAllocation  = self.avgNonFossilAllocation +\
-                                 deltaAllocation/\
-                              pcr.min(365., pcr.max(1.0, routing.timestepsToAvgDischarge))
+        deltaAllocation = self.allocNonFossilGroundwater - self.avgNonFossilAllocation
+        self.avgNonFossilAllocation = (
+            self.avgNonFossilAllocation
+            + deltaAllocation
+            / pcr.min(365., pcr.max(1.0, routing.timestepsToAvgDischarge))
+        )
         self.avgNonFossilAllocation = pcr.max(0.0, self.avgNonFossilAllocation)
         # - from the last 7 days:
-        deltaAllocationShort    = self.allocNonFossilGroundwater - self.avgNonFossilAllocationShort
-        self.avgNonFossilAllocationShort = self.avgNonFossilAllocationShort +\
-                                     deltaAllocationShort/\
-                                  pcr.min(7., pcr.max(1.0, routing.timestepsToAvgDischarge))
-        self.avgNonFossilAllocationShort = pcr.max(0.0, self.avgNonFossilAllocationShort)
+        deltaAllocationShort = (
+            self.allocNonFossilGroundwater - self.avgNonFossilAllocationShort
+        )
+        self.avgNonFossilAllocationShort = (
+            self.avgNonFossilAllocationShort
+            + deltaAllocationShort
+            / pcr.min(7., pcr.max(1.0, routing.timestepsToAvgDischarge))
+        )
+        self.avgNonFossilAllocationShort = pcr.max(
+            0.0, self.avgNonFossilAllocationShort
+        )
 
         # calculate the average total (fossil + non fossil) groundwater allocation (m/day)
-        totalGroundwaterAllocation = self.allocNonFossilGroundwater + self.fossilGroundwaterAlloc
+        totalGroundwaterAllocation = (
+            self.allocNonFossilGroundwater + self.fossilGroundwaterAlloc
+        )
         # - from the last 365 days:
-        deltaAllocation            = totalGroundwaterAllocation - self.avgAllocation
-        self.avgAllocation         = self.avgAllocation +\
-                                        deltaAllocation/\
-                                        pcr.min(365., pcr.max(1.0, routing.timestepsToAvgDischarge))
-        self.avgAllocation         = pcr.max(0.0, self.avgAllocation)
+        deltaAllocation = totalGroundwaterAllocation - self.avgAllocation
+        self.avgAllocation = self.avgAllocation + deltaAllocation / pcr.min(
+            365., pcr.max(1.0, routing.timestepsToAvgDischarge)
+        )
+        self.avgAllocation = pcr.max(0.0, self.avgAllocation)
         # - from the last 7 days:
-        deltaAllocationShort       = totalGroundwaterAllocation - self.avgAllocationShort
-        self.avgAllocationShort    = self.avgAllocationShort +\
-                                        deltaAllocationShort/\
-                                        pcr.min(7., pcr.max(1.0, routing.timestepsToAvgDischarge))
-        self.avgAllocationShort    = pcr.max(0.0, self.avgAllocationShort)
+        deltaAllocationShort = totalGroundwaterAllocation - self.avgAllocationShort
+        self.avgAllocationShort = (
+            self.avgAllocationShort
+            + deltaAllocationShort
+            / pcr.min(7., pcr.max(1.0, routing.timestepsToAvgDischarge))
+        )
+        self.avgAllocationShort = pcr.max(0.0, self.avgAllocationShort)
 
-    def old_style_groundwater_reporting(self,currTimeStep):
+    def old_style_groundwater_reporting(self, currTimeStep):
 
         if self.report == True:
-            timeStamp = datetime.datetime(currTimeStep.year,\
-                                          currTimeStep.month,\
-                                          currTimeStep.day,\
-                                          0)
+            timeStamp = datetime.datetime(
+                currTimeStep.year, currTimeStep.month, currTimeStep.day, 0
+            )
             # writing daily output to netcdf files
             timestepPCR = currTimeStep.timeStepPCR
             if self.outDailyTotNC[0] != "None":
                 for var in self.outDailyTotNC:
-                    self.netcdfObj.data2NetCDF(str(self.outNCDir)+"/"+ \
-                                         str(var)+"_dailyTot.nc",\
-                                         var,\
-                          pcr2numpy(self.__getattribute__(var),vos.MV),\
-                                         timeStamp,timestepPCR-1)
+                    self.netcdfObj.data2NetCDF(
+                        str(self.outNCDir) + "/" + str(var) + "_dailyTot.nc",
+                        var,
+                        pcr2numpy(self.__getattribute__(var), vos.MV),
+                        timeStamp,
+                        timestepPCR - 1,
+                    )
 
             # writing monthly output to netcdf files
             # -cummulative
@@ -773,20 +1184,21 @@ class Groundwater(object):
 
                     # introduce variables at the beginning of simulation or
                     #     reset variables at the beginning of the month
-                    if currTimeStep.timeStepPCR == 1 or \
-                       currTimeStep.day == 1:\
-                       vars(self)[var+'MonthTot'] = pcr.scalar(0.0)
+                    if currTimeStep.timeStepPCR == 1 or currTimeStep.day == 1:
+                        vars(self)[var + "MonthTot"] = pcr.scalar(0.0)
 
                     # accumulating
-                    vars(self)[var+'MonthTot'] += vars(self)[var]
+                    vars(self)[var + "MonthTot"] += vars(self)[var]
 
                     # reporting at the end of the month:
                     if currTimeStep.endMonth == True:
-                        self.netcdfObj.data2NetCDF(str(self.outNCDir)+"/"+ \
-                                         str(var)+"_monthTot.nc",\
-                                         var,\
-                          pcr2numpy(self.__getattribute__(var+'MonthTot'),\
-                           vos.MV),timeStamp,currTimeStep.monthIdx-1)
+                        self.netcdfObj.data2NetCDF(
+                            str(self.outNCDir) + "/" + str(var) + "_monthTot.nc",
+                            var,
+                            pcr2numpy(self.__getattribute__(var + "MonthTot"), vos.MV),
+                            timeStamp,
+                            currTimeStep.monthIdx - 1,
+                        )
             # -average
             if self.outMonthAvgNC[0] != "None":
                 for var in self.outMonthAvgNC:
@@ -795,32 +1207,36 @@ class Groundwater(object):
 
                         # introduce accumulator at the beginning of simulation or
                         #     reset accumulator at the beginning of the month
-                        if currTimeStep.timeStepPCR == 1 or \
-                           currTimeStep.day == 1:\
-                           vars(self)[var+'MonthTot'] = pcr.scalar(0.0)
+                        if currTimeStep.timeStepPCR == 1 or currTimeStep.day == 1:
+                            vars(self)[var + "MonthTot"] = pcr.scalar(0.0)
                         # accumulating
-                        vars(self)[var+'MonthTot'] += vars(self)[var]
+                        vars(self)[var + "MonthTot"] += vars(self)[var]
 
                     # calculating average & reporting at the end of the month:
                     if currTimeStep.endMonth == True:
-                        vars(self)[var+'MonthAvg'] = vars(self)[var+'MonthTot']/\
-                                                     currTimeStep.day
-                        self.netcdfObj.data2NetCDF(str(self.outNCDir)+"/"+ \
-                                         str(var)+"_monthAvg.nc",\
-                                         var,\
-                          pcr2numpy(self.__getattribute__(var+'MonthAvg'),\
-                           vos.MV),timeStamp,currTimeStep.monthIdx-1)
+                        vars(self)[var + "MonthAvg"] = (
+                            vars(self)[var + "MonthTot"] / currTimeStep.day
+                        )
+                        self.netcdfObj.data2NetCDF(
+                            str(self.outNCDir) + "/" + str(var) + "_monthAvg.nc",
+                            var,
+                            pcr2numpy(self.__getattribute__(var + "MonthAvg"), vos.MV),
+                            timeStamp,
+                            currTimeStep.monthIdx - 1,
+                        )
             #
             # -last day of the month
             if self.outMonthEndNC[0] != "None":
                 for var in self.outMonthEndNC:
                     # reporting at the end of the month:
                     if currTimeStep.endMonth == True:
-                        self.netcdfObj.data2NetCDF(str(self.outNCDir)+"/"+ \
-                                         str(var)+"_monthEnd.nc",\
-                                         var,\
-                          pcr2numpy(self.__getattribute__(var),vos.MV),\
-                                         timeStamp,currTimeStep.monthIdx-1)
+                        self.netcdfObj.data2NetCDF(
+                            str(self.outNCDir) + "/" + str(var) + "_monthEnd.nc",
+                            var,
+                            pcr2numpy(self.__getattribute__(var), vos.MV),
+                            timeStamp,
+                            currTimeStep.monthIdx - 1,
+                        )
 
             # writing yearly output to netcdf files
             # -cummulative
@@ -829,20 +1245,21 @@ class Groundwater(object):
 
                     # introduce variables at the beginning of simulation or
                     #     reset variables at the beginning of the month
-                    if currTimeStep.timeStepPCR == 1 or \
-                       currTimeStep.doy == 1:\
-                       vars(self)[var+'AnnuaTot'] = pcr.scalar(0.0)
+                    if currTimeStep.timeStepPCR == 1 or currTimeStep.doy == 1:
+                        vars(self)[var + "AnnuaTot"] = pcr.scalar(0.0)
 
                     # accumulating
-                    vars(self)[var+'AnnuaTot'] += vars(self)[var]
+                    vars(self)[var + "AnnuaTot"] += vars(self)[var]
 
                     # reporting at the end of the year:
                     if currTimeStep.endYear == True:
-                        self.netcdfObj.data2NetCDF(str(self.outNCDir)+"/"+ \
-                                         str(var)+"_annuaTot.nc",\
-                                         var,\
-                          pcr2numpy(self.__getattribute__(var+'AnnuaTot'),\
-                           vos.MV),timeStamp,currTimeStep.annuaIdx-1)
+                        self.netcdfObj.data2NetCDF(
+                            str(self.outNCDir) + "/" + str(var) + "_annuaTot.nc",
+                            var,
+                            pcr2numpy(self.__getattribute__(var + "AnnuaTot"), vos.MV),
+                            timeStamp,
+                            currTimeStep.annuaIdx - 1,
+                        )
             # -average
             if self.outAnnuaAvgNC[0] != "None":
                 for var in self.outAnnuaAvgNC:
@@ -850,30 +1267,33 @@ class Groundwater(object):
                     if var not in self.outAnnuaTotNC:
                         # introduce accumulator at the beginning of simulation or
                         #     reset accumulator at the beginning of the year
-                        if currTimeStep.timeStepPCR == 1 or \
-                           currTimeStep.doy == 1:\
-                           vars(self)[var+'AnnuaTot'] = pcr.scalar(0.0)
+                        if currTimeStep.timeStepPCR == 1 or currTimeStep.doy == 1:
+                            vars(self)[var + "AnnuaTot"] = pcr.scalar(0.0)
                         # accumulating
-                        vars(self)[var+'AnnuaTot'] += vars(self)[var]
+                        vars(self)[var + "AnnuaTot"] += vars(self)[var]
                     #
                     # calculating average & reporting at the end of the year:
                     if currTimeStep.endYear == True:
-                        vars(self)[var+'AnnuaAvg'] = vars(self)[var+'AnnuaTot']/\
-                                                     currTimeStep.doy
-                        self.netcdfObj.data2NetCDF(str(self.outNCDir)+"/"+ \
-                                         str(var)+"_annuaAvg.nc",\
-                                         var,\
-                          pcr2numpy(self.__getattribute__(var+'AnnuaAvg'),\
-                           vos.MV),timeStamp,currTimeStep.annuaIdx-1)
+                        vars(self)[var + "AnnuaAvg"] = (
+                            vars(self)[var + "AnnuaTot"] / currTimeStep.doy
+                        )
+                        self.netcdfObj.data2NetCDF(
+                            str(self.outNCDir) + "/" + str(var) + "_annuaAvg.nc",
+                            var,
+                            pcr2numpy(self.__getattribute__(var + "AnnuaAvg"), vos.MV),
+                            timeStamp,
+                            currTimeStep.annuaIdx - 1,
+                        )
             #
             # -last day of the year
             if self.outAnnuaEndNC[0] != "None":
                 for var in self.outAnnuaEndNC:
                     # reporting at the end of the year:
                     if currTimeStep.endYear == True:
-                        self.netcdfObj.data2NetCDF(str(self.outNCDir)+"/"+ \
-                                         str(var)+"_annuaEnd.nc",\
-                                         var,\
-                          pcr2numpy(self.__getattribute__(var),vos.MV),\
-                                         timeStamp,currTimeStep.annuaIdx-1)
-
+                        self.netcdfObj.data2NetCDF(
+                            str(self.outNCDir) + "/" + str(var) + "_annuaEnd.nc",
+                            var,
+                            pcr2numpy(self.__getattribute__(var), vos.MV),
+                            timeStamp,
+                            currTimeStep.annuaIdx - 1,
+                        )

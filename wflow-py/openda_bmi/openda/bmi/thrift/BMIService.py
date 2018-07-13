@@ -11,6776 +11,7833 @@ from ttypes import *
 from thrift.Thrift import TProcessor
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol, TProtocol
+
 try:
-  from thrift.protocol import fastbinary
+    from thrift.protocol import fastbinary
 except:
-  fastbinary = None
+    fastbinary = None
 
 
 class Iface(object):
-  def initialize(self, file):
-    """
+    def initialize(self, file):
+        """
     Parameters:
      - file
     """
-    pass
+        pass
 
-  def update(self, ):
-    pass
+    def update(self,):
+        pass
 
-  def update_until(self, time):
-    """
+    def update_until(self, time):
+        """
     Parameters:
      - time
     """
-    pass
+        pass
 
-  def update_frac(self, frac):
-    """
+    def update_frac(self, frac):
+        """
     Parameters:
      - frac
     """
-    pass
+        pass
 
-  def finalize_model(self, ):
-    pass
+    def finalize_model(self,):
+        pass
 
-  def get_component_name(self, ):
-    pass
+    def get_component_name(self,):
+        pass
 
-  def get_input_var_names(self, ):
-    pass
+    def get_input_var_names(self,):
+        pass
 
-  def get_output_var_names(self, ):
-    pass
+    def get_output_var_names(self,):
+        pass
 
-  def get_var_type(self, long_var_name):
-    """
+    def get_var_type(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    pass
+        pass
 
-  def get_var_units(self, long_var_name):
-    """
+    def get_var_units(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    pass
+        pass
 
-  def get_var_rank(self, long_var_name):
-    """
+    def get_var_rank(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    pass
+        pass
 
-  def get_var_size(self, long_var_name):
-    """
+    def get_var_size(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    pass
+        pass
 
-  def get_var_nbytes(self, long_var_name):
-    """
+    def get_var_nbytes(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    pass
+        pass
 
-  def get_start_time(self, ):
-    pass
+    def get_start_time(self,):
+        pass
 
-  def get_current_time(self, ):
-    pass
+    def get_current_time(self,):
+        pass
 
-  def get_end_time(self, ):
-    pass
+    def get_end_time(self,):
+        pass
 
-  def get_time_step(self, ):
-    pass
+    def get_time_step(self,):
+        pass
 
-  def get_time_units(self, ):
-    pass
+    def get_time_units(self,):
+        pass
 
-  def get_value(self, long_var_name):
-    """
+    def get_value(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    pass
+        pass
 
-  def get_value_at_indices(self, long_var_name, inds):
-    """
+    def get_value_at_indices(self, long_var_name, inds):
+        """
     Parameters:
      - long_var_name
      - inds
     """
-    pass
+        pass
 
-  def set_value(self, long_var_name, src):
-    """
+    def set_value(self, long_var_name, src):
+        """
     Parameters:
      - long_var_name
      - src
     """
-    pass
+        pass
 
-  def set_value_at_indices(self, long_var_name, inds, src):
-    """
+    def set_value_at_indices(self, long_var_name, inds, src):
+        """
     Parameters:
      - long_var_name
      - inds
      - src
     """
-    pass
+        pass
 
-  def get_grid_type(self, long_var_name):
-    """
+    def get_grid_type(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    pass
+        pass
 
-  def get_grid_shape(self, long_var_name):
-    """
+    def get_grid_shape(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    pass
+        pass
 
-  def get_grid_spacing(self, long_var_name):
-    """
+    def get_grid_spacing(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    pass
+        pass
 
-  def get_grid_origin(self, long_var_name):
-    """
+    def get_grid_origin(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    pass
+        pass
 
-  def get_grid_x(self, long_var_name):
-    """
+    def get_grid_x(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    pass
+        pass
 
-  def get_grid_y(self, long_var_name):
-    """
+    def get_grid_y(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    pass
+        pass
 
-  def get_grid_z(self, long_var_name):
-    """
+    def get_grid_z(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    pass
+        pass
 
-  def get_grid_connectivity(self, long_var_name):
-    """
+    def get_grid_connectivity(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    pass
+        pass
 
-  def get_grid_offset(self, long_var_name):
-    """
+    def get_grid_offset(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    pass
+        pass
 
-  def initialize_config(self, file):
-    """
+    def initialize_config(self, file):
+        """
     Parameters:
      - file
     """
-    pass
+        pass
 
-  def initialize_model(self, ):
-    pass
+    def initialize_model(self,):
+        pass
 
-  def set_start_time(self, start_time):
-    """
+    def set_start_time(self, start_time):
+        """
     Parameters:
      - start_time
     """
-    pass
+        pass
 
-  def set_end_time(self, end_time):
-    """
+    def set_end_time(self, end_time):
+        """
     Parameters:
      - end_time
     """
-    pass
+        pass
 
-  def get_attribute_names(self, ):
-    pass
+    def get_attribute_names(self,):
+        pass
 
-  def get_attribute_value(self, attribute_name):
-    """
+    def get_attribute_value(self, attribute_name):
+        """
     Parameters:
      - attribute_name
     """
-    pass
+        pass
 
-  def set_attribute_value(self, attribute_name, attribute_value):
-    """
+    def set_attribute_value(self, attribute_name, attribute_value):
+        """
     Parameters:
      - attribute_name
      - attribute_value
     """
-    pass
+        pass
 
-  def save_state(self, destination_directory):
-    """
+    def save_state(self, destination_directory):
+        """
     Parameters:
      - destination_directory
     """
-    pass
+        pass
 
-  def load_state(self, source_directory):
-    """
+    def load_state(self, source_directory):
+        """
     Parameters:
      - source_directory
     """
-    pass
+        pass
 
 
 class Client(Iface):
-  def __init__(self, iprot, oprot=None):
-    self._iprot = self._oprot = iprot
-    if oprot is not None:
-      self._oprot = oprot
-    self._seqid = 0
+    def __init__(self, iprot, oprot=None):
+        self._iprot = self._oprot = iprot
+        if oprot is not None:
+            self._oprot = oprot
+        self._seqid = 0
 
-  def initialize(self, file):
-    """
+    def initialize(self, file):
+        """
     Parameters:
      - file
     """
-    self.send_initialize(file)
-    self.recv_initialize()
+        self.send_initialize(file)
+        self.recv_initialize()
 
-  def send_initialize(self, file):
-    self._oprot.writeMessageBegin('initialize', TMessageType.CALL, self._seqid)
-    args = initialize_args()
-    args.file = file
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_initialize(self, file):
+        self._oprot.writeMessageBegin("initialize", TMessageType.CALL, self._seqid)
+        args = initialize_args()
+        args.file = file
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_initialize(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = initialize_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.error is not None:
-      raise result.error
-    return
+    def recv_initialize(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = initialize_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.error is not None:
+            raise result.error
+        return
 
-  def update(self, ):
-    self.send_update()
-    self.recv_update()
+    def update(self,):
+        self.send_update()
+        self.recv_update()
 
-  def send_update(self, ):
-    self._oprot.writeMessageBegin('update', TMessageType.CALL, self._seqid)
-    args = update_args()
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_update(self,):
+        self._oprot.writeMessageBegin("update", TMessageType.CALL, self._seqid)
+        args = update_args()
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_update(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = update_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.error is not None:
-      raise result.error
-    return
+    def recv_update(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = update_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.error is not None:
+            raise result.error
+        return
 
-  def update_until(self, time):
-    """
+    def update_until(self, time):
+        """
     Parameters:
      - time
     """
-    self.send_update_until(time)
-    self.recv_update_until()
+        self.send_update_until(time)
+        self.recv_update_until()
 
-  def send_update_until(self, time):
-    self._oprot.writeMessageBegin('update_until', TMessageType.CALL, self._seqid)
-    args = update_until_args()
-    args.time = time
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_update_until(self, time):
+        self._oprot.writeMessageBegin("update_until", TMessageType.CALL, self._seqid)
+        args = update_until_args()
+        args.time = time
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_update_until(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = update_until_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.error is not None:
-      raise result.error
-    return
+    def recv_update_until(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = update_until_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.error is not None:
+            raise result.error
+        return
 
-  def update_frac(self, frac):
-    """
+    def update_frac(self, frac):
+        """
     Parameters:
      - frac
     """
-    self.send_update_frac(frac)
-    self.recv_update_frac()
+        self.send_update_frac(frac)
+        self.recv_update_frac()
 
-  def send_update_frac(self, frac):
-    self._oprot.writeMessageBegin('update_frac', TMessageType.CALL, self._seqid)
-    args = update_frac_args()
-    args.frac = frac
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_update_frac(self, frac):
+        self._oprot.writeMessageBegin("update_frac", TMessageType.CALL, self._seqid)
+        args = update_frac_args()
+        args.frac = frac
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_update_frac(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = update_frac_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.error is not None:
-      raise result.error
-    return
+    def recv_update_frac(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = update_frac_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.error is not None:
+            raise result.error
+        return
 
-  def finalize_model(self, ):
-    self.send_finalize_model()
-    self.recv_finalize_model()
+    def finalize_model(self,):
+        self.send_finalize_model()
+        self.recv_finalize_model()
 
-  def send_finalize_model(self, ):
-    self._oprot.writeMessageBegin('finalize_model', TMessageType.CALL, self._seqid)
-    args = finalize_model_args()
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_finalize_model(self,):
+        self._oprot.writeMessageBegin("finalize_model", TMessageType.CALL, self._seqid)
+        args = finalize_model_args()
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_finalize_model(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = finalize_model_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.error is not None:
-      raise result.error
-    return
+    def recv_finalize_model(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = finalize_model_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.error is not None:
+            raise result.error
+        return
 
-  def get_component_name(self, ):
-    self.send_get_component_name()
-    return self.recv_get_component_name()
+    def get_component_name(self,):
+        self.send_get_component_name()
+        return self.recv_get_component_name()
 
-  def send_get_component_name(self, ):
-    self._oprot.writeMessageBegin('get_component_name', TMessageType.CALL, self._seqid)
-    args = get_component_name_args()
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_get_component_name(self,):
+        self._oprot.writeMessageBegin(
+            "get_component_name", TMessageType.CALL, self._seqid
+        )
+        args = get_component_name_args()
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_get_component_name(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = get_component_name_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    if result.error is not None:
-      raise result.error
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_component_name failed: unknown result");
+    def recv_get_component_name(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = get_component_name_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.error is not None:
+            raise result.error
+        raise TApplicationException(
+            TApplicationException.MISSING_RESULT,
+            "get_component_name failed: unknown result",
+        )
 
-  def get_input_var_names(self, ):
-    self.send_get_input_var_names()
-    return self.recv_get_input_var_names()
+    def get_input_var_names(self,):
+        self.send_get_input_var_names()
+        return self.recv_get_input_var_names()
 
-  def send_get_input_var_names(self, ):
-    self._oprot.writeMessageBegin('get_input_var_names', TMessageType.CALL, self._seqid)
-    args = get_input_var_names_args()
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_get_input_var_names(self,):
+        self._oprot.writeMessageBegin(
+            "get_input_var_names", TMessageType.CALL, self._seqid
+        )
+        args = get_input_var_names_args()
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_get_input_var_names(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = get_input_var_names_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_input_var_names failed: unknown result");
+    def recv_get_input_var_names(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = get_input_var_names_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        raise TApplicationException(
+            TApplicationException.MISSING_RESULT,
+            "get_input_var_names failed: unknown result",
+        )
 
-  def get_output_var_names(self, ):
-    self.send_get_output_var_names()
-    return self.recv_get_output_var_names()
+    def get_output_var_names(self,):
+        self.send_get_output_var_names()
+        return self.recv_get_output_var_names()
 
-  def send_get_output_var_names(self, ):
-    self._oprot.writeMessageBegin('get_output_var_names', TMessageType.CALL, self._seqid)
-    args = get_output_var_names_args()
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_get_output_var_names(self,):
+        self._oprot.writeMessageBegin(
+            "get_output_var_names", TMessageType.CALL, self._seqid
+        )
+        args = get_output_var_names_args()
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_get_output_var_names(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = get_output_var_names_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_output_var_names failed: unknown result");
+    def recv_get_output_var_names(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = get_output_var_names_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        raise TApplicationException(
+            TApplicationException.MISSING_RESULT,
+            "get_output_var_names failed: unknown result",
+        )
 
-  def get_var_type(self, long_var_name):
-    """
+    def get_var_type(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    self.send_get_var_type(long_var_name)
-    return self.recv_get_var_type()
+        self.send_get_var_type(long_var_name)
+        return self.recv_get_var_type()
 
-  def send_get_var_type(self, long_var_name):
-    self._oprot.writeMessageBegin('get_var_type', TMessageType.CALL, self._seqid)
-    args = get_var_type_args()
-    args.long_var_name = long_var_name
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_get_var_type(self, long_var_name):
+        self._oprot.writeMessageBegin("get_var_type", TMessageType.CALL, self._seqid)
+        args = get_var_type_args()
+        args.long_var_name = long_var_name
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_get_var_type(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = get_var_type_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_var_type failed: unknown result");
+    def recv_get_var_type(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = get_var_type_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        raise TApplicationException(
+            TApplicationException.MISSING_RESULT, "get_var_type failed: unknown result"
+        )
 
-  def get_var_units(self, long_var_name):
-    """
+    def get_var_units(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    self.send_get_var_units(long_var_name)
-    return self.recv_get_var_units()
+        self.send_get_var_units(long_var_name)
+        return self.recv_get_var_units()
 
-  def send_get_var_units(self, long_var_name):
-    self._oprot.writeMessageBegin('get_var_units', TMessageType.CALL, self._seqid)
-    args = get_var_units_args()
-    args.long_var_name = long_var_name
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_get_var_units(self, long_var_name):
+        self._oprot.writeMessageBegin("get_var_units", TMessageType.CALL, self._seqid)
+        args = get_var_units_args()
+        args.long_var_name = long_var_name
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_get_var_units(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = get_var_units_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_var_units failed: unknown result");
+    def recv_get_var_units(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = get_var_units_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        raise TApplicationException(
+            TApplicationException.MISSING_RESULT, "get_var_units failed: unknown result"
+        )
 
-  def get_var_rank(self, long_var_name):
-    """
+    def get_var_rank(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    self.send_get_var_rank(long_var_name)
-    return self.recv_get_var_rank()
+        self.send_get_var_rank(long_var_name)
+        return self.recv_get_var_rank()
 
-  def send_get_var_rank(self, long_var_name):
-    self._oprot.writeMessageBegin('get_var_rank', TMessageType.CALL, self._seqid)
-    args = get_var_rank_args()
-    args.long_var_name = long_var_name
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_get_var_rank(self, long_var_name):
+        self._oprot.writeMessageBegin("get_var_rank", TMessageType.CALL, self._seqid)
+        args = get_var_rank_args()
+        args.long_var_name = long_var_name
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_get_var_rank(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = get_var_rank_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_var_rank failed: unknown result");
+    def recv_get_var_rank(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = get_var_rank_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        raise TApplicationException(
+            TApplicationException.MISSING_RESULT, "get_var_rank failed: unknown result"
+        )
 
-  def get_var_size(self, long_var_name):
-    """
+    def get_var_size(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    self.send_get_var_size(long_var_name)
-    return self.recv_get_var_size()
+        self.send_get_var_size(long_var_name)
+        return self.recv_get_var_size()
 
-  def send_get_var_size(self, long_var_name):
-    self._oprot.writeMessageBegin('get_var_size', TMessageType.CALL, self._seqid)
-    args = get_var_size_args()
-    args.long_var_name = long_var_name
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_get_var_size(self, long_var_name):
+        self._oprot.writeMessageBegin("get_var_size", TMessageType.CALL, self._seqid)
+        args = get_var_size_args()
+        args.long_var_name = long_var_name
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_get_var_size(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = get_var_size_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_var_size failed: unknown result");
+    def recv_get_var_size(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = get_var_size_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        raise TApplicationException(
+            TApplicationException.MISSING_RESULT, "get_var_size failed: unknown result"
+        )
 
-  def get_var_nbytes(self, long_var_name):
-    """
+    def get_var_nbytes(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    self.send_get_var_nbytes(long_var_name)
-    return self.recv_get_var_nbytes()
+        self.send_get_var_nbytes(long_var_name)
+        return self.recv_get_var_nbytes()
 
-  def send_get_var_nbytes(self, long_var_name):
-    self._oprot.writeMessageBegin('get_var_nbytes', TMessageType.CALL, self._seqid)
-    args = get_var_nbytes_args()
-    args.long_var_name = long_var_name
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_get_var_nbytes(self, long_var_name):
+        self._oprot.writeMessageBegin("get_var_nbytes", TMessageType.CALL, self._seqid)
+        args = get_var_nbytes_args()
+        args.long_var_name = long_var_name
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_get_var_nbytes(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = get_var_nbytes_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_var_nbytes failed: unknown result");
+    def recv_get_var_nbytes(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = get_var_nbytes_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        raise TApplicationException(
+            TApplicationException.MISSING_RESULT,
+            "get_var_nbytes failed: unknown result",
+        )
 
-  def get_start_time(self, ):
-    self.send_get_start_time()
-    return self.recv_get_start_time()
+    def get_start_time(self,):
+        self.send_get_start_time()
+        return self.recv_get_start_time()
 
-  def send_get_start_time(self, ):
-    self._oprot.writeMessageBegin('get_start_time', TMessageType.CALL, self._seqid)
-    args = get_start_time_args()
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_get_start_time(self,):
+        self._oprot.writeMessageBegin("get_start_time", TMessageType.CALL, self._seqid)
+        args = get_start_time_args()
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_get_start_time(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = get_start_time_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_start_time failed: unknown result");
+    def recv_get_start_time(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = get_start_time_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        raise TApplicationException(
+            TApplicationException.MISSING_RESULT,
+            "get_start_time failed: unknown result",
+        )
 
-  def get_current_time(self, ):
-    self.send_get_current_time()
-    return self.recv_get_current_time()
+    def get_current_time(self,):
+        self.send_get_current_time()
+        return self.recv_get_current_time()
 
-  def send_get_current_time(self, ):
-    self._oprot.writeMessageBegin('get_current_time', TMessageType.CALL, self._seqid)
-    args = get_current_time_args()
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_get_current_time(self,):
+        self._oprot.writeMessageBegin(
+            "get_current_time", TMessageType.CALL, self._seqid
+        )
+        args = get_current_time_args()
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_get_current_time(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = get_current_time_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_current_time failed: unknown result");
+    def recv_get_current_time(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = get_current_time_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        raise TApplicationException(
+            TApplicationException.MISSING_RESULT,
+            "get_current_time failed: unknown result",
+        )
 
-  def get_end_time(self, ):
-    self.send_get_end_time()
-    return self.recv_get_end_time()
+    def get_end_time(self,):
+        self.send_get_end_time()
+        return self.recv_get_end_time()
 
-  def send_get_end_time(self, ):
-    self._oprot.writeMessageBegin('get_end_time', TMessageType.CALL, self._seqid)
-    args = get_end_time_args()
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_get_end_time(self,):
+        self._oprot.writeMessageBegin("get_end_time", TMessageType.CALL, self._seqid)
+        args = get_end_time_args()
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_get_end_time(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = get_end_time_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_end_time failed: unknown result");
+    def recv_get_end_time(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = get_end_time_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        raise TApplicationException(
+            TApplicationException.MISSING_RESULT, "get_end_time failed: unknown result"
+        )
 
-  def get_time_step(self, ):
-    self.send_get_time_step()
-    return self.recv_get_time_step()
+    def get_time_step(self,):
+        self.send_get_time_step()
+        return self.recv_get_time_step()
 
-  def send_get_time_step(self, ):
-    self._oprot.writeMessageBegin('get_time_step', TMessageType.CALL, self._seqid)
-    args = get_time_step_args()
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_get_time_step(self,):
+        self._oprot.writeMessageBegin("get_time_step", TMessageType.CALL, self._seqid)
+        args = get_time_step_args()
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_get_time_step(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = get_time_step_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_time_step failed: unknown result");
+    def recv_get_time_step(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = get_time_step_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        raise TApplicationException(
+            TApplicationException.MISSING_RESULT, "get_time_step failed: unknown result"
+        )
 
-  def get_time_units(self, ):
-    self.send_get_time_units()
-    return self.recv_get_time_units()
+    def get_time_units(self,):
+        self.send_get_time_units()
+        return self.recv_get_time_units()
 
-  def send_get_time_units(self, ):
-    self._oprot.writeMessageBegin('get_time_units', TMessageType.CALL, self._seqid)
-    args = get_time_units_args()
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_get_time_units(self,):
+        self._oprot.writeMessageBegin("get_time_units", TMessageType.CALL, self._seqid)
+        args = get_time_units_args()
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_get_time_units(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = get_time_units_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_time_units failed: unknown result");
+    def recv_get_time_units(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = get_time_units_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        raise TApplicationException(
+            TApplicationException.MISSING_RESULT,
+            "get_time_units failed: unknown result",
+        )
 
-  def get_value(self, long_var_name):
-    """
+    def get_value(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    self.send_get_value(long_var_name)
-    return self.recv_get_value()
+        self.send_get_value(long_var_name)
+        return self.recv_get_value()
 
-  def send_get_value(self, long_var_name):
-    self._oprot.writeMessageBegin('get_value', TMessageType.CALL, self._seqid)
-    args = get_value_args()
-    args.long_var_name = long_var_name
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_get_value(self, long_var_name):
+        self._oprot.writeMessageBegin("get_value", TMessageType.CALL, self._seqid)
+        args = get_value_args()
+        args.long_var_name = long_var_name
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_get_value(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = get_value_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    if result.error is not None:
-      raise result.error
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_value failed: unknown result");
+    def recv_get_value(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = get_value_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.error is not None:
+            raise result.error
+        raise TApplicationException(
+            TApplicationException.MISSING_RESULT, "get_value failed: unknown result"
+        )
 
-  def get_value_at_indices(self, long_var_name, inds):
-    """
+    def get_value_at_indices(self, long_var_name, inds):
+        """
     Parameters:
      - long_var_name
      - inds
     """
-    self.send_get_value_at_indices(long_var_name, inds)
-    return self.recv_get_value_at_indices()
+        self.send_get_value_at_indices(long_var_name, inds)
+        return self.recv_get_value_at_indices()
 
-  def send_get_value_at_indices(self, long_var_name, inds):
-    self._oprot.writeMessageBegin('get_value_at_indices', TMessageType.CALL, self._seqid)
-    args = get_value_at_indices_args()
-    args.long_var_name = long_var_name
-    args.inds = inds
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_get_value_at_indices(self, long_var_name, inds):
+        self._oprot.writeMessageBegin(
+            "get_value_at_indices", TMessageType.CALL, self._seqid
+        )
+        args = get_value_at_indices_args()
+        args.long_var_name = long_var_name
+        args.inds = inds
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_get_value_at_indices(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = get_value_at_indices_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    if result.error is not None:
-      raise result.error
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_value_at_indices failed: unknown result");
+    def recv_get_value_at_indices(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = get_value_at_indices_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.error is not None:
+            raise result.error
+        raise TApplicationException(
+            TApplicationException.MISSING_RESULT,
+            "get_value_at_indices failed: unknown result",
+        )
 
-  def set_value(self, long_var_name, src):
-    """
+    def set_value(self, long_var_name, src):
+        """
     Parameters:
      - long_var_name
      - src
     """
-    self.send_set_value(long_var_name, src)
-    self.recv_set_value()
+        self.send_set_value(long_var_name, src)
+        self.recv_set_value()
 
-  def send_set_value(self, long_var_name, src):
-    self._oprot.writeMessageBegin('set_value', TMessageType.CALL, self._seqid)
-    args = set_value_args()
-    args.long_var_name = long_var_name
-    args.src = src
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_set_value(self, long_var_name, src):
+        self._oprot.writeMessageBegin("set_value", TMessageType.CALL, self._seqid)
+        args = set_value_args()
+        args.long_var_name = long_var_name
+        args.src = src
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_set_value(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = set_value_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.error is not None:
-      raise result.error
-    return
+    def recv_set_value(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = set_value_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.error is not None:
+            raise result.error
+        return
 
-  def set_value_at_indices(self, long_var_name, inds, src):
-    """
+    def set_value_at_indices(self, long_var_name, inds, src):
+        """
     Parameters:
      - long_var_name
      - inds
      - src
     """
-    self.send_set_value_at_indices(long_var_name, inds, src)
-    self.recv_set_value_at_indices()
+        self.send_set_value_at_indices(long_var_name, inds, src)
+        self.recv_set_value_at_indices()
 
-  def send_set_value_at_indices(self, long_var_name, inds, src):
-    self._oprot.writeMessageBegin('set_value_at_indices', TMessageType.CALL, self._seqid)
-    args = set_value_at_indices_args()
-    args.long_var_name = long_var_name
-    args.inds = inds
-    args.src = src
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_set_value_at_indices(self, long_var_name, inds, src):
+        self._oprot.writeMessageBegin(
+            "set_value_at_indices", TMessageType.CALL, self._seqid
+        )
+        args = set_value_at_indices_args()
+        args.long_var_name = long_var_name
+        args.inds = inds
+        args.src = src
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_set_value_at_indices(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = set_value_at_indices_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.error is not None:
-      raise result.error
-    return
+    def recv_set_value_at_indices(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = set_value_at_indices_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.error is not None:
+            raise result.error
+        return
 
-  def get_grid_type(self, long_var_name):
-    """
+    def get_grid_type(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    self.send_get_grid_type(long_var_name)
-    return self.recv_get_grid_type()
+        self.send_get_grid_type(long_var_name)
+        return self.recv_get_grid_type()
 
-  def send_get_grid_type(self, long_var_name):
-    self._oprot.writeMessageBegin('get_grid_type', TMessageType.CALL, self._seqid)
-    args = get_grid_type_args()
-    args.long_var_name = long_var_name
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_get_grid_type(self, long_var_name):
+        self._oprot.writeMessageBegin("get_grid_type", TMessageType.CALL, self._seqid)
+        args = get_grid_type_args()
+        args.long_var_name = long_var_name
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_get_grid_type(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = get_grid_type_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    if result.error is not None:
-      raise result.error
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_grid_type failed: unknown result");
+    def recv_get_grid_type(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = get_grid_type_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.error is not None:
+            raise result.error
+        raise TApplicationException(
+            TApplicationException.MISSING_RESULT, "get_grid_type failed: unknown result"
+        )
 
-  def get_grid_shape(self, long_var_name):
-    """
+    def get_grid_shape(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    self.send_get_grid_shape(long_var_name)
-    return self.recv_get_grid_shape()
+        self.send_get_grid_shape(long_var_name)
+        return self.recv_get_grid_shape()
 
-  def send_get_grid_shape(self, long_var_name):
-    self._oprot.writeMessageBegin('get_grid_shape', TMessageType.CALL, self._seqid)
-    args = get_grid_shape_args()
-    args.long_var_name = long_var_name
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_get_grid_shape(self, long_var_name):
+        self._oprot.writeMessageBegin("get_grid_shape", TMessageType.CALL, self._seqid)
+        args = get_grid_shape_args()
+        args.long_var_name = long_var_name
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_get_grid_shape(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = get_grid_shape_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_grid_shape failed: unknown result");
+    def recv_get_grid_shape(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = get_grid_shape_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        raise TApplicationException(
+            TApplicationException.MISSING_RESULT,
+            "get_grid_shape failed: unknown result",
+        )
 
-  def get_grid_spacing(self, long_var_name):
-    """
+    def get_grid_spacing(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    self.send_get_grid_spacing(long_var_name)
-    return self.recv_get_grid_spacing()
+        self.send_get_grid_spacing(long_var_name)
+        return self.recv_get_grid_spacing()
 
-  def send_get_grid_spacing(self, long_var_name):
-    self._oprot.writeMessageBegin('get_grid_spacing', TMessageType.CALL, self._seqid)
-    args = get_grid_spacing_args()
-    args.long_var_name = long_var_name
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_get_grid_spacing(self, long_var_name):
+        self._oprot.writeMessageBegin(
+            "get_grid_spacing", TMessageType.CALL, self._seqid
+        )
+        args = get_grid_spacing_args()
+        args.long_var_name = long_var_name
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_get_grid_spacing(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = get_grid_spacing_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_grid_spacing failed: unknown result");
+    def recv_get_grid_spacing(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = get_grid_spacing_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        raise TApplicationException(
+            TApplicationException.MISSING_RESULT,
+            "get_grid_spacing failed: unknown result",
+        )
 
-  def get_grid_origin(self, long_var_name):
-    """
+    def get_grid_origin(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    self.send_get_grid_origin(long_var_name)
-    return self.recv_get_grid_origin()
+        self.send_get_grid_origin(long_var_name)
+        return self.recv_get_grid_origin()
 
-  def send_get_grid_origin(self, long_var_name):
-    self._oprot.writeMessageBegin('get_grid_origin', TMessageType.CALL, self._seqid)
-    args = get_grid_origin_args()
-    args.long_var_name = long_var_name
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_get_grid_origin(self, long_var_name):
+        self._oprot.writeMessageBegin("get_grid_origin", TMessageType.CALL, self._seqid)
+        args = get_grid_origin_args()
+        args.long_var_name = long_var_name
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_get_grid_origin(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = get_grid_origin_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_grid_origin failed: unknown result");
+    def recv_get_grid_origin(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = get_grid_origin_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        raise TApplicationException(
+            TApplicationException.MISSING_RESULT,
+            "get_grid_origin failed: unknown result",
+        )
 
-  def get_grid_x(self, long_var_name):
-    """
+    def get_grid_x(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    self.send_get_grid_x(long_var_name)
-    return self.recv_get_grid_x()
+        self.send_get_grid_x(long_var_name)
+        return self.recv_get_grid_x()
 
-  def send_get_grid_x(self, long_var_name):
-    self._oprot.writeMessageBegin('get_grid_x', TMessageType.CALL, self._seqid)
-    args = get_grid_x_args()
-    args.long_var_name = long_var_name
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_get_grid_x(self, long_var_name):
+        self._oprot.writeMessageBegin("get_grid_x", TMessageType.CALL, self._seqid)
+        args = get_grid_x_args()
+        args.long_var_name = long_var_name
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_get_grid_x(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = get_grid_x_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_grid_x failed: unknown result");
+    def recv_get_grid_x(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = get_grid_x_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        raise TApplicationException(
+            TApplicationException.MISSING_RESULT, "get_grid_x failed: unknown result"
+        )
 
-  def get_grid_y(self, long_var_name):
-    """
+    def get_grid_y(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    self.send_get_grid_y(long_var_name)
-    return self.recv_get_grid_y()
+        self.send_get_grid_y(long_var_name)
+        return self.recv_get_grid_y()
 
-  def send_get_grid_y(self, long_var_name):
-    self._oprot.writeMessageBegin('get_grid_y', TMessageType.CALL, self._seqid)
-    args = get_grid_y_args()
-    args.long_var_name = long_var_name
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_get_grid_y(self, long_var_name):
+        self._oprot.writeMessageBegin("get_grid_y", TMessageType.CALL, self._seqid)
+        args = get_grid_y_args()
+        args.long_var_name = long_var_name
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_get_grid_y(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = get_grid_y_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_grid_y failed: unknown result");
+    def recv_get_grid_y(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = get_grid_y_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        raise TApplicationException(
+            TApplicationException.MISSING_RESULT, "get_grid_y failed: unknown result"
+        )
 
-  def get_grid_z(self, long_var_name):
-    """
+    def get_grid_z(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    self.send_get_grid_z(long_var_name)
-    return self.recv_get_grid_z()
+        self.send_get_grid_z(long_var_name)
+        return self.recv_get_grid_z()
 
-  def send_get_grid_z(self, long_var_name):
-    self._oprot.writeMessageBegin('get_grid_z', TMessageType.CALL, self._seqid)
-    args = get_grid_z_args()
-    args.long_var_name = long_var_name
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_get_grid_z(self, long_var_name):
+        self._oprot.writeMessageBegin("get_grid_z", TMessageType.CALL, self._seqid)
+        args = get_grid_z_args()
+        args.long_var_name = long_var_name
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_get_grid_z(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = get_grid_z_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_grid_z failed: unknown result");
+    def recv_get_grid_z(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = get_grid_z_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        raise TApplicationException(
+            TApplicationException.MISSING_RESULT, "get_grid_z failed: unknown result"
+        )
 
-  def get_grid_connectivity(self, long_var_name):
-    """
+    def get_grid_connectivity(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    self.send_get_grid_connectivity(long_var_name)
-    return self.recv_get_grid_connectivity()
+        self.send_get_grid_connectivity(long_var_name)
+        return self.recv_get_grid_connectivity()
 
-  def send_get_grid_connectivity(self, long_var_name):
-    self._oprot.writeMessageBegin('get_grid_connectivity', TMessageType.CALL, self._seqid)
-    args = get_grid_connectivity_args()
-    args.long_var_name = long_var_name
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_get_grid_connectivity(self, long_var_name):
+        self._oprot.writeMessageBegin(
+            "get_grid_connectivity", TMessageType.CALL, self._seqid
+        )
+        args = get_grid_connectivity_args()
+        args.long_var_name = long_var_name
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_get_grid_connectivity(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = get_grid_connectivity_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_grid_connectivity failed: unknown result");
+    def recv_get_grid_connectivity(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = get_grid_connectivity_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        raise TApplicationException(
+            TApplicationException.MISSING_RESULT,
+            "get_grid_connectivity failed: unknown result",
+        )
 
-  def get_grid_offset(self, long_var_name):
-    """
+    def get_grid_offset(self, long_var_name):
+        """
     Parameters:
      - long_var_name
     """
-    self.send_get_grid_offset(long_var_name)
-    return self.recv_get_grid_offset()
+        self.send_get_grid_offset(long_var_name)
+        return self.recv_get_grid_offset()
 
-  def send_get_grid_offset(self, long_var_name):
-    self._oprot.writeMessageBegin('get_grid_offset', TMessageType.CALL, self._seqid)
-    args = get_grid_offset_args()
-    args.long_var_name = long_var_name
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_get_grid_offset(self, long_var_name):
+        self._oprot.writeMessageBegin("get_grid_offset", TMessageType.CALL, self._seqid)
+        args = get_grid_offset_args()
+        args.long_var_name = long_var_name
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_get_grid_offset(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = get_grid_offset_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_grid_offset failed: unknown result");
+    def recv_get_grid_offset(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = get_grid_offset_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        raise TApplicationException(
+            TApplicationException.MISSING_RESULT,
+            "get_grid_offset failed: unknown result",
+        )
 
-  def initialize_config(self, file):
-    """
+    def initialize_config(self, file):
+        """
     Parameters:
      - file
     """
-    self.send_initialize_config(file)
-    self.recv_initialize_config()
+        self.send_initialize_config(file)
+        self.recv_initialize_config()
 
-  def send_initialize_config(self, file):
-    self._oprot.writeMessageBegin('initialize_config', TMessageType.CALL, self._seqid)
-    args = initialize_config_args()
-    args.file = file
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_initialize_config(self, file):
+        self._oprot.writeMessageBegin(
+            "initialize_config", TMessageType.CALL, self._seqid
+        )
+        args = initialize_config_args()
+        args.file = file
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_initialize_config(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = initialize_config_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.error is not None:
-      raise result.error
-    return
+    def recv_initialize_config(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = initialize_config_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.error is not None:
+            raise result.error
+        return
 
-  def initialize_model(self, ):
-    self.send_initialize_model()
-    self.recv_initialize_model()
+    def initialize_model(self,):
+        self.send_initialize_model()
+        self.recv_initialize_model()
 
-  def send_initialize_model(self, ):
-    self._oprot.writeMessageBegin('initialize_model', TMessageType.CALL, self._seqid)
-    args = initialize_model_args()
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_initialize_model(self,):
+        self._oprot.writeMessageBegin(
+            "initialize_model", TMessageType.CALL, self._seqid
+        )
+        args = initialize_model_args()
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_initialize_model(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = initialize_model_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.error is not None:
-      raise result.error
-    return
+    def recv_initialize_model(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = initialize_model_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.error is not None:
+            raise result.error
+        return
 
-  def set_start_time(self, start_time):
-    """
+    def set_start_time(self, start_time):
+        """
     Parameters:
      - start_time
     """
-    self.send_set_start_time(start_time)
-    self.recv_set_start_time()
+        self.send_set_start_time(start_time)
+        self.recv_set_start_time()
 
-  def send_set_start_time(self, start_time):
-    self._oprot.writeMessageBegin('set_start_time', TMessageType.CALL, self._seqid)
-    args = set_start_time_args()
-    args.start_time = start_time
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_set_start_time(self, start_time):
+        self._oprot.writeMessageBegin("set_start_time", TMessageType.CALL, self._seqid)
+        args = set_start_time_args()
+        args.start_time = start_time
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_set_start_time(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = set_start_time_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.error is not None:
-      raise result.error
-    return
+    def recv_set_start_time(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = set_start_time_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.error is not None:
+            raise result.error
+        return
 
-  def set_end_time(self, end_time):
-    """
+    def set_end_time(self, end_time):
+        """
     Parameters:
      - end_time
     """
-    self.send_set_end_time(end_time)
-    self.recv_set_end_time()
+        self.send_set_end_time(end_time)
+        self.recv_set_end_time()
 
-  def send_set_end_time(self, end_time):
-    self._oprot.writeMessageBegin('set_end_time', TMessageType.CALL, self._seqid)
-    args = set_end_time_args()
-    args.end_time = end_time
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_set_end_time(self, end_time):
+        self._oprot.writeMessageBegin("set_end_time", TMessageType.CALL, self._seqid)
+        args = set_end_time_args()
+        args.end_time = end_time
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_set_end_time(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = set_end_time_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.error is not None:
-      raise result.error
-    return
+    def recv_set_end_time(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = set_end_time_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.error is not None:
+            raise result.error
+        return
 
-  def get_attribute_names(self, ):
-    self.send_get_attribute_names()
-    return self.recv_get_attribute_names()
+    def get_attribute_names(self,):
+        self.send_get_attribute_names()
+        return self.recv_get_attribute_names()
 
-  def send_get_attribute_names(self, ):
-    self._oprot.writeMessageBegin('get_attribute_names', TMessageType.CALL, self._seqid)
-    args = get_attribute_names_args()
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_get_attribute_names(self,):
+        self._oprot.writeMessageBegin(
+            "get_attribute_names", TMessageType.CALL, self._seqid
+        )
+        args = get_attribute_names_args()
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_get_attribute_names(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = get_attribute_names_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_attribute_names failed: unknown result");
+    def recv_get_attribute_names(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = get_attribute_names_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        raise TApplicationException(
+            TApplicationException.MISSING_RESULT,
+            "get_attribute_names failed: unknown result",
+        )
 
-  def get_attribute_value(self, attribute_name):
-    """
+    def get_attribute_value(self, attribute_name):
+        """
     Parameters:
      - attribute_name
     """
-    self.send_get_attribute_value(attribute_name)
-    return self.recv_get_attribute_value()
+        self.send_get_attribute_value(attribute_name)
+        return self.recv_get_attribute_value()
 
-  def send_get_attribute_value(self, attribute_name):
-    self._oprot.writeMessageBegin('get_attribute_value', TMessageType.CALL, self._seqid)
-    args = get_attribute_value_args()
-    args.attribute_name = attribute_name
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_get_attribute_value(self, attribute_name):
+        self._oprot.writeMessageBegin(
+            "get_attribute_value", TMessageType.CALL, self._seqid
+        )
+        args = get_attribute_value_args()
+        args.attribute_name = attribute_name
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_get_attribute_value(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = get_attribute_value_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    if result.error is not None:
-      raise result.error
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_attribute_value failed: unknown result");
+    def recv_get_attribute_value(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = get_attribute_value_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.error is not None:
+            raise result.error
+        raise TApplicationException(
+            TApplicationException.MISSING_RESULT,
+            "get_attribute_value failed: unknown result",
+        )
 
-  def set_attribute_value(self, attribute_name, attribute_value):
-    """
+    def set_attribute_value(self, attribute_name, attribute_value):
+        """
     Parameters:
      - attribute_name
      - attribute_value
     """
-    self.send_set_attribute_value(attribute_name, attribute_value)
-    self.recv_set_attribute_value()
+        self.send_set_attribute_value(attribute_name, attribute_value)
+        self.recv_set_attribute_value()
 
-  def send_set_attribute_value(self, attribute_name, attribute_value):
-    self._oprot.writeMessageBegin('set_attribute_value', TMessageType.CALL, self._seqid)
-    args = set_attribute_value_args()
-    args.attribute_name = attribute_name
-    args.attribute_value = attribute_value
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_set_attribute_value(self, attribute_name, attribute_value):
+        self._oprot.writeMessageBegin(
+            "set_attribute_value", TMessageType.CALL, self._seqid
+        )
+        args = set_attribute_value_args()
+        args.attribute_name = attribute_name
+        args.attribute_value = attribute_value
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_set_attribute_value(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = set_attribute_value_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.error is not None:
-      raise result.error
-    return
+    def recv_set_attribute_value(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = set_attribute_value_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.error is not None:
+            raise result.error
+        return
 
-  def save_state(self, destination_directory):
-    """
+    def save_state(self, destination_directory):
+        """
     Parameters:
      - destination_directory
     """
-    self.send_save_state(destination_directory)
-    self.recv_save_state()
+        self.send_save_state(destination_directory)
+        self.recv_save_state()
 
-  def send_save_state(self, destination_directory):
-    self._oprot.writeMessageBegin('save_state', TMessageType.CALL, self._seqid)
-    args = save_state_args()
-    args.destination_directory = destination_directory
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_save_state(self, destination_directory):
+        self._oprot.writeMessageBegin("save_state", TMessageType.CALL, self._seqid)
+        args = save_state_args()
+        args.destination_directory = destination_directory
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_save_state(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = save_state_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.error is not None:
-      raise result.error
-    return
+    def recv_save_state(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = save_state_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.error is not None:
+            raise result.error
+        return
 
-  def load_state(self, source_directory):
-    """
+    def load_state(self, source_directory):
+        """
     Parameters:
      - source_directory
     """
-    self.send_load_state(source_directory)
-    self.recv_load_state()
+        self.send_load_state(source_directory)
+        self.recv_load_state()
 
-  def send_load_state(self, source_directory):
-    self._oprot.writeMessageBegin('load_state', TMessageType.CALL, self._seqid)
-    args = load_state_args()
-    args.source_directory = source_directory
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
+    def send_load_state(self, source_directory):
+        self._oprot.writeMessageBegin("load_state", TMessageType.CALL, self._seqid)
+        args = load_state_args()
+        args.source_directory = source_directory
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
 
-  def recv_load_state(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = load_state_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.error is not None:
-      raise result.error
-    return
+    def recv_load_state(self,):
+        (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(self._iprot)
+            self._iprot.readMessageEnd()
+            raise x
+        result = load_state_result()
+        result.read(self._iprot)
+        self._iprot.readMessageEnd()
+        if result.error is not None:
+            raise result.error
+        return
 
 
 class Processor(Iface, TProcessor):
-  def __init__(self, handler):
-    self._handler = handler
-    self._processMap = {}
-    self._processMap["initialize"] = Processor.process_initialize
-    self._processMap["update"] = Processor.process_update
-    self._processMap["update_until"] = Processor.process_update_until
-    self._processMap["update_frac"] = Processor.process_update_frac
-    self._processMap["finalize_model"] = Processor.process_finalize_model
-    self._processMap["get_component_name"] = Processor.process_get_component_name
-    self._processMap["get_input_var_names"] = Processor.process_get_input_var_names
-    self._processMap["get_output_var_names"] = Processor.process_get_output_var_names
-    self._processMap["get_var_type"] = Processor.process_get_var_type
-    self._processMap["get_var_units"] = Processor.process_get_var_units
-    self._processMap["get_var_rank"] = Processor.process_get_var_rank
-    self._processMap["get_var_size"] = Processor.process_get_var_size
-    self._processMap["get_var_nbytes"] = Processor.process_get_var_nbytes
-    self._processMap["get_start_time"] = Processor.process_get_start_time
-    self._processMap["get_current_time"] = Processor.process_get_current_time
-    self._processMap["get_end_time"] = Processor.process_get_end_time
-    self._processMap["get_time_step"] = Processor.process_get_time_step
-    self._processMap["get_time_units"] = Processor.process_get_time_units
-    self._processMap["get_value"] = Processor.process_get_value
-    self._processMap["get_value_at_indices"] = Processor.process_get_value_at_indices
-    self._processMap["set_value"] = Processor.process_set_value
-    self._processMap["set_value_at_indices"] = Processor.process_set_value_at_indices
-    self._processMap["get_grid_type"] = Processor.process_get_grid_type
-    self._processMap["get_grid_shape"] = Processor.process_get_grid_shape
-    self._processMap["get_grid_spacing"] = Processor.process_get_grid_spacing
-    self._processMap["get_grid_origin"] = Processor.process_get_grid_origin
-    self._processMap["get_grid_x"] = Processor.process_get_grid_x
-    self._processMap["get_grid_y"] = Processor.process_get_grid_y
-    self._processMap["get_grid_z"] = Processor.process_get_grid_z
-    self._processMap["get_grid_connectivity"] = Processor.process_get_grid_connectivity
-    self._processMap["get_grid_offset"] = Processor.process_get_grid_offset
-    self._processMap["initialize_config"] = Processor.process_initialize_config
-    self._processMap["initialize_model"] = Processor.process_initialize_model
-    self._processMap["set_start_time"] = Processor.process_set_start_time
-    self._processMap["set_end_time"] = Processor.process_set_end_time
-    self._processMap["get_attribute_names"] = Processor.process_get_attribute_names
-    self._processMap["get_attribute_value"] = Processor.process_get_attribute_value
-    self._processMap["set_attribute_value"] = Processor.process_set_attribute_value
-    self._processMap["save_state"] = Processor.process_save_state
-    self._processMap["load_state"] = Processor.process_load_state
+    def __init__(self, handler):
+        self._handler = handler
+        self._processMap = {}
+        self._processMap["initialize"] = Processor.process_initialize
+        self._processMap["update"] = Processor.process_update
+        self._processMap["update_until"] = Processor.process_update_until
+        self._processMap["update_frac"] = Processor.process_update_frac
+        self._processMap["finalize_model"] = Processor.process_finalize_model
+        self._processMap["get_component_name"] = Processor.process_get_component_name
+        self._processMap["get_input_var_names"] = Processor.process_get_input_var_names
+        self._processMap[
+            "get_output_var_names"
+        ] = Processor.process_get_output_var_names
+        self._processMap["get_var_type"] = Processor.process_get_var_type
+        self._processMap["get_var_units"] = Processor.process_get_var_units
+        self._processMap["get_var_rank"] = Processor.process_get_var_rank
+        self._processMap["get_var_size"] = Processor.process_get_var_size
+        self._processMap["get_var_nbytes"] = Processor.process_get_var_nbytes
+        self._processMap["get_start_time"] = Processor.process_get_start_time
+        self._processMap["get_current_time"] = Processor.process_get_current_time
+        self._processMap["get_end_time"] = Processor.process_get_end_time
+        self._processMap["get_time_step"] = Processor.process_get_time_step
+        self._processMap["get_time_units"] = Processor.process_get_time_units
+        self._processMap["get_value"] = Processor.process_get_value
+        self._processMap[
+            "get_value_at_indices"
+        ] = Processor.process_get_value_at_indices
+        self._processMap["set_value"] = Processor.process_set_value
+        self._processMap[
+            "set_value_at_indices"
+        ] = Processor.process_set_value_at_indices
+        self._processMap["get_grid_type"] = Processor.process_get_grid_type
+        self._processMap["get_grid_shape"] = Processor.process_get_grid_shape
+        self._processMap["get_grid_spacing"] = Processor.process_get_grid_spacing
+        self._processMap["get_grid_origin"] = Processor.process_get_grid_origin
+        self._processMap["get_grid_x"] = Processor.process_get_grid_x
+        self._processMap["get_grid_y"] = Processor.process_get_grid_y
+        self._processMap["get_grid_z"] = Processor.process_get_grid_z
+        self._processMap[
+            "get_grid_connectivity"
+        ] = Processor.process_get_grid_connectivity
+        self._processMap["get_grid_offset"] = Processor.process_get_grid_offset
+        self._processMap["initialize_config"] = Processor.process_initialize_config
+        self._processMap["initialize_model"] = Processor.process_initialize_model
+        self._processMap["set_start_time"] = Processor.process_set_start_time
+        self._processMap["set_end_time"] = Processor.process_set_end_time
+        self._processMap["get_attribute_names"] = Processor.process_get_attribute_names
+        self._processMap["get_attribute_value"] = Processor.process_get_attribute_value
+        self._processMap["set_attribute_value"] = Processor.process_set_attribute_value
+        self._processMap["save_state"] = Processor.process_save_state
+        self._processMap["load_state"] = Processor.process_load_state
 
-  def process(self, iprot, oprot):
-    (name, type, seqid) = iprot.readMessageBegin()
-    if name not in self._processMap:
-      iprot.skip(TType.STRUCT)
-      iprot.readMessageEnd()
-      x = TApplicationException(TApplicationException.UNKNOWN_METHOD, 'Unknown function %s' % (name))
-      oprot.writeMessageBegin(name, TMessageType.EXCEPTION, seqid)
-      x.write(oprot)
-      oprot.writeMessageEnd()
-      oprot.trans.flush()
-      return
-    else:
-      self._processMap[name](self, seqid, iprot, oprot)
-    return True
+    def process(self, iprot, oprot):
+        (name, type, seqid) = iprot.readMessageBegin()
+        if name not in self._processMap:
+            iprot.skip(TType.STRUCT)
+            iprot.readMessageEnd()
+            x = TApplicationException(
+                TApplicationException.UNKNOWN_METHOD, "Unknown function %s" % (name)
+            )
+            oprot.writeMessageBegin(name, TMessageType.EXCEPTION, seqid)
+            x.write(oprot)
+            oprot.writeMessageEnd()
+            oprot.trans.flush()
+            return
+        else:
+            self._processMap[name](self, seqid, iprot, oprot)
+        return True
 
-  def process_initialize(self, seqid, iprot, oprot):
-    args = initialize_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = initialize_result()
-    try:
-      self._handler.initialize(args.file)
-    except ModelException as error:
-      result.error = error
-    oprot.writeMessageBegin("initialize", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_initialize(self, seqid, iprot, oprot):
+        args = initialize_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = initialize_result()
+        try:
+            self._handler.initialize(args.file)
+        except ModelException as error:
+            result.error = error
+        oprot.writeMessageBegin("initialize", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_update(self, seqid, iprot, oprot):
-    args = update_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = update_result()
-    try:
-      self._handler.update()
-    except ModelException as error:
-      result.error = error
-    oprot.writeMessageBegin("update", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_update(self, seqid, iprot, oprot):
+        args = update_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = update_result()
+        try:
+            self._handler.update()
+        except ModelException as error:
+            result.error = error
+        oprot.writeMessageBegin("update", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_update_until(self, seqid, iprot, oprot):
-    args = update_until_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = update_until_result()
-    try:
-      self._handler.update_until(args.time)
-    except ModelException as error:
-      result.error = error
-    oprot.writeMessageBegin("update_until", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_update_until(self, seqid, iprot, oprot):
+        args = update_until_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = update_until_result()
+        try:
+            self._handler.update_until(args.time)
+        except ModelException as error:
+            result.error = error
+        oprot.writeMessageBegin("update_until", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_update_frac(self, seqid, iprot, oprot):
-    args = update_frac_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = update_frac_result()
-    try:
-      self._handler.update_frac(args.frac)
-    except ModelException as error:
-      result.error = error
-    oprot.writeMessageBegin("update_frac", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_update_frac(self, seqid, iprot, oprot):
+        args = update_frac_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = update_frac_result()
+        try:
+            self._handler.update_frac(args.frac)
+        except ModelException as error:
+            result.error = error
+        oprot.writeMessageBegin("update_frac", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_finalize_model(self, seqid, iprot, oprot):
-    args = finalize_model_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = finalize_model_result()
-    try:
-      self._handler.finalize_model()
-    except ModelException as error:
-      result.error = error
-    oprot.writeMessageBegin("finalize_model", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_finalize_model(self, seqid, iprot, oprot):
+        args = finalize_model_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = finalize_model_result()
+        try:
+            self._handler.finalize_model()
+        except ModelException as error:
+            result.error = error
+        oprot.writeMessageBegin("finalize_model", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_get_component_name(self, seqid, iprot, oprot):
-    args = get_component_name_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = get_component_name_result()
-    try:
-      result.success = self._handler.get_component_name()
-    except ModelException as error:
-      result.error = error
-    oprot.writeMessageBegin("get_component_name", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_get_component_name(self, seqid, iprot, oprot):
+        args = get_component_name_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_component_name_result()
+        try:
+            result.success = self._handler.get_component_name()
+        except ModelException as error:
+            result.error = error
+        oprot.writeMessageBegin("get_component_name", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_get_input_var_names(self, seqid, iprot, oprot):
-    args = get_input_var_names_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = get_input_var_names_result()
-    result.success = self._handler.get_input_var_names()
-    oprot.writeMessageBegin("get_input_var_names", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_get_input_var_names(self, seqid, iprot, oprot):
+        args = get_input_var_names_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_input_var_names_result()
+        result.success = self._handler.get_input_var_names()
+        oprot.writeMessageBegin("get_input_var_names", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_get_output_var_names(self, seqid, iprot, oprot):
-    args = get_output_var_names_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = get_output_var_names_result()
-    result.success = self._handler.get_output_var_names()
-    oprot.writeMessageBegin("get_output_var_names", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_get_output_var_names(self, seqid, iprot, oprot):
+        args = get_output_var_names_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_output_var_names_result()
+        result.success = self._handler.get_output_var_names()
+        oprot.writeMessageBegin("get_output_var_names", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_get_var_type(self, seqid, iprot, oprot):
-    args = get_var_type_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = get_var_type_result()
-    result.success = self._handler.get_var_type(args.long_var_name)
-    oprot.writeMessageBegin("get_var_type", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_get_var_type(self, seqid, iprot, oprot):
+        args = get_var_type_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_var_type_result()
+        result.success = self._handler.get_var_type(args.long_var_name)
+        oprot.writeMessageBegin("get_var_type", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_get_var_units(self, seqid, iprot, oprot):
-    args = get_var_units_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = get_var_units_result()
-    result.success = self._handler.get_var_units(args.long_var_name)
-    oprot.writeMessageBegin("get_var_units", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_get_var_units(self, seqid, iprot, oprot):
+        args = get_var_units_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_var_units_result()
+        result.success = self._handler.get_var_units(args.long_var_name)
+        oprot.writeMessageBegin("get_var_units", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_get_var_rank(self, seqid, iprot, oprot):
-    args = get_var_rank_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = get_var_rank_result()
-    result.success = self._handler.get_var_rank(args.long_var_name)
-    oprot.writeMessageBegin("get_var_rank", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_get_var_rank(self, seqid, iprot, oprot):
+        args = get_var_rank_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_var_rank_result()
+        result.success = self._handler.get_var_rank(args.long_var_name)
+        oprot.writeMessageBegin("get_var_rank", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_get_var_size(self, seqid, iprot, oprot):
-    args = get_var_size_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = get_var_size_result()
-    result.success = self._handler.get_var_size(args.long_var_name)
-    oprot.writeMessageBegin("get_var_size", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_get_var_size(self, seqid, iprot, oprot):
+        args = get_var_size_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_var_size_result()
+        result.success = self._handler.get_var_size(args.long_var_name)
+        oprot.writeMessageBegin("get_var_size", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_get_var_nbytes(self, seqid, iprot, oprot):
-    args = get_var_nbytes_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = get_var_nbytes_result()
-    result.success = self._handler.get_var_nbytes(args.long_var_name)
-    oprot.writeMessageBegin("get_var_nbytes", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_get_var_nbytes(self, seqid, iprot, oprot):
+        args = get_var_nbytes_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_var_nbytes_result()
+        result.success = self._handler.get_var_nbytes(args.long_var_name)
+        oprot.writeMessageBegin("get_var_nbytes", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_get_start_time(self, seqid, iprot, oprot):
-    args = get_start_time_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = get_start_time_result()
-    result.success = self._handler.get_start_time()
-    oprot.writeMessageBegin("get_start_time", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_get_start_time(self, seqid, iprot, oprot):
+        args = get_start_time_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_start_time_result()
+        result.success = self._handler.get_start_time()
+        oprot.writeMessageBegin("get_start_time", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_get_current_time(self, seqid, iprot, oprot):
-    args = get_current_time_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = get_current_time_result()
-    result.success = self._handler.get_current_time()
-    oprot.writeMessageBegin("get_current_time", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_get_current_time(self, seqid, iprot, oprot):
+        args = get_current_time_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_current_time_result()
+        result.success = self._handler.get_current_time()
+        oprot.writeMessageBegin("get_current_time", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_get_end_time(self, seqid, iprot, oprot):
-    args = get_end_time_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = get_end_time_result()
-    result.success = self._handler.get_end_time()
-    oprot.writeMessageBegin("get_end_time", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_get_end_time(self, seqid, iprot, oprot):
+        args = get_end_time_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_end_time_result()
+        result.success = self._handler.get_end_time()
+        oprot.writeMessageBegin("get_end_time", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_get_time_step(self, seqid, iprot, oprot):
-    args = get_time_step_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = get_time_step_result()
-    result.success = self._handler.get_time_step()
-    oprot.writeMessageBegin("get_time_step", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_get_time_step(self, seqid, iprot, oprot):
+        args = get_time_step_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_time_step_result()
+        result.success = self._handler.get_time_step()
+        oprot.writeMessageBegin("get_time_step", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_get_time_units(self, seqid, iprot, oprot):
-    args = get_time_units_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = get_time_units_result()
-    result.success = self._handler.get_time_units()
-    oprot.writeMessageBegin("get_time_units", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_get_time_units(self, seqid, iprot, oprot):
+        args = get_time_units_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_time_units_result()
+        result.success = self._handler.get_time_units()
+        oprot.writeMessageBegin("get_time_units", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_get_value(self, seqid, iprot, oprot):
-    args = get_value_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = get_value_result()
-    try:
-      result.success = self._handler.get_value(args.long_var_name)
-    except ModelException as error:
-      result.error = error
-    oprot.writeMessageBegin("get_value", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_get_value(self, seqid, iprot, oprot):
+        args = get_value_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_value_result()
+        try:
+            result.success = self._handler.get_value(args.long_var_name)
+        except ModelException as error:
+            result.error = error
+        oprot.writeMessageBegin("get_value", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_get_value_at_indices(self, seqid, iprot, oprot):
-    args = get_value_at_indices_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = get_value_at_indices_result()
-    try:
-      result.success = self._handler.get_value_at_indices(args.long_var_name, args.inds)
-    except ModelException as error:
-      result.error = error
-    oprot.writeMessageBegin("get_value_at_indices", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_get_value_at_indices(self, seqid, iprot, oprot):
+        args = get_value_at_indices_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_value_at_indices_result()
+        try:
+            result.success = self._handler.get_value_at_indices(
+                args.long_var_name, args.inds
+            )
+        except ModelException as error:
+            result.error = error
+        oprot.writeMessageBegin("get_value_at_indices", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_set_value(self, seqid, iprot, oprot):
-    args = set_value_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = set_value_result()
-    try:
-      self._handler.set_value(args.long_var_name, args.src)
-    except ModelException as error:
-      result.error = error
-    oprot.writeMessageBegin("set_value", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_set_value(self, seqid, iprot, oprot):
+        args = set_value_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = set_value_result()
+        try:
+            self._handler.set_value(args.long_var_name, args.src)
+        except ModelException as error:
+            result.error = error
+        oprot.writeMessageBegin("set_value", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_set_value_at_indices(self, seqid, iprot, oprot):
-    args = set_value_at_indices_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = set_value_at_indices_result()
-    try:
-      self._handler.set_value_at_indices(args.long_var_name, args.inds, args.src)
-    except ModelException as error:
-      result.error = error
-    oprot.writeMessageBegin("set_value_at_indices", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_set_value_at_indices(self, seqid, iprot, oprot):
+        args = set_value_at_indices_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = set_value_at_indices_result()
+        try:
+            self._handler.set_value_at_indices(args.long_var_name, args.inds, args.src)
+        except ModelException as error:
+            result.error = error
+        oprot.writeMessageBegin("set_value_at_indices", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_get_grid_type(self, seqid, iprot, oprot):
-    args = get_grid_type_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = get_grid_type_result()
-    try:
-      result.success = self._handler.get_grid_type(args.long_var_name)
-    except ModelException as error:
-      result.error = error
-    oprot.writeMessageBegin("get_grid_type", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_get_grid_type(self, seqid, iprot, oprot):
+        args = get_grid_type_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_grid_type_result()
+        try:
+            result.success = self._handler.get_grid_type(args.long_var_name)
+        except ModelException as error:
+            result.error = error
+        oprot.writeMessageBegin("get_grid_type", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_get_grid_shape(self, seqid, iprot, oprot):
-    args = get_grid_shape_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = get_grid_shape_result()
-    result.success = self._handler.get_grid_shape(args.long_var_name)
-    oprot.writeMessageBegin("get_grid_shape", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_get_grid_shape(self, seqid, iprot, oprot):
+        args = get_grid_shape_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_grid_shape_result()
+        result.success = self._handler.get_grid_shape(args.long_var_name)
+        oprot.writeMessageBegin("get_grid_shape", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_get_grid_spacing(self, seqid, iprot, oprot):
-    args = get_grid_spacing_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = get_grid_spacing_result()
-    result.success = self._handler.get_grid_spacing(args.long_var_name)
-    oprot.writeMessageBegin("get_grid_spacing", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_get_grid_spacing(self, seqid, iprot, oprot):
+        args = get_grid_spacing_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_grid_spacing_result()
+        result.success = self._handler.get_grid_spacing(args.long_var_name)
+        oprot.writeMessageBegin("get_grid_spacing", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_get_grid_origin(self, seqid, iprot, oprot):
-    args = get_grid_origin_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = get_grid_origin_result()
-    result.success = self._handler.get_grid_origin(args.long_var_name)
-    oprot.writeMessageBegin("get_grid_origin", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_get_grid_origin(self, seqid, iprot, oprot):
+        args = get_grid_origin_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_grid_origin_result()
+        result.success = self._handler.get_grid_origin(args.long_var_name)
+        oprot.writeMessageBegin("get_grid_origin", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_get_grid_x(self, seqid, iprot, oprot):
-    args = get_grid_x_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = get_grid_x_result()
-    result.success = self._handler.get_grid_x(args.long_var_name)
-    oprot.writeMessageBegin("get_grid_x", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_get_grid_x(self, seqid, iprot, oprot):
+        args = get_grid_x_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_grid_x_result()
+        result.success = self._handler.get_grid_x(args.long_var_name)
+        oprot.writeMessageBegin("get_grid_x", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_get_grid_y(self, seqid, iprot, oprot):
-    args = get_grid_y_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = get_grid_y_result()
-    result.success = self._handler.get_grid_y(args.long_var_name)
-    oprot.writeMessageBegin("get_grid_y", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_get_grid_y(self, seqid, iprot, oprot):
+        args = get_grid_y_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_grid_y_result()
+        result.success = self._handler.get_grid_y(args.long_var_name)
+        oprot.writeMessageBegin("get_grid_y", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_get_grid_z(self, seqid, iprot, oprot):
-    args = get_grid_z_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = get_grid_z_result()
-    result.success = self._handler.get_grid_z(args.long_var_name)
-    oprot.writeMessageBegin("get_grid_z", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_get_grid_z(self, seqid, iprot, oprot):
+        args = get_grid_z_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_grid_z_result()
+        result.success = self._handler.get_grid_z(args.long_var_name)
+        oprot.writeMessageBegin("get_grid_z", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_get_grid_connectivity(self, seqid, iprot, oprot):
-    args = get_grid_connectivity_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = get_grid_connectivity_result()
-    result.success = self._handler.get_grid_connectivity(args.long_var_name)
-    oprot.writeMessageBegin("get_grid_connectivity", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_get_grid_connectivity(self, seqid, iprot, oprot):
+        args = get_grid_connectivity_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_grid_connectivity_result()
+        result.success = self._handler.get_grid_connectivity(args.long_var_name)
+        oprot.writeMessageBegin("get_grid_connectivity", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_get_grid_offset(self, seqid, iprot, oprot):
-    args = get_grid_offset_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = get_grid_offset_result()
-    result.success = self._handler.get_grid_offset(args.long_var_name)
-    oprot.writeMessageBegin("get_grid_offset", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_get_grid_offset(self, seqid, iprot, oprot):
+        args = get_grid_offset_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_grid_offset_result()
+        result.success = self._handler.get_grid_offset(args.long_var_name)
+        oprot.writeMessageBegin("get_grid_offset", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_initialize_config(self, seqid, iprot, oprot):
-    args = initialize_config_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = initialize_config_result()
-    try:
-      self._handler.initialize_config(args.file)
-    except ModelException as error:
-      result.error = error
-    oprot.writeMessageBegin("initialize_config", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_initialize_config(self, seqid, iprot, oprot):
+        args = initialize_config_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = initialize_config_result()
+        try:
+            self._handler.initialize_config(args.file)
+        except ModelException as error:
+            result.error = error
+        oprot.writeMessageBegin("initialize_config", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_initialize_model(self, seqid, iprot, oprot):
-    args = initialize_model_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = initialize_model_result()
-    try:
-      self._handler.initialize_model()
-    except ModelException as error:
-      result.error = error
-    oprot.writeMessageBegin("initialize_model", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_initialize_model(self, seqid, iprot, oprot):
+        args = initialize_model_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = initialize_model_result()
+        try:
+            self._handler.initialize_model()
+        except ModelException as error:
+            result.error = error
+        oprot.writeMessageBegin("initialize_model", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_set_start_time(self, seqid, iprot, oprot):
-    args = set_start_time_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = set_start_time_result()
-    try:
-      self._handler.set_start_time(args.start_time)
-    except ModelException as error:
-      result.error = error
-    oprot.writeMessageBegin("set_start_time", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_set_start_time(self, seqid, iprot, oprot):
+        args = set_start_time_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = set_start_time_result()
+        try:
+            self._handler.set_start_time(args.start_time)
+        except ModelException as error:
+            result.error = error
+        oprot.writeMessageBegin("set_start_time", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_set_end_time(self, seqid, iprot, oprot):
-    args = set_end_time_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = set_end_time_result()
-    try:
-      self._handler.set_end_time(args.end_time)
-    except ModelException as error:
-      result.error = error
-    oprot.writeMessageBegin("set_end_time", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_set_end_time(self, seqid, iprot, oprot):
+        args = set_end_time_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = set_end_time_result()
+        try:
+            self._handler.set_end_time(args.end_time)
+        except ModelException as error:
+            result.error = error
+        oprot.writeMessageBegin("set_end_time", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_get_attribute_names(self, seqid, iprot, oprot):
-    args = get_attribute_names_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = get_attribute_names_result()
-    result.success = self._handler.get_attribute_names()
-    oprot.writeMessageBegin("get_attribute_names", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_get_attribute_names(self, seqid, iprot, oprot):
+        args = get_attribute_names_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_attribute_names_result()
+        result.success = self._handler.get_attribute_names()
+        oprot.writeMessageBegin("get_attribute_names", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_get_attribute_value(self, seqid, iprot, oprot):
-    args = get_attribute_value_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = get_attribute_value_result()
-    try:
-      result.success = self._handler.get_attribute_value(args.attribute_name)
-    except ModelException as error:
-      result.error = error
-    oprot.writeMessageBegin("get_attribute_value", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_get_attribute_value(self, seqid, iprot, oprot):
+        args = get_attribute_value_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_attribute_value_result()
+        try:
+            result.success = self._handler.get_attribute_value(args.attribute_name)
+        except ModelException as error:
+            result.error = error
+        oprot.writeMessageBegin("get_attribute_value", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_set_attribute_value(self, seqid, iprot, oprot):
-    args = set_attribute_value_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = set_attribute_value_result()
-    try:
-      self._handler.set_attribute_value(args.attribute_name, args.attribute_value)
-    except ModelException as error:
-      result.error = error
-    oprot.writeMessageBegin("set_attribute_value", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_set_attribute_value(self, seqid, iprot, oprot):
+        args = set_attribute_value_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = set_attribute_value_result()
+        try:
+            self._handler.set_attribute_value(args.attribute_name, args.attribute_value)
+        except ModelException as error:
+            result.error = error
+        oprot.writeMessageBegin("set_attribute_value", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_save_state(self, seqid, iprot, oprot):
-    args = save_state_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = save_state_result()
-    try:
-      self._handler.save_state(args.destination_directory)
-    except ModelException as error:
-      result.error = error
-    oprot.writeMessageBegin("save_state", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_save_state(self, seqid, iprot, oprot):
+        args = save_state_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = save_state_result()
+        try:
+            self._handler.save_state(args.destination_directory)
+        except ModelException as error:
+            result.error = error
+        oprot.writeMessageBegin("save_state", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
-  def process_load_state(self, seqid, iprot, oprot):
-    args = load_state_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = load_state_result()
-    try:
-      self._handler.load_state(args.source_directory)
-    except ModelException as error:
-      result.error = error
-    oprot.writeMessageBegin("load_state", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
+    def process_load_state(self, seqid, iprot, oprot):
+        args = load_state_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = load_state_result()
+        try:
+            self._handler.load_state(args.source_directory)
+        except ModelException as error:
+            result.error = error
+        oprot.writeMessageBegin("load_state", TMessageType.REPLY, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
 
 
 # HELPER FUNCTIONS AND STRUCTURES
 
+
 class initialize_args(object):
-  """
+    """
   Attributes:
    - file
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'file', None, None, ), # 1
-  )
+    thrift_spec = (None, (1, TType.STRING, "file", None, None))  # 0  # 1
 
-  def __init__(self, file=None,):
-    self.file = file
+    def __init__(self, file=None):
+        self.file = file
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.file = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.file = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('initialize_args')
-    if self.file is not None:
-      oprot.writeFieldBegin('file', TType.STRING, 1)
-      oprot.writeString(self.file)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("initialize_args")
+        if self.file is not None:
+            oprot.writeFieldBegin("file", TType.STRING, 1)
+            oprot.writeString(self.file)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class initialize_result(object):
-  """
+    """
   Attributes:
    - error
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRUCT, 'error', (ModelException, ModelException.thrift_spec), None, ), # 1
-  )
+    thrift_spec = (
+        None,  # 0
+        (
+            1,
+            TType.STRUCT,
+            "error",
+            (ModelException, ModelException.thrift_spec),
+            None,
+        ),  # 1
+    )
 
-  def __init__(self, error=None,):
-    self.error = error
+    def __init__(self, error=None):
+        self.error = error
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRUCT:
-          self.error = ModelException()
-          self.error.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.error = ModelException()
+                    self.error.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('initialize_result')
-    if self.error is not None:
-      oprot.writeFieldBegin('error', TType.STRUCT, 1)
-      self.error.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("initialize_result")
+        if self.error is not None:
+            oprot.writeFieldBegin("error", TType.STRUCT, 1)
+            self.error.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class update_args(object):
 
-  thrift_spec = (
-  )
+    thrift_spec = ()
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('update_args')
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("update_args")
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class update_result(object):
-  """
+    """
   Attributes:
    - error
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRUCT, 'error', (ModelException, ModelException.thrift_spec), None, ), # 1
-  )
+    thrift_spec = (
+        None,  # 0
+        (
+            1,
+            TType.STRUCT,
+            "error",
+            (ModelException, ModelException.thrift_spec),
+            None,
+        ),  # 1
+    )
 
-  def __init__(self, error=None,):
-    self.error = error
+    def __init__(self, error=None):
+        self.error = error
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRUCT:
-          self.error = ModelException()
-          self.error.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.error = ModelException()
+                    self.error.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('update_result')
-    if self.error is not None:
-      oprot.writeFieldBegin('error', TType.STRUCT, 1)
-      self.error.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("update_result")
+        if self.error is not None:
+            oprot.writeFieldBegin("error", TType.STRUCT, 1)
+            self.error.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class update_until_args(object):
-  """
+    """
   Attributes:
    - time
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.DOUBLE, 'time', None, None, ), # 1
-  )
+    thrift_spec = (None, (1, TType.DOUBLE, "time", None, None))  # 0  # 1
 
-  def __init__(self, time=None,):
-    self.time = time
+    def __init__(self, time=None):
+        self.time = time
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.DOUBLE:
-          self.time = iprot.readDouble();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.DOUBLE:
+                    self.time = iprot.readDouble()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('update_until_args')
-    if self.time is not None:
-      oprot.writeFieldBegin('time', TType.DOUBLE, 1)
-      oprot.writeDouble(self.time)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("update_until_args")
+        if self.time is not None:
+            oprot.writeFieldBegin("time", TType.DOUBLE, 1)
+            oprot.writeDouble(self.time)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class update_until_result(object):
-  """
+    """
   Attributes:
    - error
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRUCT, 'error', (ModelException, ModelException.thrift_spec), None, ), # 1
-  )
+    thrift_spec = (
+        None,  # 0
+        (
+            1,
+            TType.STRUCT,
+            "error",
+            (ModelException, ModelException.thrift_spec),
+            None,
+        ),  # 1
+    )
 
-  def __init__(self, error=None,):
-    self.error = error
+    def __init__(self, error=None):
+        self.error = error
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRUCT:
-          self.error = ModelException()
-          self.error.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.error = ModelException()
+                    self.error.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('update_until_result')
-    if self.error is not None:
-      oprot.writeFieldBegin('error', TType.STRUCT, 1)
-      self.error.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("update_until_result")
+        if self.error is not None:
+            oprot.writeFieldBegin("error", TType.STRUCT, 1)
+            self.error.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class update_frac_args(object):
-  """
+    """
   Attributes:
    - frac
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.DOUBLE, 'frac', None, None, ), # 1
-  )
+    thrift_spec = (None, (1, TType.DOUBLE, "frac", None, None))  # 0  # 1
 
-  def __init__(self, frac=None,):
-    self.frac = frac
+    def __init__(self, frac=None):
+        self.frac = frac
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.DOUBLE:
-          self.frac = iprot.readDouble();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.DOUBLE:
+                    self.frac = iprot.readDouble()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('update_frac_args')
-    if self.frac is not None:
-      oprot.writeFieldBegin('frac', TType.DOUBLE, 1)
-      oprot.writeDouble(self.frac)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("update_frac_args")
+        if self.frac is not None:
+            oprot.writeFieldBegin("frac", TType.DOUBLE, 1)
+            oprot.writeDouble(self.frac)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class update_frac_result(object):
-  """
+    """
   Attributes:
    - error
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRUCT, 'error', (ModelException, ModelException.thrift_spec), None, ), # 1
-  )
+    thrift_spec = (
+        None,  # 0
+        (
+            1,
+            TType.STRUCT,
+            "error",
+            (ModelException, ModelException.thrift_spec),
+            None,
+        ),  # 1
+    )
 
-  def __init__(self, error=None,):
-    self.error = error
+    def __init__(self, error=None):
+        self.error = error
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRUCT:
-          self.error = ModelException()
-          self.error.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.error = ModelException()
+                    self.error.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('update_frac_result')
-    if self.error is not None:
-      oprot.writeFieldBegin('error', TType.STRUCT, 1)
-      self.error.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("update_frac_result")
+        if self.error is not None:
+            oprot.writeFieldBegin("error", TType.STRUCT, 1)
+            self.error.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class finalize_model_args(object):
 
-  thrift_spec = (
-  )
+    thrift_spec = ()
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('finalize_model_args')
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("finalize_model_args")
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class finalize_model_result(object):
-  """
+    """
   Attributes:
    - error
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRUCT, 'error', (ModelException, ModelException.thrift_spec), None, ), # 1
-  )
+    thrift_spec = (
+        None,  # 0
+        (
+            1,
+            TType.STRUCT,
+            "error",
+            (ModelException, ModelException.thrift_spec),
+            None,
+        ),  # 1
+    )
 
-  def __init__(self, error=None,):
-    self.error = error
+    def __init__(self, error=None):
+        self.error = error
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRUCT:
-          self.error = ModelException()
-          self.error.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.error = ModelException()
+                    self.error.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('finalize_model_result')
-    if self.error is not None:
-      oprot.writeFieldBegin('error', TType.STRUCT, 1)
-      self.error.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("finalize_model_result")
+        if self.error is not None:
+            oprot.writeFieldBegin("error", TType.STRUCT, 1)
+            self.error.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_component_name_args(object):
 
-  thrift_spec = (
-  )
+    thrift_spec = ()
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_component_name_args')
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_component_name_args")
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_component_name_result(object):
-  """
+    """
   Attributes:
    - success
    - error
   """
 
-  thrift_spec = (
-    (0, TType.STRING, 'success', None, None, ), # 0
-    (1, TType.STRUCT, 'error', (ModelException, ModelException.thrift_spec), None, ), # 1
-  )
+    thrift_spec = (
+        (0, TType.STRING, "success", None, None),  # 0
+        (
+            1,
+            TType.STRUCT,
+            "error",
+            (ModelException, ModelException.thrift_spec),
+            None,
+        ),  # 1
+    )
 
-  def __init__(self, success=None, error=None,):
-    self.success = success
-    self.error = error
+    def __init__(self, success=None, error=None):
+        self.success = success
+        self.error = error
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.STRING:
-          self.success = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 1:
-        if ftype == TType.STRUCT:
-          self.error = ModelException()
-          self.error.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.STRING:
+                    self.success = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.error = ModelException()
+                    self.error.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_component_name_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.STRING, 0)
-      oprot.writeString(self.success)
-      oprot.writeFieldEnd()
-    if self.error is not None:
-      oprot.writeFieldBegin('error', TType.STRUCT, 1)
-      self.error.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_component_name_result")
+        if self.success is not None:
+            oprot.writeFieldBegin("success", TType.STRING, 0)
+            oprot.writeString(self.success)
+            oprot.writeFieldEnd()
+        if self.error is not None:
+            oprot.writeFieldBegin("error", TType.STRUCT, 1)
+            self.error.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_input_var_names_args(object):
 
-  thrift_spec = (
-  )
+    thrift_spec = ()
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_input_var_names_args')
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_input_var_names_args")
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_input_var_names_result(object):
-  """
+    """
   Attributes:
    - success
   """
 
-  thrift_spec = (
-    (0, TType.LIST, 'success', (TType.STRING,None), None, ), # 0
-  )
+    thrift_spec = ((0, TType.LIST, "success", (TType.STRING, None), None),)  # 0
 
-  def __init__(self, success=None,):
-    self.success = success
+    def __init__(self, success=None):
+        self.success = success
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.LIST:
-          self.success = []
-          (_etype3, _size0) = iprot.readListBegin()
-          for _i4 in xrange(_size0):
-            _elem5 = iprot.readString();
-            self.success.append(_elem5)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype3, _size0) = iprot.readListBegin()
+                    for _i4 in xrange(_size0):
+                        _elem5 = iprot.readString()
+                        self.success.append(_elem5)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_input_var_names_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.STRING, len(self.success))
-      for iter6 in self.success:
-        oprot.writeString(iter6)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_input_var_names_result")
+        if self.success is not None:
+            oprot.writeFieldBegin("success", TType.LIST, 0)
+            oprot.writeListBegin(TType.STRING, len(self.success))
+            for iter6 in self.success:
+                oprot.writeString(iter6)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_output_var_names_args(object):
 
-  thrift_spec = (
-  )
+    thrift_spec = ()
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_output_var_names_args')
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_output_var_names_args")
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_output_var_names_result(object):
-  """
+    """
   Attributes:
    - success
   """
 
-  thrift_spec = (
-    (0, TType.LIST, 'success', (TType.STRING,None), None, ), # 0
-  )
+    thrift_spec = ((0, TType.LIST, "success", (TType.STRING, None), None),)  # 0
 
-  def __init__(self, success=None,):
-    self.success = success
+    def __init__(self, success=None):
+        self.success = success
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.LIST:
-          self.success = []
-          (_etype10, _size7) = iprot.readListBegin()
-          for _i11 in xrange(_size7):
-            _elem12 = iprot.readString();
-            self.success.append(_elem12)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype10, _size7) = iprot.readListBegin()
+                    for _i11 in xrange(_size7):
+                        _elem12 = iprot.readString()
+                        self.success.append(_elem12)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_output_var_names_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.STRING, len(self.success))
-      for iter13 in self.success:
-        oprot.writeString(iter13)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_output_var_names_result")
+        if self.success is not None:
+            oprot.writeFieldBegin("success", TType.LIST, 0)
+            oprot.writeListBegin(TType.STRING, len(self.success))
+            for iter13 in self.success:
+                oprot.writeString(iter13)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_var_type_args(object):
-  """
+    """
   Attributes:
    - long_var_name
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'long_var_name', None, None, ), # 1
-  )
+    thrift_spec = (None, (1, TType.STRING, "long_var_name", None, None))  # 0  # 1
 
-  def __init__(self, long_var_name=None,):
-    self.long_var_name = long_var_name
+    def __init__(self, long_var_name=None):
+        self.long_var_name = long_var_name
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.long_var_name = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.long_var_name = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_var_type_args')
-    if self.long_var_name is not None:
-      oprot.writeFieldBegin('long_var_name', TType.STRING, 1)
-      oprot.writeString(self.long_var_name)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_var_type_args")
+        if self.long_var_name is not None:
+            oprot.writeFieldBegin("long_var_name", TType.STRING, 1)
+            oprot.writeString(self.long_var_name)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_var_type_result(object):
-  """
+    """
   Attributes:
    - success
   """
 
-  thrift_spec = (
-    (0, TType.STRING, 'success', None, None, ), # 0
-  )
+    thrift_spec = ((0, TType.STRING, "success", None, None),)  # 0
 
-  def __init__(self, success=None,):
-    self.success = success
+    def __init__(self, success=None):
+        self.success = success
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.STRING:
-          self.success = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.STRING:
+                    self.success = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_var_type_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.STRING, 0)
-      oprot.writeString(self.success)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_var_type_result")
+        if self.success is not None:
+            oprot.writeFieldBegin("success", TType.STRING, 0)
+            oprot.writeString(self.success)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_var_units_args(object):
-  """
+    """
   Attributes:
    - long_var_name
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'long_var_name', None, None, ), # 1
-  )
+    thrift_spec = (None, (1, TType.STRING, "long_var_name", None, None))  # 0  # 1
 
-  def __init__(self, long_var_name=None,):
-    self.long_var_name = long_var_name
+    def __init__(self, long_var_name=None):
+        self.long_var_name = long_var_name
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.long_var_name = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.long_var_name = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_var_units_args')
-    if self.long_var_name is not None:
-      oprot.writeFieldBegin('long_var_name', TType.STRING, 1)
-      oprot.writeString(self.long_var_name)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_var_units_args")
+        if self.long_var_name is not None:
+            oprot.writeFieldBegin("long_var_name", TType.STRING, 1)
+            oprot.writeString(self.long_var_name)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_var_units_result(object):
-  """
+    """
   Attributes:
    - success
   """
 
-  thrift_spec = (
-    (0, TType.STRING, 'success', None, None, ), # 0
-  )
+    thrift_spec = ((0, TType.STRING, "success", None, None),)  # 0
 
-  def __init__(self, success=None,):
-    self.success = success
+    def __init__(self, success=None):
+        self.success = success
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.STRING:
-          self.success = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.STRING:
+                    self.success = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_var_units_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.STRING, 0)
-      oprot.writeString(self.success)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_var_units_result")
+        if self.success is not None:
+            oprot.writeFieldBegin("success", TType.STRING, 0)
+            oprot.writeString(self.success)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_var_rank_args(object):
-  """
+    """
   Attributes:
    - long_var_name
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'long_var_name', None, None, ), # 1
-  )
+    thrift_spec = (None, (1, TType.STRING, "long_var_name", None, None))  # 0  # 1
 
-  def __init__(self, long_var_name=None,):
-    self.long_var_name = long_var_name
+    def __init__(self, long_var_name=None):
+        self.long_var_name = long_var_name
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.long_var_name = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.long_var_name = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_var_rank_args')
-    if self.long_var_name is not None:
-      oprot.writeFieldBegin('long_var_name', TType.STRING, 1)
-      oprot.writeString(self.long_var_name)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_var_rank_args")
+        if self.long_var_name is not None:
+            oprot.writeFieldBegin("long_var_name", TType.STRING, 1)
+            oprot.writeString(self.long_var_name)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_var_rank_result(object):
-  """
+    """
   Attributes:
    - success
   """
 
-  thrift_spec = (
-    (0, TType.I32, 'success', None, None, ), # 0
-  )
+    thrift_spec = ((0, TType.I32, "success", None, None),)  # 0
 
-  def __init__(self, success=None,):
-    self.success = success
+    def __init__(self, success=None):
+        self.success = success
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.I32:
-          self.success = iprot.readI32();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.I32:
+                    self.success = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_var_rank_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.I32, 0)
-      oprot.writeI32(self.success)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_var_rank_result")
+        if self.success is not None:
+            oprot.writeFieldBegin("success", TType.I32, 0)
+            oprot.writeI32(self.success)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_var_size_args(object):
-  """
+    """
   Attributes:
    - long_var_name
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'long_var_name', None, None, ), # 1
-  )
+    thrift_spec = (None, (1, TType.STRING, "long_var_name", None, None))  # 0  # 1
 
-  def __init__(self, long_var_name=None,):
-    self.long_var_name = long_var_name
+    def __init__(self, long_var_name=None):
+        self.long_var_name = long_var_name
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.long_var_name = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.long_var_name = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_var_size_args')
-    if self.long_var_name is not None:
-      oprot.writeFieldBegin('long_var_name', TType.STRING, 1)
-      oprot.writeString(self.long_var_name)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_var_size_args")
+        if self.long_var_name is not None:
+            oprot.writeFieldBegin("long_var_name", TType.STRING, 1)
+            oprot.writeString(self.long_var_name)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_var_size_result(object):
-  """
+    """
   Attributes:
    - success
   """
 
-  thrift_spec = (
-    (0, TType.I32, 'success', None, None, ), # 0
-  )
+    thrift_spec = ((0, TType.I32, "success", None, None),)  # 0
 
-  def __init__(self, success=None,):
-    self.success = success
+    def __init__(self, success=None):
+        self.success = success
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.I32:
-          self.success = iprot.readI32();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.I32:
+                    self.success = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_var_size_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.I32, 0)
-      oprot.writeI32(self.success)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_var_size_result")
+        if self.success is not None:
+            oprot.writeFieldBegin("success", TType.I32, 0)
+            oprot.writeI32(self.success)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_var_nbytes_args(object):
-  """
+    """
   Attributes:
    - long_var_name
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'long_var_name', None, None, ), # 1
-  )
+    thrift_spec = (None, (1, TType.STRING, "long_var_name", None, None))  # 0  # 1
 
-  def __init__(self, long_var_name=None,):
-    self.long_var_name = long_var_name
+    def __init__(self, long_var_name=None):
+        self.long_var_name = long_var_name
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.long_var_name = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.long_var_name = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_var_nbytes_args')
-    if self.long_var_name is not None:
-      oprot.writeFieldBegin('long_var_name', TType.STRING, 1)
-      oprot.writeString(self.long_var_name)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_var_nbytes_args")
+        if self.long_var_name is not None:
+            oprot.writeFieldBegin("long_var_name", TType.STRING, 1)
+            oprot.writeString(self.long_var_name)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_var_nbytes_result(object):
-  """
+    """
   Attributes:
    - success
   """
 
-  thrift_spec = (
-    (0, TType.I32, 'success', None, None, ), # 0
-  )
+    thrift_spec = ((0, TType.I32, "success", None, None),)  # 0
 
-  def __init__(self, success=None,):
-    self.success = success
+    def __init__(self, success=None):
+        self.success = success
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.I32:
-          self.success = iprot.readI32();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.I32:
+                    self.success = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_var_nbytes_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.I32, 0)
-      oprot.writeI32(self.success)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_var_nbytes_result")
+        if self.success is not None:
+            oprot.writeFieldBegin("success", TType.I32, 0)
+            oprot.writeI32(self.success)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_start_time_args(object):
 
-  thrift_spec = (
-  )
+    thrift_spec = ()
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_start_time_args')
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_start_time_args")
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_start_time_result(object):
-  """
+    """
   Attributes:
    - success
   """
 
-  thrift_spec = (
-    (0, TType.DOUBLE, 'success', None, None, ), # 0
-  )
+    thrift_spec = ((0, TType.DOUBLE, "success", None, None),)  # 0
 
-  def __init__(self, success=None,):
-    self.success = success
+    def __init__(self, success=None):
+        self.success = success
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.DOUBLE:
-          self.success = iprot.readDouble();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.DOUBLE:
+                    self.success = iprot.readDouble()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_start_time_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.DOUBLE, 0)
-      oprot.writeDouble(self.success)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_start_time_result")
+        if self.success is not None:
+            oprot.writeFieldBegin("success", TType.DOUBLE, 0)
+            oprot.writeDouble(self.success)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_current_time_args(object):
 
-  thrift_spec = (
-  )
+    thrift_spec = ()
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_current_time_args')
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_current_time_args")
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_current_time_result(object):
-  """
+    """
   Attributes:
    - success
   """
 
-  thrift_spec = (
-    (0, TType.DOUBLE, 'success', None, None, ), # 0
-  )
+    thrift_spec = ((0, TType.DOUBLE, "success", None, None),)  # 0
 
-  def __init__(self, success=None,):
-    self.success = success
+    def __init__(self, success=None):
+        self.success = success
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.DOUBLE:
-          self.success = iprot.readDouble();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.DOUBLE:
+                    self.success = iprot.readDouble()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_current_time_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.DOUBLE, 0)
-      oprot.writeDouble(self.success)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_current_time_result")
+        if self.success is not None:
+            oprot.writeFieldBegin("success", TType.DOUBLE, 0)
+            oprot.writeDouble(self.success)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_end_time_args(object):
 
-  thrift_spec = (
-  )
+    thrift_spec = ()
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_end_time_args')
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_end_time_args")
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_end_time_result(object):
-  """
+    """
   Attributes:
    - success
   """
 
-  thrift_spec = (
-    (0, TType.DOUBLE, 'success', None, None, ), # 0
-  )
+    thrift_spec = ((0, TType.DOUBLE, "success", None, None),)  # 0
 
-  def __init__(self, success=None,):
-    self.success = success
+    def __init__(self, success=None):
+        self.success = success
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.DOUBLE:
-          self.success = iprot.readDouble();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.DOUBLE:
+                    self.success = iprot.readDouble()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_end_time_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.DOUBLE, 0)
-      oprot.writeDouble(self.success)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_end_time_result")
+        if self.success is not None:
+            oprot.writeFieldBegin("success", TType.DOUBLE, 0)
+            oprot.writeDouble(self.success)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_time_step_args(object):
 
-  thrift_spec = (
-  )
+    thrift_spec = ()
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_time_step_args')
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_time_step_args")
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_time_step_result(object):
-  """
+    """
   Attributes:
    - success
   """
 
-  thrift_spec = (
-    (0, TType.DOUBLE, 'success', None, None, ), # 0
-  )
+    thrift_spec = ((0, TType.DOUBLE, "success", None, None),)  # 0
 
-  def __init__(self, success=None,):
-    self.success = success
+    def __init__(self, success=None):
+        self.success = success
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.DOUBLE:
-          self.success = iprot.readDouble();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.DOUBLE:
+                    self.success = iprot.readDouble()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_time_step_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.DOUBLE, 0)
-      oprot.writeDouble(self.success)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_time_step_result")
+        if self.success is not None:
+            oprot.writeFieldBegin("success", TType.DOUBLE, 0)
+            oprot.writeDouble(self.success)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_time_units_args(object):
 
-  thrift_spec = (
-  )
+    thrift_spec = ()
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_time_units_args')
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_time_units_args")
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_time_units_result(object):
-  """
+    """
   Attributes:
    - success
   """
 
-  thrift_spec = (
-    (0, TType.STRING, 'success', None, None, ), # 0
-  )
+    thrift_spec = ((0, TType.STRING, "success", None, None),)  # 0
 
-  def __init__(self, success=None,):
-    self.success = success
+    def __init__(self, success=None):
+        self.success = success
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.STRING:
-          self.success = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.STRING:
+                    self.success = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_time_units_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.STRING, 0)
-      oprot.writeString(self.success)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_time_units_result")
+        if self.success is not None:
+            oprot.writeFieldBegin("success", TType.STRING, 0)
+            oprot.writeString(self.success)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_value_args(object):
-  """
+    """
   Attributes:
    - long_var_name
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'long_var_name', None, None, ), # 1
-  )
+    thrift_spec = (None, (1, TType.STRING, "long_var_name", None, None))  # 0  # 1
 
-  def __init__(self, long_var_name=None,):
-    self.long_var_name = long_var_name
+    def __init__(self, long_var_name=None):
+        self.long_var_name = long_var_name
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.long_var_name = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.long_var_name = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_value_args')
-    if self.long_var_name is not None:
-      oprot.writeFieldBegin('long_var_name', TType.STRING, 1)
-      oprot.writeString(self.long_var_name)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_value_args")
+        if self.long_var_name is not None:
+            oprot.writeFieldBegin("long_var_name", TType.STRING, 1)
+            oprot.writeString(self.long_var_name)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_value_result(object):
-  """
+    """
   Attributes:
    - success
    - error
   """
 
-  thrift_spec = (
-    (0, TType.STRING, 'success', None, None, ), # 0
-    (1, TType.STRUCT, 'error', (ModelException, ModelException.thrift_spec), None, ), # 1
-  )
+    thrift_spec = (
+        (0, TType.STRING, "success", None, None),  # 0
+        (
+            1,
+            TType.STRUCT,
+            "error",
+            (ModelException, ModelException.thrift_spec),
+            None,
+        ),  # 1
+    )
 
-  def __init__(self, success=None, error=None,):
-    self.success = success
-    self.error = error
+    def __init__(self, success=None, error=None):
+        self.success = success
+        self.error = error
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.STRING:
-          self.success = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 1:
-        if ftype == TType.STRUCT:
-          self.error = ModelException()
-          self.error.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.STRING:
+                    self.success = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.error = ModelException()
+                    self.error.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_value_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.STRING, 0)
-      oprot.writeString(self.success)
-      oprot.writeFieldEnd()
-    if self.error is not None:
-      oprot.writeFieldBegin('error', TType.STRUCT, 1)
-      self.error.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_value_result")
+        if self.success is not None:
+            oprot.writeFieldBegin("success", TType.STRING, 0)
+            oprot.writeString(self.success)
+            oprot.writeFieldEnd()
+        if self.error is not None:
+            oprot.writeFieldBegin("error", TType.STRUCT, 1)
+            self.error.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_value_at_indices_args(object):
-  """
+    """
   Attributes:
    - long_var_name
    - inds
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'long_var_name', None, None, ), # 1
-    (2, TType.LIST, 'inds', (TType.I32,None), None, ), # 2
-  )
+    thrift_spec = (
+        None,  # 0
+        (1, TType.STRING, "long_var_name", None, None),  # 1
+        (2, TType.LIST, "inds", (TType.I32, None), None),  # 2
+    )
 
-  def __init__(self, long_var_name=None, inds=None,):
-    self.long_var_name = long_var_name
-    self.inds = inds
+    def __init__(self, long_var_name=None, inds=None):
+        self.long_var_name = long_var_name
+        self.inds = inds
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.long_var_name = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.LIST:
-          self.inds = []
-          (_etype17, _size14) = iprot.readListBegin()
-          for _i18 in xrange(_size14):
-            _elem19 = iprot.readI32();
-            self.inds.append(_elem19)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.long_var_name = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.LIST:
+                    self.inds = []
+                    (_etype17, _size14) = iprot.readListBegin()
+                    for _i18 in xrange(_size14):
+                        _elem19 = iprot.readI32()
+                        self.inds.append(_elem19)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_value_at_indices_args')
-    if self.long_var_name is not None:
-      oprot.writeFieldBegin('long_var_name', TType.STRING, 1)
-      oprot.writeString(self.long_var_name)
-      oprot.writeFieldEnd()
-    if self.inds is not None:
-      oprot.writeFieldBegin('inds', TType.LIST, 2)
-      oprot.writeListBegin(TType.I32, len(self.inds))
-      for iter20 in self.inds:
-        oprot.writeI32(iter20)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_value_at_indices_args")
+        if self.long_var_name is not None:
+            oprot.writeFieldBegin("long_var_name", TType.STRING, 1)
+            oprot.writeString(self.long_var_name)
+            oprot.writeFieldEnd()
+        if self.inds is not None:
+            oprot.writeFieldBegin("inds", TType.LIST, 2)
+            oprot.writeListBegin(TType.I32, len(self.inds))
+            for iter20 in self.inds:
+                oprot.writeI32(iter20)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_value_at_indices_result(object):
-  """
+    """
   Attributes:
    - success
    - error
   """
 
-  thrift_spec = (
-    (0, TType.STRING, 'success', None, None, ), # 0
-    (1, TType.STRUCT, 'error', (ModelException, ModelException.thrift_spec), None, ), # 1
-  )
+    thrift_spec = (
+        (0, TType.STRING, "success", None, None),  # 0
+        (
+            1,
+            TType.STRUCT,
+            "error",
+            (ModelException, ModelException.thrift_spec),
+            None,
+        ),  # 1
+    )
 
-  def __init__(self, success=None, error=None,):
-    self.success = success
-    self.error = error
+    def __init__(self, success=None, error=None):
+        self.success = success
+        self.error = error
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.STRING:
-          self.success = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 1:
-        if ftype == TType.STRUCT:
-          self.error = ModelException()
-          self.error.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.STRING:
+                    self.success = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.error = ModelException()
+                    self.error.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_value_at_indices_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.STRING, 0)
-      oprot.writeString(self.success)
-      oprot.writeFieldEnd()
-    if self.error is not None:
-      oprot.writeFieldBegin('error', TType.STRUCT, 1)
-      self.error.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_value_at_indices_result")
+        if self.success is not None:
+            oprot.writeFieldBegin("success", TType.STRING, 0)
+            oprot.writeString(self.success)
+            oprot.writeFieldEnd()
+        if self.error is not None:
+            oprot.writeFieldBegin("error", TType.STRUCT, 1)
+            self.error.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class set_value_args(object):
-  """
+    """
   Attributes:
    - long_var_name
    - src
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'long_var_name', None, None, ), # 1
-    (2, TType.STRING, 'src', None, None, ), # 2
-  )
+    thrift_spec = (
+        None,  # 0
+        (1, TType.STRING, "long_var_name", None, None),  # 1
+        (2, TType.STRING, "src", None, None),  # 2
+    )
 
-  def __init__(self, long_var_name=None, src=None,):
-    self.long_var_name = long_var_name
-    self.src = src
+    def __init__(self, long_var_name=None, src=None):
+        self.long_var_name = long_var_name
+        self.src = src
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.long_var_name = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.STRING:
-          self.src = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.long_var_name = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.src = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('set_value_args')
-    if self.long_var_name is not None:
-      oprot.writeFieldBegin('long_var_name', TType.STRING, 1)
-      oprot.writeString(self.long_var_name)
-      oprot.writeFieldEnd()
-    if self.src is not None:
-      oprot.writeFieldBegin('src', TType.STRING, 2)
-      oprot.writeString(self.src)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("set_value_args")
+        if self.long_var_name is not None:
+            oprot.writeFieldBegin("long_var_name", TType.STRING, 1)
+            oprot.writeString(self.long_var_name)
+            oprot.writeFieldEnd()
+        if self.src is not None:
+            oprot.writeFieldBegin("src", TType.STRING, 2)
+            oprot.writeString(self.src)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class set_value_result(object):
-  """
+    """
   Attributes:
    - error
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRUCT, 'error', (ModelException, ModelException.thrift_spec), None, ), # 1
-  )
+    thrift_spec = (
+        None,  # 0
+        (
+            1,
+            TType.STRUCT,
+            "error",
+            (ModelException, ModelException.thrift_spec),
+            None,
+        ),  # 1
+    )
 
-  def __init__(self, error=None,):
-    self.error = error
+    def __init__(self, error=None):
+        self.error = error
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRUCT:
-          self.error = ModelException()
-          self.error.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.error = ModelException()
+                    self.error.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('set_value_result')
-    if self.error is not None:
-      oprot.writeFieldBegin('error', TType.STRUCT, 1)
-      self.error.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("set_value_result")
+        if self.error is not None:
+            oprot.writeFieldBegin("error", TType.STRUCT, 1)
+            self.error.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class set_value_at_indices_args(object):
-  """
+    """
   Attributes:
    - long_var_name
    - inds
    - src
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'long_var_name', None, None, ), # 1
-    (2, TType.LIST, 'inds', (TType.I32,None), None, ), # 2
-    (3, TType.STRING, 'src', None, None, ), # 3
-  )
+    thrift_spec = (
+        None,  # 0
+        (1, TType.STRING, "long_var_name", None, None),  # 1
+        (2, TType.LIST, "inds", (TType.I32, None), None),  # 2
+        (3, TType.STRING, "src", None, None),  # 3
+    )
 
-  def __init__(self, long_var_name=None, inds=None, src=None,):
-    self.long_var_name = long_var_name
-    self.inds = inds
-    self.src = src
+    def __init__(self, long_var_name=None, inds=None, src=None):
+        self.long_var_name = long_var_name
+        self.inds = inds
+        self.src = src
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.long_var_name = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.LIST:
-          self.inds = []
-          (_etype24, _size21) = iprot.readListBegin()
-          for _i25 in xrange(_size21):
-            _elem26 = iprot.readI32();
-            self.inds.append(_elem26)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.STRING:
-          self.src = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.long_var_name = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.LIST:
+                    self.inds = []
+                    (_etype24, _size21) = iprot.readListBegin()
+                    for _i25 in xrange(_size21):
+                        _elem26 = iprot.readI32()
+                        self.inds.append(_elem26)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.src = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('set_value_at_indices_args')
-    if self.long_var_name is not None:
-      oprot.writeFieldBegin('long_var_name', TType.STRING, 1)
-      oprot.writeString(self.long_var_name)
-      oprot.writeFieldEnd()
-    if self.inds is not None:
-      oprot.writeFieldBegin('inds', TType.LIST, 2)
-      oprot.writeListBegin(TType.I32, len(self.inds))
-      for iter27 in self.inds:
-        oprot.writeI32(iter27)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    if self.src is not None:
-      oprot.writeFieldBegin('src', TType.STRING, 3)
-      oprot.writeString(self.src)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("set_value_at_indices_args")
+        if self.long_var_name is not None:
+            oprot.writeFieldBegin("long_var_name", TType.STRING, 1)
+            oprot.writeString(self.long_var_name)
+            oprot.writeFieldEnd()
+        if self.inds is not None:
+            oprot.writeFieldBegin("inds", TType.LIST, 2)
+            oprot.writeListBegin(TType.I32, len(self.inds))
+            for iter27 in self.inds:
+                oprot.writeI32(iter27)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.src is not None:
+            oprot.writeFieldBegin("src", TType.STRING, 3)
+            oprot.writeString(self.src)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class set_value_at_indices_result(object):
-  """
+    """
   Attributes:
    - error
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRUCT, 'error', (ModelException, ModelException.thrift_spec), None, ), # 1
-  )
+    thrift_spec = (
+        None,  # 0
+        (
+            1,
+            TType.STRUCT,
+            "error",
+            (ModelException, ModelException.thrift_spec),
+            None,
+        ),  # 1
+    )
 
-  def __init__(self, error=None,):
-    self.error = error
+    def __init__(self, error=None):
+        self.error = error
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRUCT:
-          self.error = ModelException()
-          self.error.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.error = ModelException()
+                    self.error.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('set_value_at_indices_result')
-    if self.error is not None:
-      oprot.writeFieldBegin('error', TType.STRUCT, 1)
-      self.error.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("set_value_at_indices_result")
+        if self.error is not None:
+            oprot.writeFieldBegin("error", TType.STRUCT, 1)
+            self.error.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_grid_type_args(object):
-  """
+    """
   Attributes:
    - long_var_name
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'long_var_name', None, None, ), # 1
-  )
+    thrift_spec = (None, (1, TType.STRING, "long_var_name", None, None))  # 0  # 1
 
-  def __init__(self, long_var_name=None,):
-    self.long_var_name = long_var_name
+    def __init__(self, long_var_name=None):
+        self.long_var_name = long_var_name
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.long_var_name = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.long_var_name = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_grid_type_args')
-    if self.long_var_name is not None:
-      oprot.writeFieldBegin('long_var_name', TType.STRING, 1)
-      oprot.writeString(self.long_var_name)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_grid_type_args")
+        if self.long_var_name is not None:
+            oprot.writeFieldBegin("long_var_name", TType.STRING, 1)
+            oprot.writeString(self.long_var_name)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_grid_type_result(object):
-  """
+    """
   Attributes:
    - success
    - error
   """
 
-  thrift_spec = (
-    (0, TType.I32, 'success', None, None, ), # 0
-    (1, TType.STRUCT, 'error', (ModelException, ModelException.thrift_spec), None, ), # 1
-  )
+    thrift_spec = (
+        (0, TType.I32, "success", None, None),  # 0
+        (
+            1,
+            TType.STRUCT,
+            "error",
+            (ModelException, ModelException.thrift_spec),
+            None,
+        ),  # 1
+    )
 
-  def __init__(self, success=None, error=None,):
-    self.success = success
-    self.error = error
+    def __init__(self, success=None, error=None):
+        self.success = success
+        self.error = error
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.I32:
-          self.success = iprot.readI32();
-        else:
-          iprot.skip(ftype)
-      elif fid == 1:
-        if ftype == TType.STRUCT:
-          self.error = ModelException()
-          self.error.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.I32:
+                    self.success = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.error = ModelException()
+                    self.error.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_grid_type_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.I32, 0)
-      oprot.writeI32(self.success)
-      oprot.writeFieldEnd()
-    if self.error is not None:
-      oprot.writeFieldBegin('error', TType.STRUCT, 1)
-      self.error.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_grid_type_result")
+        if self.success is not None:
+            oprot.writeFieldBegin("success", TType.I32, 0)
+            oprot.writeI32(self.success)
+            oprot.writeFieldEnd()
+        if self.error is not None:
+            oprot.writeFieldBegin("error", TType.STRUCT, 1)
+            self.error.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_grid_shape_args(object):
-  """
+    """
   Attributes:
    - long_var_name
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'long_var_name', None, None, ), # 1
-  )
+    thrift_spec = (None, (1, TType.STRING, "long_var_name", None, None))  # 0  # 1
 
-  def __init__(self, long_var_name=None,):
-    self.long_var_name = long_var_name
+    def __init__(self, long_var_name=None):
+        self.long_var_name = long_var_name
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.long_var_name = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.long_var_name = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_grid_shape_args')
-    if self.long_var_name is not None:
-      oprot.writeFieldBegin('long_var_name', TType.STRING, 1)
-      oprot.writeString(self.long_var_name)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_grid_shape_args")
+        if self.long_var_name is not None:
+            oprot.writeFieldBegin("long_var_name", TType.STRING, 1)
+            oprot.writeString(self.long_var_name)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_grid_shape_result(object):
-  """
+    """
   Attributes:
    - success
   """
 
-  thrift_spec = (
-    (0, TType.LIST, 'success', (TType.I32,None), None, ), # 0
-  )
+    thrift_spec = ((0, TType.LIST, "success", (TType.I32, None), None),)  # 0
 
-  def __init__(self, success=None,):
-    self.success = success
+    def __init__(self, success=None):
+        self.success = success
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.LIST:
-          self.success = []
-          (_etype31, _size28) = iprot.readListBegin()
-          for _i32 in xrange(_size28):
-            _elem33 = iprot.readI32();
-            self.success.append(_elem33)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype31, _size28) = iprot.readListBegin()
+                    for _i32 in xrange(_size28):
+                        _elem33 = iprot.readI32()
+                        self.success.append(_elem33)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_grid_shape_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.I32, len(self.success))
-      for iter34 in self.success:
-        oprot.writeI32(iter34)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_grid_shape_result")
+        if self.success is not None:
+            oprot.writeFieldBegin("success", TType.LIST, 0)
+            oprot.writeListBegin(TType.I32, len(self.success))
+            for iter34 in self.success:
+                oprot.writeI32(iter34)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_grid_spacing_args(object):
-  """
+    """
   Attributes:
    - long_var_name
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'long_var_name', None, None, ), # 1
-  )
+    thrift_spec = (None, (1, TType.STRING, "long_var_name", None, None))  # 0  # 1
 
-  def __init__(self, long_var_name=None,):
-    self.long_var_name = long_var_name
+    def __init__(self, long_var_name=None):
+        self.long_var_name = long_var_name
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.long_var_name = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.long_var_name = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_grid_spacing_args')
-    if self.long_var_name is not None:
-      oprot.writeFieldBegin('long_var_name', TType.STRING, 1)
-      oprot.writeString(self.long_var_name)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_grid_spacing_args")
+        if self.long_var_name is not None:
+            oprot.writeFieldBegin("long_var_name", TType.STRING, 1)
+            oprot.writeString(self.long_var_name)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_grid_spacing_result(object):
-  """
+    """
   Attributes:
    - success
   """
 
-  thrift_spec = (
-    (0, TType.LIST, 'success', (TType.DOUBLE,None), None, ), # 0
-  )
+    thrift_spec = ((0, TType.LIST, "success", (TType.DOUBLE, None), None),)  # 0
 
-  def __init__(self, success=None,):
-    self.success = success
+    def __init__(self, success=None):
+        self.success = success
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.LIST:
-          self.success = []
-          (_etype38, _size35) = iprot.readListBegin()
-          for _i39 in xrange(_size35):
-            _elem40 = iprot.readDouble();
-            self.success.append(_elem40)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype38, _size35) = iprot.readListBegin()
+                    for _i39 in xrange(_size35):
+                        _elem40 = iprot.readDouble()
+                        self.success.append(_elem40)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_grid_spacing_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.DOUBLE, len(self.success))
-      for iter41 in self.success:
-        oprot.writeDouble(iter41)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_grid_spacing_result")
+        if self.success is not None:
+            oprot.writeFieldBegin("success", TType.LIST, 0)
+            oprot.writeListBegin(TType.DOUBLE, len(self.success))
+            for iter41 in self.success:
+                oprot.writeDouble(iter41)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_grid_origin_args(object):
-  """
+    """
   Attributes:
    - long_var_name
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'long_var_name', None, None, ), # 1
-  )
+    thrift_spec = (None, (1, TType.STRING, "long_var_name", None, None))  # 0  # 1
 
-  def __init__(self, long_var_name=None,):
-    self.long_var_name = long_var_name
+    def __init__(self, long_var_name=None):
+        self.long_var_name = long_var_name
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.long_var_name = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.long_var_name = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_grid_origin_args')
-    if self.long_var_name is not None:
-      oprot.writeFieldBegin('long_var_name', TType.STRING, 1)
-      oprot.writeString(self.long_var_name)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_grid_origin_args")
+        if self.long_var_name is not None:
+            oprot.writeFieldBegin("long_var_name", TType.STRING, 1)
+            oprot.writeString(self.long_var_name)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_grid_origin_result(object):
-  """
+    """
   Attributes:
    - success
   """
 
-  thrift_spec = (
-    (0, TType.LIST, 'success', (TType.DOUBLE,None), None, ), # 0
-  )
+    thrift_spec = ((0, TType.LIST, "success", (TType.DOUBLE, None), None),)  # 0
 
-  def __init__(self, success=None,):
-    self.success = success
+    def __init__(self, success=None):
+        self.success = success
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.LIST:
-          self.success = []
-          (_etype45, _size42) = iprot.readListBegin()
-          for _i46 in xrange(_size42):
-            _elem47 = iprot.readDouble();
-            self.success.append(_elem47)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype45, _size42) = iprot.readListBegin()
+                    for _i46 in xrange(_size42):
+                        _elem47 = iprot.readDouble()
+                        self.success.append(_elem47)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_grid_origin_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.DOUBLE, len(self.success))
-      for iter48 in self.success:
-        oprot.writeDouble(iter48)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_grid_origin_result")
+        if self.success is not None:
+            oprot.writeFieldBegin("success", TType.LIST, 0)
+            oprot.writeListBegin(TType.DOUBLE, len(self.success))
+            for iter48 in self.success:
+                oprot.writeDouble(iter48)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_grid_x_args(object):
-  """
+    """
   Attributes:
    - long_var_name
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'long_var_name', None, None, ), # 1
-  )
+    thrift_spec = (None, (1, TType.STRING, "long_var_name", None, None))  # 0  # 1
 
-  def __init__(self, long_var_name=None,):
-    self.long_var_name = long_var_name
+    def __init__(self, long_var_name=None):
+        self.long_var_name = long_var_name
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.long_var_name = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.long_var_name = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_grid_x_args')
-    if self.long_var_name is not None:
-      oprot.writeFieldBegin('long_var_name', TType.STRING, 1)
-      oprot.writeString(self.long_var_name)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_grid_x_args")
+        if self.long_var_name is not None:
+            oprot.writeFieldBegin("long_var_name", TType.STRING, 1)
+            oprot.writeString(self.long_var_name)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_grid_x_result(object):
-  """
+    """
   Attributes:
    - success
   """
 
-  thrift_spec = (
-    (0, TType.LIST, 'success', (TType.DOUBLE,None), None, ), # 0
-  )
+    thrift_spec = ((0, TType.LIST, "success", (TType.DOUBLE, None), None),)  # 0
 
-  def __init__(self, success=None,):
-    self.success = success
+    def __init__(self, success=None):
+        self.success = success
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.LIST:
-          self.success = []
-          (_etype52, _size49) = iprot.readListBegin()
-          for _i53 in xrange(_size49):
-            _elem54 = iprot.readDouble();
-            self.success.append(_elem54)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype52, _size49) = iprot.readListBegin()
+                    for _i53 in xrange(_size49):
+                        _elem54 = iprot.readDouble()
+                        self.success.append(_elem54)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_grid_x_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.DOUBLE, len(self.success))
-      for iter55 in self.success:
-        oprot.writeDouble(iter55)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_grid_x_result")
+        if self.success is not None:
+            oprot.writeFieldBegin("success", TType.LIST, 0)
+            oprot.writeListBegin(TType.DOUBLE, len(self.success))
+            for iter55 in self.success:
+                oprot.writeDouble(iter55)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_grid_y_args(object):
-  """
+    """
   Attributes:
    - long_var_name
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'long_var_name', None, None, ), # 1
-  )
+    thrift_spec = (None, (1, TType.STRING, "long_var_name", None, None))  # 0  # 1
 
-  def __init__(self, long_var_name=None,):
-    self.long_var_name = long_var_name
+    def __init__(self, long_var_name=None):
+        self.long_var_name = long_var_name
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.long_var_name = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.long_var_name = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_grid_y_args')
-    if self.long_var_name is not None:
-      oprot.writeFieldBegin('long_var_name', TType.STRING, 1)
-      oprot.writeString(self.long_var_name)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_grid_y_args")
+        if self.long_var_name is not None:
+            oprot.writeFieldBegin("long_var_name", TType.STRING, 1)
+            oprot.writeString(self.long_var_name)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_grid_y_result(object):
-  """
+    """
   Attributes:
    - success
   """
 
-  thrift_spec = (
-    (0, TType.LIST, 'success', (TType.DOUBLE,None), None, ), # 0
-  )
+    thrift_spec = ((0, TType.LIST, "success", (TType.DOUBLE, None), None),)  # 0
 
-  def __init__(self, success=None,):
-    self.success = success
+    def __init__(self, success=None):
+        self.success = success
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.LIST:
-          self.success = []
-          (_etype59, _size56) = iprot.readListBegin()
-          for _i60 in xrange(_size56):
-            _elem61 = iprot.readDouble();
-            self.success.append(_elem61)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype59, _size56) = iprot.readListBegin()
+                    for _i60 in xrange(_size56):
+                        _elem61 = iprot.readDouble()
+                        self.success.append(_elem61)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_grid_y_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.DOUBLE, len(self.success))
-      for iter62 in self.success:
-        oprot.writeDouble(iter62)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_grid_y_result")
+        if self.success is not None:
+            oprot.writeFieldBegin("success", TType.LIST, 0)
+            oprot.writeListBegin(TType.DOUBLE, len(self.success))
+            for iter62 in self.success:
+                oprot.writeDouble(iter62)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_grid_z_args(object):
-  """
+    """
   Attributes:
    - long_var_name
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'long_var_name', None, None, ), # 1
-  )
+    thrift_spec = (None, (1, TType.STRING, "long_var_name", None, None))  # 0  # 1
 
-  def __init__(self, long_var_name=None,):
-    self.long_var_name = long_var_name
+    def __init__(self, long_var_name=None):
+        self.long_var_name = long_var_name
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.long_var_name = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.long_var_name = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_grid_z_args')
-    if self.long_var_name is not None:
-      oprot.writeFieldBegin('long_var_name', TType.STRING, 1)
-      oprot.writeString(self.long_var_name)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_grid_z_args")
+        if self.long_var_name is not None:
+            oprot.writeFieldBegin("long_var_name", TType.STRING, 1)
+            oprot.writeString(self.long_var_name)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_grid_z_result(object):
-  """
+    """
   Attributes:
    - success
   """
 
-  thrift_spec = (
-    (0, TType.LIST, 'success', (TType.DOUBLE,None), None, ), # 0
-  )
+    thrift_spec = ((0, TType.LIST, "success", (TType.DOUBLE, None), None),)  # 0
 
-  def __init__(self, success=None,):
-    self.success = success
+    def __init__(self, success=None):
+        self.success = success
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.LIST:
-          self.success = []
-          (_etype66, _size63) = iprot.readListBegin()
-          for _i67 in xrange(_size63):
-            _elem68 = iprot.readDouble();
-            self.success.append(_elem68)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype66, _size63) = iprot.readListBegin()
+                    for _i67 in xrange(_size63):
+                        _elem68 = iprot.readDouble()
+                        self.success.append(_elem68)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_grid_z_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.DOUBLE, len(self.success))
-      for iter69 in self.success:
-        oprot.writeDouble(iter69)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_grid_z_result")
+        if self.success is not None:
+            oprot.writeFieldBegin("success", TType.LIST, 0)
+            oprot.writeListBegin(TType.DOUBLE, len(self.success))
+            for iter69 in self.success:
+                oprot.writeDouble(iter69)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_grid_connectivity_args(object):
-  """
+    """
   Attributes:
    - long_var_name
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'long_var_name', None, None, ), # 1
-  )
+    thrift_spec = (None, (1, TType.STRING, "long_var_name", None, None))  # 0  # 1
 
-  def __init__(self, long_var_name=None,):
-    self.long_var_name = long_var_name
+    def __init__(self, long_var_name=None):
+        self.long_var_name = long_var_name
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.long_var_name = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.long_var_name = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_grid_connectivity_args')
-    if self.long_var_name is not None:
-      oprot.writeFieldBegin('long_var_name', TType.STRING, 1)
-      oprot.writeString(self.long_var_name)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_grid_connectivity_args")
+        if self.long_var_name is not None:
+            oprot.writeFieldBegin("long_var_name", TType.STRING, 1)
+            oprot.writeString(self.long_var_name)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_grid_connectivity_result(object):
-  """
+    """
   Attributes:
    - success
   """
 
-  thrift_spec = (
-    (0, TType.LIST, 'success', (TType.I32,None), None, ), # 0
-  )
+    thrift_spec = ((0, TType.LIST, "success", (TType.I32, None), None),)  # 0
 
-  def __init__(self, success=None,):
-    self.success = success
+    def __init__(self, success=None):
+        self.success = success
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.LIST:
-          self.success = []
-          (_etype73, _size70) = iprot.readListBegin()
-          for _i74 in xrange(_size70):
-            _elem75 = iprot.readI32();
-            self.success.append(_elem75)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype73, _size70) = iprot.readListBegin()
+                    for _i74 in xrange(_size70):
+                        _elem75 = iprot.readI32()
+                        self.success.append(_elem75)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_grid_connectivity_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.I32, len(self.success))
-      for iter76 in self.success:
-        oprot.writeI32(iter76)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_grid_connectivity_result")
+        if self.success is not None:
+            oprot.writeFieldBegin("success", TType.LIST, 0)
+            oprot.writeListBegin(TType.I32, len(self.success))
+            for iter76 in self.success:
+                oprot.writeI32(iter76)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_grid_offset_args(object):
-  """
+    """
   Attributes:
    - long_var_name
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'long_var_name', None, None, ), # 1
-  )
+    thrift_spec = (None, (1, TType.STRING, "long_var_name", None, None))  # 0  # 1
 
-  def __init__(self, long_var_name=None,):
-    self.long_var_name = long_var_name
+    def __init__(self, long_var_name=None):
+        self.long_var_name = long_var_name
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.long_var_name = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.long_var_name = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_grid_offset_args')
-    if self.long_var_name is not None:
-      oprot.writeFieldBegin('long_var_name', TType.STRING, 1)
-      oprot.writeString(self.long_var_name)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_grid_offset_args")
+        if self.long_var_name is not None:
+            oprot.writeFieldBegin("long_var_name", TType.STRING, 1)
+            oprot.writeString(self.long_var_name)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_grid_offset_result(object):
-  """
+    """
   Attributes:
    - success
   """
 
-  thrift_spec = (
-    (0, TType.LIST, 'success', (TType.I32,None), None, ), # 0
-  )
+    thrift_spec = ((0, TType.LIST, "success", (TType.I32, None), None),)  # 0
 
-  def __init__(self, success=None,):
-    self.success = success
+    def __init__(self, success=None):
+        self.success = success
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.LIST:
-          self.success = []
-          (_etype80, _size77) = iprot.readListBegin()
-          for _i81 in xrange(_size77):
-            _elem82 = iprot.readI32();
-            self.success.append(_elem82)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype80, _size77) = iprot.readListBegin()
+                    for _i81 in xrange(_size77):
+                        _elem82 = iprot.readI32()
+                        self.success.append(_elem82)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_grid_offset_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.I32, len(self.success))
-      for iter83 in self.success:
-        oprot.writeI32(iter83)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_grid_offset_result")
+        if self.success is not None:
+            oprot.writeFieldBegin("success", TType.LIST, 0)
+            oprot.writeListBegin(TType.I32, len(self.success))
+            for iter83 in self.success:
+                oprot.writeI32(iter83)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class initialize_config_args(object):
-  """
+    """
   Attributes:
    - file
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'file', None, None, ), # 1
-  )
+    thrift_spec = (None, (1, TType.STRING, "file", None, None))  # 0  # 1
 
-  def __init__(self, file=None,):
-    self.file = file
+    def __init__(self, file=None):
+        self.file = file
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.file = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.file = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('initialize_config_args')
-    if self.file is not None:
-      oprot.writeFieldBegin('file', TType.STRING, 1)
-      oprot.writeString(self.file)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("initialize_config_args")
+        if self.file is not None:
+            oprot.writeFieldBegin("file", TType.STRING, 1)
+            oprot.writeString(self.file)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class initialize_config_result(object):
-  """
+    """
   Attributes:
    - error
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRUCT, 'error', (ModelException, ModelException.thrift_spec), None, ), # 1
-  )
+    thrift_spec = (
+        None,  # 0
+        (
+            1,
+            TType.STRUCT,
+            "error",
+            (ModelException, ModelException.thrift_spec),
+            None,
+        ),  # 1
+    )
 
-  def __init__(self, error=None,):
-    self.error = error
+    def __init__(self, error=None):
+        self.error = error
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRUCT:
-          self.error = ModelException()
-          self.error.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.error = ModelException()
+                    self.error.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('initialize_config_result')
-    if self.error is not None:
-      oprot.writeFieldBegin('error', TType.STRUCT, 1)
-      self.error.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("initialize_config_result")
+        if self.error is not None:
+            oprot.writeFieldBegin("error", TType.STRUCT, 1)
+            self.error.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class initialize_model_args(object):
 
-  thrift_spec = (
-  )
+    thrift_spec = ()
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('initialize_model_args')
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("initialize_model_args")
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class initialize_model_result(object):
-  """
+    """
   Attributes:
    - error
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRUCT, 'error', (ModelException, ModelException.thrift_spec), None, ), # 1
-  )
+    thrift_spec = (
+        None,  # 0
+        (
+            1,
+            TType.STRUCT,
+            "error",
+            (ModelException, ModelException.thrift_spec),
+            None,
+        ),  # 1
+    )
 
-  def __init__(self, error=None,):
-    self.error = error
+    def __init__(self, error=None):
+        self.error = error
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRUCT:
-          self.error = ModelException()
-          self.error.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.error = ModelException()
+                    self.error.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('initialize_model_result')
-    if self.error is not None:
-      oprot.writeFieldBegin('error', TType.STRUCT, 1)
-      self.error.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("initialize_model_result")
+        if self.error is not None:
+            oprot.writeFieldBegin("error", TType.STRUCT, 1)
+            self.error.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class set_start_time_args(object):
-  """
+    """
   Attributes:
    - start_time
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.DOUBLE, 'start_time', None, None, ), # 1
-  )
+    thrift_spec = (None, (1, TType.DOUBLE, "start_time", None, None))  # 0  # 1
 
-  def __init__(self, start_time=None,):
-    self.start_time = start_time
+    def __init__(self, start_time=None):
+        self.start_time = start_time
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.DOUBLE:
-          self.start_time = iprot.readDouble();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.DOUBLE:
+                    self.start_time = iprot.readDouble()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('set_start_time_args')
-    if self.start_time is not None:
-      oprot.writeFieldBegin('start_time', TType.DOUBLE, 1)
-      oprot.writeDouble(self.start_time)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("set_start_time_args")
+        if self.start_time is not None:
+            oprot.writeFieldBegin("start_time", TType.DOUBLE, 1)
+            oprot.writeDouble(self.start_time)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class set_start_time_result(object):
-  """
+    """
   Attributes:
    - error
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRUCT, 'error', (ModelException, ModelException.thrift_spec), None, ), # 1
-  )
+    thrift_spec = (
+        None,  # 0
+        (
+            1,
+            TType.STRUCT,
+            "error",
+            (ModelException, ModelException.thrift_spec),
+            None,
+        ),  # 1
+    )
 
-  def __init__(self, error=None,):
-    self.error = error
+    def __init__(self, error=None):
+        self.error = error
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRUCT:
-          self.error = ModelException()
-          self.error.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.error = ModelException()
+                    self.error.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('set_start_time_result')
-    if self.error is not None:
-      oprot.writeFieldBegin('error', TType.STRUCT, 1)
-      self.error.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("set_start_time_result")
+        if self.error is not None:
+            oprot.writeFieldBegin("error", TType.STRUCT, 1)
+            self.error.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class set_end_time_args(object):
-  """
+    """
   Attributes:
    - end_time
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.DOUBLE, 'end_time', None, None, ), # 1
-  )
+    thrift_spec = (None, (1, TType.DOUBLE, "end_time", None, None))  # 0  # 1
 
-  def __init__(self, end_time=None,):
-    self.end_time = end_time
+    def __init__(self, end_time=None):
+        self.end_time = end_time
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.DOUBLE:
-          self.end_time = iprot.readDouble();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.DOUBLE:
+                    self.end_time = iprot.readDouble()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('set_end_time_args')
-    if self.end_time is not None:
-      oprot.writeFieldBegin('end_time', TType.DOUBLE, 1)
-      oprot.writeDouble(self.end_time)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("set_end_time_args")
+        if self.end_time is not None:
+            oprot.writeFieldBegin("end_time", TType.DOUBLE, 1)
+            oprot.writeDouble(self.end_time)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class set_end_time_result(object):
-  """
+    """
   Attributes:
    - error
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRUCT, 'error', (ModelException, ModelException.thrift_spec), None, ), # 1
-  )
+    thrift_spec = (
+        None,  # 0
+        (
+            1,
+            TType.STRUCT,
+            "error",
+            (ModelException, ModelException.thrift_spec),
+            None,
+        ),  # 1
+    )
 
-  def __init__(self, error=None,):
-    self.error = error
+    def __init__(self, error=None):
+        self.error = error
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRUCT:
-          self.error = ModelException()
-          self.error.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.error = ModelException()
+                    self.error.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('set_end_time_result')
-    if self.error is not None:
-      oprot.writeFieldBegin('error', TType.STRUCT, 1)
-      self.error.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("set_end_time_result")
+        if self.error is not None:
+            oprot.writeFieldBegin("error", TType.STRUCT, 1)
+            self.error.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_attribute_names_args(object):
 
-  thrift_spec = (
-  )
+    thrift_spec = ()
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_attribute_names_args')
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_attribute_names_args")
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_attribute_names_result(object):
-  """
+    """
   Attributes:
    - success
   """
 
-  thrift_spec = (
-    (0, TType.LIST, 'success', (TType.STRING,None), None, ), # 0
-  )
+    thrift_spec = ((0, TType.LIST, "success", (TType.STRING, None), None),)  # 0
 
-  def __init__(self, success=None,):
-    self.success = success
+    def __init__(self, success=None):
+        self.success = success
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.LIST:
-          self.success = []
-          (_etype87, _size84) = iprot.readListBegin()
-          for _i88 in xrange(_size84):
-            _elem89 = iprot.readString();
-            self.success.append(_elem89)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype87, _size84) = iprot.readListBegin()
+                    for _i88 in xrange(_size84):
+                        _elem89 = iprot.readString()
+                        self.success.append(_elem89)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_attribute_names_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.STRING, len(self.success))
-      for iter90 in self.success:
-        oprot.writeString(iter90)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_attribute_names_result")
+        if self.success is not None:
+            oprot.writeFieldBegin("success", TType.LIST, 0)
+            oprot.writeListBegin(TType.STRING, len(self.success))
+            for iter90 in self.success:
+                oprot.writeString(iter90)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_attribute_value_args(object):
-  """
+    """
   Attributes:
    - attribute_name
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'attribute_name', None, None, ), # 1
-  )
+    thrift_spec = (None, (1, TType.STRING, "attribute_name", None, None))  # 0  # 1
 
-  def __init__(self, attribute_name=None,):
-    self.attribute_name = attribute_name
+    def __init__(self, attribute_name=None):
+        self.attribute_name = attribute_name
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.attribute_name = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.attribute_name = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_attribute_value_args')
-    if self.attribute_name is not None:
-      oprot.writeFieldBegin('attribute_name', TType.STRING, 1)
-      oprot.writeString(self.attribute_name)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_attribute_value_args")
+        if self.attribute_name is not None:
+            oprot.writeFieldBegin("attribute_name", TType.STRING, 1)
+            oprot.writeString(self.attribute_name)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class get_attribute_value_result(object):
-  """
+    """
   Attributes:
    - success
    - error
   """
 
-  thrift_spec = (
-    (0, TType.STRING, 'success', None, None, ), # 0
-    (1, TType.STRUCT, 'error', (ModelException, ModelException.thrift_spec), None, ), # 1
-  )
+    thrift_spec = (
+        (0, TType.STRING, "success", None, None),  # 0
+        (
+            1,
+            TType.STRUCT,
+            "error",
+            (ModelException, ModelException.thrift_spec),
+            None,
+        ),  # 1
+    )
 
-  def __init__(self, success=None, error=None,):
-    self.success = success
-    self.error = error
+    def __init__(self, success=None, error=None):
+        self.success = success
+        self.error = error
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.STRING:
-          self.success = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 1:
-        if ftype == TType.STRUCT:
-          self.error = ModelException()
-          self.error.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.STRING:
+                    self.success = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.error = ModelException()
+                    self.error.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_attribute_value_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.STRING, 0)
-      oprot.writeString(self.success)
-      oprot.writeFieldEnd()
-    if self.error is not None:
-      oprot.writeFieldBegin('error', TType.STRUCT, 1)
-      self.error.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("get_attribute_value_result")
+        if self.success is not None:
+            oprot.writeFieldBegin("success", TType.STRING, 0)
+            oprot.writeString(self.success)
+            oprot.writeFieldEnd()
+        if self.error is not None:
+            oprot.writeFieldBegin("error", TType.STRUCT, 1)
+            self.error.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class set_attribute_value_args(object):
-  """
+    """
   Attributes:
    - attribute_name
    - attribute_value
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'attribute_name', None, None, ), # 1
-    (2, TType.STRING, 'attribute_value', None, None, ), # 2
-  )
+    thrift_spec = (
+        None,  # 0
+        (1, TType.STRING, "attribute_name", None, None),  # 1
+        (2, TType.STRING, "attribute_value", None, None),  # 2
+    )
 
-  def __init__(self, attribute_name=None, attribute_value=None,):
-    self.attribute_name = attribute_name
-    self.attribute_value = attribute_value
+    def __init__(self, attribute_name=None, attribute_value=None):
+        self.attribute_name = attribute_name
+        self.attribute_value = attribute_value
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.attribute_name = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.STRING:
-          self.attribute_value = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.attribute_name = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.attribute_value = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('set_attribute_value_args')
-    if self.attribute_name is not None:
-      oprot.writeFieldBegin('attribute_name', TType.STRING, 1)
-      oprot.writeString(self.attribute_name)
-      oprot.writeFieldEnd()
-    if self.attribute_value is not None:
-      oprot.writeFieldBegin('attribute_value', TType.STRING, 2)
-      oprot.writeString(self.attribute_value)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("set_attribute_value_args")
+        if self.attribute_name is not None:
+            oprot.writeFieldBegin("attribute_name", TType.STRING, 1)
+            oprot.writeString(self.attribute_name)
+            oprot.writeFieldEnd()
+        if self.attribute_value is not None:
+            oprot.writeFieldBegin("attribute_value", TType.STRING, 2)
+            oprot.writeString(self.attribute_value)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class set_attribute_value_result(object):
-  """
+    """
   Attributes:
    - error
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRUCT, 'error', (ModelException, ModelException.thrift_spec), None, ), # 1
-  )
+    thrift_spec = (
+        None,  # 0
+        (
+            1,
+            TType.STRUCT,
+            "error",
+            (ModelException, ModelException.thrift_spec),
+            None,
+        ),  # 1
+    )
 
-  def __init__(self, error=None,):
-    self.error = error
+    def __init__(self, error=None):
+        self.error = error
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRUCT:
-          self.error = ModelException()
-          self.error.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.error = ModelException()
+                    self.error.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('set_attribute_value_result')
-    if self.error is not None:
-      oprot.writeFieldBegin('error', TType.STRUCT, 1)
-      self.error.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("set_attribute_value_result")
+        if self.error is not None:
+            oprot.writeFieldBegin("error", TType.STRUCT, 1)
+            self.error.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class save_state_args(object):
-  """
+    """
   Attributes:
    - destination_directory
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'destination_directory', None, None, ), # 1
-  )
+    thrift_spec = (
+        None,  # 0
+        (1, TType.STRING, "destination_directory", None, None),  # 1
+    )
 
-  def __init__(self, destination_directory=None,):
-    self.destination_directory = destination_directory
+    def __init__(self, destination_directory=None):
+        self.destination_directory = destination_directory
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.destination_directory = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.destination_directory = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('save_state_args')
-    if self.destination_directory is not None:
-      oprot.writeFieldBegin('destination_directory', TType.STRING, 1)
-      oprot.writeString(self.destination_directory)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("save_state_args")
+        if self.destination_directory is not None:
+            oprot.writeFieldBegin("destination_directory", TType.STRING, 1)
+            oprot.writeString(self.destination_directory)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class save_state_result(object):
-  """
+    """
   Attributes:
    - error
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRUCT, 'error', (ModelException, ModelException.thrift_spec), None, ), # 1
-  )
+    thrift_spec = (
+        None,  # 0
+        (
+            1,
+            TType.STRUCT,
+            "error",
+            (ModelException, ModelException.thrift_spec),
+            None,
+        ),  # 1
+    )
 
-  def __init__(self, error=None,):
-    self.error = error
+    def __init__(self, error=None):
+        self.error = error
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRUCT:
-          self.error = ModelException()
-          self.error.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.error = ModelException()
+                    self.error.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('save_state_result')
-    if self.error is not None:
-      oprot.writeFieldBegin('error', TType.STRUCT, 1)
-      self.error.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("save_state_result")
+        if self.error is not None:
+            oprot.writeFieldBegin("error", TType.STRUCT, 1)
+            self.error.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class load_state_args(object):
-  """
+    """
   Attributes:
    - source_directory
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'source_directory', None, None, ), # 1
-  )
+    thrift_spec = (None, (1, TType.STRING, "source_directory", None, None))  # 0  # 1
 
-  def __init__(self, source_directory=None,):
-    self.source_directory = source_directory
+    def __init__(self, source_directory=None):
+        self.source_directory = source_directory
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.source_directory = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.source_directory = iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('load_state_args')
-    if self.source_directory is not None:
-      oprot.writeFieldBegin('source_directory', TType.STRING, 1)
-      oprot.writeString(self.source_directory)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("load_state_args")
+        if self.source_directory is not None:
+            oprot.writeFieldBegin("source_directory", TType.STRING, 1)
+            oprot.writeString(self.source_directory)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+    def __ne__(self, other):
+        return not (self == other)
 
-  def __ne__(self, other):
-    return not (self == other)
 
 class load_state_result(object):
-  """
+    """
   Attributes:
    - error
   """
 
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRUCT, 'error', (ModelException, ModelException.thrift_spec), None, ), # 1
-  )
+    thrift_spec = (
+        None,  # 0
+        (
+            1,
+            TType.STRUCT,
+            "error",
+            (ModelException, ModelException.thrift_spec),
+            None,
+        ),  # 1
+    )
 
-  def __init__(self, error=None,):
-    self.error = error
+    def __init__(self, error=None):
+        self.error = error
 
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRUCT:
-          self.error = ModelException()
-          self.error.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
+    def read(self, iprot):
+        if (
+            iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and isinstance(iprot.trans, TTransport.CReadableTransport)
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            fastbinary.decode_binary(
+                self, iprot.trans, (self.__class__, self.thrift_spec)
+            )
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.error = ModelException()
+                    self.error.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
 
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('load_state_result')
-    if self.error is not None:
-      oprot.writeFieldBegin('error', TType.STRUCT, 1)
-      self.error.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
+    def write(self, oprot):
+        if (
+            oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated
+            and self.thrift_spec is not None
+            and fastbinary is not None
+        ):
+            oprot.trans.write(
+                fastbinary.encode_binary(self, (self.__class__, self.thrift_spec))
+            )
+            return
+        oprot.writeStructBegin("load_state_result")
+        if self.error is not None:
+            oprot.writeFieldBegin("error", TType.STRUCT, 1)
+            self.error.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
 
-  def validate(self):
-    return
+    def validate(self):
+        return
 
+    def __repr__(self):
+        L = ["%s=%r" % (key, value) for key, value in self.__dict__.iteritems()]
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(L))
 
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
+    def __ne__(self, other):
+        return not (self == other)

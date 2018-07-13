@@ -1,10 +1,11 @@
-__author__ = 'schelle'
+__author__ = "schelle"
 
 import unittest
 import logging
 import sys
-sys.path = ['../wflow'] + ['../'] + sys.path
-sys.path = ['../Scripts'] + sys.path
+
+sys.path = ["../wflow"] + ["../"] + sys.path
+sys.path = ["../Scripts"] + sys.path
 import bmi2runner as bmirun
 import time
 import os
@@ -16,12 +17,9 @@ Simple test for wflow bmi framework
 
 
 class MyTest(unittest.TestCase):
-
-
-
     def testbmirunner_set(self):
 
-        configfile = 'combined/bmirunner.ini'
+        configfile = "combined/bmirunner.ini"
         bmiobj = bmi.wflowbmi_csdms()
         bmiobj.initialize_config(configfile)
         bmiobj.initialize_model()
@@ -41,5 +39,6 @@ class MyTest(unittest.TestCase):
 
         bmiobj.finalize()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()
