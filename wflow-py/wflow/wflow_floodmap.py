@@ -56,7 +56,7 @@ $Id: wflow_floodmap.py 916 2014-02-11 14:49:35Z schelle $
 $Rev: 916 $
 """
 
-#TODO: update to update framework
+# TODO: update to update framework
 
 import numpy
 import os
@@ -64,42 +64,43 @@ import os.path
 import shutil, glob
 import getopt
 
-from  wflow.wf_DynamicFramework import *
+from wflow.wf_DynamicFramework import *
 
-#import scipy
+# import scipy
 
-from  wflow.wflow_adapt  import *
+from wflow.wflow_adapt import *
 
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args: print msg
+    for msg in args:
+        print msg
     print __doc__
     sys.exit(0)
 
-class WflowModel(DynamicModel):  
-  """
+
+class WflowModel(DynamicModel):
+    """
   The user defined model class. This is your work!
   """
-  
-  def __init__(self, cloneMap,Dir,RunDir,configfile):
-      """
+
+    def __init__(self, cloneMap, Dir, RunDir, configfile):
+        """
       Initialize the object
       
       """
-      DynamicModel.__init__(self)   
+        DynamicModel.__init__(self)
 
-      self.caseName = os.path.abspath(Dir)
-      self.clonemappath = os.path.join(os.path.abspath(Dir),"staticmaps",cloneMap)
-      setclone(self.clonemappath)
-      self.runId = RunDir
-      self.Dir = os.path.abspath(Dir)
-      self.configfile = configfile
-      self.SaveDir = os.path.join(self.Dir,self.runId)
+        self.caseName = os.path.abspath(Dir)
+        self.clonemappath = os.path.join(os.path.abspath(Dir), "staticmaps", cloneMap)
+        setclone(self.clonemappath)
+        self.runId = RunDir
+        self.Dir = os.path.abspath(Dir)
+        self.configfile = configfile
+        self.SaveDir = os.path.join(self.Dir, self.runId)
 
-
-  def stateVariables(self):
-      """ 
+    def stateVariables(self):
+        """ 
       *Required*
       
       Returns a list of state variables that are essential to the model. 
@@ -114,13 +115,12 @@ class WflowModel(DynamicModel):
       :var FloodExtent.map: Current FloodExtent
       
       """
-      states = ['FloodExtent']
-      
-      return states
-      
-      
-  def supplyCurrentTime(self):
-      """
+        states = ["FloodExtent"]
+
+        return states
+
+    def supplyCurrentTime(self):
+        """
       *Optional*
       
       Supplies the current time in seconds after the start of the run
@@ -132,52 +132,66 @@ class WflowModel(DynamicModel):
           - time in seconds since the start of the model run
           
       """
-      
-      return self.currentTimeStep() * int(configget(self.config,'model','timestepsecs','86400'))
-  
-  def suspend(self):
-    """      
+
+        return self.currentTimeStep() * int(
+            configget(self.config, "model", "timestepsecs", "86400")
+        )
+
+    def suspend(self):
+        """      
       Suspends the model to disk. All variables needed to restart the model
       are saved to disk as pcraster maps. Use resume() to re-read them
       
     """
-        
-    #self.logger.info("Saving initial conditions...")
-    #: It is advised to use the wf_suspend() function 
-    #: here which will suspend the variables that are given by stateVariables 
-    #: function.
-    self.logger.info("Saving initial conditions...")
-    self.wf_suspend(os.path.join(self.SaveDir , "outstate"))
 
-        
-    report(ifthen(self.MaxDepth >0.0,self.MaxDepth),os.path.join(self.SaveDir , "outsum","MaxDepth.map"))
-    report(ifthen(scalar(self.MaxExt) > 0.0,self.MaxExt),os.path.join(self.SaveDir, "outsum","MaxExt.map"))
+        # self.logger.info("Saving initial conditions...")
+        #: It is advised to use the wf_suspend() function
+        #: here which will suspend the variables that are given by stateVariables
+        #: function.
+        self.logger.info("Saving initial conditions...")
+        self.wf_suspend(os.path.join(self.SaveDir, "outstate"))
 
-  def parameters(self):
-    """
+        report(
+            ifthen(self.MaxDepth > 0.0, self.MaxDepth),
+            os.path.join(self.SaveDir, "outsum", "MaxDepth.map"),
+        )
+        report(
+            ifthen(scalar(self.MaxExt) > 0.0, self.MaxExt),
+            os.path.join(self.SaveDir, "outsum", "MaxExt.map"),
+        )
+
+    def parameters(self):
+        """
     Define all model parameters here that the framework should handle for the model
     See wf_updateparameters and the parameters section of the ini file
     If you use this make sure to all wf_updateparameters at the start of the dynamic section
     and at the start/end of the initial section
     """
-    modelparameters = []
+        modelparameters = []
 
-    #Static model parameters e.g.
-    #modelparameters.append(self.ParamType(name="RunoffGeneratingGWPerc",stack="intbl/RunoffGeneratingGWPerc.tbl",type="static",default=0.1))
-    # 3: Input time series ###################################################
-    self.WL_mapstack = self.Dir + configget(self.config, "inputmapstacks", "WaterLevel",
-                                           "/inmaps/H")  # timeseries for level
+        # Static model parameters e.g.
+        # modelparameters.append(self.ParamType(name="RunoffGeneratingGWPerc",stack="intbl/RunoffGeneratingGWPerc.tbl",type="static",default=0.1))
+        # 3: Input time series ###################################################
+        self.WL_mapstack = self.Dir + configget(
+            self.config, "inputmapstacks", "WaterLevel", "/inmaps/H"
+        )  # timeseries for level
 
+        modelparameters.append(
+            self.ParamType(
+                name="WL",
+                stack=self.WL_mapstack,
+                type="timeseries",
+                default=0.0,
+                verbose=True,
+                lookupmaps=[],
+            )
+        )
 
-    modelparameters.append(self.ParamType(name="WL",stack=self.WL_mapstack,type="timeseries",default=0.0,verbose=True,lookupmaps=[]))
+        return modelparameters
 
+    def initial(self):
 
-    return modelparameters
-
-      
-  def initial(self):
-      
-    """
+        """
     *Required*
     
     Initial part of the model, executed only once. It reads all static model
@@ -188,36 +202,40 @@ class WflowModel(DynamicModel):
     structure used in the other models.
     
     """
-    #: pcraster option to calculate with units or cells. Not really an issue
-    #: in this model but always good to keep in mind.
-    setglobaloption("unittrue")
+        #: pcraster option to calculate with units or cells. Not really an issue
+        #: in this model but always good to keep in mind.
+        setglobaloption("unittrue")
 
-    #: Note the use of the configget functione below. This way you sepcify a default
-    #: for a parameter but it can be overwritten by the uses in the ini file.
-    self.timestepsecs = int(configget(self.config,'model','timestepsecs','86400'))
-    self.maxdist = float(configget(self.config,'model','maxflooddist','1E31'))
-    self.reinit = int(configget(self.config,"run","reinit","0"))
+        #: Note the use of the configget functione below. This way you sepcify a default
+        #: for a parameter but it can be overwritten by the uses in the ini file.
+        self.timestepsecs = int(
+            configget(self.config, "model", "timestepsecs", "86400")
+        )
+        self.maxdist = float(configget(self.config, "model", "maxflooddist", "1E31"))
+        self.reinit = int(configget(self.config, "run", "reinit", "0"))
 
-    
-    self.wf_updateparameters()
+        self.wf_updateparameters()
 
-    self.basetimestep=86400
-    self.SaveMapDir = self.Dir + "/" + self.runId + "/outmaps"
-    self.Altitude=readmap(self.Dir + "/staticmaps/wflow_dem")
-    self.River=readmap(self.Dir + "/staticmaps/wflow_river")
-    self.Ldd=readmap(self.Dir + "/staticmaps/wflow_ldd")
-    self.BankFull=pcrut.readmapSave(self.Dir + "/staticmaps/wflow_bankfull",0.0)
-    self.RiverWidth=readmap(self.Dir + "/" + self.runId + "/outsum/RiverWidth.map")
-    self.BankFull = ifthenelse(self.BankFull == 0.0, self.RiverWidth/60.0, self.BankFull)
-    
-    self.FloodDepth = scalar(cover(0.0))
-    self.MaxExt = boolean(cover(0.0))
-    self.MaxDepth = cover(0.0)
-    self.logger.info("End of initial...")
+        self.basetimestep = 86400
+        self.SaveMapDir = self.Dir + "/" + self.runId + "/outmaps"
+        self.Altitude = readmap(self.Dir + "/staticmaps/wflow_dem")
+        self.River = readmap(self.Dir + "/staticmaps/wflow_river")
+        self.Ldd = readmap(self.Dir + "/staticmaps/wflow_ldd")
+        self.BankFull = pcrut.readmapSave(self.Dir + "/staticmaps/wflow_bankfull", 0.0)
+        self.RiverWidth = readmap(
+            self.Dir + "/" + self.runId + "/outsum/RiverWidth.map"
+        )
+        self.BankFull = ifthenelse(
+            self.BankFull == 0.0, self.RiverWidth / 60.0, self.BankFull
+        )
 
+        self.FloodDepth = scalar(cover(0.0))
+        self.MaxExt = boolean(cover(0.0))
+        self.MaxDepth = cover(0.0)
+        self.logger.info("End of initial...")
 
-  def resume(self):
-    """ 
+    def resume(self):
+        """ 
     *Required*
 
     This function is required. Read initial state maps (they are output of a 
@@ -225,19 +243,17 @@ class WflowModel(DynamicModel):
     setup needed.
     
     """
-    #self.logger.info("Reading initial conditions...")
-    #: It is advised to use the wf_resume() function 
-    #: here which pick upt the variable save by a call to wf_suspend()
-    if self.reinit == 1:
-        self.logger.info("Setting initial conditions to default (zero)")
-        self.FloodExtent=cover(boolean(0))
-    else:
-        self.wf_resume(os.path.join(self.Dir , "instate"))
+        # self.logger.info("Reading initial conditions...")
+        #: It is advised to use the wf_resume() function
+        #: here which pick upt the variable save by a call to wf_suspend()
+        if self.reinit == 1:
+            self.logger.info("Setting initial conditions to default (zero)")
+            self.FloodExtent = cover(boolean(0))
+        else:
+            self.wf_resume(os.path.join(self.Dir, "instate"))
 
-
-    
-  def dynamic(self):
-      """
+    def dynamic(self):
+        """
       *Required*
       
       This is where all the time dependent functions are executed. Time dependent
@@ -246,58 +262,85 @@ class WflowModel(DynamicModel):
       :var self.FLOOD: Actual flood level [m]
       :var self.FloodExtent: Actual flood extent [-]
       
-      """            
-      self.FloodDepth = scalar(self.FloodDepth) * 0.0
+      """
+        self.FloodDepth = scalar(self.FloodDepth) * 0.0
 
-      self.wf_updateparameters()
+        self.wf_updateparameters()
 
-      self.WLatRiver= ifthenelse(scalar(self.River) > 0,self.WL + self.Altitude,scalar(0.0))
-      # WL surface if level > bankfull. For the eventual surface substract bankfull as measure for river depth      
-      self.water_surf = cover(ifthen(self.WLatRiver > (self.BankFull + self.Altitude),self.WLatRiver - self.BankFull),0.0)
-      self.water_surf_id = ordinal(uniqueid(boolean(self.water_surf)))
-      
-      # Check how many points over bankfull we have
-      tmp = pcr2numpy(mapmaximum(self.water_surf_id),0)
-      fld_points_a = tmp[0,0]
-      
-      self.logger.info("Step: " + str(self.currentStep) + ". River cells over bankfull: " + str(fld_points_a))
-      # Only do mapping of the number of points is larger then 0
-      
-      if fld_points_a < 1:
-          self.FloodDepth = ifthen(self.FloodDepth > 1e31,self.FloodDepth)
-          self.distfromriv = self.FloodDepth
-          self.spread = self.FloodDepth
-          self.FloodExtent=cover(boolean(0))
-          self.FloodDepth=scalar(self.FloodExtent)
-      else:          
-          # find zones connect to a rivercell > bankfull
-          self.RiverCellZones = subcatchment(self.Ldd,self.water_surf_id)
-          self.spreadRivLev = areaaverage(ifthen(self.water_surf>0,self.water_surf),self.RiverCellZones)
-          self.spreadRivDemLev = areaaverage(ifthen(self.water_surf>0,self.Altitude),self.RiverCellZones)
-          
-          # add the new first estimate to the old extent
-          self.FloodExtent=cover(boolean(self.FloodExtent),boolean(self.water_surf_id))
-          # determine the distance to the nearest already flooded celll
-          self.distfromriv = ldddist(self.Ldd,self.FloodExtent,1) # is in units of model (degree here)
-          
-          # a cell is flooded if the bottomlevel is lower than the waterlevel of the nearest river cell.
-          self.FloodDepth=ifthenelse(self.spreadRivLev-self.Altitude >=0.0,self.spreadRivLev-self.Altitude,0.0)
-          # Exclude points too far away()
-          self.FloodDepth= ifthenelse(self.distfromriv > self.maxdist,0.0 , self.FloodDepth)
-          self.FloodDepth = ifthen(self.FloodDepth >0.0, self.FloodDepth)
-          self.FloodExtent = ifthenelse(self.FloodDepth > 0.0, boolean(1),boolean(0))
+        self.WLatRiver = ifthenelse(
+            scalar(self.River) > 0, self.WL + self.Altitude, scalar(0.0)
+        )
+        # WL surface if level > bankfull. For the eventual surface substract bankfull as measure for river depth
+        self.water_surf = cover(
+            ifthen(
+                self.WLatRiver > (self.BankFull + self.Altitude),
+                self.WLatRiver - self.BankFull,
+            ),
+            0.0,
+        )
+        self.water_surf_id = ordinal(uniqueid(boolean(self.water_surf)))
 
-          # Keep track of af depth and extent
-          self.MaxDepth = max(self.MaxDepth,cover(self.FloodDepth,0))
-          self.MaxExt = max(scalar(self.MaxExt),scalar(cover(self.FloodExtent,0)))
-      
-      
-      # reporting of maps is done by the framework (see ini file)
-    
+        # Check how many points over bankfull we have
+        tmp = pcr2numpy(mapmaximum(self.water_surf_id), 0)
+        fld_points_a = tmp[0, 0]
+
+        self.logger.info(
+            "Step: "
+            + str(self.currentStep)
+            + ". River cells over bankfull: "
+            + str(fld_points_a)
+        )
+        # Only do mapping of the number of points is larger then 0
+
+        if fld_points_a < 1:
+            self.FloodDepth = ifthen(self.FloodDepth > 1e31, self.FloodDepth)
+            self.distfromriv = self.FloodDepth
+            self.spread = self.FloodDepth
+            self.FloodExtent = cover(boolean(0))
+            self.FloodDepth = scalar(self.FloodExtent)
+        else:
+            # find zones connect to a rivercell > bankfull
+            self.RiverCellZones = subcatchment(self.Ldd, self.water_surf_id)
+            self.spreadRivLev = areaaverage(
+                ifthen(self.water_surf > 0, self.water_surf), self.RiverCellZones
+            )
+            self.spreadRivDemLev = areaaverage(
+                ifthen(self.water_surf > 0, self.Altitude), self.RiverCellZones
+            )
+
+            # add the new first estimate to the old extent
+            self.FloodExtent = cover(
+                boolean(self.FloodExtent), boolean(self.water_surf_id)
+            )
+            # determine the distance to the nearest already flooded celll
+            self.distfromriv = ldddist(
+                self.Ldd, self.FloodExtent, 1
+            )  # is in units of model (degree here)
+
+            # a cell is flooded if the bottomlevel is lower than the waterlevel of the nearest river cell.
+            self.FloodDepth = ifthenelse(
+                self.spreadRivLev - self.Altitude >= 0.0,
+                self.spreadRivLev - self.Altitude,
+                0.0,
+            )
+            # Exclude points too far away()
+            self.FloodDepth = ifthenelse(
+                self.distfromriv > self.maxdist, 0.0, self.FloodDepth
+            )
+            self.FloodDepth = ifthen(self.FloodDepth > 0.0, self.FloodDepth)
+            self.FloodExtent = ifthenelse(self.FloodDepth > 0.0, boolean(1), boolean(0))
+
+            # Keep track of af depth and extent
+            self.MaxDepth = max(self.MaxDepth, cover(self.FloodDepth, 0))
+            self.MaxExt = max(scalar(self.MaxExt), scalar(cover(self.FloodExtent, 0)))
+
+        # reporting of maps is done by the framework (see ini file)
+
 
 # The main function is used to run the program from the command line
 
-def main(argv=None):  
+
+def main(argv=None):
     """
     *Optional*
     
@@ -305,63 +348,72 @@ def main(argv=None):
     module to parse the command line options.
     
     The user can set the caseName, the runDir, the timestep and the configfile.
-    """      
+    """
     global multpars
     caseName = "default"
     runId = "run_default"
-    configfile="wflow_floodmap.ini"
+    configfile = "wflow_floodmap.ini"
     _lastTimeStep = 0
     _firstTimeStep = 0
-    timestepsecs=86400
-    wflow_cloneMap = 'wflow_subcatch.map'
-    runinfoFile="runinfo.xml"
+    timestepsecs = 86400
+    wflow_cloneMap = "wflow_subcatch.map"
+    runinfoFile = "runinfo.xml"
     loglevel = logging.DEBUG
-    
-    # This allows us to use the model both on the command line and to call 
+
+    # This allows us to use the model both on the command line and to call
     # the model usinge main function from another python script.
-    
+
     if argv is None:
         argv = sys.argv[1:]
         if len(argv) == 0:
             usage()
-            return     
+            return
 
-    opts, args = getopt.getopt(argv, 'C:S:T:c:s:R:fIs:l:')
-    
+    opts, args = getopt.getopt(argv, "C:S:T:c:s:R:fIs:l:")
+
     for o, a in opts:
-        if o == '-C': caseName = a
-        if o == '-R': runId = a
-        if o == '-c': configfile = a
-        if o == '-l': exec "loglevel = logging." + a            
-        if o == '-s': timestepsecs = int(a)
-        if o == '-T': _lastTimeStep=int(a)
-        if o == '-S': _firstTimeStep=int(a)
+        if o == "-C":
+            caseName = a
+        if o == "-R":
+            runId = a
+        if o == "-c":
+            configfile = a
+        if o == "-l":
+            exec "loglevel = logging." + a
+        if o == "-s":
+            timestepsecs = int(a)
+        if o == "-T":
+            _lastTimeStep = int(a)
+        if o == "-S":
+            _firstTimeStep = int(a)
 
-        
-    if (len(opts) <=1):
+    if len(opts) <= 1:
         usage()
 
-    
     if _lastTimeStep < _firstTimeStep:
-        print "The starttimestep (" + str(_firstTimeStep) +") is cmaller than the last timestep (" + str(_lastTimeStep) + ")"
+        print "The starttimestep (" + str(
+            _firstTimeStep
+        ) + ") is cmaller than the last timestep (" + str(_lastTimeStep) + ")"
         usage()
 
-        
-    myModel = WflowModel(wflow_cloneMap, caseName,runId,configfile)
-    dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep,firstTimestep=_firstTimeStep)
-    dynModelFw.createRunId(NoOverWrite=False,level=loglevel) 
+    myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile)
+    dynModelFw = wf_DynamicFramework(
+        myModel, _lastTimeStep, firstTimestep=_firstTimeStep
+    )
+    dynModelFw.createRunId(NoOverWrite=False, level=loglevel)
     for o, a in opts:
-        if o == '-I': configset(myModel.config,'model','reinit','1',overwrite=True) 
-        if o == '-s': configset(myModel.config,'model','timestepsecs',a,overwrite=True)
- 
-    
+        if o == "-I":
+            configset(myModel.config, "model", "reinit", "1", overwrite=True)
+        if o == "-s":
+            configset(myModel.config, "model", "timestepsecs", a, overwrite=True)
+
     dynModelFw._runInitial()
     dynModelFw._runResume()
-    #dynModelFw._runDynamic(0,0)
+    # dynModelFw._runDynamic(0,0)
     dynModelFw._runDynamic(_firstTimeStep, _lastTimeStep)
     dynModelFw._runSuspend()
     dynModelFw._wf_shutdown()
-    
+
 
 if __name__ == "__main__":
     main()

@@ -18,7 +18,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
 # $Rev:: 904           $:  Revision of last commit
 # $Author:: schelle    $:  Author of last commit
 # $Date:: 2014-01-13 1#$:  Date of last commit
@@ -61,11 +60,7 @@ import getopt
 import numpy as np
 
 
-
-
-
-
-def correctrad(Day,Hour,Lat,Lon,Slope,Aspect,Altitude,Altitude_UnitLatLon):
+def correctrad(Day, Hour, Lat, Lon, Slope, Aspect, Altitude, Altitude_UnitLatLon):
     """ 
     Determines radiation over a DEM assuming clear sky for a specified hour of
     a day
@@ -88,14 +83,14 @@ def correctrad(Day,Hour,Lat,Lon,Slope,Aspect,Altitude,Altitude_UnitLatLon):
     :return Shade: Map with shade (0) or no shade (1) pixels
     """
 
-    Sc  = 1367.0          # Solar constant (Gates, 1980) [W/m2]
-    Trans   = 0.6             # Transmissivity tau (Gates, 1980)    
+    Sc = 1367.0  # Solar constant (Gates, 1980) [W/m2]
+    Trans = 0.6  # Transmissivity tau (Gates, 1980)
     pi = 3.1416
-    a = pow(100,5.256)
-    #report(a,"zz.map")
+    a = pow(100, 5.256)
+    # report(a,"zz.map")
 
-    AtmPcor = pow(((288.0-0.0065*Altitude)/288.0),5.256)
-    #Lat = Lat * pi/180
+    AtmPcor = pow(((288.0 - 0.0065 * Altitude) / 288.0), 5.256)
+    # Lat = Lat * pi/180
     ##########################################################################
     # Calculate Solar Angle and correct radiation ############################
     ##########################################################################
@@ -105,55 +100,80 @@ def correctrad(Day,Hour,Lat,Lon,Slope,Aspect,Altitude,Altitude_UnitLatLon):
     # HourAng :hour angle [-] of sun during day
     # SolAlt  :solar altitude [deg], height of sun above horizon
     # SolDec  = -23.4*cos(360*(Day+10)/365);
-    # Now added a new function that should work on all latitudes! 
-    #theta    =(Day-1)*2 * pi/365  # day expressed in radians
-    theta    =(Day-1)*360.0/365.0  # day expressed in degrees
-     
-    SolDec =180/pi *  (0.006918-0.399912 * cos(theta)+0.070257 * sin(theta) -  0.006758 * cos(2*theta)+0.000907 * sin(2*theta) -  0.002697 *  cos(3*theta)+0.001480 * sin(3*theta))
-    
-    #HourAng = 180/pi * 15*(Hour-12.01)
-    HourAng = 15.0*(Hour-12.01) 
-    SolAlt  = scalar(asin(scalar(sin(Lat)*sin(SolDec)+cos(Lat)*cos(SolDec)*cos(HourAng))))
-    
-    # Solar azimuth                    
+    # Now added a new function that should work on all latitudes!
+    # theta    =(Day-1)*2 * pi/365  # day expressed in radians
+    theta = (Day - 1) * 360.0 / 365.0  # day expressed in degrees
+
+    SolDec = (
+        180
+        / pi
+        * (
+            0.006918
+            - 0.399912 * cos(theta)
+            + 0.070257 * sin(theta)
+            - 0.006758 * cos(2 * theta)
+            + 0.000907 * sin(2 * theta)
+            - 0.002697 * cos(3 * theta)
+            + 0.001480 * sin(3 * theta)
+        )
+    )
+
+    # HourAng = 180/pi * 15*(Hour-12.01)
+    HourAng = 15.0 * (Hour - 12.01)
+    SolAlt = scalar(
+        asin(scalar(sin(Lat) * sin(SolDec) + cos(Lat) * cos(SolDec) * cos(HourAng)))
+    )
+
+    # Solar azimuth
     # ----------------------------
     # SolAzi  :angle solar beams to N-S axes earth [deg]
-    SolAzi = scalar(acos((sin(SolDec)*cos(Lat)-cos(SolDec)* sin(Lat)*cos(HourAng))/cos(SolAlt)))
+    SolAzi = scalar(
+        acos(
+            (sin(SolDec) * cos(Lat) - cos(SolDec) * sin(Lat) * cos(HourAng))
+            / cos(SolAlt)
+        )
+    )
     SolAzi = ifthenelse(Hour <= 12, SolAzi, 360 - SolAzi)
-    
 
     # Surface azimuth
     # ----------------------------
     # cosIncident :cosine of angle of incident; angle solar beams to angle surface
-    cosIncident = sin(SolAlt)*cos(Slope)+cos(SolAlt)*sin(Slope)*cos(SolAzi-Aspect)
-    # Fro flat surface..  
+    cosIncident = sin(SolAlt) * cos(Slope) + cos(SolAlt) * sin(Slope) * cos(
+        SolAzi - Aspect
+    )
+    # Fro flat surface..
     FlatLine = spatial(scalar(0.00001))
     FlatSpect = spatial(scalar(0.0000))
-    cosIncidentFlat = sin(SolAlt)*cos(FlatLine)+cos(SolAlt)*sin(FlatLine)*cos(SolAzi-FlatSpect)
-    # Fro flat surface..    
-    #cosIncident = sin(SolAlt) + cos(SolAzi-Aspect)
-
+    cosIncidentFlat = sin(SolAlt) * cos(FlatLine) + cos(SolAlt) * sin(FlatLine) * cos(
+        SolAzi - FlatSpect
+    )
+    # Fro flat surface..
+    # cosIncident = sin(SolAlt) + cos(SolAzi-Aspect)
 
     # Critical angle sun
     # ----------------------------
-    # HoriAng  :tan maximum angle over DEM in direction sun, 0 if neg 
+    # HoriAng  :tan maximum angle over DEM in direction sun, 0 if neg
     # CritSun  :tan of maximum angle in direction solar beams
     # Shade    :cell in sun 1, in shade 0
     # NOTE: for a changing DEM in time use following 3 statements and put a #
     #       for the 4th CritSun statement
-    HoriAng   = cover(horizontan(Altitude_UnitLatLon,directional(SolAzi)),0)
-    #HoriAng   = horizontan(Altitude,directional(SolAzi))
-    HoriAng   = ifthenelse(HoriAng < 0, scalar(0), HoriAng)
-    CritSun   = ifthenelse(SolAlt > 90, scalar(0), scalar(atan(HoriAng)))
-    Shade   = SolAlt > CritSun
-    #Shade = spatial(boolean(1))
+    HoriAng = cover(horizontan(Altitude_UnitLatLon, directional(SolAzi)), 0)
+    # HoriAng   = horizontan(Altitude,directional(SolAzi))
+    HoriAng = ifthenelse(HoriAng < 0, scalar(0), HoriAng)
+    CritSun = ifthenelse(SolAlt > 90, scalar(0), scalar(atan(HoriAng)))
+    Shade = SolAlt > CritSun
+    # Shade = spatial(boolean(1))
     # Radiation outer atmosphere
     # ----------------------------
-    #report(HoriAng,"hor.map")
+    # report(HoriAng,"hor.map")
 
-    OpCorr = Trans**((sqrt(1229+(614*sin(SolAlt))**2) -614*sin(SolAlt))*AtmPcor)    # correction for air masses [-] 
-    Sout   = Sc*(1+0.034*cos(360*Day/365.0)) # radiation outer atmosphere [W/m2]
-    Snor   = Sout*OpCorr                   # rad on surface normal to the beam [W/m2]
+    OpCorr = Trans ** (
+        (sqrt(1229 + (614 * sin(SolAlt)) ** 2) - 614 * sin(SolAlt)) * AtmPcor
+    )  # correction for air masses [-]
+    Sout = Sc * (
+        1 + 0.034 * cos(360 * Day / 365.0)
+    )  # radiation outer atmosphere [W/m2]
+    Snor = Sout * OpCorr  # rad on surface normal to the beam [W/m2]
 
     # Radiation at DEM
     # ----------------------------
@@ -163,38 +183,55 @@ def correctrad(Day,Hour,Lat,Lon,Slope,Aspect,Altitude,Altitude_UnitLatLon):
     # Radiation :avg of Stot(Hour) and Stot(Hour-HourStep)
     # NOTE: PradM only valid for HourStep & DayStep = 1
 
-    
-    SdirCor   = ifthenelse(Snor*cosIncident*scalar(Shade)<0,0.0,Snor*cosIncident*scalar(Shade))
-    Sdir   = ifthenelse(Snor*cosIncident<0,0.0,Snor*cosIncident)
-    SdirFlat   = ifthenelse(Snor*cosIncidentFlat<0,0.0,Snor*cosIncidentFlat)
-    Sdiff  = ifthenelse(Sout*(0.271-0.294*OpCorr)*sin(SolAlt)<0, 0.0, Sout*(0.271-0.294*OpCorr)*sin(SolAlt))
-    #AtmosDiffFrac = ifthenelse(Sdir > 0, Sdiff/Sdir, 1)
-    Shade = ifthenelse(Sdir <=0, 0,Shade)
+    SdirCor = ifthenelse(
+        Snor * cosIncident * scalar(Shade) < 0, 0.0, Snor * cosIncident * scalar(Shade)
+    )
+    Sdir = ifthenelse(Snor * cosIncident < 0, 0.0, Snor * cosIncident)
+    SdirFlat = ifthenelse(Snor * cosIncidentFlat < 0, 0.0, Snor * cosIncidentFlat)
+    Sdiff = ifthenelse(
+        Sout * (0.271 - 0.294 * OpCorr) * sin(SolAlt) < 0,
+        0.0,
+        Sout * (0.271 - 0.294 * OpCorr) * sin(SolAlt),
+    )
+    # AtmosDiffFrac = ifthenelse(Sdir > 0, Sdiff/Sdir, 1)
+    Shade = ifthenelse(Sdir <= 0, 0, Shade)
 
     # Stot   = cover(Sdir+Sdiff,windowaverage(Sdir+Sdiff,3));     # Rad [W/m2]
-    Stot   = Sdir + Sdiff                                             # Rad [W/m2]
-    StotCor   = SdirCor + Sdiff                                   # Rad [W/m2]
+    Stot = Sdir + Sdiff  # Rad [W/m2]
+    StotCor = SdirCor + Sdiff  # Rad [W/m2]
     StotFlat = SdirFlat + Sdiff
-    
-    
-     
+
     return StotCor, StotFlat, Shade, SdirCor, SdirFlat
 
 
-def GenRadMaps(SaveDir,Lat,Lon,Slope,Aspect,Altitude,DegreeDem,logje,start=1,end=2,interval=60,shour=1,ehour=23):
+def GenRadMaps(
+    SaveDir,
+    Lat,
+    Lon,
+    Slope,
+    Aspect,
+    Altitude,
+    DegreeDem,
+    logje,
+    start=1,
+    end=2,
+    interval=60,
+    shour=1,
+    ehour=23,
+):
     """ 
     Generates daily radiation maps for a whole year.
     It does so by running correctrad for a whole year with hourly
     steps and averaging this per day.
     """
 
-    Intperday = 1440./interval
+    Intperday = 1440. / interval
     Starthour = shour
     EndHour = ehour
-    Calcsteps = Intperday/24 * 24
-    calchours = np.arange(Starthour,EndHour,24/Intperday)
+    Calcsteps = Intperday / 24 * 24
+    calchours = np.arange(Starthour, EndHour, 24 / Intperday)
 
-    for Day in range(start,end+1):
+    for Day in range(start, end + 1):
         avgrad = 0.0 * Altitude
 
         _flat = 0.0 * Altitude
@@ -206,30 +243,34 @@ def GenRadMaps(SaveDir,Lat,Lon,Slope,Aspect,Altitude,DegreeDem,logje,start=1,end
         logje.info("Calulations for day: " + str(Day))
         for Hour in calchours:
             logje.info("Hour: " + str(Hour))
-            crad,  flat, shade, craddir, craddirflat = correctrad(Day,float(Hour),Lat,Lon,Slope,Aspect,Altitude,DegreeDem)
-            avgrad=avgrad + crad
+            crad, flat, shade, craddir, craddirflat = correctrad(
+                Day, float(Hour), Lat, Lon, Slope, Aspect, Altitude, DegreeDem
+            )
+            avgrad = avgrad + crad
             _flat = _flat + flat
-            avshade=avshade + scalar(shade)
+            avshade = avshade + scalar(shade)
             cordir = cordir + craddir
             flatdir = flatdir + craddirflat
 
             nrr = "%03d" % id
-            #report(crad,"tt000000." + nrr)
-            #report(shade,"sh000000." + nrr)
-            #report(cradnodem,"ttr00000." + nrr)
+            # report(crad,"tt000000." + nrr)
+            # report(shade,"sh000000." + nrr)
+            # report(cradnodem,"ttr00000." + nrr)
             id = id + 1
-        
+
         nr = "%0.3d" % Day
-        report(avgrad/Calcsteps,SaveDir + "/COR00000." + nr)
-        report(avshade,SaveDir + "/SHADE000." + nr)
-        report(_flat/Calcsteps,SaveDir + "/FLAT0000." + nr)
-        report(cordir/Calcsteps,SaveDir + "/CORDIR00." + nr)
-        report(flatdir/Calcsteps,SaveDir + "/FLATDIR0." + nr)
-        #report(ifthen((Altitude + 300) > 0.0, cover(avgrad/_flat,1.0)),SaveDir + "/RATI0000." + nr)
+        report(avgrad / Calcsteps, SaveDir + "/COR00000." + nr)
+        report(avshade, SaveDir + "/SHADE000." + nr)
+        report(_flat / Calcsteps, SaveDir + "/FLAT0000." + nr)
+        report(cordir / Calcsteps, SaveDir + "/CORDIR00." + nr)
+        report(flatdir / Calcsteps, SaveDir + "/FLATDIR0." + nr)
+        # report(ifthen((Altitude + 300) > 0.0, cover(avgrad/_flat,1.0)),SaveDir + "/RATI0000." + nr)
+
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args: print msg
+    for msg in args:
+        print msg
     print __doc__
     sys.exit(0)
 
@@ -245,41 +286,52 @@ def main(argv=None):
             usage()
             return
 
-
     try:
-        opts, args = getopt.getopt(argv, 'hD:Mx:y:l:O:S:E:T:s:e:')
+        opts, args = getopt.getopt(argv, "hD:Mx:y:l:O:S:E:T:s:e:")
     except getopt.error, msg:
         usage(msg)
-
 
     thedem = "mydem.map"
     xymetres = False
     lat = 52
     lon = 10
     loglevel = logging.DEBUG
-    outputdir="output_rad"
+    outputdir = "output_rad"
     startday = 1
     endday = 2
     calc_interval = 60
-    shour=1
-    ehour=23
+    shour = 1
+    ehour = 23
 
     for o, a in opts:
-        if o == '-h': usage()
-        if o == '-O': outputdir = a
-        if o == '-D': thedem = a
-        if o == '-M': xymetres = true
-        if o == '-x': lat = int(a)
-        if o == '-y': lon = int(a)
-        if o == '-S': startday = int(a)
-        if o == '-E': endday = int(a)
-        if o == '-T': calc_interval = int(a)
-        if o == '-l': exec "thelevel = logging." + a
-        if o == '-s': shour = int(a)
-        if o == '-e': ehour = int(a)
+        if o == "-h":
+            usage()
+        if o == "-O":
+            outputdir = a
+        if o == "-D":
+            thedem = a
+        if o == "-M":
+            xymetres = true
+        if o == "-x":
+            lat = int(a)
+        if o == "-y":
+            lon = int(a)
+        if o == "-S":
+            startday = int(a)
+        if o == "-E":
+            endday = int(a)
+        if o == "-T":
+            calc_interval = int(a)
+        if o == "-l":
+            exec "thelevel = logging." + a
+        if o == "-s":
+            shour = int(a)
+        if o == "-e":
+            ehour = int(a)
 
-
-    logger = pcr.setlogger("wflow_prepare_rad.log","wflow_prepare_rad",thelevel=loglevel)
+    logger = pcr.setlogger(
+        "wflow_prepare_rad.log", "wflow_prepare_rad", thelevel=loglevel
+    )
     if not os.path.exists(thedem):
         logger.error("Cannot find dem: " + thedem + " exiting.")
         sys.exit(1)
@@ -293,11 +345,11 @@ def main(argv=None):
     logger.debug("Calculating slope and aspect...")
     if xymetres:
         LAT = spatial(scalar(lat))
-        LON= spatial(scalar(lon))
-        Slope = max(0.00001,slope(dem))
+        LON = spatial(scalar(lon))
+        Slope = max(0.00001, slope(dem))
         DEMxyUnits = dem
     else:
-        LAT= ycoordinate(boolean(dem))
+        LAT = ycoordinate(boolean(dem))
         LON = xcoordinate(boolean(dem))
         Slope = slope(dem)
         xl, yl, reallength = pcr.detRealCellLength(dem * 0.0, 0)
@@ -306,11 +358,23 @@ def main(argv=None):
 
     # Get slope in degrees
     Slope = scalar(atan(Slope))
-    Aspect = cover(scalar(aspect(dem)),0.0)
+    Aspect = cover(scalar(aspect(dem)), 0.0)
 
-    GenRadMaps(outputdir,LAT,LON,Slope,Aspect,dem,DEMxyUnits,logger,start=startday,end=endday,interval=calc_interval,shour=shour,ehour=ehour)
-
-
+    GenRadMaps(
+        outputdir,
+        LAT,
+        LON,
+        Slope,
+        Aspect,
+        dem,
+        DEMxyUnits,
+        logger,
+        start=startday,
+        end=endday,
+        interval=calc_interval,
+        shour=shour,
+        ehour=ehour,
+    )
 
 
 if __name__ == "__main__":

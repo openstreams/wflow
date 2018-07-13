@@ -31,22 +31,24 @@ import getopt
 
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
-#import scipy
 
+# import scipy
 
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args: print msg
+    for msg in args:
+        print msg
     print __doc__
     sys.exit(0)
+
 
 class WflowModel(DynamicModel):
     """
     The user defined model class. This is your work!
     """
 
-    def __init__(self, cloneMap,Dir,RunDir,configfile):
+    def __init__(self, cloneMap, Dir, RunDir, configfile):
         """
         *Required*
 
@@ -56,12 +58,11 @@ class WflowModel(DynamicModel):
         """
         DynamicModel.__init__(self)
         setclone(Dir + "/staticmaps/" + cloneMap)
-        self.runId=RunDir
-        self.caseName=Dir
+        self.runId = RunDir
+        self.caseName = Dir
         self.Dir = Dir
         self.configfile = configfile
-        self.HRU = ['unit1', 'unit2']
-
+        self.HRU = ["unit1", "unit2"]
 
     def parameters(self):
         """
@@ -83,11 +84,29 @@ class WflowModel(DynamicModel):
         """
         modelparameters = []
 
-        #Static model parameters
-        modelparameters.append(self.ParamType(name="Altitude",stack="staticmaps/wflow_dem.map",type="staticmap",default=0.0,verbose=False,lookupmaps=[]))
+        # Static model parameters
+        modelparameters.append(
+            self.ParamType(
+                name="Altitude",
+                stack="staticmaps/wflow_dem.map",
+                type="staticmap",
+                default=0.0,
+                verbose=False,
+                lookupmaps=[],
+            )
+        )
 
         # Meteo and other forcing
-        modelparameters.append(self.ParamType(name="Temperature",stack="inmaps/TEMP",type="timeseries",default=10.0,verbose=False,lookupmaps=[]))
+        modelparameters.append(
+            self.ParamType(
+                name="Temperature",
+                stack="inmaps/TEMP",
+                type="timeseries",
+                default=10.0,
+                verbose=False,
+                lookupmaps=[],
+            )
+        )
 
         return modelparameters
 
@@ -107,10 +126,9 @@ class WflowModel(DynamicModel):
 
         :var TSoil: Temperature of the soil [oC]
         """
-        states = ['TSoil']
+        states = ["TSoil"]
 
         return states
-
 
     def supplyCurrentTime(self):
         """
@@ -126,7 +144,9 @@ class WflowModel(DynamicModel):
 
         """
 
-        return self.currentTimeStep() * int(configget(self.config,'model','timestepsecs','86400'))
+        return self.currentTimeStep() * int(
+            configget(self.config, "model", "timestepsecs", "86400")
+        )
 
     def suspend(self):
         """
@@ -145,7 +165,6 @@ class WflowModel(DynamicModel):
         #: function.
         self.wf_suspend(self.Dir + "/outstate/")
 
-
     def initial(self):
 
         """
@@ -163,12 +182,12 @@ class WflowModel(DynamicModel):
         #: in this model but always good to keep in mind.
         setglobaloption("unittrue")
 
-
-        self.timestepsecs = int(configget(self.config,'model','timestepsecs','86400'))
-        self.basetimestep=86400
+        self.timestepsecs = int(
+            configget(self.config, "model", "timestepsecs", "86400")
+        )
+        self.basetimestep = 86400
         self.wf_updateparameters()
         self.logger.info("Starting Dynamic run...")
-
 
     def resume(self):
         """
@@ -189,7 +208,6 @@ class WflowModel(DynamicModel):
             for s in self.stateVariables():
                 exec "self." + s + " = cover(1.0)"
 
-
     def default_summarymaps(self):
         """
         *Optional*
@@ -197,8 +215,7 @@ class WflowModel(DynamicModel):
         Return a default list of variables to report as summary maps in the outsum dir.
         The ini file has more option, including average and sum
         """
-        return ['self.Altitude']
-
+        return ["self.Altitude"]
 
     """
     + Number of HRU;s determined from maps below
@@ -210,21 +227,32 @@ class WflowModel(DynamicModel):
     + use the array_stet mechanisme from the gr4 model
     + Make a method in the main class for each HRU
     """
-    def unit1(self,name):
+
+    def unit1(self, name):
         """
         HRU 1
         """
         print "HRU 1"
-        self.TSoil[name] = self.TSoil + 0.1125 * (self.Temperature - self.TSoil) * self.timestepsecs/self.basetimestep
+        self.TSoil[name] = (
+            self.TSoil
+            + 0.1125
+            * (self.Temperature - self.TSoil)
+            * self.timestepsecs
+            / self.basetimestep
+        )
 
-
-    def unit2(self,name):
+    def unit2(self, name):
         """
         HRU 2
         """
         print "HRU 2"
-        self.TSoil[name] = self.TSoil + 0.1125 * (self.Temperature - self.TSoil) * self.timestepsecs/self.basetimestep
-
+        self.TSoil[name] = (
+            self.TSoil
+            + 0.1125
+            * (self.Temperature - self.TSoil)
+            * self.timestepsecs
+            / self.basetimestep
+        )
 
     def dynamic(self):
         """
@@ -233,17 +261,16 @@ class WflowModel(DynamicModel):
         This is where all the time dependent functions are executed. Time dependent
         output should also be saved here.
         """
-        self.wf_updateparameters() # read the temperature map fo each step (see parameters())
+        self.wf_updateparameters()  # read the temperature map fo each step (see parameters())
         for thisunit in self.HRU:
-            m = getattr(self,thisunit)
+            m = getattr(self, thisunit)
             m()
-
-
 
         # reporting of maps and csv timeseries is done by the framework (see ini file)
 
 
 # The main function is used to run the program from the command line
+
 
 def main(argv=None):
     """
@@ -257,13 +284,13 @@ def main(argv=None):
     global multpars
     caseName = "default"
     runId = "run_default"
-    configfile="wflow_sceleton.ini"
+    configfile = "wflow_sceleton.ini"
     _lastTimeStep = 10
     _firstTimeStep = 1
-    timestepsecs=86400
-    wflow_cloneMap = 'wflow_subcatch.map'
+    timestepsecs = 86400
+    wflow_cloneMap = "wflow_subcatch.map"
 
-    # This allows us to use the model both on the command line and to call 
+    # This allows us to use the model both on the command line and to call
     # the model usinge main function from another python script.
 
     if argv is None:
@@ -272,25 +299,33 @@ def main(argv=None):
             usage()
             return
 
-    opts, args = getopt.getopt(argv, 'C:S:T:c:s:R:')
+    opts, args = getopt.getopt(argv, "C:S:T:c:s:R:")
 
     for o, a in opts:
-        if o == '-C': caseName = a
-        if o == '-R': runId = a
-        if o == '-c': configfile = a
-        if o == '-s': timestepsecs = int(a)
-        if o == '-T': _lastTimeStep=int(a)
-        if o == '-S': _firstTimeStep=int(a)
+        if o == "-C":
+            caseName = a
+        if o == "-R":
+            runId = a
+        if o == "-c":
+            configfile = a
+        if o == "-s":
+            timestepsecs = int(a)
+        if o == "-T":
+            _lastTimeStep = int(a)
+        if o == "-S":
+            _firstTimeStep = int(a)
 
-    if (len(opts) <=1):
+    if len(opts) <= 1:
         usage()
 
-    myModel = WflowModel(wflow_cloneMap, caseName,runId,configfile)
-    dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep,firstTimestep=_firstTimeStep)
-    dynModelFw.createRunId(NoOverWrite=False,level=logging.DEBUG)
+    myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile)
+    dynModelFw = wf_DynamicFramework(
+        myModel, _lastTimeStep, firstTimestep=_firstTimeStep
+    )
+    dynModelFw.createRunId(NoOverWrite=False, level=logging.DEBUG)
     dynModelFw._runInitial()
     dynModelFw._runResume()
-    dynModelFw._runDynamic(_firstTimeStep,_lastTimeStep)
+    dynModelFw._runDynamic(_firstTimeStep, _lastTimeStep)
     dynModelFw._runSuspend()
     dynModelFw._wf_shutdown()
 

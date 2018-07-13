@@ -28,39 +28,40 @@ import getopt
 
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
-#import scipy
 
+# import scipy
 
 
 def usage(*args):
     sys.stdout = sys.stderr
-    for msg in args: print msg
+    for msg in args:
+        print msg
     print __doc__
     sys.exit(0)
 
-class WflowModel(DynamicModel):  
-  """
+
+class WflowModel(DynamicModel):
+    """
   The user defined model class. This is your work!
   """
-  
-  def __init__(self, cloneMap,Dir,RunDir,configfile):
-      """
+
+    def __init__(self, cloneMap, Dir, RunDir, configfile):
+        """
       *Required*
       
       The init function **must** contain what is shown below. Other functionality
       may be added by you if needed.
       
       """
-      DynamicModel.__init__(self)   
-      setclone(Dir + "/staticmaps/" + cloneMap)
-      self.runId=RunDir      
-      self.caseName=Dir
-      self.Dir = Dir
-      self.configfile = configfile
-     
+        DynamicModel.__init__(self)
+        setclone(Dir + "/staticmaps/" + cloneMap)
+        self.runId = RunDir
+        self.caseName = Dir
+        self.Dir = Dir
+        self.configfile = configfile
 
-  def parameters(self):
-      """
+    def parameters(self):
+        """
       List all the parameters (both static and forcing here). Use the wf_updateparameters()
       function to update them in the initial section (static) and the dynamic section for
       dynamic parameters.
@@ -77,18 +78,34 @@ class WflowModel(DynamicModel):
 
       :return: List of modelparameters
       """
-      modelparameters = []
+        modelparameters = []
 
-      #Static model parameters
-      modelparameters.append(self.ParamType(name="Altitude",stack="staticmaps/wflow_dem.map",type="staticmap",default=0.0,lookupmaps=[]))
+        # Static model parameters
+        modelparameters.append(
+            self.ParamType(
+                name="Altitude",
+                stack="staticmaps/wflow_dem.map",
+                type="staticmap",
+                default=0.0,
+                lookupmaps=[],
+            )
+        )
 
-      # Meteo and other forcing
-      modelparameters.append(self.ParamType(name="Temperature",stack="inmaps/TEMP",type="timeseries",default=10.0,lookupmaps=[]))
+        # Meteo and other forcing
+        modelparameters.append(
+            self.ParamType(
+                name="Temperature",
+                stack="inmaps/TEMP",
+                type="timeseries",
+                default=10.0,
+                lookupmaps=[],
+            )
+        )
 
-      return modelparameters
+        return modelparameters
 
-  def stateVariables(self):
-      """ 
+    def stateVariables(self):
+        """ 
       *Required*
       
       Returns a list of state variables that are essential to the model. 
@@ -103,13 +120,12 @@ class WflowModel(DynamicModel):
       
       :var TSoil: Temperature of the soil [oC]
       """
-      states = ['RootingDepth','LAI']
-      
-      return states
-      
-      
-  def supplyCurrentTime(self):
-      """
+        states = ["RootingDepth", "LAI"]
+
+        return states
+
+    def supplyCurrentTime(self):
+        """
       *Optional*
       
       Supplies the current time in seconds after the start of the run
@@ -121,11 +137,13 @@ class WflowModel(DynamicModel):
           - time in seconds since the start of the model run
           
       """
-      
-      return self.currentTimeStep() * int(configget(self.config,'model','timestepsecs','86400'))
-  
-  def suspend(self):
-    """
+
+        return self.currentTimeStep() * int(
+            configget(self.config, "model", "timestepsecs", "86400")
+        )
+
+    def suspend(self):
+        """
       *Required*
       
       Suspends the model to disk. All variables needed to restart the model
@@ -134,17 +152,16 @@ class WflowModel(DynamicModel):
       This function is required. 
       
     """
-        
-    self.logger.info("Saving initial conditions...")
-    #: It is advised to use the wf_suspend() function 
-    #: here which will suspend the variables that are given by stateVariables 
-    #: function.
-    self.wf_suspend(self.Dir + "/outstate/")
 
-      
-  def initial(self):
-      
-    """
+        self.logger.info("Saving initial conditions...")
+        #: It is advised to use the wf_suspend() function
+        #: here which will suspend the variables that are given by stateVariables
+        #: function.
+        self.wf_suspend(self.Dir + "/outstate/")
+
+    def initial(self):
+
+        """
     *Required*
     
     Initial part of the model, executed only once. It reads all static model
@@ -155,19 +172,19 @@ class WflowModel(DynamicModel):
     structure used in the other models.
     
     """
-    #: pcraster option to calculate with units or cells. Not really an issue
-    #: in this model but always good to keep in mind.
-    setglobaloption("unittrue")
+        #: pcraster option to calculate with units or cells. Not really an issue
+        #: in this model but always good to keep in mind.
+        setglobaloption("unittrue")
 
+        self.timestepsecs = int(
+            configget(self.config, "model", "timestepsecs", "86400")
+        )
+        self.basetimestep = 86400
+        self.wf_updateparameters()
+        self.logger.info("Starting Dynamic run...")
 
-    self.timestepsecs = int(configget(self.config,'model','timestepsecs','86400'))
-    self.basetimestep=86400
-    self.wf_updateparameters()
-    self.logger.info("Starting Dynamic run...")
-
-
-  def resume(self):
-    """ 
+    def resume(self):
+        """ 
     *Required*
 
     This function is required. Read initial state maps (they are output of a 
@@ -175,44 +192,44 @@ class WflowModel(DynamicModel):
     setup needed.
     
     """
-    self.logger.info("Reading initial conditions...")
-    #: It is advised to use the wf_resume() function 
-    #: here which pick up the variable save by a call to wf_suspend()
-    try:
-        self.wf_resume(self.Dir + "/instate/")
-    except:
-        self.logger.warn("Cannot load initial states, setting to default")
-        for s in self.stateVariables():
-            exec "self." + s + " = cover(1.0)"
+        self.logger.info("Reading initial conditions...")
+        #: It is advised to use the wf_resume() function
+        #: here which pick up the variable save by a call to wf_suspend()
+        try:
+            self.wf_resume(self.Dir + "/instate/")
+        except:
+            self.logger.warn("Cannot load initial states, setting to default")
+            for s in self.stateVariables():
+                exec "self." + s + " = cover(1.0)"
 
-
-  def default_summarymaps(self):
-      """
+    def default_summarymaps(self):
+        """
       *Optional*
 
       Return a default list of variables to report as summary maps in the outsum dir.
       The ini file has more option, including average and sum
       """
-      return ['self.Altitude']
+        return ["self.Altitude"]
 
-  def dynamic(self):
-      """
+    def dynamic(self):
+        """
       *Required*
       
       This is where all the time dependent functions are executed.
       """
 
-      self.wf_updateparameters() # read the temperature map fo each step (see parameters())
+        self.wf_updateparameters()  # read the temperature map fo each step (see parameters())
 
-      self.LAI = self.LAI * 0.9
-      self.RootingDepth = self.LAI * 0.6
-      
-      # reporting of maps and csv timeseries is done by the framework (see ini file)
-    
+        self.LAI = self.LAI * 0.9
+        self.RootingDepth = self.LAI * 0.6
+
+        # reporting of maps and csv timeseries is done by the framework (see ini file)
+
 
 # The main function is used to run the program from the command line
 
-def main(argv=None):  
+
+def main(argv=None):
     """
     *Optional but needed it you want to run the model from the command line*
     
@@ -220,47 +237,55 @@ def main(argv=None):
     module to parse the command line options.
     
     The user can set the caseName, the runDir, the timestep and the configfile.
-    """      
+    """
     global multpars
     caseName = "default"
     runId = "run_default"
-    configfile="wflow_sceleton.ini"
+    configfile = "wflow_sceleton.ini"
     _lastTimeStep = 10
     _firstTimeStep = 1
-    timestepsecs=86400
-    wflow_cloneMap = 'wflow_subcatch.map'
-    
-    # This allows us to use the model both on the command line and to call 
+    timestepsecs = 86400
+    wflow_cloneMap = "wflow_subcatch.map"
+
+    # This allows us to use the model both on the command line and to call
     # the model usinge main function from another python script.
-    
+
     if argv is None:
         argv = sys.argv[1:]
         if len(argv) == 0:
             usage()
-            return     
+            return
 
-    opts, args = getopt.getopt(argv, 'C:S:T:c:s:R:')
-    
+    opts, args = getopt.getopt(argv, "C:S:T:c:s:R:")
+
     for o, a in opts:
-        if o == '-C': caseName = a
-        if o == '-R': runId = a
-        if o == '-c': configfile = a
-        if o == '-s': timestepsecs = int(a)
-        if o == '-T': _lastTimeStep=int(a)
-        if o == '-S': _firstTimeStep=int(a)
-        
-    if (len(opts) <=1):
+        if o == "-C":
+            caseName = a
+        if o == "-R":
+            runId = a
+        if o == "-c":
+            configfile = a
+        if o == "-s":
+            timestepsecs = int(a)
+        if o == "-T":
+            _lastTimeStep = int(a)
+        if o == "-S":
+            _firstTimeStep = int(a)
+
+    if len(opts) <= 1:
         usage()
-        
-    myModel = WflowModel(wflow_cloneMap, caseName,runId,configfile)
-    dynModelFw = wf_DynamicFramework(myModel, _lastTimeStep,firstTimestep=_firstTimeStep)
-    dynModelFw.createRunId(NoOverWrite=False,level=logging.DEBUG)    
+
+    myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile)
+    dynModelFw = wf_DynamicFramework(
+        myModel, _lastTimeStep, firstTimestep=_firstTimeStep
+    )
+    dynModelFw.createRunId(NoOverWrite=False, level=logging.DEBUG)
     dynModelFw._runInitial()
     dynModelFw._runResume()
-    dynModelFw._runDynamic(_firstTimeStep,_lastTimeStep)
+    dynModelFw._runDynamic(_firstTimeStep, _lastTimeStep)
     dynModelFw._runSuspend()
     dynModelFw._wf_shutdown()
-    
+
 
 if __name__ == "__main__":
     main()
