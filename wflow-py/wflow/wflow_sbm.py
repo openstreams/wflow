@@ -834,7 +834,7 @@ class WflowModel(DynamicModel):
         # Temperature correction poer cell to add
 
         self.TempCor = self.wf_readmap(
-            self.Dir
+            self.Dir + "\\"
             + configget(
                 self.config,
                 "model",
