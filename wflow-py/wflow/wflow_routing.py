@@ -205,7 +205,10 @@ class WflowModel(DynamicModel):
         :var self.SurfaceRunoff: Surface runoff in the kin-wave resrvoir [m^3/s]
         :var self.WaterLevel: Water level in the kin-wave resrvoir [m]
         """
-        states = ["SurfaceRunoff", "WaterLevelCH", "WaterLevelFP", "ReservoirVolume"]
+        states = ["SurfaceRunoff", "WaterLevelCH", "WaterLevelFP"]
+        
+        if hasattr(self, "ReserVoirSimpleLocs"):
+            states.append("ReservoirVolume")
 
         return states
 
@@ -406,15 +409,27 @@ class WflowModel(DynamicModel):
         self.wf_updateparameters()
 
         # Check if we have reservoirs
-        tt = pcr2numpy(self.ReserVoirLocs, 0.0)
-        self.nrres = tt.max()
-        if self.nrres > 0:
-            self.logger.info("A total of " + str(self.nrres) + " reservoirs found.")
-            self.ReserVoirDownstreamLocs = downstream(self.TopoLdd, self.ReserVoirLocs)
+        if hasattr(self, "ReserVoirSimpleLocs"):
+            tt = pcr2numpy(self.ReserVoirSimpleLocs, 0.0)
+            self.nrresSimple = tt.max()
+            self.logger.info("A total of " + str(self.nrresSimple) + " reservoirs found.")
+            areamap = self.reallength * self.reallength
+            res_area = areatotal(spatial(areamap), self.ReservoirSimpleAreas)
+
+            resarea_pnt = ifthen(boolean(self.ReserVoirSimpleLocs), res_area)
+            self.ResSimpleArea = ifthenelse(
+                cover(self.ResSimpleArea, scalar(0.0)) > 0,
+                self.ResSimpleArea,
+                cover(resarea_pnt, scalar(0.0)),
+            )
+
+            self.ReserVoirDownstreamLocs = downstream(self.TopoLdd, self.ReserVoirSimpleLocs)
             self.TopoLddOrg = self.TopoLdd
             self.TopoLdd = lddrepair(
-                cover(ifthen(boolean(self.ReserVoirLocs), ldd(5)), self.TopoLdd)
+                cover(ifthen(boolean(self.ReserVoirSimpleLocs), ldd(5)), self.TopoLdd)
             )
+        else:
+            self.nrresSimple = 0
 
         # Check if we have irrigation areas
         tt = pcr2numpy(self.IrrigationAreas, 0.0)
@@ -608,6 +623,14 @@ class WflowModel(DynamicModel):
         self.Inflow_mapstack = self.Dir + configget(
             self.config, "inputmapstacks", "Inflow", "/inmaps/IF"
         )  # timeseries for rainfall "/inmaps/IF" # in/outflow locations (abstractions)
+      
+        self.P_mapstack = self.Dir + configget(
+            self.config, "inputmapstacks", "Precipitation", "/inmaps/P"
+        )  # timeseries for rainfall
+        
+        self.PET_mapstack = self.Dir + configget(
+            self.config, "inputmapstacks", "EvapoTranspiration", "/inmaps/PET"
+        )  # timeseries for rainfall"/inmaps/PET"          # potential evapotranspiration
 
         # Meteo and other forcing
         modelparameters.append(
@@ -632,62 +655,22 @@ class WflowModel(DynamicModel):
         )
         modelparameters.append(
             self.ParamType(
-                name="ReserVoirLocs",
-                stack="staticmaps/wflow_reservoirlocs.map",
-                type="staticmap",
+                name="Precipitation",
+                stack=self.P_mapstack,
+                type="timeseries",
                 default=0.0,
-                verbose=False,
+                verbose=True,
                 lookupmaps=[],
             )
         )
         modelparameters.append(
             self.ParamType(
-                name="ResTargetFullFrac",
-                stack="intbl/ResTargetFullFrac.tbl",
-                type="tblsparse",
-                default=0.8,
-                verbose=False,
-                lookupmaps=["staticmaps/wflow_reservoirlocs.map"],
-            )
-        )
-        modelparameters.append(
-            self.ParamType(
-                name="ResTargetMinFrac",
-                stack="intbl/ResTargetMinFrac.tbl",
-                type="tblsparse",
-                default=0.4,
-                verbose=False,
-                lookupmaps=["staticmaps/wflow_reservoirlocs.map"],
-            )
-        )
-        modelparameters.append(
-            self.ParamType(
-                name="ResMaxVolume",
-                stack="intbl/ResMaxVolume.tbl",
-                type="tblsparse",
+                name="PotenEvap",
+                stack=self.PET_mapstack,
+                type="timeseries",
                 default=0.0,
-                verbose=False,
-                lookupmaps=["staticmaps/wflow_reservoirlocs.map"],
-            )
-        )
-        modelparameters.append(
-            self.ParamType(
-                name="ResMaxRelease",
-                stack="intbl/ResMaxRelease.tbl",
-                type="tblsparse",
-                default=1.0,
-                verbose=False,
-                lookupmaps=["staticmaps/wflow_reservoirlocs.map"],
-            )
-        )
-        modelparameters.append(
-            self.ParamType(
-                name="ResDemand",
-                stack="intbl/ResDemand.tbl",
-                type="tblsparse",
-                default=1.0,
-                verbose=False,
-                lookupmaps=["staticmaps/wflow_reservoirlocs.map"],
+                verbose=True,
+                lookupmaps=[],
             )
         )
         modelparameters.append(
@@ -731,7 +714,8 @@ class WflowModel(DynamicModel):
             self.WaterLevelFP = self.ZeroMap
             self.SurfaceRunoff = self.ZeroMap
             self.WaterLevel = self.WaterLevelCH + self.WaterLevelFP
-            self.ReservoirVolume = self.ResMaxVolume * self.ResTargetFullFrac
+            if hasattr(self, "ReserVoirSimpleLocs"):
+                self.ReservoirVolume = self.ResMaxVolume * self.ResTargetFullFrac
         else:
             self.logger.info("Setting initial conditions from state files")
             self.wf_resume(os.path.join(self.Dir, self.instate))
@@ -806,18 +790,24 @@ class WflowModel(DynamicModel):
         # The MAx here may lead to watbal error. However, if inwaterMMM becomes < 0, the kinematic wave becomes very slow......
         self.InwaterMM = max(0.0, self.InwaterForcing)
         self.Inwater = self.InwaterMM * self.ToCubic  # m3/s
+        
+        self.Precipitation = max(0.0, self.Precipitation)
 
         # only run the reservoir module if needed
-        if self.nrres > 0:
-            self.ReservoirVolume, self.Outflow, self.ResPercFull, self.DemandRelease = simplereservoir(
+        if self.nrresSimple > 0:
+            self.ReservoirVolume, self.OutflowSR, self.ResPercFull, self.ResPrecipSR, self.ResEvapSR, self.DemandRelease = simplereservoir(
                 self.ReservoirVolume,
                 self.SurfaceRunoff,
+                self.ResSimpleArea,
                 self.ResMaxVolume,
                 self.ResTargetFullFrac,
                 self.ResMaxRelease,
                 self.ResDemand,
                 self.ResTargetMinFrac,
-                self.ReserVoirLocs,
+                self.ReserVoirSimpleLocs,
+                self.Precipitation,
+                self.PotenEvap,
+                self.ReservoirSimpleAreas,
                 timestepsecs=self.timestepsecs,
             )
             self.OutflowDwn = upstream(
