@@ -122,7 +122,7 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
 
         # mappingdir = self.datadir + '\\bmi_mapping\\'
         mappingdir = (
-            os.path.join(self.datadir, self.config.get("IdMapping", "folder")) + "\\"
+            os.path.join(self.datadir, wfbmi.configget(self.config,"IdMapping", "folder", "bmi_mapping")[0]) + "\\"
         )
 
         self.models = configsection(self.config, "models")
