@@ -330,6 +330,9 @@ class WflowModel(DynamicModel):
             "routing.riverbedExchange",
             "routing.avgDischargeShort",
             "routing.subDischarge",
+            "routing.waterBodyStorage",
+            "routing.avgLakeReservoirOutflowLong",
+            "routing.avgLakeReservoirInflowShort",
         ]
 
         if (
