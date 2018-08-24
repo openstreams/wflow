@@ -44,7 +44,6 @@ from wflow.wf_DynamicFramework import configget
 from wflow.wflow_lib import getgridparams
 
 
-
 class Routing(object):
 
     # TODO: remove
@@ -183,7 +182,8 @@ class Routing(object):
         )
 
         # model resolution in arc-degree unit
-        self.cellSizeInArcDeg = vos.getMapAttributes(self.cloneMap, "cellsize")
+        #self.cellSizeInArcDeg = vos.getMapAttributes(self.cloneMap, "cellsize")
+        self.cellSizeInArcDeg = round(getgridparams()[2] * 360000.) / 360000.        
 
         # maximum number of days (timesteps) to calculate long term average flow values (default: 5 years = 5 * 365 days = 1825)
         self.maxTimestepsToAvgDischargeLong = 1825.
