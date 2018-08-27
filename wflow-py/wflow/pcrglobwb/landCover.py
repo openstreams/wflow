@@ -50,6 +50,7 @@ class LandCover(object):
         cloneMap,
         inputDir,
         tmpDir,
+        stateDir,
         usingAllocSegments=False,
     ):
         object.__init__(self)
@@ -57,6 +58,7 @@ class LandCover(object):
         self.cloneMap = cloneMap  # iniItems.cloneMap
         self.tmpDir = tmpDir  # iniItems.tmpDir
         self.inputDir = inputDir  # iniItems.globalOptions['inputDir']
+        self.stateDir = stateDir
         self.landmask = landmask
 
         # number of soil layers:
@@ -1242,7 +1244,7 @@ class LandCover(object):
                 if iniConditions == None:
                     input = self.iniItemsLC[str(var) + "Ini"]
                     vars(self)[var] = vos.readPCRmapClone(
-                        input, self.cloneMap, self.tmpDir, self.inputDir
+                        input, self.cloneMap, self.tmpDir, self.stateDir
                     )
                     vars(self)[var] = pcr.cover(vars(self)[var], 0.0)
                 else:
@@ -1266,7 +1268,7 @@ class LandCover(object):
                 if iniConditions == None:
                     input = self.iniItemsLC[str(var) + "Ini"]
                     vars(self)[var] = vos.readPCRmapClone(
-                        input, self.cloneMap, self.tmpDir, self.inputDir, cover=0.0
+                        input, self.cloneMap, self.tmpDir, self.stateDir, cover=0.0
                     )
                     vars(self)[var] = pcr.cover(vars(self)[var], 0.0)
                 else:

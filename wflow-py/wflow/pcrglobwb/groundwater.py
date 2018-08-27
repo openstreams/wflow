@@ -76,6 +76,9 @@ class Groundwater(object):
         self.inputDir = os.path.join(
             os.path.abspath(Dir), staticmaps
         )  # iniItems.globalOptions['inputDir']
+        self.stateDir = os.path.join(
+            os.path.abspath(Dir), 'instate'
+        )
         self.landmask = landmask
 
         # configuration from the ini file
@@ -733,7 +736,7 @@ class Groundwater(object):
                 configget(iniItems, "groundwaterOptions", "storGroundwaterIni", "0.0"),
                 self.cloneMap,
                 self.tmpDir,
-                self.inputDir,
+                self.stateDir,
             )
             self.avgAbstraction = vos.readPCRmapClone(
                 configget(
@@ -744,7 +747,7 @@ class Groundwater(object):
                 ),
                 self.cloneMap,
                 self.tmpDir,
-                self.inputDir,
+                self.stateDir,
             )
             self.avgAllocation = vos.readPCRmapClone(
                 configget(
@@ -755,7 +758,7 @@ class Groundwater(object):
                 ),
                 self.cloneMap,
                 self.tmpDir,
-                self.inputDir,
+                self.stateDir,
             )
             self.avgAllocationShort = vos.readPCRmapClone(
                 configget(
@@ -766,7 +769,7 @@ class Groundwater(object):
                 ),
                 self.cloneMap,
                 self.tmpDir,
-                self.inputDir,
+                self.stateDir,
             )
             self.avgNonFossilAllocation = vos.readPCRmapClone(
                 configget(
@@ -777,7 +780,7 @@ class Groundwater(object):
                 ),
                 self.cloneMap,
                 self.tmpDir,
-                self.inputDir,
+                self.stateDir,
             )
             self.avgNonFossilAllocationShort = vos.readPCRmapClone(
                 configget(
@@ -788,7 +791,7 @@ class Groundwater(object):
                 ),
                 self.cloneMap,
                 self.tmpDir,
-                self.inputDir,
+                self.stateDir,
             )
 
             # additional initial conditions (needed ONLY for the online coupling between PCR-GLOBWB and MODFLOW))
@@ -802,7 +805,7 @@ class Groundwater(object):
                     iniItems.get("groundwaterOptions", "relativeGroundwaterHeadIni"),
                     self.cloneMap,
                     self.tmpDir,
-                    self.inputDir,
+                    self.stateDir,
                 )
             else:
                 self.relativeGroundwaterHead = self.storGroundwater / self.specificYield
@@ -810,7 +813,7 @@ class Groundwater(object):
                 configget(iniItems, "groundwaterOptions", "baseflowIni", "0.0"),
                 self.cloneMap,
                 self.tmpDir,
-                self.inputDir,
+                self.stateDir,
             )
 
         else:  # during/after spinUp
@@ -862,7 +865,7 @@ class Groundwater(object):
                 iniItems.get("groundwaterOptions", "storGroundwaterFossilIni"),
                 self.cloneMap,
                 self.tmpDir,
-                self.inputDir,
+                self.stateDir,
             )
         #
         if (
