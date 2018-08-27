@@ -131,6 +131,9 @@ class LandSurface(object):
         self.inputDir = os.path.join(
             os.path.abspath(Dir), staticmaps
         )  # iniItems.globalOptions['inputDir']
+        self.stateDir = os.path.join(
+            os.path.abspath(Dir), 'instate'
+        )
         self.landmask = landmask
         self.startTime = startTime
 
@@ -485,6 +488,7 @@ class LandSurface(object):
                 self.cloneMap,
                 self.inputDir,
                 self.tmpDir,
+                self.stateDir,
                 self.usingAllocSegments,
             )
 

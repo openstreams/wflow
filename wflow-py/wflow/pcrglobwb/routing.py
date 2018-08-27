@@ -124,6 +124,9 @@ class Routing(object):
         self.inputDir = os.path.join(
             os.path.abspath(Dir), staticmaps
         )  # iniItems.globalOptions['inputDir']
+        self.stateDir = os.path.join(
+            os.path.abspath(Dir), 'instate'
+        )
 
         # option to activate water balance check
         self.debugWaterBalance = True
@@ -450,44 +453,44 @@ class Routing(object):
                 iniItems.get("routingOptions", "timestepsToAvgDischargeIni"),
                 self.cloneMap,
                 self.tmpDir,
-                self.inputDir,
+                self.stateDir,
             )
 
             self.channelStorage = vos.readPCRmapClone(
                 iniItems.get("routingOptions", "channelStorageIni"),
                 self.cloneMap,
                 self.tmpDir,
-                self.inputDir,
+                self.stateDir,
             )
             self.readAvlChannelStorage = vos.readPCRmapClone(
                 iniItems.get("routingOptions", "readAvlChannelStorageIni"),
                 self.cloneMap,
                 self.tmpDir,
-                self.inputDir,
+                self.stateDir,
             )
             self.avgDischarge = vos.readPCRmapClone(
                 iniItems.get("routingOptions", "avgDischargeLongIni"),
                 self.cloneMap,
                 self.tmpDir,
-                self.inputDir,
+                self.stateDir,
             )
             self.m2tDischarge = vos.readPCRmapClone(
                 iniItems.get("routingOptions", "m2tDischargeLongIni"),
                 self.cloneMap,
                 self.tmpDir,
-                self.inputDir,
+                self.stateDir,
             )
             self.avgBaseflow = vos.readPCRmapClone(
                 iniItems.get("routingOptions", "avgBaseflowLongIni"),
                 self.cloneMap,
                 self.tmpDir,
-                self.inputDir,
+                self.stateDir,
             )
             self.riverbedExchange = vos.readPCRmapClone(
                 iniItems.get("routingOptions", "riverbedExchangeIni"),
                 self.cloneMap,
                 self.tmpDir,
-                self.inputDir,
+                self.stateDir,
             )
 
             # New initial condition variable introduced in the version 2.0.2: avgDischargeShort
@@ -495,7 +498,7 @@ class Routing(object):
                 iniItems.get("routingOptions", "avgDischargeShortIni"),
                 self.cloneMap,
                 self.tmpDir,
-                self.inputDir,
+                self.stateDir,
             )
 
             # Initial conditions needed for kinematic wave methods
@@ -503,7 +506,7 @@ class Routing(object):
                 configget(iniItems, "routingOptions", "subDischargeIni", "0.0"),
                 self.cloneMap,
                 self.tmpDir,
-                self.inputDir,
+                self.stateDir,
             )
 
         else:
@@ -573,7 +576,7 @@ class Routing(object):
                 ),
                 self.cloneMap,
                 self.tmpDir,
-                self.inputDir,
+                self.stateDir,
             )
             self.avgOutflow = vos.readPCRmapClone(
                 configget(
@@ -581,7 +584,7 @@ class Routing(object):
                 ),
                 self.cloneMap,
                 self.tmpDir,
-                self.inputDir,
+                self.stateDir,
             )
             if (
                 configget(iniItems, "routingOptions", "waterBodyStorageIni", "None")
@@ -591,7 +594,7 @@ class Routing(object):
                     iniItems.get("routingOptions", "waterBodyStorageIni"),
                     self.cloneMap,
                     self.tmpDir,
-                    self.inputDir,
+                    self.stateDir,
                 )
                 self.waterBodyStorage = pcr.ifthen(
                     self.landmask, pcr.cover(self.waterBodyStorage, 0.0)
