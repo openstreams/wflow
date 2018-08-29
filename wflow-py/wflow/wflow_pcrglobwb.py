@@ -331,8 +331,8 @@ class WflowModel(DynamicModel):
             "routing.avgDischargeShort",
             "routing.subDischarge",
             "routing.waterBodyStorage",
-            "routing.avgLakeReservoirOutflowLong",
-            "routing.avgLakeReservoirInflowShort",
+            "routing.avgInflow",
+            "routing.avgOutflow",
         ]
 
         if (
@@ -765,7 +765,7 @@ def main(argv=None):
 
     dynModelFw.setupFramework()
     dynModelFw._runInitial()
-    dynModelFw._runResume()
+    #dynModelFw._runResume()
     # dynModelFw._runDynamic(0, 0)
     dynModelFw._runDynamic(_firstTimeStep, _lastTimeStep)
     dynModelFw._runSuspend()
