@@ -3,14 +3,13 @@ name: wflow
 channels:
   - conda-forge
   - defaults
-  - conda-forge/label/dev
 
 dependencies:
   - python=2.7
   - numpy>=1.12
   - scipy>=1.0
   - gdal>=2.2
-  - rasterio=1.0a12
+  - rasterio=1.0
   - fiona>=1.7.11
   - netcdf4=1.3.1
   - pyproj>=1.9
