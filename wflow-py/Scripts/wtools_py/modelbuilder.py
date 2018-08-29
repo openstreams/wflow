@@ -521,13 +521,8 @@ def download_rivers(
 
     r = post_data(SERVER_URL + "/get_rivers", data)
 
-    # download from url
-    url = json.loads(r.text)["url"]
-    r = get_data(url)
-
-    with open(path, "wb") as f:
-        r.raw.decode_content = True
-        shutil.copyfileobj(r.raw, f)
+    with open(path, "w") as f:
+        f.write(r.text)
 
 
 def download_raster(
