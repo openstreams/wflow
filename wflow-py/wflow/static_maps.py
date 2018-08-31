@@ -294,7 +294,7 @@ def main(
         )
     elif (unit_clone == "metre") or (unit_clone == "meter"):
         cellsize_hr = wt.configget(
-            config, "parameters", "highres_metre", 500, datatype="float"
+            config, "parameters", "highres_metre", 50, datatype="float"
         )
 
     cols_hr = int((float(xmax) - float(xmin)) / cellsize_hr + 2)
