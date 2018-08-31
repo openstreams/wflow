@@ -42,6 +42,7 @@ import sys
 import configparser
 import osgeo.gdal as gdal
 from osgeo.gdalconst import *
+import pcraster
 from pcraster import *
 from pcraster.framework import *
 import scipy
@@ -986,7 +987,7 @@ def points_to_map(in_map, xcor, ycor, tolerance):
 
     x = pcr2numpy(xcoordinate(defined(in_map)), numpy.nan)
     y = pcr2numpy(ycoordinate(defined(in_map)), numpy.nan)
-    XX = pcr2numpy(celllength(), 0.0)
+    cell_length = float(celllength())
 
     # simple check to use both floats and numpy arrays
     try:
@@ -1001,8 +1002,8 @@ def points_to_map(in_map, xcor, ycor, tolerance):
             print (n)
         diffx = x - xcor[n]
         diffy = y - ycor[n]
-        col_ = numpy.absolute(diffx) <= (XX[0, 0] * tolerance)  # cellsize
-        row_ = numpy.absolute(diffy) <= (XX[0, 0] * tolerance)  # cellsize
+        col_ = numpy.absolute(diffx) <= (cell_length  * tolerance)  # cellsize
+        row_ = numpy.absolute(diffy) <= (cell_length  * tolerance)  # cellsize
         point = point + numpy2pcr(Scalar, ((col_ * row_) * (n + 1)), numpy.nan)
 
     return ordinal(point)
