@@ -188,6 +188,7 @@ def main(
             )
 
     source = os.path.abspath(source)
+    clone_tif = os.path.join(source, "mask.tif")
     clone_map = os.path.join(source, "mask.map")
     clone_shp = os.path.join(source, "mask.shp")
     clone_prj = os.path.join(source, "mask.prj")
@@ -236,14 +237,14 @@ def main(
         # set clone
         pcr.setclone(clone_map)
         # get the extent from clone.tif
-        xax, yax, clone, fill_value = wt.gdal_readmap(clone_map, "GTiff")
-        trans = wt.get_geotransform(clone_map)
-        extent = wt.get_extent(clone_map)
+        xax, yax, clone, fill_value = wt.gdal_readmap(clone_tif, "GTiff")
+        trans = wt.get_geotransform(clone_tif)
+        extent = wt.get_extent(clone_tif)
         xmin, ymin, xmax, ymax = extent
         zeros = np.zeros(clone.shape)
         ones = pcr.numpy2pcr(pcr.Scalar, np.ones(clone.shape), -9999)
         # get the projection from clone.tif
-        srs = wt.get_projection(clone_map)
+        srs = wt.get_projection(clone_tif)
         unit_clone = srs.GetAttrValue("UNIT").lower()
 
     # READ CONFIG FILE
@@ -293,7 +294,7 @@ def main(
         )
     elif (unit_clone == "metre") or (unit_clone == "meter"):
         cellsize_hr = wt.configget(
-            config, "parameters", "highres_metre", 50, datatype="float"
+            config, "parameters", "highres_metre", 500, datatype="float"
         )
 
     cols_hr = int((float(xmax) - float(xmin)) / cellsize_hr + 2)
