@@ -282,7 +282,7 @@ class netcdfoutput:
         end = starttime + dt.timedelta(seconds=timestepsecs * (self.timesteps - 1))
 
         timeList = date_range(starttime, end, timestepsecs)
-        self.timestepbuffer = zeros((self.maxbuf, len(y), len(x)))
+        self.timestepbuffer = zeros((int(self.maxbuf), len(y), len(x)))
         self.bufferdirty = True
         self.bufflst = {}
 
@@ -779,7 +779,7 @@ class netcdfinput:
                 )
                 ncindex = pos
 
-        if self.alldat.has_key(var):
+        if var in self.alldat:
             # if ncindex == self.lstep:  # Read new block of data in mem
             #    logging.debug("reading new netcdf data block starting at: " + str(ncindex))
             #    for vars in self.alldat:
