@@ -17,6 +17,7 @@ import wflow.wflow_routing
 import wflow.wflow_floodmap
 import wflow.wflow_lintul
 import wflow.wflow_sceleton
+import wflow.wflow_w3ra
 
 from pcraster import *
 import configparser
@@ -28,6 +29,7 @@ wflow_models = [
     wflow.wflow_floodmap,
     wflow.wflow_lintul,
     wflow.wflow_sceleton,
+    wflow.wflow_w3ra,
 ]
 
 
