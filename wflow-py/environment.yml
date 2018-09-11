@@ -6,22 +6,22 @@ channels:
 
 dependencies:
   - python=2.7
-  - numpy=1
-  - scipy=1
-  - gdal=2
-  - rasterio=1
-  - fiona=1
+  - numpy>=1.12
+  - scipy>=1.0
+  - gdal>=2.2
+  - rasterio=1.0
+  - fiona>=1.7.11
   - netcdf4=1.3.1
-  - pyproj=1
-  - thrift=0.11
-  - pyinstaller=3.3
-  - versioneer=0.18
-  - pywin32=221
-  - setuptools=38
-  - geojson=2
-  - requests=2
-  - click=6
-  - shapely=1
-  - pip=9
+  - pyproj>=1.9
+  - thrift>=0.11
+  - pyinstaller>=3.3
+  - versioneer>=0.18
+  - pywin32>=221
+  - setuptools>=38
+  - geojson>=2.3
+  - requests>=2.18
+  - click>=6.7
+  - shapely>=1.6
+  - pip>=9.0.3
   - pip:
     - bmi-python
