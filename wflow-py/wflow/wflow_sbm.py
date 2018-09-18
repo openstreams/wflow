@@ -1974,7 +1974,7 @@ class WflowModel(DynamicModel):
         self.ActRootingDepth = min(self.SoilThickness * 0.99, self.ActRootingDepth)
 
         # Split between bare soil/open water and vegetation
-        self.potsoilopenwaterevap = (1.0 - self.CanopyGapFraction) * self.PotTransSoil
+        self.potsoilopenwaterevap = self.CanopyGapFraction * self.PotTransSoil
         self.PotTrans = self.PotTransSoil - self.potsoilopenwaterevap
         self.PotTrans0 = self.PotTrans
 
