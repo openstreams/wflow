@@ -1973,6 +1973,10 @@ class WflowModel(DynamicModel):
         # Limit rootingdepth (if set externally)
         self.ActRootingDepth = min(self.SoilThickness * 0.99, self.ActRootingDepth)
 
+        # Split between bare soil/open water and vegetation
+        self.potsoilopenwaterevap = self.CanopyGapFraction * self.PotTransSoil
+        self.PotTrans = self.PotTransSoil - self.potsoilopenwaterevap
+        self.PotTrans0 = self.PotTrans
 
         # Determine Open Water EVAP based on waterfrac. Later subtract this from water that
         # enters the Kinematic wave
