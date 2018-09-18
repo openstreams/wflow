@@ -257,9 +257,9 @@ def soilevap_SBM(
         * min(
             1.0,
             ifthenelse(
-                zi <= UStoreLayerThickness[0],
+                zi >= UStoreLayerThickness[0],
                 UStoreLayerDepth[0] / (UStoreLayerThickness[0] * (thetaS - thetaR)),
-                zi / ((zi + 1.0) * (thetaS - thetaR)),
+                UStoreLayerDepth[0] / ((zi + 1.0) * (thetaS - thetaR)),
             ),
         ),
     )
@@ -1973,20 +1973,15 @@ class WflowModel(DynamicModel):
         # Limit rootingdepth (if set externally)
         self.ActRootingDepth = min(self.SoilThickness * 0.99, self.ActRootingDepth)
 
-        # Split between bare soil/open water and vegetation
-        self.potsoilopenwaterevap = self.CanopyGapFraction * self.PotTransSoil
-        self.PotTrans = self.PotTransSoil - self.potsoilopenwaterevap
-        self.PotTrans0 = self.PotTrans
 
         # Determine Open Water EVAP based on waterfrac. Later subtract this from water that
         # enters the Kinematic wave
-        self.RestEvap = self.potsoilopenwaterevap
-        # self.RestEvap = (self.PotTrans - self.Transpiration) + self.potsoilopenwaterevap
         self.ActEvapOpenWater = min(
-            self.WaterLevel * 1000.0 * self.WaterFrac, self.WaterFrac * self.RestEvap
+            self.WaterLevel * 1000.0 * self.WaterFrac, self.WaterFrac *  self.PotTransSoil
         )
-        self.RestEvap = self.RestEvap - self.ActEvapOpenWater
-        self.RE = self.RestEvap
+        
+        self.RestEvap = self.PotTransSoil - self.ActEvapOpenWater
+
 
         self.ActEvapPond = self.ZeroMap
         if self.nrpaddyirri > 0:
@@ -2007,8 +2002,9 @@ class WflowModel(DynamicModel):
             self.SumThickness = self.UStoreLayerThickness[n] + self.SumThickness
 
         self.SaturationDeficit = self.SoilWaterCapacity - self.SatWaterDepth
-
-        # self.RestPotEvap, self.SatWaterDepth, self.ActEvapSat = actEvap_sat_SBM(self.ActRootingDepth, self.zi, self.SatWaterDepth, self.PotTrans, self.rootdistpar)
+        
+        # evap available for soil evaporation
+        self.RestEvap = self.RestEvap * self.CanopyGapFraction
 
         self.ActEvapUStore = self.ZeroMap
 
@@ -2058,6 +2054,8 @@ class WflowModel(DynamicModel):
                     self.soilevap = min(self.soilevap, self.UStoreLayerDepth[n])
 
                 self.UStoreLayerDepth[n] = self.UStoreLayerDepth[n] - self.soilevap
+                
+                #evap available for transpiration
                 self.PotTrans = (
                     self.PotTransSoil - self.soilevap - self.ActEvapOpenWater
                 )
