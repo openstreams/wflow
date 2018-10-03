@@ -1996,7 +1996,7 @@ class WflowModel(DynamicModel):
             # Find layer with  zi level
             self.ZiLayer = ifthenelse(
                 self.zi > self.SumThickness,
-                min(self.ZeroMap + n, self.nrLayersMap - 1),
+                min(self.ZeroMap + float(n), self.nrLayersMap - 1),
                 self.ZiLayer,
             )
 
@@ -2020,12 +2020,12 @@ class WflowModel(DynamicModel):
             l_Thickness.append(self.SumThickness)
             # Height of unsat zone in layer n
             self.L = ifthenelse(
-                self.ZiLayer == n,
-                ifthenelse(self.ZeroMap + n > 0, self.zi - l_Thickness[n - 1], self.zi),
+                self.ZiLayer == float(n),
+                ifthenelse(self.ZeroMap + float(n) > 0, self.zi - l_Thickness[n - 1], self.zi),
                 self.UStoreLayerThickness[n],
             )
             # Depth for calculation of vertical fluxes (bottom layer or zi)
-            self.z = ifthenelse(self.ZiLayer == n, self.zi, self.SumThickness)
+            self.z = ifthenelse(self.ZiLayer == float(n), self.zi, self.SumThickness)
             self.storage.append(self.L * (self.thetaS - self.thetaR))
 
             # First layer is treated differently than layers below first layer
@@ -2076,7 +2076,7 @@ class WflowModel(DynamicModel):
                     self.RestPotEvap,
                     self.maskLayer[n],
                     self.ZeroMap,
-                    self.ZeroMap + n,
+                    self.ZeroMap + float(n),
                     self.ActEvapUStore,
                     self.c[n],
                     self.L,
@@ -2208,7 +2208,7 @@ class WflowModel(DynamicModel):
         Ksat = self.ZeroMap
         for n in arange(0, len(self.UStoreLayerThickness)):
             Ksat = Ksat + ifthenelse(
-                self.ZiLayer == n,
+                self.ZiLayer == float(n),
                 self.KsatVerFrac[n] * self.KsatVer * exp(-self.f * self.zi),
                 0.0,
             )
@@ -2220,13 +2220,13 @@ class WflowModel(DynamicModel):
         for n in arange(0, len(self.UStoreLayerThickness)):
             if self.TransferMethod == 1:
                 self.L = ifthen(
-                    self.ZiLayer == n,
+                    self.ZiLayer == float(n),
                     ifthenelse(
-                        self.ZeroMap + n > 0, self.zi - l_Thickness[n - 1], self.zi
+                        self.ZeroMap + float(n) > 0, self.zi - l_Thickness[n - 1], self.zi
                     ),
                 )
                 self.Transfer = self.Transfer + ifthenelse(
-                    self.ZiLayer == n,
+                    self.ZiLayer == float(n),
                     min(
                         cover(self.UStoreLayerDepth[n], 0.0),
                         ifthenelse(
@@ -2282,7 +2282,7 @@ class WflowModel(DynamicModel):
         for n in arange(len(self.UStoreLayerThickness) - 1, -1, -1):
             # self.UStoreLayerDepth[n] = ifthenelse(self.ZiLayer<=n, self.UStoreLayerDepth[n] + self.ToExtra,self.UStoreLayerDepth[n])
             diff = ifthenelse(
-                self.ZiLayer == n,
+                self.ZiLayer == float(n),
                 max(
                     0.0,
                     (cover(self.UStoreLayerDepth[n], 0.0) - self.Transfer)
@@ -2333,12 +2333,12 @@ class WflowModel(DynamicModel):
         for n in arange(len(self.UStoreLayerThickness) - 1, -1, -1):
 
             L = ifthenelse(
-                self.ZiLayer == n,
-                ifthenelse(self.ZeroMap + n > 0, self.zi - l_Thickness[n - 1], self.zi),
+                self.ZiLayer == float(n),
+                ifthenelse(self.ZeroMap + float(n) > 0, self.zi - l_Thickness[n - 1], self.zi),
                 self.UStoreLayerThickness[n],
             )
             thisLayer = ifthenelse(
-                self.ZiLayer <= n,
+                self.ZiLayer <= float(n),
                 min(
                     ToAdd,
                     max(
@@ -2348,7 +2348,7 @@ class WflowModel(DynamicModel):
                 0.0,
             )
             self.UStoreLayerDepth[n] = ifthenelse(
-                self.ZiLayer <= n,
+                self.ZiLayer <= float(n),
                 self.UStoreLayerDepth[n] + thisLayer,
                 self.UStoreLayerDepth[n],
             )
@@ -2375,7 +2375,7 @@ class WflowModel(DynamicModel):
 
         for n in arange(0, len(self.UStoreLayerThickness)):
             self.UStoreLayerDepth[n] = ifthenelse(
-                self.ZiLayer == n,
+                self.ZiLayer == float(n),
                 self.UStoreLayerDepth[n] - self.Transfer,
                 self.UStoreLayerDepth[n],
             )
@@ -2491,7 +2491,7 @@ class WflowModel(DynamicModel):
             # Find layer with  zi level
             self.ZiLayer = ifthenelse(
                 self.zi > self.SumThickness,
-                min(self.ZeroMap + n, self.nrLayersMap - 1),
+                min(self.ZeroMap + float(n), self.nrLayersMap - 1),
                 self.ZiLayer,
             )
 
@@ -2513,9 +2513,9 @@ class WflowModel(DynamicModel):
             # Height of unsat zone in layer n
             self.L.append(
                 ifthenelse(
-                    self.ZiLayer == n,
+                    self.ZiLayer == float(n),
                     ifthenelse(
-                        self.ZeroMap + n > 0, self.zi - l_Thickness[n - 1], self.zi
+                        self.ZeroMap + float(n) > 0, self.zi - l_Thickness[n - 1], self.zi
                     ),
                     self.UStoreLayerThickness[n],
                 )
@@ -2910,7 +2910,7 @@ class WflowModel(DynamicModel):
         for n in arange(len(self.UStoreLayerThickness)):
 
             fracRoot = ifthenelse(
-                self.ZiLayer > n,
+                self.ZiLayer > float(n),
                 min(
                     1.0,
                     max(
@@ -2933,7 +2933,7 @@ class WflowModel(DynamicModel):
 
             self.vwc.append(
                 ifthenelse(
-                    self.ZiLayer > n,
+                    self.ZiLayer > float(n),
                     self.UStoreLayerDepth[n] / self.UStoreLayerThickness[n]
                     + self.thetaR,
                     (

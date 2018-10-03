@@ -33,8 +33,8 @@ import logging
 def usage(*args):
     sys.stdout = sys.stderr
     """Way"""
-    for msg in args: print msg
-    print __doc__
+    for msg in args: print(msg)
+    print(__doc__)
     sys.exit(0)
 
 
@@ -56,13 +56,13 @@ def main(argv=None):
     ########################################################################
     try:
         opts, args = getopt.getopt(argv, 'c:l:')
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(msg)
 
     loglevel=logging.WARN
     for o, a in opts:
         if o == '-c': configfile = a
-        if o == '-l': exec "loglevel = logging." + a
+        if o == '-l': exec("loglevel = logging." + a)
 
 
 

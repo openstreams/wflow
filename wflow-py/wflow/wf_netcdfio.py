@@ -335,9 +335,10 @@ class netcdfoutput:
         # timeObj = netCDF4.num2date(time[:], units=time.units, calendar=time.calendar)
 
         idx = timestep - 1
-
-        buffreset = (idx + 1) % self.maxbuf
-        bufpos = (idx) % self.maxbuf
+        
+        buffreset = int((idx + 1) % self.maxbuf)
+        bufpos = int((idx) % self.maxbuf)
+                
 
         try:
             nc_var = self.nc_trg.variables[var]

@@ -13,7 +13,6 @@ and interrogate the model.
 # TODO: Remove command-line options from models such as -F that is now in the ini
 # TODO: Fix timestep not forewarding in BMI runs (for reading writing maps)
 
-import datetime
 import configparser
 
 from wflow.wf_netcdfio import *
@@ -31,6 +30,7 @@ from pcraster.framework import *
 from .wflow_lib import *
 import time
 import calendar
+import datetime
 
 from wflow import __version__
 from functools import reduce
@@ -459,7 +459,7 @@ class wf_OutputTimeSeriesArea:
             bufsize = 1  # Implies line buffered
             self.fnamelist.append(fname)
 
-            self.ofile.append(open(fname, "wb", bufsize))
+            self.ofile.append(open(fname, "w", bufsize))
             if self.oformat == "csv":  # Always the case
                 self.writer.append(csv.writer(self.ofile[-1]))
                 self.ofile[-1].write("# Timestep,")
@@ -475,7 +475,8 @@ class wf_OutputTimeSeriesArea:
                 print("Not implemented yet")
 
         self.steps = self.steps + 1
-        tmpvar = scalar(spatial(variable))
+        
+        tmpvar = spatial(scalar(variable))
         if self.areafunction == "average":
             self.resmap = areaaverage(tmpvar, nominal(self.area))
         elif self.areafunction == "total":
@@ -838,6 +839,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         """
         return cover(timeinputscalar(tssfile, nominal(areamap)), default)
 
+
     def _wf_shutdown(self):
         """
         Makes sure the logging closed
@@ -849,9 +851,11 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             os.path.join(
                 self._userModel().caseName, self._userModel().runId, "configofrun.ini"
             ),
-            "wb",
+            "w",
         )
         self._userModel().config.write(fp)
+        
+        fp.close()
 
         for key, value in self.oscv.items():
             value.closeall()
@@ -1729,7 +1733,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             try:
                 fname = os.path.join(directory, var).replace("\\", "/") + ".map"
                 execstr = "savevar = self._userModel()." + var
-                exec(execstr)
+                savevar = eval("self._userModel()." + var)
 
                 try:  # Check if we have a list of maps
                     b = len(savevar)
@@ -1741,7 +1745,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                             )
                             + ".map"
                         )
-                        # report(z,fname)
+
                         self.reportState(
                             cover(z), fname, style=1, gzipit=False, longname=fname
                         )
@@ -1771,7 +1775,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         for a in self.samplenamecsv:
             found = 1
             try:
-                exec("tmpvar = " + self.varnamecsv[a])
+                tmpvar = eval(self.varnamecsv[a])
             except:
                 found = 0
                 self.logger.fatal(
@@ -1801,7 +1805,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         for a in toprint:
             b = a.replace("self.", "")
             try:
-                exec("pcrmap = self._userModel()." + b)
+                pcrmap = eval("self._userModel()." + b)
                 # report( pcrmap , os.path.join(self._userModel().Dir, self._userModel().runId, "outsum", self._userModel().config.get("summary",a)) )
                 self.reportStatic(
                     pcrmap,
@@ -2908,15 +2912,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         path = name
 
         if self.outputFormat == 1:
-            if sys.version_info[0] == 2 and sys.version_info[1] >= 6:
-                try:
-                    import pcraster as PCRaster
-                except:
-                    import PCRaster as PCRaster
-            else:
-                import PCRaster
+            
             if not hasattr(self, "NcOutputStatic"):
-                PCRaster.report(variable, path)
+                report(variable, path)
                 if gzipit:
                     Gzip(path, storePath=True)
             else:
@@ -2944,15 +2942,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         path = name
 
         if self.outputFormat == 1:
-            if sys.version_info[0] == 2 and sys.version_info[1] >= 6:
-                try:
-                    import pcraster as PCRaster
-                except:
-                    import PCRaster as PCRaster
-            else:
-                import PCRaster
             if not hasattr(self, "NcOutputState"):
-                PCRaster.report(variable, path)
+                report(variable, path)
                 if gzipit:
                     Gzip(path, storePath=True)
             else:
@@ -3340,14 +3331,14 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             # first get basename (last bit of path)
             name = os.path.basename(name)
             if hasattr(self._userModel(), name):
-                return exec("cover(self._userModel()." + name + ",scalar(default))")
+                return eval("cover(self._userModel()." + name + ",scalar(default))")
             else:
                 self.logger.warning(
                     "Variable: " + name + " not set by API, returning default"
                 )
                 exec("self._userModel()." + name + " = cover(scalar(default))")
                 # setattr(self._userModel(),name,clone())
-                return exec("self._userModel()." + name)
+                return eval("self._userModel()." + name)
         else:
             self.logger.warning(
                 "Unknown style ("
