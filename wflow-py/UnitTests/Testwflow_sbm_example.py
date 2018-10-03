@@ -45,11 +45,11 @@ class MyTest(unittest.TestCase):
         my_data = wf.genfromtxt(
             os.path.join(caseName, runId, "specrun.csv"), delimiter=","
         )
+        
+        os.chdir(orgdir)
 
         print("Checking specific runoff ....")
         self.assertAlmostEquals(46.861992001533508, my_data[:, 2].sum(), places=4)
-
-        os.chdir(orgdir)
 
 
 if __name__ == "__main__":
