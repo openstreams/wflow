@@ -32,7 +32,7 @@ class MyTest(unittest.TestCase):
             bmiobj.get_end_time() - bmiobj.get_start_time()
         ) / bmiobj.get_time_step() + 1
         print(steps)
-        for a in range(0, steps):
+        for a in range(0, int(steps)):
             bmiobj.update()
 
         atn = bmiobj.get_attribute_names()
