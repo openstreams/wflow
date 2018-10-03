@@ -1300,9 +1300,9 @@ class WflowModel(DynamicModel):
         else:
             self.QuickFlow = self.KQuickFlow * self.UpperZoneStorage
             self.RealQuickFlow = max(0, self.K0 * (self.UpperZoneStorage - self.SUZ))
-        self.UpperZoneStorage = (
+            self.UpperZoneStorage = (
             self.UpperZoneStorage - self.QuickFlow - self.RealQuickFlow
-        )
+            )
         """Quickflow volume in mm/timestep"""
         # self.UpperZoneStorage=self.UpperZoneStorage-self.QuickFlow-self.RealQuickFlow
 
