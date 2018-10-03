@@ -61,11 +61,11 @@ class MyTest(unittest.TestCase):
         )
 
         print("Checking  water budget ....")
-        self.assertAlmostEqual(0.0013141632080078125, my_data[:, 2].sum(), places=4)
+        self.assertAlmostEqual(0.0011249125109316083, my_data[:, 2].sum(), places=4)
 
         my_data = wf.genfromtxt(os.path.join(caseName, runId, "run.csv"), delimiter=",")
         print("Checking  discharge ....")
-        self.assertAlmostEquals(1811.1795542081197, my_data[:, 2].mean(), places=4)
+        self.assertAlmostEqual(1811.1795542081197, my_data[:, 2].mean(), places=4)
 
 
 if __name__ == "__main__":
