@@ -109,11 +109,11 @@ if len(scriptpaths) == 1:
     analist = [do_analysis(scriptpaths[0])]
 else:
     analist = [do_analysis(scriptpaths[0])] + \
-        map(do_analysis_bare, scriptpaths[1:])
+        list(map(do_analysis_bare, scriptpaths[1:]))
 
-pyzlist = map(do_pyz, analist)
-exelist = map(do_exe, zip(analist, pyzlist))
-collist = map(do_collect, zip(analist, exelist))
+pyzlist = list(map(do_pyz, analist))
+exelist = list(map(do_exe, zip(analist, pyzlist)))
+collist = list(map(do_collect, zip(analist, exelist)))
 
 # merge all individual folders in the parent 'dist' folder
 # Replace with MERGE when this issue is fixed
