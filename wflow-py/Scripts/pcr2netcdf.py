@@ -71,6 +71,7 @@ import getopt
 import sys
 from numpy import *
 import netCDF4 as nc4
+import cftime
 import osgeo.gdal as gdal
 import os
 import logging
@@ -307,7 +308,7 @@ def write_netcdf_timeseries(
     logger.debug("Creating time object..")
     time = nc_trg.variables["time"]
     nc_trg.set_fill_off()
-    timeObj = nc4.num2date(time[:], units=time.units, calendar=time.calendar)
+    timeObj = cftime.num2date(time[:], units=time.units, calendar=time.calendar)
 
     try:
         nc_var = nc_trg.variables[trgVar]
