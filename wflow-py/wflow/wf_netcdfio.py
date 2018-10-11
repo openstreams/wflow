@@ -12,18 +12,10 @@ $Rev: 915 $
 import osgeo
 import osgeo.ogr
 import netCDF4
+import cftime
 import pyproj
 import os
 
-
-# the two below are needed fpr bbfreeze
-
-try:
-    import netCDF4.utils
-except:
-    import netCDF4_utils
-
-import netcdftime
 from pcraster import *
 from numpy import *
 import time
@@ -93,10 +85,10 @@ def prepare_nc(
             epoch.second,
         )
 
-    startDayNr = netCDF4.date2num(
+    startDayNr = cftime.date2num(
         timeList[0].replace(tzinfo=None), units=units, calendar=calendar
     )
-    endDayNr = netCDF4.date2num(
+    endDayNr = cftime.date2num(
         timeList[-1].replace(tzinfo=None), units=units, calendar=calendar
     )
 
@@ -104,8 +96,6 @@ def prepare_nc(
 
     if os.path.exists(trgFile):
         os.remove(trgFile)
-
-    # nc_trg = netCDF4.Dataset(trgFile, 'a', format=Format, zlib=zlib, complevel=complevel)
 
     nc_trg = netCDF4.Dataset(
         trgFile, "w", format=Format, zlib=zlib, complevel=complevel
@@ -332,7 +322,7 @@ class netcdfoutput:
         # read time axis and convert to time objects
         # TODO: use this to append time
         # time = self.nc_trg.variables['time']
-        # timeObj = netCDF4.num2date(time[:], units=time.units, calendar=time.calendar)
+        # timeObj = cftime.num2date(time[:], units=time.units, calendar=time.calendar)
 
         idx = timestep - 1
         
@@ -508,7 +498,7 @@ class netcdfoutputstatic:
         # read time axis and convert to time objects
         # TODO: use this to append time
         # time = self.nc_trg.variables['time']
-        # timeObj = netCDF4.num2date(time[:], units=time.units, calendar=time.calendar)
+        # timeObj = cftime.num2date(time[:], units=time.units, calendar=time.calendar)
 
         idx = timestep - 1
 
@@ -629,7 +619,7 @@ class netcdfinput:
             self.calendar = self.dataset.variables["time"].calendar
         else:
             self.calendar = "gregorian"
-        self.datetimelist = netCDF4.num2date(
+        self.datetimelist = cftime.num2date(
             self.datetime, self.timeunits, calendar=self.calendar
         )
 
@@ -851,7 +841,7 @@ class netcdfinputstates:
             self.calendar = self.dataset.variables["time"].calendar
         else:
             self.calendar = "gregorian"
-        self.datetimelist = netCDF4.num2date(
+        self.datetimelist = cftime.num2date(
             self.datetime, self.timeunits, calendar=self.calendar
         )
 

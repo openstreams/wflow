@@ -24,6 +24,7 @@ import numpy as np
 from osgeo import osr, gdal, gdalconst
 import pcraster as pcr
 import netCDF4 as nc
+import cftime
 import datetime as dt
 import pdb
 
@@ -224,7 +225,7 @@ def prepare_nc(
     The function assumes a gregorian calendar and a time unit 'Days since 1900-01-01 00:00:00'
     """
     logger.info('Setting up "' + trg_file + '"')
-    times_list = nc.date2num(times, units=units, calendar=calendar)
+    times_list = cftime.date2num(times, units=units, calendar=calendar)
     nc_trg = nc.Dataset(trg_file, "w")
     logger.info("Setting up dimensions and attributes")
     nc_trg.createDimension("time", 0)  # NrOfDays*8

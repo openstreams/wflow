@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # we need the netcdf4 library. This allows us to read netcdf from OpeNDAP or files
 import netCDF4
+import cftime
 import osgeo.gdal as gdal
 from osgeo.gdalconst import *
 
@@ -105,7 +106,7 @@ for year in years:
         lon = lon[lonidx]
         # Now get the time for the x-axis
         time = ncdataset.variables["time"]
-        timeObj = netCDF4.num2date(time[:], units=time.units, calendar=time.calendar)
+        timeObj = cftime.num2date(time[:], units=time.units, calendar=time.calendar)
 
         # Now determine area P for each timestep and display in a graph
         # first  the mean per area lat, next average those also
