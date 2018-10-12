@@ -90,7 +90,7 @@ def do_exe(apyz):
     return EXE(pyz, a.scripts,
                exclude_binaries=True,
                name=scriptname(a.inputs[0]),
-               upx=True,
+               upx=False,
                icon='logo.ico')
 
 
@@ -102,7 +102,7 @@ def do_collect(aexe):
                    a.zipfiles,
                    a.datas,
                    name=scriptname(a.inputs[0]),
-                   upx=True)
+                   upx=False)
 
 
 if len(scriptpaths) == 1:
