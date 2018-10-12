@@ -16,7 +16,6 @@ mapstack  -c inifile -C casename --clone clonemap
 import numpy
 import os
 import os.path
-import shutil, glob
 import getopt
 
 from wflow.wf_DynamicFramework import *
@@ -149,7 +148,6 @@ class WflowModel(DynamicModel):
     setup needed.
     
     """
-        pass
 
     def suspend(self):
         """

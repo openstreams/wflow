@@ -17,9 +17,6 @@ $Rev: 898 $
 """
 
 import numpy
-import os
-import os.path
-import shutil, glob
 import getopt
 
 try:

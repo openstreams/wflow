@@ -6,7 +6,6 @@
 import numpy
 import os
 import os.path
-import shutil, glob
 import getopt
 import sys
 import getopt
@@ -16,7 +15,7 @@ from wflow.wf_DynamicFramework import *
 import wflow.wflow_bmi as bmi
 import logging
 import wflow.wflow_adapt as adapter
-import datetime, calendar
+import calendar
 import os
 import numpy as np
 import configparser

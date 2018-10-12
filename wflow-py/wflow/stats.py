@@ -37,7 +37,6 @@
 #  get_box_plot_parameters
 #
 
-import sys
 
 # Import math library
 from math import sqrt

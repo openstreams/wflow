@@ -250,7 +250,6 @@ import wflow.pcrut as pcrut
 import wflow.wflow_lib as wflow_lib
 import datetime as dt
 
-import pdb
 
 
 def main():

@@ -24,8 +24,6 @@ Example ini file:
 import wflow
 import wflow.wflow_bmi_combined as wfbmi
 import wflow.pcrut as pcrut
-import os
-import time
 import sys
 import getopt
 import logging

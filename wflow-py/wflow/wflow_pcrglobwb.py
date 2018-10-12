@@ -91,15 +91,12 @@ import numpy
 import sys
 import os
 import os.path
-import shutil, glob
 import getopt
-import datetime
 
 
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_funcs import *
 from wflow.wflow_adapt import *
-import configparser
 
 from wflow.pcrglobwb import landSurface
 from wflow.pcrglobwb import groundwater
@@ -598,7 +595,6 @@ class WflowModel(DynamicModel):
 
         if self.reinit == 1:
             self.logger.info("Setting initial conditions to default (zero!)")
-            pass
 
         else:
             self.wf_resume(os.path.join(self.Dir, "instate"))

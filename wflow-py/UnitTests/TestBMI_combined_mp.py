@@ -1,13 +1,10 @@
 __author__ = "schelle"
 
 import unittest
-import logging
 import sys
 
 sys.path = ["../wflow"] + ["../"] + sys.path
 import wflow_bmi_combined_mp as bmi
-import time
-import os
 
 """
 Simple test for wflow bmi framework

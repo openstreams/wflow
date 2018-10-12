@@ -12,7 +12,9 @@ supported targets:
 
 from cx_Freeze import setup, Executable, hooks
 
-import ctypes, glob, os, shutil
+import ctypes
+import glob
+import os
 import matplotlib
 import scipy
 import sys

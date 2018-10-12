@@ -11,8 +11,6 @@ in h:\My Documents\memo's\python scripts\wflow\
 """
 
 import numpy
-import pdb
-from copy import copy as copylist
 
 try:
     from wflow.wf_DynamicFramework import *

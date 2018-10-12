@@ -81,7 +81,7 @@ from wflow.wf_DynamicFramework import *
 from datetime import *
 import os
 import os.path
-import shutil, glob
+import shutil
 import getopt
 import time
 import struct

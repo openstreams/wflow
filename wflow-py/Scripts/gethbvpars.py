@@ -11,7 +11,6 @@ gethbvpars:
 
 """
 
-import glob
 import os.path
 import getopt
 import sys

@@ -8,7 +8,6 @@ Created on Tue Aug 12 16:07:41 2014
 import os
 import copy
 import sys
-from subprocess import call
 import configparser
 import logging
 import logging.handlers

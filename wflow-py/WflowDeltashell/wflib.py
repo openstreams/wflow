@@ -2,7 +2,6 @@
 # Read a CSV file
 import csv  # import the python csv library
 import os
-import glob
 
 
 def GetItemByPartialName(list, name):

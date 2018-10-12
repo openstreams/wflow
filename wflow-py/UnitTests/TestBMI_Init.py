@@ -3,8 +3,6 @@ __author__ = "schelle"
 import unittest
 import logging
 import wflow.wflow_bmi as bmi
-import time
-import os
 import datetime
 
 """

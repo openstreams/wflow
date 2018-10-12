@@ -18,9 +18,6 @@ ops_scalar2grid  -C case -R Runid -c inifile
 """
 
 import numpy
-import os
-import os.path
-import shutil, glob
 import getopt
 import wflow.pcrut as pcrut
 

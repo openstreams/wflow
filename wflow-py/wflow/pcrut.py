@@ -8,7 +8,6 @@ import os.path
 import numpy
 from math import *
 import sys
-import csv
 from pcraster import *
 
 

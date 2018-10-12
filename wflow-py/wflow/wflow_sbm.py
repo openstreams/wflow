@@ -90,13 +90,11 @@ import numpy
 import sys
 import os
 import os.path
-import shutil, glob
 import getopt
 
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_funcs import *
 from wflow.wflow_adapt import *
-import configparser
 
 
 wflow = "wflow_sbm: "

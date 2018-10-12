@@ -20,7 +20,6 @@ import sys
 import glob
 import json
 import versioneer
-import subprocess
 
 target = "normal"
 # Filter out wflow specific options

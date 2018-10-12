@@ -1,6 +1,3 @@
-import os
-import datetime
-import subprocess
 
 
 a = open("wflow/__init__.py", "w")

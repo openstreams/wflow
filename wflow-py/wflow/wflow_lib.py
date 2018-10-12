@@ -34,12 +34,10 @@ $Rev: 808 $
 """
 
 
-import getopt
 import os
 import os.path
 import sys
 
-import configparser
 import osgeo.gdal as gdal
 from osgeo.gdalconst import *
 import pcraster
