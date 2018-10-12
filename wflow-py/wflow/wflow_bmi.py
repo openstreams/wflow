@@ -3,7 +3,6 @@ __author__ = "schelle"
 import os
 import logging
 import datetime
-import parser
 
 import wflow.bmi as bmi
 from . import wflow_lib
@@ -509,13 +508,11 @@ class wflowbmi_light(object):
         """
         Return the number of fields of a compound type.
         """
-        pass
 
     def inq_compound_field(self, name, index):
         """
         Lookup the type,rank and shape of a compound field
         """
-        pass
 
 
 class LookupNames:

@@ -25,8 +25,6 @@ from osgeo import osr, gdal, gdalconst
 import pcraster as pcr
 import netCDF4 as nc
 import cftime
-import datetime as dt
-import pdb
 
 
 def setlogger(logfilename, logReference, verbose=True):

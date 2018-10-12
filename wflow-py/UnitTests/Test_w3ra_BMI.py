@@ -3,14 +3,11 @@ __author__ = "schelle"
 import unittest
 import logging
 import sys
-import datetime
 
 sys.path = ["../"] + sys.path
 import wflow.wflow_bmi as bmi
-import time
 from dateutil import parser
 import calendar
-import os
 import wflow.wflow_sceleton as wf
 import numpy as np
 

@@ -24,7 +24,6 @@ import bmi
 import mmi.runner
 
 
-import sys
 import docopt
 
 # from mmi.runner import runner

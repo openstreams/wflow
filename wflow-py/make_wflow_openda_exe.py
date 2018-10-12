@@ -1,4 +1,3 @@
-from distutils.core import setup
 from bbfreeze import Freezer
 from _version import *
 import ctypes

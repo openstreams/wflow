@@ -70,7 +70,6 @@ def prepare_nc(
     This function prepares a NetCDF file with given metadata, for a certain year, daily basis data
     The function assumes a gregorian calendar and a time unit 'Days since 1900-01-01 00:00:00'
     """
-    import datetime as dt
 
     logger.info("Setting up netcdf output: " + trgFile)
 

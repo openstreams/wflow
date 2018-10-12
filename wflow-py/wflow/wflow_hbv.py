@@ -83,7 +83,6 @@ import numpy
 import sys
 import os
 import os.path
-import shutil, glob
 import getopt
 
 from wflow.wf_DynamicFramework import *

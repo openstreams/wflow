@@ -7,7 +7,6 @@ from wflow.wflow_lib import configget
 import configparser
 import logging
 from pcraster import *
-import multiprocessing
 
 
 def iniFileSetUp(configfile):

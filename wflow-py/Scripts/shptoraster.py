@@ -1,8 +1,5 @@
 import os
 import os.path
-import getopt
-import configparser
-import sys
 
 """
 This scripts converst the hbv shape file to raster maps for the

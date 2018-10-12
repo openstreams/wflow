@@ -6,12 +6,10 @@ import math
 import numpy as np
 import os
 import os.path
-import shutil, glob
 import getopt
 
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
-from time import strftime
 import time
 
 """

@@ -54,11 +54,8 @@ import getopt, sys, os
 from xml.etree.ElementTree import *
 
 from datetime import *
-import time
-import string
 
 import shutil
-import re
 from glob import *
 import logging
 import logging.handlers

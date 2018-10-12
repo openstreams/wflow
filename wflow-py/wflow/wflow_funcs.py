@@ -24,10 +24,6 @@ that may be used within the wflow models
 
 
 from numpy import *
-import getopt
-import os
-import os.path
-import sys
 
 
 from pcraster import *

@@ -24,9 +24,6 @@ $Rev: 898 $
 """
 
 import numpy
-import os
-import os.path
-import shutil, glob
 import getopt
 
 from wflow.wf_DynamicFramework import *

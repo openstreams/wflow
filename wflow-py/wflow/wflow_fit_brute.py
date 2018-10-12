@@ -71,7 +71,8 @@ import matplotlib
 import pylab
 import getopt
 import sys
-import csv, itertools
+import csv
+import itertools
 
 
 # TODO: do not read results from file

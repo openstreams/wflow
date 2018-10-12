@@ -23,7 +23,6 @@ import numpy
 import sys
 import os
 import os.path
-import shutil, glob
 import getopt
 import datetime as dt
 

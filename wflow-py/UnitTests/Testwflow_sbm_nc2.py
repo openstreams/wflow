@@ -2,7 +2,6 @@ __author__ = "schelle"
 
 import unittest
 import wflow.wflow_sbm as wf
-import os
 
 """
 Run sceleton for 10 steps and checks if the outcome is approx that of the reference run

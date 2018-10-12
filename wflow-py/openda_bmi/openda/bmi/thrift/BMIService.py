@@ -24,7 +24,6 @@ class Iface(object):
     Parameters:
      - file
     """
-        pass
 
     def update(self,):
         pass
@@ -34,14 +33,12 @@ class Iface(object):
     Parameters:
      - time
     """
-        pass
 
     def update_frac(self, frac):
         """
     Parameters:
      - frac
     """
-        pass
 
     def finalize_model(self,):
         pass
@@ -60,35 +57,30 @@ class Iface(object):
     Parameters:
      - long_var_name
     """
-        pass
 
     def get_var_units(self, long_var_name):
         """
     Parameters:
      - long_var_name
     """
-        pass
 
     def get_var_rank(self, long_var_name):
         """
     Parameters:
      - long_var_name
     """
-        pass
 
     def get_var_size(self, long_var_name):
         """
     Parameters:
      - long_var_name
     """
-        pass
 
     def get_var_nbytes(self, long_var_name):
         """
     Parameters:
      - long_var_name
     """
-        pass
 
     def get_start_time(self,):
         pass
@@ -110,7 +102,6 @@ class Iface(object):
     Parameters:
      - long_var_name
     """
-        pass
 
     def get_value_at_indices(self, long_var_name, inds):
         """
@@ -118,7 +109,6 @@ class Iface(object):
      - long_var_name
      - inds
     """
-        pass
 
     def set_value(self, long_var_name, src):
         """
@@ -126,7 +116,6 @@ class Iface(object):
      - long_var_name
      - src
     """
-        pass
 
     def set_value_at_indices(self, long_var_name, inds, src):
         """
@@ -135,77 +124,66 @@ class Iface(object):
      - inds
      - src
     """
-        pass
 
     def get_grid_type(self, long_var_name):
         """
     Parameters:
      - long_var_name
     """
-        pass
 
     def get_grid_shape(self, long_var_name):
         """
     Parameters:
      - long_var_name
     """
-        pass
 
     def get_grid_spacing(self, long_var_name):
         """
     Parameters:
      - long_var_name
     """
-        pass
 
     def get_grid_origin(self, long_var_name):
         """
     Parameters:
      - long_var_name
     """
-        pass
 
     def get_grid_x(self, long_var_name):
         """
     Parameters:
      - long_var_name
     """
-        pass
 
     def get_grid_y(self, long_var_name):
         """
     Parameters:
      - long_var_name
     """
-        pass
 
     def get_grid_z(self, long_var_name):
         """
     Parameters:
      - long_var_name
     """
-        pass
 
     def get_grid_connectivity(self, long_var_name):
         """
     Parameters:
      - long_var_name
     """
-        pass
 
     def get_grid_offset(self, long_var_name):
         """
     Parameters:
      - long_var_name
     """
-        pass
 
     def initialize_config(self, file):
         """
     Parameters:
      - file
     """
-        pass
 
     def initialize_model(self,):
         pass
@@ -215,14 +193,12 @@ class Iface(object):
     Parameters:
      - start_time
     """
-        pass
 
     def set_end_time(self, end_time):
         """
     Parameters:
      - end_time
     """
-        pass
 
     def get_attribute_names(self,):
         pass
@@ -232,7 +208,6 @@ class Iface(object):
     Parameters:
      - attribute_name
     """
-        pass
 
     def set_attribute_value(self, attribute_name, attribute_value):
         """
@@ -240,21 +215,18 @@ class Iface(object):
      - attribute_name
      - attribute_value
     """
-        pass
 
     def save_state(self, destination_directory):
         """
     Parameters:
      - destination_directory
     """
-        pass
 
     def load_state(self, source_directory):
         """
     Parameters:
      - source_directory
     """
-        pass
 
 
 class Client(Iface):

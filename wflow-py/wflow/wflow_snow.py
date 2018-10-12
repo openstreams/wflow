@@ -56,11 +56,9 @@ wflow_snow [-h][-v level][-F runinfofile][-L logfile][-C casename][-R runId]
 """
 
 
-import pickle
 import numpy
 import os
 import os.path
-import shutil, glob
 import getopt
 from wflow.wf_DynamicFramework import *
 import scipy
