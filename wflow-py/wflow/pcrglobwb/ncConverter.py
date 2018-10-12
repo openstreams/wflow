@@ -59,9 +59,7 @@ class PCR2netCDF:
             and iniItems.reportingOptions["netcdf_y_orientation_follow_cf_convention"]
             == "True"
         ):
-            msg = (
-                "Latitude (y) orientation for output netcdf files start from the bottom to top."
-            )
+            msg = "Latitude (y) orientation for output netcdf files start from the bottom to top."
             self.netcdf_y_orientation_follow_cf_convention = True
             self.latitudes = np.unique(pcr.pcr2numpy(pcr.ycoordinate(cloneMap), vos.MV))
 
@@ -214,7 +212,9 @@ class PCR2netCDF:
         date_time = rootgrp.variables["time"]
         if posCnt == None:
             posCnt = len(date_time)
-        date_time[posCnt] = cftime.date2num(timeStamp, date_time.units, date_time.calendar)
+        date_time[posCnt] = cftime.date2num(
+            timeStamp, date_time.units, date_time.calendar
+        )
 
         # flip variable if necessary (to follow cf_convention)
         if self.netcdf_y_orientation_follow_cf_convention:

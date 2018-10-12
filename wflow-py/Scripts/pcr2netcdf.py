@@ -169,7 +169,7 @@ def readMap(fileName, fileFormat, logger, unzipcmd="pigz -d -k"):
         :, 0
     ]
 
-    FillVal = float(1E31)
+    FillVal = float(1e31)
     data = _pcrut.pcr2numpy(pcrdata, FillVal)
     if unzipped:
         # Delete uncompressed file if compressed exsists
@@ -280,7 +280,7 @@ def write_netcdf_timeseries(
     least_significant_digit=None,
     startidx=0,
     EPSG="EPSG:4326",
-    FillVal=1E31,
+    FillVal=1e31,
 ):
     """
     Write pcraster mapstack to netcdf file. Taken from GLOFRIS_Utils.py
@@ -513,7 +513,7 @@ def main(argv=None):
     mbuf = 600
     timestepsecs = 86400
 
-    outputFillVal = 1E31
+    outputFillVal = 1e31
     clonemap = None
     OFormat = "NETCDF4"
     IFormat = "PCRaster"

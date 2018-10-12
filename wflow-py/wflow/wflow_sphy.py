@@ -1320,7 +1320,7 @@ class WflowModel(DynamicModel):
                 #                     except:
                 #                         setattr(self, i, 0.)
                 setattr(
-                    self, i, 0.
+                    self, i, 0.0
                 )  # use this instead of the commented part above, because it is more logical to always zero as initial condition for reporting
                 if mapoutops != "NONE":
                     mapoutops = mapoutops.split(",")

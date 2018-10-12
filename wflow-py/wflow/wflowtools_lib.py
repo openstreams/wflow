@@ -597,8 +597,8 @@ def PCR_river2Shape(
     #    ordermap = streamorder_map
     #    lddmap = ldd_map
     #    SHP_FILENAME = rivshp
-    counter = 0.
-    percentage = 0.
+    counter = 0.0
+    percentage = 0.0
     file_att = os.path.splitext(os.path.basename(SHP_FILENAME))[0]
     x, y, riversid, FillVal = readMap(rivermap, "PCRaster")
     riversid[riversid == FillVal] = -1
@@ -676,9 +676,9 @@ def PCR_river2Shape(
         feature.SetField("ORDER", int(strahlerorder_select[0]))
         feature.SetField("CATCHMENT", int(catchment_select[0]))
         counter = counter + 1
-        if (float(id) / float(maxRiverId)) * 100. > percentage:
+        if (float(id) / float(maxRiverId)) * 100.0 > percentage:
             # logger.info(' ' + str(int(percentage)) + '% completed')
-            percentage = percentage + 10.
+            percentage = percentage + 10.0
         # print 'Writing polyline ' + str(id) + ' of ' + str(maxRiverId)
         layer_line.CreateFeature(feature)
         # Cleanup
@@ -792,14 +792,14 @@ def windowstats(
     array_out = np.ones((t_rows, t_columns, len(stat)), dtype=np.float) * nodata
     blocks = t_rows * t_columns
     counter = 0
-    percentage = 0.
+    percentage = 0.0
     for row in range(t_rows):
         # print 'doing row ' + str(row + 1) + '/' + str(t_rows)
         for col in range(t_columns):
             counter = counter + 1
-            if (float(counter) / float(blocks)) * 100. > percentage:
+            if (float(counter) / float(blocks)) * 100.0 > percentage:
                 logger.info(" " + str(int(percentage)) + "% completed")
-                percentage = percentage + 10.
+                percentage = percentage + 10.0
             # determine window boundaries
             xl = xorg + (col * cellsize_out)
             xr = xorg + ((col + 1) * cellsize_out)

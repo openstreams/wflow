@@ -70,9 +70,9 @@ def agriZone_no_reservoir(self, k):
     self.Fa_[k] = Pe
     Storage in unsaturated zone = 0.
     """
-    self.Qa_[k] = 0.
-    self.Ea_[k] = 0.
-    self.Sa[k] = 0.
+    self.Qa_[k] = 0.0
+    self.Ea_[k] = 0.0
+    self.Sa[k] = 0.0
     self.Fa_[k] = max(self.Pe_[k], 0)
     self.wbSa_[k] = (
         self.Pe_[k]

@@ -225,7 +225,7 @@ def GenRadMaps(
     steps and averaging this per day.
     """
 
-    Intperday = 1440. / interval
+    Intperday = 1440.0 / interval
     Starthour = shour
     EndHour = ehour
     Calcsteps = Intperday / 24 * 24

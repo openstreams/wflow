@@ -401,7 +401,7 @@ def main():
         config, "inundation", "iterations", 20, datatype="int"
     )
     options.initial_level = inun_lib.configget(
-        config, "inundation", "initial_level", 32., datatype="float"
+        config, "inundation", "initial_level", 32.0, datatype="float"
     )
     options.flood_volume_type = inun_lib.configget(
         config, "inundation", "flood_volume_type", 0, datatype="int"
@@ -595,7 +595,7 @@ def main():
                             np.arange(0, terrain.shape[1]),
                             np.arange(0, terrain.shape[0]),
                             terrain,
-                            -9999.,
+                            -9999.0,
                             gdal_type=gdal.GDT_Float32,
                             logging=logger,
                         )
@@ -661,7 +661,7 @@ def main():
                             neg_HAND=options.neg_HAND,
                         )
                     # convert to numpy
-                    hand = pcr.pcr2numpy(hand_pcr, -9999.)
+                    hand = pcr.pcr2numpy(hand_pcr, -9999.0)
                     # cut relevant part
                     if y_overlap_max == 0:
                         y_overlap_max = -hand.shape[0]
@@ -680,7 +680,7 @@ def main():
             ds_dem = None
             ds_ldd = None
             ds_stream = None
-            band_hand.SetNoDataValue(-9999.)
+            band_hand.SetNoDataValue(-9999.0)
             ds_hand = None
             logger.info("Finalizing {:s}".format(hand_file))
             # rename temporary file to final hand file
@@ -789,7 +789,7 @@ def main():
             options.time = "20000101000000"
         time = [dt.datetime.strptime(options.time, "%Y%m%d%H%M%S")]
 
-        flood[flood == flood_fill_value] = 0.
+        flood[flood == flood_fill_value] = 0.0
     # load the bankfull depths
     if options.bankfull_map == "":
         bankfull = np.zeros(flood.shape)
@@ -834,7 +834,7 @@ def main():
     else:
         flood_vol_m = flood_vol / cell_surface_wflow
     flood_vol_m_data = flood_vol_m.data
-    flood_vol_m_data[flood_vol_m.mask] = -999.
+    flood_vol_m_data[flood_vol_m.mask] = -999.0
     logger.info("Saving water layer map to {:s}".format(flood_vol_map))
     # write to a tiff file
     inun_lib.gdal_writemap(
@@ -843,7 +843,7 @@ def main():
         xax,
         yax,
         np.maximum(flood_vol_m_data, 0),
-        -999.,
+        -999.0,
         logging=logger,
     )
     # this is placed later in the hand loop
@@ -1027,7 +1027,7 @@ def main():
                         drainage_pcr, subcatch
                     ),  # to make sure backwater effects can occur from higher order rivers to lower order rivers
                     flood_vol_strahler,
-                    volume_thres=0.,
+                    volume_thres=0.0,
                     iterations=options.iterations,
                     cell_surface=pcr.numpy2pcr(pcr.Scalar, cell_surface_tile, -9999),
                     logging=logger,
@@ -1036,7 +1036,7 @@ def main():
                 )  # 1166400000.
                 # use maximum value of inundation_pcr_step and new inundation for higher strahler order
                 inundation_pcr = pcr.max(inundation_pcr, inundation_pcr_step)
-            inundation = pcr.pcr2numpy(inundation_pcr, -9999.)
+            inundation = pcr.pcr2numpy(inundation_pcr, -9999.0)
             # cut relevant part
             if y_overlap_max == 0:
                 y_overlap_max = -inundation.shape[0]

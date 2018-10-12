@@ -238,7 +238,7 @@ def main(
     # create clone raster
     print(("rows: {0} cols: {1}".format(rows, cols)))
 
-    dummy_raster = np.zeros((rows, cols)) - 9999.
+    dummy_raster = np.zeros((rows, cols)) - 9999.0
     clone_file_map = os.path.abspath(os.path.join(destination, "mask.map"))
     clone_file_tif = os.path.abspath(os.path.join(destination, "mask.tif"))
     logger.info("Writing PCRaster clone to {:s}".format(clone_file_map))
@@ -248,7 +248,7 @@ def main(
         xorg,
         yorg,
         dummy_raster,
-        -9999.,
+        -9999.0,
         resolution=cellsize,
         srs=srs,
     )
@@ -259,7 +259,7 @@ def main(
         xorg,
         yorg,
         dummy_raster,
-        -9999.,
+        -9999.0,
         resolution=cellsize,
         zlib=True,
         srs=srs,

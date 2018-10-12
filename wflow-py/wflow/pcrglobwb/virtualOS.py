@@ -56,7 +56,7 @@ filecache = dict()
 
 # Global variables:
 MV = 1e20
-smallNumber = 1E-39
+smallNumber = 1e-39
 
 # tuple of netcdf file suffixes (extensions) that can be used:
 netcdf_suffixes = (".nc4", ".nc")
@@ -1154,11 +1154,11 @@ def readPCRmapClone(
             # read from temporary file and delete the temporary file:
             PCRmap = pcr.readmap(output)
             if isLddMap == True:
-                PCRmap = pcr.ifthen(pcr.scalar(PCRmap) < 10., PCRmap)
+                PCRmap = pcr.ifthen(pcr.scalar(PCRmap) < 10.0, PCRmap)
             if isLddMap == True:
                 PCRmap = pcr.ldd(PCRmap)
             if isNomMap == True:
-                PCRmap = pcr.ifthen(pcr.scalar(PCRmap) > 0., PCRmap)
+                PCRmap = pcr.ifthen(pcr.scalar(PCRmap) > 0.0, PCRmap)
             if isNomMap == True:
                 PCRmap = pcr.nominal(PCRmap)
             if os.path.isdir(tmpDir):
@@ -1435,7 +1435,7 @@ def getMapAttributesALL(cloneMap, arcDegree=True):
         sys.exit()
     cellsize = float(cOut.split()[7])
     if arcDegree == True:
-        cellsize = round(cellsize * 360000.) / 360000.
+        cellsize = round(cellsize * 360000.0) / 360000.0
     mapAttr = {
         "cellsize": float(cellsize),
         "rows": float(cOut.split()[3]),
@@ -1481,7 +1481,7 @@ def getMapAttributes(cloneMap, attribute, arcDegree=True):
     if attribute == "cellsize":
         cellsize = float(cOut.split()[7])
         if arcDegree == True:
-            cellsize = round(cellsize * 360000.) / 360000.
+            cellsize = round(cellsize * 360000.0) / 360000.0
         return cellsize
     if attribute == "rows":
         return int(cOut.split()[3])
@@ -1519,8 +1519,8 @@ def getMapTotalHighPrecisionButOnlyForPositiveValues_NEEDMORETEST(mapFile):
 
         # cell value in this loop
         currentCellValue = pcr.rounddown(
-            remainingMapValue * pcr.scalar(10. ** (power_number))
-        ) / pcr.scalar(10. ** (power_number))
+            remainingMapValue * pcr.scalar(10.0 ** (power_number))
+        ) / pcr.scalar(10.0 ** (power_number))
         if power_number == min_power_number:
             currentCellValue = remainingMapValue
 
@@ -1580,7 +1580,7 @@ def secondsPerDay():
     return float(3600 * 24)
 
 
-def getValDivZero(x, y, y_lim=smallNumber, z_def=0.):
+def getValDivZero(x, y, y_lim=smallNumber, z_def=0.0):
     # -returns the result of a division that possibly involves a zero
     # denominator; in which case, a default value is substituted:
     # x/y= z in case y > y_lim,
@@ -1589,7 +1589,7 @@ def getValDivZero(x, y, y_lim=smallNumber, z_def=0.):
     return pcr.ifthenelse(y > y_lim, x / pcr.max(y_lim, y), z_def)
 
 
-def getValFloatDivZero(x, y, y_lim, z_def=0.):
+def getValFloatDivZero(x, y, y_lim, z_def=0.0):
     # -returns the result of a division that possibly involves a zero
     # denominator; in which case, a default value is substituted:
     # x/y= z in case y > y_lim,
@@ -1632,7 +1632,7 @@ def returnMapValue(pcrX, x, coord):
 
 
 def getQAtBasinMouths(discharge, basinMouth):
-    temp = pcr.ifthenelse(basinMouth != 0, discharge * secondsPerDay(), 0.)
+    temp = pcr.ifthenelse(basinMouth != 0, discharge * secondsPerDay(), 0.0)
     pcr.report(temp, "temp.map")
     return getMapTotal(temp) / 1e9
 
@@ -1738,9 +1738,7 @@ def waterBalanceCheck(
             msg += "\n"
             msg = "\n"
             msg += "\n"
-            msg += (
-                "##############################################################################################################################################\n"
-            )
+            msg += "##############################################################################################################################################\n"
             msg += "WARNING !!!!!!!! Water Balance Error %s Min %f Max %f Mean %f" % (
                 processName,
                 a,
@@ -1748,9 +1746,7 @@ def waterBalanceCheck(
                 c,
             )
             msg += "\n"
-            msg += (
-                "##############################################################################################################################################\n"
-            )
+            msg += "##############################################################################################################################################\n"
             msg += "\n"
             msg += "\n"
             msg += "\n"
@@ -1887,8 +1883,8 @@ def waterAbstractionAndAllocationHighPrecision_NEEDMORETEST(
 
         # cell available water in this loop
         cellAvlWater = pcr.rounddown(
-            remainingCellAvlWater * pcr.scalar(10. ** (power_number))
-        ) / pcr.scalar(10. ** (power_number))
+            remainingCellAvlWater * pcr.scalar(10.0 ** (power_number))
+        ) / pcr.scalar(10.0 ** (power_number))
         if power_number == min_power_number:
             cellAvlWater = pcr.max(0.0, remainingCellAvlWater)
 
@@ -1979,7 +1975,7 @@ def waterAbstractionAndAllocation(
     available_water_volume,
     allocation_zones,
     zone_area=None,
-    high_volume_treshold=1000000.,
+    high_volume_treshold=1000000.0,
     debug_water_balance=True,
     extra_info_for_water_balance_reporting="",
     landmask=None,

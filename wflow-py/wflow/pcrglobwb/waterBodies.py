@@ -99,7 +99,7 @@ class WaterBodies(object):
             )
 
         # minimum width (m) used in the weir formula  # TODO: define minWeirWidth based on the GLWD, GRanD database and/or bankfull discharge formula
-        self.minWeirWidth = 10.
+        self.minWeirWidth = 10.0
 
         # lower and upper limits at which reservoir release is terminated and
         #                        at which reservoir release is equal to long-term average outflow
@@ -153,7 +153,7 @@ class WaterBodies(object):
 
         self.waterBodyIds = pcr.nominal(0)  # waterBody ids
         self.waterBodyOut = pcr.boolean(0)  # waterBody outlets
-        self.waterBodyArea = pcr.scalar(0.)  # waterBody surface areas
+        self.waterBodyArea = pcr.scalar(0.0)  # waterBody surface areas
 
         # water body ids
         if self.useNetCDF:
@@ -176,7 +176,7 @@ class WaterBodies(object):
             )
         #
         self.waterBodyIds = pcr.ifthen(
-            pcr.scalar(self.waterBodyIds) > 0., pcr.nominal(self.waterBodyIds)
+            pcr.scalar(self.waterBodyIds) > 0.0, pcr.nominal(self.waterBodyIds)
         )
 
         # water body outlets (correcting outlet positions)
@@ -186,25 +186,26 @@ class WaterBodies(object):
             self.waterBodyIds,
         )  # = outlet ids
         self.waterBodyOut = pcr.ifthen(
-            pcr.scalar(self.waterBodyIds) > 0., self.waterBodyOut
+            pcr.scalar(self.waterBodyIds) > 0.0, self.waterBodyOut
         )
         # TODO: Please also consider endorheic lakes!
 
         # correcting water body ids
         self.waterBodyIds = pcr.ifthen(
-            pcr.scalar(self.waterBodyIds) > 0., pcr.subcatchment(ldd, self.waterBodyOut)
+            pcr.scalar(self.waterBodyIds) > 0.0,
+            pcr.subcatchment(ldd, self.waterBodyOut),
         )
 
         # boolean map for water body outlets:
         self.waterBodyOut = pcr.ifthen(
-            pcr.scalar(self.waterBodyOut) > 0., pcr.boolean(1)
+            pcr.scalar(self.waterBodyOut) > 0.0, pcr.boolean(1)
         )
 
         # reservoir surface area (m2):
         if self.useNetCDF:
             resSfArea = (
-                1000.
-                * 1000.
+                1000.0
+                * 1000.0
                 * vos.netcdf2PCRobjClone(
                     self.ncFileInp,
                     "resSfAreaInp",
@@ -215,8 +216,8 @@ class WaterBodies(object):
             )
         else:
             resSfArea = (
-                1000.
-                * 1000.
+                1000.0
+                * 1000.0
                 * vos.readPCRmapClone(
                     self.resSfAreaInp + str(year_used) + ".map",
                     self.cloneMap,
@@ -225,7 +226,7 @@ class WaterBodies(object):
                 )
             )
         resSfArea = pcr.areaaverage(resSfArea, self.waterBodyIds)
-        resSfArea = pcr.cover(resSfArea, 0.)
+        resSfArea = pcr.cover(resSfArea, 0.0)
 
         # water body surface area (m2): (lakes and reservoirs)
         self.waterBodyArea = pcr.max(
@@ -234,10 +235,10 @@ class WaterBodies(object):
             ),
             pcr.areaaverage(pcr.cover(resSfArea, 0.0), self.waterBodyIds),
         )
-        self.waterBodyArea = pcr.ifthen(self.waterBodyArea > 0., self.waterBodyArea)
+        self.waterBodyArea = pcr.ifthen(self.waterBodyArea > 0.0, self.waterBodyArea)
 
         # correcting water body ids and outlets (exclude all water bodies with surfaceArea = 0)
-        self.waterBodyIds = pcr.ifthen(self.waterBodyArea > 0., self.waterBodyIds)
+        self.waterBodyIds = pcr.ifthen(self.waterBodyArea > 0.0, self.waterBodyIds)
         self.waterBodyOut = pcr.ifthen(
             pcr.boolean(self.waterBodyIds), self.waterBodyOut
         )
@@ -299,8 +300,8 @@ class WaterBodies(object):
 
         if self.useNetCDF:
             self.resMaxCap = (
-                1000.
-                * 1000.
+                1000.0
+                * 1000.0
                 * vos.netcdf2PCRobjClone(
                     self.ncFileInp,
                     "resMaxCapInp",
@@ -311,8 +312,8 @@ class WaterBodies(object):
             )
         else:
             self.resMaxCap = (
-                1000.
-                * 1000.
+                1000.0
+                * 1000.0
                 * vos.readPCRmapClone(
                     self.resMaxCapInp + str(year_used) + ".map",
                     self.cloneMap,
@@ -334,10 +335,10 @@ class WaterBodies(object):
 
         # correcting water body types:                                  # Reservoirs that have zero capacities will be assumed as lakes.
         self.waterBodyTyp = pcr.ifthen(
-            pcr.scalar(self.waterBodyTyp) > 0., self.waterBodyTyp
+            pcr.scalar(self.waterBodyTyp) > 0.0, self.waterBodyTyp
         )
         self.waterBodyTyp = pcr.ifthenelse(
-            self.waterBodyCap > 0.,
+            self.waterBodyCap > 0.0,
             self.waterBodyTyp,
             pcr.ifthenelse(
                 pcr.scalar(self.waterBodyTyp) == 2, pcr.nominal(1), self.waterBodyTyp
@@ -346,16 +347,16 @@ class WaterBodies(object):
 
         # final corrections:
         self.waterBodyTyp = pcr.ifthen(
-            self.waterBodyArea > 0., self.waterBodyTyp
+            self.waterBodyArea > 0.0, self.waterBodyTyp
         )  # make sure that all lakes and/or reservoirs have surface areas
         self.waterBodyTyp = pcr.ifthen(
-            pcr.scalar(self.waterBodyTyp) > 0., self.waterBodyTyp
+            pcr.scalar(self.waterBodyTyp) > 0.0, self.waterBodyTyp
         )  # make sure that only types 1 and 2 will be considered in lake/reservoir functions
         self.waterBodyIds = pcr.ifthen(
-            pcr.scalar(self.waterBodyTyp) > 0., self.waterBodyIds
+            pcr.scalar(self.waterBodyTyp) > 0.0, self.waterBodyIds
         )  # make sure that all lakes and/or reservoirs have ids
         self.waterBodyOut = pcr.ifthen(
-            pcr.scalar(self.waterBodyIds) > 0., self.waterBodyOut
+            pcr.scalar(self.waterBodyIds) > 0.0, self.waterBodyOut
         )  # make sure that all lakes and/or reservoirs have outlets
 
         # for a natural run (self.onlyNaturalWaterBodies == True)
@@ -368,7 +369,7 @@ class WaterBodies(object):
                 "Using only natural water bodies identified in the year 1900. All reservoirs in 1900 are assumed as lakes."
             )
             self.waterBodyTyp = pcr.ifthen(
-                pcr.scalar(self.waterBodyTyp) > 0., pcr.nominal(1)
+                pcr.scalar(self.waterBodyTyp) > 0.0, pcr.nominal(1)
             )
 
         # check that all lakes and/or reservoirs have types, ids, surface areas and outlets:
@@ -422,7 +423,7 @@ class WaterBodies(object):
             #
             storageAtLakeAndReservoirs = pcr.cover(
                 pcr.ifthen(
-                    pcr.scalar(self.waterBodyIds) > 0.,
+                    pcr.scalar(self.waterBodyIds) > 0.0,
                     initial_condition["channelStorage"],
                 ),
                 0.0,
@@ -435,7 +436,7 @@ class WaterBodies(object):
             #
             # lake and reservoir storages = waterBodyStorage (m3) ; values are given for the entire lake / reservoir cells
             waterBodyStorage = pcr.ifthen(
-                pcr.scalar(self.waterBodyIds) > 0.,
+                pcr.scalar(self.waterBodyIds) > 0.0,
                 pcr.areatotal(storageAtLakeAndReservoirs, self.waterBodyIds),
             )
 
@@ -557,7 +558,7 @@ class WaterBodies(object):
         self.waterBodyOutflow = pcr.cover(reservoirOutflow, lakeOutflow)
 
         # make sure that all water bodies have outflow:
-        self.waterBodyOutflow = pcr.max(0., pcr.cover(self.waterBodyOutflow, 0.0))
+        self.waterBodyOutflow = pcr.max(0.0, pcr.cover(self.waterBodyOutflow, 0.0))
 
         # limit outflow to available storage
         factor = 0.25  # to avoid flip flop
@@ -566,7 +567,7 @@ class WaterBodies(object):
         )  # unit: m3
         # use round values
         self.waterBodyOutflow = (
-            pcr.rounddown(self.waterBodyOutflow / 1.) * 1.
+            pcr.rounddown(self.waterBodyOutflow / 1.0) * 1.0
         )  # unit: m3
 
         # outflow rate in m3 per sec
@@ -620,7 +621,7 @@ class WaterBodies(object):
                 (self.waterBodyStorage - pcr.cover(self.waterBodyCap, 0.0))
                 / self.waterBodyArea,
             ),
-            0.,
+            0.0,
         )
 
         # weirWidth (m) :
@@ -628,19 +629,19 @@ class WaterBodies(object):
         #
         avgOutflow = self.avgOutflow
         avgOutflow = pcr.ifthenelse(
-            avgOutflow > 0.,
+            avgOutflow > 0.0,
             avgOutflow,
             pcr.max(avgChannelDischarge, self.avgInflow, 0.001),
         )  # This is needed when new lakes/reservoirs introduced (its avgOutflow is still zero).
         avgOutflow = pcr.areamaximum(avgOutflow, self.waterBodyIds)
         #
-        bankfullWidth = pcr.cover(pcr.scalar(4.8) * ((avgOutflow) ** (0.5)), 0.)
+        bankfullWidth = pcr.cover(pcr.scalar(4.8) * ((avgOutflow) ** (0.5)), 0.0)
         weirWidthUsed = bankfullWidth
         weirWidthUsed = pcr.max(
             weirWidthUsed, self.minWeirWidth
         )  # TODO: minWeirWidth based on the GRanD database
         weirWidthUsed = pcr.cover(
-            pcr.ifthen(pcr.scalar(self.waterBodyIds) > 0., weirWidthUsed), 0.0
+            pcr.ifthen(pcr.scalar(self.waterBodyIds) > 0.0, weirWidthUsed), 0.0
         )
 
         # avgInflow <= lakeOutflow (weirFormula) <= waterBodyStorage
@@ -652,7 +653,7 @@ class WaterBodies(object):
         lakeOutflow = lakeOutflowInM3PerSec * length_of_time_step  # unit: m3
         lakeOutflow = pcr.min(self.waterBodyStorage, lakeOutflow)
         #
-        lakeOutflow = pcr.ifthen(pcr.scalar(self.waterBodyIds) > 0., lakeOutflow)
+        lakeOutflow = pcr.ifthen(pcr.scalar(self.waterBodyIds) > 0.0, lakeOutflow)
         lakeOutflow = pcr.ifthen(pcr.scalar(self.waterBodyTyp) == 1, lakeOutflow)
 
         # TODO: Consider endorheic lake/basin. No outflow for endorheic lake/basin!
@@ -673,10 +674,10 @@ class WaterBodies(object):
         # ~ pcr.max(avgChannelDischarge, self.avgInflow, 0.001))
         # - alternative 2
         avgOutflow = pcr.ifthenelse(
-            avgOutflow > 0., avgOutflow, pcr.max(avgChannelDischarge, self.avgInflow)
+            avgOutflow > 0.0, avgOutflow, pcr.max(avgChannelDischarge, self.avgInflow)
         )
         avgOutflow = pcr.ifthenelse(
-            avgOutflow > 0., avgOutflow, pcr.downstream(self.lddMap, avgOutflow)
+            avgOutflow > 0.0, avgOutflow, pcr.downstream(self.lddMap, avgOutflow)
         )
         avgOutflow = pcr.areamaximum(avgOutflow, self.waterBodyIds)
 
@@ -686,9 +687,9 @@ class WaterBodies(object):
         #   - if relativeCapacity > maxResvrFrac : longterm average
         reductionFactor = pcr.cover(
             pcr.min(
-                1.,
+                1.0,
                 pcr.max(
-                    0., self.waterBodyStorage - self.minResvrFrac * self.waterBodyCap
+                    0.0, self.waterBodyStorage - self.minResvrFrac * self.waterBodyCap
                 )
                 / (self.maxResvrFrac - self.minResvrFrac)
                 * self.waterBodyCap,
@@ -717,10 +718,10 @@ class WaterBodies(object):
 
         # floodOutflow: additional release if storage > upper limit
         ratioQBankfull = 2.3
-        estmStorage = pcr.max(0., self.waterBodyStorage - resvOutflow)
+        estmStorage = pcr.max(0.0, self.waterBodyStorage - resvOutflow)
         floodOutflow = pcr.max(0.0, estmStorage - self.waterBodyCap) + pcr.cover(
             pcr.max(0.0, estmStorage - self.maxResvrFrac * self.waterBodyCap)
-            / ((1. - self.maxResvrFrac) * self.waterBodyCap),
+            / ((1.0 - self.maxResvrFrac) * self.waterBodyCap),
             0.0,
         ) * pcr.max(
             0.0, ratioQBankfull * avgOutflow * vos.secondsPerDay() - resvOutflow
@@ -759,6 +760,6 @@ class WaterBodies(object):
         # resvOutflow < waterBodyStorage
         resvOutflow = pcr.min(self.waterBodyStorage, resvOutflow)
 
-        resvOutflow = pcr.ifthen(pcr.scalar(self.waterBodyIds) > 0., resvOutflow)
+        resvOutflow = pcr.ifthen(pcr.scalar(self.waterBodyIds) > 0.0, resvOutflow)
         resvOutflow = pcr.ifthen(pcr.scalar(self.waterBodyTyp) == 2, resvOutflow)
         return resvOutflow  # unit: m3

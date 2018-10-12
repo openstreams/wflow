@@ -76,9 +76,7 @@ class Groundwater(object):
         self.inputDir = os.path.join(
             os.path.abspath(Dir), staticmaps
         )  # iniItems.globalOptions['inputDir']
-        self.stateDir = os.path.join(
-            os.path.abspath(Dir), 'instate'
-        )
+        self.stateDir = os.path.join(os.path.abspath(Dir), "instate")
         self.landmask = landmask
 
         # configuration from the ini file
@@ -234,9 +232,7 @@ class Groundwater(object):
             and "recessionCoeff" not in iniItems._sections["groundwaterOptions"]
         ):
 
-            msg = (
-                "Calculating the groundwater linear reccesion coefficient based on the given parameters."
-            )
+            msg = "Calculating the groundwater linear reccesion coefficient based on the given parameters."
             logger.info(msg)
 
             # reading the 'aquiferWidth' value from the landSurfaceOptions (slopeLength)
@@ -272,9 +268,9 @@ class Groundwater(object):
 
             # calculate recessionCoeff (unit; day-1)
             self.recessionCoeff = (
-                (math.pi ** 2.)
+                (math.pi ** 2.0)
                 * aquiferThicknessForRecessionCoeff
-                / (4. * self.specificYield * (aquiferWidth ** 2.))
+                / (4.0 * self.specificYield * (aquiferWidth ** 2.0))
             )
 
         # assign the reccession coefficient based on the given pcraster file
@@ -885,23 +881,23 @@ class Groundwater(object):
         # make sure that active storGroundwater, avgAbstraction and avgNonFossilAllocation cannot be negative
         #
         self.storGroundwater = pcr.cover(self.storGroundwater, 0.0)
-        self.storGroundwater = pcr.max(0., self.storGroundwater)
+        self.storGroundwater = pcr.max(0.0, self.storGroundwater)
         self.storGroundwater = pcr.ifthen(self.landmask, self.storGroundwater)
         #
         self.avgAbstraction = pcr.cover(self.avgAbstraction, 0.0)
-        self.avgAbstraction = pcr.max(0., self.avgAbstraction)
+        self.avgAbstraction = pcr.max(0.0, self.avgAbstraction)
         self.avgAbstraction = pcr.ifthen(self.landmask, self.avgAbstraction)
         #
         self.avgAllocation = pcr.cover(self.avgAllocation, 0.0)
-        self.avgAllocation = pcr.max(0., self.avgAllocation)
+        self.avgAllocation = pcr.max(0.0, self.avgAllocation)
         self.avgAllocation = pcr.ifthen(self.landmask, self.avgAllocation)
         #
         self.avgAllocationShort = pcr.cover(self.avgAllocationShort, 0.0)
-        self.avgAllocationShort = pcr.max(0., self.avgAllocationShort)
+        self.avgAllocationShort = pcr.max(0.0, self.avgAllocationShort)
         self.avgAllocationShort = pcr.ifthen(self.landmask, self.avgAllocationShort)
         #
         self.avgNonFossilAllocation = pcr.cover(self.avgNonFossilAllocation, 0.0)
-        self.avgNonFossilAllocation = pcr.max(0., self.avgNonFossilAllocation)
+        self.avgNonFossilAllocation = pcr.max(0.0, self.avgNonFossilAllocation)
         self.avgNonFossilAllocation = pcr.ifthen(
             self.landmask, self.avgNonFossilAllocation
         )
@@ -909,7 +905,9 @@ class Groundwater(object):
         self.avgNonFossilAllocationShort = pcr.cover(
             self.avgNonFossilAllocationShort, 0.0
         )
-        self.avgNonFossilAllocationShort = pcr.max(0., self.avgNonFossilAllocationShort)
+        self.avgNonFossilAllocationShort = pcr.max(
+            0.0, self.avgNonFossilAllocationShort
+        )
         self.avgNonFossilAllocationShort = pcr.ifthen(
             self.landmask, self.avgNonFossilAllocationShort
         )
@@ -936,7 +934,7 @@ class Groundwater(object):
             self.storGroundwater = self.storGroundwater * (
                 mapnormal() * parameters["standard_deviation"] + 1
             )
-            self.storGroundwater = pcr.max(0., self.storGroundwater)
+            self.storGroundwater = pcr.max(0.0, self.storGroundwater)
 
         else:
             print("Error: only groundwater may be updated at this time")
@@ -1035,21 +1033,21 @@ class Groundwater(object):
 
         # get net recharge (percolation-capRise) and update storage:
         self.storGroundwater = pcr.max(
-            0., self.storGroundwater + landSurface.gwRecharge
+            0.0, self.storGroundwater + landSurface.gwRecharge
         )
 
         # non fossil groundwater abstraction
         self.nonFossilGroundwaterAbs = landSurface.nonFossilGroundwaterAbs
         self.storGroundwater = pcr.max(
-            0., self.storGroundwater - self.nonFossilGroundwaterAbs
+            0.0, self.storGroundwater - self.nonFossilGroundwaterAbs
         )
 
         # baseflow
         self.baseflow = pcr.max(
-            0.,
+            0.0,
             pcr.min(self.storGroundwater, self.recessionCoeff * self.storGroundwater),
         )
-        self.storGroundwater = pcr.max(0., self.storGroundwater - self.baseflow)
+        self.storGroundwater = pcr.max(0.0, self.storGroundwater - self.baseflow)
         # PS: baseflow must be calculated at the end (to ensure the availability of storGroundwater to support nonFossilGroundwaterAbs)
 
         # fossil groundwater abstraction:
@@ -1105,8 +1103,8 @@ class Groundwater(object):
                     landSurface.allocSurfaceWaterAbstract,
                 ],
                 [landSurface.totalPotentialGrossDemand],
-                [pcr.scalar(0.)],
-                [pcr.scalar(0.)],
+                [pcr.scalar(0.0)],
+                [pcr.scalar(0.0)],
                 "demand allocation (desalination, surface water, groundwater & unmetDemand. Error here may be due to rounding error.",
                 True,
                 currTimeStep.fulldate,
@@ -1119,7 +1117,7 @@ class Groundwater(object):
         totalAbstraction = self.fossilGroundwaterAbstr + self.nonFossilGroundwaterAbs
         deltaAbstraction = totalAbstraction - self.avgAbstraction
         self.avgAbstraction = self.avgAbstraction + deltaAbstraction / pcr.min(
-            365., pcr.max(1.0, routing.timestepsToAvgDischarge)
+            365.0, pcr.max(1.0, routing.timestepsToAvgDischarge)
         )
         self.avgAbstraction = pcr.max(0.0, self.avgAbstraction)
 
@@ -1129,7 +1127,7 @@ class Groundwater(object):
         self.avgNonFossilAllocation = (
             self.avgNonFossilAllocation
             + deltaAllocation
-            / pcr.min(365., pcr.max(1.0, routing.timestepsToAvgDischarge))
+            / pcr.min(365.0, pcr.max(1.0, routing.timestepsToAvgDischarge))
         )
         self.avgNonFossilAllocation = pcr.max(0.0, self.avgNonFossilAllocation)
         # - from the last 7 days:
@@ -1139,7 +1137,7 @@ class Groundwater(object):
         self.avgNonFossilAllocationShort = (
             self.avgNonFossilAllocationShort
             + deltaAllocationShort
-            / pcr.min(7., pcr.max(1.0, routing.timestepsToAvgDischarge))
+            / pcr.min(7.0, pcr.max(1.0, routing.timestepsToAvgDischarge))
         )
         self.avgNonFossilAllocationShort = pcr.max(
             0.0, self.avgNonFossilAllocationShort
@@ -1152,7 +1150,7 @@ class Groundwater(object):
         # - from the last 365 days:
         deltaAllocation = totalGroundwaterAllocation - self.avgAllocation
         self.avgAllocation = self.avgAllocation + deltaAllocation / pcr.min(
-            365., pcr.max(1.0, routing.timestepsToAvgDischarge)
+            365.0, pcr.max(1.0, routing.timestepsToAvgDischarge)
         )
         self.avgAllocation = pcr.max(0.0, self.avgAllocation)
         # - from the last 7 days:
@@ -1160,7 +1158,7 @@ class Groundwater(object):
         self.avgAllocationShort = (
             self.avgAllocationShort
             + deltaAllocationShort
-            / pcr.min(7., pcr.max(1.0, routing.timestepsToAvgDischarge))
+            / pcr.min(7.0, pcr.max(1.0, routing.timestepsToAvgDischarge))
         )
         self.avgAllocationShort = pcr.max(0.0, self.avgAllocationShort)
 

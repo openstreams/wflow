@@ -51,8 +51,8 @@ def snow_no_reservoir(self, k):
     self.PotEvaporation = cover(ifthenelse(self.EpHour > 0, self.EpHour, 0), 0)
 
     self.Qw_[k] = max(self.PrecipitationSnow, 0)
-    self.Ew_[k] = 0.
-    self.Sw[k] = 0.
+    self.Ew_[k] = 0.0
+    self.Sw[k] = 0.0
     self.wbSw_[k] = (
         self.Precipitation - self.Ew_[k] - self.Qw_[k] - self.Sw[k] + self.Sw_t[k]
     )

@@ -92,7 +92,7 @@ def read_ARCINFO_ASCII_grid(
         lat = (
             fileTable["yllcorner"]
             + (fileTable["nrows"] - i) * fileTable["cellsize"]
-            - fileTable["cellsize"] / 2.
+            - fileTable["cellsize"] / 2.0
         )
         if lat >= Extent["South"] and lat <= Extent["North"]:
             tmprcnt = tmprcnt + 1
@@ -111,7 +111,7 @@ def read_ARCINFO_ASCII_grid(
             lng = (
                 fileTable["xllcorner"]
                 + (j) * fileTable["cellsize"]
-                + fileTable["cellsize"] / 2.
+                + fileTable["cellsize"] / 2.0
             )
             if lng >= Extent["West"] and lng <= Extent["East"]:
                 if tmprcnt == 1:
@@ -184,19 +184,19 @@ def write_ARCINFO_ASCII_grid(filename, gridTable, INTflag=0):
         lat = (
             gridTable["yllcorner"]
             + (gridTable["nrows"] - i) * gridTable["cellsize"]
-            - gridTable["cellsize"] / 2.
+            - gridTable["cellsize"] / 2.0
         )
         tmpstr = ""
         for j in range(gridTable["ncols"]):
             lng = (
                 gridTable["xllcorner"]
                 + (j) * gridTable["cellsize"]
-                + gridTable["cellsize"] / 2.
+                + gridTable["cellsize"] / 2.0
             )
             if idx < gridTable["Ncells"] and (
-                abs(lat - gridTable["cell"][idx]["lat"]) <= gridTable["cellsize"] / 2.
+                abs(lat - gridTable["cell"][idx]["lat"]) <= gridTable["cellsize"] / 2.0
                 and abs(lng - gridTable["cell"][idx]["lng"])
-                <= gridTable["cellsize"] / 2.
+                <= gridTable["cellsize"] / 2.0
             ):
                 if (
                     INTflag

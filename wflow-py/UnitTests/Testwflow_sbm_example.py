@@ -45,7 +45,7 @@ class MyTest(unittest.TestCase):
         my_data = wf.genfromtxt(
             os.path.join(caseName, runId, "specrun.csv"), delimiter=","
         )
-        
+
         os.chdir(orgdir)
 
         print("Checking specific runoff ....")

@@ -124,9 +124,7 @@ class Routing(object):
         self.inputDir = os.path.join(
             os.path.abspath(Dir), staticmaps
         )  # iniItems.globalOptions['inputDir']
-        self.stateDir = os.path.join(
-            os.path.abspath(Dir), 'instate'
-        )
+        self.stateDir = os.path.join(os.path.abspath(Dir), "instate")
 
         # option to activate water balance check
         self.debugWaterBalance = True
@@ -185,14 +183,14 @@ class Routing(object):
         )
 
         # model resolution in arc-degree unit
-        #self.cellSizeInArcDeg = vos.getMapAttributes(self.cloneMap, "cellsize")
-        self.cellSizeInArcDeg = round(getgridparams()[2] * 360000.) / 360000.        
+        # self.cellSizeInArcDeg = vos.getMapAttributes(self.cloneMap, "cellsize")
+        self.cellSizeInArcDeg = round(getgridparams()[2] * 360000.0) / 360000.0
 
         # maximum number of days (timesteps) to calculate long term average flow values (default: 5 years = 5 * 365 days = 1825)
-        self.maxTimestepsToAvgDischargeLong = 1825.
+        self.maxTimestepsToAvgDischargeLong = 1825.0
 
         # maximum number of days (timesteps) to calculate short term average values (default: 1 month = 1 * 30 days = 30)
-        self.maxTimestepsToAvgDischargeShort = 30.
+        self.maxTimestepsToAvgDischargeShort = 30.0
 
         routingParameters = ["gradient", "manningsN"]
         for var in routingParameters:
@@ -264,8 +262,8 @@ class Routing(object):
 
         # channelLength = approximation of channel length (unit: m)
         # This is approximated by cell diagonal.
-        cellSizeInArcMin = self.cellSizeInArcDeg * 60.
-        verticalSizeInMeter = cellSizeInArcMin * 1852.
+        cellSizeInArcMin = self.cellSizeInArcDeg * 60.0
+        verticalSizeInMeter = cellSizeInArcMin * 1852.0
         #
         self.cellLengthFD = (
             (self.cellArea / verticalSizeInMeter) ** (2) + (verticalSizeInMeter) ** (2)
@@ -286,7 +284,7 @@ class Routing(object):
                 )
 
         # dist2celllength in m/arcDegree (needed in the accuTravelTime function):
-        nrCellsDownstream = pcr.ldddist(self.lddMap, self.lddMap == 5, 1.)
+        nrCellsDownstream = pcr.ldddist(self.lddMap, self.lddMap == 5, 1.0)
         distanceDownstream = pcr.ldddist(
             self.lddMap, self.lddMap == 5, self.channelLength
         )
@@ -412,23 +410,17 @@ class Routing(object):
                     self.inputDir,
                 )
             else:
-                msg = (
-                    "The bankfull channel storage capacity is NOT defined in the configuration file. "
-                )
+                msg = "The bankfull channel storage capacity is NOT defined in the configuration file. "
 
                 if isinstance(self.predefinedChannelWidth, type(None)) or isinstance(
                     self.predefinedChannelDepth, type(None)
                 ):
 
-                    msg += (
-                        "The bankfull capacity is estimated from average discharge (5 year long term average)."
-                    )
+                    msg += "The bankfull capacity is estimated from average discharge (5 year long term average)."
 
                 else:
 
-                    msg += (
-                        "The bankfull capacity is estimated from the given channel depth and channel width."
-                    )
+                    msg += "The bankfull capacity is estimated from the given channel depth and channel width."
                     self.usingFixedBankfullCapacity = True
                     self.predefinedBankfullCapacity = self.estimateBankfullCapacity(
                         self.predefinedChannelWidth, self.predefinedChannelDepth
@@ -697,7 +689,7 @@ class Routing(object):
         # using local distances deltaX per increment upto z[N] and the sum over sills
         # - fill all lists (including smoothing interval and slopes)
 
-        relZ = [0.] * nrZLevels
+        relZ = [0.0] * nrZLevels
         for iCnt in range(0, nrZLevels):
 
             if relativeElevationFileNC == None:
@@ -739,12 +731,12 @@ class Routing(object):
                     minSlope,
                 )
         # - the maximum value for the floodplain slope is channel gradient (flow velocity is slower in the floodplain)
-        minSlope = pcr.min(self.gradient, 0.5 * pcr.max(deltaX[1], minSlope) ** -1.)
+        minSlope = pcr.min(self.gradient, 0.5 * pcr.max(deltaX[1], minSlope) ** -1.0)
 
         # - add small increment to elevations to each sill (except in the case of lakes, #TODO: verify this)
         for iCnt in range(nrZLevels):
             relZ[iCnt] = relZ[iCnt] + sumX[iCnt] * pcr.ifthenelse(
-                relZ[nrZLevels - 1] > 0., minSlope, 0.0
+                relZ[nrZLevels - 1] > 0.0, minSlope, 0.0
             )
             # make sure that relZ[iCnt] >= relZ[iCnt-1] (added by Edwin)
             if iCnt > 0:
@@ -756,9 +748,9 @@ class Routing(object):
         # - set slope and smoothing interval between dy= y(i+1)-y(i) and dx= x(i+1)-x(i)
         #   on the basis of volume
         #
-        floodVolume = [0.] * (nrZLevels)  # volume (unit: m3)
-        mInterval = [0.] * (nrZLevels)  # smoothing interval (unit: m3)
-        kSlope = [0.] * (nrZLevels)  # slope (dimensionless)
+        floodVolume = [0.0] * (nrZLevels)  # volume (unit: m3)
+        mInterval = [0.0] * (nrZLevels)  # smoothing interval (unit: m3)
+        kSlope = [0.0] * (nrZLevels)  # slope (dimensionless)
         #
         for iCnt in range(1, nrZLevels):
             floodVolume[iCnt] = (
@@ -852,7 +844,7 @@ class Routing(object):
                 * self.manningsN ** (1.5)
                 + (flood_only_wetted_perimeter / channel_wetted_perimeter)
                 * self.floodplainManN ** (1.5)
-            ) ** (2. / 3.)
+            ) ** (2.0 / 3.0)
 
         # characteristicDistance (dimensionless)
         # - This will be used for accutraveltimeflux & accutraveltimestate
@@ -861,7 +853,7 @@ class Routing(object):
         # - storage   = the amount of material which is deposited in the cell (m3)
         #
         characteristicDistance = (
-            ((yMean * wMean) / (wMean + 2 * yMean)) ** (2. / 3.)
+            ((yMean * wMean) / (wMean + 2 * yMean)) ** (2.0 / 3.0)
             * ((self.gradient) ** (0.5))
             / usedManningsN
             * vos.secondsPerDay()
@@ -874,7 +866,7 @@ class Routing(object):
 
         # charateristicDistance for each lake/reservoir:
         lakeReservoirCharacteristicDistance = pcr.ifthen(
-            pcr.scalar(self.WaterBodies.waterBodyIds) > 0.,
+            pcr.scalar(self.WaterBodies.waterBodyIds) > 0.0,
             pcr.areaaverage(characteristicDistance, self.WaterBodies.waterBodyIds),
         )
         #
@@ -884,13 +876,13 @@ class Routing(object):
             pcr.boolean(0),
         )
         distance_to_outlets = pcr.ifthen(
-            pcr.scalar(self.WaterBodies.waterBodyIds) > 0.,
+            pcr.scalar(self.WaterBodies.waterBodyIds) > 0.0,
             pcr.ldddist(self.lddMap, outlets, pcr.scalar(1.0)),
         )
         # ~ lakeReservoirCharacteristicDistance = pcr.ifthen(pcr.scalar(self.WaterBodies.waterBodyIds) > 0.,
         # ~ pcr.max(distance_to_outlets + pcr.downstreamdist(self.lddMap)*1.50, lakeReservoirCharacteristicDistance))
         lakeReservoirCharacteristicDistance = pcr.ifthen(
-            pcr.scalar(self.WaterBodies.waterBodyIds) > 0.,
+            pcr.scalar(self.WaterBodies.waterBodyIds) > 0.0,
             pcr.max(
                 distance_to_outlets + pcr.downstreamdist(self.lddMap) * 2.50,
                 lakeReservoirCharacteristicDistance,
@@ -916,7 +908,7 @@ class Routing(object):
         # current solution: using the function "roundup" to ignore
         #                   zero and very small values
         characteristicDistance = (
-            pcr.roundup(characteristicDistance * 100.) / 100.
+            pcr.roundup(characteristicDistance * 100.0) / 100.0
         )  # arcDeg/day
 
         # and set minimum value of characteristicDistance:
@@ -1426,7 +1418,7 @@ class Routing(object):
     def simple_update(self, landSurface, groundwater, currTimeStep, meteo):
 
         # updating timesteps to calculate long and short term statistics values of avgDischarge, avgInflow, avgOutflow, etc.
-        self.timestepsToAvgDischarge += 1.
+        self.timestepsToAvgDischarge += 1.0
 
         if self.debugWaterBalance:
             preStorage = self.channelStorage  # unit: m3
@@ -1489,7 +1481,7 @@ class Routing(object):
         # at cells where lakes and/or reservoirs defined, move channelStorage to waterBodyStorage
         #
         storageAtLakeAndReservoirs = pcr.ifthen(
-            pcr.scalar(self.WaterBodies.waterBodyIds) > 0., self.channelStorage
+            pcr.scalar(self.WaterBodies.waterBodyIds) > 0.0, self.channelStorage
         )
         storageAtLakeAndReservoirs = pcr.cover(storageAtLakeAndReservoirs, 0.0)
         #
@@ -1568,19 +1560,19 @@ class Routing(object):
         #
         self.discharge = self.Q / vos.secondsPerDay()
         self.discharge = pcr.max(
-            0., self.discharge
+            0.0, self.discharge
         )  # reported channel discharge cannot be negative
         self.discharge = pcr.ifthen(self.landmask, self.discharge)
         #
         self.disChanWaterBody = pcr.ifthen(
-            pcr.scalar(self.WaterBodies.waterBodyIds) > 0.,
+            pcr.scalar(self.WaterBodies.waterBodyIds) > 0.0,
             pcr.areamaximum(self.discharge, self.WaterBodies.waterBodyIds),
         )
         self.disChanWaterBody = pcr.cover(self.disChanWaterBody, self.discharge)
         self.disChanWaterBody = pcr.ifthen(self.landmask, self.disChanWaterBody)
         #
         self.disChanWaterBody = pcr.max(
-            0., self.disChanWaterBody
+            0.0, self.disChanWaterBody
         )  # reported channel discharge cannot be negative
         #
         #
@@ -1641,7 +1633,7 @@ class Routing(object):
                 * self.manningsN ** (1.5)
                 + (flood_only_wetted_perimeter / channel_wetted_perimeter)
                 * self.floodplainManN ** (1.5)
-            ) ** (2. / 3.)
+            ) ** (2.0 / 3.0)
         else:
             usedManningsN = self.manningsN
 
@@ -1649,7 +1641,7 @@ class Routing(object):
         #
         alpha = (
             usedManningsN
-            * channel_wetted_perimeter ** (2. / 3.)
+            * channel_wetted_perimeter ** (2.0 / 3.0)
             * self.gradient ** (-0.5)
         ) ** self.beta  # dimensionless
         dischargeInitial = pcr.ifthenelse(
@@ -1714,13 +1706,13 @@ class Routing(object):
                 * self.manningsN ** (1.5)
                 + (flood_only_wetted_perimeter / channel_wetted_perimeter)
                 * self.floodplainManN ** (1.5)
-            ) ** (2. / 3.)
+            ) ** (2.0 / 3.0)
 
         # alpha (dimensionless) and estimate of channel discharge (m3/s)
         #
         alpha = (
             usedManningsN
-            * channel_wetted_perimeter ** (2. / 3.)
+            * channel_wetted_perimeter ** (2.0 / 3.0)
             * self.gradient ** (-0.5)
         ) ** self.beta  # dimensionless
         dischargeInitial = pcr.ifthenelse(
@@ -1747,9 +1739,7 @@ class Routing(object):
 
         if self.floodPlain:
 
-            msg = (
-                "Calculate channel inundated fraction and flood inundation depth above the floodplain."
-            )
+            msg = "Calculate channel inundated fraction and flood inundation depth above the floodplain."
             logger.info(msg)
 
             # given the flood channel volume: channelStorage
@@ -1781,9 +1771,9 @@ class Routing(object):
             # on the basis of the integrated logistic functions PHI(x) and 1-PHI(x)
             #
             deltaX = deltaXMin
-            deltaXScaled = pcr.ifthenelse(deltaX < 0., pcr.scalar(-1.), 1.) * pcr.min(
-                self.criterionKK, pcr.abs(deltaX / pcr.max(1., mInt))
-            )
+            deltaXScaled = pcr.ifthenelse(
+                deltaX < 0.0, pcr.scalar(-1.0), 1.0
+            ) * pcr.min(self.criterionKK, pcr.abs(deltaX / pcr.max(1.0, mInt)))
             logInt = self.integralLogisticFunction(deltaXScaled)
 
             # compute fractional inundated/flooded area
@@ -1792,7 +1782,7 @@ class Routing(object):
                 pcr.ifthenelse(
                     pcr.abs(deltaXScaled) < self.criterionKK,
                     y_i - k[0] * mInt * logInt[0] + k[1] * mInt * logInt[1],
-                    y_i + pcr.ifthenelse(deltaX < 0., k[0], k[1]) * deltaX,
+                    y_i + pcr.ifthenelse(deltaX < 0.0, k[0], k[1]) * deltaX,
                 ),
                 0.0,
             )
@@ -1800,19 +1790,19 @@ class Routing(object):
             inundatedFraction = pcr.max(self.channelFraction, inundatedFraction)
             # - maximum value is 1.0
             inundatedFraction = pcr.max(
-                0., pcr.min(1.0, inundatedFraction)
+                0.0, pcr.min(1.0, inundatedFraction)
             )  # dimensionless
 
             # calculate flooded/inundated depth (unit: m) above the floodplain
             # _- it will be zero if excessVolume == 0
             floodDepth = pcr.ifthenelse(
-                inundatedFraction > 0.,
+                inundatedFraction > 0.0,
                 excessVolume
                 / (
                     pcr.max(self.min_fracwat_for_water_height, inundatedFraction)
                     * self.cellArea
                 ),
-                0.,
+                0.0,
             )  # unit: m
             # - maximum flood depth
             max_flood_depth = 25.0
@@ -1825,7 +1815,7 @@ class Routing(object):
         # return waterBodyStorage to channelStorage
         #
         waterBodyStorageTotal = pcr.ifthen(
-            pcr.scalar(self.WaterBodies.waterBodyIds) > 0.,
+            pcr.scalar(self.WaterBodies.waterBodyIds) > 0.0,
             pcr.areaaverage(
                 pcr.ifthen(self.landmask, self.WaterBodies.waterBodyStorage),
                 pcr.ifthen(self.landmask, self.WaterBodies.waterBodyIds),
@@ -1844,7 +1834,7 @@ class Routing(object):
             )
         )
         waterBodyStoragePerCell = pcr.ifthen(
-            pcr.scalar(self.WaterBodies.waterBodyIds) > 0., waterBodyStoragePerCell
+            pcr.scalar(self.WaterBodies.waterBodyIds) > 0.0, waterBodyStoragePerCell
         )  # unit: m3
         #
         channelStorage = pcr.cover(waterBodyStoragePerCell, channelStorage)  # unit: m3
@@ -1857,7 +1847,7 @@ class Routing(object):
 
         # updating timesteps to calculate long and short term statistics
         # values of avgDischarge, avgInflow, avgOutflow, etc.
-        self.timestepsToAvgDischarge += 1.
+        self.timestepsToAvgDischarge += 1.0
 
         # the following variable defines total local change (input) to surface water storage bodies # unit: m3
         # - only local processes; therefore not considering any routing processes
@@ -1897,7 +1887,7 @@ class Routing(object):
         #
         # at cells where lakes and/or reservoirs defined, move channelStorage to waterBodyStorage
         storageAtLakeAndReservoirs = pcr.ifthen(
-            pcr.scalar(self.WaterBodies.waterBodyIds) > 0., self.channelStorage
+            pcr.scalar(self.WaterBodies.waterBodyIds) > 0.0, self.channelStorage
         )
         storageAtLakeAndReservoirs = pcr.cover(storageAtLakeAndReservoirs, 0.0)
         # - move only non negative values and use rounddown values
@@ -2175,19 +2165,19 @@ class Routing(object):
         #
         self.discharge = self.Q / vos.secondsPerDay()
         self.discharge = pcr.max(
-            0., self.discharge
+            0.0, self.discharge
         )  # reported channel discharge cannot be negative
         self.discharge = pcr.ifthen(self.landmask, self.discharge)
         #
         self.disChanWaterBody = pcr.ifthen(
-            pcr.scalar(self.WaterBodies.waterBodyIds) > 0.,
+            pcr.scalar(self.WaterBodies.waterBodyIds) > 0.0,
             pcr.areamaximum(self.discharge, self.WaterBodies.waterBodyIds),
         )
         self.disChanWaterBody = pcr.cover(self.disChanWaterBody, self.discharge)
         self.disChanWaterBody = pcr.ifthen(self.landmask, self.disChanWaterBody)
         #
         self.disChanWaterBody = pcr.max(
-            0., self.disChanWaterBody
+            0.0, self.disChanWaterBody
         )  # reported channel discharge cannot be negative
 
         # calculate the statistics of long and short term flow values
@@ -2251,9 +2241,9 @@ class Routing(object):
 
         # long term variance and standard deviation of discharge values
         varDischarge = self.m2tDischarge / pcr.max(
-            1.,
+            1.0,
             pcr.min(self.maxTimestepsToAvgDischargeLong, self.timestepsToAvgDischarge)
-            - 1.,
+            - 1.0,
         )
         # see: online algorithm on http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
         stdDischarge = pcr.max(varDischarge ** 0.5, 0.0)
@@ -2314,7 +2304,7 @@ class Routing(object):
         readAvlChannelStorage = pcr.max(0.0, readAvlChannelStorage)
 
         # ignore small volume values - less than 0.1 m3
-        readAvlChannelStorage = pcr.rounddown(readAvlChannelStorage * 10.) / 10.
+        readAvlChannelStorage = pcr.rounddown(readAvlChannelStorage * 10.0) / 10.0
         readAvlChannelStorage = pcr.ifthen(self.landmask, readAvlChannelStorage)
 
         return readAvlChannelStorage  # unit: m3

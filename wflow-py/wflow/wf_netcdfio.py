@@ -64,7 +64,7 @@ def prepare_nc(
     complevel=9,
     zlib=True,
     least_significant_digit=None,
-    FillValue=1E31,
+    FillValue=1e31,
 ):
     """
     This function prepares a NetCDF file with given metadata, for a certain year, daily basis data
@@ -325,10 +325,9 @@ class netcdfoutput:
         # timeObj = cftime.num2date(time[:], units=time.units, calendar=time.calendar)
 
         idx = timestep - 1
-        
+
         buffreset = int((idx + 1) % self.maxbuf)
         bufpos = int((idx) % self.maxbuf)
-                
 
         try:
             nc_var = self.nc_trg.variables[var]

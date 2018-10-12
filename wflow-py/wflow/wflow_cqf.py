@@ -1309,7 +1309,7 @@ class WflowModel(DynamicModel):
 
         if self.waterdem:
             waterDem = self.Altitude - (self.zi * 0.001)
-            waterLdd = lddcreate(waterDem, 1E35, 1E35, 1E35, 1E35)
+            waterLdd = lddcreate(waterDem, 1e35, 1e35, 1e35, 1e35)
             # waterLdd = lddcreate(waterDem,1,1,1,1)
             waterSlope = max(0.00001, slope(waterDem) * celllength() / self.reallength)
 

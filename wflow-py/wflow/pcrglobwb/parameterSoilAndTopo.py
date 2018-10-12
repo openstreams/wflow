@@ -416,10 +416,10 @@ class SoilAndTopoParameters(object):
             self.effSatAtFieldCapLow = pcr.cover(self.effSatAtFieldCapLow, 1.0)
 
             self.kUnsatAtFieldCapUpp = pcr.max(
-                0., (self.effSatAtFieldCapUpp ** self.campbellBetaUpp) * self.kSatUpp
+                0.0, (self.effSatAtFieldCapUpp ** self.campbellBetaUpp) * self.kSatUpp
             )  # unsaturated conductivity at field capacity: KTHEFF_FC = max(0,THEFF_FC[TYPE]**BCB*KS1)
             self.kUnsatAtFieldCapLow = pcr.max(
-                0., (self.effSatAtFieldCapLow ** self.campbellBetaLow) * self.kSatLow
+                0.0, (self.effSatAtFieldCapLow ** self.campbellBetaLow) * self.kSatLow
             )
         #
         if self.numberOfLayers == 3:
@@ -445,17 +445,17 @@ class SoilAndTopoParameters(object):
             ) ** (-1.0 / self.poreSizeBetaLow030150)
 
             self.kUnsatAtFieldCapUpp000005 = pcr.max(
-                0.,
+                0.0,
                 (self.effSatAtFieldCapUpp000005 ** self.campbellBetaUpp000005)
                 * self.kSatUpp000005,
             )
             self.kUnsatAtFieldCapUpp005030 = pcr.max(
-                0.,
+                0.0,
                 (self.effSatAtFieldCapUpp005030 ** self.campbellBetaUpp005030)
                 * self.kSatUpp005030,
             )
             self.kUnsatAtFieldCapLow030150 = pcr.max(
-                0.,
+                0.0,
                 (self.effSatAtFieldCapLow030150 ** self.campbellBetaLow030150)
                 * self.kSatLow030150,
             )
@@ -507,14 +507,14 @@ class SoilAndTopoParameters(object):
         if self.numberOfLayers == 2:
             self.interflowConcTime = (self.kSatLow * self.tanslope * 2.0) / (
                 self.slopeLength
-                * (1. - self.effSatAtFieldCapLow)
+                * (1.0 - self.effSatAtFieldCapLow)
                 * (self.satVolMoistContLow - self.resVolMoistContLow)
             )  # TCL = Duration*(2*KS2*TANSLOPE)/(LSLOPE*(1-THEFF2_FC)*(THETASAT2-THETARES2))
         #
         if self.numberOfLayers == 3:
             self.interflowConcTime = (self.kSatLow030150 * self.tanslope * 2.0) / (
                 self.slopeLength
-                * (1. - self.effSatAtFieldCapLow030150)
+                * (1.0 - self.effSatAtFieldCapLow030150)
                 * (self.satVolMoistContLow030150 - self.resVolMoistContLow030150)
             )
 

@@ -86,7 +86,7 @@ def runCommands(commands, maxCpu):
         procTuple = (command, proc)
         processes.append(procTuple)
         while len(processes) >= maxCpu:
-            time.sleep(.2)
+            time.sleep(0.2)
             processes = removeFinishedProcesses(processes)
 
     # wait for all processes

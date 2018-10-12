@@ -150,7 +150,7 @@ def readtss(nname):
         ifile.close()
 
         mat = numpy.loadtxt(nname, skiprows=toskip)
-        mis = mat == 1e+31
+        mis = mat == 1e31
         mat[mis] = numpy.nan
 
         if len(mat.shape) > 1:

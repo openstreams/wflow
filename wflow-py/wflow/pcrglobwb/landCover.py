@@ -106,9 +106,7 @@ class LandCover(object):
         self.interceptionModuleType = "Original"
         if "interceptionModuleType" in list(self.iniItemsLC.keys()):
             if self.iniItemsLC["interceptionModuleType"] == "Modified":
-                msg = (
-                    'Using the "Modified" version of the interception module (i.e. extending interception definition, using totalPotET for the available energy for the interception process).'
-                )
+                msg = 'Using the "Modified" version of the interception module (i.e. extending interception definition, using totalPotET for the available energy for the interception process).'
                 logger.info(msg)
                 self.interceptionModuleType = "Modified"
             else:
@@ -127,9 +125,7 @@ class LandCover(object):
         if self.interceptionModuleType == "Original" and "minInterceptCap" in list(
             self.iniItemsLC.keys()
         ):
-            msg = (
-                'As the "Original" interceptionModuleType is used, the "minInterceptCap" value is ignored. The interception scope is only "canopy".'
-            )
+            msg = 'As the "Original" interceptionModuleType is used, the "minInterceptCap" value is ignored. The interception scope is only "canopy".'
             logger.warning(msg)
         if self.interceptionModuleType == "Modified":
             self.minInterceptCap = vos.readPCRmapClone(
@@ -167,9 +163,7 @@ class LandCover(object):
             "allowNegativePercolation" in list(self.iniItemsLC.keys())
             and self.iniItemsLC["allowNegativePercolation"] == "True"
         ):
-            msg = (
-                "Allowing negative values of percolation percUpp (P1), as done in the oldcalc script of PCR-GLOBWB 1.0. "
-            )  # \n'
+            msg = "Allowing negative values of percolation percUpp (P1), as done in the oldcalc script of PCR-GLOBWB 1.0. "  # \n'
             msg += (
                 "Note that this option is only relevant for the two layer soil model."
             )
@@ -187,12 +181,8 @@ class LandCover(object):
             ]
             == "True"
         ):
-            msg = (
-                "Using the original rootFraction/transpiration as defined in the oldcalc script of PCR-GLOBWB 1.0. "
-            )  # \n'
-            msg += (
-                "There is a possibility that rootFraction/transpiration is only defined in the bottom layer, while no root in upper layer(s)."
-            )
+            msg = "Using the original rootFraction/transpiration as defined in the oldcalc script of PCR-GLOBWB 1.0. "  # \n'
+            msg += "There is a possibility that rootFraction/transpiration is only defined in the bottom layer, while no root in upper layer(s)."
             logger.warning(msg)
             self.usingOriginalOldCalcRootTranspirationPartitioningMethod = True
 
@@ -351,9 +341,7 @@ class LandCover(object):
                 + self.name
                 + " "
             )  # '\n'
-            msg = (
-                "This run assumes zero canopy interception capacity for this run, UNLESS minInterceptCap (minimum interception capacity) is bigger than zero."
-            )  # + '\n'
+            msg = "This run assumes zero canopy interception capacity for this run, UNLESS minInterceptCap (minimum interception capacity) is bigger than zero."  # + '\n'
             logger.warning(msg)
             self.coverFractionNC = None
             self.interceptCapNC = None
@@ -471,9 +459,7 @@ class LandCover(object):
         # get parameters that are fixed for the entire simulation:
         if date_in_string == None:
 
-            msg = (
-                "Obtaining the land cover parameters that are fixed for the entire simulation."
-            )
+            msg = "Obtaining the land cover parameters that are fixed for the entire simulation."
             logger.debug(msg)
 
             if self.iniItemsLC["landCoverMapsNC"] == str(None):
@@ -562,8 +548,8 @@ class LandCover(object):
                 # estimating arnoBeta from the values of maxSoilDepthFrac and minSoilDepthFrac.
                 lc_parameters["arnoBeta"] = pcr.max(
                     0.001,
-                    (lc_parameters["maxSoilDepthFrac"] - 1.)
-                    / (1. - lc_parameters["minSoilDepthFrac"])
+                    (lc_parameters["maxSoilDepthFrac"] - 1.0)
+                    / (1.0 - lc_parameters["minSoilDepthFrac"])
                     + self.parameters.orographyBeta
                     - 0.01,
                 )  # Rens's line: BCF[TYPE]= max(0.001,(MAXFRAC[TYPE]-1)/(1-MINFRAC[TYPE])+B_ORO-0.01)
@@ -638,8 +624,8 @@ class LandCover(object):
                 # estimating arnoBeta from the values of maxSoilDepthFrac and minSoilDepthFrac
                 lc_parameters["arnoBeta"] = pcr.max(
                     0.001,
-                    (lc_parameters["maxSoilDepthFrac"] - 1.)
-                    / (1. - lc_parameters["minSoilDepthFrac"])
+                    (lc_parameters["maxSoilDepthFrac"] - 1.0)
+                    / (1.0 - lc_parameters["minSoilDepthFrac"])
                     + self.parameters.orographyBeta
                     - 0.01,
                 )  # Rens's line: BCF[TYPE]= max(0.001,(MAXFRAC[TYPE]-1)/(1-MINFRAC[TYPE])+B_ORO-0.01)
@@ -718,9 +704,11 @@ class LandCover(object):
         # Due to compaction infiltration/percolation loss rate can be much smaller than original soil saturated conductivity
         # - Wada et al. (2014) assume it will be 10 times smaller
         if self.numberOfLayers == 2:
-            design_percolation_loss = self.parameters.kSatUpp / 10.  # unit: m/day
+            design_percolation_loss = self.parameters.kSatUpp / 10.0  # unit: m/day
         if self.numberOfLayers == 3:
-            design_percolation_loss = self.parameters.kSatUpp000005 / 10.  # unit: m/day
+            design_percolation_loss = (
+                self.parameters.kSatUpp000005 / 10.0
+            )  # unit: m/day
 
         # However, it can also be much smaller especially in well-puddled paddy fields and should avoid salinization problems.
         # - Default minimum and maximum percolation loss values based on FAO values Reference: http://www.fao.org/docrep/s2022e/s2022e08.htm
@@ -978,14 +966,14 @@ class LandCover(object):
                         self.parameters.matricSuction50
                         / self.parameters.airEntryValueUpp
                     )
-                    ** (-1. / self.parameters.poreSizeBetaUpp)
+                    ** (-1.0 / self.parameters.poreSizeBetaUpp)
                     + self.parameters.storCapLow
                     * self.adjRootFrLow
                     * (
                         self.parameters.matricSuction50
                         / self.parameters.airEntryValueLow
                     )
-                    ** (-1. / self.parameters.poreSizeBetaLow)
+                    ** (-1.0 / self.parameters.poreSizeBetaLow)
                 )
                 / (
                     self.parameters.storCapUpp * self.adjRootFrUpp
@@ -1058,21 +1046,21 @@ class LandCover(object):
                         self.parameters.matricSuction50
                         / self.parameters.airEntryValueUpp000005
                     )
-                    ** (-1. / self.parameters.poreSizeBetaUpp000005)
+                    ** (-1.0 / self.parameters.poreSizeBetaUpp000005)
                     + self.parameters.storCapUpp005030
                     * self.adjRootFrUpp005030
                     * (
                         self.parameters.matricSuction50
                         / self.parameters.airEntryValueUpp000005
                     )
-                    ** (-1. / self.parameters.poreSizeBetaUpp000005)
+                    ** (-1.0 / self.parameters.poreSizeBetaUpp000005)
                     + self.parameters.storCapLow030150
                     * self.adjRootFrLow030150
                     * (
                         self.parameters.matricSuction50
                         / self.parameters.airEntryValueLow030150
                     )
-                    ** (-1. / self.parameters.poreSizeBetaLow030150)
+                    ** (-1.0 / self.parameters.poreSizeBetaLow030150)
                     / (
                         self.parameters.storCapUpp000005 * self.adjRootFrUpp000005
                         + self.parameters.storCapUpp005030 * self.adjRootFrUpp005030
@@ -1146,7 +1134,7 @@ class LandCover(object):
 
             self.totAvlWater = (
                 pcr.max(
-                    0.,
+                    0.0,
                     self.parameters.effSatAtFieldCapUpp
                     - self.parameters.effSatAtWiltPointUpp,
                 )
@@ -1156,7 +1144,7 @@ class LandCover(object):
                 self.parameters.thickUpp, self.maxRootDepth
             ) + (
                 pcr.max(
-                    0.,
+                    0.0,
                     self.parameters.effSatAtFieldCapLow
                     - self.parameters.effSatAtWiltPointLow,
                 )
@@ -1164,7 +1152,7 @@ class LandCover(object):
                 self.parameters.satVolMoistContLow - self.parameters.resVolMoistContLow
             ) * pcr.min(
                 self.parameters.thickLow,
-                pcr.max(self.maxRootDepth - self.parameters.thickUpp, 0.),
+                pcr.max(self.maxRootDepth - self.parameters.thickUpp, 0.0),
             )  # Edwin modified this line. Edwin uses soil thickness thickUpp and thickLow (instead of storCapUpp and storCapLow).
             # And Rens support this.
             self.totAvlWater = pcr.min(
@@ -1177,7 +1165,7 @@ class LandCover(object):
             self.totAvlWater = (
                 (
                     pcr.max(
-                        0.,
+                        0.0,
                         self.parameters.effSatAtFieldCapUpp000005
                         - self.parameters.effSatAtWiltPointUpp000005,
                     )
@@ -1189,7 +1177,7 @@ class LandCover(object):
                 * pcr.min(self.parameters.thickUpp000005, self.maxRootDepth)
                 + (
                     pcr.max(
-                        0.,
+                        0.0,
                         self.parameters.effSatAtFieldCapUpp005030
                         - self.parameters.effSatAtWiltPointUpp005030,
                     )
@@ -1204,7 +1192,7 @@ class LandCover(object):
                 )
                 + (
                     pcr.max(
-                        0.,
+                        0.0,
                         self.parameters.effSatAtFieldCapLow030150
                         - self.parameters.effSatAtWiltPointLow030150,
                     )
@@ -1215,7 +1203,7 @@ class LandCover(object):
                 )
                 * pcr.min(
                     self.parameters.thickLow030150,
-                    pcr.max(self.maxRootDepth - self.parameters.thickUpp005030, 0.),
+                    pcr.max(self.maxRootDepth - self.parameters.thickUpp005030, 0.0),
                 )
             )
             #
@@ -1335,11 +1323,11 @@ class LandCover(object):
         # saturation degrees (needed only for reporting):
         if self.numberOfSoilLayers == 2:
             self.satDegUpp = vos.getValDivZero(
-                self.storUpp, self.parameters.storCapUpp, vos.smallNumber, 0.
+                self.storUpp, self.parameters.storCapUpp, vos.smallNumber, 0.0
             )
             self.satDegUpp = pcr.ifthen(self.landmask, self.satDegUpp)
             self.satDegLow = vos.getValDivZero(
-                self.storLow, self.parameters.storCapLow, vos.smallNumber, 0.
+                self.storLow, self.parameters.storCapLow, vos.smallNumber, 0.0
             )
             self.satDegLow = pcr.ifthen(self.landmask, self.satDegLow)
 
@@ -1351,21 +1339,21 @@ class LandCover(object):
                 self.storUpp000005,
                 self.parameters.storCapUpp000005,
                 vos.smallNumber,
-                0.,
+                0.0,
             )
             self.satDegUpp000005 = pcr.ifthen(self.landmask, self.satDegUpp000005)
             self.satDegUpp005030 = vos.getValDivZero(
                 self.storUpp005030,
                 self.parameters.storCapUpp005030,
                 vos.smallNumber,
-                0.,
+                0.0,
             )
             self.satDegUpp005030 = pcr.ifthen(self.landmask, self.satDegUpp005030)
             self.satDegLow030150 = vos.getValDivZero(
                 self.storLow030150,
                 self.parameters.storCapLow030150,
                 vos.smallNumber,
-                0.,
+                0.0,
             )
             self.satDegLow030150 = pcr.ifthen(self.landmask, self.satDegLow030150)
 
@@ -1373,7 +1361,7 @@ class LandCover(object):
                 self.storUpp000005 + self.storUpp005030,
                 self.parameters.storCapUpp000005 + self.parameters.storCapUpp005030,
                 vos.smallNumber,
-                0.,
+                0.0,
             )
             self.satDegUppTotal = pcr.ifthen(self.landmask, self.satDegUppTotal)
             self.satDegLowTotal = self.satDegLow030150
@@ -1591,7 +1579,7 @@ class LandCover(object):
             self.potInterceptionFlux
             * (
                 vos.getValDivZero(
-                    self.interceptStor, self.interceptCap, vos.smallNumber, 0.
+                    self.interceptStor, self.interceptCap, vos.smallNumber, 0.0
                 )
                 ** (2.00 / 3.00)
             ),
@@ -1635,7 +1623,7 @@ class LandCover(object):
             )
 
         # update actual evaporation (after interceptEvap)
-        self.actualET = 0.  # interceptEvap is the first flux in ET
+        self.actualET = 0.0  # interceptEvap is the first flux in ET
         self.actualET += self.interceptEvap
 
         if self.debugWaterBalance:
@@ -1806,12 +1794,12 @@ class LandCover(object):
 
         # netLqWaterToSoil = net liquid transferred to soil
         self.netLqWaterToSoil = pcr.max(
-            0., self.snowFreeWater - self.snowWaterHoldingCap * self.snowCoverSWE
+            0.0, self.snowFreeWater - self.snowWaterHoldingCap * self.snowCoverSWE
         )  # Pn = max(0,SCF_L[TYPE]-CWH*SC_L[TYPE])
 
         # update snowFreeWater (after netLqWaterToSoil)
         self.snowFreeWater = pcr.max(
-            0., self.snowFreeWater - self.netLqWaterToSoil
+            0.0, self.snowFreeWater - self.netLqWaterToSoil
         )  # SCF_L[TYPE] = max(0,SCF_L[TYPE]-Pn)
 
         # evaporation from snowFreeWater (based on potBareSoilEvap)
@@ -1871,17 +1859,17 @@ class LandCover(object):
         if self.numberOfLayers == 2:
 
             # initial total soilWaterStorage
-            self.soilWaterStorage = pcr.max(0., self.storUpp + self.storLow)
+            self.soilWaterStorage = pcr.max(0.0, self.storUpp + self.storLow)
 
             # effective degree of saturation (-)
             self.effSatUpp = pcr.max(
-                0., self.storUpp / self.parameters.storCapUpp
+                0.0, self.storUpp / self.parameters.storCapUpp
             )  # THEFF1= max(0,S1_L[TYPE]/SC1[TYPE]);
             self.effSatLow = pcr.max(
-                0., self.storLow / self.parameters.storCapLow
+                0.0, self.storLow / self.parameters.storCapLow
             )  # THEFF2= max(0,S2_L[TYPE]/SC2[TYPE]);
-            self.effSatUpp = pcr.min(1., self.effSatUpp)
-            self.effSatLow = pcr.min(1., self.effSatLow)
+            self.effSatUpp = pcr.min(1.0, self.effSatUpp)
+            self.effSatLow = pcr.min(1.0, self.effSatLow)
             self.effSatUpp = pcr.cover(self.effSatUpp, 1.0)
             self.effSatLow = pcr.cover(self.effSatLow, 1.0)
 
@@ -1903,12 +1891,12 @@ class LandCover(object):
             # ~ self.parameters.campbellBeta2*self.parameters.KSat2)         # DW's code
             #
             self.kUnsatUpp = pcr.max(
-                0.,
+                0.0,
                 (self.effSatUpp ** self.parameters.campbellBetaUpp)
                 * self.parameters.kSatUpp,
             )  # original Rens's code: KTHEFF1= max(0,THEFF1**BCB1[TYPE]*KS1[TYPE])
             self.kUnsatLow = pcr.max(
-                0.,
+                0.0,
                 (self.effSatLow ** self.parameters.campbellBetaLow)
                 * self.parameters.kSatLow,
             )  # original Rens's code: KTHEFF2= max(0,THEFF2**BCB2[TYPE]*KS2[TYPE])
@@ -1933,7 +1921,7 @@ class LandCover(object):
             self.gradientUppLow = pcr.max(
                 0.0,
                 (self.matricSuctionUpp - self.matricSuctionLow)
-                * 2.
+                * 2.0
                 / (self.parameters.thickUpp + self.parameters.thickLow)
                 - pcr.scalar(1.0),
             )
@@ -1953,18 +1941,18 @@ class LandCover(object):
             # ~ pcr.max(self.maxRootDepth-self.parameters.storCapUpp,0.)) # DW's code (using storCapUpp and storCapLow). Edwin does not agree with this.
             #
             self.readAvlWater = (
-                pcr.max(0., self.effSatUpp - self.parameters.effSatAtWiltPointUpp)
+                pcr.max(0.0, self.effSatUpp - self.parameters.effSatAtWiltPointUpp)
             ) * (
                 self.parameters.satVolMoistContUpp - self.parameters.resVolMoistContUpp
             ) * pcr.min(
                 self.parameters.thickUpp, self.maxRootDepth
             ) + (
-                pcr.max(0., self.effSatLow - self.parameters.effSatAtWiltPointLow)
+                pcr.max(0.0, self.effSatLow - self.parameters.effSatAtWiltPointLow)
             ) * (
                 self.parameters.satVolMoistContLow - self.parameters.resVolMoistContLow
             ) * pcr.min(
                 self.parameters.thickLow,
-                pcr.max(self.maxRootDepth - self.parameters.thickUpp, 0.),
+                pcr.max(self.maxRootDepth - self.parameters.thickUpp, 0.0),
             )  # Edwin modified this line. Edwin uses soil thickness thickUpp & thickLow (instead of storCapUpp & storCapLow).
             # And Rens support this.
 
@@ -1972,22 +1960,22 @@ class LandCover(object):
 
             # initial total soilWaterStorage
             self.soilWaterStorage = pcr.max(
-                0., self.storUpp000005 + self.storUpp005030 + self.storLow030150
+                0.0, self.storUpp000005 + self.storUpp005030 + self.storLow030150
             )
 
             # effective degree of saturation (-)
             self.effSatUpp000005 = pcr.max(
-                0., self.storUpp000005 / self.parameters.storCapUpp000005
+                0.0, self.storUpp000005 / self.parameters.storCapUpp000005
             )
             self.effSatUpp005030 = pcr.max(
-                0., self.storUpp005030 / self.parameters.storCapUpp005030
+                0.0, self.storUpp005030 / self.parameters.storCapUpp005030
             )
             self.effSatLow030150 = pcr.max(
-                0., self.storLow030150 / self.parameters.storCapLow030150
+                0.0, self.storLow030150 / self.parameters.storCapLow030150
             )
-            self.effSatUpp000005 = pcr.min(1., self.effSatUpp000005)
-            self.effSatUpp005030 = pcr.min(1., self.effSatUpp005030)
-            self.effSatLow030150 = pcr.min(1., self.effSatLow030150)
+            self.effSatUpp000005 = pcr.min(1.0, self.effSatUpp000005)
+            self.effSatUpp005030 = pcr.min(1.0, self.effSatUpp005030)
+            self.effSatLow030150 = pcr.min(1.0, self.effSatLow030150)
 
             # matricSuction (m)
             self.matricSuctionUpp000005 = self.parameters.airEntryValueUpp000005 * (
@@ -2005,17 +1993,17 @@ class LandCover(object):
 
             # kUnsat (m.day-1): unsaturated hydraulic conductivity
             self.kUnsatUpp000005 = pcr.max(
-                0.,
+                0.0,
                 (self.effSatUpp000005 ** self.parameters.campbellBetaUpp000005)
                 * self.parameters.kSatUpp000005,
             )
             self.kUnsatUpp005030 = pcr.max(
-                0.,
+                0.0,
                 (self.effSatUpp005030 ** self.parameters.campbellBetaUpp005030)
                 * self.parameters.kSatUpp005030,
             )
             self.kUnsatLow030150 = pcr.max(
-                0.,
+                0.0,
                 (self.effSatLow030150 ** self.parameters.campbellBetaLow030150)
                 * self.parameters.kSatLow030150,
             )
@@ -2058,26 +2046,26 @@ class LandCover(object):
             # gradient for capillary rise (index indicating target store to its underlying store)
             #    between Upp000005Upp005030
             self.gradientUpp000005Upp005030 = pcr.max(
-                0.,
-                2.
+                0.0,
+                2.0
                 * (self.matricSuctionUpp000005 - self.matricSuctionUpp005030)
                 / (self.parameters.thickUpp000005 + self.parameters.thickUpp005030)
-                - 1.,
+                - 1.0,
             )
             #    between Upp005030Low030150
             self.gradientUpp005030Low030150 = pcr.max(
-                0.,
-                2.
+                0.0,
+                2.0
                 * (self.matricSuctionUpp005030 - self.matricSuctionLow030150)
                 / (self.parameters.thickUpp005030 + self.parameters.thickLow030150)
-                - 1.,
+                - 1.0,
             )
 
             # readily available water in the root zone (upper soil layers)
             self.readAvlWater = (
                 (
                     pcr.max(
-                        0.,
+                        0.0,
                         self.effSatUpp000005
                         - self.parameters.effSatAtWiltPointUpp000005,
                     )
@@ -2089,7 +2077,7 @@ class LandCover(object):
                 * pcr.min(self.parameters.thickUpp000005, self.maxRootDepth)
                 + (
                     pcr.max(
-                        0.,
+                        0.0,
                         self.effSatUpp005030
                         - self.parameters.effSatAtWiltPointUpp005030,
                     )
@@ -2104,7 +2092,7 @@ class LandCover(object):
                 )
                 + (
                     pcr.max(
-                        0.,
+                        0.0,
                         self.effSatLow030150
                         - self.parameters.effSatAtWiltPointLow030150,
                     )
@@ -2115,7 +2103,7 @@ class LandCover(object):
                 )
                 * pcr.min(
                     self.parameters.thickLow030150,
-                    pcr.max(self.maxRootDepth - self.parameters.thickUpp005030, 0.),
+                    pcr.max(self.maxRootDepth - self.parameters.thickUpp005030, 0.0),
                 )
             )
 
@@ -2136,14 +2124,14 @@ class LandCover(object):
     ):
 
         # irrigation water demand (unit: m/day) for paddy and non-paddy
-        self.irrGrossDemand = pcr.scalar(0.)
+        self.irrGrossDemand = pcr.scalar(0.0)
         if (
             self.name == "irrPaddy" or self.name == "irr_paddy"
         ) and self.includeIrrigation:
             self.irrGrossDemand = pcr.ifthenelse(
                 self.cropKC > 0.75,
                 pcr.max(0.0, self.minTopWaterLayer - (self.topWaterLayer)),
-                0.,
+                0.0,
             )  # a function of cropKC (evaporation and transpiration),
             #               topWaterLayer (water available in the irrigation field)
 
@@ -2160,7 +2148,7 @@ class LandCover(object):
             adjDeplFactor = pcr.max(
                 0.1,
                 pcr.min(
-                    0.8, (self.cropDeplFactor + 0.04 * (5. - self.totalPotET * 1000.))
+                    0.8, (self.cropDeplFactor + 0.04 * (5.0 - self.totalPotET * 1000.0))
                 ),
             )  # original formula based on Allen et al. (1998)
             # see: http://www.fao.org/docrep/x0490e/x0490e0e.htm#
@@ -2188,9 +2176,9 @@ class LandCover(object):
                         0.0,
                         self.totAvlWater * self.irrigation_factor - self.readAvlWater,
                     ),
-                    0.,
+                    0.0,
                 ),
-                0.,
+                0.0,
             )
 
             # irrigation demand is implemented only if there is deficit in transpiration and/or evaporation
@@ -2307,7 +2295,7 @@ class LandCover(object):
             self.irrGrossDemand = pcr.min(maximum_demand, self.irrGrossDemand)
 
             # ignore small irrigation demand (less than 1 mm)
-            self.irrGrossDemand = pcr.rounddown(self.irrGrossDemand * 1000.) / 1000.
+            self.irrGrossDemand = pcr.rounddown(self.irrGrossDemand * 1000.0) / 1000.0
 
             # irrigation demand is only calculated for areas with fracVegCover > 0                   # DO WE NEED THIS ?
             self.irrGrossDemand = pcr.ifthenelse(
@@ -2383,7 +2371,7 @@ class LandCover(object):
                 ),
                 allocation_zones=allocSegments,
                 zone_area=self.segmentArea,
-                high_volume_treshold=1000000.,
+                high_volume_treshold=1000000.0,
                 debug_water_balance=True,
                 extra_info_for_water_balance_reporting=str(currTimeStep.fulldate),
                 landmask=self.landmask,
@@ -2552,7 +2540,7 @@ class LandCover(object):
                 available_water_volume=pcr.max(0.00, routing.readAvlChannelStorage),
                 allocation_zones=allocSegments,
                 zone_area=self.segmentArea,
-                high_volume_treshold=1000000.,
+                high_volume_treshold=1000000.0,
                 debug_water_balance=True,
                 extra_info_for_water_balance_reporting=str(currTimeStep.fulldate),
                 landmask=self.landmask,
@@ -2703,7 +2691,7 @@ class LandCover(object):
             )
 
             # estimate of total groundwater abstraction (m3) from the last 365 days:
-            tolerating_days = 0.
+            tolerating_days = 0.0
             annualGroundwaterAbstraction = (
                 groundwater.avgAbstraction
                 * routing.cellArea
@@ -2819,7 +2807,7 @@ class LandCover(object):
                 ),
                 allocation_zones=groundwater.allocSegments,
                 zone_area=groundwater.segmentArea,
-                high_volume_treshold=1000000.,
+                high_volume_treshold=1000000.0,
                 debug_water_balance=True,
                 extra_info_for_water_balance_reporting=str(currTimeStep.fulldate),
                 landmask=self.landmask,
@@ -3026,7 +3014,7 @@ class LandCover(object):
             )
             # - ignore small irrigation demand (less than 1 mm)
             correctedRemainingIrrigation = (
-                pcr.rounddown(correctedRemainingIrrigation * 1000.) / 1000.
+                pcr.rounddown(correctedRemainingIrrigation * 1000.0) / 1000.0
             )
 
             # the (corrected) remaining total demand (limited to self.potFossilGroundwaterAbstract)
@@ -3123,15 +3111,9 @@ class LandCover(object):
 
                 # Note: If limitFossilGroundwaterAbstraction == False,
                 #       allocation of fossil groundwater abstraction is not needed.
-                msg = (
-                    "Fossil groundwater abstractions are without limit for satisfying local demand. "
-                )
-                msg = (
-                    "Allocation for fossil groundwater abstraction is NOT needed/implemented. "
-                )
-                msg += (
-                    "However, the fossil groundwater abstraction rate still consider the maximumDailyGroundwaterAbstraction."
-                )
+                msg = "Fossil groundwater abstractions are without limit for satisfying local demand. "
+                msg = "Allocation for fossil groundwater abstraction is NOT needed/implemented. "
+                msg += "However, the fossil groundwater abstraction rate still consider the maximumDailyGroundwaterAbstraction."
                 logger.debug(msg)
 
                 # fossil groundwater abstraction (unit: m/day)
@@ -3194,7 +3176,7 @@ class LandCover(object):
                         ),
                         allocation_zones=groundwater.allocSegments,
                         zone_area=groundwater.segmentArea,
-                        high_volume_treshold=1000000.,
+                        high_volume_treshold=1000000.0,
                         debug_water_balance=True,
                         extra_info_for_water_balance_reporting=str(
                             currTimeStep.fulldate
@@ -3368,7 +3350,7 @@ class LandCover(object):
             * self.livestockWaterWithdrawal
         )
         # - ignore very small return flow (less than 0.1 mm)
-        self.nonIrrReturnFlow = pcr.rounddown(self.nonIrrReturnFlow * 10000.) / 10000.
+        self.nonIrrReturnFlow = pcr.rounddown(self.nonIrrReturnFlow * 10000.0) / 10000.0
         self.nonIrrReturnFlow = pcr.min(self.nonIrrReturnFlow, self.nonIrrGrossDemand)
 
         if self.debugWaterBalance:
@@ -3457,11 +3439,11 @@ class LandCover(object):
             self.rootZoneWaterStorageMin, iniWaterStorage
         )  # Pn = Pn-max(WMIN[TYPE],W[TYPE]);
         soilWaterStorage = pcr.ifthenelse(
-            Pn < 0.,
+            Pn < 0.0,
             self.rootZoneWaterStorageMin + Pn,
             pcr.max(iniWaterStorage, self.rootZoneWaterStorageMin),
         )  # W[TYPE]= if(Pn<0,WMIN[TYPE]+Pn,max(W[TYPE],WMIN[TYPE]));
-        Pn = pcr.max(0., Pn)  # Pn = max(0,Pn);
+        Pn = pcr.max(0.0, Pn)  # Pn = max(0,Pn);
         #
         DW = pcr.max(
             0.0, self.parameters.rootZoneWaterStorageCap - soilWaterStorage
@@ -3476,11 +3458,11 @@ class LandCover(object):
         )
 
         self.WFRACB = WFRAC ** (
-            1. / (1. + self.arnoBeta)
+            1.0 / (1.0 + self.arnoBeta)
         )  # WFRACB = WFRAC**(1/(1+BCF[TYPE]));
         #
         self.satAreaFrac = pcr.ifthenelse(
-            self.WFRACB > 0., 1. - self.WFRACB ** self.arnoBeta, 1.
+            self.WFRACB > 0.0, 1.0 - self.WFRACB ** self.arnoBeta, 1.0
         )  # SATFRAC_L = if(WFRACB>0,1-WFRACB**BCF[TYPE],1);
         # make sure that 0.0 <= satAreaFrac <= 1.0
         self.satAreaFrac = pcr.min(self.satAreaFrac, 1.0)
@@ -3544,7 +3526,7 @@ class LandCover(object):
 
         # directRunoff
         condition = (
-            (self.arnoBeta + pcr.scalar(1.))
+            (self.arnoBeta + pcr.scalar(1.0))
             * self.rootZoneWaterStorageRange
             * self.WFRACB
         )
@@ -3562,9 +3544,9 @@ class LandCover(object):
                 self.rootZoneWaterStorageRange
                 * (
                     self.WFRACB
-                    - Pn / ((self.arnoBeta + 1.) * self.rootZoneWaterStorageRange)
+                    - Pn / ((self.arnoBeta + 1.0) * self.rootZoneWaterStorageRange)
                 )
-                ** (self.arnoBeta + 1.),
+                ** (self.arnoBeta + 1.0),
             ),
         )
         #    Q1_L[TYPE]= max(0,Pn-(WMAX[TYPE]+P2_L[TYPE]-W[TYPE])+
@@ -3579,7 +3561,7 @@ class LandCover(object):
 
         # update topWaterLayer (above soil)
         # - with netLqWaterToSoil and irrGrossDemand
-        self.topWaterLayer += pcr.max(0., self.netLqWaterToSoil + self.irrGrossDemand)
+        self.topWaterLayer += pcr.max(0.0, self.netLqWaterToSoil + self.irrGrossDemand)
 
         # potential evaporation for openWaterEvap
         remainingPotETP = (
@@ -3588,13 +3570,13 @@ class LandCover(object):
         # remainingPotETP = self.totalPotET                              # DW, RvB, and YW use self.totalPotETP
 
         # openWaterEvap is ONLY for evaporation from paddy field areas
-        self.openWaterEvap = pcr.spatial(pcr.scalar(0.))
+        self.openWaterEvap = pcr.spatial(pcr.scalar(0.0))
 
         if (
             self.name == "irrPaddy" or self.name == "irr_paddy"
         ):  # only open water evaporation from the paddy field
             self.openWaterEvap = pcr.min(
-                pcr.max(0., self.topWaterLayer), remainingPotETP
+                pcr.max(0.0, self.topWaterLayer), remainingPotETP
             )
 
         # update potBareSoilEvap & potTranspiration (after openWaterEvap)
@@ -3619,7 +3601,7 @@ class LandCover(object):
         )
 
         # update top water layer after openWaterEvap
-        self.topWaterLayer = pcr.max(0., self.topWaterLayer - self.openWaterEvap)
+        self.topWaterLayer = pcr.max(0.0, self.topWaterLayer - self.openWaterEvap)
 
     def calculateInfiltration(self):
 
@@ -3640,7 +3622,7 @@ class LandCover(object):
         ) and self.includeIrrigation:
             infiltration_loss = pcr.max(
                 self.design_percolation_loss,
-                ((1. / self.irrigationEfficiencyUsed) - 1.) * self.topWaterLayer,
+                ((1.0 / self.irrigationEfficiencyUsed) - 1.0) * self.topWaterLayer,
             )
             self.infiltration = pcr.min(infiltration_loss, self.infiltration)
 
@@ -3667,12 +3649,12 @@ class LandCover(object):
                 self.adjRootFrUpp * self.storUpp + self.adjRootFrLow * self.storLow,
             )
             transpFracUpp = pcr.ifthenelse(
-                (self.storUpp + self.storLow) > 0.,
+                (self.storUpp + self.storLow) > 0.0,
                 self.adjRootFrUpp * self.storUpp / dividerTranspFracs,
                 self.adjRootFrUpp,
             )
             transpFracLow = pcr.ifthenelse(
-                (self.storUpp + self.storLow) > 0.,
+                (self.storUpp + self.storLow) > 0.0,
                 self.adjRootFrLow * self.storLow / dividerTranspFracs,
                 self.adjRootFrLow,
             )  #   WF1= if((S1_L[TYPE]+S2_L[TYPE])>0,RFW1[TYPE]*S1_L[TYPE]/
@@ -3687,17 +3669,17 @@ class LandCover(object):
                 + self.adjRootFrLow030150 * self.storLow030150,
             )
             transpFracUpp000005 = pcr.ifthenelse(
-                (self.storUpp000005 + self.storUpp005030 + self.storLow030150) > 0.,
+                (self.storUpp000005 + self.storUpp005030 + self.storLow030150) > 0.0,
                 self.adjRootFrUpp000005 * self.storUpp000005 / dividerTranspFracs,
                 self.adjRootFrUpp000005,
             )
             transpFracUpp005030 = pcr.ifthenelse(
-                (self.storUpp000005 + self.storUpp005030 + self.storLow030150) > 0.,
+                (self.storUpp000005 + self.storUpp005030 + self.storLow030150) > 0.0,
                 self.adjRootFrUpp005030 * self.storUpp005030 / dividerTranspFracs,
                 self.adjRootFrUpp005030,
             )
             transpFracLow030150 = pcr.ifthenelse(
-                (self.storUpp000005 + self.storUpp005030 + self.storLow030150) > 0.,
+                (self.storUpp000005 + self.storUpp005030 + self.storLow030150) > 0.0,
                 self.adjRootFrLow030150 * self.storLow030150 / dividerTranspFracs,
                 self.adjRootFrLow030150,
             )
@@ -3713,15 +3695,15 @@ class LandCover(object):
                 self.parameters.rootZoneWaterStorageCap
                 + self.arnoBeta
                 * self.rootZoneWaterStorageRange
-                * (1. - (1. + self.arnoBeta) / self.arnoBeta * self.WFRACB)
+                * (1.0 - (1.0 + self.arnoBeta) / self.arnoBeta * self.WFRACB)
             ) / (
                 self.parameters.rootZoneWaterStorageCap
-                + self.arnoBeta * self.rootZoneWaterStorageRange * (1. - self.WFRACB)
+                + self.arnoBeta * self.rootZoneWaterStorageRange * (1.0 - self.WFRACB)
             )  # original Rens's line:
             # FRACTA[TYPE] = (WMAX[TYPE]+BCF[TYPE]*WRANGE[TYPE]*(1-(1+BCF[TYPE])/BCF[TYPE]*WFRACB))/
             #                (WMAX[TYPE]+BCF[TYPE]*WRANGE[TYPE]*(1-WFRACB));
-            relActTranspiration = (1. - self.satAreaFrac) / (
-                1.
+            relActTranspiration = (1.0 - self.satAreaFrac) / (
+                1.0
                 + (pcr.max(0.01, relActTranspiration) / self.effSatAt50)
                 ** (self.effPoreSizeBetaAt50 * pcr.scalar(-3.0))
             )  # original Rens's line:
@@ -3794,14 +3776,14 @@ class LandCover(object):
         if self.numberOfLayers == 2 and returnTotalEstimation == False:
             actBareSoilEvap = self.satAreaFrac * pcr.min(
                 self.potBareSoilEvap, self.parameters.kSatUpp
-            ) + (1. - self.satAreaFrac) * pcr.min(
+            ) + (1.0 - self.satAreaFrac) * pcr.min(
                 self.potBareSoilEvap, self.kUnsatUpp
             )  # ES_a[TYPE] =  SATFRAC_L *min(ES_p[TYPE],KS1[TYPE]*Duration*timeslice())+
             #            (1-SATFRAC_L)*min(ES_p[TYPE],KTHEFF1*Duration*timeslice());
         if self.numberOfLayers == 3 and returnTotalEstimation == False:
             actBareSoilEvap = self.satAreaFrac * pcr.min(
                 self.potBareSoilEvap, self.parameters.kSatUpp000005
-            ) + (1. - self.satAreaFrac) * pcr.min(
+            ) + (1.0 - self.satAreaFrac) * pcr.min(
                 self.potBareSoilEvap, self.kUnsatUpp000005
             )
         actBareSoilEvap = pcr.max(0.0, actBareSoilEvap)
@@ -3857,17 +3839,17 @@ class LandCover(object):
         if self.numberOfLayers == 2:
 
             # - percolation from storUpp to storLow
-            self.percUpp = self.kThVertUppLow * 1.
+            self.percUpp = self.kThVertUppLow * 1.0
             self.percUpp = pcr.ifthenelse(
                 self.effSatUpp > self.parameters.effSatAtFieldCapUpp,
                 pcr.min(
-                    pcr.max(0., self.effSatUpp - self.parameters.effSatAtFieldCapUpp)
+                    pcr.max(0.0, self.effSatUpp - self.parameters.effSatAtFieldCapUpp)
                     * self.parameters.storCapUpp,
                     self.percUpp,
                 ),
                 self.percUpp,
             ) + pcr.max(
-                0., self.infiltration - (self.parameters.storCapUpp - self.storUpp)
+                0.0, self.infiltration - (self.parameters.storCapUpp - self.storUpp)
             )  # original Rens's line:
             #   P1_L[TYPE] = KTHVERT*Duration*timeslice();
             #   P1_L[TYPE] = if(THEFF1 > THEFF1_FC[TYPE],min(max(0,THEFF1-THEFF1_FC[TYPE])*SC1[TYPE],
@@ -3882,7 +3864,7 @@ class LandCover(object):
 
             # - capillary rise to storUpp from storLow
             self.capRiseUpp = pcr.min(
-                pcr.max(0., self.parameters.effSatAtFieldCapUpp - self.effSatUpp)
+                pcr.max(0.0, self.parameters.effSatAtFieldCapUpp - self.effSatUpp)
                 * self.parameters.storCapUpp,
                 self.kThVertUppLow * self.gradientUppLow,
             )  # original Rens's line:
@@ -3893,7 +3875,7 @@ class LandCover(object):
                 0.5
                 * (self.satAreaFrac + capRiseFrac)
                 * pcr.min(
-                    (1. - self.effSatLow)
+                    (1.0 - self.effSatLow)
                     * pcr.sqrt(self.parameters.kSatLow * self.kUnsatLow),
                     pcr.max(0.0, self.parameters.effSatAtFieldCapLow - self.effSatLow)
                     * self.parameters.storCapLow,
@@ -3913,19 +3895,20 @@ class LandCover(object):
             )
             self.interflow = pcr.max(
                 self.parameters.interflowConcTime * percToInterflow
-                + (pcr.scalar(1.) - self.parameters.interflowConcTime) * self.interflow,
+                + (pcr.scalar(1.0) - self.parameters.interflowConcTime)
+                * self.interflow,
                 0.0,
             )
 
         if self.numberOfLayers == 3:
 
             # - percolation from storUpp000005 to storUpp005030 (m)
-            self.percUpp000005 = self.kThVertUpp000005Upp005030 * 1.
+            self.percUpp000005 = self.kThVertUpp000005Upp005030 * 1.0
             self.percUpp000005 = pcr.ifthenelse(
                 self.effSatUpp000005 > self.parameters.effSatAtFieldCapUpp000005,
                 pcr.min(
                     pcr.max(
-                        0.,
+                        0.0,
                         self.effSatUpp000005
                         - self.parameters.effSatAtFieldCapUpp000005,
                     )
@@ -3934,18 +3917,18 @@ class LandCover(object):
                 ),
                 self.percUpp000005,
             ) + pcr.max(
-                0.,
+                0.0,
                 self.infiltration
                 - (self.parameters.storCapUpp000005 - self.storUpp000005),
             )
 
             # - percolation from storUpp005030 to storLow030150 (m)
-            self.percUpp005030 = self.kThVertUpp005030Low030150 * 1.
+            self.percUpp005030 = self.kThVertUpp005030Low030150 * 1.0
             self.percUpp005030 = pcr.ifthenelse(
                 self.effSatUpp005030 > self.parameters.effSatAtFieldCapUpp005030,
                 pcr.min(
                     pcr.max(
-                        0.,
+                        0.0,
                         self.effSatUpp005030
                         - self.parameters.effSatAtFieldCapUpp005030,
                     )
@@ -3954,7 +3937,7 @@ class LandCover(object):
                 ),
                 self.percUpp005030,
             ) + pcr.max(
-                0.,
+                0.0,
                 self.percUpp000005
                 - (self.parameters.storCapUpp005030 - self.storUpp005030),
             )
@@ -3970,7 +3953,8 @@ class LandCover(object):
             # - capillary rise to storUpp000005 from storUpp005030 (m)
             self.capRiseUpp000005 = pcr.min(
                 pcr.max(
-                    0., self.parameters.effSatAtFieldCapUpp000005 - self.effSatUpp000005
+                    0.0,
+                    self.parameters.effSatAtFieldCapUpp000005 - self.effSatUpp000005,
                 )
                 * self.parameters.storCapUpp000005,
                 self.kThVertUpp000005Upp005030 * self.gradientUpp000005Upp005030,
@@ -3979,7 +3963,8 @@ class LandCover(object):
             # - capillary rise to storUpp005030 from storLow030150 (m)
             self.capRiseUpp005030 = pcr.min(
                 pcr.max(
-                    0., self.parameters.effSatAtFieldCapUpp005030 - self.effSatUpp005030
+                    0.0,
+                    self.parameters.effSatAtFieldCapUpp005030 - self.effSatUpp005030,
                 )
                 * self.parameters.storCapUpp005030,
                 self.kThVertUpp005030Low030150 * self.gradientUpp005030Low030150,
@@ -3990,7 +3975,7 @@ class LandCover(object):
                 0.5
                 * (self.satAreaFrac + capRiseFrac)
                 * pcr.min(
-                    (1. - self.effSatLow030150)
+                    (1.0 - self.effSatLow030150)
                     * pcr.sqrt(self.parameters.kSatLow030150 * self.kUnsatLow030150),
                     pcr.max(
                         0.0,
@@ -4014,7 +3999,8 @@ class LandCover(object):
             )
             self.interflow = pcr.max(
                 self.parameters.interflowConcTime * percToInterflow
-                + (pcr.scalar(1.) - self.parameters.interflowConcTime) * self.interflow,
+                + (pcr.scalar(1.0) - self.parameters.interflowConcTime)
+                * self.interflow,
                 0.0,
             )
 
@@ -4031,7 +4017,7 @@ class LandCover(object):
             ADJUST = pcr.ifthenelse(
                 ADJUST > 0.0,
                 pcr.min(1.0, pcr.max(0.0, self.storUpp + self.infiltration) / ADJUST),
-                0.,
+                0.0,
             )
             ADJUST = pcr.cover(ADJUST, 0.0)
             self.actBareSoilEvap = ADJUST * self.actBareSoilEvap
@@ -4049,7 +4035,7 @@ class LandCover(object):
             ADJUST = pcr.ifthenelse(
                 ADJUST > 0.0,
                 pcr.min(1.0, pcr.max(0.0, self.storLow + self.percUpp) / ADJUST),
-                0.,
+                0.0,
             )
             ADJUST = pcr.cover(ADJUST, 0.0)
             self.percLow = ADJUST * self.percLow
@@ -4079,9 +4065,9 @@ class LandCover(object):
             # also limited with reducedCapRise
             #
             self.capRiseLow = pcr.max(
-                0.,
+                0.0,
                 pcr.min(
-                    pcr.max(0., groundwater.storGroundwater - self.reducedCapRise),
+                    pcr.max(0.0, groundwater.storGroundwater - self.reducedCapRise),
                     self.capRiseLow,
                 ),
             )
@@ -4110,7 +4096,7 @@ class LandCover(object):
                 pcr.min(
                     1.0, pcr.max(0.0, self.storUpp000005 + self.infiltration) / ADJUST
                 ),
-                0.,
+                0.0,
             )
             self.actBareSoilEvap = ADJUST * self.actBareSoilEvap
             self.percUpp000005 = ADJUST * self.percUpp000005
@@ -4123,7 +4109,7 @@ class LandCover(object):
                 pcr.min(
                     1.0, pcr.max(0.0, self.storUpp005030 + self.percUpp000005) / ADJUST
                 ),
-                0.,
+                0.0,
             )
             self.percUpp005030 = ADJUST * self.percUpp005030
             self.actTranspiUpp005030 = ADJUST * self.actTranspiUpp005030
@@ -4135,7 +4121,7 @@ class LandCover(object):
                 pcr.min(
                     1.0, pcr.max(0.0, self.storLow030150 + self.percUpp005030) / ADJUST
                 ),
-                0.,
+                0.0,
             )
             self.percLow030150 = ADJUST * self.percLow030150
             self.actTranspiLow030150 = ADJUST * self.actTranspiLow030150
@@ -4145,9 +4131,9 @@ class LandCover(object):
             # and also limited with reducedCapRise
             #
             self.capRiseLow030150 = pcr.max(
-                0.,
+                0.0,
                 pcr.min(
-                    pcr.max(0., groundwater.storGroundwater - self.reducedCapRise),
+                    pcr.max(0.0, groundwater.storGroundwater - self.reducedCapRise),
                     self.capRiseLow030150,
                 ),
             )
@@ -4180,7 +4166,7 @@ class LandCover(object):
 
         # for irrigation areas: interflow will be minimized
         if self.name.startswith("irr"):
-            self.interflow = 0.
+            self.interflow = 0.0
 
         # ~ # deep percolation should consider losses during application in non paddy areas
         # ~ if self.name == 'irrNonPaddy':
@@ -4235,7 +4221,7 @@ class LandCover(object):
                 deep_percolation_loss = pcr.max(
                     deep_percolation_loss,
                     pcr.max(0.0, self.storLow)
-                    * ((1. / self.irrigationEfficiencyUsed) - 1.),
+                    * ((1.0 / self.irrigationEfficiencyUsed) - 1.0),
                 )
                 self.percLow = pcr.ifthenelse(
                     self.cropKC > startingKC, deep_percolation_loss, self.percLow
@@ -4246,7 +4232,7 @@ class LandCover(object):
                 deep_percolation_loss = pcr.max(
                     deep_percolation_loss,
                     pcr.max(0.0, self.storLow030150)
-                    * ((1. / self.irrigationEfficiencyUsed) - 1.),
+                    * ((1.0 / self.irrigationEfficiencyUsed) - 1.0),
                 )
                 self.percLow030150 = pcr.ifthenelse(
                     self.cropKC > startingKC, deep_percolation_loss, self.percLow030150
@@ -4338,7 +4324,7 @@ class LandCover(object):
             ADJUST = pcr.ifthenelse(
                 ADJUST > 0.0,
                 pcr.min(1.0, pcr.max(0.0, self.storUpp + self.infiltration) / ADJUST),
-                0.,
+                0.0,
             )
             self.actBareSoilEvap = ADJUST * self.actBareSoilEvap
             self.actTranspiUpp = ADJUST * self.potTranspiration
@@ -4378,7 +4364,7 @@ class LandCover(object):
             ADJUST = pcr.ifthenelse(
                 ADJUST > 0.0,
                 pcr.min(1.0, pcr.max(0.0, self.storLow + self.percUpp) / ADJUST),
-                0.,
+                0.0,
             )
             self.actTranspiLow = ADJUST * remainingPotET
             # - percolation and interflow fluxes depend on the remaining water
@@ -4390,7 +4376,7 @@ class LandCover(object):
                     pcr.max(0.0, self.storLow + self.percUpp - self.actTranspiLow)
                     / ADJUST,
                 ),
-                0.,
+                0.0,
             )
             self.percLow = ADJUST * self.percLow
             self.interflow = ADJUST * self.interflow
@@ -4398,9 +4384,9 @@ class LandCover(object):
             # capillary rise to storLow is limited to available storGroundwater
             # - also limited with reducedCapRise
             self.capRiseLow = pcr.max(
-                0.,
+                0.0,
                 pcr.min(
-                    pcr.max(0., groundwater.storGroundwater - self.reducedCapRise),
+                    pcr.max(0.0, groundwater.storGroundwater - self.reducedCapRise),
                     self.capRiseLow,
                 ),
             )
@@ -4427,7 +4413,7 @@ class LandCover(object):
                 pcr.min(
                     1.0, pcr.max(0.0, self.storUpp000005 + self.infiltration) / ADJUST
                 ),
-                0.,
+                0.0,
             )
             self.actBareSoilEvap = ADJUST * self.actBareSoilEvap
             self.actTranspiUpp000005 = ADJUST * self.potTranspiration
@@ -4469,7 +4455,7 @@ class LandCover(object):
                 pcr.min(
                     1.0, pcr.max(0.0, self.storUpp005030 + self.percUpp000005) / ADJUST
                 ),
-                0.,
+                0.0,
             )
             self.actTranspiUpp005030 = ADJUST * remainingPotET
             # - percolation fluxes depend on the remaining water
@@ -4490,7 +4476,7 @@ class LandCover(object):
                 pcr.min(
                     1.0, pcr.max(0.0, self.storLow030150 + self.percUpp005030) / ADJUST
                 ),
-                0.,
+                0.0,
             )
             self.actTranspiLow030150 = ADJUST * remainingPotET
             # - percolation and interflow fluxes depend on the remaining water
@@ -4507,7 +4493,7 @@ class LandCover(object):
                     )
                     / ADJUST,
                 ),
-                0.,
+                0.0,
             )
             self.percLow030150 = ADJUST * self.percLow030150
             self.interflow = ADJUST * self.interflow
@@ -4516,9 +4502,9 @@ class LandCover(object):
             # - also limited with reducedCapRise
             #
             self.capRiseLow030150 = pcr.max(
-                0.,
+                0.0,
                 pcr.min(
-                    pcr.max(0., groundwater.storGroundwater - self.reducedCapRise),
+                    pcr.max(0.0, groundwater.storGroundwater - self.reducedCapRise),
                     self.capRiseLow030150,
                 ),
             )
@@ -4559,7 +4545,7 @@ class LandCover(object):
 
         # for irrigation areas: interflow will be minimized
         if self.name.startswith("irr"):
-            self.interflow = 0.
+            self.interflow = 0.0
 
         # an idea: deep percolation should consider losses during application in non paddy areas
         #
@@ -4576,11 +4562,11 @@ class LandCover(object):
                 )
                 ADJUST = self.percLow + self.interflow
                 ADJUST = pcr.ifthenelse(
-                    ADJUST > 0.,
+                    ADJUST > 0.0,
                     pcr.min(maxADJUST, pcr.max(0.0, deep_percolation) / ADJUST),
-                    0.,
+                    0.0,
                 )
-                ADJUST = pcr.ifthenelse(self.cropKC > startingCropKC, ADJUST, 1.)
+                ADJUST = pcr.ifthenelse(self.cropKC > startingCropKC, ADJUST, 1.0)
                 self.percLow = ADJUST * self.percLow
                 self.interflow = ADJUST * self.interflow
             if self.numberOfLayers == 3:
@@ -4589,11 +4575,11 @@ class LandCover(object):
                 )
                 ADJUST = self.percLow030150 + self.interflow
                 ADJUST = pcr.ifthenelse(
-                    ADJUST > 0.,
+                    ADJUST > 0.0,
                     pcr.min(maxADJUST, pcr.max(0.0, deep_percolation) / ADJUST),
-                    0.,
+                    0.0,
                 )
-                ADJUST = pcr.ifthenelse(self.cropKC > startingCropKC, ADJUST, 1.)
+                ADJUST = pcr.ifthenelse(self.cropKC > startingCropKC, ADJUST, 1.0)
                 self.percLow030150 = ADJUST * self.percLow030150
                 self.interflow = ADJUST * self.interflow
 
@@ -4607,7 +4593,7 @@ class LandCover(object):
             ADJUST = pcr.ifthenelse(
                 ADJUST > 0.0,
                 pcr.min(1.0, pcr.max(0.0, self.storUpp + self.infiltration) / ADJUST),
-                0.,
+                0.0,
             )
             self.actBareSoilEvap = ADJUST * self.actBareSoilEvap
             self.actTranspiUpp = ADJUST * self.potTranspiration
@@ -4647,7 +4633,7 @@ class LandCover(object):
             ADJUST = pcr.ifthenelse(
                 ADJUST > 0.0,
                 pcr.min(1.0, pcr.max(0.0, self.storLow + self.percUpp) / ADJUST),
-                0.,
+                0.0,
             )
             self.actTranspiLow = ADJUST * remainingPotET
             # - percolation and interflow fluxes depend on the remaining water
@@ -4659,7 +4645,7 @@ class LandCover(object):
                     pcr.max(0.0, self.storLow + self.percUpp - self.actTranspiLow)
                     / ADJUST,
                 ),
-                0.,
+                0.0,
             )
             self.percLow = ADJUST * self.percLow
             self.interflow = ADJUST * self.interflow
@@ -4667,9 +4653,9 @@ class LandCover(object):
             # capillary rise to storLow is limited to available storGroundwater
             # - also limited with reducedCapRise
             self.capRiseLow = pcr.max(
-                0.,
+                0.0,
                 pcr.min(
-                    pcr.max(0., groundwater.storGroundwater - self.reducedCapRise),
+                    pcr.max(0.0, groundwater.storGroundwater - self.reducedCapRise),
                     self.capRiseLow,
                 ),
             )
@@ -4696,7 +4682,7 @@ class LandCover(object):
                 pcr.min(
                     1.0, pcr.max(0.0, self.storUpp000005 + self.infiltration) / ADJUST
                 ),
-                0.,
+                0.0,
             )
             self.actBareSoilEvap = ADJUST * self.actBareSoilEvap
             self.actTranspiUpp000005 = ADJUST * self.potTranspiration
@@ -4738,7 +4724,7 @@ class LandCover(object):
                 pcr.min(
                     1.0, pcr.max(0.0, self.storUpp005030 + self.percUpp000005) / ADJUST
                 ),
-                0.,
+                0.0,
             )
             self.actTranspiUpp005030 = ADJUST * remainingPotET
             # - percolation fluxes depend on the remaining water
@@ -4759,7 +4745,7 @@ class LandCover(object):
                 pcr.min(
                     1.0, pcr.max(0.0, self.storLow030150 + self.percUpp005030) / ADJUST
                 ),
-                0.,
+                0.0,
             )
             self.actTranspiLow030150 = ADJUST * remainingPotET
             # - percolation and interflow fluxes depend on the remaining water
@@ -4776,7 +4762,7 @@ class LandCover(object):
                     )
                     / ADJUST,
                 ),
-                0.,
+                0.0,
             )
             self.percLow030150 = ADJUST * self.percLow030150
             self.interflow = ADJUST * self.interflow
@@ -4785,9 +4771,9 @@ class LandCover(object):
             # - also limited with reducedCapRise
             #
             self.capRiseLow030150 = pcr.max(
-                0.,
+                0.0,
                 pcr.min(
-                    pcr.max(0., groundwater.storGroundwater - self.reducedCapRise),
+                    pcr.max(0.0, groundwater.storGroundwater - self.reducedCapRise),
                     self.capRiseLow030150,
                 ),
             )
@@ -4832,7 +4818,7 @@ class LandCover(object):
             # - capRiseUpp
             #
             self.storLow = pcr.max(
-                0.,
+                0.0,
                 self.storLow
                 + self.percUpp
                 + self.capRiseLow
@@ -4848,25 +4834,27 @@ class LandCover(object):
             if self.allowNegativePercolation:
                 # this is as defined in the original oldcalc script of Rens
                 self.percUpp = percUpp - pcr.max(
-                    0., self.storLow - self.parameters.storCapLow
+                    0.0, self.storLow - self.parameters.storCapLow
                 )
                 # Rens's line: P1_L[TYPE] = P1_L[TYPE]-max(0,S2_L[TYPE]-SC2[TYPE]);
                 # PS: In the original Rens's code, P1 can be negative.
             else:
                 # alternative, proposed by Edwin: avoid negative percolation
                 self.percUpp = pcr.max(
-                    0., percUpp - pcr.max(0., self.storLow - self.parameters.storCapLow)
+                    0.0,
+                    percUpp - pcr.max(0.0, self.storLow - self.parameters.storCapLow),
                 )
                 self.storLow = self.storLow - percUpp + self.percUpp
                 # If necessary, reduce capRise input:
                 capRiseLow = self.capRiseLow
                 self.capRiseLow = pcr.max(
-                    0.,
-                    capRiseLow - pcr.max(0., self.storLow - self.parameters.storCapLow),
+                    0.0,
+                    capRiseLow
+                    - pcr.max(0.0, self.storLow - self.parameters.storCapLow),
                 )
                 self.storLow = self.storLow - capRiseLow + self.capRiseLow
                 # If necessary, increase interflow outflow:
-                addInterflow = pcr.max(0., self.storLow - self.parameters.storCapLow)
+                addInterflow = pcr.max(0.0, self.storLow - self.parameters.storCapLow)
                 self.interflow += addInterflow
                 self.storLow -= addInterflow
                 #
@@ -4881,7 +4869,7 @@ class LandCover(object):
             # - actBareSoilEvap
             #
             self.storUpp = pcr.max(
-                0.,
+                0.0,
                 self.storUpp
                 + self.infiltration
                 + self.capRiseUpp
@@ -4890,12 +4878,12 @@ class LandCover(object):
             #              (P1_L[TYPE]+T_a1[TYPE]+ES_a[TYPE])); #*
             #
             # any excess above storCapUpp is handed to topWaterLayer
-            self.satExcess = pcr.max(0., self.storUpp - self.parameters.storCapUpp)
+            self.satExcess = pcr.max(0.0, self.storUpp - self.parameters.storCapUpp)
             self.topWaterLayer = self.topWaterLayer + self.satExcess
 
             # any excess above minTopWaterLayer is released as directRunoff
             self.directRunoff = self.directRunoff + pcr.max(
-                0., self.topWaterLayer - self.minTopWaterLayer
+                0.0, self.topWaterLayer - self.minTopWaterLayer
             )
 
             # make sure that storage capacities are not exceeded
@@ -4938,7 +4926,7 @@ class LandCover(object):
             # - capRiseUpp005030
             #
             self.storLow030150 = pcr.max(
-                0.,
+                0.0,
                 self.storLow030150
                 + self.percUpp005030
                 + self.capRiseLow030150
@@ -4953,18 +4941,18 @@ class LandCover(object):
             # If necessary, reduce percolation input:
             percUpp005030 = self.percUpp005030
             self.percUpp005030 = pcr.max(
-                0.,
+                0.0,
                 percUpp005030
-                - pcr.max(0., self.storLow030150 - self.parameters.storCapLow030150),
+                - pcr.max(0.0, self.storLow030150 - self.parameters.storCapLow030150),
             )
             self.storLow030150 = self.storLow030150 - percUpp005030 + self.percUpp005030
             #
             # If necessary, reduce capRise input:
             capRiseLow030150 = self.capRiseLow030150
             self.capRiseLow030150 = pcr.max(
-                0.,
+                0.0,
                 capRiseLow030150
-                - pcr.max(0., self.storLow030150 - self.parameters.storCapLow030150),
+                - pcr.max(0.0, self.storLow030150 - self.parameters.storCapLow030150),
             )
             self.storLow030150 = (
                 self.storLow030150 - capRiseLow030150 + self.capRiseLow030150
@@ -4972,7 +4960,7 @@ class LandCover(object):
             #
             # If necessary, increase interflow outflow:
             addInterflow = pcr.max(
-                0., self.storLow030150 - self.parameters.storCapLow030150
+                0.0, self.storLow030150 - self.parameters.storCapLow030150
             )
             self.interflow += addInterflow
             self.storLow030150 -= addInterflow
@@ -4989,7 +4977,7 @@ class LandCover(object):
             # - capRiseUpp000005
             #
             self.storUpp005030 = pcr.max(
-                0.,
+                0.0,
                 self.storUpp005030
                 + self.percUpp000005
                 + self.capRiseUpp005030
@@ -5003,18 +4991,18 @@ class LandCover(object):
             # If necessary, reduce percolation input:
             percUpp000005 = self.percUpp000005
             self.percUpp000005 = pcr.max(
-                0.,
+                0.0,
                 percUpp000005
-                - pcr.max(0., self.storUpp005030 - self.parameters.storCapUpp005030),
+                - pcr.max(0.0, self.storUpp005030 - self.parameters.storCapUpp005030),
             )
             self.storUpp005030 = self.storUpp005030 - percUpp000005 + self.percUpp000005
             #
             # If necessary, reduce capRise input:
             capRiseUpp005030 = self.capRiseUpp005030
             self.capRiseUpp005030 = pcr.max(
-                0.,
+                0.0,
                 capRiseUpp005030
-                - pcr.max(0., self.storUpp005030 - self.parameters.storCapUpp005030),
+                - pcr.max(0.0, self.storUpp005030 - self.parameters.storCapUpp005030),
             )
             self.storUpp005030 = (
                 self.storUpp005030 - capRiseUpp005030 + self.capRiseUpp005030
@@ -5022,7 +5010,7 @@ class LandCover(object):
             #
             # If necessary, introduce interflow outflow:
             self.interflowUpp005030 = pcr.max(
-                0., self.storUpp005030 - self.parameters.storCapUpp005030
+                0.0, self.storUpp005030 - self.parameters.storCapUpp005030
             )
             self.storUpp005030 = self.storUpp005030 - self.interflowUpp005030
 
@@ -5034,7 +5022,7 @@ class LandCover(object):
             # - actBareSoilEvap
             #
             self.storUpp000005 = pcr.max(
-                0.,
+                0.0,
                 self.storUpp000005
                 + self.infiltration
                 + self.capRiseUpp000005
@@ -5045,13 +5033,13 @@ class LandCover(object):
             #
             # any excess above storCapUpp is handed to topWaterLayer
             self.satExcess = pcr.max(
-                0., self.storUpp000005 - self.parameters.storCapUpp000005
+                0.0, self.storUpp000005 - self.parameters.storCapUpp000005
             )
             self.topWaterLayer = self.topWaterLayer + self.satExcess
 
             # any excess above minTopWaterLayer is released as directRunoff
             self.directRunoff = self.directRunoff + pcr.max(
-                0., self.topWaterLayer - self.minTopWaterLayer
+                0.0, self.topWaterLayer - self.minTopWaterLayer
             )
 
             # make sure that storage capacities are not exceeded

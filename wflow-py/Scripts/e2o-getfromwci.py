@@ -19,9 +19,7 @@ http://'http://wci.earth2observe.eu/thredds/dodsC/ecmwf/met_forcing_v0/1980/Tair
 
 """
 
-baseurl = (
-    "http://wci.earth2observe.eu/thredds/dodsC/ecmwf/met_forcing_v0/%d/Rainf_daily_E2OBS_%d%02d.nc"
-)
+baseurl = "http://wci.earth2observe.eu/thredds/dodsC/ecmwf/met_forcing_v0/%d/Rainf_daily_E2OBS_%d%02d.nc"
 # baseurl =  'http://wci.earth2observe.eu/thredds/dodsC/ecmwf/met_forcing_v0/%d/Tair_daily_E2OBS_%d%02d.nc'
 
 months = arange(1, 13, 1)

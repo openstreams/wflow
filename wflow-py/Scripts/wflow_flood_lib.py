@@ -292,7 +292,7 @@ def prepare_gdal(
         ds.SetProjection(srs.ExportToWkt())
     # get rasterband entry
     band = ds.GetRasterBand(1)
-    band.SetNoDataValue(-9999.)
+    band.SetNoDataValue(-9999.0)
     ds.SetMetadata(metadata)
     band.SetMetadata(metadata_var)
 
@@ -454,7 +454,7 @@ def derive_HAND(
         if up_area is None:
             up_area = pcr.accuflux(ldd, 1)
         up_area = pcr.ifthen(stream, up_area)  # mask areas outside streams
-        friction = 1. / pcr.scalar(
+        friction = 1.0 / pcr.scalar(
             pcr.spreadzone(pcr.cover(pcr.ordinal(up_area), 0), 0, 0)
         )
         # if basin, use nearest river within subcatchment, if outside basin, use weighted-nearest river
@@ -558,7 +558,7 @@ def subcatch_stream(
             )
         riverid = pcr.ifthen(pcr.boolean(pcr.cover(stream_ge, 0)), subcatch)
 
-        friction = 1. / pcr.scalar(
+        friction = 1.0 / pcr.scalar(
             pcr.spreadzone(pcr.cover(pcr.ordinal(up_area), 0), 0, 0)
         )  # *(pcr.scalar(ldd)*0+1)
         delta = pcr.ifthen(
@@ -585,8 +585,8 @@ def volume_spread(
     hand,
     subcatch,
     volume,
-    volume_thres=0.,
-    cell_surface=1.,
+    volume_thres=0.0,
+    cell_surface=1.0,
     iterations=15,
     logging=logging,
     order=0,
@@ -622,14 +622,14 @@ def volume_spread(
     # pcr.report(volume, 'volume_{:02d}.map'.format(order))
     if neg_HAND == 1:
         dem_max = pcr.ifthenelse(
-            volume_catch > volume_thres, pcr.scalar(32.), pcr.scalar(-32.)
+            volume_catch > volume_thres, pcr.scalar(32.0), pcr.scalar(-32.0)
         )  # bizarre high inundation depth☻
-        dem_min = pcr.scalar(-32.)
+        dem_min = pcr.scalar(-32.0)
     else:
         dem_max = pcr.ifthenelse(
-            volume_catch > volume_thres, pcr.scalar(32.), pcr.scalar(0.)
+            volume_catch > volume_thres, pcr.scalar(32.0), pcr.scalar(0.0)
         )  # bizarre high inundation depth☻
-        dem_min = pcr.scalar(0.)
+        dem_min = pcr.scalar(0.0)
     for n in range(iterations):
         logging.debug("Iteration: {:02d}".format(n + 1))
         #####while np.logical_and(error_abs > error_thres, dem_min < dem_max):

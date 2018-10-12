@@ -140,7 +140,7 @@ def main(argv=None):
     demburn = cover(ifthen(boolean(riverburn), dem - 600), dem)
     print("Creating ldd...")
     ldd = lddcreate_save(
-        caseNameNew + "/staticmaps/wflow_ldd.map", demburn, True, 10.0E35
+        caseNameNew + "/staticmaps/wflow_ldd.map", demburn, True, 10.0e35
     )
     #
     ## Find catchment (overall)
