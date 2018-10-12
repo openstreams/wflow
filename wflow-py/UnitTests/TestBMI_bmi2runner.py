@@ -7,7 +7,6 @@ sys.path = ["../wflow"] + ["../"] + sys.path
 sys.path = ["../Scripts"] + sys.path
 import bmi2runner as bmirun
 import os
-import wflow_bmi_combined as bmi
 
 """
 Simple test for wflow bmi framework

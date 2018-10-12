@@ -19,7 +19,6 @@ $Id:  $
 $Rev: 898 $
 """
 
-import numpy
 import os
 import os.path
 import getopt

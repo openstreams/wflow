@@ -36,7 +36,6 @@ from .ncConverter import *
 
 from . import waterBodies
 
-from wflow.wf_DynamicFramework import configsection
 from wflow.wf_DynamicFramework import configget
 from wflow.wflow_lib import getgridparams
 

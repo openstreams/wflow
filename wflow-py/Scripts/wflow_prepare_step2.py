@@ -31,7 +31,6 @@ import os.path
 import getopt
 import configparser
 import sys
-import numpy as np
 
 tr.Verbose = 1
 

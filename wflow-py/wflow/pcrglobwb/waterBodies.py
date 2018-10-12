@@ -23,7 +23,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from pcraster.framework import *
 import pcraster as pcr
 
 import logging
@@ -32,7 +31,6 @@ logger = logging.getLogger("wflow_pcrglobwb")
 
 from . import virtualOS as vos
 
-from wflow.wf_DynamicFramework import configsection
 from wflow.wf_DynamicFramework import configget
 
 

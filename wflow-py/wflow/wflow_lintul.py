@@ -3,7 +3,6 @@
 
 from math import pi
 import math
-import numpy as np
 import os
 import os.path
 import getopt

@@ -40,12 +40,9 @@ import sys
 
 import osgeo.gdal as gdal
 from osgeo.gdalconst import *
-import pcraster
 from pcraster import *
 from pcraster.framework import *
-import scipy
 import numpy as np
-import netCDF4 as nc4
 import gzip, zipfile
 
 

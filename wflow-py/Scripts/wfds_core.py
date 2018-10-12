@@ -20,7 +20,6 @@ Optional arguments:
   --bmi-class              when used - the engine is assumed to be the full name of a Python class that implements bmi [default: bmi.wrapper.BMIWrapper]
 
 """
-import bmi
 import mmi.runner
 
 

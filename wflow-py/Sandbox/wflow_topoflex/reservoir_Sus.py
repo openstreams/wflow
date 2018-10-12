@@ -10,13 +10,11 @@ List all function versions
 """
 
 
-import numpy
 
 try:
     from wflow.wf_DynamicFramework import *
 except ImportError:
     from wf_DynamicFramework import *
-import scipy
 
 
 def selectSusR(i):

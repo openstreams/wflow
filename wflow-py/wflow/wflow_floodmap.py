@@ -58,7 +58,6 @@ $Rev: 916 $
 
 # TODO: update to update framework
 
-import numpy
 import os
 import os.path
 import getopt

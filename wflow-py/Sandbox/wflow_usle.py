@@ -43,7 +43,6 @@ self.usle_s = (0.43+ 0.30*(self.Slope*100) + 0.043 * (self.Slope * 100)**2)/6.61
 
 """
 
-import numpy
 import getopt
 
 from wflow.wf_DynamicFramework import *

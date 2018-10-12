@@ -35,7 +35,6 @@ logger = logging.getLogger("wflow_pcrglobwb")
 from . import virtualOS as vos
 from .ncConverter import *
 
-from wflow.wf_DynamicFramework import configsection
 from wflow.wf_DynamicFramework import configget
 
 

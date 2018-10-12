@@ -30,7 +30,6 @@ $Id: wflow_sceleton.py 898 2014-01-09 14:47:06Z schelle $
 $Rev: 898 $
 """
 
-import numpy
 import os
 import os.path
 import getopt

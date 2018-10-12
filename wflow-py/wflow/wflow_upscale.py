@@ -43,7 +43,6 @@ run the wflow_prepare scripts twice to create the different models.
 
 
 from wflow.wflow_lib import *
-import wflow.pcrut as pcrut
 
 
 import os, sys, shlex, time

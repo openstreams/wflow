@@ -1,9 +1,7 @@
 import wflow.bmi as bmi
 import wflow.wflow_bmi as wfbmi
-import wflow
 import os
 from wflow.pcrut import setlogger
-from wflow.wflow_lib import configget
 import configparser
 import logging
 from pcraster import *

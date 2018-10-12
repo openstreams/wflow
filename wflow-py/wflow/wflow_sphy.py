@@ -19,7 +19,6 @@
 # TODO: split off routing
 
 
-import numpy
 import sys
 import os
 import os.path

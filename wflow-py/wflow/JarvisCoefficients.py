@@ -16,13 +16,11 @@ use hourly evaporation as model input
 Calculations based on Zhou et al 2006 and Stewart 1998
 """
 
-import numpy
 
 try:
     from wflow.wf_DynamicFramework import *
 except ImportError:
     from .wf_DynamicFramework import *
-import scipy
 
 
 def calcEp(self, k):

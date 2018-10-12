@@ -43,7 +43,6 @@ import getopt
 import configparser
 import sys
 import gc
-import numpy as np
 
 
 def usage(*args):

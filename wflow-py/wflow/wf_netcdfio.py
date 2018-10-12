@@ -20,7 +20,6 @@ from pcraster import *
 from numpy import *
 import time
 import datetime as dt
-import wflow.wflow_lib as wflow_lib
 import wflow.pcrut as _pcrut
 
 globmetadata = {}

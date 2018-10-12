@@ -13,7 +13,6 @@ mapstack  -c inifile -C casename --clone clonemap
 
 """
 
-import numpy
 import os
 import os.path
 import getopt

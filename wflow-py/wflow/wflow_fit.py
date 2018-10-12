@@ -59,7 +59,6 @@ $Rev: 669 $
 """
 
 
-import matplotlib
 import pylab
 import scipy.optimize
 

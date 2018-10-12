@@ -19,7 +19,6 @@ $Id:  $
 $Rev: 898 $
 """
 
-import numpy
 import getopt
 
 from wflow.wf_DynamicFramework import *

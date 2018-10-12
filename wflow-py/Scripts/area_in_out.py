@@ -16,7 +16,6 @@ $Id: wflow_sceleton.py 898 2014-01-09 14:47:06Z schelle $
 $Rev: 898 $
 """
 
-import numpy
 import getopt
 
 try:
@@ -28,7 +27,6 @@ try:
     from wflow.wflow_adapt import *
 except ImportError:
     from wflow_adapt import *
-import scipy
 
 
 def usage(*args):
