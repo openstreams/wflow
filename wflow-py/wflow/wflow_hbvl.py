@@ -74,7 +74,6 @@ wflow_hbv::
 
 """
 
-import numpy
 import os
 import os.path
 import getopt

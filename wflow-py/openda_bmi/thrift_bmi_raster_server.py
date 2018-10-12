@@ -12,7 +12,7 @@ from thrift.server import TServer
 
 from openda_bmi.openda.bmi.thrift.BMIService import Iface
 from openda_bmi.openda.bmi.thrift.BMIService import Processor
-from openda_bmi.openda.bmi.thrift.ttypes import ModelException, BmiGridType
+from openda_bmi.openda.bmi.thrift.ttypes import ModelException
 
 import sys
 import signal

@@ -20,7 +20,6 @@ $Id: wflow_sceleton.py 898 2014-01-09 14:47:06Z schelle $
 $Rev: 898 $
 """
 
-import numpy
 import getopt
 
 from wflow.wf_DynamicFramework import *

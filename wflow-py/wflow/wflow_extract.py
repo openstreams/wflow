@@ -35,7 +35,6 @@ The script uses the pcraster resample program to reduce the maps.
 
 
 from wflow.wflow_lib import *
-import wflow.pcrut as pcrut
 import sys
 import os
 import os.path

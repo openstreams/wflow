@@ -16,7 +16,6 @@ and interrogate the model.
 import configparser
 
 from wflow.wf_netcdfio import *
-import wflow
 from . import pcrut
 import glob
 import traceback

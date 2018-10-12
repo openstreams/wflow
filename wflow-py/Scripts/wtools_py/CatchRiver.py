@@ -15,7 +15,6 @@ import shutil
 import numpy as np
 from osgeo import ogr
 from osgeo import gdal
-from osgeo.gdalconst import *
 
 import wflow.wflowtools_lib as wt
 

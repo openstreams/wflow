@@ -5,7 +5,6 @@ import sys
 
 sys.path = ["../wflow"] + ["../"] + sys.path
 sys.path = ["../Scripts"] + sys.path
-import bmi2runner as bmirun
 import wflow_bmi_combined as bmi
 
 """

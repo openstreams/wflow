@@ -5,7 +5,6 @@ import logging
 import datetime
 
 import wflow.bmi as bmi
-from . import wflow_lib
 import numpy as np
 from wflow.pcrut import setlogger
 

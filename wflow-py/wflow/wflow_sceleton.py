@@ -18,7 +18,6 @@ wflow_sceleton  -C case -R Runid -c inifile
 
 """
 
-import numpy
 import getopt
 
 from wflow.wf_DynamicFramework import *

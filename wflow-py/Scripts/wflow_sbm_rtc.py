@@ -3,7 +3,6 @@
 # <h1>Basic test of the wflow BMI interface + reservoir
 
 # In[10]:
-import numpy
 import os
 import os.path
 import getopt

@@ -56,13 +56,10 @@ wflow_snow [-h][-v level][-F runinfofile][-L logfile][-C casename][-R runId]
 """
 
 
-import numpy
 import os
 import os.path
 import getopt
 from wflow.wf_DynamicFramework import *
-import scipy
-import wflow.wflow_adapt as wflow_adapt
 import wflow.pcrut as pcrut
 
 

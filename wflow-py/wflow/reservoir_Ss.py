@@ -10,13 +10,11 @@ not all functions are still in this file, the older functions can be found
 in h:\My Documents\memo's\python scripts\wflow\
 """
 
-import numpy
 
 try:
     from wflow.wf_DynamicFramework import *
 except ImportError:
     from .wf_DynamicFramework import *
-import scipy
 
 
 def groundWater_no_reservoir(self):

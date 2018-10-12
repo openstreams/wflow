@@ -85,7 +85,6 @@ usage
 
 """
 
-import numpy
 
 # import pcrut
 import sys

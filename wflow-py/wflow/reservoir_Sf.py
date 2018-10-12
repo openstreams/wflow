@@ -7,13 +7,11 @@ Created on Fri Apr 04 17:15:38 2014
 List all function versions
 """
 
-import numpy
 
 try:
     from wflow.wf_DynamicFramework import *
 except ImportError:
     from .wf_DynamicFramework import *
-import scipy
 
 
 def selectSfR(i):

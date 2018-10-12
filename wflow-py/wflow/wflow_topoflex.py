@@ -16,15 +16,7 @@ wflow_topoflex  -C case -R Runid -c inifile
 
 """
 
-import wflow.reservoir_Si as reservoir_Si
-import wflow.reservoir_Sa as reservoir_Sa
-import wflow.reservoir_Sw as reservoir_Sw
-import wflow.reservoir_Su as reservoir_Su
-import wflow.reservoir_Sf as reservoir_Sf
-import wflow.reservoir_Ss as reservoir_Ss
-import wflow.JarvisCoefficients as JarvisCoefficients
 
-import numpy
 import os
 import os.path
 import getopt
