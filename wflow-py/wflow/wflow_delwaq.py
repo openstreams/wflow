@@ -868,7 +868,7 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map):
     # v_pcs.name = "Unknown projected"
     v_pcs.epsg = 4326
     v_pcs.grid_mapping_name = "Unknown projected"
-    v_pcs.longitude_of_prime_meridian = 0.
+    v_pcs.longitude_of_prime_meridian = 0.0
     # v_pcs.semi_major_axis = 6378137.
     # v_pcs.semi_minor_axis = 6356752.314245
     v_pcs.inverse_flattening = 298.257223563

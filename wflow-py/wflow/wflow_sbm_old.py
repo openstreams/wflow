@@ -1447,7 +1447,7 @@ class WflowModel(DynamicModel):
                 If below that a max amount of 2mm/day can be converted to glacier-ice
                 """
                 # TODO: document glacier module
-                self.snowdist = sCurve(self.Snow, a=8300., c=0.06)
+                self.snowdist = sCurve(self.Snow, a=8300.0, c=0.06)
                 self.Snow2Glacier = ifthenelse(
                     self.Snow > 8300, self.snowdist * (self.Snow - 8300), self.ZeroMap
                 )
@@ -1746,7 +1746,7 @@ class WflowModel(DynamicModel):
             0.000001, slope(self.WaterDem) * celllength() / self.reallength
         )
         if self.waterdem:
-            self.waterLdd = lddcreate(self.WaterDem, 1E35, 1E35, 1E35, 1E35)
+            self.waterLdd = lddcreate(self.WaterDem, 1e35, 1e35, 1e35, 1e35)
 
         # TODO: We should make a couple ot iterations here...
         if self.waterdem:

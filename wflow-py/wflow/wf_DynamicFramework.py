@@ -475,7 +475,7 @@ class wf_OutputTimeSeriesArea:
                 print("Not implemented yet")
 
         self.steps = self.steps + 1
-        
+
         tmpvar = spatial(scalar(variable))
         if self.areafunction == "average":
             self.resmap = areaaverage(tmpvar, nominal(self.area))
@@ -839,7 +839,6 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         """
         return cover(timeinputscalar(tssfile, nominal(areamap)), default)
 
-
     def _wf_shutdown(self):
         """
         Makes sure the logging closed
@@ -854,7 +853,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             "w",
         )
         self._userModel().config.write(fp)
-        
+
         fp.close()
 
         for key, value in self.oscv.items():
@@ -2912,7 +2911,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         path = name
 
         if self.outputFormat == 1:
-            
+
             if not hasattr(self, "NcOutputStatic"):
                 report(variable, path)
                 if gzipit:

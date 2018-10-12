@@ -512,7 +512,7 @@ def main(
         demburn_hr = dem_hr + burn_hr
         demburn_hr[np.isnan(demburn_hr)] = -9999
         wt.gdal_writemap(
-            demburn_hr_file, "PCRaster", xax_hr, yax_hr, demburn_hr, -9999.
+            demburn_hr_file, "PCRaster", xax_hr, yax_hr, demburn_hr, -9999.0
         )
         pcr.setclone(demburn_hr_file)
         demburn_hr = pcr.readmap(demburn_hr_file)

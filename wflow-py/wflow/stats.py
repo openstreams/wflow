@@ -45,7 +45,7 @@ from math import fabs
 from numpy import isnan
 
 NoDataVal = -999
-SmallValue = 1.e-10
+SmallValue = 1.0e-10
 
 
 def get_mean(values, N="", NoData=NoDataVal, Skip=""):
@@ -93,7 +93,7 @@ def get_median(values, N="", NoData=NoDataVal):
     if Nact > 0:
         new_value.sort()
         if Nact % 2 == 0:
-            median = (new_value[int(Nact / 2)] + new_value[int(Nact / 2)]) / 2.
+            median = (new_value[int(Nact / 2)] + new_value[int(Nact / 2)]) / 2.0
         else:
             median = new_value[int(Nact / 2)]
     else:
@@ -720,7 +720,7 @@ def get_box_plot_parameters(values, N="", NoData=NoDataVal):
     SubSetVals = [0] * 2
     if Nact > 0:
         if Nact % 2 == 0:
-            median = (tmpvalues[int(Nact / 2)] + tmpvalues[int(Nact / 2)]) / 2.
+            median = (tmpvalues[int(Nact / 2)] + tmpvalues[int(Nact / 2)]) / 2.0
             SubSetVals[0] = tmpvalues[: int(Nact / 2) + 1]
             SubSetVals[1] = tmpvalues[int(Nact / 2) + 1 :]
         else:
@@ -753,7 +753,7 @@ def get_box_plot_parameters(values, N="", NoData=NoDataVal):
                 quartiles[subset] = (
                     SubSetVals[subset][int(Nact / 2)]
                     + SubSetVals[subset][int(Nact / 2)]
-                ) / 2.
+                ) / 2.0
             else:
                 quartiles[subset] = SubSetVals[subset][int(Nact / 2)]
         else:
@@ -767,8 +767,8 @@ def get_box_plot_parameters(values, N="", NoData=NoDataVal):
     MildOutliers = []
     for idx in range(Nact - 1, -1, -1):
         if (
-            tmpvalues[idx] < quartiles[0] - 3. * IQR
-            or tmpvalues[idx] > quartiles[1] + 3. * IQR
+            tmpvalues[idx] < quartiles[0] - 3.0 * IQR
+            or tmpvalues[idx] > quartiles[1] + 3.0 * IQR
         ):
             ExtremeOutliers = ExtremeOutliers + [tmpvalues[idx]]
             del tmpvalues[idx]

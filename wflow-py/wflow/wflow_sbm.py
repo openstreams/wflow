@@ -834,7 +834,8 @@ class WflowModel(DynamicModel):
         # Temperature correction poer cell to add
 
         self.TempCor = self.wf_readmap(
-            self.Dir + "\\"
+            self.Dir
+            + "\\"
             + configget(
                 self.config,
                 "model",
@@ -1823,7 +1824,7 @@ class WflowModel(DynamicModel):
                 If below that a max amount of 2mm/day can be converted to glacier-ice
                 """
                 # TODO: document glacier module
-                self.snowdist = sCurve(self.Snow, a=8300., c=0.06)
+                self.snowdist = sCurve(self.Snow, a=8300.0, c=0.06)
                 self.Snow2Glacier = ifthenelse(
                     self.Snow > 8300, self.snowdist * (self.Snow - 8300), self.ZeroMap
                 )
@@ -1973,15 +1974,14 @@ class WflowModel(DynamicModel):
         # Limit rootingdepth (if set externally)
         self.ActRootingDepth = min(self.SoilThickness * 0.99, self.ActRootingDepth)
 
-
         # Determine Open Water EVAP based on waterfrac. Later subtract this from water that
         # enters the Kinematic wave
         self.ActEvapOpenWater = min(
-            self.WaterLevel * 1000.0 * self.WaterFrac, self.WaterFrac *  self.PotTransSoil
+            self.WaterLevel * 1000.0 * self.WaterFrac,
+            self.WaterFrac * self.PotTransSoil,
         )
-        
-        self.RestEvap = self.PotTransSoil - self.ActEvapOpenWater
 
+        self.RestEvap = self.PotTransSoil - self.ActEvapOpenWater
 
         self.ActEvapPond = self.ZeroMap
         if self.nrpaddyirri > 0:
@@ -2002,7 +2002,7 @@ class WflowModel(DynamicModel):
             self.SumThickness = self.UStoreLayerThickness[n] + self.SumThickness
 
         self.SaturationDeficit = self.SoilWaterCapacity - self.SatWaterDepth
-        
+
         # evap available for soil evaporation
         self.RestEvap = self.RestEvap * self.CanopyGapFraction
 
@@ -2021,7 +2021,9 @@ class WflowModel(DynamicModel):
             # Height of unsat zone in layer n
             self.L = ifthenelse(
                 self.ZiLayer == float(n),
-                ifthenelse(self.ZeroMap + float(n) > 0, self.zi - l_Thickness[n - 1], self.zi),
+                ifthenelse(
+                    self.ZeroMap + float(n) > 0, self.zi - l_Thickness[n - 1], self.zi
+                ),
                 self.UStoreLayerThickness[n],
             )
             # Depth for calculation of vertical fluxes (bottom layer or zi)
@@ -2054,8 +2056,8 @@ class WflowModel(DynamicModel):
                     self.soilevap = min(self.soilevap, self.UStoreLayerDepth[n])
 
                 self.UStoreLayerDepth[n] = self.UStoreLayerDepth[n] - self.soilevap
-                
-                #evap available for transpiration
+
+                # evap available for transpiration
                 self.PotTrans = (
                     self.PotTransSoil - self.soilevap - self.ActEvapOpenWater
                 )
@@ -2224,7 +2226,9 @@ class WflowModel(DynamicModel):
                 self.L = ifthen(
                     self.ZiLayer == float(n),
                     ifthenelse(
-                        self.ZeroMap + float(n) > 0, self.zi - l_Thickness[n - 1], self.zi
+                        self.ZeroMap + float(n) > 0,
+                        self.zi - l_Thickness[n - 1],
+                        self.zi,
                     ),
                 )
                 self.Transfer = self.Transfer + ifthenelse(
@@ -2336,7 +2340,9 @@ class WflowModel(DynamicModel):
 
             L = ifthenelse(
                 self.ZiLayer == float(n),
-                ifthenelse(self.ZeroMap + float(n) > 0, self.zi - l_Thickness[n - 1], self.zi),
+                ifthenelse(
+                    self.ZeroMap + float(n) > 0, self.zi - l_Thickness[n - 1], self.zi
+                ),
                 self.UStoreLayerThickness[n],
             )
             thisLayer = ifthenelse(
@@ -2406,7 +2412,7 @@ class WflowModel(DynamicModel):
             0.000001, slope(self.WaterDem) * celllength() / self.reallength
         )
         if self.waterdem:
-            self.waterLdd = lddcreate(self.WaterDem, 1E35, 1E35, 1E35, 1E35)
+            self.waterLdd = lddcreate(self.WaterDem, 1e35, 1e35, 1e35, 1e35)
             # waterLdd = lddcreate(waterDem,1,1,1,1)
 
         # TODO: We should make a couple of itterations here...
@@ -2517,7 +2523,9 @@ class WflowModel(DynamicModel):
                 ifthenelse(
                     self.ZiLayer == float(n),
                     ifthenelse(
-                        self.ZeroMap + float(n) > 0, self.zi - l_Thickness[n - 1], self.zi
+                        self.ZeroMap + float(n) > 0,
+                        self.zi - l_Thickness[n - 1],
+                        self.zi,
                     ),
                     self.UStoreLayerThickness[n],
                 )

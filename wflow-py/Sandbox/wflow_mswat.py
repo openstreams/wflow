@@ -380,7 +380,7 @@ class WflowModel(DynamicModel):
         self.xl, self.yl, self.reallength = pcrut.detRealCellLength(
             self.ZeroMap, sizeinmetres
         )
-        self.hru_km = (self.reallength / 1000.) ** 2
+        self.hru_km = (self.reallength / 1000.0) ** 2
 
         # Calulate slope taking into account that x,y may be in lat,lon
         self.Slope = slope(self.Altitude)
@@ -390,34 +390,36 @@ class WflowModel(DynamicModel):
         self.percent_sand = 100 - (self.percent_clay + self.percent_silt)
         self.erod_k = ifthenelse(
             pcrand(
-                self.percent_clay >= 40.,
-                pcrand(self.percent_sand >= 20., self.percent_sand <= 45.),
+                self.percent_clay >= 40.0,
+                pcrand(self.percent_sand >= 20.0, self.percent_sand <= 45.0),
             ),
             2.0,
             ifthenelse(
                 pcrand(
-                    self.percent_clay >= 27.,
-                    pcrand(self.percent_sand >= 20., self.percent_sand <= 45.),
+                    self.percent_clay >= 27.0,
+                    pcrand(self.percent_sand >= 20.0, self.percent_sand <= 45.0),
                 ),
                 1.7,
                 ifthenelse(
-                    pcrand(self.percent_silt <= 40., self.percent_sand <= 20.),
+                    pcrand(self.percent_silt <= 40.0, self.percent_sand <= 20.0),
                     2.0,
                     ifthenelse(
-                        pcrand(self.percent_silt > 40., self.percent_clay >= 40.),
+                        pcrand(self.percent_silt > 40.0, self.percent_clay >= 40.0),
                         1.6,
                         ifthenelse(
-                            pcrand(self.percent_clay >= 35., self.percent_sand >= 45.),
+                            pcrand(
+                                self.percent_clay >= 35.0, self.percent_sand >= 45.0
+                            ),
                             1.9,
                             ifthenelse(
                                 pcrand(
-                                    self.percent_clay >= 27., self.percent_sand < 20.
+                                    self.percent_clay >= 27.0, self.percent_sand < 20.0
                                 ),
                                 1.6,
                                 ifthenelse(
                                     pcrand(
-                                        self.percent_clay <= 10.,
-                                        self.percent_silt >= 80.,
+                                        self.percent_clay <= 10.0,
+                                        self.percent_silt >= 80.0,
                                     ),
                                     1.2,
                                     ifthenelse(
@@ -425,24 +427,24 @@ class WflowModel(DynamicModel):
                                         1.5,
                                         ifthenelse(
                                             pcrand(
-                                                self.percent_clay >= 7.,
+                                                self.percent_clay >= 7.0,
                                                 pcrand(
-                                                    self.percent_sand <= 52.,
-                                                    self.percent_silt >= 28.,
+                                                    self.percent_sand <= 52.0,
+                                                    self.percent_silt >= 28.0,
                                                 ),
                                             ),
                                             2.0,
                                             ifthenelse(
-                                                self.percent_clay >= 20.,
+                                                self.percent_clay >= 20.0,
                                                 2.1,
                                                 ifthenelse(
                                                     self.percent_clay
-                                                    >= self.percent_sand - 70.,
+                                                    >= self.percent_sand - 70.0,
                                                     2.6,
                                                     ifthenelse(
                                                         self.percent_clay
-                                                        >= (2. * self.percent_sand)
-                                                        - 170.,
+                                                        >= (2.0 * self.percent_sand)
+                                                        - 170.0,
                                                         3,
                                                         scalar(1.9),
                                                     ),
@@ -558,12 +560,12 @@ class WflowModel(DynamicModel):
         # JS PAthFrac (Fimp) is already impervious fraction so this (sedspl) is the pervious?
         # So we multiply sedspl with pervious area fraction
         # DT Yes we do, it is erosion from pervious area. Splash erosion from impervious area (I think they call it 'wash') is not included.
-        self.sedspl = self.sedspl * (1. - self.PathFrac)
+        self.sedspl = self.sedspl * (1.0 - self.PathFrac)
 
         """ maximum water depth that allows splash erosion """
         self.sedspl = ifthenelse(
-            pcror(self.RunDepthMM >= 3. * rain_d50, self.RunDepthMM <= 1.e-6),
-            0.,
+            pcror(self.RunDepthMM >= 3.0 * rain_d50, self.RunDepthMM <= 1.0e-6),
+            0.0,
             self.sedspl,
         )
 
@@ -590,12 +592,12 @@ class WflowModel(DynamicModel):
 
         """ Impervious area of HRU """
         # DT, again it is only erosion from pervious area
-        self.sedov = self.sedov * (1. - self.PathFrac)
+        self.sedov = self.sedov * (1.0 - self.PathFrac)
 
         """ Report sediment yield """
         self.hhsedy = self.dratio * (self.sedspl + self.sedov)
         self.hhsedy = cover(
-            ifthenelse(self.hhsedy < 1.e-10, 0, self.hhsedy), scalar(0.0)
+            ifthenelse(self.hhsedy < 1.0e-10, 0, self.hhsedy), scalar(0.0)
         )
         # We could use accucapacityflux and link the capacity to runoff of speed
         self.SedRunoff = accuflux(self.TopoLdd, self.hhsedy)

@@ -180,7 +180,7 @@ class WflowModel(DynamicModel):
         self.Ncombined = (
             self.Pch / self.WetPComb * self.N ** 1.5
             + self.Pfp / self.WetPComb * self.NFloodPlain ** 1.5
-        ) ** (2. / 3.)
+        ) ** (2.0 / 3.0)
         self.AlpTermFP = pow((self.NFloodPlain / (sqrt(self.SlopeDCL))), self.Beta)
         self.AlpTermComb = pow((self.Ncombined / (sqrt(self.SlopeDCL))), self.Beta)
         self.AlphaFP = self.AlpTermFP * pow(self.Pfp, self.AlpPow)
@@ -206,7 +206,7 @@ class WflowModel(DynamicModel):
         :var self.WaterLevel: Water level in the kin-wave resrvoir [m]
         """
         states = ["SurfaceRunoff", "WaterLevelCH", "WaterLevelFP"]
-        
+
         if hasattr(self, "ReserVoirSimpleLocs"):
             states.append("ReservoirVolume")
 
@@ -412,7 +412,9 @@ class WflowModel(DynamicModel):
         if hasattr(self, "ReserVoirSimpleLocs"):
             tt = pcr2numpy(self.ReserVoirSimpleLocs, 0.0)
             self.nrresSimple = tt.max()
-            self.logger.info("A total of " + str(self.nrresSimple) + " reservoirs found.")
+            self.logger.info(
+                "A total of " + str(self.nrresSimple) + " reservoirs found."
+            )
             areamap = self.reallength * self.reallength
             res_area = areatotal(spatial(areamap), self.ReservoirSimpleAreas)
 
@@ -423,7 +425,9 @@ class WflowModel(DynamicModel):
                 cover(resarea_pnt, scalar(0.0)),
             )
 
-            self.ReserVoirDownstreamLocs = downstream(self.TopoLdd, self.ReserVoirSimpleLocs)
+            self.ReserVoirDownstreamLocs = downstream(
+                self.TopoLdd, self.ReserVoirSimpleLocs
+            )
             self.TopoLddOrg = self.TopoLdd
             self.TopoLdd = lddrepair(
                 cover(ifthen(boolean(self.ReserVoirSimpleLocs), ldd(5)), self.TopoLdd)
@@ -623,11 +627,11 @@ class WflowModel(DynamicModel):
         self.Inflow_mapstack = self.Dir + configget(
             self.config, "inputmapstacks", "Inflow", "/inmaps/IF"
         )  # timeseries for rainfall "/inmaps/IF" # in/outflow locations (abstractions)
-      
+
         self.P_mapstack = self.Dir + configget(
             self.config, "inputmapstacks", "Precipitation", "/inmaps/P"
         )  # timeseries for rainfall
-        
+
         self.PET_mapstack = self.Dir + configget(
             self.config, "inputmapstacks", "EvapoTranspiration", "/inmaps/PET"
         )  # timeseries for rainfall"/inmaps/PET"          # potential evapotranspiration
@@ -732,7 +736,7 @@ class WflowModel(DynamicModel):
         self.Ncombined = (
             self.Pch / self.WetPComb * self.N ** 1.5
             + self.Pfp / self.WetPComb * self.NFloodPlain ** 1.5
-        ) ** (2. / 3.)
+        ) ** (2.0 / 3.0)
 
         self.AlpTermFP = pow((self.NFloodPlain / (sqrt(self.SlopeDCL))), self.Beta)
         self.AlpTermComb = pow((self.Ncombined / (sqrt(self.SlopeDCL))), self.Beta)
@@ -790,7 +794,7 @@ class WflowModel(DynamicModel):
         # The MAx here may lead to watbal error. However, if inwaterMMM becomes < 0, the kinematic wave becomes very slow......
         self.InwaterMM = max(0.0, self.InwaterForcing)
         self.Inwater = self.InwaterMM * self.ToCubic  # m3/s
-        
+
         self.Precipitation = max(0.0, self.Precipitation)
 
         # only run the reservoir module if needed

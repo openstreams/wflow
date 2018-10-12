@@ -503,7 +503,7 @@ class WflowModel(DynamicModel):
 
             self.Sg = cover(0)
             self.Sr = cover(0)
-            self.Mleaf = 2. / self.SLA
+            self.Mleaf = 2.0 / self.SLA
             self.S0 = 0.2 * self.w0limE * self.S0max
             self.Ss = 0.2 * self.wslimU * self.Ssmax
             self.Sd = 0.2 * self.wdlimU * self.Sdmax
@@ -708,7 +708,7 @@ class WflowModel(DynamicModel):
         if self.UseETPdata == 1:
             self.E0 = max(self.EPOT, 0)
             keps = (
-                0.655E-3 * pair / pes
+                0.655e-3 * pair / pes
             )  # See Appendix A3 (http://www.clw.csiro.au/publications/waterforahealthycountry/2010/wfhc-aus-water-resources-assessment-system.pdf) --------------------------------   check!
             self.Ept = self.E0
 

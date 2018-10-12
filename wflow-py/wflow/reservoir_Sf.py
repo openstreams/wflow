@@ -39,7 +39,7 @@ def fastRunoff_no_reservoir(self, k):
     """
     self.Qfin_[k] = self.Qu * (1 - self.D)
     self.Qf_[k] = self.Qfin_[k]
-    self.Sf_[k] = 0.
+    self.Sf_[k] = 0.0
     self.wbSf_[k] = self.Qfin_[k] - self.Qf_[k] - self.Sf[k] + self.Sf_t[k]
 
 
@@ -52,7 +52,7 @@ def fastAgriRunoff_no_reservoir(self, k):
     """
 
     self.Qfa_[k] = self.Qa_[k]
-    self.Sfa[k] = 0.
+    self.Sfa[k] = 0.0
     self.wbSfa_[k] = (
         self.Qfa_[k]
         - self.Qfa_[k]

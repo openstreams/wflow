@@ -38,8 +38,8 @@ def interception_no_reservoir(self, k):
     Storage in interception = 0.
     """
     self.Pe_[k] = max(self.Precipitation, 0)
-    self.Ei_[k] = 0.
-    self.Si_[k] = 0.
+    self.Ei_[k] = 0.0
+    self.Si_[k] = 0.0
     self.wbSi_[k] = (
         self.Precipitation - self.Ei_[k] - self.Pe_[k] - self.Si[k] + self.Si_t[k]
     )

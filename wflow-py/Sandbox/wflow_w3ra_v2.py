@@ -358,7 +358,7 @@ class WflowModel(DynamicModel):
 
         self.wf_multparameters()
         # Static, for the computation of Aerodynamic conductance (3.7)
-        self.fh = ln(813. / max(self.hveg, 0.25) - 5.45)
+        self.fh = ln(813.0 / max(self.hveg, 0.25) - 5.45)
         self.ku1 = 0.305 / (self.fh * (self.fh + 2.3))
 
         self.logger.info("Starting Dynamic run...")
@@ -549,7 +549,7 @@ class WflowModel(DynamicModel):
         if self.UseETPdata == 1:
             self.E0 = max(self.EPOT, 0)
             keps = (
-                0.655E-3 * pair / pes
+                0.655e-3 * pair / pes
             )  # See Appendix A3 (http://www.clw.csiro.au/publications/waterforahealthycountry/2010/wfhc-aus-water-resources-assessment-system.pdf) --------------------------------   check!
 
         elif self.UseETPdata == 0:

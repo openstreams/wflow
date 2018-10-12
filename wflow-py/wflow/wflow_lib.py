@@ -321,10 +321,10 @@ def lddcreate_save(
     lddname,
     dem,
     force,
-    corevolume=1E35,
-    catchmentprecipitation=1E35,
-    corearea=1E35,
-    outflowdepth=1E35,
+    corevolume=1e35,
+    catchmentprecipitation=1e35,
+    corearea=1e35,
+    outflowdepth=1e35,
 ):
     """
     Creates an ldd if a file does not exists or if the force flag is used
@@ -346,7 +346,7 @@ def lddcreate_save(
     else:
         if Verbose:
             print(("Creating ldd", lddname))
-            LDD = lddcreate(dem, 10.0E35, outflowdepth, 10.0E35, 10.0E35)
+            LDD = lddcreate(dem, 10.0e35, outflowdepth, 10.0e35, 10.0e35)
             report(LDD, lddname)
             return LDD
 
@@ -798,7 +798,7 @@ def subcatch_stream(
             up_area = ifthen(boolean(cover(stream_ge, 0)), accuflux(ldd, 1))
         riverid = ifthen(boolean(cover(stream_ge, 0)), subcatch)
 
-        friction = 1. / scalar(
+        friction = 1.0 / scalar(
             spreadzone(cover(ordinal(up_area), 0), 0, 0)
         )  # *(scalar(ldd)*0+1)
         delta = ifthen(
@@ -1002,8 +1002,8 @@ def points_to_map(in_map, xcor, ycor, tolerance):
             print (n)
         diffx = x - xcor[n]
         diffy = y - ycor[n]
-        col_ = numpy.absolute(diffx) <= (cell_length  * tolerance)  # cellsize
-        row_ = numpy.absolute(diffy) <= (cell_length  * tolerance)  # cellsize
+        col_ = numpy.absolute(diffx) <= (cell_length * tolerance)  # cellsize
+        row_ = numpy.absolute(diffy) <= (cell_length * tolerance)  # cellsize
         point = point + numpy2pcr(Scalar, ((col_ * row_) * (n + 1)), numpy.nan)
 
     return ordinal(point)
@@ -1114,7 +1114,7 @@ def derive_HAND(dem, ldd, accuThreshold, rivers=None, basin=None):
         up_elevation = scalar(subcatchment(ldd, height_river))
     else:
         drainage_surf = ifthen(rivers, accuflux(ldd, 1))
-        weight = 1. / scalar(spreadzone(cover(ordinal(drainage_surf), 0), 0, 0))
+        weight = 1.0 / scalar(spreadzone(cover(ordinal(drainage_surf), 0), 0, 0))
         up_elevation = ifthenelse(
             basin,
             scalar(subcatchment(ldd, height_river)),

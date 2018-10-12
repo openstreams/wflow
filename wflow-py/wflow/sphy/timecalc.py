@@ -1,4 +1,3 @@
-
 # -Function to return the julian day of the year
 def julian(self):
     y = self.curdate.year

@@ -131,9 +131,7 @@ class LandSurface(object):
         self.inputDir = os.path.join(
             os.path.abspath(Dir), staticmaps
         )  # iniItems.globalOptions['inputDir']
-        self.stateDir = os.path.join(
-            os.path.abspath(Dir), 'instate'
-        )
+        self.stateDir = os.path.join(os.path.abspath(Dir), "instate")
         self.landmask = landmask
         self.startTime = startTime
 
@@ -470,9 +468,7 @@ class LandSurface(object):
             else:
 
                 msg = "Using the default set of soil and topo parameters "
-                msg += (
-                    "as defined in the landSurfaceOptions of the ini/configuration file."
-                )
+                msg += "as defined in the landSurfaceOptions of the ini/configuration file."
 
                 self.soil_topo_parameters[coverType] = self.soil_topo_parameters[
                     "default"
@@ -546,9 +542,7 @@ class LandSurface(object):
             and self.noLandCoverFractionCorrection == False
         ):
             self.noLandCoverFractionCorrection = True
-            msg = (
-                "WARNING! No land cover fraction correction will be performed. Please make sure that the 'total' of all fracVegCover adds to one."
-            )
+            msg = "WARNING! No land cover fraction correction will be performed. Please make sure that the 'total' of all fracVegCover adds to one."
             logger.warning(msg)
             logger.warning(msg)
             logger.warning(msg)
@@ -1537,15 +1531,21 @@ class LandSurface(object):
         ] = self.livestockGrossDemand
         nonIrrigationWaterDemandDict["return_flow_fraction"] = {}
         nonIrrigationWaterDemandDict["return_flow_fraction"]["domestic"] = pcr.cover(
-            pcr.min(1.0, pcr.roundup(self.domesticReturnFlowFraction * 1000.) / 1000.),
+            pcr.min(
+                1.0, pcr.roundup(self.domesticReturnFlowFraction * 1000.0) / 1000.0
+            ),
             1.0,
         )
         nonIrrigationWaterDemandDict["return_flow_fraction"]["industry"] = pcr.cover(
-            pcr.min(1.0, pcr.roundup(self.industryReturnFlowFraction * 1000.) / 1000.),
+            pcr.min(
+                1.0, pcr.roundup(self.industryReturnFlowFraction * 1000.0) / 1000.0
+            ),
             1.0,
         )
         nonIrrigationWaterDemandDict["return_flow_fraction"]["livestock"] = pcr.cover(
-            pcr.min(1.0, pcr.roundup(self.livestockReturnFlowFraction * 1000.) / 1000.),
+            pcr.min(
+                1.0, pcr.roundup(self.livestockReturnFlowFraction * 1000.0) / 1000.0
+            ),
             1.0,
         )
 
@@ -1807,7 +1807,7 @@ class LandSurface(object):
             averageUpstreamInput + averageBaseflowInput,
             vos.smallNumber,
         )
-        swAbstractionFraction = pcr.roundup(swAbstractionFraction * 100.) / 100.
+        swAbstractionFraction = pcr.roundup(swAbstractionFraction * 100.0) / 100.0
         swAbstractionFraction = pcr.max(0.0, swAbstractionFraction)
         swAbstractionFraction = pcr.min(1.0, swAbstractionFraction)
 
@@ -1879,7 +1879,7 @@ class LandSurface(object):
         )  # using this factor, the minimum value for the following 'data_weight_value' is 0.75 (for swAbstractionFractionDataQuality == 5)
         data_weight_value = (
             pcr.scalar(1.0)
-            - (pcr.min(5., pcr.max(0.0, swAbstractionFractionDataQuality)) / 10.0)
+            - (pcr.min(5.0, pcr.max(0.0, swAbstractionFractionDataQuality)) / 10.0)
             * factor
         )
 
@@ -1918,7 +1918,7 @@ class LandSurface(object):
         # read historical irrigation areas
         if self.dynamicIrrigationAreaFile.endswith((".nc4", ".nc")):
             fulldateInString = yearInString + "-01" + "-01"
-            self.irrigationArea = 10000. * pcr.cover(
+            self.irrigationArea = 10000.0 * pcr.cover(
                 vos.netcdf2PCRobjClone(
                     self.dynamicIrrigationAreaFile,
                     "irrigationArea",
@@ -1935,7 +1935,7 @@ class LandSurface(object):
             logger.debug(
                 "reading irrigation area map from : " + irrigation_pcraster_file
             )
-            self.irrigationArea = 10000. * pcr.cover(
+            self.irrigationArea = 10000.0 * pcr.cover(
                 vos.readPCRmapClone(
                     irrigation_pcraster_file, self.cloneMap, self.tmpDir
                 ),
@@ -1966,8 +1966,8 @@ class LandSurface(object):
 
                 # avoid small values
                 self.landCoverObj[coverType].fracVegCover = (
-                    pcr.rounddown(self.landCoverObj[coverType].fracVegCover * 1000.)
-                    / 1000.
+                    pcr.rounddown(self.landCoverObj[coverType].fracVegCover * 1000.0)
+                    / 1000.0
                 )
 
         # rescale land cover fractions (for all land cover types):
@@ -1990,7 +1990,7 @@ class LandSurface(object):
                 )
                 other_ids = (
                     pcr.mapmaximum(self.groundwater_pumping_region_ids)
-                    + pcr.scalar(1000.)
+                    + pcr.scalar(1000.0)
                     + pcr.uniqueid(self.landmask)
                 )
                 self.groundwater_pumping_region_ids = pcr.cover(
@@ -2020,13 +2020,13 @@ class LandSurface(object):
                 )
 
                 self.regionalAnnualGroundwaterAbstractionLimit *= (
-                    1000. * 1000. * 1000.
+                    1000.0 * 1000.0 * 1000.0
                 )  # unit: m3/year
                 self.regionalAnnualGroundwaterAbstractionLimit = pcr.ifthen(
                     self.landmask, self.regionalAnnualGroundwaterAbstractionLimit
                 )
                 # minimum value (unit: m3/year at the regional scale)
-                minimum_value = 1000.
+                minimum_value = 1000.0
                 self.regionalAnnualGroundwaterAbstractionLimit = pcr.max(
                     minimum_value, self.regionalAnnualGroundwaterAbstractionLimit
                 )

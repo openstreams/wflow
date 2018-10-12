@@ -77,8 +77,12 @@ wflowVersion = (
 updateCols = []  #: columns used in updating
 
 
-multpars = {}  #: Dictionary with parameters and multipliers (static) (used in calibration)
-multdynapars = {}  #: Dictionary with parameters and multipliers (dynamic) (used in calibration)
+multpars = (
+    {}
+)  #: Dictionary with parameters and multipliers (static) (used in calibration)
+multdynapars = (
+    {}
+)  #: Dictionary with parameters and multipliers (dynamic) (used in calibration)
 
 
 def usage(*args):

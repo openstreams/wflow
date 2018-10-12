@@ -1,4 +1,3 @@
-
 # coding: utf-8
 
 # <h1>Basic test of the wflow BMI interface + reservoir

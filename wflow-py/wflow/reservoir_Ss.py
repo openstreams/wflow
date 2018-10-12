@@ -41,7 +41,7 @@ def groundWater_no_reservoir(self):
     )  # areatotal is taken, according to area percentage of cell
 
     self.Qs = self.Qsin
-    self.Ss = 0.
+    self.Ss = 0.0
     self.wbSs = self.Qsin - self.Qs - self.Ss + self.Ss_t
 
 
