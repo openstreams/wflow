@@ -4,6 +4,8 @@ import os
 import sys
 import shutil
 from distutils.dir_util import copy_tree, remove_tree
+from pyproj import pyproj_datadir
+from osgeo import gdal
 
 # Set these for your installation
 
@@ -47,10 +49,27 @@ def do_analysis(scriptpath):
     # if they are to work in a bundled folder
     return Analysis([scriptpath],
                     binaries=[(pcrasterlib, '.')],
+                    # TODO check if still necessary in PyInstaller 3.3 after
+                    # https://github.com/pyinstaller/pyinstaller/pull/2401
+                    # Though this seems more solid, submit as hook patch?
+                    datas=[(gdal.GetConfigOption('GDAL_DATA'), 'gdal-data'),
+                           (pyproj_datadir, 'proj-data')],
                     hiddenimports=[# in opendapy.py: importlib.import_module(sys.argv[3])
                                    # for wflow this would always be wflow.wflow_bmi
                                    'wflow.wflow_bmi',
                                    'wflow.wflow_bmi_combined',
+                                   'rasterio.control',  # needed
+                                   'rasterio.crs',  # needed
+                                   'rasterio._shim',  # needed
+                                   'rasterio.sample',  # needed
+                                   'rasterio.vrt',  # needed
+                                   'rasterio.coords',  # TODO test if needed
+                                   'rasterio.enums',  # TODO test if needed
+                                   'rasterio.env',  # TODO test if needed
+                                   'rasterio.errors',  # TODO test if needed
+                                   'rasterio.profiles',  # TODO test if needed
+                                   'rasterio.transform',  # TODO test if needed
+                                   'rasterio.vfs'  # TODO test if needed
                                    ])
 
 
