@@ -14,7 +14,6 @@ pcrasterlib = sys.argv[-1]
 # list identical make_wflow_exe script with --normal
 # except for the wtools scripts
 scriptpaths = [
-    'Scripts/wtools_py/modelbuilder.py',
     'openda_bmi/opendapy.py',
     'Scripts/bmi2runner.py',
     'Scripts/pcr2netcdf.py',
