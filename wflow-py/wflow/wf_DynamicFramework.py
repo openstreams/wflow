@@ -457,7 +457,7 @@ class wf_OutputTimeSeriesArea:
             bufsize = 1  # Implies line buffered
             self.fnamelist.append(fname)
 
-            self.ofile.append(open(fname, "w", bufsize))
+            self.ofile.append(open(fname, "w", bufsize, newline="\n"))
             if self.oformat == "csv":  # Always the case
                 self.writer.append(csv.writer(self.ofile[-1]))
                 self.ofile[-1].write("# Timestep,")
