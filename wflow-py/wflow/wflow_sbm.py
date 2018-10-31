@@ -2109,12 +2109,12 @@ class WflowModel(DynamicModel):
                         min(self.UStoreLayerDepth[n], st),
                     )
                     self.T[n] = ifthenelse(
-                        self.ZiLayer == n, self.maskLayer[n], self.T[n]
+                        self.ZiLayer == float(n), self.maskLayer[n], self.T[n]
                     )
                     self.UStoreLayerDepth[n] = self.UStoreLayerDepth[n] - self.T[n]
             else:
                 self.UStoreLayerDepth[n] = ifthenelse(
-                    self.ZiLayer < n,
+                    self.ZiLayer < float(n),
                     self.maskLayer[n],
                     self.UStoreLayerDepth[n] + self.T[n - 1],
                 )
@@ -2130,7 +2130,7 @@ class WflowModel(DynamicModel):
                     self.RestPotEvap,
                     self.maskLayer[n],
                     self.ZeroMap,
-                    self.ZeroMap + n,
+                    self.ZeroMap + float(n),
                     self.ActEvapUStore,
                     self.c[n],
                     self.L,
@@ -2156,12 +2156,12 @@ class WflowModel(DynamicModel):
 
                 # Transfer in layer with zi is not yet substracted from layer (set to zero)
                 self.T[n] = ifthenelse(
-                    self.ZiLayer <= n,
+                    self.ZiLayer <= float(n),
                     self.maskLayer[n],
                     min(self.UStoreLayerDepth[n], st),
                 )
                 self.UStoreLayerDepth[n] = ifthenelse(
-                    self.ZiLayer < n,
+                    self.ZiLayer < float(n),
                     self.maskLayer[n],
                     self.UStoreLayerDepth[n] - self.T[n],
                 )
@@ -2253,13 +2253,13 @@ class WflowModel(DynamicModel):
 
             if self.TransferMethod == 2:
                 self.L = ifthen(
-                    self.ZiLayer == n,
+                    self.ZiLayer == float(n),
                     ifthenelse(
-                        self.ZeroMap + n > 0, self.zi - l_Thickness[n - 1], self.zi
+                        self.ZeroMap + float(n) > 0, self.zi - l_Thickness[n - 1], self.zi
                     ),
                 )
                 st = ifthen(
-                    self.ZiLayer == n,
+                    self.ZiLayer == float(n),
                     self.KsatVer
                     * exp(-self.f * self.zi)
                     * min(
@@ -2272,7 +2272,7 @@ class WflowModel(DynamicModel):
                     ** self.c[n],
                 )
                 self.Transfer = self.Transfer + ifthenelse(
-                    self.ZiLayer == n,
+                    self.ZiLayer == float(n),
                     min(
                         self.UStoreLayerDepth[n],
                         ifthenelse(self.SaturationDeficit <= 0.00001, 0.0, st),
