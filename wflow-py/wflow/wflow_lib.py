@@ -283,13 +283,14 @@ def complexreservoir(
         ] = np_outflow[np_outflow < 0]
         outflow_linked = numpy2pcr(Scalar, np_outflow_linked, 0.0)
 
+        fl_nr_loop = float(nr_loop)
         storage = (
             storage_start
-            + (inflow * timestepsecs / nr_loop)
-            + (prec_av / nr_loop / 1000.0) * ResArea
-            - (pet_av / nr_loop / 1000.0) * ResArea
-            - (cover(outflow, 0.0) * timestepsecs / nr_loop)
-            + (cover(outflow_linked, 0.0) * timestepsecs / nr_loop)
+            + (inflow * timestepsecs / fl_nr_loop)
+            + (prec_av / fl_nr_loop / 1000.0) * ResArea
+            - (pet_av / fl_nr_loop / 1000.0) * ResArea
+            - (cover(outflow, 0.0) * timestepsecs / fl_nr_loop)
+            + (cover(outflow_linked, 0.0) * timestepsecs / fl_nr_loop)
         )
 
         waterlevel = ifthenelse(
