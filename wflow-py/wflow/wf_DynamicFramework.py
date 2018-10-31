@@ -1729,7 +1729,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         for var in allvars:
             try:
                 fname = os.path.join(directory, var).replace("\\", "/") + ".map"
-                savevar = getattr(self._userModel(), var)
+                #savevar = getattr(self._userModel(), var)
+                savevar = reduce(getattr, var.split('.'), self._userModel())
 
                 try:  # Check if we have a list of maps
                     b = len(savevar)
@@ -1747,7 +1748,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         )
                         a = a + 1
                 except:
-                    thevar = getattr(self._userModel(), var)
+                    #thevar = getattr(self._userModel(), var)
+                    thevar = reduce(getattr, var.split('.'), self._userModel())
                     self.reportState(
                         thevar, fname, style=1, gzipit=False, longname=fname
                     )
@@ -2024,7 +2026,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         for var in allvars:
             try:
-                setattr(self._userModel(), var + "_laststep", getattr(self._userModel(), var))
+                setattr(self._userModel(), var + "_laststep", reduce(getattr, var.split('.'), self._userModel()))
             except:
                 self.logger.warning("Problem saving state variable: " + var)
 
