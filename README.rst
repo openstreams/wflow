@@ -82,7 +82,7 @@ Citation
 ========
 See doi of the release you use. If you use a snapshot of the development (without a DOI) cite as follows:
 
-Jaap Schellekens, Willem van Verseveld, Tanja Euser, Hessel Winsemius, Christophe Thiange, Laurene Bouaziz, Daniel Tollenaar, Sander de Vries, Albrecht Weerts, YEAR. openstreams/wflow: unstable-master. https://github.com/openstreams/wflow, obtained: DATE_OF_DOWNLOAD
+Jaap Schellekens, Willem van Verseveld, Tanja Euser, Hessel Winsemius, Christophe Thiange, Laurène Bouaziz, Daniel Tollenaar, Sander de Vries, Albrecht Weerts, YEAR. openstreams/wflow: unstable-master. https://github.com/openstreams/wflow, obtained: DATE_OF_DOWNLOAD
 
 
 Recent releases
@@ -91,7 +91,7 @@ Recent releases
 .. image:: https://zenodo.org/badge/17738134.svg
    :target: https://zenodo.org/badge/latestdoi/17738134
    
-Jaap Schellekens, Willem van Verseveld, Tanja Euser, Hessel Winsemius, Christophe Thiange, Laurene Bouaziz, Daniel Tollenaar, Sander de Vries, 2016. openstreams/wflow: 2016.04 Test release. doi:10.5281/zenodo.167057
+Jaap Schellekens, Willem van Verseveld, Tanja Euser, Hessel Winsemius, Christophe Thiange, Laurène Bouaziz, Daniel Tollenaar, Sander de Vries, 2016. openstreams/wflow: 2016.04 Test release. doi:10.5281/zenodo.167057
 
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.155389.svg
    :target: https://doi.org/10.5281/zenodo.155389
