@@ -2255,7 +2255,9 @@ class WflowModel(DynamicModel):
                 self.L = ifthen(
                     self.ZiLayer == float(n),
                     ifthenelse(
-                        self.ZeroMap + float(n) > 0, self.zi - l_Thickness[n - 1], self.zi
+                        self.ZeroMap + float(n) > 0,
+                        self.zi - l_Thickness[n - 1],
+                        self.zi,
                     ),
                 )
                 st = ifthen(

@@ -251,7 +251,6 @@ import wflow.wflow_lib as wflow_lib
 import datetime as dt
 
 
-
 def main():
     ### Read input arguments #####
     parser = OptionParser()
