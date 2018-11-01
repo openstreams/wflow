@@ -9,8 +9,6 @@ dependencies:
   - numpy>=1.12
   - scipy>=1.0
   - gdal>=2.2.4
-  - rasterio=1.0
-  - fiona>=1.7.11
   - netcdf4>=1.4.1
   - cftime>=1.0.1
   - pyproj>=1.9
@@ -22,7 +20,6 @@ dependencies:
   - geojson>=2.3
   - requests>=2.18
   - click>=6.7
-  - shapely>=1.6
   - pip>=9.0.3
   - pip:
     - bmi-python
