@@ -12,7 +12,7 @@ except:
     print("see www.pcraster.eu")
 
 here = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(here, "../README.rst"), encoding='utf-8') as f:
+with open(os.path.join(here, "../README.rst"), encoding="utf-8") as f:
     README = f.read()
 
 setup(

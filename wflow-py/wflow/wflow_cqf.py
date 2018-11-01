@@ -107,7 +107,6 @@ from wflow.wflow_funcs import *
 from wflow.wflow_adapt import *
 
 
-
 wflow = "wflow_cqf: "
 wflowVersion = "$Revision: 909 $  $Date: 2014-01-16 16:23:32 +0100 (Thu, 16 Jan 2014) $"
 

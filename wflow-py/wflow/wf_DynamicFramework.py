@@ -626,27 +626,31 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         """
         if self._userModel()._inDynamic():
             for cmdd in self.modelparameters_changes_timestep:
-                var = cmdd.replace("self._userModel().","")
+                var = cmdd.replace("self._userModel().", "")
                 if not hasattr(self._userModel(), var):
                     self.logger.error(
                         "Variable change (apply_timestep) could not be applied to "
-                         + str(var)
+                        + str(var)
                     )
                 else:
-                    setattr(self._userModel(), var, self.modelparameters_changes_timestep[cmdd])
-
+                    setattr(
+                        self._userModel(),
+                        var,
+                        self.modelparameters_changes_timestep[cmdd],
+                    )
 
         if self._userModel()._inInitial():
             for cmdd in self.modelparameters_changes_once:
-                var = cmdd.replace("self._userModel().","")
+                var = cmdd.replace("self._userModel().", "")
                 if not hasattr(self._userModel(), var):
                     self.logger.error(
                         "Variable change ((apply_once) could not be applied to "
                         + str(var)
                     )
                 else:
-                    setattr(self._userModel(), var, self.modelparameters_changes_once[cmdd])
-                
+                    setattr(
+                        self._userModel(), var, self.modelparameters_changes_once[cmdd]
+                    )
 
     def wf_updateparameters(self):
         """
@@ -1729,8 +1733,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         for var in allvars:
             try:
                 fname = os.path.join(directory, var).replace("\\", "/") + ".map"
-                #savevar = getattr(self._userModel(), var)
-                savevar = reduce(getattr, var.split('.'), self._userModel())
+                # savevar = getattr(self._userModel(), var)
+                savevar = reduce(getattr, var.split("."), self._userModel())
 
                 try:  # Check if we have a list of maps
                     b = len(savevar)
@@ -1748,14 +1752,14 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         )
                         a = a + 1
                 except:
-                    #thevar = getattr(self._userModel(), var)
-                    thevar = reduce(getattr, var.split('.'), self._userModel())
+                    # thevar = getattr(self._userModel(), var)
+                    thevar = reduce(getattr, var.split("."), self._userModel())
                     self.reportState(
                         thevar, fname, style=1, gzipit=False, longname=fname
                     )
             except:
                 self.logger.warning("Problem saving state variable: " + var)
-                #self.logger.warning(execstr)
+                # self.logger.warning(execstr)
                 self.logger.warning(sys.exc_info())
 
         # Save the summary maps
@@ -1771,14 +1775,22 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         for a in self.samplenamecsv:
             found = 1
             try:
-                if '+' in self.varnamecsv[a]:
+                if "+" in self.varnamecsv[a]:
                     a_ = self.varnamecsv[a].split("+")
                     tmpvar = cover(0.0)
                     for i in arange(0, len(a_)):
-                        tmpvar = tmpvar + reduce(getattr, a_[i].strip().replace("self._userModel().", "").split('.'), self._userModel())
+                        tmpvar = tmpvar + reduce(
+                            getattr,
+                            a_[i].strip().replace("self._userModel().", "").split("."),
+                            self._userModel(),
+                        )
 
-                else:    
-                    tmpvar = reduce(getattr, self.varnamecsv[a].replace("self._userModel().", "").split('.'), self._userModel())
+                else:
+                    tmpvar = reduce(
+                        getattr,
+                        self.varnamecsv[a].replace("self._userModel().", "").split("."),
+                        self._userModel(),
+                    )
             except:
                 found = 0
                 self.logger.fatal(
@@ -1877,14 +1889,18 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 for i in arange(0, len(a_)):
                     # check for nested objects
                     if len(a_[i].replace("self.", "").split(".")) > 1:
-                        if hasattr((
-                            self._userModel(), a_[i].replace("self.", "").split(".")[0]
-                        )
-                         and reduce(
-                            getattr,
-                            a_[i].replace("self.", "").split("."),
-                            self._userModel(),
-                            ) is not None ):                           
+                        if hasattr(
+                            (
+                                self._userModel(),
+                                a_[i].replace("self.", "").split(".")[0],
+                            )
+                            and reduce(
+                                getattr,
+                                a_[i].replace("self.", "").split("."),
+                                self._userModel(),
+                            )
+                            is not None
+                        ):
 
                             thevar = thevar + reduce(
                                 getattr,
@@ -1906,14 +1922,15 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             else:
                 # check for nested objects
                 if len(a.replace("self.", "").split(".")) > 1:
-                    if (hasattr(
-                        self._userModel(), a.replace("self.", "").split(".")[0]
-
-                    ) and reduce(
-                        getattr,
-                        a.replace("self.", "").split("."),
-                        self._userModel(),                        
-                    ) is not None):
+                    if (
+                        hasattr(self._userModel(), a.replace("self.", "").split(".")[0])
+                        and reduce(
+                            getattr,
+                            a.replace("self.", "").split("."),
+                            self._userModel(),
+                        )
+                        is not None
+                    ):
                         thevar = reduce(
                             getattr,
                             a.replace("self.", "").split("."),
@@ -2026,7 +2043,11 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         for var in allvars:
             try:
-                setattr(self._userModel(), var + "_laststep", reduce(getattr, var.split('.'), self._userModel()))
+                setattr(
+                    self._userModel(),
+                    var + "_laststep",
+                    reduce(getattr, var.split("."), self._userModel()),
+                )
             except:
                 self.logger.warning("Problem saving state variable: " + var)
 
@@ -2040,7 +2061,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         allvars = self._userModel().stateVariables()
 
         for var in allvars:
-            setattr(self._userModel(), var, getattr(self._userModel(), var + "_laststep"))
+            setattr(
+                self._userModel(), var, getattr(self._userModel(), var + "_laststep")
+            )
 
         ts = self._userModel().currentTimeStep()
         self._userModel()._setCurrentTimeStep(ts)
@@ -2271,7 +2294,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         arpcr = cover(value)
         self.setviaAPI[mapname] = 1
         if hasattr(self._userModel(), mapname):
-            setattr(self._userModel(), mapname, arpcr * getattr(self._userModel(), mapname))
+            setattr(
+                self._userModel(), mapname, arpcr * getattr(self._userModel(), mapname)
+            )
             return 1
         else:
             self.logger.debug(
@@ -2298,11 +2323,15 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         arpcr = cover(value)
         self.setviaAPI[mapname] = 1
         if hasattr(self._userModel(), mapname):
-            setattr(self._userModel(), mapname, ifthenelse(
-                getattr(self._userModel(), areamapname) == str(areacode),
-                arpcr * getattr(self._userModel(), areamapname),
-                getattr(self._userModel(), areamapname)
-            ))
+            setattr(
+                self._userModel(),
+                mapname,
+                ifthenelse(
+                    getattr(self._userModel(), areamapname) == str(areacode),
+                    arpcr * getattr(self._userModel(), areamapname),
+                    getattr(self._userModel(), areamapname),
+                ),
+            )
 
             return 1
         else:
