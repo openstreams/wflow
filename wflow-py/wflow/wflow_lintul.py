@@ -777,7 +777,7 @@ class WflowModel(DynamicModel):
         # Calculate daylength (assumed similar throughout the catchment area -> scalar, no array), based on latitude and Day Of Year (DOY)
         DAYL = astro_py(DOY, self.LAT)
 
-        # Calculate the specific leaf area (m2 (leaf) g−1 (leaf)) by interpolation of development stage in SLAF, multiplication with self.SLACF
+        # Calculate the specific leaf area (m2 (leaf) g-1 (leaf)) by interpolation of development stage in SLAF, multiplication with self.SLACF
         SLA = self.SLAC * self.SLACF.lookup_linear(self.DVS)
         # Obtain the fractions (-) of daily dry matter production allocated (in absence of water shortage) to, respectively, root growth (FRTWET), leaf growth (FLVT),
         # growth of stems (FSTT) and growth of storage organs (FSO, i.e. rice grains), as a function of development stage (DVS), by interpolation.
@@ -809,7 +809,7 @@ class WflowModel(DynamicModel):
         # In LINTUL1 and LINTUL2, TSUM directly steered all processes influenced by crop phenological development.
         # However, Shibu et al. (2010) derived some code from ORYZA_2000 (Bouman et al., 2001), including the use DVS instead of TSUM.
         # Hence in LINTUL3, some processes are still controlled directly by TSUM and some are controlled by its derived variable DVS
-        # – a somewhat confusing situation that offers scope for future improvement.
+        # - a somewhat confusing situation that offers scope for future improvement.
         # After anthesis DVS proceeds at a different rate (DVS_gen) than before (DVS_veg). Throughout crop development DVS is calculated as the DVS_veg + DVS_gen.
         DVS_veg = self.TSUM / self.TSUMAN * ifthenelse(CropHarvNow, scalar(0.), 1.)
         DVS_gen = (1. + (self.TSUM - self.TSUMAN) / self.TSUMMT) * ifthenelse(

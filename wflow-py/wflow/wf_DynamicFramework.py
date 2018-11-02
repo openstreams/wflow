@@ -575,6 +575,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self._addMethodToClass(self.wf_supplyJulianDOY)
         self._addMethodToClass(self.wf_supplyStartDateTime)
         self._addMethodToClass(self.wf_supplyCurrentDateTime)
+        self._addMethodToClass(self.wf_supplyEndTime)
         self._addAttributeToClass("ParamType", self.ParamType)
         self._addAttributeToClass("timestepsecs", self.DT.timeStepSecs)
         self._addAttributeToClass("__version__", __version__)
