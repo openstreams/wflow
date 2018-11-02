@@ -1991,7 +1991,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     "\\", "/"
                 )
 
-                try:
+                if os.path.exists(name):
                     tvar = self.wf_readmap(
                         name,
                         0.0,
