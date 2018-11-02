@@ -1957,8 +1957,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 name = os.path.join(directory, var + "_" + str(nr) + ".map").replace(
                     "\\", "/"
                 )
-
-                try:
+                if os.path.exists(name):
                     tvar = self.wf_readmap(
                         name,
                         0.0,
@@ -1971,7 +1970,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     execstr = "self._userModel()." + var + ".append(tvar)"
                     exec execstr
                     nr = nr + 1
-                except:
+                else:
+                    if nr > 0:
+                        self.logger.info("state variable " + str(var) + " contains " + str(nr) + " state files (stack)")
                     stop = 1
 
                 # if os.path.exists(name):

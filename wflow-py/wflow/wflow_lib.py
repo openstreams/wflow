@@ -280,11 +280,15 @@ def complexreservoir(
         np_outflow = pcr2numpy(outflow, np.nan)
         np_outflow_linked = np_reslocs * 0.0
 
-        np_outflow_linked[
-            np.in1d(np_reslocs, np_linkedreslocs[np_outflow < 0]).reshape(
-                np_linkedreslocs.shape
-            )
-        ] = np_outflow[np_outflow < 0]
+        with np.errstate(invalid='ignore'):
+            if np_outflow[np_outflow < 0] is not None:
+                    np_outflow_linked[
+                        np.in1d(np_reslocs, np_linkedreslocs[np_outflow < 0]).reshape(
+                            np_linkedreslocs.shape
+                        )
+                    ] = np_outflow[np_outflow < 0]
+
+
         outflow_linked = numpy2pcr(Scalar, np_outflow_linked, 0.0)
 
         storage = (
@@ -303,7 +307,8 @@ def complexreservoir(
         )
 
         np_outflow_nz = np_outflow * 0.0
-        np_outflow_nz[np_outflow > 0] = np_outflow[np_outflow > 0]
+        with np.errstate(invalid='ignore'):
+            np_outflow_nz[np_outflow > 0] = np_outflow[np_outflow > 0]
         _outflow.append(np_outflow_nz)
 
     outflow_av_temp = np.average(_outflow, 0)
