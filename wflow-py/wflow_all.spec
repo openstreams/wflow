@@ -20,8 +20,6 @@ scriptpaths = [
     'Scripts/wflow_prepare_step1.py',
     'Scripts/wflow_prepare_step2.py',
     'Scripts/wflow_sbm_rtc.py',
-    'wflow/create_grid.py',
-    'wflow/static_maps.py',
     'wflow/wflow_adapt.py',
     'wflow/wflow_delwaq.py',
     'wflow/wflow_floodmap.py',
