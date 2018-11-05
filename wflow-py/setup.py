@@ -24,7 +24,7 @@ setup(
     url="http://wflow.readthedocs.io/en/latest/",
     license="GPL",
     python_requires=">=3.6",
-    install_requires=["numpy", "gdal", "netCDF4", "pyproj"],
+    install_requires=["numpy", "gdal", "netCDF4", "pyproj", "dateutil"],
     version=versioneer.get_version().split("+")[0],
     cmdclass=versioneer.get_cmdclass(),
     packages=["wflow", "wflow.pcrglobwb", "wflow.sphy", "wflow.wrappers.rtc"],

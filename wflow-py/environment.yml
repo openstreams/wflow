@@ -17,9 +17,7 @@ dependencies:
   - versioneer>=0.18
   - pywin32>=221
   - setuptools>=38
-  - geojson>=2.3
-  - requests>=2.18
-  - click>=6.7
   - pip>=9.0.3
+  - dateutil>=2.7
   - pip:
     - bmi-python
