@@ -230,7 +230,7 @@ def actEvap_unsat_SBM(
     return UStoreDepth, sumActEvapUStore, RestPotEvap, ActEvapUStore
 
 
-def soilevap_SBM(
+def soilevap_SBM_unsat(
     CanopyGapFraction,
     PotTransSoil,
     SoilWaterCapacity,
@@ -263,6 +263,29 @@ def soilevap_SBM(
     )
 
     return soilevap
+
+def soilevap_SBM_sat(PotTransSoil,zi,thetaS,thetaR,UStoreLayerThickness, UStoreLayerDepth):
+    # Follows after soilevap_SBM_unsat and requires the PotTranSoil that remains after
+    # soilevap_SBM_unsat. 
+    # soilevap_SBM_sat only takes place in the upper layer.
+    
+    # Only works when more than 1 layer is used, otherwise soilevap_sat equals 0.
+    # PotTranSoil is reduced when there is either no saturated water layer in the 
+    # upper soil layer (reduced to zero), or when the saturated layer is only a 
+    # fraction of the upper soil layer (reduced to that fraction).
+    
+    # In case water is ponding, zi is negative - Start with setting negative values 
+    # to 0.0 to assure positive soilevap values
+    zi = ifthenelse(zi < 0.0, 0.0, zi)
+    
+    # Calculate soilevap
+    soilevap_sat = ifthenelse(len(UStoreLayerThickness)==1, 0.0, PotTransSoil * min(1.0, ifthenelse(zi >= UStoreLayerThickness[0], 0.0, (UStoreLayerThickness[0] - zi)/UStoreLayerThickness[0])))
+    
+    # Set soilevap to demand (soilevap_sat) or, if less than the demand, the depth
+    # of the saturated water layer
+    soilevapsat = ifthenelse(len(UStoreLayerThickness)==1, 0.0, min(soilevap_sat, ifthenelse(zi >= UStoreLayerThickness[0], 0.0, (UStoreLayerThickness[0] - zi)*(thetaS-thetaR))))
+    
+    return soilevapsat
 
 
 def sum_UstoreLayerDepth(UStoreLayerThickness, ZeroMap, UStoreLayerDepth):
@@ -2032,7 +2055,7 @@ class WflowModel(DynamicModel):
             if n == 0:
                 DownWard = InfiltSoilPath  # MaxInfiltPath+MaxInfiltSoil
                 self.UStoreLayerDepth[n] = self.UStoreLayerDepth[n] + DownWard
-                self.soilevap = soilevap_SBM(
+                self.soilevapunsat = soilevap_SBM_unsat(
                     self.CanopyGapFraction,
                     self.RestEvap,
                     self.SoilWaterCapacity,
@@ -2045,15 +2068,24 @@ class WflowModel(DynamicModel):
                 )
                 # assume soil evaporation is from first soil layer
                 if self.nrpaddyirri > 0:
-                    self.soilevap = ifthenelse(
+                    self.soilevapunsat = ifthenelse(
                         self.PondingDepth > 0.0,
                         0.0,
-                        min(self.soilevap, self.UStoreLayerDepth[0]),
+                        min(self.soilevapunsat, self.UStoreLayerDepth[0]),
                     )
                 else:
-                    self.soilevap = min(self.soilevap, self.UStoreLayerDepth[n])
+                    self.soilevapunsat = min(self.soilevapunsat, self.UStoreLayerDepth[n])
 
-                self.UStoreLayerDepth[n] = self.UStoreLayerDepth[n] - self.soilevap
+                # The remaining 'RestEvap' can be used for evaporation from the saturated layer
+                self.RestEvap = self.RestEvap - self.soilevapunsat
+                self.soilevapsat = soilevap_SBM_sat(self.RestEvap,self.zi,self.thetaS,self.thetaR,self.UStoreLayerThickness,self.UStoreLayerDepth)
+                
+                # Total soil evaporation from the first soil layer
+                self.soilevap = self.soilevapunsat + self.soilevapsat
+
+                # Recalculate the water depths in the unsaturated and saturated buckets
+                self.UStoreLayerDepth[n] = self.UStoreLayerDepth[n] - self.soilevapunsat
+                self.SatWaterDepth = self.SatWaterDepth - self.soilevapsat
 
                 # evap available for transpiration
                 self.PotTrans = (
