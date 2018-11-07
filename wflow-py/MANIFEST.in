@@ -1,2 +1,3 @@
+include COPYING
 include versioneer.py
 include wflow/_version.py
