@@ -18,6 +18,6 @@ dependencies:
   - pywin32>=221
   - setuptools>=38
   - pip>=9.0.3
-  - dateutil>=2.7
+  - python-dateutil>=2.7
   - pip:
     - bmi-python
