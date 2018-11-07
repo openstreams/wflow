@@ -37,7 +37,7 @@ setup(
     cmdclass=versioneer.get_cmdclass(),
     packages=["wflow", "wflow.pcrglobwb", "wflow.sphy", "wflow.wrappers.rtc"],
     package_dir={"wflow": "wflow"},
-    test_suite="UnitTests",
+    test_suite="tests",
     zip_safe=False,
     scripts=[
         "Scripts/pcr2netcdf.py",
