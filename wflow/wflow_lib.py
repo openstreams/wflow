@@ -822,7 +822,7 @@ def subcatch_order_a(ldd, oorder):
     Determines subcatchments using the catchment order
 
     This version uses the last cell BELOW order to derive the
-    catchments. In general you want the \_b version
+    catchments. In general you want the _b version
 
     Input:
         - ldd

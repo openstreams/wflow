@@ -68,7 +68,7 @@ usage
     -U: The argument to this option should be a .tss file with measured discharge in
         [m^3/s] which the progam will use to update the internal state to match
         the measured flow. The number of columns in this file should match the
-        number of gauges in the wflow\_gauges.map file.
+        number of gauges in the wflow_gauges.map file.
 
     -u: list of gauges/columns to use in update. Format:
         -u [1 , 4 ,13]

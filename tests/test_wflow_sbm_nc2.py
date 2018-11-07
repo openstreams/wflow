@@ -18,7 +18,7 @@ class MyTest(unittest.TestCase):
         runId = "unittest"
         configfile = "wflow_sbm_NC2.ini"
         wflow_cloneMap = "wflow_catchment.map"
-        caseName = "../examples\wflow_rhine_sbm_nc"
+        caseName = "../examples/wflow_rhine_sbm_nc"
 
         myModel = wf.WflowModel(wflow_cloneMap, caseName, runId, configfile)
         # initialise the framework
