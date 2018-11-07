@@ -35,6 +35,7 @@ The main dependencies for wflow are an installation of Python 3.6+, and PCRaster
 Only 64 bit OS/Python is supported.
 
 *Installing Python*
+
 For Python we recommend using the Anaconda Distribution for Python 3, which is available
 for download from https://www.anaconda.com/download/. The installer gives the option to
 add ``python`` to your ``PATH`` environment variable. We will assume in the instructions
@@ -42,9 +43,10 @@ below that it is available in the path, such that ``python``, ``pip``, and ``con
 all available from the command line.
 
 Note that there is no hard requirement specifically for Anaconda's Python, but often it
-makes installation of required dependencies easier using the ``conda`` package manager.
+makes installation of required dependencies easier using the conda package manager.
 
 *Installing pcraster*
+
 + Download pcraster from http://pcraster.geo.uu.nl/ website (version 4.2+)
 + Follow the installation instructions at http://pcraster.geo.uu.nl/quick-start-guide/
 
@@ -78,7 +80,7 @@ Install using pip
 
 Besides the recommended conda environment setup described above, you can also install
 wflow with ``pip``. For the more difficult to install Python dependencies, it is best to
-use the ``conda`` package manager:
+use the conda package manager:
 
 + ``conda install numpy scipy gdal netcdf4 cftime pyproj python-dateutil``
 
@@ -108,7 +110,7 @@ To check it the install is successful, go to the examples directory and run the 
 
 + ``python -m wflow.wflow_sbm -C wflow_rhine_sbm -R testing``
 
-This should run without errors
+This should run without errors.
 
 
 Credits
