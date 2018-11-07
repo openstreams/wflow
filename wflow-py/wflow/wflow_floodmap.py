@@ -5,9 +5,9 @@ Definition of the wflow_floodmap model.
 ---------------------------------------
 
 Runs flood mapping (very basic) based on an existing
-wflow\_sbm|hbv model run. 
+wflow_sbm|hbv model run. 
 
-The wflow\_sbm|hbv model must have saved mapstacks for
+The wflow_sbm|hbv model must have saved mapstacks for
 water level and discharge for each timestep (run*****.*** and lev*****.***).
 If the name of you Q and/or H maps are different specify these in the
 [inputmapstacks] section, e.g:
