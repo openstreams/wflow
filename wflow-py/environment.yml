@@ -21,3 +21,4 @@ dependencies:
   - python-dateutil>=2.7
   - pip:
     - bmi-python
+    - wflow
