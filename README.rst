@@ -55,7 +55,7 @@ Install as a conda environment
 ------------------------------
 
 The easiest and most robust way to install wflow is by installing it in a separate
-conda environment. In the ``wflow-py`` directory there is an ``environment.yml`` file.
+conda environment. In the root repository directory there is an ``environment.yml`` file.
 This file lists all dependencies, except PCRaster, which must be installed manually as
 described above.
 
@@ -95,7 +95,7 @@ instead create a link in your Python installation pointing to the folder you ins
 it from, such that any changes you make there are directly reflected in your install.
 
 + ``git clone https://github.com/openstreams/wflow.git``
-+ ``cd wflow/wflow-py``
++ ``cd wflow``
 + ``pip install -e .``
 
 Alternatively, if you want to avoid using ``git`` and simply want to test the latest

@@ -12,6 +12,6 @@ Seee the section wf_DyanmicFramwork for the ini file settings.
 
 .. automodule:: testrunner_wflowhbv
 
-.. literalinclude:: ../wflow-py/wflow/testrunner_wflowhbv.py
+.. literalinclude:: ../wflow/testrunner_wflowhbv.py
 
 

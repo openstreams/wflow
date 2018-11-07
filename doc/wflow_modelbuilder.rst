@@ -29,7 +29,7 @@ available in this location:
 
 ::
 
-	<your_wflow_folder>/wflow-py/Scripts/wtools_py/modelbuilder.py
+	<your_wflow_folder>/Scripts/wtools_py/modelbuilder.py
 
 You can run the modelbuilder script from the command line or in a batch
 file. The script uses the settings.json file for the location of the
