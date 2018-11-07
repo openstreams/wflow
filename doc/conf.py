@@ -41,10 +41,10 @@ sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('pcraster-for-doc-only/'))
-sys.path.insert(0, os.path.abspath('../wflow-py/wflow/'))
-sys.path.insert(0, os.path.abspath('../wflow-py/'))
-sys.path.insert(0, os.path.abspath('../wflow-py/Scripts/'))
+sys.path.insert(0, os.path.abspath('pcraster-for-doc-only'))
+sys.path.insert(0, os.path.abspath('wflow'))
+sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('Scripts'))
 
 
 
@@ -81,7 +81,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'wflow'
-copyright = u'2013-2015, Deltares/Jaap Schellekens'
+copyright = u'2013-2018, Deltares/Jaap Schellekens'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
