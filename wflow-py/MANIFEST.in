@@ -1,3 +1,4 @@
-include COPYING
+include README.rst
+include LICENSE
 include versioneer.py
 include wflow/_version.py
