@@ -505,7 +505,9 @@ transfer between the :math:`U` and :math:`S` stores increases.
 Saturated conductivity (:math:`K_{sat}`) declines with soil depth (:math:`z`) in
 the model according to: 
 
-.. math::`K_{sat}=K_{0}e^{(-fz)}`
+.. math::
+
+	`K_{sat}=K_{0}e^{(-fz)}`
 
 where:
 
