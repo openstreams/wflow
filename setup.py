@@ -17,11 +17,11 @@ with open(os.path.join(here, "README.rst"), encoding="utf-8") as f:
 
 setup(
     name="wflow",
-    description="the wflow hydrological models (part of OpenStreams)",
+    description="wflow hydrological modeling framework",
     long_description=README,
     author="J. Schellekens",
-    author_email="jaap.schellekens@deltares.nl",
-    url="http://wflow.readthedocs.io/en/latest/",
+    author_email="wflow@deltares.nl",
+    url="http://wflow.readthedocs.io/",
     license="GPL",
     python_requires=">=3.6",
     install_requires=[
@@ -64,4 +64,14 @@ setup(
         "wflow/wflow_routing.py",
         "Scripts/bmi2runner.py",
     ],
+    classifiers=[
+        # https://pypi.python.org/pypi?%3Aaction=list_classifiers
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
+        "Intended Audience :: Science/Research",
+        "Topic :: Scientific/Engineering",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "Programming Language :: Python :: 3",
+    ],
+    keywords="wflow hydrology modeling framework pcraster",
 )
