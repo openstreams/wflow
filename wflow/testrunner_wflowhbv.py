@@ -50,7 +50,7 @@ def main():
     runId = "memtest"
     configfile = "wflow_hbv_mem.ini"
     wflow_cloneMap = "wflow_subcatch.map"
-    caseName = "../../../examples/wflow_rhine_hbv"
+    caseName = "../../examples/wflow_rhine_hbv"
     # Mske a usermodel object
     myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile)
     # initialise the framework

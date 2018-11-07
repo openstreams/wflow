@@ -20,7 +20,7 @@ class MyTest(unittest.TestCase):
     def testbmirunnetcdfw3ra(self):
         bmiobj = bmi.wflowbmi_csdms()
         bmiobj.initialize_config(
-            "../../examples/openstreams_w3ra_usa/wflow_w3ra.ini", loglevel=logging.DEBUG
+            "../examples/openstreams_w3ra_usa/wflow_w3ra.ini", loglevel=logging.DEBUG
         )
         bmiobj.set_attribute_value("run:runlengthdetermination", "intervals")
 
@@ -50,7 +50,7 @@ class MyTest(unittest.TestCase):
         bmiobj.finalize()
         # Check the values in a state file as a refrence. This is what the baselien model gives
         x, y, data, FillVal = wf.readMap(
-            "../../examples/openstreams_w3ra_usa/run_default/outstate/Sd2.map",
+            "../examples/openstreams_w3ra_usa/run_default/outstate/Sd2.map",
             "PCRaster",
         )
         tmean = np.ma.masked_invalid(data.astype(np.float64)).mean()

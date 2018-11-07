@@ -16,7 +16,7 @@ class MyTest(unittest.TestCase):
         currentTime = 1
 
         orgdir = os.getcwd()
-        os.chdir("../../examples/")
+        os.chdir("../examples/")
         # set runid, clonemap and casename. Also define the ini file
         runId = "unittestsbm"
         configfile = "wflow_sbm.ini"
