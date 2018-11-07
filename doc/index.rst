@@ -22,18 +22,6 @@ Welcome to wflow's |release| documentation!
 
     wflow uses pcraster/python (see http://www.pcraster.eu) as it's calculation engine.
 
-    In order to tun the python code you must install the following python packages:
-
-    + pcraster
-    + netcdf4
-    + numpy
-    + matplotlib
-    + gdal
-    + pyproj
-
-    Alternatively you can use one of the releases (executable) to run the models without installing python and the
-    required packages:   https://github.com/openstreams/wflow/releases
-
 
 Introduction
 ============

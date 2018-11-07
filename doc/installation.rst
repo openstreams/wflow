@@ -1,71 +1,86 @@
 Installation
 ============
 
-Introduction and targets
-------------------------
+The main dependencies for wflow are an installation of Python 3.6+, and PCRaster 4.2+.
+Only 64 bit OS/Python is supported.
 
-The best way to install wflow is to use the setup.py install script (found in the wflow-py directory). Depending on
-the way you want to use the models you can choose the install or develop targets
-(e.g. python setup.py install). If you choose the develop target the installer
-will make a link from the python library to the version you are working on
-and ech chnage you make will end up in the library immediately. If you just want to
-use the model it is best to choose the install target.
+*Installing Python*
 
+For Python we recommend using the Anaconda Distribution for Python 3, which is available
+for download from https://www.anaconda.com/download/. The installer gives the option to
+add ``python`` to your ``PATH`` environment variable. We will assume in the instructions
+below that it is available in the path, such that ``python``, ``pip``, and ``conda`` are
+all available from the command line.
 
-Dependencies
-------------
-in order to run wflow requires the following packages:
-
-+ netCDF4
-+ numpy
-+ matplotlib
-+ pcraster
-+ osgeo
-+ pyproj
-
-The setup.py script will try to install these dependencies but it is best to make
-sure you have installed and tested those before running the setup.py script.
-Make sure to have 64 bit versions of all packages.
-
-Windows
--------
-We recommend installing Anaconda and install the required packages using the conda tool. We have
-binary releases for windows available that allow you to run the models without installing python and all required packages:
-
-+ https://github.com/openstreams/wflow/releases
-
-if you want to adjust the code you should install python and all the required packages as per instructions below:
-
-*Installing Anaconda (scientific python distribution)*
-
-Download Anaconda for python 2.7 64 bit (Tested with anaconda2 2.5.0). From the Anaconda installer choose the following options:
-+ Install to c:\Anaconda
-+ Register as default python
-+ Add to path
-
-Once Anaconda is installed open a command window and install netCDF4, gdal and pyproj using the following commands:
-
-+ Conda install netCDF4
-+ Conda install gdal=1.11
-+ Conda install pyproj
+Note that there is no hard requirement specifically for Anaconda's Python, but often it
+makes installation of required dependencies easier using the conda package manager.
 
 *Installing pcraster*
 
-+ Download pcraster from www.pcraster.eu website (version 4.1 64 bit)
-+ Extract zip to root of c: This will created c:\pcraster-4.1.0_x86-64
-+ Add c:\pcraster-4.1.0_x86-64\python to the PYTHONPATH environment variable
++ Download pcraster from http://pcraster.geo.uu.nl/ website (version 4.2+)
++ Follow the installation instructions at http://pcraster.geo.uu.nl/quick-start-guide/
 
-*Installing wflow itself*
 
-Clone with git or Download the latest zip with the source code of wflow. Go to the wflow-py directory and run:
+Install as a conda environment
+------------------------------
 
-+ python setup.py install
+The easiest and most robust way to install wflow is by installing it in a separate
+conda environment. In the ``wflow-py`` directory there is an ``environment.yml`` file.
+This file lists all dependencies, except PCRaster, which must be installed manually as
+described above.
 
-To check it the install is successfull, go to the  the the examples directory and run the following command:
+Run this command to start installing wflow with all dependencies:
 
-+ Python c:\Anaconda\scripts\wflow_sbm.py -C wflow_rhine_hbv -T 100 -R testing
++ ``conda env create -f environment.yml``
 
-This should run without errors
+This creates a new environment with the name ``wflow``. To activate this environment in
+a session, run:
+
++ ``activate wflow``
+
+Now you should be able to start this environment's Python with ``python``, try
+``import wflow`` to see if the package is installed.
+
+More details on how to work with conda environments can be found here:
+https://conda.io/docs/user-guide/tasks/manage-environments.html
+
+
+Install using pip
+-----------------
+
+Besides the recommended conda environment setup described above, you can also install
+wflow with ``pip``. For the more difficult to install Python dependencies, it is best to
+use the conda package manager:
+
++ ``conda install numpy scipy gdal netcdf4 cftime pyproj python-dateutil``
+
+This will install the latest release of wflow:
+
++ ``pip install wflow``
+
+If you are planning to make changes and contribute to the development of wflow, it is
+best to make a git clone of the repository, and do a editable install in the location
+of you clone. This will not move a copy to your Python installation directory, but
+instead create a link in your Python installation pointing to the folder you installed
+it from, such that any changes you make there are directly reflected in your install.
+
++ ``git clone https://github.com/openstreams/wflow.git``
++ ``cd wflow/wflow-py``
++ ``pip install -e .``
+
+Alternatively, if you want to avoid using ``git`` and simply want to test the latest
+version from the ``master`` branch, you can replace the first line with downloading
+a zip archive from GitHub: https://github.com/openstreams/wflow/archive/master.zip
+
+
+Check if the installation is successful
+---------------------------------------
+
+To check it the install is successful, go to the examples directory and run the following command:
+
++ ``python -m wflow.wflow_sbm -C wflow_rhine_sbm -R testing``
+
+This should run without errors.
 
 Linux
 -----
@@ -74,6 +89,8 @@ Although you can get everything with the python packages bundled with most linux
 (CentOS, Ubuntu, etc) we have found that the easiest way is to install the linux version of Anaconda
 and use the conda tool to install all requirements apart from pcraster which has to be installed manually.
 
+Since version 4.2, compiled versions of PCRaster are no longer distributed, so it will
+need to be built following the instructions given at http://pcraster.geo.uu.nl/getting-started/pcraster-on-linux/
 
 OSX
 ---
