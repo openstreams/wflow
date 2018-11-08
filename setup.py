@@ -33,6 +33,9 @@ setup(
         "pyproj",
         "python-dateutil",
     ],
+    extras_require={
+        "docs": ["sphinx", "sphinx_rtd_theme"],
+    },
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     packages=["wflow", "wflow.pcrglobwb", "wflow.sphy", "wflow.wrappers.rtc"],
