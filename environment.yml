@@ -18,8 +18,8 @@ dependencies:
   - setuptools>=38
   - pip>=9.0.3
   - python-dateutil>=2.7
-  - sphinx 
-  - sphinx _rtd_theme
+  - sphinx
+  - sphinx_rtd_theme
   - pip:
     - bmi-python
     - wflow
