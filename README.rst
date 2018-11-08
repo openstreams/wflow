@@ -113,6 +113,23 @@ To check it the install is successful, go to the examples directory and run the 
 This should run without errors.
 
 
+Linux
+-----
+
+Although you can get everything with the python packages bundled with most linux distributions
+(CentOS, Ubuntu, etc) we have found that the easiest way is to install the linux version of Anaconda
+and use the conda tool to install all requirements apart from pcraster which has to be installed manually.
+
+Since version 4.2, compiled versions of PCRaster are no longer distributed, so it will
+need to be built following the instructions given at http://pcraster.geo.uu.nl/getting-started/pcraster-on-linux/
+
+
+OSX
+---
+Unfortunately there is no pcraster build for osx yet. If anybody wants to pick this up please let
+the guys at pcraster.eu know!
+
+
 Credits
 =======
 
