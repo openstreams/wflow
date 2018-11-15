@@ -1,4 +1,4 @@
-WFLOW
+wflow
 =====
 
 wflow consists of a set of Python programs that can be run on the command line
