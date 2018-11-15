@@ -87,6 +87,7 @@ import time
 import struct
 import shutil
 import builtins
+import configparser
 
 from wflow import wf_netcdfio
 
@@ -1281,7 +1282,7 @@ def main():
     global pointer
     dw_CreateDwRun(dwdir)
 
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     config.optionxform = str
     config.read(caseId + "/" + configfile)
 
