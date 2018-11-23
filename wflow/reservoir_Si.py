@@ -34,7 +34,7 @@ def interception_no_reservoir(self, k):
     Interception evaporation = 0.
     Storage in interception = 0.
     """
-    self.Pe_[k] = max(self.Precipitation, 0)
+    self.Pe_[k] = pcr.max(self.Precipitation, 0)
     self.Ei_[k] = 0.0
     self.Si_[k] = 0.0
     self.wbSi_[k] = (
@@ -49,10 +49,10 @@ def interception_overflow2(self, k):
     - Code for ini-file: 2
     """
 
-    self.Pe = max(self.Precipitation - (self.imax[k] - self.Si_t[k]), 0)
+    self.Pe = pcr.max(self.Precipitation - (self.imax[k] - self.Si_t[k]), 0)
     self.Si[k] = self.Si_t[k] + (self.Precipitation - self.Pe)
-    self.Ei = ifthenelse(
-        self.Sw[k] == 0, min(self.PotEvaporation, self.Si[k]), 0
+    self.Ei = pcr.ifthenelse(
+        self.Sw[k] == 0, pcr.min(self.PotEvaporation, self.Si[k]), 0
     )  # ifstatement added on 3-11-2015 for snow module
     self.Si[k] = self.Si[k] - self.Ei
 
@@ -68,12 +68,12 @@ def interception_overflow2(self, k):
     self.PotEvaporation_ = self.PotEvaporation
 
     if self.URFR_L:
-        self.Ei = areatotal(self.Ei * self.percentArea, nominal(self.TopoId))
-        self.Pe = areatotal(self.Pe * self.percentArea, nominal(self.TopoId))
-        self.PotEvaporation = areatotal(
-            self.PotEvaporation * self.percentArea, nominal(self.TopoId)
+        self.Ei = pcr.areatotal(self.Ei * self.percentArea, pcr.nominal(self.TopoId))
+        self.Pe = pcr.areatotal(self.Pe * self.percentArea, pcr.nominal(self.TopoId))
+        self.PotEvaporation = pcr.areatotal(
+            self.PotEvaporation * self.percentArea, pcr.nominal(self.TopoId)
         )
-        self.Si[k] = areatotal(self.Si[k] * self.percentArea, nominal(self.TopoId))
+        self.Si[k] = pcr.areatotal(self.Si[k] * self.percentArea, pcr.nominal(self.TopoId))
 
 
 def interception_overflow_Ep(self, k):
@@ -87,13 +87,13 @@ def interception_overflow_Ep(self, k):
     JarvisCoefficients.calcEp(
         self, k
     )  # this line indicates that hourly profiles are made out of daily pot evap data based on start day (DS.tss) and day end (DE)
-    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0), 0)
+    self.PotEvaporation = pcr.cover(pcr.ifthenelse(self.EpHour >= 0, self.EpHour, 0), 0)
 
-    self.Pe = max(self.Precipitation - (self.imax[k] - self.Si_t[k]), 0)
+    self.Pe = pcr.max(self.Precipitation - (self.imax[k] - self.Si_t[k]), 0)
     self.Si[k] = self.Si_t[k] + (self.Precipitation - self.Pe)
-    self.Ei = ifthenelse(
+    self.Ei = pcr.ifthenelse(
         self.Sw[k] == 0,
-        min(
+        pcr.min(
             (self.PotEvaporation - (self.Ew_[k] / self.lamda * self.lamdaS)), self.Si[k]
         ),
         0,
@@ -112,9 +112,9 @@ def interception_overflow_Ep(self, k):
     self.Ep_[k] = self.EpHour
 
     if self.URFR_L:
-        self.Ei = areatotal(self.Ei * self.percentArea, nominal(self.TopoId))
-        self.Pe = areatotal(self.Pe * self.percentArea, nominal(self.TopoId))
-        self.PotEvaporation = areatotal(
-            self.PotEvaporation * self.percentArea, nominal(self.TopoId)
+        self.Ei = pcr.areatotal(self.Ei * self.percentArea, pcr.nominal(self.TopoId))
+        self.Pe = pcr.areatotal(self.Pe * self.percentArea, pcr.nominal(self.TopoId))
+        self.PotEvaporation = pcr.areatotal(
+            self.PotEvaporation * self.percentArea, pcr.nominal(self.TopoId)
         )
-        self.Si[k] = areatotal(self.Si[k] * self.percentArea, nominal(self.TopoId))
+        self.Si[k] = pcr.areatotal(self.Si[k] * self.percentArea, pcr.nominal(self.TopoId))

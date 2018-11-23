@@ -7,9 +7,11 @@ PCRaster python bindings.
 import logging
 import logging.handlers
 import os.path
-from math import *
+import math
+import sys
 
-from pcraster.framework import *
+import numpy
+import pcraster as pcr
 
 
 def lattometres(lat):
@@ -19,10 +21,10 @@ def lattometres(lat):
     Input: map with lattitude values for each cell
     Returns: length of a cell lat, length of a cell long
     """
-    # radlat = spatial(lat * ((2.0 * math.pi)/360.0))
+    # radlat = pcr.spatial(lat * ((2.0 * math.pi)/360.0))
     # radlat = lat * (2.0 * math.pi)/360.0
-    setglobaloption("degrees")
-    radlat = spatial(lat)  # pcraster cos/sin work in degrees!
+    pcr.setglobaloption("degrees")
+    radlat = pcr.spatial(lat)  # pcraster cos/sin work in degrees!
 
     m1 = 111132.92  # latitude calculation term 1
     m2 = -559.82  # latitude calculation term 2
@@ -35,11 +37,11 @@ def lattometres(lat):
 
     latlen = (
         m1
-        + (m2 * cos(2.0 * radlat))
-        + (m3 * cos(4.0 * radlat))
-        + (m4 * cos(6.0 * radlat))
+        + (m2 * pcr.cos(2.0 * radlat))
+        + (m3 * pcr.cos(4.0 * radlat))
+        + (m4 * pcr.cos(6.0 * radlat))
     )
-    longlen = (p1 * cos(radlat)) + (p2 * cos(3.0 * radlat)) + (p3 * cos(5.0 * radlat))
+    longlen = (p1 * pcr.cos(radlat)) + (p2 * pcr.cos(3.0 * radlat)) + (p3 * pcr.cos(5.0 * radlat))
 
     return latlen, longlen
 
@@ -51,15 +53,15 @@ def detRealCellLength(ZeroMap, sizeinmetres):
     """
 
     if sizeinmetres:
-        reallength = celllength()
-        xl = celllength()
-        yl = celllength()
+        reallength = pcr.celllength()
+        xl = pcr.celllength()
+        yl = pcr.celllength()
     else:
-        aa = ycoordinate(boolean(cover(ZeroMap + 1, 1)))
+        aa = pcr.ycoordinate(pcr.boolean(pcr.cover(ZeroMap + 1, 1)))
         yl, xl = lattometres(aa)
 
-        xl = xl * celllength()
-        yl = yl * celllength()
+        xl = xl * pcr.celllength()
+        yl = yl * pcr.celllength()
         # Average length for surface area calculations.
 
         reallength = (xl + yl) * 0.5
@@ -113,9 +115,9 @@ def readmapSave(pathtomap, default):
     Adpatation of readmap that returns a default map if the map cannot be found
     """
     if os.path.isfile(pathtomap):
-        return readmap(pathtomap)
+        return pcr.readmap(pathtomap)
     else:
-        return scalar(default)
+        return pcr.scalar(default)
 
 
 def readtss(nname):
@@ -175,15 +177,15 @@ def interpolategauges(inputmap, method):
     """
 
     if method == "inv":
-        result = inversedistance(1, inputmap, 3, 0, 0)
+        result = pcr.inversedistance(1, inputmap, 3, 0, 0)
     elif method == "pol":
-        Unq = uniqueid(boolean(inputmap + 1))
-        result = spreadzone(ordinal(cover(Unq, 0)), 0, 1)
-        result = areaaverage(inputmap, result)
+        Unq = pcr.uniqueid(pcr.boolean(inputmap + 1))
+        result = pcr.spreadzone(pcr.ordinal(pcr.cover(Unq, 0)), 0, 1)
+        result = pcr.areaaverage(inputmap, result)
     else:
-        Unq = uniqueid(boolean(inputmap + 1))
-        result = spreadzone(ordinal(cover(Unq, 0)), 0, 1)
-        result = areaaverage(inputmap, result)
+        Unq = pcr.uniqueid(pcr.boolean(inputmap + 1))
+        result = pcr.spreadzone(pcr.ordinal(pcr.cover(Unq, 0)), 0, 1)
+        result = pcr.areaaverage(inputmap, result)
 
     return result
 
@@ -244,6 +246,6 @@ def tableToMapSparse(step, table, map):
     else:
         fname_map = map + str(tableToMapSparse._tableToMap_LastMap[map]) + ".map"
 
-    rmat = lookupscalar(str(fname_tbl), str(fname_map))
+    rmat = pcr.lookupscalar(str(fname_tbl), str(fname_map))
 
     return rmat

@@ -14,18 +14,25 @@ and interrogate the model.
 
 import calendar
 import configparser
+import csv
 import datetime
 import glob
+import logging
+import shutil
 import traceback
 from collections import namedtuple
 from functools import reduce
 
+import numpy as np
+import pcraster as pcr
+import pcraster.framework
 from wflow import __version__
 from wflow.wf_netcdfio import *
 
 from . import pcrut
 from . import wflow_adapt
 from .wflow_lib import *
+import time  # last to prevent clobbering by *
 
 
 def log_uncaught_exceptions(ex_cls, ex, tb):
@@ -349,7 +356,7 @@ class wf_online_stats:
 
         self.count[name] = self.count[name] + 1
 
-        return scalar(self.result[name])
+        return pcr.scalar(self.result[name])
 
 
 class wf_sumavg:
@@ -377,9 +384,9 @@ class wf_sumavg:
             if self.mode == "sum" or self.mode == "avg":
                 self.data = self.data + data
             if self.mode == "max":
-                self.data = max(self.data, data)
+                self.data = pcr.max(self.data, data)
             if self.mode == "min":
-                self.data = min(self.data, data)
+                self.data = pcr.min(self.data, data)
         self.count = self.count + 1
 
     def finalise(self):
@@ -411,15 +418,15 @@ class wf_OutputTimeSeriesArea:
         self.steps = 0
         self.timeformat = tformat
         self.area = area
-        self.areanp = pcr2numpy(area, 0).copy()
+        self.areanp = pcr.pcr2numpy(area, 0).copy()
         self.oformat = oformat
         self.areafunction = areafunction
         """ average, total, minimum, maximum, majority"""
 
-        self.flatarea, self.idx = numpy.unique(self.areanp, return_index=True)
+        self.flatarea, self.idx = np.unique(self.areanp, return_index=True)
         # print self.flatarea
-        # self.flatarea = self.flatarea[numpy.isfinite(self.flatarea)]
-        # self.idx = self.idx[numpy.isfinite(self.flatarea)]
+        # self.flatarea = self.flatarea[np.isfinite(self.flatarea)]
+        # self.idx = self.idx[np.isfinite(self.flatarea)]
         self.fnamelist = []
         self.writer = []
         self.ofile = []
@@ -465,21 +472,21 @@ class wf_OutputTimeSeriesArea:
 
         self.steps = self.steps + 1
 
-        tmpvar = spatial(scalar(variable))
+        tmpvar = pcr.spatial(pcr.scalar(variable))
         if self.areafunction == "average":
-            self.resmap = areaaverage(tmpvar, nominal(self.area))
+            self.resmap = pcr.areaaverage(tmpvar, pcr.nominal(self.area))
         elif self.areafunction == "total":
-            self.resmap = areatotal(tmpvar, nominal(self.area))
+            self.resmap = pcr.areatotal(tmpvar, pcr.nominal(self.area))
         elif self.areafunction == "maximum":
-            self.resmap = areamaximum(tmpvar, nominal(self.area))
+            self.resmap = pcr.areamaximum(tmpvar, pcr.nominal(self.area))
         elif self.areafunction == "minimum":
-            self.resmap = areaminimum(tmpvar, nominal(self.area))
+            self.resmap = pcr.areaminimum(tmpvar, pcr.nominal(self.area))
         elif self.areafunction == "majority":
-            self.resmap = areamajority(tmpvar, nominal(self.area))
+            self.resmap = pcr.areamajority(tmpvar, pcr.nominal(self.area))
         else:
-            self.resmap = areaaverage(tmpvar, nominal(self.area))
+            self.resmap = pcr.areaaverage(tmpvar, pcr.nominal(self.area))
 
-        self.remap_np = pcr2numpy(self.resmap, 0)
+        self.remap_np = pcr.pcr2numpy(self.resmap, 0)
         self.flatres = self.remap_np.flatten()[self.idx]
 
         thiswriter = self.fnamelist.index(fname)
@@ -489,10 +496,10 @@ class wf_OutputTimeSeriesArea:
             self.writer[thiswriter].writerow([timestep] + self.flatres.tolist())
         else:
             self.writer[thiswriter].writerow([self.steps] + self.flatres.tolist())
-            # self.flatres = numpy.insert(self.flatres,0,self.steps)
+            # self.flatres = np.insert(self.flatres,0,self.steps)
 
 
-class wf_DynamicFramework(frameworkBase.FrameworkBase):
+class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
     ## \brief Constructor
     #
     # \param userModel class containing the user model
@@ -508,7 +515,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         datetimestart=dt.datetime(1990, 1, 1),
         timestepsecs=86400,
     ):
-        frameworkBase.FrameworkBase.__init__(self)
+        pcraster.framework.frameworkBase.FrameworkBase.__init__(self)
 
         self.ParamType = namedtuple(
             "ParamType", "name stack type default verbose lookupmaps"
@@ -546,7 +553,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             msg = (
                 "Cannot run dynamic framework: Start timestep smaller than end timestep"
             )
-            raise frameworkBase.FrameworkError(msg)
+            raise pcraster.framework.frameworkBase.FrameworkError(msg)
 
         # fttb
         self._addMethodToClass(self._readmapNew)
@@ -589,7 +596,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         self._update_time_from_DT()
 
-        self.TheClone = scalar(xcoordinate((spatial(boolean(1.0))))) * 0.0
+        self.TheClone = pcr.scalar(pcr.xcoordinate((pcr.spatial(pcr.boolean(1.0))))) * 0.0
 
     def _update_time_from_DT(self):
         """
@@ -713,7 +720,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         par.default,
                         verbose=int(par.verbose),
                     )
-                    theparmap = cover(theparmap, par.default)
+                    theparmap = pcr.cover(theparmap, par.default)
                     setattr(self._userModel(), par.name, theparmap)
 
                 if par.type == "monthlyclim":
@@ -727,7 +734,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         default=par.default,
                         verbose=int(par.verbose),
                     )
-                    theparmap = cover(theparmap, par.default)
+                    theparmap = pcr.cover(theparmap, par.default)
                     setattr(self._userModel(), par.name, theparmap)
 
                 if par.type == "tblmonthlyclim":
@@ -832,7 +839,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         :param areamap:
         :return: tss converted to a map
         """
-        return cover(timeinputscalar(tssfile, nominal(areamap)), default)
+        return pcr.cover(pcr.timeinputscalar(tssfile, pcr.nominal(areamap)), default)
 
     def _wf_shutdown(self):
         """
@@ -903,10 +910,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         )
         if os.path.exists(mapname):
             self.logger.info("reading map parameter file: " + mapname)
-            rest = cover(readmap(mapname), default)
+            rest = pcr.cover(pcr.readmap(mapname), default)
         else:
             if os.path.isfile(pathtotbl):
-                rest = lookupscalar(pathtotbl, landuse, subcatch, soil)
+                rest = pcr.lookupscalar(pathtotbl, landuse, subcatch, soil)
                 self.logger.info("Creating map from table: " + pathtotbl)
             else:
                 self.logger.warning(
@@ -915,13 +922,13 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     + ") returning default value: "
                     + str(default)
                 )
-                rest = spatial(cover(scalar(default)))
+                rest = pcr.spatial(pcr.cover(pcr.scalar(default)))
 
             cmask = self._userModel().TopoId
 
-            cmask = ifthen(cmask > 0, cmask)
-            totalzeromap = pcr2numpy(maptotal(scalar(defined(cmask))), 0)
-            resttotal = pcr2numpy(maptotal(scalar(defined(rest))), 0)
+            cmask = pcr.ifthen(cmask > 0, cmask)
+            totalzeromap = pcr.pcr2numpy(pcr.maptotal(pcr.scalar(pcr.defined(cmask))), 0)
+            resttotal = pcr.pcr2numpy(pcr.maptotal(pcr.scalar(pcr.defined(rest))), 0)
 
             if resttotal[0, 0] < totalzeromap[0, 0]:
                 self.logger.error(
@@ -936,7 +943,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         # Apply multiplication table if present
         multname = os.path.dirname(pathtotbl) + ".mult"
         if os.path.exists(multname):
-            multfac = lookupscalar(multname, landuse, subcatch, soil)
+            multfac = pcr.lookupscalar(multname, landuse, subcatch, soil)
             rest = rest * multfac
             self.logger.info("Applying multiplication from table: " + multname)
 
@@ -976,10 +983,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         if os.path.exists(mapname):
             self.logger.info("reading map parameter file: " + mapname)
-            rest = cover(readmap(mapname), default)
+            rest = pcr.cover(pcr.readmap(mapname), default)
         else:
             if os.path.isfile(pathtotbl):
-                rest = lookupscalar(pathtotbl, landuse, subcatch, soil, cover(0.0) + n)
+                rest = pcr.lookupscalar(pathtotbl, landuse, subcatch, soil, pcr.cover(0.0) + n)
                 self.logger.info("Creating map from table: " + pathtotbl)
             else:
                 self.logger.warning(
@@ -988,13 +995,13 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     + ") returning default value: "
                     + str(default)
                 )
-                rest = spatial(cover(scalar(default)))
+                rest = pcr.spatial(pcr.cover(pcr.scalar(default)))
 
             cmask = self._userModel().TopoId
 
-            cmask = ifthen(cmask > 0, cmask)
-            totalzeromap = pcr2numpy(maptotal(scalar(defined(cmask))), 0)
-            resttotal = pcr2numpy(maptotal(scalar(defined(rest))), 0)
+            cmask = pcr.ifthen(cmask > 0, cmask)
+            totalzeromap = pcr.pcr2numpy(pcr.maptotal(pcr.scalar(pcr.defined(cmask))), 0)
+            resttotal = pcr.pcr2numpy(pcr.maptotal(pcr.scalar(pcr.defined(rest))), 0)
 
             if resttotal[0, 0] < totalzeromap[0, 0]:
                 self.logger.warning(
@@ -1009,7 +1016,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         # Apply multiplication table if present
         multname = os.path.dirname(pathtotbl) + ".mult"
         if os.path.exists(multname):
-            multfac = lookupscalar(multname, landuse, subcatch, soil)
+            multfac = pcr.lookupscalar(multname, landuse, subcatch, soil)
             rest = rest * multfac
             self.logger.info("Applying multiplication from table: " + multname)
 
@@ -1046,7 +1053,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         )
         if os.path.exists(mapname):
             self.logger.info("Reading map parameter file: " + mapname)
-            rest = cover(readmap(mapname), default)
+            rest = pcr.cover(pcr.readmap(mapname), default)
         else:
             if os.path.isfile(pathtotbl):
                 newargs = []
@@ -1063,12 +1070,12 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                             default=default,
                             verbose=True,
                         )
-                        theparmap = cover(theparmap, default)
+                        theparmap = pcr.cover(theparmap, default)
                         newargs.append(theparmap)
 
                 for lmap in newargs:
                     if not os.path.exists(lmap):
-                        rest = spatial(scalar(default))
+                        rest = pcr.spatial(pcr.scalar(default))
                         self.logger.debug(
                             "map file not found ("
                             + lmap
@@ -1076,7 +1083,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                             + str(default)
                         )
                     else:
-                        rest = lookupscalar(pathtotbl, *newargs)
+                        rest = pcr.lookupscalar(pathtotbl, *newargs)
             else:
                 self.logger.debug(
                     "tbl file not found ("
@@ -1084,13 +1091,13 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     + ") returning default value: "
                     + str(default)
                 )
-                rest = spatial(scalar(default))
+                rest = pcr.spatial(pcr.scalar(default))
 
                 # cmask = self._userModel().TopoId
 
-                # cmask = ifthen(cmask > 0,cmask)
-                # totalzeromap = pcr2numpy(maptotal(scalar(defined(cmask))),0)
-                # resttotal = pcr2numpy(maptotal(scalar(defined(rest))),0)
+                # cmask = pcr.ifthen(cmask > 0,cmask)
+                # totalzeromap = pcr.pcr2numpy(pcr.maptotal(pcr.scalar(pcr.defined(cmask))),0)
+                # resttotal = pcr.pcr2numpy(pcr.maptotal(pcr.scalar(pcr.defined(rest))),0)
 
                 # if resttotal[0,0] < totalzeromap[0,0]:
                 #    self.logger.warning("Not all catchment cells have a value for [" + pathtotbl + "] : " + str(resttotal[0,0]) + "!=" + str(totalzeromap[0,0]))
@@ -1098,7 +1105,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         # Apply multiplication table if present
         multname = os.path.dirname(pathtotbl) + ".mult"
         if os.path.exists(multname):
-            multfac = lookupscalar(multname, *args)
+            multfac = pcr.lookupscalar(multname, *args)
             rest = rest * multfac
             self.logger.info("Applying multiplication from table: " + multname)
 
@@ -1739,7 +1746,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         )
 
                         self.reportState(
-                            cover(z), fname, style=1, gzipit=False, longname=fname
+                            pcr.cover(z), fname, style=1, gzipit=False, longname=fname
                         )
                         a = a + 1
                 except:
@@ -1768,8 +1775,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             try:
                 if "+" in self.varnamecsv[a]:
                     a_ = self.varnamecsv[a].split("+")
-                    tmpvar = cover(0.0)
-                    for i in arange(0, len(a_)):
+                    tmpvar = pcr.cover(0.0)
+                    for i in np.arange(0, len(a_)):
                         tmpvar = tmpvar + reduce(
                             getattr,
                             a_[i].strip().replace("self._userModel().", "").split("."),
@@ -1835,7 +1842,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 b = a.replace("self.", "")
                 if hasattr(self._userModel(), b):
                     pcrmap = getattr(self._userModel(), b)
-                    # report( pcrmap , os.path.join(self._userModel().Dir, self._userModel().runId, "outsum", b + ".map" ))
+                    # pcr.report( pcrmap , os.path.join(self._userModel().Dir, self._userModel().runId, "outsum", b + ".map" ))
                     self.reportStatic(
                         pcrmap,
                         os.path.join(
@@ -1876,8 +1883,8 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             # possible to add variables
             if "+" in a:
                 a_ = a.split("+")
-                thevar = cover(0.0)
-                for i in arange(0, len(a_)):
+                thevar = pcr.cover(0.0)
+                for i in np.arange(0, len(a_)):
                     # check for nested objects
                     if len(a_[i].replace("self.", "").split(".")) > 1:
                         if hasattr(
@@ -1936,7 +1943,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             if report == True:
                 if type(thevar) is list:
                     a = self._userModel().config.get("outputmaps", a)
-                    for i in arange(0, len(thevar)):
+                    for i in np.arange(0, len(thevar)):
                         thename = a + "_" + str(i) + "_"
                         self._reportNew(
                             thevar[i],
@@ -2108,14 +2115,14 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         :returns: 1 if the map was present, 0 if a new map was created
         """
 
-        arpcr = numpy2pcr(Scalar, flipud(values).copy(), -999)
+        arpcr = pcr.numpy2pcr(pcr.Scalar, np.flipud(values).copy(), -999)
 
         self.setviaAPI[mapname] = 1
 
         if hasattr(self._userModel(), mapname):
 
             if "LDD" in mapname.upper():
-                setattr(self._userModel(), mapname, lddrepair(ldd(arpcr)))
+                setattr(self._userModel(), mapname, pcr.lddrepair(pcr.ldd(arpcr)))
             else:
                 setattr(self._userModel(), mapname, arpcr)
 
@@ -2168,12 +2175,12 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         """
         self.setviaAPI[mapname] = 1
         if isinstance(values, list):
-            ar = array(values)
+            ar = np.array(values)
             ar.reshape(getrows(), getcols())
-            arpcr = numpy2pcr(Scalar, ar.reshape(getrows(), getcols()), -999)
+            arpcr = pcr.numpy2pcr(pcr.Scalar, ar.reshape(getrows(), getcols()), -999)
         else:
             self.logger.debug("Setting single value: " + str(values))
-            arpcr = cover(scalar(values))
+            arpcr = pcr.cover(pcr.scalar(values))
 
         if hasattr(self._userModel(), mapname):
             setattr(self._userModel(), mapname, arpcr)
@@ -2200,9 +2207,9 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         """
         self.setviaAPI[mapname] = 1
         if hasattr(self._userModel(), mapname):
-            ar = pcr2numpy(getattr(self._userModel(), mapname), -999)
+            ar = pcr.pcr2numpy(getattr(self._userModel(), mapname), -999)
             ar[row, col] = value
-            arpcr = numpy2pcr(Scalar, ar.copy(), -999)
+            arpcr = pcr.numpy2pcr(pcr.Scalar, ar.copy(), -999)
             setattr(self._userModel(), mapname, arpcr)
             return 1
         else:
@@ -2227,12 +2234,12 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self.setviaAPI[mapname] = 1
         if hasattr(self._userModel(), mapname):
             pcrmap = getattr(self._userModel(), mapname)
-            ar = pcr2numpy(scalar(pcrmap), -999)
+            ar = pcr.pcr2numpy(pcr.scalar(pcrmap), -999)
             row, col = getRowColPoint(pcrmap, xcor, ycor)
             ar[row, col] = value
             save("tt.np", ar)
-            pcrmap = numpy2pcr(Scalar, ar.copy(), -999)
-            report(pcrmap, "zz.map")
+            pcrmap = pcr.numpy2pcr(pcr.Scalar, ar.copy(), -999)
+            pcr.report(pcrmap, "zz.map")
             setattr(self._userModel(), mapname, pcrmap)
             return 1
         else:
@@ -2256,11 +2263,11 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         self.setviaAPI[mapname] = 1
         if hasattr(self._userModel(), mapname):
             pcrmap = getattr(self._userModel(), mapname)
-            ar = pcr2numpy(pcrmap, -999)
+            ar = pcr.pcr2numpy(pcrmap, -999)
             row, col = getRowColPoint(pcrmap, xcor, ycor)
             ar[row, col] = value
-            arpcr = numpy2pcr(Scalar, ar.copy(), -999)
-            setattr(self._userModel(), mapname, lddrepair(ldd(arpcr)))
+            arpcr = pcr.numpy2pcr(pcr.Scalar, ar.copy(), -999)
+            setattr(self._userModel(), mapname, pcr.lddrepair(pcr.ldd(arpcr)))
             return 1
         else:
             self.logger.debug(
@@ -2282,7 +2289,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         :returns: 1 if the map was present, 0 if nothing was done
         """
 
-        arpcr = cover(value)
+        arpcr = pcr.cover(value)
         self.setviaAPI[mapname] = 1
         if hasattr(self._userModel(), mapname):
             setattr(
@@ -2311,13 +2318,13 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         :returns: 1 if the map was present, 0 if nothing was done
         """
 
-        arpcr = cover(value)
+        arpcr = pcr.cover(value)
         self.setviaAPI[mapname] = 1
         if hasattr(self._userModel(), mapname):
             setattr(
                 self._userModel(),
                 mapname,
-                ifthenelse(
+                pcr.ifthenelse(
                     getattr(self._userModel(), areamapname) == str(areacode),
                     arpcr * getattr(self._userModel(), areamapname),
                     getattr(self._userModel(), areamapname),
@@ -2348,12 +2355,12 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         """
         self.setviaAPI[mapname] = 1
         if isinstance(values, list):
-            ar = array(values)
+            ar = np.array(values)
 
             ar.reshape(getrows(), getcols())
-            arpcr = numpy2pcr(Scalar, ar.reshape(getrows(), getcols()), -999)
+            arpcr = pcr.numpy2pcr(pcr.Scalar, ar.reshape(getrows(), getcols()), -999)
         else:
-            arpcr = cover(values)
+            arpcr = pcr.cover(values)
 
         if hasattr(self._userModel(), mapname):
             setattr(self._userModel(), mapname, arpcr)
@@ -2377,7 +2384,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             - list
         """
         if hasattr(self._userModel(), mapname):
-            retval = pcr2numpy(getattr(self._userModel(), mapname), -999)
+            retval = pcr.pcr2numpy(getattr(self._userModel(), mapname), -999)
             return retval.flatten().tolist()
         else:
             self.logger.debug(
@@ -2401,7 +2408,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         """
 
         if hasattr(self._userModel(), mapname):
-            retval = pcr2numpy(getattr(self._userModel(), mapname), -999)
+            retval = pcr.pcr2numpy(getattr(self._userModel(), mapname), -999)
             if self.APIDebug:
                 self.logger.debug("wf_supplyMapAsList returning: " + mapname)
 
@@ -2429,13 +2436,13 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         if hasattr(self._userModel(), mapname):
             pcrmap = getattr(self._userModel(), mapname)
             if isinstance(pcrmap, pcraster._pcraster.Field):
-                tt = pcr2numpy(pcrmap, -999.0)
-                retval = flipud(tt).copy()
+                tt = pcr.pcr2numpy(pcrmap, -999.0)
+                retval = np.flipud(tt).copy()
             else:
-                if type(pcrmap) == numpy.ndarray:
+                if type(pcrmap) == np.ndarray:
                     retval = pcrmap
                 else:
-                    retval = array(pcrmap)
+                    retval = np.array(pcrmap)
 
             if self.APIDebug:
                 self.logger.debug("wf_supplyMapAsNumpy returning: " + mapname)
@@ -2455,10 +2462,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         Missing value is -999
         """
 
-        x = xcoordinate((spatial(boolean(1.0))))
-        retval = pcr_as_numpy(x).copy()
+        x = pcr.xcoordinate((pcr.spatial(pcr.boolean(1.0))))
+        retval = pcr.pcr_as_numpy(x).copy()
 
-        return flipud(retval).copy()
+        return np.flipud(retval).copy()
 
     def wf_supplyMapYAsNumpy(self):
         """
@@ -2468,10 +2475,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         Missing value is -999
         """
 
-        y = ycoordinate((spatial(boolean(1.0))))
-        retval = pcr_as_numpy(y).copy()
+        y = pcr.ycoordinate((pcr.spatial(pcr.boolean(1.0))))
+        retval = pcr.pcr_as_numpy(y).copy()
 
-        return flipud(retval).copy()
+        return np.flipud(retval).copy()
 
     def wf_supplyMapZAsNumpy(self):
         """
@@ -2485,7 +2492,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         if hasattr(self._userModel(), "Altitude"):
             retval = getattr(self._userModel(), "Altitude")
 
-            return flipud(pcr2numpy(retval, -999)).copy()
+            return np.flipud(pcr.pcr2numpy(retval, -999)).copy()
         else:
             self.logger.warning(
                 "Altitude is not defined in the usermodel, returning empty list"
@@ -2498,12 +2505,12 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         :return: lower left corner of the map as X, Y
 
         """
-        a = boolean(1)
+        a = pcr.boolean(1)
 
         Y = self.wf_supplyMapYAsNumpy()
         X = self.wf_supplyMapXAsNumpy()
 
-        return numpy.array([X.flatten.min(), Y.flatten.min()])
+        return np.array([X.flatten.min(), Y.flatten.min()])
 
     def wf_supplyMapAsPcrMap(self, mapname):
         """
@@ -2568,7 +2575,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         # Fill object with data from ini file
         # TODO: clean up!!
-        if size(res) == 0:
+        if len(res) == 0:
             API = configsection(self._userModel().config, "API")
             for a in API:
                 tt = []
@@ -2782,7 +2789,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             - value at location row, col
         """
         pcmap = getattr(self._userModel(), mapname)
-        ret = cellvalue(pcmap, row + 1, col + 1)
+        ret = pcr.cellvalue(pcmap, row + 1, col + 1)
 
         return ret[0]
 
@@ -2839,7 +2846,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             # Online statistics (rolling mean for now)
             for key in self.onlinestat.statvarname:
                 stvar = self.onlinestat.getstat(getattr(self._userModel(), key), key)
-                # stvar = self.onlinestat.getstat(cover(self.DT.currentTimeStep * 1.0), key)
+                # stvar = self.onlinestat.getstat(pcr.cover(self.DT.currentTimeStep * 1.0), key)
                 setattr(self._userModel(), self.onlinestat.statvarname[key], stvar)
 
             # Increment one timesteps
@@ -2908,18 +2915,18 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         if self.outputFormat == 1:
 
             if not hasattr(self, "NcOutputStatic"):
-                report(variable, path)
+                pcr.report(variable, path)
                 if gzipit:
                     Gzip(path, storePath=True)
             else:
                 self.NcOutputStatic.savetimestep(1, variable, var=name, name=longname)
 
         elif self.outputFormat == 2:
-            numpy.savez(path, pcr2numpy(variable, -999))
+            np.savez(path, pcr.pcr2numpy(variable, -999))
         elif self.outputFormat == 3:
-            numpy.savez(path, pcr2numpy(variable, -999))
+            np.savez(path, pcr.pcr2numpy(variable, -999))
         elif self.outputFormat == 4:
-            numpy.savetxt(path, pcr2numpy(variable, -999), fmt="%0.6g")
+            np.savetxt(path, pcr.pcr2numpy(variable, -999), fmt="%0.6g")
 
     def reportState(self, variable, name, style=1, gzipit=False, longname=None):
         """
@@ -2937,18 +2944,18 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         if self.outputFormat == 1:
             if not hasattr(self, "NcOutputState"):
-                report(variable, path)
+                pcr.report(variable, path)
                 if gzipit:
                     Gzip(path, storePath=True)
             else:
                 self.NcOutputState.savetimestep(1, variable, var=name, name=longname)
 
         elif self.outputFormat == 2:
-            numpy.savez(path, pcr2numpy(variable, -999))
+            np.savez(path, pcr.pcr2numpy(variable, -999))
         elif self.outputFormat == 3:
-            numpy.savez(path, pcr2numpy(variable, -999))
+            np.savez(path, pcr.pcr2numpy(variable, -999))
         elif self.outputFormat == 4:
-            numpy.savetxt(path, pcr2numpy(variable, -999), fmt="%0.6g")
+            np.savetxt(path, pcr.pcr2numpy(variable, -999), fmt="%0.6g")
 
     def _reportNew(self, variable, name, style=1, gzipit=False, longname=None):
         """
@@ -2991,7 +2998,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         if hasattr(self._userModel(), "_inDynamic"):
             if self._userModel()._inDynamic() or self._inUpdateWeight():
-                newName = generateNameT(name, self._userModel().currentTimeStep())
+                newName = pcraster.framework.generateNameT(name, self._userModel().currentTimeStep())
 
         if newName == "":  # For files from suspend
             newName = name
@@ -3000,7 +3007,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         if self.outputFormat == 1:
             if not hasattr(self, "NcOutput"):
-                report(variable, path)
+                pcr.report(variable, path)
                 if gzipit:
                     Gzip(path, storePath=True)
             else:
@@ -3012,11 +3019,11 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 )
 
         elif self.outputFormat == 2:
-            numpy.savez(path, pcr2numpy(variable, -999))
+            np.savez(path, pcr.pcr2numpy(variable, -999))
         elif self.outputFormat == 3:
-            numpy.savez(path, pcr2numpy(variable, -999))
+            np.savez(path, pcr.pcr2numpy(variable, -999))
         elif self.outputFormat == 4:
-            numpy.savetxt(path, pcr2numpy(variable, -999), fmt="%0.6g")
+            np.savetxt(path, pcr.pcr2numpy(variable, -999), fmt="%0.6g")
 
     def wf_readmapClimatology(self, name, kind=1, default=0.0, verbose=1):
         """
@@ -3043,10 +3050,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
         directoryPrefix = ""
         if kind == 1:
             month = self.DT.currentDateTime.month
-            newName = generateNameT(name, month)
+            newName = pcraster.framework.generateNameT(name, month)
             path = os.path.join(directoryPrefix, newName)
             if os.path.isfile(path):
-                mapje = readmap(path)
+                mapje = pcr.readmap(path)
                 return mapje
             else:
                 if verbose:
@@ -3057,13 +3064,13 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         + str(default)
                     )
 
-                return scalar(default)
+                return pcr.scalar(default)
         elif kind == 2:
             yday = self.DT.currentDateTime.timetuple().tm_yday
-            newName = generateNameT(name, yday)
+            newName = pcraster.framework.generateNameT(name, yday)
             path = os.path.join(directoryPrefix, newName)
             if os.path.isfile(path):
-                mapje = readmap(path)
+                mapje = pcr.readmap(path)
                 return mapje
             else:
                 if verbose:
@@ -3074,7 +3081,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         + str(default)
                     )
 
-                return scalar(default)
+                return pcr.scalar(default)
 
         else:
             self.logger.error(
@@ -3108,7 +3115,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
 
         # find if this is an exchnageitem
         thevars = self.exchnageitems.getvars()
-        if size(thevars) == 0:
+        if len(thevars) == 0:
             self.wf_supplyVariableNamesAndRoles()
 
         style = self.exchnageitems.getvarStyle(varname)
@@ -3155,7 +3162,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                 if "None" not in self.ncfile:
                     newName = name
                 else:
-                    newName = generateNameT(name, timestep)
+                    newName = pcraster.framework.generateNameT(name, timestep)
 
         if style == 1:  # Normal reading of mapstack from DISK per via or via netcdf
             path = os.path.join(directoryPrefix, newName)
@@ -3173,10 +3180,10 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                     if succ:
                         return retval
                     else:
-                        return cover(scalar(default))
+                        return pcr.cover(pcr.scalar(default))
 
                 if os.path.isfile(path):
-                    mapje = readmap(path)
+                    mapje = pcr.readmap(path)
                     return mapje
                 else:
                     if verbose:
@@ -3193,7 +3200,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                             + " not found, exiting.."
                         )
                         raise ValueError("Input map not found")
-                    return cover(scalar(default))
+                    return pcr.cover(pcr.scalar(default))
 
             elif self._userModel()._inInitial():
                 if "None" not in self.ncfilestatic:
@@ -3219,7 +3226,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                             return self.TheClone + default
 
                 if os.path.isfile(path):
-                    mapje = readmap(path)
+                    mapje = pcr.readmap(path)
                     return mapje
                 else:
                     if verbose:
@@ -3259,7 +3266,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                         return self.TheClone + default
 
                 if os.path.isfile(path):
-                    mapje = readmap(path)
+                    mapje = pcr.readmap(path)
                     return mapje
                 else:
                     if verbose:
@@ -3277,7 +3284,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                                 + " not found, exiting.."
                             )
                         raise ValueError("Input state variable not found")
-                    return cover(scalar(default))
+                    return pcr.cover(pcr.scalar(default))
             else:  # Assuming we are in pre-or post loop within the framwork
                 if "None" not in self.ncfilestatic:
                     retval, succ = self.NcInputStatic.gettimestep(
@@ -3300,7 +3307,7 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
                             return self.TheClone + default
 
                 if os.path.isfile(path):
-                    mapje = readmap(path)
+                    mapje = pcr.readmap(path)
                     return mapje
                 else:
                     if verbose:
@@ -3325,12 +3332,12 @@ class wf_DynamicFramework(frameworkBase.FrameworkBase):
             # first get basename (last bit of path)
             name = os.path.basename(name)
             if hasattr(self._userModel(), name):
-                return cover(getattr(self._userModel(), name), scalar(default))
+                return pcr.cover(getattr(self._userModel(), name), pcr.scalar(default))
             else:
                 self.logger.warning(
                     "Variable: " + name + " not set by API, returning default"
                 )
-                setattr(self._userModel(), name, cover(scalar(default)))
+                setattr(self._userModel(), name, pcr.cover(pcr.scalar(default)))
                 return getattr(self._userModel(), name)
         else:
             self.logger.warning(

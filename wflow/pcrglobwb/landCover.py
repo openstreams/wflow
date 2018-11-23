@@ -1908,7 +1908,7 @@ class LandCover(object):
                 )
                 ** 0.25,
             )
-            # KTHVERT = min(sqrt(KTHEFF1*KTHEFF2),(KTHEFF1*KTHEFF2*KTHEFF1_FC*KTHEFF2_FC)**0.25)
+            # KTHVERT = min(pcr.sqrt(KTHEFF1*KTHEFF2),(KTHEFF1*KTHEFF2*KTHEFF1_FC*KTHEFF2_FC)**0.25)
 
             # gradient for capillary rise (index indicating target store to its underlying store)
             self.gradientUppLow = pcr.max(
@@ -3853,7 +3853,7 @@ class LandCover(object):
                 pcr.sqrt(self.kUnsatLow * self.parameters.kUnsatAtFieldCapLow),
             )
             # original Rens's line:
-            #    P2_L[TYPE] = min(KTHEFF2,sqrt(KTHEFF2*KTHEFF2_FC[TYPE]))*Duration*timeslice()
+            #    P2_L[TYPE] = min(KTHEFF2,pcr.sqrt(KTHEFF2*KTHEFF2_FC[TYPE]))*Duration*timeslice()
 
             # - capillary rise to storUpp from storLow
             self.capRiseUpp = pcr.min(

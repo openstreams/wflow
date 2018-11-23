@@ -19,6 +19,7 @@ wflow_topoflex  -C case -R Runid -c inifile
 import os.path
 from copy import deepcopy as copylist
 
+import pcraster.framework
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
 
@@ -40,7 +41,7 @@ def usage(*args):
     sys.exit(0)
 
 
-class WflowModel(DynamicModel):
+class WflowModel(pcraster.framework.DynamicModel):
     """
   The user defined model class. This is your work!
   """
@@ -53,8 +54,8 @@ class WflowModel(DynamicModel):
       may be added by you if needed.
       
       """
-        DynamicModel.__init__(self)
-        setclone(os.path.join(Dir, "staticmaps", cloneMap))
+        pcraster.framework.DynamicModel.__init__(self)
+        pcr.setclone(os.path.join(Dir, "staticmaps", cloneMap))
         self.runId = RunDir
         self.caseName = os.path.abspath(Dir)
         self.Dir = os.path.abspath(Dir)
@@ -170,10 +171,10 @@ class WflowModel(DynamicModel):
         )
         if os.path.exists(mapname):
             self.logger.info("reading map parameter file: " + mapname)
-            rest = cover(readmap(mapname), default)
+            rest = pcr.cover(pcr.readmap(mapname), default)
         else:
             if os.path.isfile(pathtotbl):
-                rest = cover(lookupscalar(pathtotbl, landuse, subcatch, soil), default)
+                rest = pcr.cover(pcr.lookupscalar(pathtotbl, landuse, subcatch, soil), default)
                 self.logger.info("Creating map from table: " + pathtotbl)
             else:
                 self.logger.warning(
@@ -182,7 +183,7 @@ class WflowModel(DynamicModel):
                     + ") returning default value: "
                     + str(default)
                 )
-                rest = scalar(default)
+                rest = pcr.scalar(default)
 
         return rest
 
@@ -204,7 +205,7 @@ class WflowModel(DynamicModel):
             self.logger.info("Saving initial conditions for FEWS...")
             #            self.wf_suspend(os.path.join(self.Dir, "outstate"))
             [
-                report(
+                pcr.report(
                     self.Si[i],
                     self.Dir + "/outstate/Si" + self.NamesClasses[i] + ".map",
                 )
@@ -212,7 +213,7 @@ class WflowModel(DynamicModel):
                 if self.selectSi[i]
             ]
             [
-                report(
+                pcr.report(
                     self.Su[i],
                     self.Dir + "/outstate/Su" + self.NamesClasses[i] + ".map",
                 )
@@ -220,7 +221,7 @@ class WflowModel(DynamicModel):
                 if self.selectSu[i]
             ]
             [
-                report(
+                pcr.report(
                     self.Sa[i],
                     self.Dir + "/outstate/Sa" + self.NamesClasses[i] + ".map",
                 )
@@ -228,7 +229,7 @@ class WflowModel(DynamicModel):
                 if self.selectSa[i]
             ]
             [
-                report(
+                pcr.report(
                     self.Sf[i],
                     self.Dir + "/outstate/Sf" + self.NamesClasses[i] + ".map",
                 )
@@ -236,7 +237,7 @@ class WflowModel(DynamicModel):
                 if self.selectSf[i]
             ]
             [
-                report(
+                pcr.report(
                     self.Sfa[i],
                     self.Dir + "/outstate/Sfa" + self.NamesClasses[i] + ".map",
                 )
@@ -244,22 +245,22 @@ class WflowModel(DynamicModel):
                 if self.selectSfa[i]
             ]
             [
-                report(
+                pcr.report(
                     self.Sw[i],
                     self.Dir + "/outstate/Sw" + self.NamesClasses[i] + ".map",
                 )
                 for i in self.Classes
                 if self.selectSw[i]
             ]
-            report(self.Ss, self.Dir + "/outstate/Ss.map")
-            report(self.Qstate, self.Dir + "/outstate/Qstate.map")
-            report(self.WaterLevel, self.Dir + "/outstate/WaterLevel.map")
+            pcr.report(self.Ss, self.Dir + "/outstate/Ss.map")
+            pcr.report(self.Qstate, self.Dir + "/outstate/Qstate.map")
+            pcr.report(self.WaterLevel, self.Dir + "/outstate/WaterLevel.map")
 
         #: It is advised to use the wf_suspend() function
         #: here which will suspend the variables that are given by stateVariables
         #: function.
         [
-            report(
+            pcr.report(
                 self.Si[i],
                 self.SaveDir + "/outstate/Si" + self.NamesClasses[i] + ".map",
             )
@@ -267,7 +268,7 @@ class WflowModel(DynamicModel):
             if self.selectSi[i]
         ]
         [
-            report(
+            pcr.report(
                 self.Su[i],
                 self.SaveDir + "/outstate/Su" + self.NamesClasses[i] + ".map",
             )
@@ -275,7 +276,7 @@ class WflowModel(DynamicModel):
             if self.selectSu[i]
         ]
         [
-            report(
+            pcr.report(
                 self.Sa[i],
                 self.SaveDir + "/outstate/Sa" + self.NamesClasses[i] + ".map",
             )
@@ -283,7 +284,7 @@ class WflowModel(DynamicModel):
             if self.selectSa[i]
         ]
         [
-            report(
+            pcr.report(
                 self.Sf[i],
                 self.SaveDir + "/outstate/Sf" + self.NamesClasses[i] + ".map",
             )
@@ -291,7 +292,7 @@ class WflowModel(DynamicModel):
             if self.selectSf[i]
         ]
         [
-            report(
+            pcr.report(
                 self.Sfa[i],
                 self.SaveDir + "/outstate/Sfa" + self.NamesClasses[i] + ".map",
             )
@@ -299,33 +300,33 @@ class WflowModel(DynamicModel):
             if self.selectSfa[i]
         ]
         [
-            report(
+            pcr.report(
                 self.Sw[i],
                 self.SaveDir + "/outstate/Sw" + self.NamesClasses[i] + ".map",
             )
             for i in self.Classes
             if self.selectSw[i]
         ]
-        report(self.Ss, self.SaveDir + "/outstate/Ss.map")
-        report(self.Qstate, self.SaveDir + "/outstate/Qstate.map")
-        report(self.WaterLevel, self.SaveDir + "/outstate/WaterLevel.map")
+        pcr.report(self.Ss, self.SaveDir + "/outstate/Ss.map")
+        pcr.report(self.Qstate, self.SaveDir + "/outstate/Qstate.map")
+        pcr.report(self.WaterLevel, self.SaveDir + "/outstate/WaterLevel.map")
 
         [
-            report(
+            pcr.report(
                 self.percent[i],
                 self.SaveDir + "/outmaps/percent" + self.NamesClasses[i] + ".map",
             )
             for i in self.Classes
         ]
-        report(self.percentArea, self.SaveDir + "/outmaps/percentArea.map")
-        report(self.surfaceArea, self.SaveDir + "/outmaps/surfaceArea.map")
+        pcr.report(self.percentArea, self.SaveDir + "/outmaps/percentArea.map")
+        pcr.report(self.surfaceArea, self.SaveDir + "/outmaps/surfaceArea.map")
 
-        report(self.sumprecip, self.SaveDir + "/outsum/sumprecip.map")
-        report(self.sumevap, self.SaveDir + "/outsum/sumevap.map")
-        report(self.sumpotevap, self.SaveDir + "/outsum/sumpotevap.map")
-        report(self.sumtemp, self.SaveDir + "/outsum/sumtemp.map")
-        report(self.sumrunoff, self.SaveDir + "/outsum/sumrunoff.map")
-        report(self.sumwb, self.SaveDir + "/outsum/sumwb.map")
+        pcr.report(self.sumprecip, self.SaveDir + "/outsum/sumprecip.map")
+        pcr.report(self.sumevap, self.SaveDir + "/outsum/sumevap.map")
+        pcr.report(self.sumpotevap, self.SaveDir + "/outsum/sumpotevap.map")
+        pcr.report(self.sumtemp, self.SaveDir + "/outsum/sumtemp.map")
+        pcr.report(self.sumrunoff, self.SaveDir + "/outsum/sumrunoff.map")
+        pcr.report(self.sumwb, self.SaveDir + "/outsum/sumwb.map")
 
     def initial(self):
 
@@ -342,9 +343,9 @@ class WflowModel(DynamicModel):
     """
         #: pcraster option to calculate with units or cells. Not really an issue
         #: in this model but always good to keep in mind.
-        setglobaloption("unittrue")
+        pcr.setglobaloption("unittrue")
 
-        self.thestep = scalar(0)
+        self.thestep = pcr.scalar(0)
         #: files to be used in case of timesries (scalar) input to the model
         # files for forcing data
         self.precipTss = os.path.join(
@@ -579,49 +580,49 @@ class WflowModel(DynamicModel):
         ]
 
         # 2: Input base maps ########################################################
-        subcatch = ordinal(
-            readmap(os.path.join(self.Dir, wflow_subcatch))
+        subcatch = pcr.ordinal(
+            pcr.readmap(os.path.join(self.Dir, wflow_subcatch))
         )  # Determines the area of calculations (all cells > 0)
-        subcatch = ifthen(subcatch > 0, subcatch)
+        subcatch = pcr.ifthen(subcatch > 0, subcatch)
 
-        self.Altitude = readmap(os.path.join(self.Dir, wflow_dem)) * scalar(
-            defined(subcatch)
+        self.Altitude = pcr.readmap(os.path.join(self.Dir, wflow_dem)) * pcr.scalar(
+            pcr.defined(subcatch)
         )  #: The digital elevation map (DEM)
         self.maxSlope = self.wf_readmap(os.path.join(self.Dir, wflow_maxSlope), 0.0)
-        self.TopoLdd = readmap(
+        self.TopoLdd = pcr.readmap(
             os.path.join(self.Dir, wflow_ldd)
         )  #: The local drinage definition map (ldd)
-        self.TopoId = readmap(
+        self.TopoId = pcr.readmap(
             os.path.join(self.Dir, wflow_subcatch)
         )  #: Map define the area over which the calculations are done (mask)
-        self.catchArea = scalar(ifthen(self.TopoId > 0, scalar(1)))
-        self.LandUse = ordinal(
+        self.catchArea = pcr.scalar(pcr.ifthen(self.TopoId > 0, pcr.scalar(1)))
+        self.LandUse = pcr.ordinal(
             self.wf_readmap(os.path.join(self.Dir, wflow_landuse), 0.0, fail=True)
         )  #: Map with lan-use/cover classes
-        self.LandUse = cover(self.LandUse, ordinal(ordinal(subcatch) > 0))
-        self.Soil = ordinal(
+        self.LandUse = pcr.cover(self.LandUse, pcr.ordinal(ordinal(subcatch) > 0))
+        self.Soil = pcr.ordinal(
             self.wf_readmap(os.path.join(self.Dir, wflow_soil), 0.0, fail=True)
         )  #: Map with soil classes
-        self.Soil = cover(self.Soil, ordinal(ordinal(subcatch) > 0))
-        self.TopoId = ifthen(scalar(self.TopoId) > 0, self.TopoId)
-        self.surfaceArea = scalar(
-            readmap(os.path.join(self.Dir, wflow_surfaceArea))
+        self.Soil = pcr.cover(self.Soil, pcr.ordinal(ordinal(subcatch) > 0))
+        self.TopoId = pcr.ifthen(pcr.scalar(self.TopoId) > 0, self.TopoId)
+        self.surfaceArea = pcr.scalar(
+            pcr.readmap(os.path.join(self.Dir, wflow_surfaceArea))
         )  #: Map with surface area per cell
-        self.totalArea = areatotal(self.surfaceArea, nominal(self.TopoId))
+        self.totalArea = pcr.areatotal(self.surfaceArea, pcr.nominal(self.TopoId))
         self.percentArea = self.surfaceArea / self.totalArea
-        self.Transit = scalar(
-            readmap(os.path.join(self.Dir, wflow_transit))
+        self.Transit = pcr.scalar(
+            pcr.readmap(os.path.join(self.Dir, wflow_transit))
         )  #: Map with surface area per cell
-        self.velocity = scalar(
-            readmap(os.path.join(self.Dir, wflow_velocity))
+        self.velocity = pcr.scalar(
+            pcr.readmap(os.path.join(self.Dir, wflow_velocity))
         )  #: Map with surface area per cell
-        self.gaugesR = nominal(readmap(os.path.join(self.Dir, wflow_gauges)))
+        self.gaugesR = pcr.nominal(pcr.readmap(os.path.join(self.Dir, wflow_gauges)))
         self.RiverLength = self.wf_readmap(
             os.path.join(self.Dir, wflow_riverlength), 0.0
         )
         # Factor to multiply riverlength with (defaults to 1.0)
-        self.River = cover(
-            boolean(
+        self.River = pcr.cover(
+            pcr.boolean(
                 self.wf_readmap(os.path.join(self.Dir, wflow_river), 0.0, fail=True)
             ),
             0,
@@ -632,7 +633,7 @@ class WflowModel(DynamicModel):
         self.RiverWidth = self.wf_readmap(os.path.join(self.Dir, wflow_riverwidth), 0.0)
         self.percent = []
         for i in self.Classes:
-            self.percent.append(readmap(os.path.join(self.Dir, wflow_percent[i])))
+            self.percent.append(pcr.readmap(os.path.join(self.Dir, wflow_percent[i])))
 
         self.wf_updateparameters()
         # MODEL PARAMETERS - VALUES PER CLASS
@@ -878,13 +879,13 @@ class WflowModel(DynamicModel):
         )
 
         # kinematic wave parameters
-        self.Beta = scalar(0.6)  # For sheetflow
-        # self.M=lookupscalar(self.Dir + "/" + modelEnv['intbl'] + "/M.tbl" ,self.LandUse,subcatch,self.Soil) # Decay parameter in Topog_sbm
-        self.N = lookupscalar(
+        self.Beta = pcr.scalar(0.6)  # For sheetflow
+        # self.M=pcr.lookupscalar(self.Dir + "/" + modelEnv['intbl'] + "/M.tbl" ,self.LandUse,subcatch,self.Soil) # Decay parameter in Topog_sbm
+        self.N = pcr.lookupscalar(
             self.Dir + "/" + self.intbl + "/N.tbl", self.LandUse, subcatch, self.Soil
         )  # Manning overland flow
         """ *Parameter:* Manning's N for all non-river cells """
-        self.NRiver = lookupscalar(
+        self.NRiver = pcr.lookupscalar(
             self.Dir + "/" + self.intbl + "/N_River.tbl",
             self.LandUse,
             subcatch,
@@ -897,47 +898,47 @@ class WflowModel(DynamicModel):
         self.lamdaS = eval(str(configget(self.config, "model", "lamdaS", "[0]")))
 
         # initialise list for routing
-        self.trackQ = [0 * scalar(self.catchArea)] * int(
+        self.trackQ = [0 * pcr.scalar(self.catchArea)] * int(
             self.maxTransit
         )  # list * scalar ---> list wordt zoveel x gekopieerd als scalar.
 
         # initialise list for lag function
-        self.convQu = [[0 * scalar(self.catchArea)] * self.Tf[i] for i in self.Classes]
-        self.convQa = [[0 * scalar(self.catchArea)] * self.Tfa[i] for i in self.Classes]
+        self.convQu = [[0 * pcr.scalar(self.catchArea)] * self.Tf[i] for i in self.Classes]
+        self.convQa = [[0 * pcr.scalar(self.catchArea)] * self.Tfa[i] for i in self.Classes]
 
         if self.scalarInput:
-            self.gaugesMap = nominal(
-                readmap(os.path.join(self.Dir, wflow_mgauges))
+            self.gaugesMap = pcr.nominal(
+                pcr.readmap(os.path.join(self.Dir, wflow_mgauges))
             )  #: Map with locations of rainfall/evap/temp gauge(s). Only needed if the input to the model is not in maps
-        self.OutputId = readmap(
+        self.OutputId = pcr.readmap(
             os.path.join(self.Dir, wflow_subcatch)
         )  # location of subcatchment
-        self.OutputIdRunoff = boolean(
-            ifthenelse(
-                self.gaugesR == 1, 1 * scalar(self.TopoId), 0 * scalar(self.TopoId)
+        self.OutputIdRunoff = pcr.boolean(
+            pcr.ifthenelse(
+                self.gaugesR == 1, 1 * pcr.scalar(self.TopoId), 0 * pcr.scalar(self.TopoId)
             )
         )  # location of subcatchment
 
-        self.ZeroMap = 0.0 * scalar(subcatch)  # map with only zero's
+        self.ZeroMap = 0.0 * pcr.scalar(subcatch)  # map with only zero's
 
         self.xl, self.yl, self.reallength = pcrut.detRealCellLength(
             self.ZeroMap, sizeinmetres
         )
-        self.Slope = slope(self.Altitude)
-        self.Slope = ifthen(
-            boolean(self.TopoId),
-            max(0.001, self.Slope * celllength() / self.reallength),
+        self.Slope = pcr.slope(self.Altitude)
+        self.Slope = pcr.ifthen(
+            pcr.boolean(self.TopoId),
+            pcr.max(0.001, self.Slope * pcr.celllength() / self.reallength),
         )
-        self.Slope = ifthenelse(self.maxSlope > 0.0, self.maxSlope, self.Slope)
-        Terrain_angle = scalar(atan(self.Slope))
+        self.Slope = pcr.ifthenelse(self.maxSlope > 0.0, self.maxSlope, self.Slope)
+        Terrain_angle = pcr.scalar(pcr.atan(self.Slope))
         temp = (
-            catchmenttotal(cover(1.0), self.TopoLdd)
+            pcr.catchmenttotal(pcr.cover(1.0), self.TopoLdd)
             * self.reallength
             * 0.001
             * 0.001
             * self.reallength
         )
-        self.QMMConvUp = cover(self.timestepsecs * 0.001) / temp
+        self.QMMConvUp = pcr.cover(self.timestepsecs * 0.001) / temp
 
         self.wf_multparameters()
 
@@ -947,16 +948,16 @@ class WflowModel(DynamicModel):
         # "Noah J. Finnegan et al 2005 Controls on the channel width of rivers:
         # Implications for modeling fluvial incision of bedrock"
 
-        upstr = catchmenttotal(1, self.TopoLdd)
-        Qscale = upstr / mapmaximum(upstr) * Qmax
+        upstr = pcr.catchmenttotal(1, self.TopoLdd)
+        Qscale = upstr / pcr.mapmaximum(upstr) * Qmax
         W = (
             (alf * (alf + 2.0) ** (0.6666666667)) ** (0.375)
             * Qscale ** (0.375)
-            * (max(0.0001, windowaverage(self.Slope, celllength() * 4.0))) ** (-0.1875)
+            * (pcr.max(0.0001, pcr.windowaverage(self.Slope, pcr.celllength() * 4.0))) ** (-0.1875)
             * self.N ** (0.375)
         )
         # Use supplied riverwidth if possible, else calulate
-        self.RiverWidth = ifthenelse(self.RiverWidth <= 0.0, W, self.RiverWidth)
+        self.RiverWidth = pcr.ifthenelse(self.RiverWidth <= 0.0, W, self.RiverWidth)
 
         # For in memory override:
         self.P = self.ZeroMap
@@ -968,21 +969,21 @@ class WflowModel(DynamicModel):
         # Initializing of variables
 
         self.logger.info("Initializing of model variables..")
-        self.TopoLdd = lddmask(self.TopoLdd, boolean(self.TopoId))
-        catchmentcells = maptotal(scalar(self.TopoId))
+        self.TopoLdd = pcr.lddmask(self.TopoLdd, pcr.boolean(self.TopoId))
+        catchmentcells = pcr.maptotal(pcr.scalar(self.TopoId))
 
         # Limit lateral flow per subcatchment (make pits at all subcatch boundaries)
         # This is very handy for Ribasim etc...
         if self.SubCatchFlowOnly > 0:
             self.logger.info("Creating subcatchment-only drainage network (ldd)")
-            ds = downstream(self.TopoLdd, self.TopoId)
-            usid = ifthenelse(ds != self.TopoId, self.TopoId, 0)
-            self.TopoLdd = lddrepair(ifthenelse(boolean(usid), ldd(5), self.TopoLdd))
+            ds = pcr.downstream(self.TopoLdd, self.TopoId)
+            usid = pcr.ifthenelse(ds != self.TopoId, self.TopoId, 0)
+            self.TopoLdd = pcr.lddrepair(pcr.ifthenelse(pcr.boolean(usid), pcr.ldd(5), self.TopoLdd))
 
         # Used to seperate output per LandUse/management classes
         # OutZones = self.LandUse
-        # report(self.reallength,"rl.map")
-        # report(catchmentcells,"kk.map")
+        # pcr.report(self.reallength,"rl.map")
+        # pcr.report(catchmentcells,"kk.map")
         self.QMMConv = self.timestepsecs / (
             self.reallength * self.reallength * 0.001
         )  # m3/s --> mm
@@ -1010,9 +1011,9 @@ class WflowModel(DynamicModel):
         # Set DCL to riverlength if that is longer that the basic length calculated from grid
         drainlength = detdrainlength(self.TopoLdd, self.xl, self.yl)
 
-        self.DCL = max(drainlength, self.RiverLength)  # m
+        self.DCL = pcr.max(drainlength, self.RiverLength)  # m
         # Multiply with Factor (taken from upscaling operation, defaults to 1.0 if no map is supplied
-        self.DCL = self.DCL * max(1.0, self.RiverLengthFac)
+        self.DCL = self.DCL * pcr.max(1.0, self.RiverLengthFac)
 
         # water depth (m)
         # set width for kinematic wave to cell width for all cells
@@ -1020,17 +1021,17 @@ class WflowModel(DynamicModel):
         # However, in the main river we have real flow so set the width to the
         # width of the river
 
-        self.Bw = ifthenelse(self.River, self.RiverWidth, self.Bw)
+        self.Bw = pcr.ifthenelse(self.River, self.RiverWidth, self.Bw)
 
         # term for Alpha
-        self.AlpTerm = pow((self.N / (sqrt(self.Slope))), self.Beta)
+        self.AlpTerm = pow((self.N / (pcr.sqrt(self.Slope))), self.Beta)
         # power for Alpha
         self.AlpPow = (2.0 / 3.0) * self.Beta
         # initial approximation for Alpha
 
         # calculate catchmentsize
-        self.upsize = catchmenttotal(self.xl * self.yl, self.TopoLdd)
-        self.csize = areamaximum(self.upsize, self.TopoId)
+        self.upsize = pcr.catchmenttotal(self.xl * self.yl, self.TopoLdd)
+        self.csize = pcr.areamaximum(self.upsize, self.TopoId)
 
         self.SaveDir = os.path.join(self.Dir, self.runId)
         self.logger.info("Starting Dynamic run...")
@@ -1061,18 +1062,18 @@ class WflowModel(DynamicModel):
 
             self.WaterLevel = (
                 self.catchArea * 0
-            )  # cover(0.0) #: Water level in kinimatic wave (state variable [m])
+            )  # pcr.cover(0.0) #: Water level in kinimatic wave (state variable [m])
 
             # set initial storage values
             #            pdb.set_trace()
             self.Sa = [
-                0.05 * self.samax[i] * scalar(self.catchArea) for i in self.Classes
+                0.05 * self.samax[i] * pcr.scalar(self.catchArea) for i in self.Classes
             ]
             self.Su = [
-                self.sumax[i] * scalar(self.catchArea) for i in self.Classes
+                self.sumax[i] * pcr.scalar(self.catchArea) for i in self.Classes
             ]  # catchArea is nu het hele stroomgebied
             # TODO checken of catchArea aangepast moet worden naar TopoId
-            self.Ss = self.Ss + 30 * scalar(
+            self.Ss = self.Ss + 30 * pcr.scalar(
                 self.catchArea
             )  # for combined gw reservoir # 30 mm
 
@@ -1083,7 +1084,7 @@ class WflowModel(DynamicModel):
             for i in self.Classes:
                 if self.selectSi[i]:
                     self.Si.append(
-                        readmap(
+                        pcr.readmap(
                             os.path.join(
                                 self.Dir,
                                 "instate",
@@ -1097,7 +1098,7 @@ class WflowModel(DynamicModel):
             for i in self.Classes:
                 if self.selectSw[i]:
                     self.Sw.append(
-                        readmap(
+                        pcr.readmap(
                             os.path.join(
                                 self.Dir,
                                 "instate",
@@ -1111,7 +1112,7 @@ class WflowModel(DynamicModel):
             for i in self.Classes:
                 if self.selectSa[i]:
                     self.Sa.append(
-                        readmap(
+                        pcr.readmap(
                             os.path.join(
                                 self.Dir,
                                 "instate",
@@ -1125,7 +1126,7 @@ class WflowModel(DynamicModel):
             for i in self.Classes:
                 if self.selectSu[i]:
                     self.Su.append(
-                        readmap(
+                        pcr.readmap(
                             os.path.join(
                                 self.Dir,
                                 "instate",
@@ -1139,7 +1140,7 @@ class WflowModel(DynamicModel):
             for i in self.Classes:
                 if self.selectSf[i]:
                     self.Sf.append(
-                        readmap(
+                        pcr.readmap(
                             os.path.join(
                                 self.Dir,
                                 "instate",
@@ -1153,7 +1154,7 @@ class WflowModel(DynamicModel):
             for i in self.Classes:
                 if self.selectSfa[i]:
                     self.Sfa.append(
-                        readmap(
+                        pcr.readmap(
                             os.path.join(
                                 self.Dir,
                                 "instate",
@@ -1163,9 +1164,9 @@ class WflowModel(DynamicModel):
                     )
                 else:
                     self.Sfa.append(self.ZeroMap)
-            self.Ss = readmap(os.path.join(self.Dir, "instate", "Ss.map"))
-            self.Qstate = readmap(os.path.join(self.Dir, "instate", "Qstate.map"))
-            self.WaterLevel = readmap(
+            self.Ss = pcr.readmap(os.path.join(self.Dir, "instate", "Ss.map"))
+            self.Qstate = pcr.readmap(os.path.join(self.Dir, "instate", "Qstate.map"))
+            self.WaterLevel = pcr.readmap(
                 os.path.join(self.Dir, "instate", "WaterLevel.map")
             )
 
@@ -1256,24 +1257,24 @@ class WflowModel(DynamicModel):
         self.convQa_t = [copylist(self.convQa[i]) for i in self.Classes]
 
         if self.IRURFR_L:
-            self.PotEvaporation = areatotal(
-                self.PotEvaporation * self.percentArea, nominal(self.TopoId)
+            self.PotEvaporation = pcr.areatotal(
+                self.PotEvaporation * self.percentArea, pcr.nominal(self.TopoId)
             )
-            self.Precipitation = areatotal(
-                self.Precipitation * self.percentArea, nominal(self.TopoId)
+            self.Precipitation = pcr.areatotal(
+                self.Precipitation * self.percentArea, pcr.nominal(self.TopoId)
             )
-            self.Temperature = areaaverage(
-                self.Temperature * self.percentArea, nominal(self.TopoId)
+            self.Temperature = pcr.areaaverage(
+                self.Temperature * self.percentArea, pcr.nominal(self.TopoId)
             )
 
         self.PrecipTotal = (
             self.Precipitation
         )  # NB: self.PrecipTotal is the precipitation as in the inmaps and self.Precipitation is in fact self.Rainfall !!!!
         if self.selectSw[0] > 0:
-            self.Precipitation = ifthenelse(
+            self.Precipitation = pcr.ifthenelse(
                 self.Temperature >= self.Tt[0], self.PrecipTotal, 0
             )
-            self.PrecipitationSnow = ifthenelse(
+            self.PrecipitationSnow = pcr.ifthenelse(
                 self.Temperature < self.Tt[0], self.PrecipTotal, 0
             )
 
@@ -1374,125 +1375,125 @@ class WflowModel(DynamicModel):
         )
 
         #    #fuxes and states in m3/h
-        self.P = areatotal(
-            self.PrecipTotal / 1000 * self.surfaceArea, nominal(self.TopoId)
+        self.P = pcr.areatotal(
+            self.PrecipTotal / 1000 * self.surfaceArea, pcr.nominal(self.TopoId)
         )
-        self.Ei = areatotal(
+        self.Ei = pcr.areatotal(
             sum(multiply(self.Ei_, self.percent)) / 1000 * self.surfaceArea,
-            nominal(self.TopoId),
+            pcr.nominal(self.TopoId),
         )
-        self.Ea = areatotal(
+        self.Ea = pcr.areatotal(
             sum(multiply(self.Ea_, self.percent)) / 1000 * self.surfaceArea,
-            nominal(self.TopoId),
+            pcr.nominal(self.TopoId),
         )
-        self.Eu = areatotal(
+        self.Eu = pcr.areatotal(
             sum(multiply(self.Eu_, self.percent)) / 1000 * self.surfaceArea,
-            nominal(self.TopoId),
+            pcr.nominal(self.TopoId),
         )
-        self.Ew = areatotal(
+        self.Ew = pcr.areatotal(
             sum(multiply(self.Ew_, self.percent)) / 1000 * self.surfaceArea,
-            nominal(self.TopoId),
+            pcr.nominal(self.TopoId),
         )
-        self.EwiCorr = areatotal(
+        self.EwiCorr = pcr.areatotal(
             sum(multiply(multiply(self.Ew_, self.lamdaS / self.lamda), self.percent))
             / 1000
             * self.surfaceArea,
-            nominal(self.TopoId),
+            pcr.nominal(self.TopoId),
         )
         self.Qtot = self.QLagTot * self.timestepsecs
-        self.SiWB = areatotal(
+        self.SiWB = pcr.areatotal(
             sum(multiply(self.Si, self.percent)) / 1000 * self.surfaceArea,
-            nominal(self.TopoId),
+            pcr.nominal(self.TopoId),
         )
-        self.Si_WB = areatotal(
+        self.Si_WB = pcr.areatotal(
             sum(multiply(self.Si_t, self.percent)) / 1000 * self.surfaceArea,
-            nominal(self.TopoId),
+            pcr.nominal(self.TopoId),
         )
-        self.SuWB = areatotal(
+        self.SuWB = pcr.areatotal(
             sum(multiply(self.Su, self.percent)) / 1000 * self.surfaceArea,
-            nominal(self.TopoId),
+            pcr.nominal(self.TopoId),
         )
-        self.Su_WB = areatotal(
+        self.Su_WB = pcr.areatotal(
             sum(multiply(self.Su_t, self.percent)) / 1000 * self.surfaceArea,
-            nominal(self.TopoId),
+            pcr.nominal(self.TopoId),
         )
-        self.SaWB = areatotal(
+        self.SaWB = pcr.areatotal(
             sum(multiply(self.Sa, self.percent)) / 1000 * self.surfaceArea,
-            nominal(self.TopoId),
+            pcr.nominal(self.TopoId),
         )
-        self.Sa_WB = areatotal(
+        self.Sa_WB = pcr.areatotal(
             sum(multiply(self.Sa_t, self.percent)) / 1000 * self.surfaceArea,
-            nominal(self.TopoId),
+            pcr.nominal(self.TopoId),
         )
-        self.SfWB = areatotal(
+        self.SfWB = pcr.areatotal(
             sum(multiply(self.Sf, self.percent)) / 1000 * self.surfaceArea,
-            nominal(self.TopoId),
+            pcr.nominal(self.TopoId),
         )
-        self.Sf_WB = areatotal(
+        self.Sf_WB = pcr.areatotal(
             sum(multiply(self.Sf_t, self.percent)) / 1000 * self.surfaceArea,
-            nominal(self.TopoId),
+            pcr.nominal(self.TopoId),
         )
-        self.SfaWB = areatotal(
+        self.SfaWB = pcr.areatotal(
             sum(multiply(self.Sfa, self.percent)) / 1000 * self.surfaceArea,
-            nominal(self.TopoId),
+            pcr.nominal(self.TopoId),
         )
-        self.Sfa_WB = areatotal(
+        self.Sfa_WB = pcr.areatotal(
             sum(multiply(self.Sfa_t, self.percent)) / 1000 * self.surfaceArea,
-            nominal(self.TopoId),
+            pcr.nominal(self.TopoId),
         )
-        self.SwWB = areatotal(
+        self.SwWB = pcr.areatotal(
             sum(multiply(self.Sw, self.percent)) / 1000 * self.surfaceArea,
-            nominal(self.TopoId),
+            pcr.nominal(self.TopoId),
         )
-        self.Sw_WB = areatotal(
+        self.Sw_WB = pcr.areatotal(
             sum(multiply(self.Sw_t, self.percent)) / 1000 * self.surfaceArea,
-            nominal(self.TopoId),
+            pcr.nominal(self.TopoId),
         )
-        self.SsWB = areatotal(self.Ss / 1000 * self.surfaceArea, nominal(self.TopoId))
-        self.Ss_WB = areatotal(
-            self.Ss_t / 1000 * self.surfaceArea, nominal(self.TopoId)
+        self.SsWB = pcr.areatotal(self.Ss / 1000 * self.surfaceArea, pcr.nominal(self.TopoId))
+        self.Ss_WB = pcr.areatotal(
+            self.Ss_t / 1000 * self.surfaceArea, pcr.nominal(self.TopoId)
         )
-        self.convQuWB = areatotal(
+        self.convQuWB = pcr.areatotal(
             sum(multiply([sum(self.convQu[i]) for i in self.Classes], self.percent))
             / 1000
             * self.surfaceArea,
-            nominal(self.TopoId),
+            pcr.nominal(self.TopoId),
         )
-        self.convQu_WB = areatotal(
+        self.convQu_WB = pcr.areatotal(
             sum(multiply([sum(self.convQu_t[i]) for i in self.Classes], self.percent))
             / 1000
             * self.surfaceArea,
-            nominal(self.TopoId),
+            pcr.nominal(self.TopoId),
         )
-        self.convQaWB = areatotal(
+        self.convQaWB = pcr.areatotal(
             sum(multiply([sum(self.convQa[i]) for i in self.Classes], self.percent))
             / 1000
             * self.surfaceArea,
-            nominal(self.TopoId),
+            pcr.nominal(self.TopoId),
         )
-        self.convQa_WB = areatotal(
+        self.convQa_WB = pcr.areatotal(
             sum(multiply([sum(self.convQa_t[i]) for i in self.Classes], self.percent))
             / 1000
             * self.surfaceArea,
-            nominal(self.TopoId),
+            pcr.nominal(self.TopoId),
         )
-        self.trackQWB = areatotal(sum(self.trackQ), nominal(self.TopoId))
-        self.trackQ_WB = areatotal(sum(self.trackQ_t), nominal(self.TopoId))
+        self.trackQWB = pcr.areatotal(sum(self.trackQ), pcr.nominal(self.TopoId))
+        self.trackQ_WB = pcr.areatotal(sum(self.trackQ_t), pcr.nominal(self.TopoId))
         if self.selectRout == "kinematic_wave_routing":
-            self.QstateWB = areatotal(
-                sum(self.Qstate_new) * self.timestepsecs, nominal(self.TopoId)
+            self.QstateWB = pcr.areatotal(
+                sum(self.Qstate_new) * self.timestepsecs, pcr.nominal(self.TopoId)
             )
         else:
-            self.QstateWB = areatotal(
-                sum(self.Qstate) * self.timestepsecs, nominal(self.TopoId)
+            self.QstateWB = pcr.areatotal(
+                sum(self.Qstate) * self.timestepsecs, pcr.nominal(self.TopoId)
             )  # dit moet Qstate_new zijn ipv Qstate als je met de kin wave werkt en waterbalans wilt laten sluiten TODO aanpassen zodat het nog steeds werkt voor eerdere routing !!!
-        self.Qstate_WB = areatotal(
-            sum(self.Qstate_t) * self.timestepsecs, nominal(self.TopoId)
+        self.Qstate_WB = pcr.areatotal(
+            sum(self.Qstate_t) * self.timestepsecs, pcr.nominal(self.TopoId)
         )
-        #        self.QstateWB = areatotal(sum(self.Qstate) * 0.0405, nominal(self.TopoId))
-        #        self.Qstate_WB = areatotal(sum(self.Qstate_t) * 0.0405, nominal(self.TopoId))
-        #        self.QstateWB = areatotal(self.Qstate, nominal(self.TopoId))
-        #        self.Qstate_WB = areatotal(self.Qstate_t, nominal(self.TopoId))
+        #        self.QstateWB = pcr.areatotal(sum(self.Qstate) * 0.0405, pcr.nominal(self.TopoId))
+        #        self.Qstate_WB = pcr.areatotal(sum(self.Qstate_t) * 0.0405, pcr.nominal(self.TopoId))
+        #        self.QstateWB = pcr.areatotal(self.Qstate, pcr.nominal(self.TopoId))
+        #        self.Qstate_WB = pcr.areatotal(self.Qstate_t, pcr.nominal(self.TopoId))
         #
         # WBtot in m3/s   -- volgens mij moet dit m3/h zijn ??? TODO!
         self.WBtot = (

@@ -17,6 +17,7 @@ ops_scalar2grid  -C case -R Runid -c inifile
 
 """
 
+import pcraster.framework
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
 
@@ -29,7 +30,7 @@ def usage(*args):
     sys.exit(0)
 
 
-class WflowModel(DynamicModel):
+class WflowModel(pcraster.framework.DynamicModel):
     """
   The user defined model class. This is your work!
   """
@@ -42,8 +43,8 @@ class WflowModel(DynamicModel):
       may be added by you if needed.
       
       """
-        DynamicModel.__init__(self)
-        setclone(Dir + "/staticmaps/" + cloneMap)
+        pcraster.framework.DynamicModel.__init__(self)
+        pcr.setclone(Dir + "/staticmaps/" + cloneMap)
         self.runId = RunDir
         self.caseName = Dir
         self.Dir = Dir
@@ -153,7 +154,7 @@ class WflowModel(DynamicModel):
     """
         #: pcraster option to calculate with units or cells. Not really an issue
         #: in this model but always good to keep in mind.
-        setglobaloption("unittrue")
+        pcr.setglobaloption("unittrue")
 
         self.timestepsecs = int(
             configget(self.config, "model", "timestepsecs", "86400")
@@ -186,7 +187,7 @@ class WflowModel(DynamicModel):
         except:
             self.logger.warning("Cannot load initial states, setting to default")
             for s in self.stateVariables():
-                exec("self." + s + " = cover(1.0)")
+                exec("self." + s + " = pcr.cover(1.0)")
 
     def default_summarymaps(self):
         """
@@ -207,21 +208,21 @@ class WflowModel(DynamicModel):
 
         self.wf_updateparameters()  # read the temperature map for each step (see parameters())
 
-        self.Stations = ordinal(self.Stations)
+        self.Stations = pcr.ordinal(self.Stations)
 
         for var in self.ToInterpolate:
             tss = configget(self.config, "interpolate", var, None)
-            tmp = timeinputscalar(self.Dir + "/" + tss, self.Stations)
+            tmp = pcr.timeinputscalar(self.Dir + "/" + tss, self.Stations)
 
             if self.interpolationmethod == "thiessen":
-                Unq = uniqueid(boolean(abs(tmp) + 1.0))
-                GaugeArea = spreadzone(ordinal(cover(Unq, 0)), 0, 1)
-                exec("self." + var + " = areaaverage(tmp,GaugeArea)")
+                Unq = pcr.uniqueid(pcr.boolean(abs(tmp) + 1.0))
+                GaugeArea = spreadzone(pcr.ordinal(pcr.cover(Unq, 0)), 0, 1)
+                exec("self." + var + " = pcr.areaaverage(tmp,GaugeArea)")
             elif self.interpolationmethod == "inverse":
                 exec(
                     "self."
                     + var
-                    + "=inversedistance(1,tmp,"
+                    + "=pcr.inversedistance(1,tmp,"
                     + str(self.inversepower)
                     + ",0,0)"
                 )

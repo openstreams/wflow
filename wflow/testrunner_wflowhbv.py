@@ -82,7 +82,7 @@ def main():
         # dynModelFw.wf_setValue("ForecQ_qmec", -1.0 * inflowQ  ,6.46823,51.6821)
         Resoutflow = inflowQ
         dynModelFw.wf_setValue("ForecQ_qmec", Resoutflow, 6.43643, 51.7226)
-        dynModelFw.wf_setValues("P", scalar(ts) * 0.1)
+        dynModelFw.wf_setValues("P", pcr.scalar(ts) * 0.1)
         # dynModelFw.wf_setValue("ForecQ_qmec",inflowQ * 1000 ,6.47592,51.7288)
         # update runoff ONLY NEEDED IF YOU FIDDLE WITH THE KIN_WAVE RESERVOIR
         myModel.updateRunOff()

@@ -60,6 +60,7 @@ $Rev: 916 $
 
 import os.path
 
+import pcraster.framework
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
 
@@ -72,7 +73,7 @@ def usage(*args):
     sys.exit(0)
 
 
-class WflowModel(DynamicModel):
+class WflowModel(pcraster.framework.DynamicModel):
     """
   The user defined model class. This is your work!
   """
@@ -82,11 +83,11 @@ class WflowModel(DynamicModel):
       Initialize the object
       
       """
-        DynamicModel.__init__(self)
+        pcraster.framework.DynamicModel.__init__(self)
 
         self.caseName = os.path.abspath(Dir)
         self.clonemappath = os.path.join(os.path.abspath(Dir), "staticmaps", cloneMap)
-        setclone(self.clonemappath)
+        pcr.setclone(self.clonemappath)
         self.runId = RunDir
         self.Dir = os.path.abspath(Dir)
         self.configfile = configfile
@@ -144,12 +145,12 @@ class WflowModel(DynamicModel):
         self.logger.info("Saving initial conditions...")
         self.wf_suspend(os.path.join(self.SaveDir, "outstate"))
 
-        report(
-            ifthen(self.MaxDepth > 0.0, self.MaxDepth),
+        pcr.report(
+            pcr.ifthen(self.MaxDepth > 0.0, self.MaxDepth),
             os.path.join(self.SaveDir, "outsum", "MaxDepth.map"),
         )
-        report(
-            ifthen(scalar(self.MaxExt) > 0.0, self.MaxExt),
+        pcr.report(
+            pcr.ifthen(pcr.scalar(self.MaxExt) > 0.0, self.MaxExt),
             os.path.join(self.SaveDir, "outsum", "MaxExt.map"),
         )
 
@@ -197,7 +198,7 @@ class WflowModel(DynamicModel):
     """
         #: pcraster option to calculate with units or cells. Not really an issue
         #: in this model but always good to keep in mind.
-        setglobaloption("unittrue")
+        pcr.setglobaloption("unittrue")
 
         #: Note the use of the configget functione below. This way you sepcify a default
         #: for a parameter but it can be overwritten by the uses in the ini file.
@@ -211,20 +212,20 @@ class WflowModel(DynamicModel):
 
         self.basetimestep = 86400
         self.SaveMapDir = self.Dir + "/" + self.runId + "/outmaps"
-        self.Altitude = readmap(self.Dir + "/staticmaps/wflow_dem")
-        self.River = readmap(self.Dir + "/staticmaps/wflow_river")
-        self.Ldd = readmap(self.Dir + "/staticmaps/wflow_ldd")
+        self.Altitude = pcr.readmap(self.Dir + "/staticmaps/wflow_dem")
+        self.River = pcr.readmap(self.Dir + "/staticmaps/wflow_river")
+        self.Ldd = pcr.readmap(self.Dir + "/staticmaps/wflow_ldd")
         self.BankFull = pcrut.readmapSave(self.Dir + "/staticmaps/wflow_bankfull", 0.0)
-        self.RiverWidth = readmap(
+        self.RiverWidth = pcr.readmap(
             self.Dir + "/" + self.runId + "/outsum/RiverWidth.map"
         )
-        self.BankFull = ifthenelse(
+        self.BankFull = pcr.ifthenelse(
             self.BankFull == 0.0, self.RiverWidth / 60.0, self.BankFull
         )
 
-        self.FloodDepth = scalar(cover(0.0))
-        self.MaxExt = boolean(cover(0.0))
-        self.MaxDepth = cover(0.0)
+        self.FloodDepth = pcr.scalar(pcr.cover(0.0))
+        self.MaxExt = pcr.boolean(pcr.cover(0.0))
+        self.MaxDepth = pcr.cover(0.0)
         self.logger.info("End of initial...")
 
     def resume(self):
@@ -241,7 +242,7 @@ class WflowModel(DynamicModel):
         #: here which pick upt the variable save by a call to wf_suspend()
         if self.reinit == 1:
             self.logger.info("Setting initial conditions to default (zero)")
-            self.FloodExtent = cover(boolean(0))
+            self.FloodExtent = pcr.cover(pcr.boolean(0))
         else:
             self.wf_resume(os.path.join(self.Dir, "instate"))
 
@@ -256,25 +257,25 @@ class WflowModel(DynamicModel):
       :var self.FloodExtent: Actual flood extent [-]
       
       """
-        self.FloodDepth = scalar(self.FloodDepth) * 0.0
+        self.FloodDepth = pcr.scalar(self.FloodDepth) * 0.0
 
         self.wf_updateparameters()
 
-        self.WLatRiver = ifthenelse(
-            scalar(self.River) > 0, self.WL + self.Altitude, scalar(0.0)
+        self.WLatRiver = pcr.ifthenelse(
+            pcr.scalar(self.River) > 0, self.WL + self.Altitude, pcr.scalar(0.0)
         )
         # WL surface if level > bankfull. For the eventual surface substract bankfull as measure for river depth
-        self.water_surf = cover(
-            ifthen(
+        self.water_surf = pcr.cover(
+            pcr.ifthen(
                 self.WLatRiver > (self.BankFull + self.Altitude),
                 self.WLatRiver - self.BankFull,
             ),
             0.0,
         )
-        self.water_surf_id = ordinal(uniqueid(boolean(self.water_surf)))
+        self.water_surf_id = pcr.ordinal(pcr.uniqueid(pcr.boolean(self.water_surf)))
 
         # Check how many points over bankfull we have
-        tmp = pcr2numpy(mapmaximum(self.water_surf_id), 0)
+        tmp = pcr.pcr2numpy(pcr.mapmaximum(self.water_surf_id), 0)
         fld_points_a = tmp[0, 0]
 
         self.logger.info(
@@ -286,24 +287,24 @@ class WflowModel(DynamicModel):
         # Only do mapping of the number of points is larger then 0
 
         if fld_points_a < 1:
-            self.FloodDepth = ifthen(self.FloodDepth > 1e31, self.FloodDepth)
+            self.FloodDepth = pcr.ifthen(self.FloodDepth > 1e31, self.FloodDepth)
             self.distfromriv = self.FloodDepth
             self.spread = self.FloodDepth
-            self.FloodExtent = cover(boolean(0))
-            self.FloodDepth = scalar(self.FloodExtent)
+            self.FloodExtent = pcr.cover(pcr.boolean(0))
+            self.FloodDepth = pcr.scalar(self.FloodExtent)
         else:
             # find zones connect to a rivercell > bankfull
-            self.RiverCellZones = subcatchment(self.Ldd, self.water_surf_id)
-            self.spreadRivLev = areaaverage(
-                ifthen(self.water_surf > 0, self.water_surf), self.RiverCellZones
+            self.RiverCellZones = pcr.subcatchment(self.Ldd, self.water_surf_id)
+            self.spreadRivLev = pcr.areaaverage(
+                pcr.ifthen(self.water_surf > 0, self.water_surf), self.RiverCellZones
             )
-            self.spreadRivDemLev = areaaverage(
-                ifthen(self.water_surf > 0, self.Altitude), self.RiverCellZones
+            self.spreadRivDemLev = pcr.areaaverage(
+                pcr.ifthen(self.water_surf > 0, self.Altitude), self.RiverCellZones
             )
 
             # add the new first estimate to the old extent
-            self.FloodExtent = cover(
-                boolean(self.FloodExtent), boolean(self.water_surf_id)
+            self.FloodExtent = pcr.cover(
+                pcr.boolean(self.FloodExtent), pcr.boolean(self.water_surf_id)
             )
             # determine the distance to the nearest already flooded celll
             self.distfromriv = ldddist(
@@ -311,21 +312,21 @@ class WflowModel(DynamicModel):
             )  # is in units of model (degree here)
 
             # a cell is flooded if the bottomlevel is lower than the waterlevel of the nearest river cell.
-            self.FloodDepth = ifthenelse(
+            self.FloodDepth = pcr.ifthenelse(
                 self.spreadRivLev - self.Altitude >= 0.0,
                 self.spreadRivLev - self.Altitude,
                 0.0,
             )
             # Exclude points too far away()
-            self.FloodDepth = ifthenelse(
+            self.FloodDepth = pcr.ifthenelse(
                 self.distfromriv > self.maxdist, 0.0, self.FloodDepth
             )
-            self.FloodDepth = ifthen(self.FloodDepth > 0.0, self.FloodDepth)
-            self.FloodExtent = ifthenelse(self.FloodDepth > 0.0, boolean(1), boolean(0))
+            self.FloodDepth = pcr.ifthen(self.FloodDepth > 0.0, self.FloodDepth)
+            self.FloodExtent = pcr.ifthenelse(self.FloodDepth > 0.0, pcr.boolean(1), pcr.boolean(0))
 
             # Keep track of af depth and extent
-            self.MaxDepth = max(self.MaxDepth, cover(self.FloodDepth, 0))
-            self.MaxExt = max(scalar(self.MaxExt), scalar(cover(self.FloodExtent, 0)))
+            self.MaxDepth = pcr.max(self.MaxDepth, pcr.cover(self.FloodDepth, 0))
+            self.MaxExt = pcr.max(pcr.scalar(self.MaxExt), pcr.scalar(pcr.cover(self.FloodExtent, 0)))
 
         # reporting of maps is done by the framework (see ini file)
 

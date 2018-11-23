@@ -1,8 +1,10 @@
 __author__ = "schelle"
 
-import unittest
-import wflow.wflow_sbm as wf
 import os
+import unittest
+
+import numpy as np
+import wflow.wflow_sbm as wf
 
 """
 Run sceleton for 10 steps and checks if the outcome is approx that of the reference run
@@ -50,7 +52,7 @@ class MyTest(unittest.TestCase):
 
         # nore read the csv results acn check of they match the first run
         # Sum should be approx c 4.569673676
-        my_data = wf.genfromtxt(
+        my_data = np.genfromtxt(
             os.path.join(caseName, runId, "wbsurf.csv"),
             delimiter=",",
             usecols=(0, 1, 2, 3, 4),
@@ -58,13 +60,13 @@ class MyTest(unittest.TestCase):
 
         print("Checking surface water budget ....")
         self.assertAlmostEqual(3.574188167654313e-09, my_data[:, 2].sum(), places=4)
-        my_data = wf.genfromtxt(
+        my_data = np.genfromtxt(
             os.path.join(caseName, runId, "wbsoil.csv"), delimiter=","
         )
         print("Checking soil water budget ....")
         self.assertAlmostEqual(0.0026834408363356488, my_data[:, 2].sum(), places=4)
         print("Checking precip sum ....")
-        my_data = wf.genfromtxt(os.path.join(caseName, runId, "P.csv"), delimiter=",")
+        my_data = np.genfromtxt(os.path.join(caseName, runId, "P.csv"), delimiter=",")
         self.assertAlmostEqual(sump, my_data[:, 2].sum())
 
 
