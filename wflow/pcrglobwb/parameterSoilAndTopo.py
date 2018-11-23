@@ -24,10 +24,10 @@
 
 
 import pcraster as pcr
-from . import virtualOS as vos
-
-from wflow.wflow_lib import configsection
 from wflow.wflow_lib import configget
+from wflow.wflow_lib import configsection
+
+from . import virtualOS as vos
 
 
 class SoilAndTopoParameters(object):

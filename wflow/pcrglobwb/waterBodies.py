@@ -23,15 +23,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import pcraster as pcr
-
 import logging
 
-logger = logging.getLogger("wflow_pcrglobwb")
+import pcraster as pcr
+from wflow.wf_DynamicFramework import configget
 
 from . import virtualOS as vos
 
-from wflow.wf_DynamicFramework import configget
+logger = logging.getLogger("wflow_pcrglobwb")
 
 
 class WaterBodies(object):

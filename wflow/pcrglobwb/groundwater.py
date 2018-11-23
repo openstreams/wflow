@@ -22,20 +22,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import math
-import os
-
-from pcraster.framework import *
-import pcraster as pcr
-
 import logging
 
-logger = logging.getLogger("wflow_pcrglobwb")
+from pcraster.framework import *
+from wflow.wf_DynamicFramework import configget
 
-from . import virtualOS as vos
 from .ncConverter import *
 
-from wflow.wf_DynamicFramework import configget
+logger = logging.getLogger("wflow_pcrglobwb")
 
 
 class Groundwater(object):

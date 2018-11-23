@@ -22,22 +22,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-
-from pcraster.framework import *
-import pcraster as pcr
-
 import logging
 
-logger = logging.getLogger("wflow_pcrglobwb")
-
-from . import virtualOS as vos
-from .ncConverter import *
-
-from . import waterBodies
-
+from pcraster.framework import *
 from wflow.wf_DynamicFramework import configget
 from wflow.wflow_lib import getgridparams
+
+from . import waterBodies
+from .ncConverter import *
+
+logger = logging.getLogger("wflow_pcrglobwb")
 
 
 class Routing(object):

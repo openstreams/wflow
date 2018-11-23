@@ -38,9 +38,9 @@
 #
 
 
-# Import math library
-from math import sqrt
 from math import fabs
+from math import sqrt
+
 from numpy import isnan
 
 NoDataVal = -999

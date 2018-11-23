@@ -97,15 +97,9 @@ $Id: wflow_wave.py 913 2014-02-04 13:10:51Z schelle $
 $Rev: 913 $
 
 """
-import numpy
-import os
 import os.path
-import getopt
 
 from wflow.wf_DynamicFramework import *
-
-# import scipy
-
 from wflow.wflow_adapt import *
 
 

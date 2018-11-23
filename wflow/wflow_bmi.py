@@ -1,25 +1,22 @@
 __author__ = "schelle"
 
-import os
-import logging
+import configparser
 import datetime
+import logging
 
-import wflow.bmi as bmi
 import numpy as np
-from wflow.pcrut import setlogger
-
-# wflow models we want to support, keep up to date with wflow_model
-import wflow.wflow_sbm
-import wflow.wflow_hbv
-import wflow.wflow_routing
+import wflow.bmi as bmi
 import wflow.wflow_floodmap
+import wflow.wflow_hbv
 import wflow.wflow_lintul
+import wflow.wflow_routing
+import wflow.wflow_sbm
 import wflow.wflow_sceleton
 import wflow.wflow_w3ra
-
 from pcraster import *
-import configparser
+from wflow.pcrut import setlogger
 
+# wflow models we want to support
 wflow_models = [
     wflow.wflow_sbm,
     wflow.wflow_hbv,

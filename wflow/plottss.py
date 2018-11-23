@@ -30,10 +30,10 @@ syntax:
 
 """
 
-from wflow.pcrut import *
-
 import getopt
+
 from pylab import *
+from wflow.pcrut import *
 
 
 def usage(*args):

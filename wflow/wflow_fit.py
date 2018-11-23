@@ -59,20 +59,16 @@ $Rev: 669 $
 """
 
 
+import csv
+import getopt
+import os.path
+import sys
+
+import numpy as np
 import pylab
 import scipy.optimize
-
 import wflow.pcrut as pcrut
 import wflow.stats as stats
-
-
-import os.path
-import numpy as np
-
-
-import getopt
-import sys
-import csv
 
 
 # TODO: do not read results from file

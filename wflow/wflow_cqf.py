@@ -95,17 +95,12 @@ $Author: schelle $
 $Id: wflow_cqf.py 909 2014-01-16 15:23:32Z schelle $
 $Rev: 909 $
 """
-import numpy
 
-# import pcrut
-import os
 import os.path
-import getopt
 
 from wflow.wf_DynamicFramework import *
-from wflow.wflow_funcs import *
 from wflow.wflow_adapt import *
-
+from wflow.wflow_funcs import *
 
 wflow = "wflow_cqf: "
 wflowVersion = "$Revision: 909 $  $Date: 2014-01-16 16:23:32 +0100 (Thu, 16 Jan 2014) $"

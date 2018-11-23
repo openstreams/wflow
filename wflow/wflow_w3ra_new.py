@@ -32,12 +32,11 @@ $Id: wflow_sceleton.py 898 2014-01-09 14:47:06Z schelle $
 $Rev: 898 $
 """
 
-import os
 import os.path
-import getopt
 
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
+
 
 # TODO: Make the script HRU independent (loop over the nr of HRU's)
 # TODO:

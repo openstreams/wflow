@@ -85,21 +85,14 @@ usage
 
 """
 
-
-# import pcrut
-import sys
-import os
 import os.path
-import getopt
 
-
-from wflow.wf_DynamicFramework import *
-from wflow.wflow_funcs import *
-from wflow.wflow_adapt import *
-
-from wflow.pcrglobwb import landSurface
 from wflow.pcrglobwb import groundwater
+from wflow.pcrglobwb import landSurface
 from wflow.pcrglobwb import routing
+from wflow.wf_DynamicFramework import *
+from wflow.wflow_adapt import *
+from wflow.wflow_funcs import *
 
 wflow = "wflow_pcrglobwb: "
 

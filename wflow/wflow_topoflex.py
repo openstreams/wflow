@@ -16,14 +16,11 @@ wflow_topoflex  -C case -R Runid -c inifile
 
 """
 
-
-import os
 import os.path
-import getopt
+from copy import deepcopy as copylist
 
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
-from copy import deepcopy as copylist
 
 # TODO: see below
 """

@@ -12,29 +12,20 @@ and interrogate the model.
 # TODO: Remove command-line options from models such as -F that is now in the ini
 # TODO: Fix timestep not forewarding in BMI runs (for reading writing maps)
 
+import calendar
 import configparser
-
-from wflow.wf_netcdfio import *
-from . import pcrut
+import datetime
 import glob
 import traceback
-from . import wflow_adapt
 from collections import namedtuple
-
-import logging
-
-import pcraster
-from pcraster.framework import *
-from .wflow_lib import *
-import time
-import calendar
-import datetime
-
-from wflow import __version__
 from functools import reduce
 
-# from wflow import __release__
-# from wflow import __build__
+from wflow import __version__
+from wflow.wf_netcdfio import *
+
+from . import pcrut
+from . import wflow_adapt
+from .wflow_lib import *
 
 
 def log_uncaught_exceptions(ex_cls, ex, tb):

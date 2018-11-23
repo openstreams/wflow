@@ -7,8 +7,6 @@ Created on Thu Apr 03 16:31:35 2014
 List all function versions
 """
 
-import numpy
-
 try:
     from wflow.wf_DynamicFramework import *
 except ImportError:
