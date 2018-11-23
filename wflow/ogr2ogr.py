@@ -35,13 +35,14 @@
 # Note : this is the most direct port of ogr2ogr.cpp possible
 # It could be made much more Python'ish !
 
-import sys
 import os
 import stat
+import sys
 
 from osgeo import gdal
 from osgeo import ogr
 from osgeo import osr
+
 
 ###############################################################################
 

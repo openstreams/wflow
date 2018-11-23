@@ -17,12 +17,8 @@ ops_scalar2grid  -C case -R Runid -c inifile
 
 """
 
-import getopt
-
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
-
-# import scipy
 
 
 def usage(*args):

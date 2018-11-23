@@ -6,7 +6,9 @@ __all__ = [
     "wf_DynamicFramework",
     "stats",
 ]
-import os, sys
+import os
+import sys
+
 import osgeo.gdal as gdal
 
 if getattr(sys, "frozen", False):

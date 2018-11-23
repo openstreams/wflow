@@ -4,17 +4,12 @@ PCRaster python bindings.
 
 """
 
-import os.path
-import numpy
-from math import *
-import sys
-from pcraster import *
-
-
-from pcraster import *
-from pcraster.framework import *
 import logging
 import logging.handlers
+import os.path
+from math import *
+
+from pcraster.framework import *
 
 
 def lattometres(lat):

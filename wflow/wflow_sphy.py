@@ -19,23 +19,11 @@
 # TODO: split off routing
 
 
-import sys
-import os
 import os.path
-import getopt
-import datetime as dt
 
-from wflow.wf_DynamicFramework import *
-from wflow.wf_DynamicFramework import *
-from wflow.wflow_adapt import *
-from wflow.wflow_adapt import *
 import pcraster as pcr
-
-# from wflow.wflow_lib import reporting
-
-# import scipy
-# import pcrut
-
+from wflow.wf_DynamicFramework import *
+from wflow.wflow_adapt import *
 
 wflow = "wflow_sphy"
 

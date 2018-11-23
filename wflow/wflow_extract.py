@@ -34,12 +34,11 @@ The script uses the pcraster resample program to reduce the maps.
 """
 
 
-from wflow.wflow_lib import *
-import sys
-import os
-import os.path
-import glob
 import getopt
+import glob
+import os.path
+
+from wflow.wflow_lib import *
 
 
 def usage(*args):

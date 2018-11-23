@@ -9,18 +9,16 @@ $Id: wf_DynamicFramework.py 915 2014-02-10 07:33:56Z schelle $
 $Rev: 915 $
 """
 
+import datetime as dt
+
+import cftime
+import netCDF4
 import osgeo
 import osgeo.ogr
-import netCDF4
-import cftime
 import pyproj
-import os
-
-from pcraster import *
-from numpy import *
-import time
-import datetime as dt
 import wflow.pcrut as _pcrut
+from numpy import *
+from pcraster import *
 
 globmetadata = {}
 globmetadata["title"] = "wflow output mapstack"

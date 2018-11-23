@@ -1,15 +1,11 @@
 #!/usr/bin/python
 #
 
-from math import pi
-import math
-import os
 import os.path
-import getopt
+from math import pi
 
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
-import time
 
 """
 

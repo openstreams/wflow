@@ -1,10 +1,10 @@
-import wflow.bmi as bmi
-import wflow.wflow_bmi as wfbmi
-import os
-from wflow.pcrut import setlogger
 import configparser
 import logging
+
+import wflow.bmi as bmi
+import wflow.wflow_bmi as wfbmi
 from pcraster import *
+from wflow.pcrut import setlogger
 
 
 def iniFileSetUp(configfile):
