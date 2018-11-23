@@ -18,6 +18,7 @@ wflow_sceleton  -C case -R Runid -c inifile
 
 """
 
+import pcraster.framework
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
 
@@ -30,7 +31,7 @@ def usage(*args):
     sys.exit(0)
 
 
-class WflowModel(DynamicModel):
+class WflowModel(pcraster.framework.DynamicModel):
     """
   The user defined model class. This is your work!
   """
@@ -43,8 +44,8 @@ class WflowModel(DynamicModel):
       may be added by you if needed.
       
       """
-        DynamicModel.__init__(self)
-        setclone(Dir + "/staticmaps/" + cloneMap)
+        pcraster.framework.DynamicModel.__init__(self)
+        pcr.setclone(Dir + "/staticmaps/" + cloneMap)
         self.runId = RunDir
         self.caseName = Dir
         self.Dir = Dir
@@ -166,7 +167,7 @@ class WflowModel(DynamicModel):
     """
         #: pcraster option to calculate with units or cells. Not really an issue
         #: in this model but always good to keep in mind.
-        setglobaloption("unittrue")
+        pcr.setglobaloption("unittrue")
 
         self.timestepsecs = int(
             configget(self.config, "model", "timestepsecs", "86400")
@@ -192,14 +193,14 @@ class WflowModel(DynamicModel):
         if self.reinit:
             self.logger.warning("Setting initial states to default")
             for s in self.stateVariables():
-                exec("self." + s + " = cover(1.0)")
+                exec("self." + s + " = pcr.cover(1.0)")
         else:
             try:
                 self.wf_resume(self.Dir + "/instate/")
             except:
                 self.logger.warning("Cannot load initial states, setting to default")
                 for s in self.stateVariables():
-                    exec("self." + s + " = cover(1.0)")
+                    exec("self." + s + " = pcr.cover(1.0)")
 
     def default_summarymaps(self):
         """

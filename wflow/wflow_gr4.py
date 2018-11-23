@@ -36,6 +36,7 @@ NOTES
 
 import os.path
 
+import pcraster.framework
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
 
@@ -53,7 +54,7 @@ def pcr_tanh(x):
     define tanh for pcraster objects
     
     """
-    return (exp(x) - exp(-x)) / (exp(x) + exp(-x))
+    return (pcr.exp(x) - pcr.exp(-x)) / (pcr.exp(x) + pcr.exp(-x))
 
 
 def initUH1(X4, D):
@@ -69,7 +70,7 @@ def initUH1(X4, D):
     """
     NH = int(numpy.ceil(X4))
 
-    t = arange(1, NH + 1)
+    t = np.arange(1, NH + 1)
     SH1 = numpy.minimum(1.0, (t / X4) ** D)
 
     # Use numpy.diff to get the UH, insert value at zero to complete
@@ -93,8 +94,8 @@ def initUH2(X4, D):
     """
     NH = int(numpy.ceil(X4))
 
-    t1 = arange(1, NH)
-    t2 = arange(NH, 2 * NH + 1)
+    t1 = np.arange(1, NH)
+    t2 = np.arange(NH, 2 * NH + 1)
 
     SH2_1 = 0.5 * (t1 / X4) ** D
     SH2_2 = 1 - 0.5 * (numpy.maximum(0, 2 - t2 / X4)) ** D
@@ -124,12 +125,12 @@ def mk_qres(N):
     uhq = []
 
     for i in range(0, N):
-        uhq.append(cover(0.0))
+        uhq.append(pcr.cover(0.0))
 
     return uhq
 
 
-class WflowModel(DynamicModel):
+class WflowModel(pcraster.framework.DynamicModel):
     """
   The user defined model class. This is your work!
   """
@@ -142,11 +143,11 @@ class WflowModel(DynamicModel):
       may be added by you if needed.
       
       """
-        DynamicModel.__init__(self)
+        pcraster.framework.DynamicModel.__init__(self)
 
         self.caseName = os.path.abspath(Dir)
         self.clonemappath = os.path.join(os.path.abspath(Dir), "staticmaps", cloneMap)
-        setclone(self.clonemappath)
+        pcr.setclone(self.clonemappath)
         self.runId = RunDir
         self.Dir = os.path.abspath(Dir)
         self.configfile = configfile
@@ -231,9 +232,9 @@ class WflowModel(DynamicModel):
     """
         #: pcraster option to calculate with units or cells. Not really an issue
         #: in this model but always good to keep in mind.
-        setglobaloption("unittrue")
-        self.thestep = scalar(0)
-        self.ZeroMap = cover(0.0)
+        pcr.setglobaloption("unittrue")
+        self.thestep = pcr.scalar(0)
+        self.ZeroMap = pcr.cover(0.0)
 
         self.timestepsecs = int(configget(self.config, "model", "timestepsecs", "3600"))
         self.basetimestep = 3600
@@ -244,7 +245,7 @@ class WflowModel(DynamicModel):
             self.config, "inputmapstacks", "Temperature", "/inmaps/TEMP"
         )
         self.intbl = configget(self.config, "model", "intbl", "intbl")
-        self.Altitude = readmap(self.Dir + "/staticmaps/wflow_dem")
+        self.Altitude = pcr.readmap(self.Dir + "/staticmaps/wflow_dem")
 
         wflow_subcatch = configget(
             self.config, "model", "wflow_subcatch", "/staticmaps/wflow_subcatch.map"
@@ -262,10 +263,10 @@ class WflowModel(DynamicModel):
             self.config, "inputmapstacks", "EvapoTranspiration", "/inmaps/PET"
         )  # timeseries for rainfall"/inmaps/PET"          # potential evapotranspiration
         sizeinmetres = int(configget(self.config, "layout", "sizeinmetres", "0"))
-        subcatch = ordinal(
-            readmap(self.Dir + wflow_subcatch)
+        subcatch = pcr.ordinal(
+            pcr.readmap(self.Dir + wflow_subcatch)
         )  # Determines the area of calculations (all cells > 0)
-        subcatch = ifthen(subcatch > 0, subcatch)
+        subcatch = pcr.ifthen(subcatch > 0, subcatch)
         self.xl, self.yl, self.reallength = pcrut.detRealCellLength(
             self.ZeroMap, sizeinmetres
         )
@@ -273,13 +274,13 @@ class WflowModel(DynamicModel):
             self.reallength * self.reallength * 0.001
         ) / self.timestepsecs  # m3/s
 
-        self.LandUse = readmap(
+        self.LandUse = pcr.readmap(
             self.Dir + wflow_landuse
         )  #: Map with lan-use/cover classes
-        self.LandUse = cover(self.LandUse, nominal(ordinal(subcatch) > 0))
-        self.Soil = readmap(self.Dir + wflow_soil)  #: Map with soil classes
-        self.Soil = cover(self.Soil, nominal(ordinal(subcatch) > 0))
-        self.OutputId = readmap(self.Dir + wflow_subcatch)  # location of subcatchment
+        self.LandUse = pcr.cover(self.LandUse, pcr.nominal(pcr.ordinal(subcatch) > 0))
+        self.Soil = pcr.readmap(self.Dir + wflow_soil)  #: Map with soil classes
+        self.Soil = pcr.cover(self.Soil, pcr.nominal(pcr.ordinal(subcatch) > 0))
+        self.OutputId = pcr.readmap(self.Dir + wflow_subcatch)  # location of subcatchment
 
         # hourly time step
         self.dt = int(configget(self.config, "gr4", "dt", "1"))
@@ -367,19 +368,19 @@ class WflowModel(DynamicModel):
         )
         self.thestep = self.thestep + 1
 
-        self.Precipitation = cover(self.wf_readmap(self.P_mapstack, 0.0), 0.0)
-        self.PotEvaporation = cover(self.wf_readmap(self.PET_mapstack, 0.0), 0.0)
+        self.Precipitation = pcr.cover(self.wf_readmap(self.P_mapstack, 0.0), 0.0)
+        self.PotEvaporation = pcr.cover(self.wf_readmap(self.PET_mapstack, 0.0), 0.0)
 
         # ROUTING WATER AND PRODUCTION RESERVOIR PERCOLATION ========================================================
 
-        self.Pn = ifthenelse(
+        self.Pn = pcr.ifthenelse(
             self.Precipitation >= self.PotEvaporation,
             self.Precipitation - self.PotEvaporation,
-            scalar(0.0),
+            pcr.scalar(0.0),
         )
-        self.En = ifthenelse(
+        self.En = pcr.ifthenelse(
             self.Precipitation >= self.PotEvaporation,
-            scalar(0.0),
+            pcr.scalar(0.0),
             self.PotEvaporation - self.Precipitation,
         )
         self.Ps = (self.X1 * (1 - (self.S_X1) ** 2) * pcr_tanh(self.Pn / self.X1)) / (
@@ -388,18 +389,18 @@ class WflowModel(DynamicModel):
         self.Es = (
             self.S_X1 * self.X1 * (2 - self.S_X1) * pcr_tanh(self.En / self.X1)
         ) / (1 + (1 - self.S_X1) * pcr_tanh(self.En / self.X1))
-        self.Ps = ifthenelse(
-            self.Precipitation >= self.PotEvaporation, self.Ps, scalar(0.0)
+        self.Ps = pcr.ifthenelse(
+            self.Precipitation >= self.PotEvaporation, self.Ps, pcr.scalar(0.0)
         )
-        self.Es = ifthenelse(
-            self.Precipitation >= self.PotEvaporation, scalar(0.0), self.Es
+        self.Es = pcr.ifthenelse(
+            self.Precipitation >= self.PotEvaporation, pcr.scalar(0.0), self.Es
         )
 
         self.Sprim_X1 = (
             self.S_X1 + ((self.Ps - self.Es) * self.dt) / self.X1
         )  # reservoir new content
         # Filter out value < 0 in self.Sprim_X1
-        self.Sprim_X1 = max(0.0, self.Sprim_X1)
+        self.Sprim_X1 = pcr.max(0.0, self.Sprim_X1)
 
         self.Perc = (
             self.Sprim_X1 * self.X1 * (1 - (1 + (self.Sprim_X1 / 5.25) ** 4) ** -0.25)
@@ -435,16 +436,16 @@ class WflowModel(DynamicModel):
             self.Rprim_X3 * self.X3 * (1.0 - (1.0 + (self.Rprim_X3) ** 4) ** -0.25)
         )  # routing output
         self.R_X3 = self.Rprim_X3 - self.Qr / self.X3  # new routing reservoir level
-        self.Qd = max(0.0, self.Q1 + self.F)  # flow component Qd
+        self.Qd = pcr.max(0.0, self.Q1 + self.F)  # flow component Qd
         self.Q = self.Qr + self.Qd  # total flow Q in mm/hr
         # Updated this line to get total Q per basin
-        self.SurfaceRunoff = areatotal(self.Q * self.ToCubic, self.OutputId)
+        self.SurfaceRunoff = pcr.areatotal(self.Q * self.ToCubic, self.OutputId)
 
         # Remove first item from the UH stacks and add a new empty one at the end
         self.QUH1 = delete(self.QUH1, 0)
-        self.QUH1 = append(self.QUH1, cover(0.0))
+        self.QUH1 = append(self.QUH1, pcr.cover(0.0))
         self.QUH2 = delete(self.QUH2, 0)
-        self.QUH2 = append(self.QUH2, cover(0.0))
+        self.QUH2 = append(self.QUH2, pcr.cover(0.0))
 
 
 # The main function is used to run the program from the command line

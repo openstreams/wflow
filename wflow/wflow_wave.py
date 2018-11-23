@@ -99,6 +99,7 @@ $Rev: 913 $
 """
 import os.path
 
+import pcraster.framework
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
 
@@ -111,7 +112,7 @@ def usage(*args):
     sys.exit(0)
 
 
-class WflowModel(DynamicModel):
+class WflowModel(pcraster.framework.DynamicModel):
     """
   The user defined model class. This is your work!
   """
@@ -122,11 +123,11 @@ class WflowModel(DynamicModel):
       
       """
         self.thestep = 0
-        DynamicModel.__init__(self)
+        pcraster.framework.DynamicModel.__init__(self)
 
         self.caseName = os.path.abspath(Dir)
         self.clonemappath = os.path.join(os.path.abspath(Dir), "staticmaps", cloneMap)
-        setclone(self.clonemappath)
+        pcr.setclone(self.clonemappath)
         self.runId = RunDir
         self.Dir = os.path.abspath(Dir)
         self.configfile = configfile
@@ -139,28 +140,28 @@ class WflowModel(DynamicModel):
         """
 
         # Determine all the inflow points into the main river
-        setglobaloption("manning")
-        comb = ordinal(cover(self.DynRiver, 0))
-        dst = downstream(self.Ldd, comb)
-        inf = ifthen(boolean(self.DynRiver), ordinal(0))
-        inf = cover(inf, dst)
-        self.Qin = ifthenelse(
-            inf > 0, self.SurfaceRunoff * self.timestepsecs, scalar(0.0)
+        pcr.setglobaloption("manning")
+        comb = pcr.ordinal(pcr.cover(self.DynRiver, 0))
+        dst = pcr.downstream(self.Ldd, comb)
+        inf = pcr.ifthen(pcr.boolean(self.DynRiver), pcr.ordinal(0))
+        inf = pcr.cover(inf, dst)
+        self.Qin = pcr.ifthenelse(
+            inf > 0, self.SurfaceRunoff * self.timestepsecs, pcr.scalar(0.0)
         )
-        self.Qin = upstream(self.Ldd, self.Qin)
+        self.Qin = pcr.upstream(self.Ldd, self.Qin)
 
         self.Qin = self.Qin / self.dynsubsteps
 
         # level boundary, fixed or TSS
         if self.fixed_h == 0.0:
-            levelBoun = timeinputscalar(
-                self.caseName + self.fixed_h_tss, ordinal(self.dynHBoundary)
+            levelBoun = pcr.timeinputscalar(
+                self.caseName + self.fixed_h_tss, pcr.ordinal(self.dynHBoundary)
             )
         else:
             levelBoun = self.fixed_h
 
         self.oldTsliceDynDyn = self.TsliceDyn
-        self.WaterLevelDyn = ifthen(self.DynRiver, self.WaterLevelDyn)
+        self.WaterLevelDyn = pcr.ifthen(self.DynRiver, self.WaterLevelDyn)
         for step in range(self.dynsubsteps):
 
             self.logger.debug("Dynamic wave substep: " + str(step))
@@ -169,12 +170,12 @@ class WflowModel(DynamicModel):
                 + (self.ChannelForm * self.WaterLevelDyn * 2.0)
                 + self.ChannelBottomWidth
             ) / 2.0
-            self.AChannel = min(self.WaterLevelDyn, self.ChannelDepth) * ChannelSurface
-            self.AFloodplain = max(
+            self.AChannel = pcr.min(self.WaterLevelDyn, self.ChannelDepth) * ChannelSurface
+            self.AFloodplain = pcr.max(
                 (self.WaterLevelDyn - self.ChannelDepth) * self.FloodplainWidth, 0.0
             )
 
-            self.A = max(self.AChannel + self.AFloodplain, 0.0001)
+            self.A = pcr.max(self.AChannel + self.AFloodplain, 0.0001)
             self.velocity = self.SurfaceRunoffDyn / self.A
             self.crt = abs(
                 (
@@ -186,10 +187,10 @@ class WflowModel(DynamicModel):
             )
             Vol = self.A * self.ChannelLength
             if self.lowerflowbound:
-                Qout = ifthen(boolean(pit(self.Ldd)), Vol * 0.9)
-                self.Qin = cover(Qout, self.Qin)
+                Qout = pcr.ifthen(pcr.boolean(pit(self.Ldd)), Vol * 0.9)
+                self.Qin = pcr.cover(Qout, self.Qin)
 
-            crt = numpy.max(pcr2numpy(self.crt, 0.0)) * 0.5
+            crt = numpy.max(pcr.pcr2numpy(self.crt, 0.0)) * 0.5
             if self.AdaptiveTimeStepping:
                 self.TsliceDynDyn = numpy.max(
                     [
@@ -214,7 +215,7 @@ class WflowModel(DynamicModel):
             self.oldTsliceDynDyn = self.TsliceDynDyn
             self.crtsum = self.crtsum + self.crt
 
-            self.EffectiveRoughness = ifthenelse(
+            self.EffectiveRoughness = pcr.ifthenelse(
                 self.WaterLevelDyn > self.ChannelDepth,
                 self.FloodplainRoughness,
                 self.ChannelRoughness,
@@ -262,16 +263,16 @@ class WflowModel(DynamicModel):
             )
 
             if self.fixed_h < 0.0:
-                upstr1 = upstream(self.LddIn, self.WaterLevelDyn)
-                upstr2 = upstream(self.LddIn, upstr1)
-                upstr3 = upstream(self.LddIn, upstr2)
+                upstr1 = pcr.upstream(self.LddIn, self.WaterLevelDyn)
+                upstr2 = pcr.upstream(self.LddIn, upstr1)
+                upstr3 = pcr.upstream(self.LddIn, upstr2)
                 upstr = (upstr1 + upstr2 + upstr3) / 3.0
                 levelBoun = upstr
 
             self.FloodPlainVol = self.AFloodplain * self.ChannelLength
             self.ChannelVol = self.AChannel * self.ChannelLength
-            fxboun = ifthen(self.dynHBoundary > 0, scalar(levelBoun))
-            self.WaterLevelDyn = cover(ifthen(fxboun > 0, fxboun), self.WaterLevelDyn)
+            fxboun = pcr.ifthen(self.dynHBoundary > 0, pcr.scalar(levelBoun))
+            self.WaterLevelDyn = pcr.cover(pcr.ifthen(fxboun > 0, fxboun), self.WaterLevelDyn)
 
     def stateVariables(self):
         """ 
@@ -341,7 +342,7 @@ class WflowModel(DynamicModel):
     """
         #: pcraster option to calculate with units or cells. Not really an issue
         #: in this model but always good to keep in mind.
-        setglobaloption("unittrue")
+        pcr.setglobaloption("unittrue")
 
         #: Note the use of the configget functione below. This way you sepcify a default
         #: for a parameter but it can be overwritten by the uses in the ini file.
@@ -390,94 +391,94 @@ class WflowModel(DynamicModel):
         self.SaveMapDir = os.path.join(self.Dir, self.runId, "outmaps")
         self.WL_mapstack = self.Dir + "/" + self.runId + "/outmaps/" + Hname
         self.Q_mapstack = self.Dir + "/" + self.runId + "/outmaps/" + Qname
-        self.Altitude = readmap(self.Dir + "/staticmaps/wflow_dem")
-        self.River = readmap(self.Dir + "/staticmaps/wflow_river")
-        self.Ldd = readmap(self.Dir + "/staticmaps/wflow_ldd")
-        self.RiverWidth = readmap(
+        self.Altitude = pcr.readmap(self.Dir + "/staticmaps/wflow_dem")
+        self.River = pcr.readmap(self.Dir + "/staticmaps/wflow_river")
+        self.Ldd = pcr.readmap(self.Dir + "/staticmaps/wflow_ldd")
+        self.RiverWidth = pcr.readmap(
             os.path.join(self.Dir, self.runId, "outsum", "RiverWidth.map")
         )
-        self.DCL = readmap(os.path.join(self.Dir, self.runId, "outsum", "DCL.map"))
-        self.ZeroMap = 0.0 * scalar(self.Altitude)
-        self.OutputLoc = readmap(self.Dir + "/staticmaps/wflow_gauges.map")
-        self.OutputId = readmap(self.Dir + "/staticmaps/wflow_subcatch.map")
+        self.DCL = pcr.readmap(os.path.join(self.Dir, self.runId, "outsum", "DCL.map"))
+        self.ZeroMap = 0.0 * pcr.scalar(self.Altitude)
+        self.OutputLoc = pcr.readmap(self.Dir + "/staticmaps/wflow_gauges.map")
+        self.OutputId = pcr.readmap(self.Dir + "/staticmaps/wflow_subcatch.map")
 
         if wflow_dynriver == "not_set":
-            self.DynRiver = boolean(self.River)
+            self.DynRiver = pcr.boolean(self.River)
         else:
-            self.DynRiver = boolean(readmap(os.path.join(self.Dir, wflow_dynriver)))
+            self.DynRiver = pcr.boolean(pcr.readmap(os.path.join(self.Dir, wflow_dynriver)))
 
         self.ChannelDepth = pcrut.readmapSave(
             self.Dir + "/staticmaps/ChannelDepth.map", 8.0
         )
-        self.ChannelDepth = self.ChannelDepth * scalar(boolean(self.DynRiver))
+        self.ChannelDepth = self.ChannelDepth * pcr.scalar(pcr.boolean(self.DynRiver))
         self.ChannelBottomLevel = (
-            self.Altitude * scalar(boolean(self.DynRiver)) - self.ChannelDepth
+            self.Altitude * pcr.scalar(pcr.boolean(self.DynRiver)) - self.ChannelDepth
         )
         self.FloodplainRoughness = pcrut.readmapSave(
             self.Dir + "/staticmaps/FloodplainRoughness.map", 0.4
         )
-        self.FloodplainRoughness = self.FloodplainRoughness * scalar(
-            boolean(self.DynRiver)
+        self.FloodplainRoughness = self.FloodplainRoughness * pcr.scalar(
+            pcr.boolean(self.DynRiver)
         )
         self.ChannelRoughness = pcrut.readmapSave(
             self.Dir + "/staticmaps/ChannelRoughness.map", 0.03
         )
-        self.ChannelRoughness = self.ChannelRoughness * scalar(boolean(self.DynRiver))
+        self.ChannelRoughness = self.ChannelRoughness * pcr.scalar(pcr.boolean(self.DynRiver))
         # COnvert to chezy
         # self.ChannelRoughness = 1.49/self.ChannelRoughness
-        self.ChannelLength = self.DCL * scalar(boolean(self.DynRiver))
+        self.ChannelLength = self.DCL * pcr.scalar(pcr.boolean(self.DynRiver))
         self.ChannelBottomWidth = self.RiverWidth
         self.ChannelForm = pcrut.readmapSave(
             self.Dir + "/staticmaps/ChannelForm.map", 1.0
         )
-        self.ChannelForm = self.ChannelForm * scalar(boolean(self.DynRiver))
+        self.ChannelForm = self.ChannelForm * pcr.scalar(pcr.boolean(self.DynRiver))
         self.FloodplainWidth = pcrut.readmapSave(
             self.Dir + "/staticmaps/FloodplainWidth.map", 300.0
-        ) * scalar(boolean(self.DynRiver))
-        self.FloodplainWidth = max(
+        ) * pcr.scalar(pcr.boolean(self.DynRiver))
+        self.FloodplainWidth = pcr.max(
             self.FloodplainWidth,
             (self.ChannelBottomWidth + (self.ChannelDepth * self.ChannelForm * 2.0))
-            * scalar(boolean(self.DynRiver)),
+            * pcr.scalar(pcr.boolean(self.DynRiver)),
         )
 
-        self.Structures = boolean(self.ZeroMap * scalar(boolean(self.DynRiver)))
-        self.StructureA = self.ZeroMap * scalar(boolean(self.DynRiver))
-        self.StructureB = self.ZeroMap * scalar(boolean(self.DynRiver))
-        self.StructureCrestLevel = self.ZeroMap * scalar(boolean(self.DynRiver))
+        self.Structures = pcr.boolean(self.ZeroMap * pcr.scalar(pcr.boolean(self.DynRiver)))
+        self.StructureA = self.ZeroMap * pcr.scalar(pcr.boolean(self.DynRiver))
+        self.StructureB = self.ZeroMap * pcr.scalar(pcr.boolean(self.DynRiver))
+        self.StructureCrestLevel = self.ZeroMap * pcr.scalar(pcr.boolean(self.DynRiver))
 
-        report(
+        pcr.report(
             self.FloodplainWidth,
             self.Dir + "/" + self.runId + "/outsum/FloodplainWidth.map",
         )
-        report(
+        pcr.report(
             self.ChannelLength,
             self.Dir + "/" + self.runId + "/outsum/ChannelLength.map",
         )
-        report(
+        pcr.report(
             self.ChannelDepth, self.Dir + "/" + self.runId + "/outsum/ChannelDepth.map"
         )
-        report(
+        pcr.report(
             self.ChannelBottomLevel,
             self.Dir + "/" + self.runId + "/outsum/ChannelBottomLevel.map",
         )
-        report(
+        pcr.report(
             self.ChannelRoughness,
             self.Dir + "/" + self.runId + "/outsum/ChannelRoughness.map",
         )
-        report(
+        pcr.report(
             self.FloodplainRoughness,
             self.Dir + "/" + self.runId + "/outsum/FloodplainRoughness.map",
         )
-        report(
+        pcr.report(
             self.ChannelForm, self.Dir + "/" + self.runId + "/outsum/ChannelForm.map"
         )
-        report(
+        pcr.report(
             self.ChannelBottomWidth,
             self.Dir + "/" + self.runId + "/outsum/ChannelBottomWidth.map",
         )
 
         # Make seperate LDD for Dynamic Wave
-        self.LddIn = lddrepair(ifthen(boolean(self.DynRiver), self.Ldd))
+        self.LddIn = pcr.lddrepair(pcr.ifthen(pcr.boolean(self.DynRiver), self.Ldd))
         self.crtsum = self.ZeroMap
 
         self.logger.info("End of initial section.")
@@ -495,8 +496,8 @@ class WflowModel(DynamicModel):
         #: here which pick upt the variable save by a call to wf_suspend()
         if self.reinit == 1:
             self.logger.info("Setting initial conditions to default (zero!)")
-            self.WaterLevelDyn = (self.ZeroMap + 0.1) * scalar(boolean(self.River))
-            self.SurfaceRunoffDyn = self.ZeroMap * scalar(boolean(self.River))
+            self.WaterLevelDyn = (self.ZeroMap + 0.1) * pcr.scalar(pcr.boolean(self.River))
+            self.SurfaceRunoffDyn = self.ZeroMap * pcr.scalar(pcr.boolean(self.River))
 
         else:
             self.wf_resume(os.path.join(self.Dir, "instate"))

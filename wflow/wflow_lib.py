@@ -35,11 +35,13 @@ $Rev: 808 $
 
 import gzip
 import os.path
+import sys
 import zipfile
 
 import numpy as np
 import osgeo.gdal as gdal
-from pcraster.framework import *
+import pcraster as pcr
+import pcraster.framework
 
 
 def pt_flow_in_river(ldd, river):
@@ -52,10 +54,10 @@ def pt_flow_in_river(ldd, river):
     :return ctach: catchment of each of the inflow points
     """
 
-    dspts = downstream(ldd, cover(river, 0))
-    dspts = ifthenelse(cover(river, 0) == 1, 0, dspts)
+    dspts = pcr.downstream(ldd, pcr.cover(river, 0))
+    dspts = pcr.ifthenelse(pcr.cover(river, 0) == 1, 0, dspts)
 
-    catch = subcatchment(ldd, nominal(uniqueid(dspts)))
+    catch = pcr.subcatchment(ldd, pcr.nominal(pcr.uniqueid(dspts)))
 
     return dspts, catch
 
@@ -69,9 +71,9 @@ def sum_list_cover(list_of_maps, covermap):
 
     :return: sum of list of maps (single map)
     """
-    sum_ = cover(0.0)
+    sum_ = pcr.cover(0.0)
     for map in list_of_maps:
-        sum_ = sum_ + cover(map, covermap)
+        sum_ = sum_ + pcr.cover(map, covermap)
 
     return sum_
 
@@ -86,15 +88,15 @@ def idtoid(sourceidmap, targetidmap, valuemap):
     :return:
     """
 
-    _area = pcr2numpy(targetidmap, 0.0).copy().astype(float)
-    _pt = pcr2numpy(sourceidmap, 0.0).copy()
-    _val = pcr2numpy(valuemap, 0.0).copy()
+    _area = pcr.pcr2numpy(targetidmap, 0.0).copy().astype(float)
+    _pt = pcr.pcr2numpy(sourceidmap, 0.0).copy()
+    _val = pcr.pcr2numpy(valuemap, 0.0).copy()
 
     for val in np.unique(_pt):
         if val > 0:  #
             _area[_area == val] = np.mean(_val[_pt == val])
 
-    retmap = numpy2pcr(Scalar, _area, 0.0)
+    retmap = pcr.numpy2pcr(pcr.Scalar, _area, 0.0)
 
     return retmap
 
@@ -128,15 +130,15 @@ def simplereservoir(
     :return: storage (m^3), outflow (m^3/s), PercentageFull (0-1), Release (m^3/sec)
     """
 
-    inflow = ifthen(boolean(ReserVoirLocs), inflow)
+    inflow = pcr.ifthen(pcr.boolean(ReserVoirLocs), inflow)
 
-    prec_av = cover(
-        ifthen(boolean(ReserVoirLocs), areaaverage(precip, ReservoirSimpleAreas)),
-        scalar(0.0),
+    prec_av = pcr.cover(
+        pcr.ifthen(pcr.boolean(ReserVoirLocs), pcr.areaaverage(precip, ReservoirSimpleAreas)),
+        pcr.scalar(0.0),
     )
-    pet_av = cover(
-        ifthen(boolean(ReserVoirLocs), areaaverage(pet, ReservoirSimpleAreas)),
-        scalar(0.0),
+    pet_av = pcr.cover(
+        pcr.ifthen(pcr.boolean(ReserVoirLocs), pcr.areaaverage(pet, ReservoirSimpleAreas)),
+        pcr.scalar(0.0),
     )
 
     oldstorage = storage
@@ -150,16 +152,16 @@ def simplereservoir(
     percfull = ((storage + oldstorage) * 0.5) / maxstorage
     # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
     fac = sCurve(percfull, a=minimum_full_perc, c=30.0)
-    demandRelease = min(fac * demand * timestepsecs, storage)
+    demandRelease = pcr.min(fac * demand * timestepsecs, storage)
     storage = storage - demandRelease
 
     # Re-determine percfull
     percfull = ((storage + oldstorage) * 0.5) / maxstorage
 
-    wantrel = max(0.0, storage - (maxstorage * target_perc_full))
+    wantrel = pcr.max(0.0, storage - (maxstorage * target_perc_full))
     # Assume extra maximum Q if spilling
     overflowQ = (percfull - 1.0) * (storage - maxstorage)
-    torelease = min(wantrel, overflowQ + maximum_Q * timestepsecs)
+    torelease = pcr.min(wantrel, overflowQ + maximum_Q * timestepsecs)
     storage = storage - torelease
     outflow = (torelease + demandRelease) / timestepsecs
     percfull = storage / maxstorage
@@ -169,8 +171,8 @@ def simplereservoir(
 
 def lookupResRegMatr(ReserVoirLocs, values, hq, JDOY):
 
-    np_res_ids = pcr2numpy(ReserVoirLocs, 0)
-    npvalues = pcr2numpy(values, 0)
+    np_res_ids = pcr.pcr2numpy(ReserVoirLocs, 0)
+    npvalues = pcr.pcr2numpy(values, 0)
     out = np.copy(npvalues) * 0.0
 
     if len(hq) > 0:
@@ -181,13 +183,13 @@ def lookupResRegMatr(ReserVoirLocs, values, hq, JDOY):
 
             out[np.where(np_res_ids == key)] = val
 
-    return numpy2pcr(Scalar, out, 0)
+    return pcr.numpy2pcr(pcr.Scalar, out, 0)
 
 
 def lookupResFunc(ReserVoirLocs, values, sh, dirLookup):
 
-    np_res_ids = pcr2numpy(ReserVoirLocs, 0)
-    npvalues = pcr2numpy(values, 0)
+    np_res_ids = pcr.pcr2numpy(ReserVoirLocs, 0)
+    npvalues = pcr.pcr2numpy(values, 0)
     out = np.copy(npvalues) * 0.0
 
     if len(sh) > 0:
@@ -201,7 +203,7 @@ def lookupResFunc(ReserVoirLocs, values, sh, dirLookup):
 
             out[np.where(np_res_ids == key)] = val
 
-    return numpy2pcr(Scalar, out, 0)
+    return pcr.numpy2pcr(pcr.Scalar, out, 0)
 
 
 def complexreservoir(
@@ -226,18 +228,18 @@ def complexreservoir(
 
     mv = -999.0
 
-    inflow = ifthen(boolean(ReserVoirLocs), inflow)
+    inflow = pcr.ifthen(pcr.boolean(ReserVoirLocs), inflow)
 
-    prec_av = ifthen(boolean(ReserVoirLocs), areaaverage(precip, ReservoirComplexAreas))
-    pet_av = ifthen(boolean(ReserVoirLocs), areaaverage(pet, ReservoirComplexAreas))
+    prec_av = pcr.ifthen(pcr.boolean(ReserVoirLocs), pcr.areaaverage(precip, ReservoirComplexAreas))
+    pet_av = pcr.ifthen(pcr.boolean(ReserVoirLocs), pcr.areaaverage(pet, ReservoirComplexAreas))
 
-    np_reslocs = pcr2numpy(ReserVoirLocs, 0.0)
-    np_linkedreslocs = pcr2numpy(LinkedReserVoirLocs, 0.0)
+    np_reslocs = pcr.pcr2numpy(ReserVoirLocs, 0.0)
+    np_linkedreslocs = pcr.pcr2numpy(LinkedReserVoirLocs, 0.0)
 
     _outflow = []
     nr_loop = np.max([int(timestepsecs / 21600), 1])
     for n in range(0, nr_loop):
-        np_waterlevel = pcr2numpy(waterlevel, np.nan)
+        np_waterlevel = pcr.pcr2numpy(waterlevel, np.nan)
         np_waterlevel_lower = np_waterlevel.copy()
 
         for val in np.unique(np_linkedreslocs):
@@ -250,26 +252,26 @@ def complexreservoir(
         diff_wl[np.isnan(diff_wl)] = mv
         np_waterlevel_lower[np.isnan(np_waterlevel_lower)] = mv
 
-        pcr_diff_wl = numpy2pcr(Scalar, diff_wl, mv)
-        pcr_wl_lower = numpy2pcr(Scalar, np_waterlevel_lower, mv)
+        pcr_diff_wl = pcr.numpy2pcr(pcr.Scalar, diff_wl, mv)
+        pcr_wl_lower = pcr.numpy2pcr(pcr.Scalar, np_waterlevel_lower, mv)
 
-        storage_start = ifthenelse(
+        storage_start = pcr.ifthenelse(
             ResStorFunc == 1,
             ResArea * waterlevel,
             lookupResFunc(ReserVoirLocs, waterlevel, sh, "0-1"),
         )
 
-        outflow = ifthenelse(
+        outflow = pcr.ifthenelse(
             ResOutflowFunc == 1,
             lookupResRegMatr(ReserVoirLocs, waterlevel, hq, JDOY),
-            ifthenelse(
+            pcr.ifthenelse(
                 pcr_diff_wl >= 0,
-                max(res_b * (waterlevel - ResThreshold) ** res_e, 0),
-                min(-1 * res_b * (pcr_wl_lower - ResThreshold) ** res_e, 0),
+                pcr.max(res_b * (waterlevel - ResThreshold) ** res_e, 0),
+                pcr.min(-1 * res_b * (pcr_wl_lower - ResThreshold) ** res_e, 0),
             ),
         )
 
-        np_outflow = pcr2numpy(outflow, np.nan)
+        np_outflow = pcr.pcr2numpy(outflow, np.nan)
         np_outflow_linked = np_reslocs * 0.0
 
         with np.errstate(invalid='ignore'):
@@ -280,7 +282,7 @@ def complexreservoir(
                     )
                 ] = np_outflow[np_outflow < 0]
 
-        outflow_linked = numpy2pcr(Scalar, np_outflow_linked, 0.0)
+        outflow_linked = pcr.numpy2pcr(pcr.Scalar, np_outflow_linked, 0.0)
 
         fl_nr_loop = float(nr_loop)
         storage = (
@@ -288,11 +290,11 @@ def complexreservoir(
             + (inflow * timestepsecs / fl_nr_loop)
             + (prec_av / fl_nr_loop / 1000.0) * ResArea
             - (pet_av / fl_nr_loop / 1000.0) * ResArea
-            - (cover(outflow, 0.0) * timestepsecs / fl_nr_loop)
-            + (cover(outflow_linked, 0.0) * timestepsecs / fl_nr_loop)
+            - (pcr.cover(outflow, 0.0) * timestepsecs / fl_nr_loop)
+            + (pcr.cover(outflow_linked, 0.0) * timestepsecs / fl_nr_loop)
         )
 
-        waterlevel = ifthenelse(
+        waterlevel = pcr.ifthenelse(
             ResStorFunc == 1,
             waterlevel + (storage - storage_start) / ResArea,
             lookupResFunc(ReserVoirLocs, storage, sh, "1-0"),
@@ -305,7 +307,7 @@ def complexreservoir(
 
     outflow_av_temp = np.average(_outflow, 0)
     outflow_av_temp[np.isnan(outflow_av_temp)] = mv
-    outflow_av = numpy2pcr(Scalar, outflow_av_temp, mv)
+    outflow_av = pcr.numpy2pcr(pcr.Scalar, outflow_av_temp, mv)
 
     return waterlevel, outflow_av, prec_av, pet_av, storage
 
@@ -338,12 +340,12 @@ def lddcreate_save(
     if os.path.exists(lddname) and not force:
         if Verbose:
             print(("Returning existing ldd", lddname))
-            return readmap(lddname)
+            return pcr.readmap(lddname)
     else:
         if Verbose:
             print(("Creating ldd", lddname))
-            LDD = lddcreate(dem, 10.0e35, outflowdepth, 10.0e35, 10.0e35)
-            report(LDD, lddname)
+            LDD = pcr.lddcreate(dem, 10.0e35, outflowdepth, 10.0e35, 10.0e35)
+            pcr.report(LDD, lddname)
             return LDD
 
 
@@ -434,7 +436,7 @@ def getrows():
     Output:
         - nr of rows in the current clonemap as a scalar
     """
-    a = pcr2numpy(celllength(), numpy.nan).shape[0]
+    a = pcr.pcr2numpy(pcr.celllength(), np.nan).shape[0]
 
     return a
 
@@ -449,7 +451,7 @@ def getcols():
     Output:
         - nr of columns in the current clonemap as a scalar
     """
-    a = pcr2numpy(celllength(), numpy.nan).shape[1]
+    a = pcr.pcr2numpy(pcr.celllength(), np.nan).shape[1]
 
     return a
 
@@ -470,13 +472,13 @@ def getgridparams():
         - ylr -  y lower right centre
     """
     # This is the default, but add for safety...
-    setglobaloption("coorcentre")
+    pcr.setglobaloption("coorcentre")
     # x and Y are the same for now
-    xy = pcr2numpy(celllength(), numpy.nan)[0, 0]
-    xu = pcr2numpy(xcoordinate(1), numpy.nan)[0, 0]
-    yu = pcr2numpy(ycoordinate(1), numpy.nan)[0, 0]
-    ylr = pcr2numpy(ycoordinate(1), numpy.nan)[getrows() - 1, getcols() - 1]
-    xlr = pcr2numpy(xcoordinate(1), numpy.nan)[getrows() - 1, getcols() - 1]
+    xy = pcr.pcr2numpy(pcr.celllength(), np.nan)[0, 0]
+    xu = pcr.pcr2numpy(pcr.xcoordinate(1), np.nan)[0, 0]
+    yu = pcr.pcr2numpy(pcr.ycoordinate(1), np.nan)[0, 0]
+    ylr = pcr.pcr2numpy(pcr.ycoordinate(1), np.nan)[getrows() - 1, getcols() - 1]
+    xlr = pcr.pcr2numpy(pcr.xcoordinate(1), np.nan)[getrows() - 1, getcols() - 1]
 
     return [xu, yu, xy, xy, getrows(), getcols(), xlr, ylr]
 
@@ -494,21 +496,21 @@ def snaptomap(points, mmap):
     Return:
         - map with shifted points
     """
-    points = cover(points, 0)
+    points = pcr.cover(points, 0)
     # Create unique id map of mmap cells
-    unq = nominal(cover(uniqueid(defined(mmap)), scalar(0.0)))
+    unq = pcr.nominal(pcr.cover(pcr.uniqueid(pcr.defined(mmap)), pcr.scalar(0.0)))
     # Now fill holes in mmap map with lues indicating the closes mmap cell.
-    dist_cellid = scalar(spreadzone(unq, 0, 1))
+    dist_cellid = pcr.scalar(pcr.spreadzone(unq, 0, 1))
     # Get map with values at location in points with closes mmap cell
-    dist_cellid = ifthenelse(points > 0, dist_cellid, 0)
+    dist_cellid = pcr.ifthenelse(points > 0, dist_cellid, 0)
     # Spread this out
-    dist_fill = spreadzone(nominal(dist_cellid), 0, 1)
+    dist_fill = pcr.spreadzone(pcr.nominal(dist_cellid), 0, 1)
     # Find the new (moved) locations
-    npt = uniqueid(boolean(ifthen(dist_fill == unq, unq)))
+    npt = pcr.uniqueid(pcr.boolean(pcr.ifthen(dist_fill == unq, unq)))
     # Now recreate the original value in the points maps
-    ptcover = spreadzone(cover(points, 0), 0, 1)
+    ptcover = pcr.spreadzone(pcr.cover(points, 0), 0, 1)
     # Now get the org point value in the pt map
-    nptorg = ifthen(npt > 0, ptcover)
+    nptorg = pcr.ifthen(npt > 0, ptcover)
 
     return nptorg
 
@@ -524,11 +526,11 @@ def riverlength(ldd, order):
     Returns:
         - totallength,lengthpercell, streamorder
     """
-    strorder = streamorder(ldd)
-    strorder = ifthen(strorder >= ordinal(order), strorder)
-    dist = max(celllength(), ifthen(boolean(strorder), downstreamdist(ldd)))
+    strorder = pcr.streamorder(ldd)
+    strorder = pcr.ifthen(strorder >= pcr.ordinal(order), strorder)
+    dist = pcr.max(pcr.celllength(), pcr.ifthen(pcr.boolean(strorder), pcr.downstreamdist(ldd)))
 
-    return catchmenttotal(cover(dist, 0), ldd), dist, strorder
+    return pcr.catchmenttotal(pcr.cover(dist, 0), ldd), dist, strorder
 
 
 def upscale_riverlength(ldd, order, factor):
@@ -548,13 +550,13 @@ def upscale_riverlength(ldd, order, factor):
         - distance per factor cells
     """
 
-    strorder = streamorder(ldd)
-    strorder = ifthen(strorder >= order, strorder)
-    dist = cover(max(celllength(), ifthen(boolean(strorder), downstreamdist(ldd))), 0)
-    totdist = max(
-        ifthen(
-            boolean(strorder),
-            windowtotal(ifthen(boolean(strorder), dist), celllength() * factor),
+    strorder = pcr.streamorder(ldd)
+    strorder = pcr.ifthen(strorder >= order, strorder)
+    dist = pcr.cover(pcr.max(pcr.celllength(), pcr.ifthen(pcr.boolean(strorder), pcr.downstreamdist(ldd))), 0)
+    totdist = pcr.max(
+        pcr.ifthen(
+            pcr.boolean(strorder),
+            pcr.windowtotal(pcr.ifthen(pcr.boolean(strorder), dist), pcr.celllength() * factor),
         ),
         dist,
     )
@@ -570,18 +572,18 @@ def area_riverlength_factor(ldd, Area, Clength):
     Input:
         - ldd
         - Area
-        - Clength (1d length of a cell (sqrt(Area))
+        - Clength (1d length of a cell (pcr.sqrt(Area))
 
     Output:
         - distance per area
 
     """
-    strorder = streamorder(ldd)
-    strordermax = areamaximum(strorder, Area)
-    dist = downstreamdist(ldd)
+    strorder = pcr.streamorder(ldd)
+    strordermax = pcr.areamaximum(strorder, Area)
+    dist = pcr.downstreamdist(ldd)
     # count nr of strorder cells in each area
-    nr = areatotal(ifthen(strorder == strordermax, dist), Area)
-    # N = sqrt(areatotal(scalar(boolean(Area)),Area))
+    nr = pcr.areatotal(pcr.ifthen(strorder == strordermax, dist), Area)
+    # N = pcr.sqrt(pcr.areatotal(pcr.scalar(pcr.boolean(Area)),Area))
     N = Clength
     factor = nr / N
 
@@ -602,12 +604,12 @@ def area_river_burnin(ldd, dem, order, Area):
   Output:
       - dem
   """
-    strorder = streamorder(ldd)
-    strordermax = areamaximum(strorder, Area)
-    maxordcell = ifthen(strordermax > order, strordermax)
-    riverdem = areaminimum(dem, Area)
+    strorder = pcr.streamorder(ldd)
+    strordermax = pcr.areamaximum(strorder, Area)
+    maxordcell = pcr.ifthen(strordermax > order, strordermax)
+    riverdem = pcr.areaminimum(dem, Area)
 
-    return ifthen(boolean(maxordcell), riverdem)
+    return pcr.ifthen(pcr.boolean(maxordcell), riverdem)
 
 
 def area_percentile(inmap, area, n, order, percentile):
@@ -616,7 +618,7 @@ def area_percentile(inmap, area, n, order, percentile):
   n is the number of points in each area,
   order, the sorter order of inmap per area (output of
   areaorder(inmap,area))
-  n is the output of areatotal(spatial(scalar(1.0)),area)
+  n is the output of pcr.areatotal(pcr.spatial(pcr.scalar(1.0)),area)
 
   Input:
       - inmap
@@ -629,10 +631,10 @@ def area_percentile(inmap, area, n, order, percentile):
       - percentile map
 
   """
-    i = rounddown((n * percentile) / 100.0 + 0.5)  # index in order map
-    perc = ifthen(i == order, inmap)
+    i = pcr.rounddown((n * percentile) / 100.0 + 0.5)  # index in order map
+    perc = pcr.ifthen(i == order, inmap)
 
-    return areaaverage(perc, area)
+    return pcr.areaaverage(perc, area)
 
 
 def find_outlet(ldd):
@@ -645,8 +647,8 @@ def find_outlet(ldd):
     Output:
         - outlet map (single point in the map)
     """
-    largest = mapmaximum(catchmenttotal(spatial(scalar(1.0)), ldd))
-    outlet = ifthen(catchmenttotal(1.0, ldd) == largest, spatial(scalar(1.0)))
+    largest = pcr.mapmaximum(pcr.catchmenttotal(pcr.spatial(pcr.scalar(1.0)), ldd))
+    outlet = pcr.ifthen(pcr.catchmenttotal(1.0, ldd) == largest, pcr.spatial(pcr.scalar(1.0)))
 
     return outlet
 
@@ -664,7 +666,7 @@ def subcatch(ldd, outlet):
     Output:
         - map of subcatchments
     """
-    subcatch = subcatchment(ldd, ordinal(outlet))
+    subcatch = pcr.subcatchment(ldd, pcr.ordinal(outlet))
 
     return subcatch
 
@@ -681,12 +683,12 @@ def areastat(Var, Area):
         - Standard_Deviation,Average,Max,Min
 
     """
-    Avg = areaaverage(Var, Area)
+    Avg = pcr.areaaverage(Var, Area)
     Sq = (Var - Avg) ** 2
-    N = areatotal(spatial(cellarea()), Area) / cellarea()
-    Sd = (areatotal(Sq, Area) / N) ** 0.5
-    Max = areamaximum(Var, Area)
-    Min = areaminimum(Var, Area)
+    N = pcr.areatotal(pcr.spatial(pcr.cellarea()), Area) / pcr.cellarea()
+    Sd = (pcr.areatotal(Sq, Area) / N) ** 0.5
+    Max = pcr.areamaximum(Var, Area)
+    Min = pcr.areaminimum(Var, Area)
 
     return Sd, Avg, Max, Min
 
@@ -706,19 +708,19 @@ def checkerboard(mapin, fcc):
     Output:
         - checkerboard type map
     """
-    msker = defined(mapin)
-    ymin = mapminimum(ycoordinate(msker))
-    yc = (ycoordinate((msker)) - ymin) / celllength()
-    yc = rounddown(yc / fcc)
+    msker = pcr.defined(mapin)
+    ymin = pcr.mapminimum(pcr.ycoordinate(msker))
+    yc = (pcr.ycoordinate((msker)) - ymin) / pcr.celllength()
+    yc = pcr.rounddown(yc / fcc)
     # yc = yc/fcc
-    xmin = mapminimum(xcoordinate((msker)))
-    xc = (xcoordinate((msker)) - xmin) / celllength()
-    xc = rounddown(xc / fcc)
+    xmin = pcr.mapminimum(pcr.xcoordinate((msker)))
+    xc = (pcr.xcoordinate((msker)) - xmin) / pcr.celllength()
+    xc = pcr.rounddown(xc / fcc)
     # xc = xc/fcc
 
-    yc = yc * (mapmaximum(xc) + 1.0)
+    yc = yc * (pcr.mapmaximum(xc) + 1.0)
 
-    xy = ordinal(xc + yc)
+    xy = pcr.ordinal(xc + yc)
 
     return xy
 
@@ -757,60 +759,60 @@ def subcatch_stream(
     """
     # derive stream order
 
-    stream = streamorder(ldd)
-    stream_ge = ifthen(stream >= threshold, stream)
-    stream_up_sum = ordinal(upstream(ldd, cover(scalar(stream_ge), 0)))
+    stream = pcr.streamorder(ldd)
+    stream_ge = pcr.ifthen(stream >= threshold, stream)
+    stream_up_sum = pcr.ordinal(pcr.upstream(ldd, pcr.cover(pcr.scalar(stream_ge), 0)))
     # detect any transfer of strahler order, to a higher strahler order.
-    transition_strahler = ifthenelse(
-        downstream(ldd, stream_ge) != stream_ge,
-        boolean(1),
-        ifthenelse(
-            nominal(ldd) == 5,
-            boolean(1),
-            ifthenelse(
-                downstream(ldd, scalar(stream_up_sum)) > scalar(stream_ge),
-                boolean(1),
-                boolean(0),
+    transition_strahler = pcr.ifthenelse(
+        pcr.downstream(ldd, stream_ge) != stream_ge,
+        pcr.boolean(1),
+        pcr.ifthenelse(
+            pcr.nominal(ldd) == 5,
+            pcr.boolean(1),
+            pcr.ifthenelse(
+                pcr.downstream(ldd, pcr.scalar(stream_up_sum)) > pcr.scalar(stream_ge),
+                pcr.boolean(1),
+                pcr.boolean(0),
             ),
         ),
     )
     # make unique ids (write to file)
-    transition_unique = ordinal(uniqueid(transition_strahler))
+    transition_unique = pcr.ordinal(pcr.uniqueid(transition_strahler))
 
     # derive upstream catchment areas (write to file)
-    subcatch = nominal(subcatchment(ldd, transition_unique))
+    subcatch = pcr.nominal(pcr.subcatchment(ldd, transition_unique))
 
     if assign_edge:
         # fill unclassified areas (in pcraster equal to zero) with a unique id, above the maximum id assigned so far
-        unique_edge = clump(ifthen(subcatch == 0, ordinal(0)))
-        subcatch = ifthenelse(
+        unique_edge = pcr.clump(pcr.ifthen(subcatch == 0, pcr.ordinal(0)))
+        subcatch = pcr.ifthenelse(
             subcatch == 0,
-            nominal(mapmaximum(scalar(subcatch)) + scalar(unique_edge)),
-            nominal(subcatch),
+            pcr.nominal(pcr.mapmaximum(pcr.scalar(subcatch)) + pcr.scalar(unique_edge)),
+            pcr.nominal(subcatch),
         )
     elif assign_existing:
         # unaccounted areas are added to largest nearest draining basin
         if up_area is None:
-            up_area = ifthen(boolean(cover(stream_ge, 0)), accuflux(ldd, 1))
-        riverid = ifthen(boolean(cover(stream_ge, 0)), subcatch)
+            up_area = pcr.ifthen(pcr.boolean(pcr.cover(stream_ge, 0)), pcr.accuflux(ldd, 1))
+        riverid = pcr.ifthen(pcr.boolean(pcr.cover(stream_ge, 0)), subcatch)
 
-        friction = 1.0 / scalar(
-            spreadzone(cover(ordinal(up_area), 0), 0, 0)
-        )  # *(scalar(ldd)*0+1)
-        delta = ifthen(
-            scalar(ldd) >= 0,
-            ifthen(cover(subcatch, 0) == 0, spreadzone(cover(riverid, 0), 0, friction)),
+        friction = 1.0 / pcr.scalar(
+            pcr.spreadzone(pcr.cover(pcr.ordinal(up_area), 0), 0, 0)
+        )  # *(pcr.scalar(ldd)*0+1)
+        delta = pcr.ifthen(
+            pcr.scalar(ldd) >= 0,
+            pcr.ifthen(pcr.cover(subcatch, 0) == 0, pcr.spreadzone(pcr.cover(riverid, 0), 0, friction)),
         )
-        subcatch = ifthenelse(boolean(cover(subcatch, 0)), subcatch, delta)
+        subcatch = pcr.ifthenelse(pcr.boolean(pcr.cover(subcatch, 0)), subcatch, delta)
 
     # finally, only keep basins with minimum and maximum river order flowing through them
-    strahler_subcatch = areamaximum(stream, subcatch)
-    subcatch = ifthen(
-        ordinal(strahler_subcatch) >= min_strahler,
-        ifthen(ordinal(strahler_subcatch) <= max_strahler, subcatch),
+    strahler_subcatch = pcr.areamaximum(stream, subcatch)
+    subcatch = pcr.ifthen(
+        pcr.ordinal(strahler_subcatch) >= min_strahler,
+        pcr.ifthen(pcr.ordinal(strahler_subcatch) <= max_strahler, subcatch),
     )
 
-    return stream_ge, ordinal(subcatch)
+    return stream_ge, pcr.ordinal(subcatch)
 
 
 def subcatch_order_a(ldd, oorder):
@@ -828,17 +830,17 @@ def subcatch_order_a(ldd, oorder):
         - map with catchment for the given streamorder
     """
     outl = find_outlet(ldd)
-    large = subcatchment(ldd, boolean(outl))
-    stt = streamorder(ldd)
-    sttd = downstream(ldd, stt)
-    pts = ifthen((scalar(sttd) - scalar(stt)) > 0.0, sttd)
-    dif = upstream(
+    large = pcr.subcatchment(ldd, pcr.boolean(outl))
+    stt = pcr.streamorder(ldd)
+    sttd = pcr.downstream(ldd, stt)
+    pts = pcr.ifthen((pcr.scalar(sttd) - pcr.scalar(stt)) > 0.0, sttd)
+    dif = pcr.upstream(
         ldd,
-        cover(ifthen(large, uniqueid(boolean(ifthen(stt == ordinal(oorder), pts)))), 0),
+        pcr.cover(pcr.ifthen(large, pcr.uniqueid(pcr.boolean(pcr.ifthen(stt == pcr.ordinal(oorder), pts)))), 0),
     )
-    dif = cover(scalar(outl), dif)  # Add catchment outlet
-    dif = ordinal(uniqueid(boolean(dif)))
-    sc = subcatchment(ldd, dif)
+    dif = pcr.cover(pcr.scalar(outl), dif)  # Add catchment outlet
+    dif = pcr.ordinal(pcr.uniqueid(pcr.boolean(dif)))
+    sc = pcr.subcatchment(ldd, dif)
 
     return sc, dif, stt
 
@@ -864,42 +866,42 @@ def subcatch_order_b(
     :returns sc, dif, nldd; Subcatchment, Points, subcatchldd
     """
     # outl = find_outlet(ldd)
-    # large = subcatchment(ldd,boolean(outl))
+    # large = pcr.subcatchment(ldd,pcr.boolean(outl))
 
     if stoporder == 0:
         stoporder = oorder
 
-    stt = streamorder(ldd)
-    sttd = downstream(ldd, stt)
-    pts = ifthen((scalar(sttd) - scalar(stt)) > 0.0, sttd)
-    maxorder = getCellValue(mapmaximum(stt), 1, 1)
-    dif = uniqueid(boolean(ifthen(stt == ordinal(oorder), pts)))
+    stt = pcr.streamorder(ldd)
+    sttd = pcr.downstream(ldd, stt)
+    pts = pcr.ifthen((pcr.scalar(sttd) - pcr.scalar(stt)) > 0.0, sttd)
+    maxorder = pcraster.framework.getCellValue(pcr.mapmaximum(stt), 1, 1)
+    dif = pcr.uniqueid(pcr.boolean(pcr.ifthen(stt == pcr.ordinal(oorder), pts)))
 
     if fill:
         for order in range(oorder, maxorder):
-            m_pts = ifthen((scalar(sttd) - scalar(order)) > 0.0, sttd)
-            m_dif = uniqueid(boolean(ifthen(stt == ordinal(order), m_pts)))
-            dif = uniqueid(boolean(cover(m_dif, dif)))
+            m_pts = pcr.ifthen((pcr.scalar(sttd) - pcr.scalar(order)) > 0.0, sttd)
+            m_dif = pcr.uniqueid(pcr.boolean(pcr.ifthen(stt == pcr.ordinal(order), m_pts)))
+            dif = pcr.uniqueid(pcr.boolean(pcr.cover(m_dif, dif)))
 
         for myorder in range(oorder - 1, stoporder, -1):
-            sc = subcatchment(ldd, nominal(dif))
-            m_pts = ifthen((scalar(sttd) - scalar(stt)) > 0.0, sttd)
-            m_dif = uniqueid(boolean(ifthen(stt == ordinal(myorder - 1), m_pts)))
-            dif = uniqueid(boolean(cover(ifthen(scalar(sc) == 0, m_dif), dif)))
+            sc = pcr.subcatchment(ldd, pcr.nominal(dif))
+            m_pts = pcr.ifthen((pcr.scalar(sttd) - pcr.scalar(stt)) > 0.0, sttd)
+            m_dif = pcr.uniqueid(pcr.boolean(pcr.ifthen(stt == pcr.ordinal(myorder - 1), m_pts)))
+            dif = pcr.uniqueid(pcr.boolean(pcr.cover(pcr.ifthen(pcr.scalar(sc) == 0, m_dif), dif)))
 
         if fillcomplete:
-            sc = subcatchment(ldd, nominal(dif))
+            sc = pcr.subcatchment(ldd, pcr.nominal(dif))
             cs, m_dif, stt = subcatch_order_a(ldd, stoporder)
-            dif = uniqueid(
-                boolean(cover(ifthen(scalar(sc) == 0, ordinal(m_dif)), ordinal(dif)))
+            dif = pcr.uniqueid(
+                pcr.boolean(pcr.cover(pcr.ifthen(pcr.scalar(sc) == 0, pcr.ordinal(m_dif)), pcr.ordinal(dif)))
             )
 
-    scsize = catchmenttotal(1, ldd)
-    dif = ordinal(uniqueid(boolean(ifthen(scsize >= sizelimit, dif))))
-    sc = subcatchment(ldd, dif)
+    scsize = pcr.catchmenttotal(1, ldd)
+    dif = pcr.ordinal(pcr.uniqueid(pcr.boolean(pcr.ifthen(scsize >= sizelimit, dif))))
+    sc = pcr.subcatchment(ldd, dif)
 
     # Make pit ldd
-    nldd = lddrepair(ifthenelse(cover(dif, 0) > 0, 5, ldd))
+    nldd = pcr.lddrepair(pcr.ifthenelse(pcr.cover(dif, 0) > 0, 5, ldd))
 
     return sc, dif, nldd
 
@@ -917,15 +919,15 @@ def getRowColPoint(in_map, xcor, ycor):
     Output:
         - row, column
     """
-    x = pcr2numpy(xcoordinate(boolean(scalar(in_map) + 1.0)), numpy.nan)
-    y = pcr2numpy(ycoordinate(boolean(scalar(in_map) + 1.0)), numpy.nan)
-    XX = pcr2numpy(celllength(), 0.0)
+    x = pcr.pcr2numpy(pcr.xcoordinate(pcr.boolean(pcr.scalar(in_map) + 1.0)), np.nan)
+    y = pcr.pcr2numpy(pcr.ycoordinate(pcr.boolean(pcr.scalar(in_map) + 1.0)), np.nan)
+    XX = pcr.pcr2numpy(pcr.celllength(), 0.0)
     tolerance = 0.5  # takes a single point
 
     diffx = x - xcor
     diffy = y - ycor
-    col_ = numpy.absolute(diffx) <= (XX[0, 0] * tolerance)  # cellsize
-    row_ = numpy.absolute(diffy) <= (XX[0, 0] * tolerance)  # cellsize
+    col_ = np.absolute(diffx) <= (XX[0, 0] * tolerance)  # cellsize
+    row_ = np.absolute(diffy) <= (XX[0, 0] * tolerance)  # cellsize
     point = col_ * row_
 
     return point.argmax(0).max(), point.argmax(1).max()
@@ -944,16 +946,16 @@ def getValAtPoint(in_map, xcor, ycor):
     Output:
         - value
     """
-    x = pcr2numpy(xcoordinate(defined(in_map)), numpy.nan)
-    y = pcr2numpy(ycoordinate(defined(in_map)), numpy.nan)
-    XX = pcr2numpy(celllength(), 0.0)
-    themap = pcr2numpy(in_map, numpy.nan)
+    x = pcr.pcr2numpy(pcr.xcoordinate(pcr.defined(in_map)), np.nan)
+    y = pcr.pcr2numpy(pcr.ycoordinate(pcr.defined(in_map)), np.nan)
+    XX = pcr.pcr2numpy(pcr.celllength(), 0.0)
+    themap = pcr.pcr2numpy(in_map, np.nan)
     tolerance = 0.5  # takes a single point
 
     diffx = x - xcor
     diffy = y - ycor
-    col_ = numpy.absolute(diffx) <= (XX[0, 0] * tolerance)  # cellsize
-    row_ = numpy.absolute(diffy) <= (XX[0, 0] * tolerance)  # cellsize
+    col_ = np.absolute(diffx) <= (XX[0, 0] * tolerance)  # cellsize
+    row_ = np.absolute(diffy) <= (XX[0, 0] * tolerance)  # cellsize
     point = col_ * row_
     pt = point.argmax()
 
@@ -981,16 +983,16 @@ def points_to_map(in_map, xcor, ycor, tolerance):
     """
     point = in_map * 0.0
 
-    x = pcr2numpy(xcoordinate(defined(in_map)), numpy.nan)
-    y = pcr2numpy(ycoordinate(defined(in_map)), numpy.nan)
-    cell_length = float(celllength())
+    x = pcr.pcr2numpy(pcr.xcoordinate(pcr.defined(in_map)), np.nan)
+    y = pcr.pcr2numpy(pcr.ycoordinate(pcr.defined(in_map)), np.nan)
+    cell_length = float(pcr.celllength())
 
     # simple check to use both floats and numpy arrays
     try:
         c = xcor.ndim
     except:
-        xcor = numpy.array([xcor])
-        ycor = numpy.array([ycor])
+        xcor = np.array([xcor])
+        ycor = np.array([ycor])
 
     # Loop over points and "burn in" map
     for n in range(0, xcor.size):
@@ -998,11 +1000,11 @@ def points_to_map(in_map, xcor, ycor, tolerance):
             print (n)
         diffx = x - xcor[n]
         diffy = y - ycor[n]
-        col_ = numpy.absolute(diffx) <= (cell_length * tolerance)  # cellsize
-        row_ = numpy.absolute(diffy) <= (cell_length * tolerance)  # cellsize
-        point = point + numpy2pcr(Scalar, ((col_ * row_) * (n + 1)), numpy.nan)
+        col_ = np.absolute(diffx) <= (cell_length * tolerance)  # cellsize
+        row_ = np.absolute(diffy) <= (cell_length * tolerance)  # cellsize
+        point = point + pcr.numpy2pcr(pcr.Scalar, ((col_ * row_) * (n + 1)), np.nan)
 
-    return ordinal(point)
+    return pcr.ordinal(point)
 
 
 def detdrainlength(ldd, xl, yl):
@@ -1020,15 +1022,15 @@ def detdrainlength(ldd, xl, yl):
     # take into account non-square cells
     # if ldd is 8 or 2 use Ylength
     # if ldd is 4 or 6 use Xlength
-    draindir = scalar(ldd)
-    slantlength = sqrt(xl ** 2 + yl ** 2)
-    drainlength = ifthenelse(
+    draindir = pcr.scalar(ldd)
+    slantlength = pcr.sqrt(xl ** 2 + yl ** 2)
+    drainlength = pcr.ifthenelse(
         draindir == 2,
         yl,
-        ifthenelse(
+        pcr.ifthenelse(
             draindir == 8,
             yl,
-            ifthenelse(draindir == 4, xl, ifthenelse(draindir == 6, xl, slantlength)),
+            pcr.ifthenelse(draindir == 4, xl, pcr.ifthenelse(draindir == 6, xl, slantlength)),
         ),
     )
 
@@ -1050,15 +1052,15 @@ def detdrainwidth(ldd, xl, yl):
     # take into account non-square cells
     # if ldd is 8 or 2 use Xlength
     # if ldd is 4 or 6 use Ylength
-    draindir = scalar(ldd)
+    draindir = pcr.scalar(ldd)
     slantwidth = (xl + yl) * 0.5
-    drainwidth = ifthenelse(
+    drainwidth = pcr.ifthenelse(
         draindir == 2,
         xl,
-        ifthenelse(
+        pcr.ifthenelse(
             draindir == 8,
             xl,
-            ifthenelse(draindir == 4, yl, ifthenelse(draindir == 6, yl, slantwidth)),
+            pcr.ifthenelse(draindir == 4, yl, pcr.ifthenelse(draindir == 6, yl, slantwidth)),
         ),
     )
     return drainwidth
@@ -1072,11 +1074,11 @@ def classify(
 
     """
 
-    result = ordinal(cover(-1))
+    result = pcr.ordinal(pcr.cover(-1))
     for l, u, c in zip(lower, upper, classes):
-        result = cover(ifthen(inmap >= l, ifthen(inmap < u, ordinal(c))), result)
+        result = pcr.cover(pcr.ifthen(inmap >= l, pcr.ifthen(inmap < u, pcr.ordinal(c))), result)
 
-    return ifthen(result >= 0, result)
+    return pcr.ifthen(result >= 0, result)
 
 
 def derive_HAND(dem, ldd, accuThreshold, rivers=None, basin=None):
@@ -1101,24 +1103,24 @@ def derive_HAND(dem, ldd, accuThreshold, rivers=None, basin=None):
             according to D8 directions
     """
     if rivers is None:
-        stream = ifthenelse(accuflux(ldd, 1) >= accuThreshold, boolean(1), boolean(0))
+        stream = pcr.ifthenelse(pcr.accuflux(ldd, 1) >= accuThreshold, pcr.boolean(1), pcr.boolean(0))
     else:
-        stream = boolean(cover(rivers, 0))
+        stream = pcr.boolean(pcr.cover(rivers, 0))
 
-    height_river = ifthenelse(stream, ordinal(dem * 100), 0)
+    height_river = pcr.ifthenelse(stream, pcr.ordinal(dem * 100), 0)
     if basin is None:
-        up_elevation = scalar(subcatchment(ldd, height_river))
+        up_elevation = pcr.scalar(pcr.subcatchment(ldd, height_river))
     else:
-        drainage_surf = ifthen(rivers, accuflux(ldd, 1))
-        weight = 1.0 / scalar(spreadzone(cover(ordinal(drainage_surf), 0), 0, 0))
-        up_elevation = ifthenelse(
+        drainage_surf = pcr.ifthen(rivers, pcr.accuflux(ldd, 1))
+        weight = 1.0 / pcr.scalar(pcr.spreadzone(pcr.cover(pcr.ordinal(drainage_surf), 0), 0, 0))
+        up_elevation = pcr.ifthenelse(
             basin,
-            scalar(subcatchment(ldd, height_river)),
-            scalar(spreadzone(height_river, 0, weight)),
+            pcr.scalar(pcr.subcatchment(ldd, height_river)),
+            pcr.scalar(pcr.spreadzone(height_river, 0, weight)),
         )
         # replace areas outside of basin by a spread zone calculation.
-    hand = max(scalar(ordinal(dem * 100)) - up_elevation, 0) / 100
-    dist = ldddist(ldd, stream, 1)
+    hand = pcr.max(pcr.scalar(pcr.ordinal(dem * 100)) - up_elevation, 0) / 100
+    dist = pcr.ldddist(ldd, stream, 1)
 
     return hand, dist
 
@@ -1138,9 +1140,9 @@ def sCurve(X, a=0.0, b=1.0, c=1.0):
         - result
     """
     try:
-        s = 1.0 / (b + exp(-c * (X - a)))
+        s = 1.0 / (b + pcr.exp(-c * (X - a)))
     except:
-        s = 1.0 / (b + np.exp(-c * (X - a)))
+        s = 1.0 / (b + pcr.exp(-c * (X - a)))
     return s
 
 
@@ -1171,9 +1173,7 @@ def Gzip(fileName, storePath=False, chunkSize=1024 * 1024):
             fileName:   file to be GZipped
             storePath:  destination folder. Default is False, meaning the file will be zipped to its own folder
             chunkSize:  size of chunks to write. If set too large, GZip will fail with memory problems
-        """
-    import gzip
-
+    """
     if not storePath:
         pathName = os.path.split(fileName)[0]
         fileName = os.path.split(fileName)[1]
@@ -1195,36 +1195,6 @@ def Gzip(fileName, storePath=False, chunkSize=1024 * 1024):
 
 
 # These come from GLOFRIS_Utils
-
-
-def Gzip(fileName, storePath=False, chunkSize=1024 * 1024):
-    """
-        Usage: Gzip(fileName, storePath=False, chunksize=1024*1024)
-        Gzip the given file to the given storePath and then remove the file.
-        A chunk size may be selected. Default is 1 megabyte
-        Input:
-            fileName:   file to be GZipped
-            storePath:  destination folder. Default is False, meaning the file will be zipped to its own folder
-            chunkSize:  size of chunks to write. If set too large, GZip will fail with memory problems
-        """
-    if not storePath:
-        pathName = os.path.split(fileName)[0]
-        fileName = os.path.split(fileName)[1]
-        curdir = os.path.curdir
-        os.chdir(pathName)
-    # open files for reading / writing
-    r_file = open(fileName, "rb")
-    w_file = gzip.GzipFile(fileName + ".gz", "wb", 9)
-    dataChunk = r_file.read(chunkSize)
-    while dataChunk:
-        w_file.write(dataChunk)
-        dataChunk = r_file.read(chunkSize)
-    w_file.flush()
-    w_file.close()
-    r_file.close()
-    os.unlink(fileName)  # We don't need the file now
-    if not storePath:
-        os.chdir(curdir)
 
 
 def zipFiles(fileList, fileTarget):
@@ -1264,8 +1234,8 @@ def readMap(fileName, fileFormat):
     resY = geotrans[5]
     cols = ds.RasterXSize
     rows = ds.RasterYSize
-    x = numpy.linspace(originX + resX / 2, originX + resX / 2 + resX * (cols - 1), cols)
-    y = numpy.linspace(originY + resY / 2, originY + resY / 2 + resY * (rows - 1), rows)
+    x = np.linspace(originX + resX / 2, originX + resX / 2 + resX * (cols - 1), cols)
+    y = np.linspace(originY + resY / 2, originY + resY / 2 + resY * (rows - 1), rows)
     # Retrieve raster
     RasterBand = ds.GetRasterBand(1)  # there's only 1 band, starting from 1
     data = RasterBand.ReadAsArray(0, 0, cols, rows)

@@ -246,8 +246,8 @@ def dw_WriteSegmentOrExchangeData(ttime, fname, datablock, boundids, WriteAscii=
     for i in range(boundids - 1):
         totareas = vstack((totareas, datablock))
 
-    artow = array(totareas, dtype=float32).copy()
-    timear = array(ttime, dtype=int32)
+    artow = np.array(totareas, dtype=float32).copy()
+    timear = np.array(ttime, dtype=int32)
     if os.path.isfile(fname):  # append to existing file
         fp = open(fname, "ab")
         tstr = timear.tostring() + artow.tostring()
@@ -308,22 +308,22 @@ def dw_mkDelwaqPointers(ldd, amap, difboun, layers):
         
     """
     # Firts make sure there is at least on outflow in the model
-    ptid = uniqueid(boolean(amap))
-    flowto = downstream(ldd, ptid)
+    ptid = pcr.uniqueid(pcr.boolean(amap))
+    flowto = pcr.downstream(ldd, ptid)
     # Fix if downsteam is no pit.In that case flowto is missing, set it so itself
-    hasflowto = defined(flowto)
-    flowto = ifthenelse(defined(ptid) != hasflowto, ptid, flowto)
+    hasflowto = pcr.defined(flowto)
+    flowto = pcr.ifthenelse(pcr.defined(ptid) != hasflowto, ptid, flowto)
 
     # find all upstream cells (these must be set negative)
-    upbound = upstream(ldd, 1.0)
-    upbound = ifthen(amap > 0, upbound)
+    upbound = pcr.upstream(ldd, 1.0)
+    upbound = pcr.ifthen(amap > 0, upbound)
     # Find the lower boundaries (and pits). These flow to themselves
 
     # make into flatted numpy arrays
-    np_ptid = pcr2numpy(ptid, NaN).flatten()
-    np_flowto = pcr2numpy(flowto, NaN).flatten()
-    np_catchid = pcr2numpy(scalar(amap), -999).flatten()
-    np_upbound = pcr2numpy(upbound, NaN).flatten()
+    np_ptid = pcr.pcr2numpy(ptid, np.nan).flatten()
+    np_flowto = pcr.pcr2numpy(flowto, np.nan).flatten()
+    np_catchid = pcr.pcr2numpy(pcr.scalar(amap), -999).flatten()
+    np_upbound = pcr.pcr2numpy(upbound, np.nan).flatten()
 
     # remove all non-active cells
     np_catchid = np_catchid[np_catchid > 0.0]
@@ -335,7 +335,7 @@ def dw_mkDelwaqPointers(ldd, amap, difboun, layers):
     np_catchid = np_catchid.reshape(len(np_catchid), 1)
     # Now make catchid a list
     np_catchid = np_catchid.flatten()
-    np_catchid = array(int_(np_catchid), dtype="|S").tolist()
+    np_catchid = np.array(int_(np_catchid), dtype="|S").tolist()
     # find all downstream segments (flowto == ptid)
     # now set the flowto points (outflows, usually just one) also to negative
     lowerck = absolute(np_ptid) == absolute(np_flowto)
@@ -361,7 +361,7 @@ def dw_mkDelwaqPointers(ldd, amap, difboun, layers):
     lopt = np_ptid[lowerck]
     lopt = lopt.reshape(len(lopt), 1)
     zerocol = zeros((len(lopt), 1))
-    lowerids = arange(1, len(lopt) + 1) * -1
+    lowerids = np.arange(1, len(lopt) + 1) * -1
     # of = hstack((lopt,lopt * -1.0,zerocol,zerocol))
     lowerids = lowerids.reshape(len(lowerids), 1)
     of = hstack((lopt, lowerids, zerocol, zerocol))
@@ -373,7 +373,7 @@ def dw_mkDelwaqPointers(ldd, amap, difboun, layers):
     start = absolute(lowerids.min()) + 1
     bouns = 1
     for idd in range(1, difboun + 1):
-        bounid = arange(start, (len(cells) + start)).reshape((len(cells), 1)) * -1.0
+        bounid = np.arange(start, (len(cells) + start)).reshape((len(cells), 1)) * -1.0
         if bouns == 1:
             extraboun = hstack((bounid, cells, zzerocol, zzerocol))
         else:
@@ -409,7 +409,7 @@ def dw_pcrToDataBlock(pcrmap):
     Converts a pcrmap to a numpy array.that is flattend and from which
     missing values are removed. Used for generating delwaq data
     """
-    ttar = pcr2numpy(pcrmap, NaN).flatten()
+    ttar = pcr.pcr2numpy(pcrmap, np.nan).flatten()
     ttar = ttar[isfinite(ttar)]
 
     return ttar
@@ -425,7 +425,7 @@ def _readTS(name, ts):
     ff = mname + tsje[len(mname) :]
     ff = ff[:8] + "." + ff[8:]
     name = os.path.dirname(name) + "/" + ff
-    mapje = readmap(name)
+    mapje = pcr.readmap(name)
 
     return mapje
 
@@ -563,10 +563,10 @@ def dw_Write_B2_outlocs(fname, gauges, segs):
     Write an output loc file based on the wflow_gauges
     map.
     """
-    segs = ifthenelse(gauges > 0, segs, NaN)
-    gauges = ifthenelse(gauges > 0, scalar(gauges), NaN)
-    np_gauges = pcr2numpy(gauges, NaN).flatten()
-    np_segs = pcr2numpy(segs, NaN).flatten()
+    segs = pcr.ifthenelse(gauges > 0, segs, np.nan)
+    gauges = pcr.ifthenelse(gauges > 0, pcr.scalar(gauges), np.nan)
+    np_gauges = pcr.pcr2numpy(gauges, np.nan).flatten()
+    np_segs = pcr.pcr2numpy(segs, np.nan).flatten()
 
     np_gauges = np_gauges[isfinite(np_gauges)]
     np_segs = np_segs[isfinite(np_segs)]
@@ -593,8 +593,8 @@ def dw_GetGridDimensions(ptid_map):
     - ptid_map : PCRaster map with unique id's
     """
     # find number of cells in m and n directions
-    zero_map = scalar(ptid_map) * 0.0
-    allx = dw_pcrToDataBlock(xcoordinate(boolean(cover(zero_map + 1, 1))))
+    zero_map = pcr.scalar(ptid_map) * 0.0
+    allx = dw_pcrToDataBlock(pcr.xcoordinate(pcr.boolean(pcr.cover(zero_map + 1, 1))))
     i = 0
     diff = round(builtins.abs(allx[i] - allx[i + 1]), 5)
     diff_next = diff
@@ -618,18 +618,18 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map):
     """
     # Get coordinates
 
-    zero_map = scalar(ptid_map) * 0.0
-    setglobaloption("coorul")  # upper-left cell corners
-    xxul = pcr2numpy(xcoordinate(boolean(cover(zero_map + 1, 1))), -1)
-    yyul = pcr2numpy(ycoordinate(boolean(cover(zero_map + 1, 1))), -1)
-    setglobaloption("coorlr")  # lower-right cell corners
-    xxlr = pcr2numpy(xcoordinate(boolean(cover(zero_map + 1, 1))), -1)
-    yylr = pcr2numpy(ycoordinate(boolean(cover(zero_map + 1, 1))), -1)
+    zero_map = pcr.scalar(ptid_map) * 0.0
+    pcr.setglobaloption("coorul")  # upper-left cell corners
+    xxul = pcr.pcr2numpy(pcr.xcoordinate(pcr.boolean(pcr.cover(zero_map + 1, 1))), -1)
+    yyul = pcr.pcr2numpy(pcr.ycoordinate(pcr.boolean(pcr.cover(zero_map + 1, 1))), -1)
+    pcr.setglobaloption("coorlr")  # lower-right cell corners
+    xxlr = pcr.pcr2numpy(pcr.xcoordinate(pcr.boolean(pcr.cover(zero_map + 1, 1))), -1)
+    yylr = pcr.pcr2numpy(pcr.ycoordinate(pcr.boolean(pcr.cover(zero_map + 1, 1))), -1)
 
     # Convert pcr maps to numpy arrays
 
-    np_ptid = pcr2numpy(ptid_map, -1)
-    np_ldd = pcr2numpy(ldd_map, -1)
+    np_ptid = pcr.pcr2numpy(ptid_map, -1)
+    np_ldd = pcr.pcr2numpy(ldd_map, -1)
     np_ldd[np_ldd == 255] = 0
 
     # Number of segments in horizontal dimension
@@ -951,18 +951,18 @@ def dw_WriteBndFile(fname, ptid_map, pointer, pointer_labels, areas, source_ids)
     A unique boundary is generated for each outflow.
     """
     buff = ""
-    np_ptid = pcr2numpy(ptid_map, -1)
+    np_ptid = pcr.pcr2numpy(ptid_map, -1)
     area_ids = unique(areas)
 
     # Upper-left and lower-right Coordinates
 
-    zero_map = scalar(ptid_map) * 0.0
-    setglobaloption("coorul")  # upper-left cell corners
-    xxul = pcr2numpy(xcoordinate(boolean(cover(zero_map + 1, 1))), -1)
-    yyul = pcr2numpy(ycoordinate(boolean(cover(zero_map + 1, 1))), -1)
-    setglobaloption("coorlr")  # lower-right cell corners
-    xxlr = pcr2numpy(xcoordinate(boolean(cover(zero_map + 1, 1))), -1)
-    yylr = pcr2numpy(ycoordinate(boolean(cover(zero_map + 1, 1))), -1)
+    zero_map = pcr.scalar(ptid_map) * 0.0
+    pcr.setglobaloption("coorul")  # upper-left cell corners
+    xxul = pcr.pcr2numpy(pcr.xcoordinate(pcr.boolean(pcr.cover(zero_map + 1, 1))), -1)
+    yyul = pcr.pcr2numpy(pcr.ycoordinate(pcr.boolean(pcr.cover(zero_map + 1, 1))), -1)
+    pcr.setglobaloption("coorlr")  # lower-right cell corners
+    xxlr = pcr.pcr2numpy(pcr.xcoordinate(pcr.boolean(pcr.cover(zero_map + 1, 1))), -1)
+    yylr = pcr.pcr2numpy(pcr.ycoordinate(pcr.boolean(pcr.cover(zero_map + 1, 1))), -1)
 
     # Map dimensions
 
@@ -1331,15 +1331,15 @@ def main():
         + "/"
         + configget(config, "model", "wflow_subcatch", "/staticmaps/wflow_subcatch.map")
     )
-    setclone(wflow_subcatch)
-    amap = scalar(readmap(caseId + "/" + areamap))
-    modelmap = readmap(wflow_subcatch)
-    ldd = readmap(
+    pcr.setclone(wflow_subcatch)
+    amap = pcr.scalar(pcr.readmap(caseId + "/" + areamap))
+    modelmap = pcr.readmap(wflow_subcatch)
+    ldd = pcr.readmap(
         caseId
         + "/"
         + configget(config, "model", "wflow_ldd", "/staticmaps/wflow_ldd.map")
     )
-    gauges = readmap(
+    gauges = pcr.readmap(
         caseId
         + "/"
         + configget(config, "model", "wflow_gauges", "/staticmaps/wflow_gauges.map")
@@ -1351,17 +1351,17 @@ def main():
     rl_map_file = caseId + "/" + runId + "/outsum/rl.map"
     if not os.path.exists(rl_map_file):
         rl_map_file = caseId + "/" + runId + "/outsum/reallength.map"
-    cellsize = float(pcr2numpy(readmap(rl_map_file), NaN)[0, 0])
+    cellsize = float(pcr.pcr2numpy(pcr.readmap(rl_map_file), np.nan)[0, 0])
     logger.info("Cellsize model: " + str(cellsize))
 
     # Limit areas map to modelmap (subcatchments)
-    amap = ifthen(modelmap > 0, amap)
-    ldd = ifthen(amap > 0, ldd)
-    report(amap, dwdir + "/debug/area.map")
-    report(ldd, dwdir + "/debug/ldd.map")
-    report(modelmap, dwdir + "/debug/modelmap.map")
+    amap = pcr.ifthen(modelmap > 0, amap)
+    ldd = pcr.ifthen(amap > 0, ldd)
+    pcr.report(amap, dwdir + "/debug/area.map")
+    pcr.report(ldd, dwdir + "/debug/ldd.map")
+    pcr.report(modelmap, dwdir + "/debug/modelmap.map")
 
-    thecells = pcr2numpy(modelmap, NaN).flatten()
+    thecells = pcr.pcr2numpy(modelmap, np.nan).flatten()
     nrcells = len(thecells)
     nractcells = len(thecells[isfinite(thecells)])
 
@@ -1369,14 +1369,14 @@ def main():
     logger.info("Total number of used gridcells: " + str(nractcells))
 
     # find all upstream cells (these must be set negative)
-    upbound = upstream(ldd, 1.0)
-    upbound = ifthen(upbound == 0, upbound)
-    upar = pcr2numpy(scalar(upbound), NaN).flatten()
+    upbound = pcr.upstream(ldd, 1.0)
+    upbound = pcr.ifthen(upbound == 0, upbound)
+    upar = pcr.pcr2numpy(pcr.scalar(upbound), np.nan).flatten()
     logger.info(
         "Number of upstream cells (without upstream connection): "
         + str(len(upar[isfinite(upar)]))
     )
-    report(upbound, dwdir + "/debug/upbound.map")
+    pcr.report(upbound, dwdir + "/debug/upbound.map")
 
     if Write_Structure:
         # get pointer an boundaries from ldd, subcatch and defined boundaries (P only now)
@@ -1389,7 +1389,7 @@ def main():
         save(dwdir + "/debug/areas.npy", areas)
 
         # Write id maps to debug area
-        report(ptid, dwdir + "/debug/ptid.map")
+        pcr.report(ptid, dwdir + "/debug/ptid.map")
         logger.info("Unique areas: " + str(unique(areas)))
         # logger.info("Number of area inflows: " + str(len(areas) * boundids))
         logger.info("Number of segments: " + str(len(segments.flatten())))
@@ -1421,8 +1421,8 @@ def main():
         )
         dw_Write_B2_outlocs(dwdir + "/includes_deltashell/B2_outlocs.inc", gauges, ptid)
 
-    internalflowwidth = readmap(caseId + "/" + runId + "/outsum/Bw.map")
-    internalflowlength = readmap(caseId + "/" + runId + "/outsum/DCL.map")
+    internalflowwidth = pcr.readmap(caseId + "/" + runId + "/outsum/Bw.map")
+    internalflowlength = pcr.readmap(caseId + "/" + runId + "/outsum/DCL.map")
     surface_map = internalflowwidth * internalflowlength
     surface_block = dw_pcrToDataBlock(surface_map)
     logger.info("Writing surface.dat. Nr of points: " + str(size(surface_block)))
@@ -1452,7 +1452,7 @@ def main():
     dw_WriteBndFile(comroot, ptid, pointer, pointer_labels, areas, sourcesMap)
 
     # mask to filter out inactive segments
-    zero_map = 0.0 * scalar(ptid)
+    zero_map = 0.0 * pcr.scalar(ptid)
 
     # Open nc outputmaps file
     if nc_outmap_file is not None:

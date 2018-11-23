@@ -1,8 +1,11 @@
 __author__ = "schelle"
 
+import datetime
+import os
 import unittest
+
+import numpy as np
 import wflow.wflow_hbv as wf
-import os, datetime
 
 """
 
@@ -56,14 +59,14 @@ class MyTest(unittest.TestCase):
 
         # nore read the csv results acn check of they match the first run
         # Sum should be approx c 4.569673676
-        my_data = wf.genfromtxt(
+        my_data = np.genfromtxt(
             os.path.join(caseName, runId, "watbal.csv"), delimiter=","
         )
 
         print("Checking  water budget ....")
         self.assertAlmostEqual(0.0011249125109316083, my_data[:, 2].sum(), places=4)
 
-        my_data = wf.genfromtxt(os.path.join(caseName, runId, "run.csv"), delimiter=",")
+        my_data = np.genfromtxt(os.path.join(caseName, runId, "run.csv"), delimiter=",")
         print("Checking  discharge ....")
         self.assertAlmostEqual(1811.1795542081197, my_data[:, 2].mean(), places=4)
 

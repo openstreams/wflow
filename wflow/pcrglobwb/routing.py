@@ -23,8 +23,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+import os
 
-from pcraster.framework import *
+import pcraster as pcr
 from wflow.wf_DynamicFramework import configget
 from wflow.wflow_lib import getgridparams
 
@@ -2424,7 +2425,7 @@ class Routing(object):
                     self.netcdfObj.data2NetCDF(
                         str(self.outNCDir) + "/" + str(var) + "_dailyTot.nc",
                         var,
-                        pcr2numpy(self.__getattribute__(var), vos.MV),
+                        pcr.pcr2numpy(self.__getattribute__(var), vos.MV),
                         timeStamp,
                         timestepPCR - 1,
                     )
@@ -2447,7 +2448,7 @@ class Routing(object):
                         self.netcdfObj.data2NetCDF(
                             str(self.outNCDir) + "/" + str(var) + "_monthTot.nc",
                             var,
-                            pcr2numpy(self.__getattribute__(var + "MonthTot"), vos.MV),
+                            pcr.pcr2numpy(self.__getattribute__(var + "MonthTot"), vos.MV),
                             timeStamp,
                             currTimeStep.monthIdx - 1,
                         )
@@ -2472,7 +2473,7 @@ class Routing(object):
                         self.netcdfObj.data2NetCDF(
                             str(self.outNCDir) + "/" + str(var) + "_monthAvg.nc",
                             var,
-                            pcr2numpy(self.__getattribute__(var + "MonthAvg"), vos.MV),
+                            pcr.pcr2numpy(self.__getattribute__(var + "MonthAvg"), vos.MV),
                             timeStamp,
                             currTimeStep.monthIdx - 1,
                         )
@@ -2485,7 +2486,7 @@ class Routing(object):
                         self.netcdfObj.data2NetCDF(
                             str(self.outNCDir) + "/" + str(var) + "_monthEnd.nc",
                             var,
-                            pcr2numpy(self.__getattribute__(var), vos.MV),
+                            pcr.pcr2numpy(self.__getattribute__(var), vos.MV),
                             timeStamp,
                             currTimeStep.monthIdx - 1,
                         )
@@ -2508,7 +2509,7 @@ class Routing(object):
                         self.netcdfObj.data2NetCDF(
                             str(self.outNCDir) + "/" + str(var) + "_annuaTot.nc",
                             var,
-                            pcr2numpy(self.__getattribute__(var + "AnnuaTot"), vos.MV),
+                            pcr.pcr2numpy(self.__getattribute__(var + "AnnuaTot"), vos.MV),
                             timeStamp,
                             currTimeStep.annuaIdx - 1,
                         )
@@ -2532,7 +2533,7 @@ class Routing(object):
                         self.netcdfObj.data2NetCDF(
                             str(self.outNCDir) + "/" + str(var) + "_annuaAvg.nc",
                             var,
-                            pcr2numpy(self.__getattribute__(var + "AnnuaAvg"), vos.MV),
+                            pcr.pcr2numpy(self.__getattribute__(var + "AnnuaAvg"), vos.MV),
                             timeStamp,
                             currTimeStep.annuaIdx - 1,
                         )
@@ -2545,7 +2546,7 @@ class Routing(object):
                         self.netcdfObj.data2NetCDF(
                             str(self.outNCDir) + "/" + str(var) + "_annuaEnd.nc",
                             var,
-                            pcr2numpy(self.__getattribute__(var), vos.MV),
+                            pcr.pcr2numpy(self.__getattribute__(var), vos.MV),
                             timeStamp,
                             currTimeStep.annuaIdx - 1,
                         )

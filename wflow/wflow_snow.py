@@ -58,6 +58,7 @@ wflow_snow [-h][-v level][-F runinfofile][-L logfile][-C casename][-R runId]
 import getopt
 import os.path
 
+import pcraster.framework
 from wflow.wf_DynamicFramework import *
 
 wflow = "wflow_pack: "
@@ -91,10 +92,10 @@ def usage(*args):
     sys.exit(0)
 
 
-class WflowModel(DynamicModel):
+class WflowModel(pcraster.framework.DynamicModel):
     def __init__(self, cloneMap, Dir, RunDir, configfile):
-        DynamicModel.__init__(self)
-        setclone(Dir + "/staticmaps/" + cloneMap)
+        pcraster.framework.DynamicModel.__init__(self)
+        pcr.setclone(Dir + "/staticmaps/" + cloneMap)
         self.runId = RunDir
         self.caseName = Dir
         self.Dir = Dir
@@ -173,10 +174,10 @@ class WflowModel(DynamicModel):
         )
         if os.path.exists(mapname):
             self.logger.info("reading map parameter file: " + mapname)
-            rest = cover(readmap(mapname), default)
+            rest = pcr.cover(pcr.readmap(mapname), default)
         else:
             if os.path.isfile(pathtotbl):
-                rest = cover(lookupscalar(pathtotbl, landuse, subcatch, soil), default)
+                rest = pcr.cover(pcr.lookupscalar(pathtotbl, landuse, subcatch, soil), default)
                 self.logger.info("Creating map from table: " + pathtotbl)
             else:
                 self.logger.warning(
@@ -185,7 +186,7 @@ class WflowModel(DynamicModel):
                     + ") returning default value: "
                     + str(default)
                 )
-                rest = scalar(default)
+                rest = pcr.scalar(default)
 
         return rest
 
@@ -202,8 +203,8 @@ class WflowModel(DynamicModel):
             self.logger.info("Saving initial conditions over start conditions...")
             self.wf_suspend(self.SaveDir + "/instate/")
 
-        report(self.sumprecip, self.SaveDir + "/outsum/sumprecip.map")
-        report(self.sumtemp, self.SaveDir + "/outsum/sumtemp.map")
+        pcr.report(self.sumprecip, self.SaveDir + "/outsum/sumprecip.map")
+        pcr.report(self.sumtemp, self.SaveDir + "/outsum/sumtemp.map")
 
     def initial(self):
 
@@ -214,9 +215,9 @@ class WflowModel(DynamicModel):
     """
         global statistics
 
-        setglobaloption("unittrue")
+        pcr.setglobaloption("unittrue")
 
-        self.thestep = scalar(0)
+        self.thestep = pcr.scalar(0)
         self.setQuiet(True)
         self.precipTss = (
             "../intss/P.tss"
@@ -246,33 +247,33 @@ class WflowModel(DynamicModel):
         self.TEMP_style = int(configget(self.config, "model", "TEMP_style", "1"))
 
         # 2: Input base maps ########################################################
-        subcatch = ordinal(
-            readmap(self.Dir + "/staticmaps/wflow_subcatch.map")
+        subcatch = pcr.ordinal(
+            pcr.readmap(self.Dir + "/staticmaps/wflow_subcatch.map")
         )  # Determines the area of calculations (all cells > 0)
-        subcatch = ifthen(subcatch > 0, subcatch)
+        subcatch = pcr.ifthen(subcatch > 0, subcatch)
         if self.sCatch > 0:
-            subcatch = ifthen(subcatch == sCatch, subcatch)
+            subcatch = pcr.ifthen(subcatch == sCatch, subcatch)
 
-        self.Altitude = readmap(self.Dir + "/staticmaps/wflow_dem") * scalar(
-            defined(subcatch)
+        self.Altitude = pcr.readmap(self.Dir + "/staticmaps/wflow_dem") * pcr.scalar(
+            pcr.defined(subcatch)
         )  #: The digital elevation map (DEM)
-        self.TopoId = readmap(
+        self.TopoId = pcr.readmap(
             self.Dir + "/staticmaps/wflow_subcatch.map"
         )  #: Map define the area over which the calculations are done (mask)
-        self.TopoLdd = readmap(
+        self.TopoLdd = pcr.readmap(
             self.Dir + "/staticmaps/wflow_ldd.map"
         )  #: The local drinage definition map (ldd)
         # read landuse and soilmap and make sure there are no missing points related to the
         # subcatchment map. Currently sets the lu and soil type  type to 1
-        self.LandUse = readmap(
+        self.LandUse = pcr.readmap(
             self.Dir + "/staticmaps/wflow_landuse.map"
         )  #: Map with lan-use/cover classes
-        self.LandUse = cover(self.LandUse, nominal(ordinal(subcatch) > 0))
-        self.Soil = readmap(
+        self.LandUse = pcr.cover(self.LandUse, pcr.nominal(pcr.ordinal(subcatch) > 0))
+        self.Soil = pcr.readmap(
             self.Dir + "/staticmaps/wflow_soil.map"
         )  #: Map with soil classes
-        self.Soil = cover(self.Soil, nominal(ordinal(subcatch) > 0))
-        self.OutputLoc = readmap(
+        self.Soil = pcr.cover(self.Soil, pcr.nominal(pcr.ordinal(subcatch) > 0))
+        self.OutputLoc = pcr.readmap(
             self.Dir + "/staticmaps/wflow_gauges.map"
         )  #: Map with locations of output gauge(s)
 
@@ -282,14 +283,14 @@ class WflowModel(DynamicModel):
         )
 
         if self.scalarInput:
-            self.gaugesMap = readmap(
+            self.gaugesMap = pcr.readmap(
                 self.Dir + "/staticmaps/wflow_mgauges.map"
             )  #: Map with locations of rainfall/evap/temp gauge(s). Only needed if the input to the model is not in maps
-        self.OutputId = readmap(
+        self.OutputId = pcr.readmap(
             self.Dir + "/staticmaps/wflow_subcatch.map"
         )  # location of subcatchment
 
-        self.ZeroMap = 0.0 * scalar(subcatch)  # map with only zero's
+        self.ZeroMap = 0.0 * pcr.scalar(subcatch)  # map with only zero's
 
         # 3: Input time series ###################################################
         self.Rain_ = self.Dir + "/inmaps/P"  #: timeseries for rainfall
@@ -297,8 +298,8 @@ class WflowModel(DynamicModel):
 
         # Set static initial values here #########################################
 
-        self.Latitude = ycoordinate(boolean(self.Altitude))
-        self.Longitude = xcoordinate(boolean(self.Altitude))
+        self.Latitude = pcr.ycoordinate(pcr.boolean(self.Altitude))
+        self.Longitude = pcr.xcoordinate(pcr.boolean(self.Altitude))
 
         self.logger.info("Linking parameters to landuse, catchment and soil...")
 
@@ -379,10 +380,10 @@ class WflowModel(DynamicModel):
         self.xl, self.yl, self.reallength = pcrut.detRealCellLength(
             self.ZeroMap, sizeinmetres
         )
-        self.Slope = slope(self.Altitude)
-        self.Slope = ifthen(
-            boolean(self.TopoId),
-            max(0.001, self.Slope * celllength() / self.reallength),
+        self.Slope = pcr.slope(self.Altitude)
+        self.Slope = pcr.ifthen(
+            pcr.boolean(self.TopoId),
+            pcr.max(0.001, self.Slope * pcr.celllength() / self.reallength),
         )
 
         # Multiply parameters with a factor (for calibration etc) -P option in command line
@@ -395,13 +396,13 @@ class WflowModel(DynamicModel):
 
         # Initializing of variables
         self.logger.info("Initializing of model variables..")
-        self.TopoLdd = lddmask(self.TopoLdd, boolean(self.TopoId))
-        catchmentcells = maptotal(scalar(self.TopoId))
+        self.TopoLdd = pcr.lddmask(self.TopoLdd, pcr.boolean(self.TopoId))
+        catchmentcells = pcr.maptotal(pcr.scalar(self.TopoId))
 
         # Used to seperate output per LandUse/management classes
         # OutZones = self.LandUse
-        # report(self.reallength,"rl.map")
-        # report(catchmentcells,"kk.map")
+        # pcr.report(self.reallength,"rl.map")
+        # pcr.report(catchmentcells,"kk.map")
         self.QMMConv = self.timestepsecs / (
             self.reallength * self.reallength * 0.001
         )  # m3/s --> mm
@@ -414,13 +415,13 @@ class WflowModel(DynamicModel):
 
         # Save some summary maps
         self.logger.info("Saving summary maps...")
-        report(self.Cfmax, self.Dir + "/" + self.runId + "/outsum/Cfmax.map")
-        report(self.TTI, self.Dir + "/" + self.runId + "/outsum/TTI.map")
-        report(self.TT, self.Dir + "/" + self.runId + "/outsum/TT.map")
-        report(self.WHC, self.Dir + "/" + self.runId + "/outsum/WHC.map")
-        report(self.xl, self.Dir + "/" + self.runId + "/outsum/xl.map")
-        report(self.yl, self.Dir + "/" + self.runId + "/outsum/yl.map")
-        report(self.reallength, self.Dir + "/" + self.runId + "/outsum/rl.map")
+        pcr.report(self.Cfmax, self.Dir + "/" + self.runId + "/outsum/Cfmax.map")
+        pcr.report(self.TTI, self.Dir + "/" + self.runId + "/outsum/TTI.map")
+        pcr.report(self.TT, self.Dir + "/" + self.runId + "/outsum/TT.map")
+        pcr.report(self.WHC, self.Dir + "/" + self.runId + "/outsum/WHC.map")
+        pcr.report(self.xl, self.Dir + "/" + self.runId + "/outsum/xl.map")
+        pcr.report(self.yl, self.Dir + "/" + self.runId + "/outsum/yl.map")
+        pcr.report(self.reallength, self.Dir + "/" + self.runId + "/outsum/rl.map")
 
         self.SaveDir = self.Dir + "/" + self.runId + "/"
         self.logger.info("Starting Dynamic run...")
@@ -430,8 +431,8 @@ class WflowModel(DynamicModel):
 
         if self.reinit == 1:
             self.logger.info("Setting initial conditions to default (zero!)")
-            self.FreeWater = cover(0.0)  #: Water on surface (state variable [mm])
-            self.DrySnow = cover(0.0)  #: Snow amount (state variable [mm])
+            self.FreeWater = pcr.cover(0.0)  #: Water on surface (state variable [mm])
+            self.DrySnow = pcr.cover(0.0)  #: Snow amount (state variable [mm])
         else:
             self.wf_resume(self.Dir + "/instate/")
 
@@ -448,20 +449,20 @@ class WflowModel(DynamicModel):
         if self.scalarInput:
             # gaugesmap not yet finished. Should be a map with cells that
             # hold the gauges with an unique id
-            Precipitation = timeinputscalar(self.precipTss, self.gaugesMap)
-            # Seepage = cover(timeinputscalar(self.SeepageTss,self.SeepageLoc),0)
+            Precipitation = pcr.timeinputscalar(self.precipTss, self.gaugesMap)
+            # Seepage = pcr.cover(pcr.timeinputscalar(self.SeepageTss,self.SeepageLoc),0)
             Precipitation = pcrut.interpolategauges(Precipitation, self.interpolMethod)
             # self.report(PotEvaporation,'p')
-            Temperature = timeinputscalar(self.tempTss, self.gaugesMap)
+            Temperature = pcr.timeinputscalar(self.tempTss, self.gaugesMap)
             Temperature = pcrut.interpolategauges(Temperature, self.interpolMethod)
             Temperature = Temperature + self.TempCor
         else:
-            Precipitation = cover(self.readmap(self.Rain_, 0.0, self.P_style), 0.0)
-            # Inflow=cover(self.readmap(self.Inflow),0)
+            Precipitation = pcr.cover(self.readmap(self.Rain_, 0.0, self.P_style), 0.0)
+            # Inflow=pcr.cover(self.readmap(self.Inflow),0)
             # These ar ALWAYS 0 at present!!!
             Temperature = self.readmap(self.Temp_, 0.0, self.TEMP_style)
             Temperature = Temperature + self.TempCor
-            # Inflow=spatial(scalar(0.0))
+            # Inflow=pcr.spatial(pcr.scalar(0.0))
 
         # Multiply input parameters with a factor (for calibration etc) -p option in command line
         for k, v in multdynapars.items():
@@ -470,13 +471,13 @@ class WflowModel(DynamicModel):
             exec(estr)
 
         # Snow pack modelling degree day methods
-        RainFrac = ifthenelse(
+        RainFrac = pcr.ifthenelse(
             1.0 * self.TTI == 0.0,
-            ifthenelse(Temperature <= self.TT, scalar(0.0), scalar(1.0)),
-            min((Temperature - (self.TT - self.TTI / 2.0)) / self.TTI, scalar(1.0)),
+            pcr.ifthenelse(Temperature <= self.TT, pcr.scalar(0.0), pcr.scalar(1.0)),
+            pcr.min((Temperature - (self.TT - self.TTI / 2.0)) / self.TTI, pcr.scalar(1.0)),
         )
-        RainFrac = max(
-            RainFrac, scalar(0.0)
+        RainFrac = pcr.max(
+            RainFrac, pcr.scalar(0.0)
         )  # fraction of precipitation which falls as rain
         SnowFrac = 1.0 - RainFrac  # fraction of precipitation which falls as snow
         Precipitation = (
@@ -485,26 +486,26 @@ class WflowModel(DynamicModel):
 
         SnowFall = SnowFrac * Precipitation  #: snowfall depth
         RainFall = RainFrac * Precipitation  #: rainfall depth
-        PotSnowMelt = ifthenelse(
-            Temperature > self.TT, self.Cfmax * (Temperature - self.TT), scalar(0.0)
+        PotSnowMelt = pcr.ifthenelse(
+            Temperature > self.TT, self.Cfmax * (Temperature - self.TT), pcr.scalar(0.0)
         )  # Potential snow melt, based on temperature
-        PotRefreezing = ifthenelse(
+        PotRefreezing = pcr.ifthenelse(
             Temperature < self.TT, self.Cfmax * self.CFR * (self.TT - Temperature), 0.0
         )  # Potential refreezing, based on temperature
 
         # PotSnowMelt=self.FoCfmax*PotSnowMelt     	#correction for forest zones 0.6)
         # PotRefreezing=self.FoCfmax*PotRefreezing
-        Refreezing = ifthenelse(
-            Temperature < self.TT, min(PotRefreezing, self.FreeWater), 0.0
+        Refreezing = pcr.ifthenelse(
+            Temperature < self.TT, pcr.min(PotRefreezing, self.FreeWater), 0.0
         )  # actual refreezing
-        SnowMelt = min(PotSnowMelt, self.DrySnow)  # actual snow melt
+        SnowMelt = pcr.min(PotSnowMelt, self.DrySnow)  # actual snow melt
         self.DrySnow = (
             self.DrySnow + SnowFall + Refreezing - SnowMelt
         )  # dry snow content
         self.FreeWater = self.FreeWater - Refreezing  # free water content in snow
         MaxFreeWater = self.DrySnow * self.WHC
         self.FreeWater = self.FreeWater + SnowMelt + RainFall
-        InSoil = max(
+        InSoil = pcr.max(
             self.FreeWater - MaxFreeWater, 0.0
         )  # abundant water in snow pack which goes into soil
         self.FreeWater = self.FreeWater - InSoil
@@ -514,7 +515,7 @@ class WflowModel(DynamicModel):
         if self.MassWasting:
             # Masswasting of snow
             # 5.67 = tan 80 graden
-            SnowFluxFrac = min(0.5, self.Slope / 5.67) * min(
+            SnowFluxFrac = pcr.min(0.5, self.Slope / 5.67) * pcr.min(
                 1.0, self.DrySnow / MaxSnowPack
             )
             MaxFlux = SnowFluxFrac * self.DrySnow
