@@ -1192,7 +1192,9 @@ class Groundwater(object):
                         self.netcdfObj.data2NetCDF(
                             str(self.outNCDir) + "/" + str(var) + "_monthTot.nc",
                             var,
-                            pcr.pcr2numpy(self.__getattribute__(var + "MonthTot"), vos.MV),
+                            pcr.pcr2numpy(
+                                self.__getattribute__(var + "MonthTot"), vos.MV
+                            ),
                             timeStamp,
                             currTimeStep.monthIdx - 1,
                         )
@@ -1217,7 +1219,9 @@ class Groundwater(object):
                         self.netcdfObj.data2NetCDF(
                             str(self.outNCDir) + "/" + str(var) + "_monthAvg.nc",
                             var,
-                            pcr.pcr2numpy(self.__getattribute__(var + "MonthAvg"), vos.MV),
+                            pcr.pcr2numpy(
+                                self.__getattribute__(var + "MonthAvg"), vos.MV
+                            ),
                             timeStamp,
                             currTimeStep.monthIdx - 1,
                         )
@@ -1253,7 +1257,9 @@ class Groundwater(object):
                         self.netcdfObj.data2NetCDF(
                             str(self.outNCDir) + "/" + str(var) + "_annuaTot.nc",
                             var,
-                            pcr.pcr2numpy(self.__getattribute__(var + "AnnuaTot"), vos.MV),
+                            pcr.pcr2numpy(
+                                self.__getattribute__(var + "AnnuaTot"), vos.MV
+                            ),
                             timeStamp,
                             currTimeStep.annuaIdx - 1,
                         )
@@ -1277,7 +1283,9 @@ class Groundwater(object):
                         self.netcdfObj.data2NetCDF(
                             str(self.outNCDir) + "/" + str(var) + "_annuaAvg.nc",
                             var,
-                            pcr.pcr2numpy(self.__getattribute__(var + "AnnuaAvg"), vos.MV),
+                            pcr.pcr2numpy(
+                                self.__getattribute__(var + "AnnuaAvg"), vos.MV
+                            ),
                             timeStamp,
                             currTimeStep.annuaIdx - 1,
                         )

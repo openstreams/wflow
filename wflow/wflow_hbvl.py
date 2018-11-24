@@ -349,7 +349,9 @@ class WflowModel(pcraster.framework.DynamicModel):
             os.path.join(self.Dir, wflow_subcatch), 0.0, fail=True
         )  # location of subcatchment
 
-        self.ZeroMap = 0.0 * pcr.scalar(pcr.defined(self.Altitude))  # map with only zero's
+        self.ZeroMap = 0.0 * pcr.scalar(
+            pcr.defined(self.Altitude)
+        )  # map with only zero's
 
         # 3: Input time series ###################################################
         self.P_mapstack = self.Dir + configget(
@@ -647,9 +649,12 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         RainFrac = pcr.ifthenelse(
             1.0 * self.TTI == 0.0,
-            pcr.ifthenelse(self.Temperature <= self.TT, pcr.scalar(0.0), pcr.scalar(1.0)),
+            pcr.ifthenelse(
+                self.Temperature <= self.TT, pcr.scalar(0.0), pcr.scalar(1.0)
+            ),
             pcr.min(
-                (self.Temperature - (self.TT - self.TTI / 2.0)) / self.TTI, pcr.scalar(1.0)
+                (self.Temperature - (self.TT - self.TTI / 2.0)) / self.TTI,
+                pcr.scalar(1.0),
             ),
         )
         RainFrac = pcr.max(
