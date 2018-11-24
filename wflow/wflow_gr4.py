@@ -280,7 +280,9 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.LandUse = pcr.cover(self.LandUse, pcr.nominal(pcr.ordinal(subcatch) > 0))
         self.Soil = pcr.readmap(self.Dir + wflow_soil)  #: Map with soil classes
         self.Soil = pcr.cover(self.Soil, pcr.nominal(pcr.ordinal(subcatch) > 0))
-        self.OutputId = pcr.readmap(self.Dir + wflow_subcatch)  # location of subcatchment
+        self.OutputId = pcr.readmap(
+            self.Dir + wflow_subcatch
+        )  # location of subcatchment
 
         # hourly time step
         self.dt = int(configget(self.config, "gr4", "dt", "1"))

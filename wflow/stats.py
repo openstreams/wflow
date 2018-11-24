@@ -486,7 +486,9 @@ def get_number_of_sign_changes(Avalues, Bvalues, N="", NoData=NoDataVal):
             Bvalues[i] != NoData and not np.isnan(Avalues[i])
         ):
             if Avalues[i] != Bvalues[i]:
-                curr_sign = (Avalues[i] - Bvalues[i]) / math.fabs(Avalues[i] - Bvalues[i])
+                curr_sign = (Avalues[i] - Bvalues[i]) / math.fabs(
+                    Avalues[i] - Bvalues[i]
+                )
             else:
                 curr_sign = sign
             if curr_sign != sign:

@@ -141,7 +141,9 @@ class WflowModel(pcraster.framework.DynamicModel):
         #: pcraster option to calculate with units or cells. Not really an issue
         #: in this model but always good to keep in mind.
         pcr.setglobaloption("unittrue")
-        pcr.setglobaloption("radians")  # Needed as W3RA was originally written in matlab
+        pcr.setglobaloption(
+            "radians"
+        )  # Needed as W3RA was originally written in matlab
 
         # SET GLBOAL PARAMETER VALUES (however not used in original script)
         # Nhru=2
@@ -519,16 +521,28 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         # conversion daylength
         pcr.setglobaloption("radians")
-        m = pcr.scalar(1) - math.tan((self.latitude * pcr.scalar(math.pi) / pcr.scalar(180))) * math.tan(
+        m = pcr.scalar(1) - math.tan(
+            (self.latitude * pcr.scalar(math.pi) / pcr.scalar(180))
+        ) * math.tan(
             (
                 (pcr.scalar(23.439) * pcr.scalar(math.pi) / pcr.scalar(180))
-                * cos(pcr.scalar(2) * pcr.scalar(math.pi) * (doy + pcr.scalar(9)) / pcr.scalar(365.25))
+                * cos(
+                    pcr.scalar(2)
+                    * pcr.scalar(math.pi)
+                    * (doy + pcr.scalar(9))
+                    / pcr.scalar(365.25)
+                )
             )
         )
         self.fday = pcr.min(
             pcr.max(
                 pcr.scalar(0.02),
-                pcr.scalar(pcr.acos(pcr.scalar(1) - pcr.min(pcr.max(pcr.scalar(0), m), pcr.scalar(2))))
+                pcr.scalar(
+                    pcr.acos(
+                        pcr.scalar(1)
+                        - pcr.min(pcr.max(pcr.scalar(0), m), pcr.scalar(2))
+                    )
+                )
                 / pcr.scalar(math.pi),
             ),
             pcr.scalar(1),
@@ -548,7 +562,8 @@ class WflowModel(pcraster.framework.DynamicModel):
             Ta = self.TMIN + pcr.scalar(0.75) * (self.TMAX - self.TMIN)  # T in degC
             T24 = self.TMIN + pcr.scalar(0.5) * (self.TMAX - self.TMIN)  # T in degC
             pex = pcr.min(
-                pcr.scalar(17.27) * (self.TMIN) / (pcr.scalar(237.3) + self.TMIN), pcr.scalar(10)
+                pcr.scalar(17.27) * (self.TMIN) / (pcr.scalar(237.3) + self.TMIN),
+                pcr.scalar(10),
             )  # T in degC
             pe = pcr.min(
                 pcr.scalar(610.8) * (pcr.exp(pex)), pcr.scalar(10000.0)
@@ -597,14 +612,20 @@ class WflowModel(pcraster.framework.DynamicModel):
         # for i=1:par.Nhru
         fwater1 = pcr.min(0.005, (0.007 * self.Sr ** 0.75))
         fwater2 = pcr.min(0.005, (0.007 * self.Sr ** 0.75))
-        fsat1 = pcr.min(1.0, pcr.max(pcr.min(0.005, 0.007 * self.Sr ** 0.75), Sgfree / self.Sgref))
-        fsat2 = pcr.min(1.0, pcr.max(pcr.min(0.005, 0.007 * self.Sr ** 0.75), Sgfree / self.Sgref))
+        fsat1 = pcr.min(
+            1.0, pcr.max(pcr.min(0.005, 0.007 * self.Sr ** 0.75), Sgfree / self.Sgref)
+        )
+        fsat2 = pcr.min(
+            1.0, pcr.max(pcr.min(0.005, 0.007 * self.Sr ** 0.75), Sgfree / self.Sgref)
+        )
         Sghru1 = self.Sg
         Sghru2 = self.Sg
 
         # CALCULATION OF PET
         # Conversions and coefficients (3.1)
-        pesx = pcr.min((pcr.scalar(17.27) * Ta / (pcr.scalar(237.3) + Ta)), pcr.scalar(10))
+        pesx = pcr.min(
+            (pcr.scalar(17.27) * Ta / (pcr.scalar(237.3) + Ta)), pcr.scalar(10)
+        )
         pes = pcr.min(
             pcr.scalar((pcr.scalar(610.8)) * pcr.exp(pesx)), pcr.scalar(10000)
         )  # saturated vapour pressure
@@ -650,7 +671,9 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.RLn = self.RLin - RLout
 
             self.fGR1 = self.Gfrac_max1 * (1 - pcr.exp(-fsoil1 / self.fvegref_G1))
-            self.fGR2 = self.Gfrac_max2 * (1 - pcr.exp(-fsoil2 / self.fvegref_G2))  # (3.5)
+            self.fGR2 = self.Gfrac_max2 * (
+                1 - pcr.exp(-fsoil2 / self.fvegref_G2)
+            )  # (3.5)
             self.Rneff1 = (RSn1 + self.RLn) * (1 - self.fGR1)
             self.Rneff2 = (RSn2 + self.RLn) * (1 - self.fGR2)
 
@@ -703,14 +726,26 @@ class WflowModel(pcraster.framework.DynamicModel):
         Et2 = pcr.min(Utot2, Etmax2)
 
         # # Root water uptake distribution (2.3)
-        U01 = pcr.max(pcr.min((U0max1 / (U0max1 + Usmax1 + Udmax1)) * Et1, self.S01 - 1e-2), 0)
-        Us1 = pcr.max(pcr.min((Usmax1 / (U0max1 + Usmax1 + Udmax1)) * Et1, self.Ss1 - 1e-2), 0)
-        Ud1 = pcr.max(pcr.min((Udmax1 / (U0max1 + Usmax1 + Udmax1)) * Et1, self.Sd1 - 1e-2), 0)
+        U01 = pcr.max(
+            pcr.min((U0max1 / (U0max1 + Usmax1 + Udmax1)) * Et1, self.S01 - 1e-2), 0
+        )
+        Us1 = pcr.max(
+            pcr.min((Usmax1 / (U0max1 + Usmax1 + Udmax1)) * Et1, self.Ss1 - 1e-2), 0
+        )
+        Ud1 = pcr.max(
+            pcr.min((Udmax1 / (U0max1 + Usmax1 + Udmax1)) * Et1, self.Sd1 - 1e-2), 0
+        )
         Et1 = U01 + Us1 + Ud1  # to ensure mass balance
 
-        U02 = pcr.max(pcr.min((U0max2 / (U0max2 + Usmax2 + Udmax2)) * Et2, self.S02 - 1e-2), 0)
-        Us2 = pcr.max(pcr.min((Usmax2 / (U0max2 + Usmax2 + Udmax2)) * Et2, self.Ss2 - 1e-2), 0)
-        Ud2 = pcr.max(pcr.min((Udmax2 / (U0max2 + Usmax2 + Udmax2)) * Et2, self.Sd2 - 1e-2), 0)
+        U02 = pcr.max(
+            pcr.min((U0max2 / (U0max2 + Usmax2 + Udmax2)) * Et2, self.S02 - 1e-2), 0
+        )
+        Us2 = pcr.max(
+            pcr.min((Usmax2 / (U0max2 + Usmax2 + Udmax2)) * Et2, self.Ss2 - 1e-2), 0
+        )
+        Ud2 = pcr.max(
+            pcr.min((Udmax2 / (U0max2 + Usmax2 + Udmax2)) * Et2, self.Sd2 - 1e-2), 0
+        )
         Et2 = U02 + Us2 + Ud2
 
         # Soil evaporation (4.5)
@@ -720,8 +755,12 @@ class WflowModel(pcraster.framework.DynamicModel):
         w02 = self.S02 / self.S0FC2  # (2.1)
         fsoilE1 = self.FsoilEmax1 * pcr.min(1, w01 / self.w0limE1)
         fsoilE2 = self.FsoilEmax2 * pcr.min(1, w02 / self.w0limE2)
-        Es1 = pcr.max(0, pcr.min(((1 - fsat1) * fsoilE1 * (self.E01 - Et1)), self.S01 - 1e-2))
-        Es2 = pcr.max(0, pcr.min(((1 - fsat2) * fsoilE2 * (self.E02 - Et2)), self.S02 - 1e-2))
+        Es1 = pcr.max(
+            0, pcr.min(((1 - fsat1) * fsoilE1 * (self.E01 - Et1)), self.S01 - 1e-2)
+        )
+        Es2 = pcr.max(
+            0, pcr.min(((1 - fsat2) * fsoilE2 * (self.E02 - Et2)), self.S02 - 1e-2)
+        )
         # Groundwater evaporation (4.6)
         Eg1 = pcr.min((fsat1 - fwater1) * self.FsoilEmax1 * (self.E01 - Et1), Sghru1)
         Eg2 = pcr.min((fsat2 - fwater2) * self.FsoilEmax2 * (self.E02 - Et2), Sghru2)
@@ -896,10 +935,12 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.Sd1 = self.Sd1 - Dd1
         self.Sd2 = self.Sd2 - Dd2
         Y1 = pcr.min(
-            self.Fgw_conn1 * pcr.max(0, self.wdlimU1 * self.SdFC1 - self.Sd1), Sghru1 - Eg1
+            self.Fgw_conn1 * pcr.max(0, self.wdlimU1 * self.SdFC1 - self.Sd1),
+            Sghru1 - Eg1,
         )
         Y2 = pcr.min(
-            self.Fgw_conn2 * pcr.max(0, self.wdlimU2 * self.SdFC2 - self.Sd2), Sghru2 - Eg2
+            self.Fgw_conn2 * pcr.max(0, self.wdlimU2 * self.SdFC2 - self.Sd2),
+            Sghru2 - Eg2,
         )
         # Y = Fgw_conn.*max(0,wdlimU.*SdFC-Sd); #nog matlab script
         self.Sd1 = self.Sd1 + Y1

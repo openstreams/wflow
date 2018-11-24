@@ -515,7 +515,9 @@ class WflowModel(pcraster.framework.DynamicModel):
             for i in pars:
                 try:
                     setattr(
-                        self, i, pcr.readmap(self.inpath + config.get("GROUNDW_PARS", i))
+                        self,
+                        i,
+                        pcr.readmap(self.inpath + config.get("GROUNDW_PARS", i)),
                     )
                 except:
                     setattr(
@@ -605,7 +607,9 @@ class WflowModel(pcraster.framework.DynamicModel):
             pars = ["DDFG", "DDFDG", "GlacF"]
             for i in pars:
                 try:
-                    setattr(self, i, pcr.readmap(self.inpath + config.get("GLACIER", i)))
+                    setattr(
+                        self, i, pcr.readmap(self.inpath + config.get("GLACIER", i))
+                    )
                 except:
                     # setattr(self, i, config.getfloat('GLACIER',i))
                     setattr(self, i, float(configget(self.config, "GLACIER", i, i)))
@@ -686,7 +690,9 @@ class WflowModel(pcraster.framework.DynamicModel):
         # -read lake maps and parameters if lake module is used
         if self.LakeFLAG == 1:
             # nominal map with lake IDs
-            self.LakeID = pcr.cover(pcr.readmap(self.inpath + config.get("LAKE", "LakeId")), 0)
+            self.LakeID = pcr.cover(
+                pcr.readmap(self.inpath + config.get("LAKE", "LakeId")), 0
+            )
             # lookup table with function for each lake (exp, 1-order poly, 2-order poly, 3-order poly)
             LakeFunc_Tab = self.inpath + config.get("LAKE", "LakeFunc")
             # lookup table with Qh-coeficients for each lake
@@ -945,7 +951,8 @@ class WflowModel(pcraster.framework.DynamicModel):
             if self.LakeFLAG == 1:
                 LakeStor_Tab = self.inpath + config.get("LAKE", "LakeStor")
                 self.StorRES = (
-                    pcr.cover(pcr.lookupscalar(LakeStor_Tab, 1, self.LakeID), 0) * 10 ** 6
+                    pcr.cover(pcr.lookupscalar(LakeStor_Tab, 1, self.LakeID), 0)
+                    * 10 ** 6
                 )  # convert to m3
                 # -Qfrac for lake cells should be zero, else 1
                 self.QFRAC = pcr.ifthenelse(self.LakeID != 0, pcr.scalar(0), 1)
@@ -957,7 +964,9 @@ class WflowModel(pcraster.framework.DynamicModel):
                 try:
                     self.StorRES = self.StorRES + ResStor
                     # -Qfrac for reservoir cells should be zero, else 1
-                    self.QFRAC = pcr.ifthenelse(self.ResID != 0, pcr.scalar(0), self.QFRAC)
+                    self.QFRAC = pcr.ifthenelse(
+                        self.ResID != 0, pcr.scalar(0), self.QFRAC
+                    )
                 except:
                     self.StorRES = ResStor
                     # -Qfrac for reservoir cells should be zero, else 1
@@ -975,7 +984,8 @@ class WflowModel(pcraster.framework.DynamicModel):
                         i + "stor",
                         (
                             pcr.cover(
-                                pcr.lookupscalar(LakeStor_Tab, column + 2, self.LakeID), 0
+                                pcr.lookupscalar(LakeStor_Tab, column + 2, self.LakeID),
+                                0,
                             )
                             + pcr.cover(
                                 pcr.lookupscalar(ResStor_Tab, column + 3, self.ResID), 0
@@ -993,7 +1003,8 @@ class WflowModel(pcraster.framework.DynamicModel):
                             self,
                             i + "stor",
                             pcr.cover(
-                                pcr.lookupscalar(LakeStor_Tab, column + 2, self.LakeID), 0
+                                pcr.lookupscalar(LakeStor_Tab, column + 2, self.LakeID),
+                                0,
                             )
                             * 10 ** 6,
                         )
@@ -1007,7 +1018,10 @@ class WflowModel(pcraster.framework.DynamicModel):
                                 self,
                                 i + "stor",
                                 pcr.cover(
-                                    pcr.lookupscalar(ResStor_Tab, column + 3, self.ResID), 0
+                                    pcr.lookupscalar(
+                                        ResStor_Tab, column + 3, self.ResID
+                                    ),
+                                    0,
                                 )
                                 * 10 ** 6,
                             )
@@ -1743,7 +1757,10 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.RootWater = self.RootWater - RootRunoff
         # -Actual evapotranspiration
         etreddry = pcr.max(
-            pcr.min((self.RootWater - self.RootDry) / (self.RootWilt - self.RootDry), 1), 0
+            pcr.min(
+                (self.RootWater - self.RootDry) / (self.RootWilt - self.RootDry), 1
+            ),
+            0,
         )
         ETact = self.ET.ETact(
             pcr, ETpot, self.RootWater, self.RootSat, etreddry, RainFrac
@@ -1758,7 +1775,8 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.RoutFLAG == 1 or self.ResFLAG == 1 or self.LakeFLAG == 1
         ):
             self.ETaSubBasinTSS.sample(
-                pcr.catchmenttotal(ActETact, self.FlowDir) / pcr.catchmenttotal(1, self.FlowDir)
+                pcr.catchmenttotal(ActETact, self.FlowDir)
+                / pcr.catchmenttotal(1, self.FlowDir)
             )
         # -Update rootwater content
         self.RootWater = pcr.max(self.RootWater - ETact, 0)
@@ -1796,7 +1814,9 @@ class WflowModel(pcraster.framework.DynamicModel):
                     self.SeePage = self.SeepOld
             # -Report seepage
             self.reporting.reporting(self, pcr, "TotSeepF", pcr.scalar(self.SeePage))
-            self.SubWater = pcr.min(pcr.max(self.SubWater - self.SeePage, 0), self.SubSat)
+            self.SubWater = pcr.min(
+                pcr.max(self.SubWater - self.SeePage, 0), self.SubSat
+            )
             if self.mm_rep_FLAG == 1 and (
                 self.RoutFLAG == 1 or self.ResFLAG == 1 or self.LakeFLAG == 1
             ):
@@ -1985,7 +2005,8 @@ class WflowModel(pcraster.framework.DynamicModel):
             # -report flux in mm
             if self.mm_rep_FLAG == 1:
                 self.QTOTSubBasinTSS.sample(
-                    ((Q * 3600 * 24) / pcr.catchmenttotal(pcr.cellarea(), self.FlowDir)) * 1000
+                    ((Q * 3600 * 24) / pcr.catchmenttotal(pcr.cellarea(), self.FlowDir))
+                    * 1000
                 )
             # -report lake and reservoir waterbalance
             if self.LakeFLAG == 1 and config.getint("REPORTING", "Lake_wbal") == 1:
@@ -2153,7 +2174,8 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.reporting.reporting(self, pcr, "QallRAtot", Q)
             if self.mm_rep_FLAG == 1:
                 self.QTOTSubBasinTSS.sample(
-                    ((Q * 3600 * 24) / pcr.catchmenttotal(pcr.cellarea(), self.FlowDir)) * 1000
+                    ((Q * 3600 * 24) / pcr.catchmenttotal(pcr.cellarea(), self.FlowDir))
+                    * 1000
                 )
             # -Snow routing
             if self.SnowRA_FLAG == 1 and self.SnowFLAG == 1:

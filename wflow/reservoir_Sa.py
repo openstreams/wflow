@@ -914,7 +914,9 @@ def agriZone_Ep_Sa_beta_frostSamax_surfTemp(self, k):
 
     self.FrDur[k] = pcr.min(
         self.FrDur[k]
-        + pcr.ifthenelse(self.TempSurf > 0, self.ratFT[k] * self.TempSurf, self.TempSurf)
+        + pcr.ifthenelse(
+            self.TempSurf > 0, self.ratFT[k] * self.TempSurf, self.TempSurf
+        )
         * self.dayDeg[k],
         0,
     )

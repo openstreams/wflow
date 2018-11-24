@@ -510,7 +510,9 @@ class WflowModel(pcraster.framework.DynamicModel):
             os.path.join(self.Dir, wflow_subcatch), 0.0, fail=True
         )  # location of subcatchment
 
-        self.ZeroMap = 0.0 * pcr.scalar(pcr.defined(self.Altitude))  # map with only zero's
+        self.ZeroMap = 0.0 * pcr.scalar(
+            pcr.defined(self.Altitude)
+        )  # map with only zero's
 
         # 3: Input time series ###################################################
         self.P_mapstack = self.Dir + configget(
@@ -621,10 +623,15 @@ class WflowModel(pcraster.framework.DynamicModel):
                 + str(self.nrresComplex)
                 + " complex reservoirs found."
             )
-            self.ReserVoirDownstreamLocs = pcr.downstream(self.TopoLdd, self.ReserVoirLocs)
+            self.ReserVoirDownstreamLocs = pcr.downstream(
+                self.TopoLdd, self.ReserVoirLocs
+            )
             self.TopoLddOrg = self.TopoLdd
             self.TopoLdd = pcr.lddrepair(
-                pcr.cover(pcr.ifthen(pcr.boolean(self.ReserVoirLocs), pcr.ldd(5)), self.TopoLdd)
+                pcr.cover(
+                    pcr.ifthen(pcr.boolean(self.ReserVoirLocs), pcr.ldd(5)),
+                    self.TopoLdd,
+                )
             )
 
         # HBV Soil params
@@ -845,7 +852,8 @@ class WflowModel(pcraster.framework.DynamicModel):
         W = (
             (alf * (alf + 2.0) ** (0.6666666667)) ** (0.375)
             * Qscale ** (0.375)
-            * (pcr.max(0.0001, pcr.windowaverage(self.Slope, pcr.celllength() * 4.0))) ** (-0.1875)
+            * (pcr.max(0.0001, pcr.windowaverage(self.Slope, pcr.celllength() * 4.0)))
+            ** (-0.1875)
             * self.N ** (0.375)
         )
         # Use supplied riverwidth if possible, else calulate
@@ -891,7 +899,9 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.logger.info("Creating subcatchment-only drainage network (ldd)")
             ds = pcr.downstream(self.TopoLdd, self.TopoId)
             usid = pcr.ifthenelse(ds != self.TopoId, self.TopoId, 0)
-            self.TopoLdd = pcr.lddrepair(pcr.ifthenelse(pcr.boolean(usid), pcr.ldd(5), self.TopoLdd))
+            self.TopoLdd = pcr.lddrepair(
+                pcr.ifthenelse(pcr.boolean(usid), pcr.ldd(5), self.TopoLdd)
+            )
 
         # Used to seperate output per LandUse/management classes
         # OutZones = self.LandUse
@@ -931,7 +941,9 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.Aspect = pcr.ifthenelse(self.Aspect <= 0.0, pcr.scalar(0.001), self.Aspect)
         # On Flat areas the Aspect function fails, fill in with average...
         self.Aspect = pcr.ifthenelse(
-            pcr.defined(self.Aspect), self.Aspect, pcr.areaaverage(self.Aspect, self.TopoId)
+            pcr.defined(self.Aspect),
+            self.Aspect,
+            pcr.areaaverage(self.Aspect, self.TopoId),
         )
 
         # Set DCL to riverlength if that is longer that the basic length calculated from grid
@@ -1100,9 +1112,12 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         RainFrac = pcr.ifthenelse(
             1.0 * self.TTI == 0.0,
-            pcr.ifthenelse(self.Temperature <= self.TT, pcr.scalar(0.0), pcr.scalar(1.0)),
+            pcr.ifthenelse(
+                self.Temperature <= self.TT, pcr.scalar(0.0), pcr.scalar(1.0)
+            ),
             pcr.min(
-                (self.Temperature - (self.TT - self.TTI / 2.0)) / self.TTI, pcr.scalar(1.0)
+                (self.Temperature - (self.TT - self.TTI / 2.0)) / self.TTI,
+                pcr.scalar(1.0),
             ),
         )
         RainFrac = pcr.max(
@@ -1289,7 +1304,9 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.RealQuickFlow = self.ZeroMap
         else:
             self.QuickFlow = self.KQuickFlow * self.UpperZoneStorage
-            self.RealQuickFlow = pcr.max(0, self.K0 * (self.UpperZoneStorage - self.SUZ))
+            self.RealQuickFlow = pcr.max(
+                0, self.K0 * (self.UpperZoneStorage - self.SUZ)
+            )
             self.UpperZoneStorage = (
                 self.UpperZoneStorage - self.QuickFlow - self.RealQuickFlow
             )

@@ -322,11 +322,15 @@ class WflowModel(pcraster.framework.DynamicModel):
                 self.distfromriv > self.maxdist, 0.0, self.FloodDepth
             )
             self.FloodDepth = pcr.ifthen(self.FloodDepth > 0.0, self.FloodDepth)
-            self.FloodExtent = pcr.ifthenelse(self.FloodDepth > 0.0, pcr.boolean(1), pcr.boolean(0))
+            self.FloodExtent = pcr.ifthenelse(
+                self.FloodDepth > 0.0, pcr.boolean(1), pcr.boolean(0)
+            )
 
             # Keep track of af depth and extent
             self.MaxDepth = pcr.max(self.MaxDepth, pcr.cover(self.FloodDepth, 0))
-            self.MaxExt = pcr.max(pcr.scalar(self.MaxExt), pcr.scalar(pcr.cover(self.FloodExtent, 0)))
+            self.MaxExt = pcr.max(
+                pcr.scalar(self.MaxExt), pcr.scalar(pcr.cover(self.FloodExtent, 0))
+            )
 
         # reporting of maps is done by the framework (see ini file)
 

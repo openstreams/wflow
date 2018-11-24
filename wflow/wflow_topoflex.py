@@ -174,7 +174,9 @@ class WflowModel(pcraster.framework.DynamicModel):
             rest = pcr.cover(pcr.readmap(mapname), default)
         else:
             if os.path.isfile(pathtotbl):
-                rest = pcr.cover(pcr.lookupscalar(pathtotbl, landuse, subcatch, soil), default)
+                rest = pcr.cover(
+                    pcr.lookupscalar(pathtotbl, landuse, subcatch, soil), default
+                )
                 self.logger.info("Creating map from table: " + pathtotbl)
             else:
                 self.logger.warning(
@@ -903,8 +905,12 @@ class WflowModel(pcraster.framework.DynamicModel):
         )  # list * scalar ---> list wordt zoveel x gekopieerd als scalar.
 
         # initialise list for lag function
-        self.convQu = [[0 * pcr.scalar(self.catchArea)] * self.Tf[i] for i in self.Classes]
-        self.convQa = [[0 * pcr.scalar(self.catchArea)] * self.Tfa[i] for i in self.Classes]
+        self.convQu = [
+            [0 * pcr.scalar(self.catchArea)] * self.Tf[i] for i in self.Classes
+        ]
+        self.convQa = [
+            [0 * pcr.scalar(self.catchArea)] * self.Tfa[i] for i in self.Classes
+        ]
 
         if self.scalarInput:
             self.gaugesMap = pcr.nominal(
@@ -915,7 +921,9 @@ class WflowModel(pcraster.framework.DynamicModel):
         )  # location of subcatchment
         self.OutputIdRunoff = pcr.boolean(
             pcr.ifthenelse(
-                self.gaugesR == 1, 1 * pcr.scalar(self.TopoId), 0 * pcr.scalar(self.TopoId)
+                self.gaugesR == 1,
+                1 * pcr.scalar(self.TopoId),
+                0 * pcr.scalar(self.TopoId),
             )
         )  # location of subcatchment
 
@@ -953,7 +961,8 @@ class WflowModel(pcraster.framework.DynamicModel):
         W = (
             (alf * (alf + 2.0) ** (0.6666666667)) ** (0.375)
             * Qscale ** (0.375)
-            * (pcr.max(0.0001, pcr.windowaverage(self.Slope, pcr.celllength() * 4.0))) ** (-0.1875)
+            * (pcr.max(0.0001, pcr.windowaverage(self.Slope, pcr.celllength() * 4.0)))
+            ** (-0.1875)
             * self.N ** (0.375)
         )
         # Use supplied riverwidth if possible, else calulate
@@ -978,7 +987,9 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.logger.info("Creating subcatchment-only drainage network (ldd)")
             ds = pcr.downstream(self.TopoLdd, self.TopoId)
             usid = pcr.ifthenelse(ds != self.TopoId, self.TopoId, 0)
-            self.TopoLdd = pcr.lddrepair(pcr.ifthenelse(pcr.boolean(usid), pcr.ldd(5), self.TopoLdd))
+            self.TopoLdd = pcr.lddrepair(
+                pcr.ifthenelse(pcr.boolean(usid), pcr.ldd(5), self.TopoLdd)
+            )
 
         # Used to seperate output per LandUse/management classes
         # OutZones = self.LandUse
@@ -1449,7 +1460,9 @@ class WflowModel(pcraster.framework.DynamicModel):
             sum(multiply(self.Sw_t, self.percent)) / 1000 * self.surfaceArea,
             pcr.nominal(self.TopoId),
         )
-        self.SsWB = pcr.areatotal(self.Ss / 1000 * self.surfaceArea, pcr.nominal(self.TopoId))
+        self.SsWB = pcr.areatotal(
+            self.Ss / 1000 * self.surfaceArea, pcr.nominal(self.TopoId)
+        )
         self.Ss_WB = pcr.areatotal(
             self.Ss_t / 1000 * self.surfaceArea, pcr.nominal(self.TopoId)
         )

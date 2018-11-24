@@ -73,7 +73,9 @@ def interception_overflow2(self, k):
         self.PotEvaporation = pcr.areatotal(
             self.PotEvaporation * self.percentArea, pcr.nominal(self.TopoId)
         )
-        self.Si[k] = pcr.areatotal(self.Si[k] * self.percentArea, pcr.nominal(self.TopoId))
+        self.Si[k] = pcr.areatotal(
+            self.Si[k] * self.percentArea, pcr.nominal(self.TopoId)
+        )
 
 
 def interception_overflow_Ep(self, k):
@@ -117,4 +119,6 @@ def interception_overflow_Ep(self, k):
         self.PotEvaporation = pcr.areatotal(
             self.PotEvaporation * self.percentArea, pcr.nominal(self.TopoId)
         )
-        self.Si[k] = pcr.areatotal(self.Si[k] * self.percentArea, pcr.nominal(self.TopoId))
+        self.Si[k] = pcr.areatotal(
+            self.Si[k] * self.percentArea, pcr.nominal(self.TopoId)
+        )

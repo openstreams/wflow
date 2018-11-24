@@ -41,7 +41,11 @@ def lattometres(lat):
         + (m3 * pcr.cos(4.0 * radlat))
         + (m4 * pcr.cos(6.0 * radlat))
     )
-    longlen = (p1 * pcr.cos(radlat)) + (p2 * pcr.cos(3.0 * radlat)) + (p3 * pcr.cos(5.0 * radlat))
+    longlen = (
+        (p1 * pcr.cos(radlat))
+        + (p2 * pcr.cos(3.0 * radlat))
+        + (p3 * pcr.cos(5.0 * radlat))
+    )
 
     return latlen, longlen
 

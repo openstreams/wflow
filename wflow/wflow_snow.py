@@ -177,7 +177,9 @@ class WflowModel(pcraster.framework.DynamicModel):
             rest = pcr.cover(pcr.readmap(mapname), default)
         else:
             if os.path.isfile(pathtotbl):
-                rest = pcr.cover(pcr.lookupscalar(pathtotbl, landuse, subcatch, soil), default)
+                rest = pcr.cover(
+                    pcr.lookupscalar(pathtotbl, landuse, subcatch, soil), default
+                )
                 self.logger.info("Creating map from table: " + pathtotbl)
             else:
                 self.logger.warning(
@@ -474,7 +476,9 @@ class WflowModel(pcraster.framework.DynamicModel):
         RainFrac = pcr.ifthenelse(
             1.0 * self.TTI == 0.0,
             pcr.ifthenelse(Temperature <= self.TT, pcr.scalar(0.0), pcr.scalar(1.0)),
-            pcr.min((Temperature - (self.TT - self.TTI / 2.0)) / self.TTI, pcr.scalar(1.0)),
+            pcr.min(
+                (Temperature - (self.TT - self.TTI / 2.0)) / self.TTI, pcr.scalar(1.0)
+            ),
         )
         RainFrac = pcr.max(
             RainFrac, pcr.scalar(0.0)
