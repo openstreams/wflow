@@ -804,7 +804,7 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         # only run the reservoir module if needed
         if self.nrresSimple > 0:
-            self.ReservoirVolume, self.OutflowSR, self.ResPercFull, self.ResPrecipSR, self.ResEvapSR, self.DemandRelease = simplereservoir(
+            self.ReservoirVolume, self.OutflowSR, self.ResPercFull, self.DemandRelease = simplereservoir_routing(
                 self.ReservoirVolume,
                 self.SurfaceRunoff,
                 self.ResSimpleArea,
@@ -814,13 +814,11 @@ class WflowModel(pcraster.framework.DynamicModel):
                 self.ResDemand,
                 self.ResTargetMinFrac,
                 self.ReserVoirSimpleLocs,
-                self.Precipitation,
-                self.PotenEvap,
                 self.ReservoirSimpleAreas,
                 timestepsecs=self.timestepsecs,
             )
             self.OutflowDwn = pcr.upstream(
-                self.TopoLddOrg, pcr.cover(self.Outflow, pcr.scalar(0.0))
+                self.TopoLddOrg, pcr.cover(self.OutflowSR, pcr.scalar(0.0))
             )
             self.Inflow = self.OutflowDwn + pcr.cover(self.Inflow, self.ZeroMap)
         else:
