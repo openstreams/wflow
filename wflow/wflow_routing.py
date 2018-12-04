@@ -404,6 +404,10 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.logger.info("Linking parameters to landuse, catchment and soil...")
         self.wf_updateparameters()
 
+        self.xl, self.yl, self.reallength = pcrut.detRealCellLength(
+            self.ZeroMap, sizeinmetres
+        )
+        
         # Check if we have reservoirs
         if hasattr(self, "ReserVoirSimpleLocs"):
             tt = pcr.pcr2numpy(self.ReserVoirSimpleLocs, 0.0)
@@ -461,9 +465,6 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.Soil,
             self.NRiver * 2.0,
         )  # Manning river
-        self.xl, self.yl, self.reallength = pcrut.detRealCellLength(
-            self.ZeroMap, sizeinmetres
-        )
         self.Slope = pcr.slope(self.Altitude)
         # self.Slope=pcr.ifthen(pcr.boolean(self.TopoId),pcr.max(0.001,self.Slope*celllength()/self.reallength))
         self.Slope = pcr.max(0.00001, self.Slope * pcr.celllength() / self.reallength)
