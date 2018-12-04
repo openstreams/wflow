@@ -1,6 +1,7 @@
 name: wflow
 
 channels:
+  - conda-forge
   - defaults
 
 dependencies:
