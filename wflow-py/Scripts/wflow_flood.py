@@ -243,6 +243,7 @@ import numpy as np
 from osgeo import gdal, gdalconst
 import pcraster as pcr
 import netCDF4 as nc
+import cftime
 
 import wflow_flood_lib as inun_lib
 import wflow.pcrut as pcrut
@@ -760,7 +761,7 @@ def main():
                 xax = a.variables["x"][:]
                 yax = a.variables["y"][:]
         if options.time == "":
-            time_list = nc.num2date(
+            time_list = cftime.num2date(
                 a.variables["time"][:],
                 units=a.variables["time"].units,
                 calendar=a.variables["time"].calendar,

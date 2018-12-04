@@ -39,6 +39,7 @@ import calendar
 import glob
 
 import netCDF4 as nc
+import cftime
 import numpy as np
 import numpy.ma as ma
 import pcraster as pcr
@@ -397,7 +398,7 @@ def netcdf2PCRobjClone(
                 # msg += "\n"
                 logger.warning(msg)
         try:
-            idx = nc.date2index(
+            idx = cftime.date2index(
                 date,
                 f.variables["time"],
                 calendar=f.variables["time"].calendar,
@@ -425,7 +426,7 @@ def netcdf2PCRobjClone(
             )
             logger.debug(msg)
             try:
-                idx = nc.date2index(
+                idx = cftime.date2index(
                     date,
                     f.variables["time"],
                     calendar=f.variables["time"].calendar,
@@ -450,7 +451,7 @@ def netcdf2PCRobjClone(
                 )
                 # msg += "\n"
             except:
-                idx = nc.date2index(
+                idx = cftime.date2index(
                     date,
                     f.variables["time"],
                     calendar=f.variables["time"].calendar,
@@ -706,7 +707,7 @@ def netcdf2PCRobjCloneJOYCE(
                 # msg += "\n"
                 logger.warning(msg)
         try:
-            idx = nc.date2index(
+            idx = cftime.date2index(
                 date,
                 f.variables["time"],
                 calendar=f.variables["time"].calendar,
@@ -734,7 +735,7 @@ def netcdf2PCRobjCloneJOYCE(
             )
             logger.debug(msg)
             try:
-                idx = nc.date2index(
+                idx = cftime.date2index(
                     date,
                     f.variables["time"],
                     calendar=f.variables["time"].calendar,
@@ -759,7 +760,7 @@ def netcdf2PCRobjCloneJOYCE(
                 )
                 # msg += "\n"
             except:
-                idx = nc.date2index(
+                idx = cftime.date2index(
                     date,
                     f.variables["time"],
                     calendar=f.variables["time"].calendar,
@@ -933,7 +934,7 @@ def netcdf2PCRobjCloneWindDist(
         date = datetime.datetime(date.year, date.month, date.day)
         # time index (in the netCDF file)
         nctime = f.variables["time"]  # A netCDF time variable object.
-        idx = nc.date2index(date, nctime, calendar=nctime.calendar, select="exact")
+        idx = cftime.date2index(date, nctime, calendar=nctime.calendar, select="exact")
     idx = int(idx)
 
     #    sameClone = True
@@ -1014,7 +1015,7 @@ def netcdf2PCRobjCloneWind(
         date = datetime.datetime(date.year, date.month, date.day, 0, 0)
         # time index (in the netCDF file)
         nctime = f.variables["time"]  # A netCDF time variable object.
-        idx = nc.date2index(date, nctime, select="exact")
+        idx = cftime.date2index(date, nctime, select="exact")
     idx = int(idx)
 
     #    sameClone = True
@@ -1088,7 +1089,7 @@ def netcdf2PCRobj(ncFile, varName, dateInput):
 
     # time index (in the netCDF file)
     nctime = f.variables["time"]  # A netCDF time variable object.
-    idx = nc.date2index(date, nctime, calendar=nctime.calendar, select="exact")
+    idx = cftime.date2index(date, nctime, calendar=nctime.calendar, select="exact")
 
     # convert to PCR object and close f
     outPCR = pcr.numpy2pcr(
@@ -2117,7 +2118,7 @@ def findLastYearInNCFile(ncFile):
 def findLastYearInNCTime(ncTimeVariable):
 
     # last datetime
-    last_datetime = nc.num2date(
+    last_datetime = cftime.num2date(
         ncTimeVariable[len(ncTimeVariable) - 1],
         ncTimeVariable.units,
         ncTimeVariable.calendar,
@@ -2129,7 +2130,7 @@ def findLastYearInNCTime(ncTimeVariable):
 def findFirstYearInNCTime(ncTimeVariable):
 
     # first datetime
-    first_datetime = nc.num2date(
+    first_datetime = cftime.num2date(
         ncTimeVariable[0], ncTimeVariable.units, ncTimeVariable.calendar
     )
 

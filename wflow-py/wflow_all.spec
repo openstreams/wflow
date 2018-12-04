@@ -58,6 +58,7 @@ def do_analysis(scriptpath):
                                    # for wflow this would always be wflow.wflow_bmi
                                    'wflow.wflow_bmi',
                                    'wflow.wflow_bmi_combined',
+                                   'cftime',
                                    'rasterio.control',  # needed
                                    'rasterio.crs',  # needed
                                    'rasterio._shim',  # needed

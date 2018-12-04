@@ -30,6 +30,7 @@ import re
 import glob
 import subprocess
 import netCDF4 as nc
+import cftime
 import numpy as np
 import pcraster as pcr
 import virtualOS as vos
@@ -209,7 +210,7 @@ class PCR2netCDF:
         date_time = rootgrp.variables["time"]
         if posCnt == None:
             posCnt = len(date_time)
-        date_time[posCnt] = nc.date2num(timeStamp, date_time.units, date_time.calendar)
+        date_time[posCnt] = cftime.date2num(timeStamp, date_time.units, date_time.calendar)
 
         # flip variable if necessary (to follow cf_convention)
         if self.netcdf_y_orientation_follow_cf_convention:
@@ -232,7 +233,7 @@ class PCR2netCDF:
 
         for shortVarName in shortVarNameList:
 
-            date_time[posCnt] = nc.date2num(
+            date_time[posCnt] = cftime.date2num(
                 timeStamp, date_time.units, date_time.calendar
             )
             varField = varFieldList[shortVarName]
