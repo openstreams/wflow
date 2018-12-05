@@ -87,7 +87,6 @@ usage
 
 import os.path
 
-import pcraster.framework
 from wflow.pcrglobwb import groundwater
 from wflow.pcrglobwb import landSurface
 from wflow.pcrglobwb import routing
@@ -257,7 +256,7 @@ def setLandSurfaceStates(landSurface):
             )
 
 
-class WflowModel(pcraster.framework.DynamicModel):
+class WflowModel(DynamicModel):
 
     """
   The user defined model class.
@@ -265,14 +264,14 @@ class WflowModel(pcraster.framework.DynamicModel):
   """
 
     def __init__(self, cloneMap, Dir, RunDir, configfile, staticmaps):
-        pcraster.framework.DynamicModel.__init__(self)
+        DynamicModel.__init__(self)
 
         self.caseName = os.path.abspath(Dir)
         self.runId = RunDir
         self.Dir = os.path.abspath(Dir)
         self.staticmaps = os.path.join(self.Dir, staticmaps)
         self.clonemappath = os.path.join(os.path.abspath(Dir), staticmaps, cloneMap)
-        pcr.setclone(self.clonemappath)
+        setclone(self.clonemappath)
         self.configfile = configfile
         self.SaveDir = os.path.join(self.Dir, self.runId)
 
@@ -519,7 +518,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         wflow_landmask = self.wf_readmap(
             os.path.join(self.staticmaps, landmask), 0.0, fail=True
         )
-        wflow_ldd = pcr.ldd(
+        wflow_ldd = ldd(
             self.wf_readmap(os.path.join(self.staticmaps, lddMap), 0.0, fail=True)
         )
 

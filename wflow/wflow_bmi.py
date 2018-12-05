@@ -3,7 +3,6 @@ __author__ = "schelle"
 import configparser
 import datetime
 import logging
-import os
 
 import numpy as np
 import wflow.bmi as bmi
@@ -14,7 +13,7 @@ import wflow.wflow_routing
 import wflow.wflow_sbm
 import wflow.wflow_sceleton
 import wflow.wflow_w3ra
-import pcraster as pcr
+from pcraster import *
 from wflow.pcrut import setlogger
 
 # wflow models we want to support
@@ -423,9 +422,9 @@ class wflowbmi_light(object):
 
         if self.wrtodisk:
             fname = str(self.currenttimestep) + "_get_" + long_var_name + ".map"
-            arpcr = pcr.numpy2pcr(pcr.Scalar, src, -999)
+            arpcr = numpy2pcr(Scalar, src, -999)
             self.bmilogger.debug("Writing to disk: " + fname)
-            pcr.report(arpcr, fname)
+            report(arpcr, fname)
 
         return src
 
@@ -440,9 +439,9 @@ class wflowbmi_light(object):
 
         if self.wrtodisk:
             fname = str(self.currenttimestep) + "_set_" + long_var_name + ".map"
-            arpcr = pcr.numpy2pcr(pcr.Scalar, src, -999)
+            arpcr = numpy2pcr(Scalar, src, -999)
             self.bmilogger.debug("Writing to disk: " + fname)
-            pcr.report(arpcr, fname)
+            report(arpcr, fname)
 
         if long_var_name in self.outputonlyvars:
             self.bmilogger.error(
@@ -1083,9 +1082,9 @@ class wflowbmi_csdms(bmi.Bmi):
 
             if self.wrtodisk:
                 fname = str(self.currenttimestep) + "_get_" + long_var_name + ".map"
-                arpcr = pcr.numpy2pcr(pcr.Scalar, ret, -999)
+                arpcr = numpy2pcr(Scalar, ret, -999)
                 self.bmilogger.debug("Writing to disk: " + fname)
-                pcr.report(arpcr, fname)
+                report(arpcr, fname)
 
             return ret
         else:
@@ -1292,9 +1291,9 @@ class wflowbmi_csdms(bmi.Bmi):
         self.bmilogger.debug("set_value: " + long_var_name + ":" + str(src))
         if self.wrtodisk:
             fname = str(self.currenttimestep) + "_set_" + long_var_name + ".map"
-            arpcr = pcr.numpy2pcr(pcr.Scalar, src, -999)
+            arpcr = numpy2pcr(Scalar, src, -999)
             self.bmilogger.debug("Writing to disk: " + fname)
-            pcr.report(arpcr, fname)
+            report(arpcr, fname)
 
         if long_var_name in self.outputonlyvars:
             self.bmilogger.error(

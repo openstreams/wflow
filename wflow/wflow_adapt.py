@@ -331,7 +331,7 @@ def tss_topixml(tssfile, xmlfile, locationname, parametername, Sdate, timestep):
         dumm[:] = -999.0
         tss = numpy.vstack((dumm, tss))
 
-    # replace np.nan with missing values
+    # replace NaN with missing values
     tss[numpy.isnan(tss)] = missval
 
     trange = timedelta(seconds=timestep * (tss.shape[0]))

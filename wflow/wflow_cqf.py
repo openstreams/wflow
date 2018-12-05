@@ -98,7 +98,6 @@ $Rev: 909 $
 
 import os.path
 
-import pcraster.framework
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
 from wflow.wflow_funcs import *
@@ -143,22 +142,22 @@ def actEvap_SBM(RootingDepth, WTable, UStoreDepth, FirstZoneDepth, PotTrans, smo
 
     # Step 1 from saturated zone, use rootingDepth as a limiting factor
     # rootsinWater = WTable < RootingDepth
-    # ActEvapSat = pcr.ifthenelse(rootsinWater,pcr.min(PotTrans,FirstZoneDepth),0.0)
+    # ActEvapSat = ifthenelse(rootsinWater,min(PotTrans,FirstZoneDepth),0.0)
     # new method:
     # use sCurve to determine if the roots are wet.At the moment this ise set
     # to be a 0-1 curve
     wetroots = sCurve(WTable, a=RootingDepth, c=smoothpar)
-    ActEvapSat = pcr.min(PotTrans * wetroots, FirstZoneDepth)
+    ActEvapSat = min(PotTrans * wetroots, FirstZoneDepth)
 
     FirstZoneDepth = FirstZoneDepth - ActEvapSat
     RestPotEvap = PotTrans - ActEvapSat
 
     # now try unsat store
-    AvailCap = pcr.min(1.0, pcr.max(0.0, (WTable - RootingDepth) / (RootingDepth + 1.0)))
+    AvailCap = min(1.0, max(0.0, (WTable - RootingDepth) / (RootingDepth + 1.0)))
 
-    # AvailCap = pcr.max(0.0,pcr.ifthenelse(WTable < RootingDepth,  WTable/RootingDepth,  RootingDepth/WTable))
+    # AvailCap = max(0.0,ifthenelse(WTable < RootingDepth,  WTable/RootingDepth,  RootingDepth/WTable))
     MaxExtr = AvailCap * UStoreDepth
-    ActEvapUStore = pcr.min(MaxExtr, RestPotEvap, UStoreDepth)
+    ActEvapUStore = min(MaxExtr, RestPotEvap, UStoreDepth)
     UStoreDepth = UStoreDepth - ActEvapUStore
 
     ActEvap = ActEvapSat + ActEvapUStore
@@ -166,10 +165,10 @@ def actEvap_SBM(RootingDepth, WTable, UStoreDepth, FirstZoneDepth, PotTrans, smo
     return ActEvap, FirstZoneDepth, UStoreDepth, ActEvapUStore
 
 
-class WflowModel(pcraster.framework.DynamicModel):
+class WflowModel(DynamicModel):
     def __init__(self, cloneMap, Dir, RunDir, configfile):
-        pcraster.framework.DynamicModel.__init__(self)
-        pcr.setclone(Dir + "/staticmaps/" + cloneMap)
+        DynamicModel.__init__(self)
+        setclone(Dir + "/staticmaps/" + cloneMap)
         self.runId = RunDir
         self.caseName = Dir
         self.Dir = Dir + "/"
@@ -234,10 +233,10 @@ class WflowModel(pcraster.framework.DynamicModel):
         )
         if os.path.exists(mapname):
             self.logger.info("reading map parameter file: " + mapname)
-            rest = pcr.cover(pcr.readmap(mapname), default)
+            rest = cover(readmap(mapname), default)
         else:
             if os.path.isfile(pathtotbl):
-                rest = pcr.lookupscalar(pathtotbl, landuse, subcatch, soil)  #
+                rest = lookupscalar(pathtotbl, landuse, subcatch, soil)  #
                 self.logger.info("Creating map from table: " + pathtotbl)
             else:
                 self.logger.warning(
@@ -246,7 +245,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                     + ") returning default value: "
                     + str(default)
                 )
-                rest = pcr.scalar(default)
+                rest = scalar(default)
 
         return rest
 
@@ -259,15 +258,15 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.logger.info("Saving initial conditions over start conditions...")
             self.wf_suspend(self.SaveDir + "/instate/")
 
-        pcr.report(self.CumInwaterMM, self.SaveDir + "/outsum/CumInwaterMM.map")
-        pcr.report(self.CumReinfilt, self.SaveDir + "/outsum/CumReinfilt.map")
-        pcr.report(self.CumPrec, self.SaveDir + "/outsum/CumPrec.map")
-        pcr.report(self.CumEvap, self.SaveDir + "/outsum/CumEvap.map")
-        pcr.report(self.CumInt, self.SaveDir + "/outsum/CumInt.map")
-        pcr.report(self.CumLeakage, self.SaveDir + "/outsum/CumLeakage.map")
-        pcr.report(self.CumPotenEvap, self.SaveDir + "/outsum/CumPotenEvap.map")
-        pcr.report(self.CumExfiltWater, self.SaveDir + "/outsum/CumExfiltWater.map")
-        pcr.report(self.watbal, self.SaveDir + "/outsum/watbal.map")
+        report(self.CumInwaterMM, self.SaveDir + "/outsum/CumInwaterMM.map")
+        report(self.CumReinfilt, self.SaveDir + "/outsum/CumReinfilt.map")
+        report(self.CumPrec, self.SaveDir + "/outsum/CumPrec.map")
+        report(self.CumEvap, self.SaveDir + "/outsum/CumEvap.map")
+        report(self.CumInt, self.SaveDir + "/outsum/CumInt.map")
+        report(self.CumLeakage, self.SaveDir + "/outsum/CumLeakage.map")
+        report(self.CumPotenEvap, self.SaveDir + "/outsum/CumPotenEvap.map")
+        report(self.CumExfiltWater, self.SaveDir + "/outsum/CumExfiltWater.map")
+        report(self.watbal, self.SaveDir + "/outsum/watbal.map")
 
     def initial(self):
 
@@ -275,10 +274,10 @@ class WflowModel(pcraster.framework.DynamicModel):
         global statistics
         global multpars
 
-        self.thestep = pcr.scalar(0)
+        self.thestep = scalar(0)
         self.basetimestep = 86400
         self.SSSF = False
-        pcr.setglobaloption("unittrue")
+        setglobaloption("unittrue")
         intbl = "intbl"
         self.precipTss = "/intss/P.tss"
         self.evapTss = "/intss/PET.tss"
@@ -357,31 +356,31 @@ class WflowModel(pcraster.framework.DynamicModel):
         )
 
         # 2: Input base maps ########################################################
-        subcatch = pcr.ordinal(
-            pcr.readmap(self.Dir + wflow_subcatch)
+        subcatch = ordinal(
+            readmap(self.Dir + wflow_subcatch)
         )  # Determines the area of calculations (all cells > 0)
-        subcatch = pcr.ifthen(subcatch > 0, subcatch)
+        subcatch = ifthen(subcatch > 0, subcatch)
         if self.sCatch > 0:
-            subcatch = pcr.ifthen(subcatch == sCatch, subcatch)
+            subcatch = ifthen(subcatch == sCatch, subcatch)
 
-        self.Altitude = pcr.readmap(
+        self.Altitude = readmap(
             self.Dir + wflow_dem
-        )  # * pcr.scalar(pcr.defined(subcatch)) # DEM
-        self.TopoLdd = pcr.readmap(self.Dir + wflow_ldd)  # Local
-        self.TopoId = pcr.ordinal(pcr.readmap(self.Dir + wflow_subcatch))  # area map
-        self.River = pcr.cover(pcr.boolean(pcr.readmap(self.Dir + wflow_river)), 0)
+        )  # * scalar(defined(subcatch)) # DEM
+        self.TopoLdd = readmap(self.Dir + wflow_ldd)  # Local
+        self.TopoId = ordinal(readmap(self.Dir + wflow_subcatch))  # area map
+        self.River = cover(boolean(readmap(self.Dir + wflow_river)), 0)
         self.RiverLength = pcrut.readmapSave(self.Dir + wflow_riverlength, 0.0)
         # Factor to multiply riverlength with (defaults to 1.0)
         self.RiverLengthFac = pcrut.readmapSave(self.Dir + wflow_riverlength_fact, 1.0)
 
         # read landuse and soilmap and make sure there are no missing points related to the
         # subcatchment map. Currently sets the lu and soil type  type to 1
-        self.LandUse = pcr.readmap(self.Dir + wflow_landuse)
-        self.LandUse = pcr.cover(self.LandUse, pcr.nominal(pcr.ordinal(subcatch) > 0))
-        self.Soil = pcr.readmap(self.Dir + wflow_soil)
-        self.Soil = pcr.cover(self.Soil, pcr.nominal(pcr.ordinal(subcatch) > 0))
-        self.OutputLoc = pcr.ordinal(
-            pcr.readmap(self.Dir + wflow_gauges)
+        self.LandUse = readmap(self.Dir + wflow_landuse)
+        self.LandUse = cover(self.LandUse, nominal(ordinal(subcatch) > 0))
+        self.Soil = readmap(self.Dir + wflow_soil)
+        self.Soil = cover(self.Soil, nominal(ordinal(subcatch) > 0))
+        self.OutputLoc = ordinal(
+            readmap(self.Dir + wflow_gauges)
         )  # location of output gauge(s)
         self.InflowLoc = pcrut.readmapSave(
             self.Dir + wflow_inflow, 0.0
@@ -402,11 +401,11 @@ class WflowModel(pcraster.framework.DynamicModel):
         )
 
         if self.scalarInput:
-            self.gaugesMap = pcr.readmap(
+            self.gaugesMap = readmap(
                 self.Dir + wflow_mgauges
             )  # location of rainfall/evap/temp gauge(s)
-        self.OutputId = pcr.ordinal(
-            pcr.readmap(self.Dir + wflow_subcatch)
+        self.OutputId = ordinal(
+            readmap(self.Dir + wflow_subcatch)
         )  # location of subcatchment
         # Temperature correction poer cell to add
 
@@ -421,7 +420,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             0.0,
         )
 
-        self.ZeroMap = 0.0 * pcr.scalar(subcatch)  # map with only zero's
+        self.ZeroMap = 0.0 * scalar(subcatch)  # map with only zero's
 
         # 3: Input time series ###################################################
         self.P_mapstack = self.Dir + configget(
@@ -462,8 +461,8 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.e = 2.7183
         self.SScale = 100.0
 
-        self.Latitude = pcr.ycoordinate(pcr.boolean(self.Altitude))
-        self.Longitude = pcr.xcoordinate(pcr.boolean(self.Altitude))
+        self.Latitude = ycoordinate(boolean(self.Altitude))
+        self.Longitude = xcoordinate(boolean(self.Altitude))
 
         self.logger.info("Linking parameters to landuse, catchment and soil...")
         self.RunoffGeneratingGWPerc = self.readtblDefault(
@@ -494,7 +493,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.Soil,
             0.1,
         )
-        # self.Albedo=pcr.lookupscalar(self.Dir + "\intbl\Albedo.tbl",self.LandUse) # Not used anymore
+        # self.Albedo=lookupscalar(self.Dir + "\intbl\Albedo.tbl",self.LandUse) # Not used anymore
         self.CanopyGapFraction = self.readtblDefault(
             self.Dir + "/" + self.intbl + "/CanopyGapFraction.tbl",
             self.LandUse,
@@ -614,7 +613,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             * self.timestepsecs
             / self.basetimestep
         )
-        self.Beta = pcr.scalar(0.6)  # For sheetflow
+        self.Beta = scalar(0.6)  # For sheetflow
 
         self.M = self.readtblDefault(
             self.Dir + "/" + self.intbl + "/M.tbl",
@@ -678,10 +677,10 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.xl, self.yl, self.reallength = pcrut.detRealCellLength(
             self.ZeroMap, sizeinmetres
         )
-        self.Slope = pcr.slope(self.Altitude)
-        # self.Slope=pcr.ifthen(pcr.boolean(self.TopoId),pcr.max(0.001,self.Slope*celllength()/self.reallength))
-        self.Slope = pcr.max(0.001, self.Slope * pcr.celllength() / self.reallength)
-        Terrain_angle = pcr.scalar(pcr.atan(self.Slope))
+        self.Slope = slope(self.Altitude)
+        # self.Slope=ifthen(boolean(self.TopoId),max(0.001,self.Slope*celllength()/self.reallength))
+        self.Slope = max(0.001, self.Slope * celllength() / self.reallength)
+        Terrain_angle = scalar(atan(self.Slope))
 
         # Multiply parameters with a factor (for calibration etc) -P option in command line
         for k, v in multpars.items():
@@ -689,7 +688,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.logger.info("Parameter multiplication: " + estr)
             exec(estr)
 
-        self.N = pcr.ifthenelse(self.River, self.NRiver, self.N)
+        self.N = ifthenelse(self.River, self.NRiver, self.N)
 
         # Determine river width from DEM, upstream area and yearly average discharge
         # Scale yearly average Q at outlet with upstream are to get Q over whole catchment
@@ -697,12 +696,12 @@ class WflowModel(pcraster.framework.DynamicModel):
         # "Noah J. Finnegan et al 2005 Controls on the channel width of rivers:
         # Implications for modeling fluvial incision of bedrock"
 
-        upstr = pcr.catchmenttotal(1, self.TopoLdd)
-        Qscale = upstr / pcr.mapmaximum(upstr) * Qmax
+        upstr = catchmenttotal(1, self.TopoLdd)
+        Qscale = upstr / mapmaximum(upstr) * Qmax
         W = (
             (alf * (alf + 2.0) ** (0.6666666667)) ** (0.375)
             * Qscale ** (0.375)
-            * (pcr.max(0.0001, pcr.windowaverage(self.Slope, pcr.celllength() * 4.0))) ** (-0.1875)
+            * (max(0.0001, windowaverage(self.Slope, celllength() * 4.0))) ** (-0.1875)
             * self.N ** (0.375)
         )
         RiverWidth = W
@@ -710,28 +709,28 @@ class WflowModel(pcraster.framework.DynamicModel):
         # soil thickness based on topographical index (see Environmental modelling: finding simplicity in complexity)
         # 1: calculate wetness index
         # 2: Scale the capacity (now actually a max capacity) based on the index, also apply a minmum capacity
-        WI = pcr.ln(
-            pcr.accuflux(self.TopoLdd, 1) / self.Slope
+        WI = ln(
+            accuflux(self.TopoLdd, 1) / self.Slope
         )  # Topographical wetnesss. Scale WI by zone/subcatchment assuming these ara also geological units
-        WIMax = pcr.areamaximum(WI, self.TopoId) * WIMaxScale
-        self.FirstZoneThickness = pcr.max(
-            pcr.min(self.FirstZoneThickness, (WI / WIMax) * self.FirstZoneThickness),
+        WIMax = areamaximum(WI, self.TopoId) * WIMaxScale
+        self.FirstZoneThickness = max(
+            min(self.FirstZoneThickness, (WI / WIMax) * self.FirstZoneThickness),
             self.FirstZoneMinCapacity,
         )
 
         self.FirstZoneCapacity = self.FirstZoneThickness * (self.thetaS - self.thetaR)
 
         # limit roots to top 99% of first zone
-        self.RootingDepth = pcr.min(self.FirstZoneThickness * 0.99, self.RootingDepth)
+        self.RootingDepth = min(self.FirstZoneThickness * 0.99, self.RootingDepth)
 
         # subgrid runoff generation
-        self.DemMax = pcr.readmap(self.Dir + "/staticmaps/wflow_demmax")
-        self.DrainageBase = pcr.readmap(self.Dir + "/staticmaps/wflow_demmin")
-        self.CC = pcr.min(
-            100.0, -log(1.0 / 0.1 - 1) / pcr.min(-0.1, self.DrainageBase - self.Altitude)
+        self.DemMax = readmap(self.Dir + "/staticmaps/wflow_demmax")
+        self.DrainageBase = readmap(self.Dir + "/staticmaps/wflow_demmin")
+        self.CC = min(
+            100.0, -log(1.0 / 0.1 - 1) / min(-0.1, self.DrainageBase - self.Altitude)
         )
 
-        # if pcr.maptotal(self.RunoffGeneratingThickness <= 0.0):
+        # if maptotal(self.RunoffGeneratingThickness <= 0.0):
         self.GWScale = (
             (self.DemMax - self.DrainageBase)
             / self.FirstZoneThickness
@@ -750,14 +749,14 @@ class WflowModel(pcraster.framework.DynamicModel):
                 idx = (gaugear == thecol).nonzero()
                 touse[idx] = thecol
 
-            self.UpdateMap = pcr.numpy2pcr(pcr.Nominal, touse, 0.0)
+            self.UpdateMap = numpy2pcr(Nominal, touse, 0.0)
             # Calulate distance to updating points (upstream) annd use to scale the correction
             # ldddist returns zero for cell at the gauges so add 1.0 tp result
-            self.DistToUpdPt = pcr.cover(
-                pcr.min(
-                    ldddist(self.TopoLdd, pcr.boolean(pcr.cover(self.UpdateMap, 0)), 1)
+            self.DistToUpdPt = cover(
+                min(
+                    ldddist(self.TopoLdd, boolean(cover(self.UpdateMap, 0)), 1)
                     * self.reallength
-                    / pcr.celllength(),
+                    / celllength(),
                     self.UpdMaxDist,
                 ),
                 self.UpdMaxDist,
@@ -765,8 +764,8 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         # Initializing of variables
         self.logger.info("Initializing of model variables..")
-        self.TopoLdd = pcr.lddmask(self.TopoLdd, pcr.boolean(self.TopoId))
-        catchmentcells = pcr.maptotal(pcr.scalar(self.TopoId))
+        self.TopoLdd = lddmask(self.TopoLdd, boolean(self.TopoId))
+        catchmentcells = maptotal(scalar(self.TopoId))
 
         # Used to seperate output per LandUse/management classes
         OutZones = self.LandUse
@@ -810,19 +809,19 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.CumIF = self.ZeroMap
         self.CumSeepage = self.ZeroMap
         self.CumActInfilt = self.ZeroMap
-        self.Aspect = pcr.scalar(pcr.aspect(self.Altitude))  # aspect [deg]
-        self.Aspect = pcr.ifthenelse(self.Aspect <= 0.0, pcr.scalar(0.001), self.Aspect)
+        self.Aspect = scalar(aspect(self.Altitude))  # aspect [deg]
+        self.Aspect = ifthenelse(self.Aspect <= 0.0, scalar(0.001), self.Aspect)
         # On Flat areas the Aspect function fails, fill in with average...
-        self.Aspect = pcr.ifthenelse(
-            pcr.defined(self.Aspect), self.Aspect, pcr.areaaverage(self.Aspect, self.TopoId)
+        self.Aspect = ifthenelse(
+            defined(self.Aspect), self.Aspect, areaaverage(self.Aspect, self.TopoId)
         )
 
         # Set DCL to riverlength if that is longer that the basic length calculated from grid
         drainlength = detdrainlength(self.TopoLdd, self.xl, self.yl)
 
-        self.DCL = pcr.max(drainlength, self.RiverLength)  # m
+        self.DCL = max(drainlength, self.RiverLength)  # m
         # Multiply with Factor (taken from upscaling operation, defaults to 1.0 if no map is supplied
-        self.DCL = self.DCL * pcr.max(1.0, self.RiverLengthFac)
+        self.DCL = self.DCL * max(1.0, self.RiverLengthFac)
 
         # water depth (m)
         # set width for kinematic wave to cell width for all cells
@@ -830,90 +829,90 @@ class WflowModel(pcraster.framework.DynamicModel):
         # However, in the main river we have real flow so set the width to the
         # width of the river
 
-        self.Bw = pcr.ifthenelse(self.River, RiverWidth, self.Bw)
+        self.Bw = ifthenelse(self.River, RiverWidth, self.Bw)
 
         # Add rivers to the WaterFrac, but check with waterfrac map
-        self.RiverFrac = pcr.min(
+        self.RiverFrac = min(
             1.0,
-            pcr.ifthenelse(self.River, (RiverWidth * self.DCL) / (self.xl * self.yl), 0),
+            ifthenelse(self.River, (RiverWidth * self.DCL) / (self.xl * self.yl), 0),
         )
-        self.WaterFrac = self.WaterFrac - pcr.ifthenelse(
+        self.WaterFrac = self.WaterFrac - ifthenelse(
             (self.RiverFrac + self.WaterFrac) > 1.0,
             self.RiverFrac + self.WaterFrac - 1.0,
             0.0,
         )
 
         # term for Alpha
-        self.AlpTerm = pow((self.N / (pcr.sqrt(self.Slope))), self.Beta)
+        self.AlpTerm = pow((self.N / (sqrt(self.Slope))), self.Beta)
         # power for Alpha
         self.AlpPow = (2.0 / 3.0) * self.Beta
         # initial approximation for Alpha
 
-        # self.initstorage=pcr.areaaverage(self.FirstZoneDepth,self.TopoId)+areaaverage(self.UStoreDepth,self.TopoId)#+areaaverage(self.Snow,self.TopoId)
+        # self.initstorage=areaaverage(self.FirstZoneDepth,self.TopoId)+areaaverage(self.UStoreDepth,self.TopoId)#+areaaverage(self.Snow,self.TopoId)
         # calculate catchmentsize
-        self.upsize = pcr.catchmenttotal(self.xl * self.yl, self.TopoLdd)
-        self.csize = pcr.areamaximum(self.upsize, self.TopoId)
+        self.upsize = catchmenttotal(self.xl * self.yl, self.TopoLdd)
+        self.csize = areamaximum(self.upsize, self.TopoId)
         # Save some summary maps
         self.logger.info("Saving summary maps...")
         if self.modelSnow:
-            pcr.report(self.Cfmax, self.Dir + "/" + self.runId + "/outsum/Cfmax.map")
-            pcr.report(self.TTI, self.Dir + "/" + self.runId + "/outsum/TTI.map")
-            pcr.report(self.TT, self.Dir + "/" + self.runId + "/outsum/TT.map")
-            pcr.report(self.WHC, self.Dir + "/" + self.runId + "/outsum/WHC.map")
+            report(self.Cfmax, self.Dir + "/" + self.runId + "/outsum/Cfmax.map")
+            report(self.TTI, self.Dir + "/" + self.runId + "/outsum/TTI.map")
+            report(self.TT, self.Dir + "/" + self.runId + "/outsum/TT.map")
+            report(self.WHC, self.Dir + "/" + self.runId + "/outsum/WHC.map")
 
-        pcr.report(self.Cmax, self.Dir + "/" + self.runId + "/outsum/Cmax.map")
-        pcr.report(self.csize, self.Dir + "/" + self.runId + "/outsum/CatchmentSize.map")
-        pcr.report(self.upsize, self.Dir + "/" + self.runId + "/outsum/UpstreamSize.map")
-        pcr.report(self.EoverR, self.Dir + "/" + self.runId + "/outsum/EoverR.map")
-        pcr.report(
+        report(self.Cmax, self.Dir + "/" + self.runId + "/outsum/Cmax.map")
+        report(self.csize, self.Dir + "/" + self.runId + "/outsum/CatchmentSize.map")
+        report(self.upsize, self.Dir + "/" + self.runId + "/outsum/UpstreamSize.map")
+        report(self.EoverR, self.Dir + "/" + self.runId + "/outsum/EoverR.map")
+        report(
             self.RootingDepth, self.Dir + "/" + self.runId + "/outsum/RootingDepth.map"
         )
-        pcr.report(
+        report(
             self.CanopyGapFraction,
             self.Dir + "/" + self.runId + "/outsum/CanopyGapFraction.map",
         )
-        pcr.report(
+        report(
             self.InfiltCapSoil,
             self.Dir + "/" + self.runId + "/outsum/InfiltCapSoil.map",
         )
-        pcr.report(
+        report(
             self.InfiltCapPath,
             self.Dir + "/" + self.runId + "/outsum/InfiltCapPath.map",
         )
-        pcr.report(self.PathFrac, self.Dir + "/" + self.runId + "/outsum/PathFrac.map")
-        pcr.report(self.thetaR, self.Dir + "/" + self.runId + "/outsum/thetaR.map")
-        pcr.report(self.thetaS, self.Dir + "/" + self.runId + "/outsum/thetaS.map")
-        pcr.report(
+        report(self.PathFrac, self.Dir + "/" + self.runId + "/outsum/PathFrac.map")
+        report(self.thetaR, self.Dir + "/" + self.runId + "/outsum/thetaR.map")
+        report(self.thetaS, self.Dir + "/" + self.runId + "/outsum/thetaS.map")
+        report(
             self.FirstZoneMinCapacity,
             self.Dir + "/" + self.runId + "/outsum/FirstZoneMinCapacity.map",
         )
-        pcr.report(
+        report(
             self.FirstZoneKsatVer,
             self.Dir + "/" + self.runId + "/outsum/FirstZoneKsatVer.map",
         )
-        pcr.report(self.M, self.Dir + "/" + self.runId + "/outsum/M.map")
-        pcr.report(
+        report(self.M, self.Dir + "/" + self.runId + "/outsum/M.map")
+        report(
             self.FirstZoneCapacity,
             self.Dir + "/" + self.runId + "/outsum/FirstZoneCapacity.map",
         )
-        pcr.report(Terrain_angle, self.Dir + "/" + self.runId + "/outsum/angle.map")
-        pcr.report(self.Slope, self.Dir + "/" + self.runId + "/outsum/slope.map")
-        pcr.report(WI, self.Dir + "/" + self.runId + "/outsum/WI.map")
-        pcr.report(self.CC, self.Dir + "/" + self.runId + "/outsum/CC.map")
-        pcr.report(self.N, self.Dir + "/" + self.runId + "/outsum/N.map")
-        pcr.report(self.RiverFrac, self.Dir + "/" + self.runId + "/outsum/RiverFrac.map")
+        report(Terrain_angle, self.Dir + "/" + self.runId + "/outsum/angle.map")
+        report(self.Slope, self.Dir + "/" + self.runId + "/outsum/slope.map")
+        report(WI, self.Dir + "/" + self.runId + "/outsum/WI.map")
+        report(self.CC, self.Dir + "/" + self.runId + "/outsum/CC.map")
+        report(self.N, self.Dir + "/" + self.runId + "/outsum/N.map")
+        report(self.RiverFrac, self.Dir + "/" + self.runId + "/outsum/RiverFrac.map")
 
-        pcr.report(self.xl, self.Dir + "/" + self.runId + "/outsum/xl.map")
-        pcr.report(self.yl, self.Dir + "/" + self.runId + "/outsum/yl.map")
-        pcr.report(self.reallength, self.Dir + "/" + self.runId + "/outsum/rl.map")
-        pcr.report(self.DCL, self.Dir + "/" + self.runId + "/outsum/DCL.map")
-        pcr.report(self.Bw, self.Dir + "/" + self.runId + "/outsum/Bw.map")
-        pcr.report(
-            pcr.ifthen(self.River, self.Bw),
+        report(self.xl, self.Dir + "/" + self.runId + "/outsum/xl.map")
+        report(self.yl, self.Dir + "/" + self.runId + "/outsum/yl.map")
+        report(self.reallength, self.Dir + "/" + self.runId + "/outsum/rl.map")
+        report(self.DCL, self.Dir + "/" + self.runId + "/outsum/DCL.map")
+        report(self.Bw, self.Dir + "/" + self.runId + "/outsum/Bw.map")
+        report(
+            ifthen(self.River, self.Bw),
             self.Dir + "/" + self.runId + "/outsum/RiverWidth.map",
         )
         if self.updating:
-            pcr.report(
+            report(
                 self.DistToUpdPt,
                 self.Dir + "/" + self.runId + "/outsum/DistToUpdPt.map",
             )
@@ -952,7 +951,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.CellStorage = self.FirstZoneDepth + self.UStoreDepth
 
         # Determine actual water depth
-        self.zi = pcr.max(
+        self.zi = max(
             0.0,
             self.FirstZoneThickness - self.FirstZoneDepth / (self.thetaS - self.thetaR),
         )
@@ -998,18 +997,18 @@ class WflowModel(pcraster.framework.DynamicModel):
         )
         self.thestep = self.thestep + 1
 
-        self.Precipitation = pcr.cover(self.wf_readmap(self.P_mapstack, 0.0), 0)
-        self.HP = pcr.cover(self.wf_readmap(self.HP_mapstack, 0.0), 0)
-        # self.PotenEvap=pcr.cover(self.wf_readmap(self.PET_mapstack,0.0),0)
-        self.Radiation = pcr.cover(self.wf_readmap(self.RAD_mapstack, 0.0), 0)
-        # Inflow=pcr.cover(self.readmap(self.Inflow),0)
+        self.Precipitation = cover(self.wf_readmap(self.P_mapstack, 0.0), 0)
+        self.HP = cover(self.wf_readmap(self.HP_mapstack, 0.0), 0)
+        # self.PotenEvap=cover(self.wf_readmap(self.PET_mapstack,0.0),0)
+        self.Radiation = cover(self.wf_readmap(self.RAD_mapstack, 0.0), 0)
+        # Inflow=cover(self.readmap(self.Inflow),0)
         self.Inflow = pcrut.readmapSave(self.Inflow_mapstack, 0.0)
         self.Seepage = pcrut.readmapSave(self.Seepage_mapstack, 0.0)
-        # Inflow=pcr.spatial(pcr.scalar(0.0))
-        self.Temperature = pcr.cover(self.wf_readmap(self.TEMP_mapstack, 0.0), 0)
-        self.RH = pcr.cover(self.wf_readmap(self.RH_mapstack, 0.0), 0)
-        self.WindSpeed = pcr.cover(self.wf_readmap(self.WindSpeed_mapstack, 0.0), 0)
-        self.WaterCatch = pcr.cover(self.wf_readmap(self.WaterCatch_mapstack, 0.0), 0)
+        # Inflow=spatial(scalar(0.0))
+        self.Temperature = cover(self.wf_readmap(self.TEMP_mapstack, 0.0), 0)
+        self.RH = cover(self.wf_readmap(self.RH_mapstack, 0.0), 0)
+        self.WindSpeed = cover(self.wf_readmap(self.WindSpeed_mapstack, 0.0), 0)
+        self.WaterCatch = cover(self.wf_readmap(self.WaterCatch_mapstack, 0.0), 0)
 
         for k, v in multdynapars.items():
             estr = k + "=" + k + "*" + str(v)
@@ -1029,7 +1028,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         G = self.Radiation * (1 - self.Albedo) * 1.0 / (self.LeafAreaIndex + 12)
 
         # Determine Esat and Delta according to Calder 1990
-        Esat = 6.1078 * pcr.exp(17.2694 * self.Temperature / (self.Temperature + 237.3))
+        Esat = 6.1078 * exp(17.2694 * self.Temperature / (self.Temperature + 237.3))
         Delta = Esat * 17.2694 * 237.3 / sqr(self.Temperature + 237.3)
 
         # Determine Eact using relative humidity
@@ -1048,7 +1047,7 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         # At present set A to Radiation * (1- Albedo) and split according to
         # wetted part of the Canopy
-        WetPart = pcr.min(1.0, self.CanopyStorage / self.Cmax)
+        WetPart = min(1.0, self.CanopyStorage / self.Cmax)
         Atrans = (self.Radiation - G) * (1 - self.Albedo) * (1 - WetPart)
         A = (self.Radiation - G) * (1 - self.Albedo)
         Acanopy = (self.Radiation - G) * (1 - self.Albedo)
@@ -1066,7 +1065,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         Zoh = 0.25 * Zom
         d = 0.66 * self.VegetationHeigth
 
-        Ra = 4.72 * pcr.ln((z - d) / Zom) * pcr.ln((z - d) / Zoh) / (1 + 0.54 * self.WindSpeed)
+        Ra = 4.72 * ln((z - d) / Zom) * ln((z - d) / Zoh) / (1 + 0.54 * self.WindSpeed)
 
         # Now the actual formula, this is for Interception, rs is zero
         VPD = Esat - Eact
@@ -1085,17 +1084,17 @@ class WflowModel(pcraster.framework.DynamicModel):
         # Now the actual formula, this is for Transpiration
         # Determine Rs seperate for Pasture and Forest (Hard coded, should be paramiterized in files later)
         # Reference equations
-        InVPD = pcr.ifthenelse(VPD < 0.01, 0.01, VPD)
-        InWave = pcr.ifthenelse(ShortWave < 5.0, 5.0, ShortWave)
+        InVPD = ifthenelse(VPD < 0.01, 0.01, VPD)
+        InWave = ifthenelse(ShortWave < 5.0, 5.0, ShortWave)
         # CQ Specific function!
-        PasRs = pcr.exp(1.05 * pcr.ln(InVPD) - 0.651 * pcr.ln(InWave) + 5.89)
+        PasRs = exp(1.05 * ln(InVPD) - 0.651 * ln(InWave) + 5.89)
         # CQ Specific function!
-        ForRs = pcr.exp(0.867 * pcr.ln(InVPD) - 0.000831 * InWave + 2.81)
+        ForRs = exp(0.867 * ln(InVPD) - 0.000831 * InWave + 2.81)
 
-        Rs = pcr.max(0.5, pcr.min(1000, pcr.ifthenelse(pcr.scalar(self.LandUse) > 1.0, ForRs, PasRs)))
+        Rs = max(0.5, min(1000, ifthenelse(scalar(self.LandUse) > 1.0, ForRs, PasRs)))
 
         # No transpiration at nigth, this is of no use to the trees.
-        Rs = pcr.ifthenelse(InWave < 10.0, 500, Rs)
+        Rs = ifthenelse(InWave < 10.0, 500, Rs)
 
         ##########################################################################
         # Interception according to a modified Rutter model with hourly timesteps#
@@ -1108,7 +1107,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         Pfrac = (1 - p - pt) * self.Precipitation
 
         # S cannot be larger than Cmax, no gravity drainage bolow that
-        DD = pcr.ifthenelse(
+        DD = ifthenelse(
             self.CanopyStorage > self.Cmax, self.Cmax - self.CanopyStorage, 0.0
         )
         self.CanopyStorage = self.CanopyStorage - DD
@@ -1117,14 +1116,14 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.CanopyStorage = self.CanopyStorage + Pfrac
 
         # Now do the Evap, make sure the store does not get negative
-        dC = -1 * pcr.min(self.CanopyStorage, PotEvap)
+        dC = -1 * min(self.CanopyStorage, PotEvap)
         self.CanopyStorage = self.CanopyStorage + dC
 
         LeftOver = PotEvap + dC
         # Amount of evap not used
 
         # Now drain the canopy storage again if needed...
-        D = pcr.ifthenelse(
+        D = ifthenelse(
             self.CanopyStorage > self.Cmax, self.CanopyStorage - self.Cmax, 0.0
         )
         self.CanopyStorage = self.CanopyStorage - D
@@ -1138,9 +1137,9 @@ class WflowModel(pcraster.framework.DynamicModel):
         Interception = -dC
 
         # Determine Evnergy left over for transpiration
-        Atrans = pcr.ifthenelse(
+        Atrans = ifthenelse(
             self.CanopyStorage > 0.001,
-            pcr.ifthenelse(PotEvap > 0, LeftOver / PotEvap * A, A),
+            ifthenelse(PotEvap > 0, LeftOver / PotEvap * A, A),
             A,
         )
 
@@ -1184,20 +1183,20 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.AbsoluteGW = self.DemMax - (self.zi * self.GWScale)
             self.SubCellFrac = sCurve(self.AbsoluteGW, c=self.CC, a=self.Altitude + 1.0)
             self.SubCellRunoff = self.SubCellFrac * FreeWaterDepth
-            self.SubCellGWRunoff = pcr.min(
+            self.SubCellGWRunoff = min(
                 self.SubCellFrac * self.FirstZoneDepth,
                 self.SubCellFrac
                 * self.Slope
                 * self.FirstZoneKsatVer
-                * pcr.exp(-self.f * self.zi),
+                * exp(-self.f * self.zi),
             )
             self.FirstZoneDepth = self.FirstZoneDepth - self.SubCellGWRunoff
             FreeWaterDepth = FreeWaterDepth - self.SubCellRunoff
         else:
             self.AbsoluteGW = self.DemMax - (self.zi * self.GWScale)
-            self.SubCellFrac = pcr.spatial(pcr.scalar(0.0))
-            self.SubCellGWRunoff = pcr.spatial(pcr.scalar(0.0))
-            self.SubCellRunoff = pcr.spatial(pcr.scalar(0.0))
+            self.SubCellFrac = spatial(scalar(0.0))
+            self.SubCellGWRunoff = spatial(scalar(0.0))
+            self.SubCellRunoff = spatial(scalar(0.0))
 
         # ----->>
         # First determine if the soil infiltration capacity can deal with the
@@ -1207,32 +1206,32 @@ class WflowModel(pcraster.framework.DynamicModel):
         SoilInf = FreeWaterDepth * (1 - self.PathFrac)
         PathInf = FreeWaterDepth * self.PathFrac
         if self.modelSnow:
-            soilInfRedu = pcr.ifthenelse(self.TSoil < 0.0, self.cf_soil, 1.0)
+            soilInfRedu = ifthenelse(self.TSoil < 0.0, self.cf_soil, 1.0)
         else:
             soilInfRedu = 1.0
-        MaxInfiltSoil = pcr.min(self.InfiltCapSoil * soilInfRedu, SoilInf)
+        MaxInfiltSoil = min(self.InfiltCapSoil * soilInfRedu, SoilInf)
 
-        self.SoilInfiltExceeded = self.SoilInfiltExceeded + pcr.scalar(
+        self.SoilInfiltExceeded = self.SoilInfiltExceeded + scalar(
             self.InfiltCapSoil * soilInfRedu < SoilInf
         )
-        InfiltSoil = pcr.min(MaxInfiltSoil, UStoreCapacity)
+        InfiltSoil = min(MaxInfiltSoil, UStoreCapacity)
         self.UStoreDepth = self.UStoreDepth + InfiltSoil
         UStoreCapacity = UStoreCapacity - InfiltSoil
         FreeWaterDepth = FreeWaterDepth - InfiltSoil
         # <-------
-        MaxInfiltPath = pcr.min(self.InfiltCapPath * soilInfRedu, PathInf)
-        # self.PathInfiltExceeded=self.PathInfiltExceeded + pcr.ifthenelse(self.InfiltCapPath < FreeWaterDepth, pcr.scalar(1), pcr.scalar(0))
-        self.PathInfiltExceeded = self.PathInfiltExceeded + pcr.scalar(
+        MaxInfiltPath = min(self.InfiltCapPath * soilInfRedu, PathInf)
+        # self.PathInfiltExceeded=self.PathInfiltExceeded + ifthenelse(self.InfiltCapPath < FreeWaterDepth, scalar(1), scalar(0))
+        self.PathInfiltExceeded = self.PathInfiltExceeded + scalar(
             self.InfiltCapPath * soilInfRedu < PathInf
         )
-        InfiltPath = pcr.min(MaxInfiltPath, UStoreCapacity)
+        InfiltPath = min(MaxInfiltPath, UStoreCapacity)
         self.UStoreDepth = self.UStoreDepth + InfiltPath
         UStoreCapacity = UStoreCapacity - InfiltPath
         FreeWaterDepth = FreeWaterDepth - InfiltPath
 
         self.ActInfilt = InfiltPath + InfiltSoil
 
-        self.InfiltExcess = pcr.ifthenelse(UStoreCapacity > 0.0, FreeWaterDepth, 0.0)
+        self.InfiltExcess = ifthenelse(UStoreCapacity > 0.0, FreeWaterDepth, 0.0)
         self.CumInfiltExcess = self.CumInfiltExcess + self.InfiltExcess
 
         self.ActEvap, self.FirstZoneDepth, self.UStoreDepth, self.ActEvapUStore = actEvap_SBM(
@@ -1248,52 +1247,52 @@ class WflowModel(pcraster.framework.DynamicModel):
         ##########################################################################
         # Transfer of water from unsaturated to saturated store...################
         ##########################################################################
-        self.zi = pcr.max(
+        self.zi = max(
             0.0,
             self.FirstZoneThickness - self.FirstZoneDepth / (self.thetaS - self.thetaR),
         )  # Determine actual water depth
-        Ksat = self.FirstZoneKsatVer * pcr.exp(-self.f * self.zi)
-        self.DeepKsat = self.FirstZoneKsatVer * pcr.exp(-self.f * self.FirstZoneThickness)
+        Ksat = self.FirstZoneKsatVer * exp(-self.f * self.zi)
+        self.DeepKsat = self.FirstZoneKsatVer * exp(-self.f * self.FirstZoneThickness)
 
         # Determine saturation deficit. NB, as noted by Vertessy and Elsenbeer 1997
         # this deficit does NOT take into account the water in the unsaturated zone
         SaturationDeficit = self.FirstZoneCapacity - self.FirstZoneDepth
 
         # now the actual tranfer to the saturated store..
-        self.Transfer = pcr.min(
+        self.Transfer = min(
             self.UStoreDepth,
-            pcr.ifthenelse(
+            ifthenelse(
                 SaturationDeficit <= 0.00001,
                 0.0,
                 Ksat * self.UStoreDepth / (SaturationDeficit + 1),
             ),
         )
         # Determine Ksat at base
-        # DeepTransfer = pcr.min(self.UStoreDepth,ifthenelse (SaturationDeficit <= 0.00001, 0.0, DeepKsat * self.UStoreDepth/(SaturationDeficit+1)))
+        # DeepTransfer = min(self.UStoreDepth,ifthenelse (SaturationDeficit <= 0.00001, 0.0, DeepKsat * self.UStoreDepth/(SaturationDeficit+1)))
 
         # Now add leakage
         # Limit to MaxLeakage/day. Leakage percentage gets bigger if the
         # storm is bigger (macropores start kicking in...
-        ActLeakage = pcr.max(
-            0, pcr.min(self.MaxLeakage, self.Transfer * pcr.exp(0.01 * self.Transfer) / e)
+        ActLeakage = max(
+            0, min(self.MaxLeakage, self.Transfer * exp(0.01 * self.Transfer) / e)
         )
         self.Transfer = self.Transfer - ActLeakage
         # Now add leakage. to deeper groundwater
-        # ActLeakage = pcr.cover(pcr.max(0,pcr.min(self.MaxLeakage* timestepsecs/basetimestep,ActLeakage)),0)
+        # ActLeakage = cover(max(0,min(self.MaxLeakage* timestepsecs/basetimestep,ActLeakage)),0)
 
         # Now look if there is Seeapage
 
-        # ActLeakage = pcr.ifthenelse(self.Seepage > 0.0, -1.0 * Seepage, ActLeakage)
+        # ActLeakage = ifthenelse(self.Seepage > 0.0, -1.0 * Seepage, ActLeakage)
         self.FirstZoneDepth = self.FirstZoneDepth + self.Transfer - ActLeakage
         self.UStoreDepth = self.UStoreDepth - self.Transfer
 
         # Determine % saturated
-        # Sat = pcr.ifthenelse(self.FirstZoneDepth >= (self.FirstZoneCapacity*0.999), pcr.scalar(1.0), pcr.scalar(0.0))
-        self.Sat = pcr.max(
+        # Sat = ifthenelse(self.FirstZoneDepth >= (self.FirstZoneCapacity*0.999), scalar(1.0), scalar(0.0))
+        self.Sat = max(
             self.SubCellFrac,
-            pcr.scalar(self.FirstZoneDepth >= (self.FirstZoneCapacity * 0.999)),
+            scalar(self.FirstZoneDepth >= (self.FirstZoneCapacity * 0.999)),
         )
-        # PercSat = pcr.areaaverage(pcr.scalar(Sat),self.TopoId) * 100
+        # PercSat = areaaverage(scalar(Sat),self.TopoId) * 100
 
         ##########################################################################
         # Horizontal (downstream) transport of water #############################
@@ -1301,22 +1300,22 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         if self.waterdem:
             waterDem = self.Altitude - (self.zi * 0.001)
-            waterLdd = pcr.lddcreate(waterDem, 1e35, 1e35, 1e35, 1e35)
-            # waterLdd = pcr.lddcreate(waterDem,1,1,1,1)
-            waterSlope = pcr.max(0.00001, pcr.slope(waterDem) * pcr.celllength() / self.reallength)
+            waterLdd = lddcreate(waterDem, 1e35, 1e35, 1e35, 1e35)
+            # waterLdd = lddcreate(waterDem,1,1,1,1)
+            waterSlope = max(0.00001, slope(waterDem) * celllength() / self.reallength)
 
-        self.zi = pcr.max(
+        self.zi = max(
             0.0,
             self.FirstZoneThickness - self.FirstZoneDepth / (self.thetaS - self.thetaR),
         )  # Determine actual water depth
 
         if self.waterdem:
-            MaxHor = pcr.max(
+            MaxHor = max(
                 0.0,
-                pcr.min(
+                min(
                     self.FirstZoneKsatVer
                     * waterSlope
-                    * pcr.exp(-SaturationDeficit / self.M),
+                    * exp(-SaturationDeficit / self.M),
                     self.FirstZoneDepth,
                 ),
             )
@@ -1326,13 +1325,13 @@ class WflowModel(pcraster.framework.DynamicModel):
             )
         else:
             #
-            # MaxHor = pcr.max(0,pcr.min(self.FirstZoneKsatVer * self.Slope * pcr.exp(-SaturationDeficit/self.M),self.FirstZoneDepth*(self.thetaS-self.thetaR))) * timestepsecs/basetimestep
-            MaxHor = pcr.max(
+            # MaxHor = max(0,min(self.FirstZoneKsatVer * self.Slope * exp(-SaturationDeficit/self.M),self.FirstZoneDepth*(self.thetaS-self.thetaR))) * timestepsecs/basetimestep
+            MaxHor = max(
                 0.0,
-                pcr.min(
+                min(
                     self.FirstZoneKsatVer
                     * self.Slope
-                    * pcr.exp(-SaturationDeficit / self.M),
+                    * exp(-SaturationDeficit / self.M),
                     self.FirstZoneDepth,
                 ),
             )
@@ -1358,17 +1357,17 @@ class WflowModel(pcraster.framework.DynamicModel):
         # Re-determine UStoreCapacity
         UStoreCapacity = self.FirstZoneCapacity - self.FirstZoneDepth - self.UStoreDepth
         # Determine capilary rise
-        self.zi = pcr.max(
+        self.zi = max(
             0.0,
             self.FirstZoneThickness - self.FirstZoneDepth / (self.thetaS - self.thetaR),
         )  # Determine actual water depth
-        Ksat = self.FirstZoneKsatVer * pcr.exp(-self.f * self.zi)
+        Ksat = self.FirstZoneKsatVer * exp(-self.f * self.zi)
 
-        MaxCapFlux = pcr.max(
-            0.0, pcr.min(Ksat, self.ActEvapUStore, UStoreCapacity, self.FirstZoneDepth)
+        MaxCapFlux = max(
+            0.0, min(Ksat, self.ActEvapUStore, UStoreCapacity, self.FirstZoneDepth)
         )
         # No capilary flux is roots are in water, max flux if very near to water, lower flux if distance is large
-        CapFluxScale = pcr.ifthenelse(
+        CapFluxScale = ifthenelse(
             self.zi > self.RootingDepth,
             self.CapScale / (self.CapScale + self.zi - self.RootingDepth),
             0.0,
@@ -1386,15 +1385,15 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         # Estimate water that may re-infiltrate
         if self.reInfilt:
-            Reinfilt = pcr.max(
-                0, pcr.min(SurfaceWater, pcr.min(self.InfiltCapSoil, UStoreCapacity))
+            Reinfilt = max(
+                0, min(SurfaceWater, min(self.InfiltCapSoil, UStoreCapacity))
             )
             self.CumReinfilt = self.CumReinfilt + Reinfilt
             self.UStoreDepth = self.UStoreDepth + Reinfilt
         else:
             Reinfilt = self.ZeroMap
 
-        self.InwaterMM = pcr.max(
+        self.InwaterMM = max(
             0.0,
             self.ExfiltWater
             + FreeWaterDepth
@@ -1419,7 +1418,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         # per distance along stream
         q = self.Inwater / self.DCL
         # discharge (m3/s)
-        self.SurfaceRunoff = pcr.kinematic(
+        self.SurfaceRunoff = kinematic(
             self.TopoLdd,
             self.SurfaceRunoff,
             q,
@@ -1433,7 +1432,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.SurfaceRunoff * self.QMMConv
         )  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
         self.updateRunOff()
-        self.InflowKinWaveCell = pcr.upstream(self.TopoLdd, self.SurfaceRunoff)
+        self.InflowKinWaveCell = upstream(self.TopoLdd, self.SurfaceRunoff)
         self.MassBalKinWave = (
             (self.KinWaveVolume - self.OldKinWaveVolume) / self.timestepsecs
             + self.InflowKinWaveCell
@@ -1449,30 +1448,30 @@ class WflowModel(pcraster.framework.DynamicModel):
         # first column (nr 1). Assumes that outputloc and columns match!
 
         if self.updating:
-            QM = pcr.timeinputscalar(updateFile, self.UpdateMap) * self.QMMConv
+            QM = timeinputscalar(updateFile, self.UpdateMap) * self.QMMConv
 
             # Now update the state. Just add to the Ustore
             # self.UStoreDepth =  result
             # No determine multiplication ratio for each gauge influence area.
             # For missing gauges 1.0 is assumed (no change).
-            # UpDiff = pcr.areamaximum(QM,  self.UpdateMap) - pcr.areamaximum(self.SurfaceRunoffMM, self.UpdateMap)
-            UpRatio = pcr.areamaximum(QM, self.UpdateMap) / pcr.areamaximum(
+            # UpDiff = areamaximum(QM,  self.UpdateMap) - areamaximum(self.SurfaceRunoffMM, self.UpdateMap)
+            UpRatio = areamaximum(QM, self.UpdateMap) / areamaximum(
                 self.SurfaceRunoffMM, self.UpdateMap
             )
 
-            UpRatio = pcr.cover(pcr.areaaverage(UpRatio, self.TopoId), 1.0)
+            UpRatio = cover(areaaverage(UpRatio, self.TopoId), 1.0)
             # Now split between Soil and Kyn  wave
-            UpRatioKyn = pcr.min(
-                MaxUpdMult, pcr.max(MinUpdMult, (UpRatio - 1.0) * UpFrac + 1.0)
+            UpRatioKyn = min(
+                MaxUpdMult, max(MinUpdMult, (UpRatio - 1.0) * UpFrac + 1.0)
             )
-            UpRatioSoil = pcr.min(
-                MaxUpdMult, pcr.max(MinUpdMult, (UpRatio - 1.0) * (1.0 - UpFrac) + 1.0)
+            UpRatioSoil = min(
+                MaxUpdMult, max(MinUpdMult, (UpRatio - 1.0) * (1.0 - UpFrac) + 1.0)
             )
 
             # update/nudge self.UStoreDepth for the whole upstream area,
             # not sure how much this helps or worsens things
             if UpdSoil:
-                toadd = pcr.min(
+                toadd = min(
                     (self.UStoreDepth * UpRatioSoil) - self.UStoreDepth,
                     StorageDeficit * 0.95,
                 )
@@ -1499,7 +1498,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         CellStorage = self.UStoreDepth + self.FirstZoneDepth
         DeltaStorage = CellStorage - self.InitialStorage
         OutFlow = self.FirstZoneFlux
-        CellInFlow = pcr.upstream(self.TopoLdd, pcr.scalar(self.FirstZoneFlux))
+        CellInFlow = upstream(self.TopoLdd, scalar(self.FirstZoneFlux))
         # CellWatBal = ActInfilt - self.ActEvap - self.ExfiltWater - ActLeakage + Reinfilt + IF - OutFlow + (OldCellStorage - CellStorage)
         # SumCellWatBal = SumCellWatBal + CellWatBal;
 

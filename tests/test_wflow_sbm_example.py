@@ -1,10 +1,8 @@
 __author__ = "schelle"
 
-import os
 import unittest
-
-import numpy as np
 import wflow.wflow_sbm as wf
+import os
 
 """
 Run wflow_sbm for 10 steps and checks if the outcome is approx that of the reference run
@@ -44,7 +42,7 @@ class MyTest(unittest.TestCase):
 
         # now read the csv results acn check of they match the first run
         # Sum should be approx c 4.569673676
-        my_data = np.genfromtxt(
+        my_data = wf.genfromtxt(
             os.path.join(caseName, runId, "specrun.csv"), delimiter=","
         )
 

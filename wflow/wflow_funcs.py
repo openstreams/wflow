@@ -22,7 +22,10 @@ that may be used within the wflow models
 
 """
 
-import pcraster as pcr
+
+from numpy import *
+
+from pcraster.framework import *
 
 
 def rainfall_interception_hbv(Rainfall, PotEvaporation, Cmax, InterceptionStorage):
@@ -30,7 +33,7 @@ def rainfall_interception_hbv(Rainfall, PotEvaporation, Cmax, InterceptionStorag
     Returns:
     TF, Interception, IntEvap,InterceptionStorage
     """
-    Interception = pcr.min(
+    Interception = min(
         Rainfall, Cmax - InterceptionStorage
     )  #: Interception in mm/timestep
 
@@ -38,7 +41,7 @@ def rainfall_interception_hbv(Rainfall, PotEvaporation, Cmax, InterceptionStorag
         InterceptionStorage + Interception
     )  #: Current interception storage
     TF = Rainfall - Interception
-    IntEvap = pcr.min(
+    IntEvap = min(
         InterceptionStorage, PotEvaporation
     )  #: Evaporation from interception storage
     InterceptionStorage = InterceptionStorage - IntEvap
@@ -59,24 +62,24 @@ def rainfall_interception_gash(
 
     pt = 0.1 * CanopyGapFraction
 
-    P_sat = pcr.max(
-        pcr.scalar(0.0),
-        pcr.cover(
-            (-Cmax / EoverR) * pcr.ln(1.0 - (EoverR / (1.0 - CanopyGapFraction - pt))),
-            pcr.scalar(0.0),
+    P_sat = max(
+        scalar(0.0),
+        cover(
+            (-Cmax / EoverR) * ln(1.0 - (EoverR / (1.0 - CanopyGapFraction - pt))),
+            scalar(0.0),
         ),
     )
 
     # large storms P > P_sat
     largestorms = Precipitation > P_sat
 
-    Iwet = pcr.ifthenelse(
+    Iwet = ifthenelse(
         largestorms,
         ((1 - CanopyGapFraction - pt) * P_sat) - Cmax,
         Precipitation * (1 - CanopyGapFraction - pt),
     )
-    Isat = pcr.ifthenelse(largestorms, (EoverR) * (Precipitation - P_sat), 0.0)
-    Idry = pcr.ifthenelse(largestorms, Cmax, 0.0)
+    Isat = ifthenelse(largestorms, (EoverR) * (Precipitation - P_sat), 0.0)
+    Idry = ifthenelse(largestorms, Cmax, 0.0)
     Itrunc = 0
 
     StemFlow = pt * Precipitation
@@ -86,15 +89,15 @@ def rainfall_interception_gash(
 
     # Non corect for area without any Interception (say open water Cmax -- zero)
     CmaxZero = Cmax <= 0.0
-    ThroughFall = pcr.ifthenelse(CmaxZero, Precipitation, ThroughFall)
-    Interception = pcr.ifthenelse(CmaxZero, pcr.scalar(0.0), Interception)
-    StemFlow = pcr.ifthenelse(CmaxZero, pcr.scalar(0.0), StemFlow)
+    ThroughFall = ifthenelse(CmaxZero, Precipitation, ThroughFall)
+    Interception = ifthenelse(CmaxZero, scalar(0.0), Interception)
+    StemFlow = ifthenelse(CmaxZero, scalar(0.0), StemFlow)
 
     # Now corect for maximum potential evap
-    OverEstimate = pcr.ifthenelse(
-        Interception > maxevap, Interception - maxevap, pcr.scalar(0.0)
+    OverEstimate = ifthenelse(
+        Interception > maxevap, Interception - maxevap, scalar(0.0)
     )
-    Interception = pcr.min(Interception, maxevap)
+    Interception = min(Interception, maxevap)
     # Add surpluss to the thoughdfall
     ThroughFall = ThroughFall + OverEstimate
 
@@ -126,24 +129,24 @@ def rainfall_interception_modrut(
     pt = 0.1 * p
 
     # Amount of P that falls on the canopy
-    Pfrac = pcr.max((1 - p - pt),0) * Precipitation
+    Pfrac = max((1 - p - pt),0) * Precipitation
 
     # S cannot be larger than Cmax, no gravity drainage below that
-    DD = pcr.ifthenelse(CanopyStorage > Cmax, CanopyStorage - Cmax, 0.0)
+    DD = ifthenelse(CanopyStorage > Cmax, CanopyStorage - Cmax, 0.0)
     CanopyStorage = CanopyStorage - DD
 
     # Add the precipitation that falls on the canopy to the store
     CanopyStorage = CanopyStorage + Pfrac
 
     # Now do the Evap, make sure the store does not get negative
-    dC = -1 * pcr.min(CanopyStorage, PotEvap)
+    dC = -1 * min(CanopyStorage, PotEvap)
     CanopyStorage = CanopyStorage + dC
 
     LeftOver = PotEvap + dC
     # Amount of evap not used
 
     # Now drain the canopy storage again if needed...
-    D = pcr.ifthenelse(CanopyStorage > Cmax, CanopyStorage - Cmax, 0.0)
+    D = ifthenelse(CanopyStorage > Cmax, CanopyStorage - Cmax, 0.0)
     CanopyStorage = CanopyStorage - D
 
     # Calculate throughfall

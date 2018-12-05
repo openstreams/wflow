@@ -188,12 +188,12 @@ def main():
 
     print("recreating static maps ...")
     # Create new ldd using old river network
-    dem = pcr.readmap(caseNameNew + "/staticmaps/wflow_dem.map")
+    dem = readmap(caseNameNew + "/staticmaps/wflow_dem.map")
     # orig low res river
-    riverburn = pcr.readmap(caseNameNew + "/staticmaps/wflow_river.map")
+    riverburn = readmap(caseNameNew + "/staticmaps/wflow_river.map")
     # save it
-    pcr.report(riverburn, caseNameNew + "/staticmaps/wflow_riverburnin.map")
-    demburn = pcr.cover(pcr.ifthen(pcr.boolean(riverburn), dem - 600), dem)
+    report(riverburn, caseNameNew + "/staticmaps/wflow_riverburnin.map")
+    demburn = cover(ifthen(boolean(riverburn), dem - 600), dem)
     print("Creating ldd...")
     ldd = lddcreate_save(
         caseNameNew + "/staticmaps/wflow_ldd.map", demburn, True, 10.0e35
@@ -201,12 +201,12 @@ def main():
     ## Find catchment (overall)
     outlet = find_outlet(ldd)
     sub = subcatch(ldd, outlet)
-    pcr.report(sub, caseNameNew + "/staticmaps/wflow_catchment.map")
-    pcr.report(outlet, caseNameNew + "/staticmaps/wflow_outlet.map")
+    report(sub, caseNameNew + "/staticmaps/wflow_catchment.map")
+    report(outlet, caseNameNew + "/staticmaps/wflow_outlet.map")
     # os.system("col2map --clone " + caseNameNew + "/staticmaps/wflow_subcatch.map " + caseNameNew + "/staticmaps/gauges.col " + caseNameNew + "/staticmaps/wflow_gauges.map")
-    gmap = pcr.readmap(caseNameNew + "/staticmaps/wflow_gauges.map")
+    gmap = readmap(caseNameNew + "/staticmaps/wflow_gauges.map")
     scatch = subcatch(ldd, gmap)
-    pcr.report(scatch, caseNameNew + "/staticmaps/wflow_subcatch.map")
+    report(scatch, caseNameNew + "/staticmaps/wflow_subcatch.map")
 
 
 if __name__ == "__main__":

@@ -72,7 +72,7 @@ def unsatZone_no_reservoir(self, k):
     Cap = 0.
     Storage in unsaturated zone = 0.
     """
-    self.Qu_[k] = pcr.max(self.Pe_[k], 0)
+    self.Qu_[k] = max(self.Pe_[k], 0)
     self.Eu_[k] = 0.0
     self.Perc_[k] = 0.0
     self.Su[k] = 0.0
@@ -91,10 +91,10 @@ def unsatZone_LP_beta(self, k):
     - Qu is determined with a beta function (same as in HBV?)
     - Code for ini-file: 1
     """
-    self.Su[k] = pcr.ifthenelse(
+    self.Su[k] = ifthenelse(
         self.Su_t[k] + self.Pe > self.sumax[k], self.sumax[k], self.Su_t[k] + self.Pe
     )
-    self.Quadd = pcr.ifthenelse(
+    self.Quadd = ifthenelse(
         self.Su_t[k] + self.Pe > self.sumax[k],
         self.Su_t[k] + self.Pe - self.sumax[k],
         0,
@@ -102,7 +102,7 @@ def unsatZone_LP_beta(self, k):
     self.SuN = self.Su[k] / self.sumax[k]
     self.SiN = self.Si[k] / self.imax[k]
 
-    self.Eu1 = pcr.max((self.PotEvaporation - self.Ei), 0) * pcr.min(
+    self.Eu1 = max((self.PotEvaporation - self.Ei), 0) * min(
         self.Su[k] / (self.sumax[k] * self.LP[k]), 1
     )
 
@@ -112,12 +112,12 @@ def unsatZone_LP_beta(self, k):
         self.Su_t[k] + (self.Pe - self.Quadd) - self.Qu1 - self.Eu1 - self.Perc1
     )
 
-    self.Su_diff = pcr.ifthenelse(self.Su[k] < 0, self.Su[k], 0)
+    self.Su_diff = ifthenelse(self.Su[k] < 0, self.Su[k], 0)
     self.Eu = (
         self.Eu1
         + (
             self.Eu1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -129,7 +129,7 @@ def unsatZone_LP_beta(self, k):
         self.Qu1
         + (
             self.Qu1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -137,12 +137,12 @@ def unsatZone_LP_beta(self, k):
         )
         * self.Su_diff
     )
-    self.Perc = pcr.ifthenelse(
+    self.Perc = ifthenelse(
         self.Perc1 > 0,
         self.Perc1
         + (
             self.Perc1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -152,10 +152,10 @@ def unsatZone_LP_beta(self, k):
         self.Perc1,
     )
     self.Su[k] = self.Su_t[k] + (self.Pe - self.Quadd) - self.Eu - self.Qu - self.Perc
-    self.Su[k] = pcr.ifthenelse(self.Su[k] < 0, 0, self.Su[k])
-    self.Su_diff2 = pcr.ifthen(self.Su[k] < 0, self.Su[k])
+    self.Su[k] = ifthenelse(self.Su[k] < 0, 0, self.Su[k])
+    self.Su_diff2 = ifthen(self.Su[k] < 0, self.Su[k])
 
-    self.Cap = pcr.min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)
+    self.Cap = min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)
     self.Su[k] = self.Su[k] + self.Cap
 
     self.wbSu_[k] = (
@@ -189,10 +189,10 @@ def unsatZone_LP_beta_Jarvis(self, k):
     - Qu is determined with a beta function (same as in HBV?)
     - Code for ini-file: 12
     """
-    self.Su[k] = pcr.ifthenelse(
+    self.Su[k] = ifthenelse(
         self.Su_t[k] + self.Pe > self.sumax[k], self.sumax[k], self.Su_t[k] + self.Pe
     )
-    self.Quadd = pcr.ifthenelse(
+    self.Quadd = ifthenelse(
         self.Su_t[k] + self.Pe > self.sumax[k],
         self.Su_t[k] + self.Pe - self.sumax[k],
         0,
@@ -208,24 +208,24 @@ def unsatZone_LP_beta_Jarvis(self, k):
     self.Perc1 = self.perc[k] * self.SuN
     self.Su[k] = self.Su_t[k] + (self.Pe - self.Quadd) - self.Qu1 - self.Eu - self.Perc1
 
-    self.Su_diff = pcr.ifthenelse(self.Su[k] < 0, self.Su[k], 0)
+    self.Su_diff = ifthenelse(self.Su[k] < 0, self.Su[k], 0)
     self.Qu = (
         self.Qu1
-        + (self.Qu1 / pcr.ifthenelse(self.Qu1 + self.Perc1 > 0, self.Qu1 + self.Perc1, 1))
+        + (self.Qu1 / ifthenelse(self.Qu1 + self.Perc1 > 0, self.Qu1 + self.Perc1, 1))
         * self.Su_diff
     )
-    self.Perc = pcr.ifthenelse(
+    self.Perc = ifthenelse(
         self.Perc1 > 0,
         self.Perc1
-        + (self.Perc1 / pcr.ifthenelse(self.Qu1 + self.Perc1 > 0, self.Qu1 + self.Perc1, 1))
+        + (self.Perc1 / ifthenelse(self.Qu1 + self.Perc1 > 0, self.Qu1 + self.Perc1, 1))
         * self.Su_diff,
         self.Perc1,
     )
     self.Su[k] = self.Su_t[k] + (self.Pe - self.Quadd) - self.Eu - self.Qu - self.Perc
-    self.Su[k] = pcr.ifthenelse(self.Su[k] < 0, 0, self.Su[k])
-    self.Su_diff2 = pcr.ifthen(self.Su[k] < 0, self.Su[k])
+    self.Su[k] = ifthenelse(self.Su[k] < 0, 0, self.Su[k])
+    self.Su_diff2 = ifthen(self.Su[k] < 0, self.Su[k])
 
-    self.Cap = pcr.min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)
+    self.Cap = min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)
     self.Su[k] = self.Su[k] + self.Cap
 
     self.wbSu_[k] = (
@@ -263,12 +263,12 @@ def unsatZone_LP_beta_Ep(self, k):
 
     # pdb.set_trace()
     JarvisCoefficients.calcEp(self, k)
-    self.PotEvaporation = pcr.cover(pcr.ifthenelse(self.EpHour >= 0, self.EpHour, 0), 0)
+    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0), 0)
 
-    self.Su[k] = pcr.ifthenelse(
+    self.Su[k] = ifthenelse(
         self.Su_t[k] + self.Pe > self.sumax[k], self.sumax[k], self.Su_t[k] + self.Pe
     )
-    self.Quadd = pcr.ifthenelse(
+    self.Quadd = ifthenelse(
         self.Su_t[k] + self.Pe > self.sumax[k],
         self.Su_t[k] + self.Pe - self.sumax[k],
         0,
@@ -276,7 +276,7 @@ def unsatZone_LP_beta_Ep(self, k):
     self.SuN = self.Su[k] / self.sumax[k]
     self.SiN = self.Si[k] / self.imax[k]
 
-    self.Eu1 = pcr.max((self.PotEvaporation - self.Ei), 0) * pcr.min(
+    self.Eu1 = max((self.PotEvaporation - self.Ei), 0) * min(
         self.Su[k] / (self.sumax[k] * self.LP[k]), 1
     )
 
@@ -286,12 +286,12 @@ def unsatZone_LP_beta_Ep(self, k):
         self.Su_t[k] + (self.Pe - self.Quadd) - self.Qu1 - self.Eu1 - self.Perc1
     )
 
-    self.Su_diff = pcr.ifthenelse(self.Su[k] < 0, self.Su[k], 0)
+    self.Su_diff = ifthenelse(self.Su[k] < 0, self.Su[k], 0)
     self.Eu = (
         self.Eu1
         + (
             self.Eu1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -303,7 +303,7 @@ def unsatZone_LP_beta_Ep(self, k):
         self.Qu1
         + (
             self.Qu1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -311,12 +311,12 @@ def unsatZone_LP_beta_Ep(self, k):
         )
         * self.Su_diff
     )
-    self.Perc = pcr.ifthenelse(
+    self.Perc = ifthenelse(
         self.Perc1 > 0,
         self.Perc1
         + (
             self.Perc1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -326,10 +326,10 @@ def unsatZone_LP_beta_Ep(self, k):
         self.Perc1,
     )
     self.Su[k] = self.Su_t[k] + (self.Pe - self.Quadd) - self.Eu - self.Qu - self.Perc
-    self.Su[k] = pcr.ifthenelse(self.Su[k] < 0, 0, self.Su[k])
-    self.Su_diff2 = pcr.ifthen(self.Su[k] < 0, self.Su[k])
+    self.Su[k] = ifthenelse(self.Su[k] < 0, 0, self.Su[k])
+    self.Su_diff2 = ifthen(self.Su[k] < 0, self.Su[k])
 
-    self.Cap = pcr.min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)
+    self.Cap = min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)
     self.Su[k] = self.Su[k] + self.Cap
 
     self.wbSu_[k] = (
@@ -366,12 +366,12 @@ def unsatZone_LP_beta_Ep_Ei(self, k):
 
     # pdb.set_trace()
     JarvisCoefficients.calcEp(self, k)
-    self.PotEvaporation = pcr.cover(pcr.ifthenelse(self.EpHour >= 0, self.EpHour, 0), 0)
+    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0), 0)
 
-    self.Su[k] = pcr.ifthenelse(
+    self.Su[k] = ifthenelse(
         self.Su_t[k] + self.Pe > self.sumax[k], self.sumax[k], self.Su_t[k] + self.Pe
     )
-    self.Quadd = pcr.ifthenelse(
+    self.Quadd = ifthenelse(
         self.Su_t[k] + self.Pe > self.sumax[k],
         self.Su_t[k] + self.Pe - self.sumax[k],
         0,
@@ -379,13 +379,13 @@ def unsatZone_LP_beta_Ep_Ei(self, k):
     self.SuN = self.Su[k] / self.sumax[k]
     self.SiN = self.Si[k] / self.imax[k]
 
-    self.Eu1 = pcr.ifthenelse(
+    self.Eu1 = ifthenelse(
         self.SiN == 1,
         0,
-        pcr.max((self.PotEvaporation), 0)
-        * pcr.min(self.Su[k] / (self.sumax[k] * self.LP[k]), 1),
+        max((self.PotEvaporation), 0)
+        * min(self.Su[k] / (self.sumax[k] * self.LP[k]), 1),
     )
-    #    self.Eu1 = pcr.max((self.PotEvaporation),0) * pcr.min(self.Su[k] / (self.sumax[k] * self.LP[k]),1)
+    #    self.Eu1 = max((self.PotEvaporation),0) * min(self.Su[k] / (self.sumax[k] * self.LP[k]),1)
 
     self.Qu1 = (self.Pe - self.Quadd) * (1 - (1 - self.SuN) ** self.beta[k])
     self.Perc1 = self.perc[k] * self.SuN
@@ -393,12 +393,12 @@ def unsatZone_LP_beta_Ep_Ei(self, k):
         self.Su_t[k] + (self.Pe - self.Quadd) - self.Qu1 - self.Eu1 - self.Perc1
     )
 
-    self.Su_diff = pcr.ifthenelse(self.Su[k] < 0, self.Su[k], 0)
+    self.Su_diff = ifthenelse(self.Su[k] < 0, self.Su[k], 0)
     self.Eu = (
         self.Eu1
         + (
             self.Eu1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -410,7 +410,7 @@ def unsatZone_LP_beta_Ep_Ei(self, k):
         self.Qu1
         + (
             self.Qu1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -418,12 +418,12 @@ def unsatZone_LP_beta_Ep_Ei(self, k):
         )
         * self.Su_diff
     )
-    self.Perc = pcr.ifthenelse(
+    self.Perc = ifthenelse(
         self.Perc1 > 0,
         self.Perc1
         + (
             self.Perc1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -433,10 +433,10 @@ def unsatZone_LP_beta_Ep_Ei(self, k):
         self.Perc1,
     )
     self.Su[k] = self.Su_t[k] + (self.Pe - self.Quadd) - self.Eu - self.Qu - self.Perc
-    self.Su[k] = pcr.ifthenelse(self.Su[k] < 0, 0, self.Su[k])
-    self.Su_diff2 = pcr.ifthen(self.Su[k] < 0, self.Su[k])
+    self.Su[k] = ifthenelse(self.Su[k] < 0, 0, self.Su[k])
+    self.Su_diff2 = ifthen(self.Su[k] < 0, self.Su[k])
 
-    self.Cap = pcr.min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)
+    self.Cap = min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)
     self.Su[k] = self.Su[k] + self.Cap
 
     self.wbSu_[k] = (
@@ -472,12 +472,12 @@ def unsatZone_LP_beta_Ep_percD(self, k):
     """
 
     JarvisCoefficients.calcEp(self, k)
-    self.PotEvaporation = pcr.cover(pcr.ifthenelse(self.EpHour >= 0, self.EpHour, 0), 0)
+    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0), 0)
 
-    self.Su[k] = pcr.ifthenelse(
+    self.Su[k] = ifthenelse(
         self.Su_t[k] + self.Pe > self.sumax[k], self.sumax[k], self.Su_t[k] + self.Pe
     )
-    self.Quadd = pcr.ifthenelse(
+    self.Quadd = ifthenelse(
         self.Su_t[k] + self.Pe > self.sumax[k],
         self.Su_t[k] + self.Pe - self.sumax[k],
         0,
@@ -485,7 +485,7 @@ def unsatZone_LP_beta_Ep_percD(self, k):
     self.SuN = self.Su[k] / self.sumax[k]
     self.SiN = self.Si[k] / self.imax[k]
 
-    self.Eu1 = pcr.max((self.PotEvaporation - self.Ei), 0) * pcr.min(
+    self.Eu1 = max((self.PotEvaporation - self.Ei), 0) * min(
         self.Su[k] / (self.sumax[k] * self.LP[k]), 1
     )
 
@@ -496,12 +496,12 @@ def unsatZone_LP_beta_Ep_percD(self, k):
         self.Su_t[k] + (self.Pe - self.Quadd) - self.Qu1 - self.Eu1 - self.Perc1
     )
 
-    self.Su_diff = pcr.ifthenelse(self.Su[k] < 0, self.Su[k], 0)
+    self.Su_diff = ifthenelse(self.Su[k] < 0, self.Su[k], 0)
     self.Eu = (
         self.Eu1
         + (
             self.Eu1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -513,7 +513,7 @@ def unsatZone_LP_beta_Ep_percD(self, k):
         self.Qu1
         + (
             self.Qu1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -521,12 +521,12 @@ def unsatZone_LP_beta_Ep_percD(self, k):
         )
         * self.Su_diff
     )
-    self.Perc = pcr.ifthenelse(
+    self.Perc = ifthenelse(
         self.Perc1 > 0,
         self.Perc1
         + (
             self.Perc1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -536,10 +536,10 @@ def unsatZone_LP_beta_Ep_percD(self, k):
         self.Perc1,
     )
     self.Su[k] = self.Su_t[k] + (self.Pe - self.Quadd) - self.Eu - self.Qu - self.Perc
-    self.Su[k] = pcr.ifthenelse(self.Su[k] < 0, 0, self.Su[k])
-    self.Su_diff2 = pcr.ifthen(self.Su[k] < 0, self.Su[k])
+    self.Su[k] = ifthenelse(self.Su[k] < 0, 0, self.Su[k])
+    self.Su_diff2 = ifthen(self.Su[k] < 0, self.Su[k])
 
-    self.Cap = pcr.min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)
+    self.Cap = min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)
     self.Su[k] = self.Su[k] + self.Cap
 
     self.wbSu_[k] = (
@@ -573,12 +573,12 @@ def unsatZone_LP_beta_Ep_percD(self, k):
     """
 
     JarvisCoefficients.calcEp(self, k)
-    self.PotEvaporation = pcr.cover(pcr.ifthenelse(self.EpHour >= 0, self.EpHour, 0), 0)
+    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0), 0)
 
-    self.Su[k] = pcr.ifthenelse(
+    self.Su[k] = ifthenelse(
         self.Su_t[k] + self.Pe > self.sumax[k], self.sumax[k], self.Su_t[k] + self.Pe
     )
-    self.Quadd = pcr.ifthenelse(
+    self.Quadd = ifthenelse(
         self.Su_t[k] + self.Pe > self.sumax[k],
         self.Su_t[k] + self.Pe - self.sumax[k],
         0,
@@ -586,7 +586,7 @@ def unsatZone_LP_beta_Ep_percD(self, k):
     self.SuN = self.Su[k] / self.sumax[k]
     self.SiN = self.Si[k] / self.imax[k]
 
-    self.Eu1 = pcr.max((self.PotEvaporation - self.Ei), 0) * pcr.min(
+    self.Eu1 = max((self.PotEvaporation - self.Ei), 0) * min(
         self.Su[k] / (self.sumax[k] * self.LP[k]), 1
     )
 
@@ -597,12 +597,12 @@ def unsatZone_LP_beta_Ep_percD(self, k):
         self.Su_t[k] + (self.Pe - self.Quadd) - self.Qu1 - self.Eu1 - self.Perc1
     )
 
-    self.Su_diff = pcr.ifthenelse(self.Su[k] < 0, self.Su[k], 0)
+    self.Su_diff = ifthenelse(self.Su[k] < 0, self.Su[k], 0)
     self.Eu = (
         self.Eu1
         + (
             self.Eu1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -614,7 +614,7 @@ def unsatZone_LP_beta_Ep_percD(self, k):
         self.Qu1
         + (
             self.Qu1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -622,12 +622,12 @@ def unsatZone_LP_beta_Ep_percD(self, k):
         )
         * self.Su_diff
     )
-    self.Perc = pcr.ifthenelse(
+    self.Perc = ifthenelse(
         self.Perc1 > 0,
         self.Perc1
         + (
             self.Perc1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -637,10 +637,10 @@ def unsatZone_LP_beta_Ep_percD(self, k):
         self.Perc1,
     )
     self.Su[k] = self.Su_t[k] + (self.Pe - self.Quadd) - self.Eu - self.Qu - self.Perc
-    self.Su[k] = pcr.ifthenelse(self.Su[k] < 0, 0, self.Su[k])
-    self.Su_diff2 = pcr.ifthen(self.Su[k] < 0, self.Su[k])
+    self.Su[k] = ifthenelse(self.Su[k] < 0, 0, self.Su[k])
+    self.Su_diff2 = ifthen(self.Su[k] < 0, self.Su[k])
 
-    self.Cap = pcr.min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)
+    self.Cap = min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)
     self.Su[k] = self.Su[k] + self.Cap
 
     self.wbSu_[k] = (
@@ -674,12 +674,12 @@ def unsatZone_LP_beta_Ep_percDvar(self, k):
     """
 
     JarvisCoefficients.calcEp(self, k)
-    self.PotEvaporation = pcr.cover(pcr.ifthenelse(self.EpHour >= 0, self.EpHour, 0), 0)
+    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0), 0)
 
-    self.Su[k] = pcr.ifthenelse(
+    self.Su[k] = ifthenelse(
         self.Su_t[k] + self.Pe > self.sumax[k], self.sumax[k], self.Su_t[k] + self.Pe
     )
-    self.Quadd = pcr.ifthenelse(
+    self.Quadd = ifthenelse(
         self.Su_t[k] + self.Pe > self.sumax[k],
         self.Su_t[k] + self.Pe - self.sumax[k],
         0,
@@ -687,19 +687,19 @@ def unsatZone_LP_beta_Ep_percDvar(self, k):
     self.SuN = self.Su[k] / self.sumax[k]
     self.SiN = self.Si[k] / self.imax[k]
 
-    self.drought = pcr.ifthenelse(
+    self.drought = ifthenelse(
         self.SuN < self.LP[k],
         self.TopoId,
-        pcr.ifthenelse(
-            pcr.pcrand(self.SuN < 0.8, self.drought),
+        ifthenelse(
+            pcrand(self.SuN < 0.8, self.drought),
             self.TopoId,
-            pcr.boolean(pcr.scalar(self.TopoId) * 0),
+            boolean(scalar(self.TopoId) * 0),
         ),
     )
-    self.stijg = pcr.max(
-        pcr.min(
-            pcr.scalar(
-                pcr.ifthenelse(
+    self.stijg = max(
+        min(
+            scalar(
+                ifthenelse(
                     self.drought == 1, self.stijg + self.Su_t[k] - self.Su_t2[k], 0
                 )
             ),
@@ -708,24 +708,24 @@ def unsatZone_LP_beta_Ep_percDvar(self, k):
         0,
     )
 
-    self.Eu1 = pcr.max((self.PotEvaporation - self.Ei), 0) * pcr.min(
+    self.Eu1 = max((self.PotEvaporation - self.Ei), 0) * min(
         self.Su[k] / (self.sumax[k] * self.LP[k]), 1
     )
 
     self.Qu1 = (self.Pe - self.Quadd) * (1 - (1 - self.SuN) ** self.beta[k])
-    #    self.percDeep = pcr.max(10 * (1 - self.Ss / 30) * self.perc[k], 0)
+    #    self.percDeep = max(10 * (1 - self.Ss / 30) * self.perc[k], 0)
     self.percDeep = 0.8 * self.stijg * self.perc[k]
     self.Perc1 = self.perc[k] * self.SuN + self.percDeep
     self.Su[k] = (
         self.Su_t[k] + (self.Pe - self.Quadd) - self.Qu1 - self.Eu1 - self.Perc1
     )
 
-    self.Su_diff = pcr.ifthenelse(self.Su[k] < 0, self.Su[k], 0)
+    self.Su_diff = ifthenelse(self.Su[k] < 0, self.Su[k], 0)
     self.Eu = (
         self.Eu1
         + (
             self.Eu1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -737,7 +737,7 @@ def unsatZone_LP_beta_Ep_percDvar(self, k):
         self.Qu1
         + (
             self.Qu1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -745,12 +745,12 @@ def unsatZone_LP_beta_Ep_percDvar(self, k):
         )
         * self.Su_diff
     )
-    self.Perc = pcr.ifthenelse(
+    self.Perc = ifthenelse(
         self.Perc1 > 0,
         self.Perc1
         + (
             self.Perc1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -760,10 +760,10 @@ def unsatZone_LP_beta_Ep_percDvar(self, k):
         self.Perc1,
     )
     self.Su[k] = self.Su_t[k] + (self.Pe - self.Quadd) - self.Eu - self.Qu - self.Perc
-    self.Su[k] = pcr.ifthenelse(self.Su[k] < 0, 0, self.Su[k])
-    self.Su_diff2 = pcr.ifthen(self.Su[k] < 0, self.Su[k])
+    self.Su[k] = ifthenelse(self.Su[k] < 0, 0, self.Su[k])
+    self.Su_diff2 = ifthen(self.Su[k] < 0, self.Su[k])
 
-    self.Cap = pcr.min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)
+    self.Cap = min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)
     self.Su[k] = self.Su[k] + self.Cap
 
     self.wbSu_[k] = (
@@ -799,9 +799,9 @@ def unsatZone_LP_beta_Ep_cropG(self, k):
     """
 
     JarvisCoefficients.calcEp(self, k)
-    self.PotEvaporation = pcr.cover(pcr.ifthenelse(self.EpHour >= 0, self.EpHour, 0), 0)
+    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0), 0)
 
-    self.cropG_scal = pcr.pcr2numpy(self.cropG, np.nan)
+    self.cropG_scal = pcr2numpy(self.cropG, NaN)
     if any(self.cropG_scal == 1):
         self.sumax2 = self.sumax[k]
     elif any(self.cropG_scal > 0):
@@ -811,16 +811,16 @@ def unsatZone_LP_beta_Ep_cropG(self, k):
     else:
         self.sumax2 = self.sumax[k] * self.redsu[k]
 
-    self.Su[k] = pcr.ifthenelse(
+    self.Su[k] = ifthenelse(
         self.Su_t[k] + self.Pe > self.sumax2, self.sumax2, self.Su_t[k] + self.Pe
     )
-    self.Quadd = pcr.ifthenelse(
+    self.Quadd = ifthenelse(
         self.Su_t[k] + self.Pe > self.sumax2, self.Su_t[k] + self.Pe - self.sumax2, 0
     )
     self.SuN = self.Su[k] / self.sumax2
     self.SiN = self.Si[k] / self.imax[k]
 
-    self.Eu1 = pcr.max((self.PotEvaporation - self.Ei), 0) * pcr.min(
+    self.Eu1 = max((self.PotEvaporation - self.Ei), 0) * min(
         self.Su[k] / (self.sumax2 * self.LP[k]), 1
     )
 
@@ -830,12 +830,12 @@ def unsatZone_LP_beta_Ep_cropG(self, k):
         self.Su_t[k] + (self.Pe - self.Quadd) - self.Qu1 - self.Eu1 - self.Perc1
     )
 
-    self.Su_diff = pcr.ifthenelse(self.Su[k] < 0, self.Su[k], 0)
+    self.Su_diff = ifthenelse(self.Su[k] < 0, self.Su[k], 0)
     self.Eu = (
         self.Eu1
         + (
             self.Eu1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -847,7 +847,7 @@ def unsatZone_LP_beta_Ep_cropG(self, k):
         self.Qu1
         + (
             self.Qu1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -855,12 +855,12 @@ def unsatZone_LP_beta_Ep_cropG(self, k):
         )
         * self.Su_diff
     )
-    self.Perc = pcr.ifthenelse(
+    self.Perc = ifthenelse(
         self.Perc1 > 0,
         self.Perc1
         + (
             self.Perc1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -870,10 +870,10 @@ def unsatZone_LP_beta_Ep_cropG(self, k):
         self.Perc1,
     )
     self.Su[k] = self.Su_t[k] + (self.Pe - self.Quadd) - self.Eu - self.Qu - self.Perc
-    self.Su[k] = pcr.ifthenelse(self.Su[k] < 0, 0, self.Su[k])
-    self.Su_diff2 = pcr.ifthen(self.Su[k] < 0, self.Su[k])
+    self.Su[k] = ifthenelse(self.Su[k] < 0, 0, self.Su[k])
+    self.Su_diff2 = ifthen(self.Su[k] < 0, self.Su[k])
 
-    self.Cap = pcr.min(self.cap[k] * (1 - self.Su[k] / self.sumax2), self.Ss)
+    self.Cap = min(self.cap[k] * (1 - self.Su[k] / self.sumax2), self.Ss)
     self.Su[k] = self.Su[k] + self.Cap
 
     self.wbSu_[k] = (
@@ -908,10 +908,10 @@ def unsatZone_forAgri_Jarvis(self, k):
     - inflow is infiltration from agriculture reservoir
     - Code for ini-file: 16
     """
-    self.Su[k] = pcr.ifthenelse(
+    self.Su[k] = ifthenelse(
         self.Su_t[k] + self.Fa > self.sumax[k], self.sumax[k], self.Su_t[k] + self.Fa
     )
-    self.Quadd = pcr.ifthenelse(
+    self.Quadd = ifthenelse(
         self.Su_t[k] + self.Fa > self.sumax[k],
         self.Su_t[k] + self.Fa - self.sumax[k],
         0,
@@ -928,12 +928,12 @@ def unsatZone_forAgri_Jarvis(self, k):
     self.Perc1 = self.perc[k] * self.SuN
     self.Su[k] = self.Su_t[k] + (self.Fa - self.Quadd) - self.Qu1 - self.Eu - self.Perc1
 
-    self.Su_diff = pcr.ifthenelse(self.Su[k] < 0, self.Su[k], 0)
+    self.Su_diff = ifthenelse(self.Su[k] < 0, self.Su[k], 0)
     self.Eu = (
         self.Eu1
         + (
             self.Eu1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -945,7 +945,7 @@ def unsatZone_forAgri_Jarvis(self, k):
         self.Qu1
         + (
             self.Qu1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -953,12 +953,12 @@ def unsatZone_forAgri_Jarvis(self, k):
         )
         * self.Su_diff
     )
-    self.Perc = pcr.ifthenelse(
+    self.Perc = ifthenelse(
         self.Perc1 > 0,
         self.Perc1
         + (
             self.Perc1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -968,10 +968,10 @@ def unsatZone_forAgri_Jarvis(self, k):
         self.Perc1,
     )
     self.Su[k] = self.Su_t[k] + (self.Fa - self.Quadd) - self.Eu - self.Qu - self.Perc
-    self.Su[k] = pcr.ifthenelse(self.Su[k] < 0, 0, self.Su[k])
-    self.Su_diff2 = pcr.ifthen(self.Su[k] < 0, self.Su[k])
+    self.Su[k] = ifthenelse(self.Su[k] < 0, 0, self.Su[k])
+    self.Su_diff2 = ifthen(self.Su[k] < 0, self.Su[k])
 
-    self.Cap = pcr.min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)
+    self.Cap = min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)
     self.Su[k] = self.Su[k] + self.Cap
 
     self.wbSu_[k] = (
@@ -1004,12 +1004,12 @@ def unsatZone_forAgri_Ep(self, k):
     """
 
     JarvisCoefficients.calcEp(self, k)
-    self.PotEvaporation = pcr.cover(pcr.ifthenelse(self.EpHour >= 0, self.EpHour, 0), 0)
+    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0), 0)
 
-    self.Su[k] = pcr.ifthenelse(
+    self.Su[k] = ifthenelse(
         self.Su_t[k] + self.Fa > self.sumax[k], self.sumax[k], self.Su_t[k] + self.Fa
     )
-    self.Quadd = pcr.ifthenelse(
+    self.Quadd = ifthenelse(
         self.Su_t[k] + self.Fa > self.sumax[k],
         self.Su_t[k] + self.Fa - self.sumax[k],
         0,
@@ -1017,10 +1017,10 @@ def unsatZone_forAgri_Ep(self, k):
     self.SuN = self.Su[k] / self.sumax[k]
     self.SiN = self.Si[k] / self.imax[k]
 
-    self.Eu1 = pcr.ifthenelse(
+    self.Eu1 = ifthenelse(
         self.Ft_[k] == 1,
-        pcr.max((self.PotEvaporation - self.Ei - self.Ea), 0)
-        * pcr.min(self.Su[k] / (self.sumax[k] * self.LP[k]), 1),
+        max((self.PotEvaporation - self.Ei - self.Ea), 0)
+        * min(self.Su[k] / (self.sumax[k] * self.LP[k]), 1),
         0,
     )  # no transpiration in case of frozen soil. Added on 22 feb 2016
 
@@ -1028,12 +1028,12 @@ def unsatZone_forAgri_Ep(self, k):
     self.Perc1 = self.perc[k] * self.SuN
     self.Su[k] = self.Su_t[k] + (self.Fa - self.Quadd) - self.Qu1 - self.Eu - self.Perc1
 
-    self.Su_diff = pcr.ifthenelse(self.Su[k] < 0, self.Su[k], 0)
+    self.Su_diff = ifthenelse(self.Su[k] < 0, self.Su[k], 0)
     self.Eu = (
         self.Eu1
         + (
             self.Eu1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -1045,7 +1045,7 @@ def unsatZone_forAgri_Ep(self, k):
         self.Qu1
         + (
             self.Qu1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -1053,12 +1053,12 @@ def unsatZone_forAgri_Ep(self, k):
         )
         * self.Su_diff
     )
-    self.Perc = pcr.ifthenelse(
+    self.Perc = ifthenelse(
         self.Perc1 > 0,
         self.Perc1
         + (
             self.Perc1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -1068,10 +1068,10 @@ def unsatZone_forAgri_Ep(self, k):
         self.Perc1,
     )
     self.Su[k] = self.Su_t[k] + (self.Fa - self.Quadd) - self.Eu - self.Qu - self.Perc
-    self.Su[k] = pcr.ifthenelse(self.Su[k] < 0, 0, self.Su[k])
-    self.Su_diff2 = pcr.ifthen(self.Su[k] < 0, self.Su[k])
+    self.Su[k] = ifthenelse(self.Su[k] < 0, 0, self.Su[k])
+    self.Su_diff2 = ifthen(self.Su[k] < 0, self.Su[k])
 
-    self.Cap = pcr.min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)
+    self.Cap = min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)
     self.Su[k] = self.Su[k] + self.Cap
 
     self.wbSu_[k] = (
@@ -1104,12 +1104,12 @@ def unsatZone_forAgri_Ep_percD(self, k):
     """
 
     JarvisCoefficients.calcEp(self, k)
-    self.PotEvaporation = pcr.cover(pcr.ifthenelse(self.EpHour >= 0, self.EpHour, 0), 0)
+    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0), 0)
 
-    self.Su[k] = pcr.ifthenelse(
+    self.Su[k] = ifthenelse(
         self.Su_t[k] + self.Fa > self.sumax[k], self.sumax[k], self.Su_t[k] + self.Fa
     )
-    self.Quadd = pcr.ifthenelse(
+    self.Quadd = ifthenelse(
         self.Su_t[k] + self.Fa > self.sumax[k],
         self.Su_t[k] + self.Fa - self.sumax[k],
         0,
@@ -1117,10 +1117,10 @@ def unsatZone_forAgri_Ep_percD(self, k):
     self.SuN = self.Su[k] / self.sumax[k]
     self.SiN = self.Si[k] / self.imax[k]
 
-    self.Eu1 = pcr.ifthenelse(
+    self.Eu1 = ifthenelse(
         self.Ft_[k] == 1,
-        pcr.max((self.PotEvaporation - self.Ei - self.Ea), 0)
-        * pcr.min(self.Su[k] / (self.sumax[k] * self.LP[k]), 1),
+        max((self.PotEvaporation - self.Ei - self.Ea), 0)
+        * min(self.Su[k] / (self.sumax[k] * self.LP[k]), 1),
         0,
     )  # no transpiration in case of frozen soil. Added on 22 feb 2016
 
@@ -1129,12 +1129,12 @@ def unsatZone_forAgri_Ep_percD(self, k):
     self.Perc1 = self.perc[k] * self.SuN + self.percDeep
     self.Su[k] = self.Su_t[k] + (self.Fa - self.Quadd) - self.Qu1 - self.Eu - self.Perc1
 
-    self.Su_diff = pcr.ifthenelse(self.Su[k] < 0, self.Su[k], 0)
+    self.Su_diff = ifthenelse(self.Su[k] < 0, self.Su[k], 0)
     self.Eu = (
         self.Eu1
         + (
             self.Eu1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -1146,7 +1146,7 @@ def unsatZone_forAgri_Ep_percD(self, k):
         self.Qu1
         + (
             self.Qu1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -1154,12 +1154,12 @@ def unsatZone_forAgri_Ep_percD(self, k):
         )
         * self.Su_diff
     )
-    self.Perc = pcr.ifthenelse(
+    self.Perc = ifthenelse(
         self.Perc1 > 0,
         self.Perc1
         + (
             self.Perc1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -1169,10 +1169,10 @@ def unsatZone_forAgri_Ep_percD(self, k):
         self.Perc1,
     )
     self.Su[k] = self.Su_t[k] + (self.Fa - self.Quadd) - self.Eu - self.Qu - self.Perc
-    self.Su[k] = pcr.ifthenelse(self.Su[k] < 0, 0, self.Su[k])
-    self.Su_diff2 = pcr.ifthen(self.Su[k] < 0, self.Su[k])
+    self.Su[k] = ifthenelse(self.Su[k] < 0, 0, self.Su[k])
+    self.Su_diff2 = ifthen(self.Su[k] < 0, self.Su[k])
 
-    self.Cap = pcr.min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)
+    self.Cap = min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)
     self.Su[k] = self.Su[k] + self.Cap
 
     self.wbSu_[k] = (
@@ -1205,12 +1205,12 @@ def unsatZone_forAgri_Ep_percDvar(self, k):
     """
 
     JarvisCoefficients.calcEp(self, k)
-    self.PotEvaporation = pcr.cover(pcr.ifthenelse(self.EpHour >= 0, self.EpHour, 0), 0)
+    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0), 0)
 
-    self.Su[k] = pcr.ifthenelse(
+    self.Su[k] = ifthenelse(
         self.Su_t[k] + self.Fa > self.sumax[k], self.sumax[k], self.Su_t[k] + self.Fa
     )
-    self.Quadd = pcr.ifthenelse(
+    self.Quadd = ifthenelse(
         self.Su_t[k] + self.Fa > self.sumax[k],
         self.Su_t[k] + self.Fa - self.sumax[k],
         0,
@@ -1218,19 +1218,19 @@ def unsatZone_forAgri_Ep_percDvar(self, k):
     self.SuN = self.Su[k] / self.sumax[k]
     self.SiN = self.Si[k] / self.imax[k]
 
-    self.drought = pcr.ifthenelse(
+    self.drought = ifthenelse(
         self.SuN < self.LP[k],
         self.TopoId,
-        pcr.ifthenelse(
-            pcr.pcrand(self.SuN < 0.8, self.drought),
+        ifthenelse(
+            pcrand(self.SuN < 0.8, self.drought),
             self.TopoId,
-            pcr.boolean(pcr.scalar(self.TopoId) * 0),
+            boolean(scalar(self.TopoId) * 0),
         ),
     )
-    self.stijg = pcr.max(
-        pcr.min(
-            pcr.scalar(
-                pcr.ifthenelse(
+    self.stijg = max(
+        min(
+            scalar(
+                ifthenelse(
                     self.drought == 1, self.stijg + self.Su_t[k] - self.Su_t2[k], 0
                 )
             ),
@@ -1238,12 +1238,12 @@ def unsatZone_forAgri_Ep_percDvar(self, k):
         ),
         0,
     )
-    #    self.stijg = pcr.max(self.Su_t[k] - self.Su_t2[k], 0)
+    #    self.stijg = max(self.Su_t[k] - self.Su_t2[k], 0)
 
-    self.Eu1 = pcr.ifthenelse(
+    self.Eu1 = ifthenelse(
         self.Ft_[k] == 1,
-        pcr.max((self.PotEvaporation - self.Ei - self.Ea), 0)
-        * pcr.min(self.Su[k] / (self.sumax[k] * self.LP[k]), 1),
+        max((self.PotEvaporation - self.Ei - self.Ea), 0)
+        * min(self.Su[k] / (self.sumax[k] * self.LP[k]), 1),
         0,
     )  # no transpiration in case of frozen soil. Added on 22 feb 2016
 
@@ -1252,12 +1252,12 @@ def unsatZone_forAgri_Ep_percDvar(self, k):
     self.Perc1 = self.perc[k] * self.SuN + self.percDeep
     self.Su[k] = self.Su_t[k] + (self.Fa - self.Quadd) - self.Qu1 - self.Eu - self.Perc1
 
-    self.Su_diff = pcr.ifthenelse(self.Su[k] < 0, self.Su[k], 0)
+    self.Su_diff = ifthenelse(self.Su[k] < 0, self.Su[k], 0)
     self.Eu = (
         self.Eu1
         + (
             self.Eu1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -1269,7 +1269,7 @@ def unsatZone_forAgri_Ep_percDvar(self, k):
         self.Qu1
         + (
             self.Qu1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -1277,12 +1277,12 @@ def unsatZone_forAgri_Ep_percDvar(self, k):
         )
         * self.Su_diff
     )
-    self.Perc = pcr.ifthenelse(
+    self.Perc = ifthenelse(
         self.Perc1 > 0,
         self.Perc1
         + (
             self.Perc1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -1292,10 +1292,10 @@ def unsatZone_forAgri_Ep_percDvar(self, k):
         self.Perc1,
     )
     self.Su[k] = self.Su_t[k] + (self.Fa - self.Quadd) - self.Eu - self.Qu - self.Perc
-    self.Su[k] = pcr.ifthenelse(self.Su[k] < 0, 0, self.Su[k])
-    self.Su_diff2 = pcr.ifthen(self.Su[k] < 0, self.Su[k])
+    self.Su[k] = ifthenelse(self.Su[k] < 0, 0, self.Su[k])
+    self.Su_diff2 = ifthen(self.Su[k] < 0, self.Su[k])
 
-    self.Cap = pcr.min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)
+    self.Cap = min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)
     self.Su[k] = self.Su[k] + self.Cap
 
     self.wbSu_[k] = (
@@ -1327,10 +1327,10 @@ def unsatZone_forAgri_hourlyEp(self, k):
     - Code for ini-file: 25
     """
 
-    self.Su[k] = pcr.ifthenelse(
+    self.Su[k] = ifthenelse(
         self.Su_t[k] + self.Fa > self.sumax[k], self.sumax[k], self.Su_t[k] + self.Fa
     )
-    self.Quadd = pcr.ifthenelse(
+    self.Quadd = ifthenelse(
         self.Su_t[k] + self.Fa > self.sumax[k],
         self.Su_t[k] + self.Fa - self.sumax[k],
         0,
@@ -1338,10 +1338,10 @@ def unsatZone_forAgri_hourlyEp(self, k):
     self.SuN = self.Su[k] / self.sumax[k]
     self.SiN = self.Si[k] / self.imax[k]
 
-    self.Eu1 = pcr.ifthenelse(
+    self.Eu1 = ifthenelse(
         self.Ft_[k] == 1,
-        pcr.max((self.PotEvaporation - self.Ei - self.Ea), 0)
-        * pcr.min(self.Su[k] / (self.sumax[k] * self.LP[k]), 1),
+        max((self.PotEvaporation - self.Ei - self.Ea), 0)
+        * min(self.Su[k] / (self.sumax[k] * self.LP[k]), 1),
         0,
     )  # no transpiration in case of frozen soil. Added on 31 mrt 2016
 
@@ -1349,12 +1349,12 @@ def unsatZone_forAgri_hourlyEp(self, k):
     self.Perc1 = self.perc[k] * self.SuN
     self.Su[k] = self.Su_t[k] + (self.Fa - self.Quadd) - self.Qu1 - self.Eu - self.Perc1
 
-    self.Su_diff = pcr.ifthenelse(self.Su[k] < 0, self.Su[k], 0)
+    self.Su_diff = ifthenelse(self.Su[k] < 0, self.Su[k], 0)
     self.Eu = (
         self.Eu1
         + (
             self.Eu1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -1366,7 +1366,7 @@ def unsatZone_forAgri_hourlyEp(self, k):
         self.Qu1
         + (
             self.Qu1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -1374,12 +1374,12 @@ def unsatZone_forAgri_hourlyEp(self, k):
         )
         * self.Su_diff
     )
-    self.Perc = pcr.ifthenelse(
+    self.Perc = ifthenelse(
         self.Perc1 > 0,
         self.Perc1
         + (
             self.Perc1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -1389,10 +1389,10 @@ def unsatZone_forAgri_hourlyEp(self, k):
         self.Perc1,
     )
     self.Su[k] = self.Su_t[k] + (self.Fa - self.Quadd) - self.Eu - self.Qu - self.Perc
-    self.Su[k] = pcr.ifthenelse(self.Su[k] < 0, 0, self.Su[k])
-    self.Su_diff2 = pcr.ifthen(self.Su[k] < 0, self.Su[k])
+    self.Su[k] = ifthenelse(self.Su[k] < 0, 0, self.Su[k])
+    self.Su_diff2 = ifthen(self.Su[k] < 0, self.Su[k])
 
-    self.Cap = pcr.min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)
+    self.Cap = min(self.cap[k] * (1 - self.Su[k] / self.sumax[k]), self.Ss)
     self.Su[k] = self.Su[k] + self.Cap
 
     self.wbSu_[k] = (
@@ -1423,16 +1423,16 @@ def unsatZone_forAgri_Jarvis_cropG(self, k):
     - inflow is infiltration from agriculture reservoir
     - Code for ini-file: 18
     """
-    self.cropG_scal = pcr.pcr2numpy(self.cropG, np.nan)
+    self.cropG_scal = pcr2numpy(self.cropG, NaN)
     if any(self.cropG_scal == 1):
         self.sumax2 = self.sumax[k]
     else:
         self.sumax2 = self.sumax[k] * self.redsu[k]
 
-    self.Su[k] = pcr.ifthenelse(
+    self.Su[k] = ifthenelse(
         self.Su_t[k] + self.Fa > self.sumax2, self.sumax2, self.Su_t[k] + self.Fa
     )
-    self.Quadd = pcr.ifthenelse(
+    self.Quadd = ifthenelse(
         self.Su_t[k] + self.Fa > self.sumax2, self.Su_t[k] + self.Fa - self.sumax2, 0
     )
     self.SuN = self.Su[k] / self.sumax2
@@ -1447,12 +1447,12 @@ def unsatZone_forAgri_Jarvis_cropG(self, k):
     self.Perc1 = self.perc[k] * self.SuN
     self.Su[k] = self.Su_t[k] + (self.Fa - self.Quadd) - self.Qu1 - self.Eu - self.Perc1
 
-    self.Su_diff = pcr.ifthenelse(self.Su[k] < 0, self.Su[k], 0)
+    self.Su_diff = ifthenelse(self.Su[k] < 0, self.Su[k], 0)
     self.Eu = (
         self.Eu1
         + (
             self.Eu1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -1464,7 +1464,7 @@ def unsatZone_forAgri_Jarvis_cropG(self, k):
         self.Qu1
         + (
             self.Qu1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -1472,12 +1472,12 @@ def unsatZone_forAgri_Jarvis_cropG(self, k):
         )
         * self.Su_diff
     )
-    self.Perc = pcr.ifthenelse(
+    self.Perc = ifthenelse(
         self.Perc1 > 0,
         self.Perc1
         + (
             self.Perc1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -1487,10 +1487,10 @@ def unsatZone_forAgri_Jarvis_cropG(self, k):
         self.Perc1,
     )
     self.Su[k] = self.Su_t[k] + (self.Fa - self.Quadd) - self.Eu - self.Qu - self.Perc
-    self.Su[k] = pcr.ifthenelse(self.Su[k] < 0, 0, self.Su[k])
-    self.Su_diff2 = pcr.ifthen(self.Su[k] < 0, self.Su[k])
+    self.Su[k] = ifthenelse(self.Su[k] < 0, 0, self.Su[k])
+    self.Su_diff2 = ifthen(self.Su[k] < 0, self.Su[k])
 
-    self.Cap = pcr.min(self.cap[k] * (1 - self.Su[k] / self.sumax2), self.Ss)
+    self.Cap = min(self.cap[k] * (1 - self.Su[k] / self.sumax2), self.Ss)
     self.Su[k] = self.Su[k] + self.Cap
 
     self.wbSu_[k] = (
@@ -1523,24 +1523,24 @@ def unsatZone_forAgri_Ep_cropG(self, k):
     """
 
     JarvisCoefficients.calcEp(self, k)
-    self.PotEvaporation = pcr.cover(pcr.ifthenelse(self.EpHour >= 0, self.EpHour, 0), 0)
+    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0), 0)
 
-    self.cropG_scal = pcr.pcr2numpy(self.cropG, np.nan)
+    self.cropG_scal = pcr2numpy(self.cropG, NaN)
     if any(self.cropG_scal == 1):
         self.sumax2 = self.sumax[k]
     else:
         self.sumax2 = self.sumax[k] * self.redsu[k]
 
-    self.Su[k] = pcr.ifthenelse(
+    self.Su[k] = ifthenelse(
         self.Su_t[k] + self.Fa > self.sumax2, self.sumax2, self.Su_t[k] + self.Fa
     )
-    self.Quadd = pcr.ifthenelse(
+    self.Quadd = ifthenelse(
         self.Su_t[k] + self.Fa > self.sumax2, self.Su_t[k] + self.Fa - self.sumax2, 0
     )
     self.SuN = self.Su[k] / self.sumax2
     self.SiN = self.Si[k] / self.imax[k]
 
-    self.Eu1 = pcr.max((self.PotEvaporation - self.Ei), 0) * pcr.min(
+    self.Eu1 = max((self.PotEvaporation - self.Ei), 0) * min(
         self.Su[k] / (self.sumax2 * self.LP[k]), 1
     )
 
@@ -1548,12 +1548,12 @@ def unsatZone_forAgri_Ep_cropG(self, k):
     self.Perc1 = self.perc[k] * self.SuN
     self.Su[k] = self.Su_t[k] + (self.Fa - self.Quadd) - self.Qu1 - self.Eu - self.Perc1
 
-    self.Su_diff = pcr.ifthenelse(self.Su[k] < 0, self.Su[k], 0)
+    self.Su_diff = ifthenelse(self.Su[k] < 0, self.Su[k], 0)
     self.Eu = (
         self.Eu1
         + (
             self.Eu1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -1565,7 +1565,7 @@ def unsatZone_forAgri_Ep_cropG(self, k):
         self.Qu1
         + (
             self.Qu1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -1573,12 +1573,12 @@ def unsatZone_forAgri_Ep_cropG(self, k):
         )
         * self.Su_diff
     )
-    self.Perc = pcr.ifthenelse(
+    self.Perc = ifthenelse(
         self.Perc1 > 0,
         self.Perc1
         + (
             self.Perc1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qu1 + self.Eu1 + self.Perc1 > 0,
                 self.Qu1 + self.Eu1 + self.Perc1,
                 1,
@@ -1588,10 +1588,10 @@ def unsatZone_forAgri_Ep_cropG(self, k):
         self.Perc1,
     )
     self.Su[k] = self.Su_t[k] + (self.Fa - self.Quadd) - self.Eu - self.Qu - self.Perc
-    self.Su[k] = pcr.ifthenelse(self.Su[k] < 0, 0, self.Su[k])
-    self.Su_diff2 = pcr.ifthen(self.Su[k] < 0, self.Su[k])
+    self.Su[k] = ifthenelse(self.Su[k] < 0, 0, self.Su[k])
+    self.Su_diff2 = ifthen(self.Su[k] < 0, self.Su[k])
 
-    self.Cap = pcr.min(self.cap[k] * (1 - self.Su[k] / self.sumax2), self.Ss)
+    self.Cap = min(self.cap[k] * (1 - self.Su[k] / self.sumax2), self.Ss)
     self.Su[k] = self.Su[k] + self.Cap
 
     self.wbSu_[k] = (
@@ -1620,17 +1620,17 @@ def unsatZone_withAgri(self, k):
     - Qu is determined with a beta function (same as in HBV?)
     - Code for ini-file: 10
     """
-    self.Sa[k] = pcr.ifthenelse(
+    self.Sa[k] = ifthenelse(
         self.Sa_t[k] + self.Pe > self.samax[k], self.samax[k], self.Sa_t[k] + self.Pe
     )
-    self.Qaadd = pcr.ifthenelse(
+    self.Qaadd = ifthenelse(
         self.Sa_t[k] + self.Pe > self.samax[k],
         self.Sa_t[k] + self.Pe - self.samax[k],
         0,
     )
     self.SaN = self.Sa[k] / self.samax[k]
 
-    self.Ea1 = pcr.max((self.PotEvaporation - self.Ei), 0) * pcr.min(
+    self.Ea1 = max((self.PotEvaporation - self.Ei), 0) * min(
         self.Sa[k] / (self.samax[k] * self.LP[k]), 1
     )
     self.Qa1 = (self.Pe - self.Qaadd) * (1 - (1 - self.SaN) ** self.beta[k])
@@ -1638,12 +1638,12 @@ def unsatZone_withAgri(self, k):
 
     self.Sa[k] = self.Sa_t[k] + (self.Pe - self.Qaadd) - self.Qa1 - self.Ea1 - self.Fa1
 
-    self.Sa_diff = pcr.ifthenelse(self.Sa[k] < 0, self.Sa[k], 0)
+    self.Sa_diff = ifthenelse(self.Sa[k] < 0, self.Sa[k], 0)
     self.Ea = (
         self.Ea1
         + (
             self.Ea1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qa1 + self.Ea1 + self.Fa1 > 0, self.Qa1 + self.Ea1 + self.Fa1, 1
             )
         )
@@ -1653,18 +1653,18 @@ def unsatZone_withAgri(self, k):
         self.Qa1
         + (
             self.Qa1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qa1 + self.Ea1 + self.Fa1 > 0, self.Qa1 + self.Ea1 + self.Fa1, 1
             )
         )
         * self.Sa_diff
     )
-    self.Fa = pcr.ifthenelse(
+    self.Fa = ifthenelse(
         self.Fa1 > 0,
         self.Fa1
         + (
             self.Fa1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qa1 + self.Ea1 + self.Fa1 > 0, self.Qa1 + self.Ea1 + self.Fa1, 1
             )
         )
@@ -1672,10 +1672,10 @@ def unsatZone_withAgri(self, k):
         self.Fa1,
     )
     self.Sa[k] = self.Sa_t[k] + (self.Pe - self.Qaadd) - self.Ea - self.Qa - self.Fa
-    self.Sa[k] = pcr.ifthenelse(self.Sa[k] < 0, 0, self.Sa[k])
-    self.Sa_diff2 = pcr.ifthen(self.Sa[k] < 0, self.Sa[k])
+    self.Sa[k] = ifthenelse(self.Sa[k] < 0, 0, self.Sa[k])
+    self.Sa_diff2 = ifthen(self.Sa[k] < 0, self.Sa[k])
 
-    self.Capa = pcr.min(self.cap[k] * (1 - self.Sa[k] / self.samax[k]), self.Su[k])
+    self.Capa = min(self.cap[k] * (1 - self.Sa[k] / self.samax[k]), self.Su[k])
     self.Sa[k] = self.Sa[k] + self.Capa
 
     self.Su[k] = self.Su_t[k] + self.Fa - self.Capa
@@ -1718,19 +1718,19 @@ def unsatZone_withAgri_Ep(self, k):
     """
 
     JarvisCoefficients.calcEp(self, k)
-    self.PotEvaporation = pcr.cover(pcr.ifthenelse(self.EpHour >= 0, self.EpHour, 0), 0)
+    self.PotEvaporation = cover(ifthenelse(self.EpHour >= 0, self.EpHour, 0), 0)
 
-    self.Sa[k] = pcr.ifthenelse(
+    self.Sa[k] = ifthenelse(
         self.Sa_t[k] + self.Pe > self.samax[k], self.samax[k], self.Sa_t[k] + self.Pe
     )
-    self.Qaadd = pcr.ifthenelse(
+    self.Qaadd = ifthenelse(
         self.Sa_t[k] + self.Pe > self.samax[k],
         self.Sa_t[k] + self.Pe - self.samax[k],
         0,
     )
     self.SaN = self.Sa[k] / self.samax[k]
 
-    self.Ea1 = pcr.max((self.PotEvaporation - self.Ei), 0) * pcr.min(
+    self.Ea1 = max((self.PotEvaporation - self.Ei), 0) * min(
         self.Sa[k] / (self.samax[k] * self.LP[k]), 1
     )
     self.Qa1 = (self.Pe - self.Qaadd) * (1 - (1 - self.SaN) ** self.beta[k])
@@ -1738,12 +1738,12 @@ def unsatZone_withAgri_Ep(self, k):
 
     self.Sa[k] = self.Sa_t[k] + (self.Pe - self.Qaadd) - self.Qa1 - self.Ea1 - self.Fa1
 
-    self.Sa_diff = pcr.ifthenelse(self.Sa[k] < 0, self.Sa[k], 0)
+    self.Sa_diff = ifthenelse(self.Sa[k] < 0, self.Sa[k], 0)
     self.Ea = (
         self.Ea1
         + (
             self.Ea1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qa1 + self.Ea1 + self.Fa1 > 0, self.Qa1 + self.Ea1 + self.Fa1, 1
             )
         )
@@ -1753,18 +1753,18 @@ def unsatZone_withAgri_Ep(self, k):
         self.Qa1
         + (
             self.Qa1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qa1 + self.Ea1 + self.Fa1 > 0, self.Qa1 + self.Ea1 + self.Fa1, 1
             )
         )
         * self.Sa_diff
     )
-    self.Fa = pcr.ifthenelse(
+    self.Fa = ifthenelse(
         self.Fa1 > 0,
         self.Fa1
         + (
             self.Fa1
-            / pcr.ifthenelse(
+            / ifthenelse(
                 self.Qa1 + self.Ea1 + self.Fa1 > 0, self.Qa1 + self.Ea1 + self.Fa1, 1
             )
         )
@@ -1772,10 +1772,10 @@ def unsatZone_withAgri_Ep(self, k):
         self.Fa1,
     )
     self.Sa[k] = self.Sa_t[k] + (self.Pe - self.Qaadd) - self.Ea - self.Qa - self.Fa
-    self.Sa[k] = pcr.ifthenelse(self.Sa[k] < 0, 0, self.Sa[k])
-    self.Sa_diff2 = pcr.ifthen(self.Sa[k] < 0, self.Sa[k])
+    self.Sa[k] = ifthenelse(self.Sa[k] < 0, 0, self.Sa[k])
+    self.Sa_diff2 = ifthen(self.Sa[k] < 0, self.Sa[k])
 
-    self.Capa = pcr.min(self.cap[k] * (1 - self.Sa[k] / self.samax[k]), self.Su[k])
+    self.Capa = min(self.cap[k] * (1 - self.Sa[k] / self.samax[k]), self.Su[k])
     self.Sa[k] = self.Sa[k] + self.Capa
 
     self.Su[k] = self.Su_t[k] + self.Fa - self.Capa
@@ -1817,10 +1817,10 @@ def unsatZone_withAgri_Jarvis(self, k):
     - Code for ini-file: 15
     """
 
-    self.Sa[k] = pcr.ifthenelse(
+    self.Sa[k] = ifthenelse(
         self.Sa_t[k] + self.Pe > self.samax[k], self.samax[k], self.Sa_t[k] + self.Pe
     )
-    self.Qaadd = pcr.ifthenelse(
+    self.Qaadd = ifthenelse(
         self.Sa_t[k] + self.Pe > self.samax[k],
         self.Sa_t[k] + self.Pe - self.samax[k],
         0,
@@ -1837,24 +1837,24 @@ def unsatZone_withAgri_Jarvis(self, k):
 
     self.Sa[k] = self.Sa_t[k] + (self.Pe - self.Qaadd) - self.Qa1 - self.Ea - self.Fa1
 
-    self.Sa_diff = pcr.ifthenelse(self.Sa[k] < 0, self.Sa[k], 0)
+    self.Sa_diff = ifthenelse(self.Sa[k] < 0, self.Sa[k], 0)
     self.Qa = (
         self.Qa1
-        + (self.Qa1 / pcr.ifthenelse(self.Qa1 + self.Fa1 > 0, self.Qa1 + self.Fa1, 1))
+        + (self.Qa1 / ifthenelse(self.Qa1 + self.Fa1 > 0, self.Qa1 + self.Fa1, 1))
         * self.Sa_diff
     )
-    self.Fa = pcr.ifthenelse(
+    self.Fa = ifthenelse(
         self.Fa1 > 0,
         self.Fa1
-        + (self.Fa1 / pcr.ifthenelse(self.Qa1 + self.Fa1 > 0, self.Qa1 + self.Fa1, 1))
+        + (self.Fa1 / ifthenelse(self.Qa1 + self.Fa1 > 0, self.Qa1 + self.Fa1, 1))
         * self.Sa_diff,
         self.Fa1,
     )
     self.Sa[k] = self.Sa_t[k] + (self.Pe - self.Qaadd) - self.Ea - self.Qa - self.Fa
-    self.Sa[k] = pcr.ifthenelse(self.Sa[k] < 0, 0, self.Sa[k])
-    self.Sa_diff2 = pcr.ifthen(self.Sa[k] < 0, self.Sa[k])
+    self.Sa[k] = ifthenelse(self.Sa[k] < 0, 0, self.Sa[k])
+    self.Sa_diff2 = ifthen(self.Sa[k] < 0, self.Sa[k])
 
-    self.Capa = pcr.min(self.cap[k] * (1 - self.Sa[k] / self.samax[k]), self.Su[k])
+    self.Capa = min(self.cap[k] * (1 - self.Sa[k] / self.samax[k]), self.Su[k])
     self.Sa[k] = self.Sa[k] + self.Capa
 
     self.Su[k] = self.Su_t[k] + self.Fa - self.Capa

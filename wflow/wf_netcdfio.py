@@ -10,22 +10,21 @@ $Rev: 915 $
 """
 
 import datetime as dt
-import os
-import sys
 
 import cftime
 import netCDF4
 import osgeo
 import osgeo.ogr
 import pyproj
-import numpy as np
-import pcraster as pcr
+import wflow.pcrut as _pcrut
+from numpy import *
+from pcraster import *
 
 globmetadata = {}
 globmetadata["title"] = "wflow output mapstack"
 globmetadata["institution"] = "Deltares"
 globmetadata["source"] = "wflow"
-globmetadata["history"] = dt.datetime.now().isoformat()
+globmetadata["history"] = time.ctime()
 globmetadata["references"] = "https://github.com/openstreams/wflow"
 globmetadata["Conventions"] = "CF-1.4"
 
@@ -89,7 +88,7 @@ def prepare_nc(
         timeList[-1].replace(tzinfo=None), units=units, calendar=calendar
     )
 
-    timeAR = np.linspace(startDayNr, endDayNr, num=len(timeList))
+    timeAR = linspace(startDayNr, endDayNr, num=len(timeList))
 
     if os.path.exists(trgFile):
         os.remove(trgFile)
@@ -187,7 +186,7 @@ def prepare_nc(
         crs._CoordinateAxisTypes = "y x"
         crs.proj4_params = projStr
         # Also write lat lon fields
-        XI, YI = np.meshgrid(x, y)
+        XI, YI = meshgrid(x, y)
         lon_vals, lat_vals = convertCoord(projStr, proj_src, XI, YI)
         # Need to create lat-lon fields
         lat = nc_trg.createVariable("lat", "f4", ("y", "x"))
@@ -252,16 +251,16 @@ class netcdfoutput:
         self.maxbuf = maxbuf if timesteps >= maxbuf else timesteps
         self.ncfile = netcdffile
         self.timesteps = timesteps
-        rows = pcr.clone().nrRows()
-        cols = pcr.clone().nrCols()
-        cellsize = pcr.clone().cellSize()
-        yupper = pcr.clone().north()
-        xupper = pcr.clone().west()
-        x = pcr.pcr2numpy(
-            pcr.xcoordinate(pcr.boolean(pcr.cover(1.0))), np.nan
+        rows = pcraster._pcraster.clone().nrRows()
+        cols = pcraster._pcraster.clone().nrCols()
+        cellsize = pcraster._pcraster.clone().cellSize()
+        yupper = pcraster._pcraster.clone().north()
+        xupper = pcraster._pcraster.clone().west()
+        x = _pcrut.pcr2numpy(
+            _pcrut.xcoordinate(_pcrut.boolean(_pcrut.cover(1.0))), NaN
         )[0, :]
-        y = pcr.pcr2numpy(
-            pcr.ycoordinate(pcr.boolean(pcr.cover(1.0))), np.nan
+        y = _pcrut.pcr2numpy(
+            _pcrut.ycoordinate(_pcrut.boolean(_pcrut.cover(1.0))), NaN
         )[:, 0]
 
         # Shift one timestep as we output at the end
@@ -269,7 +268,7 @@ class netcdfoutput:
         end = starttime + dt.timedelta(seconds=timestepsecs * (self.timesteps - 1))
 
         timeList = date_range(starttime, end, timestepsecs)
-        self.timestepbuffer = np.zeros((int(self.maxbuf), len(y), len(x)))
+        self.timestepbuffer = zeros((int(self.maxbuf), len(y), len(x)))
         self.bufferdirty = True
         self.bufflst = {}
 
@@ -361,7 +360,7 @@ class netcdfoutput:
             self.nc_trg.sync()
 
         miss = float(nc_var._FillValue)
-        data = pcr.pcr2numpy(pcr.scalar(pcrdata), miss)
+        data = pcr2numpy(scalar(pcrdata), miss)
 
         if var in self.bufflst:
             self.bufflst[var][bufpos, :, :] = data
@@ -438,16 +437,16 @@ class netcdfoutputstatic:
         self.maxbuf = maxbuf if timesteps >= maxbuf else timesteps
         self.ncfile = netcdffile
         self.timesteps = timesteps
-        rows = pcr.clone().nrRows()
-        cols = pcr.clone().nrCols()
-        cellsize = pcr.clone().cellSize()
-        yupper = pcr.clone().north()
-        xupper = pcr.clone().west()
-        x = pcr.pcr2numpy(
-            pcr.xcoordinate(pcr.boolean(pcr.cover(1.0))), np.nan
+        rows = pcraster._pcraster.clone().nrRows()
+        cols = pcraster._pcraster.clone().nrCols()
+        cellsize = pcraster._pcraster.clone().cellSize()
+        yupper = pcraster._pcraster.clone().north()
+        xupper = pcraster._pcraster.clone().west()
+        x = _pcrut.pcr2numpy(
+            _pcrut.xcoordinate(_pcrut.boolean(_pcrut.cover(1.0))), NaN
         )[0, :]
-        y = pcr.pcr2numpy(
-            pcr.ycoordinate(pcr.boolean(pcr.cover(1.0))), np.nan
+        y = _pcrut.pcr2numpy(
+            _pcrut.ycoordinate(_pcrut.boolean(_pcrut.cover(1.0))), NaN
         )[:, 0]
 
         # Shift one timestep as we output at the end
@@ -455,7 +454,7 @@ class netcdfoutputstatic:
         end = starttime + dt.timedelta(seconds=timestepsecs * (self.timesteps - 1))
 
         timeList = date_range(starttime, end, timestepsecs)
-        self.timestepbuffer = np.zeros((self.maxbuf, len(y), len(x)))
+        self.timestepbuffer = zeros((self.maxbuf, len(y), len(x)))
         self.bufflst = {}
         self.buffdirty = False
 
@@ -536,7 +535,7 @@ class netcdfoutputstatic:
             self.nc_trg.sync()
 
         miss = float(nc_var._FillValue)
-        data = pcr.pcr2numpy(pcr.scalar(pcrdata), miss)
+        data = pcr2numpy(scalar(pcrdata), miss)
 
         if var in self.bufflst:
             self.bufflst[var][bufpos, :, :] = data
@@ -596,13 +595,13 @@ class netcdfinput:
 
         logging.info("Reading input from netCDF file: " + netcdffile)
         self.alldat = {}
-        a = pcr.pcr2numpy(pcr.cover(0.0), 0.0).flatten()
+        a = pcr2numpy(cover(0.0), 0.0).flatten()
         # Determine steps to load in mem based on estimated memory usage
         floatspermb = 1048576 / 4
         maxmb = 40
 
         self.maxlentime = len(self.dataset.variables["time"])
-        self.maxsteps = np.minimum(maxmb * len(a) / floatspermb + 1, self.maxlentime - 1)
+        self.maxsteps = minimum(maxmb * len(a) / floatspermb + 1, self.maxlentime - 1)
         self.fstep = 0
         self.lstep = self.fstep + self.maxsteps
         self.offset = 0
@@ -643,29 +642,29 @@ class netcdfinput:
             else:
                 self.flip = True
 
-        x = pcr.pcr2numpy(
-            pcr.xcoordinate(pcr.boolean(pcr.cover(1.0))), np.nan
+        x = _pcrut.pcr2numpy(
+            _pcrut.xcoordinate(_pcrut.boolean(_pcrut.cover(1.0))), NaN
         )[0, :]
-        y = pcr.pcr2numpy(
-            pcr.ycoordinate(pcr.boolean(pcr.cover(1.0))), np.nan
+        y = _pcrut.pcr2numpy(
+            _pcrut.ycoordinate(_pcrut.boolean(_pcrut.cover(1.0))), NaN
         )[:, 0]
 
         # Get average cell size
         acc = (
-            np.diff(x).mean() * 0.25
+            diff(x).mean() * 0.25
         )  # non-exact match needed becuase of possible rounding problems
         if self.flip:
-            (self.latidx,) = np.logical_and(
+            (self.latidx,) = logical_and(
                 self.y[::-1] + acc >= y.min(), self.y[::-1] <= y.max() + acc
             ).nonzero()
-            (self.lonidx,) = np.logical_and(
+            (self.lonidx,) = logical_and(
                 self.x + acc >= x.min(), self.x <= x.max() + acc
             ).nonzero()
         else:
-            (self.latidx,) = np.logical_and(
+            (self.latidx,) = logical_and(
                 self.y + acc >= y.min(), self.y <= y.max() + acc
             ).nonzero()
-            (self.lonidx,) = np.logical_and(
+            (self.lonidx,) = logical_and(
                 self.x + acc >= x.min(), self.x <= x.max() + acc
             ).nonzero()
 
@@ -791,12 +790,12 @@ class netcdfinput:
 
             miss = float(self.dataset.variables[var]._FillValue)
             if self.flip:
-                return pcr.numpy2pcr(pcr.Scalar, np.flipud(np_step).copy(), miss), True
+                return numpy2pcr(Scalar, flipud(np_step).copy(), miss), True
             else:
-                return pcr.numpy2pcr(pcr.Scalar, np_step, miss), True
+                return numpy2pcr(Scalar, np_step, miss), True
         else:
             # logging.debug("Var (" + var + ") not found returning 0")
-            return pcr.cover(pcr.scalar(0.0)), False
+            return cover(scalar(0.0)), False
 
 
 class netcdfinputstates:
@@ -820,7 +819,7 @@ class netcdfinputstates:
 
         logging.info("Reading state input from netCDF file: " + netcdffile)
         self.alldat = {}
-        a = pcr.pcr2numpy(pcr.cover(0.0), 0.0).flatten()
+        a = pcr2numpy(cover(0.0), 0.0).flatten()
         # Determine steps to load in mem based on estimated memory usage
         floatspermb = 1048576 / 4
         maxmb = 40
@@ -865,29 +864,29 @@ class netcdfinputstates:
             else:
                 self.flip = True
 
-        x = pcr.pcr2numpy(
-            pcr.xcoordinate(pcr.boolean(pcr.cover(1.0))), np.nan
+        x = _pcrut.pcr2numpy(
+            _pcrut.xcoordinate(_pcrut.boolean(_pcrut.cover(1.0))), NaN
         )[0, :]
-        y = pcr.pcr2numpy(
-            pcr.ycoordinate(pcr.boolean(pcr.cover(1.0))), np.nan
+        y = _pcrut.pcr2numpy(
+            _pcrut.ycoordinate(_pcrut.boolean(_pcrut.cover(1.0))), NaN
         )[:, 0]
 
         # Get average cell size
         acc = (
-            np.diff(x).mean() * 0.25
+            diff(x).mean() * 0.25
         )  # non-exact match needed becuase of possible rounding problems
         if self.flip:
-            (self.latidx,) = np.logical_and(
+            (self.latidx,) = logical_and(
                 self.y[::-1] + acc >= y.min(), self.y[::-1] <= y.max() + acc
             ).nonzero()
-            (self.lonidx,) = np.logical_and(
+            (self.lonidx,) = logical_and(
                 self.x + acc >= x.min(), self.x <= x.max() + acc
             ).nonzero()
         else:
-            (self.latidx,) = np.logical_and(
+            (self.latidx,) = logical_and(
                 self.y + acc >= y.min(), self.y <= y.max() + acc
             ).nonzero()
-            (self.lonidx,) = np.logical_and(
+            (self.lonidx,) = logical_and(
                 self.x + acc >= x.min(), self.x <= x.max() + acc
             ).nonzero()
 
@@ -966,10 +965,10 @@ class netcdfinputstates:
             ]
 
             miss = float(self.dataset.variables[var]._FillValue)
-            return pcr.numpy2pcr(pcr.Scalar, np_step, miss), True
+            return numpy2pcr(Scalar, np_step, miss), True
         else:
             # logging.debug("Var (" + var + ") not found returning map with 0.0")
-            return pcr.cover(pcr.scalar(0.0)), False
+            return cover(scalar(0.0)), False
 
 
 class netcdfinputstatic:
@@ -1000,15 +999,15 @@ class netcdfinputstatic:
         except:
             self.y = self.dataset.variables["lat"][:]
 
-        x = pcr.pcr2numpy(
-            pcr.xcoordinate(pcr.boolean(pcr.cover(1.0))), np.nan
+        x = _pcrut.pcr2numpy(
+            _pcrut.xcoordinate(_pcrut.boolean(_pcrut.cover(1.0))), NaN
         )[0, :]
-        y = pcr.pcr2numpy(
-            pcr.ycoordinate(pcr.boolean(pcr.cover(1.0))), np.nan
+        y = _pcrut.pcr2numpy(
+            _pcrut.ycoordinate(_pcrut.boolean(_pcrut.cover(1.0))), NaN
         )[:, 0]
 
-        (self.latidx,) = np.logical_and(self.x >= x.min(), self.x < x.max()).nonzero()
-        (self.lonidx,) = np.logical_and(self.y >= x.min(), self.y < y.max()).nonzero()
+        (self.latidx,) = logical_and(self.x >= x.min(), self.x < x.max()).nonzero()
+        (self.lonidx,) = logical_and(self.y >= x.min(), self.y < y.max()).nonzero()
 
         logging.info("Reading static input from netCDF file: " + netcdffile)
 
@@ -1028,7 +1027,7 @@ class netcdfinputstatic:
                 self.lonidx.min() : self.lonidx.max() + 1,
             ]
             miss = float(self.dataset.variables[var]._FillValue)
-            return pcr.numpy2pcr(pcr.Scalar, np_step, miss), True
+            return numpy2pcr(Scalar, np_step, miss), True
         else:
             logging.debug("Var (" + var + ") not found returning map with 0.0")
-            return pcr.cover(pcr.scalar(0.0)), False
+            return cover(scalar(0.0)), False

@@ -76,7 +76,6 @@ wflow_hbv::
 
 import os.path
 
-import pcraster.framework
 from wflow.wf_DynamicFramework import *
 
 from .wflow_adapt import *
@@ -102,7 +101,7 @@ def usage(*args):
     sys.exit(0)
 
 
-class WflowModel(pcraster.framework.DynamicModel):
+class WflowModel(DynamicModel):
 
     """
   The user defined model class.
@@ -110,10 +109,10 @@ class WflowModel(pcraster.framework.DynamicModel):
   """
 
     def __init__(self, cloneMap, Dir, RunDir, configfile):
-        pcraster.framework.DynamicModel.__init__(self)
+        DynamicModel.__init__(self)
         self.caseName = os.path.abspath(Dir)
         self.clonemappath = os.path.join(os.path.abspath(Dir), "staticmaps", cloneMap)
-        pcr.setclone(self.clonemappath)
+        setclone(self.clonemappath)
         self.runId = RunDir
         self.Dir = os.path.abspath(Dir)
         self.configfile = configfile
@@ -258,9 +257,9 @@ class WflowModel(pcraster.framework.DynamicModel):
         global multpars
         global updateCols
 
-        pcr.setglobaloption("unittrue")
+        setglobaloption("unittrue")
 
-        self.thestep = pcr.scalar(0)
+        self.thestep = scalar(0)
 
         #: files to be used in case of timesries (scalar) input to the model
 
@@ -304,15 +303,15 @@ class WflowModel(pcraster.framework.DynamicModel):
         )
 
         # 2: Input base maps ########################################################
-        subcatch = pcr.ordinal(
+        subcatch = ordinal(
             self.wf_readmap(os.path.join(self.Dir, wflow_subcatch), 0.0, fail=True)
         )  # Determines the area of calculations (all cells > 0)
-        subcatch = pcr.ifthen(subcatch > 0, subcatch)
+        subcatch = ifthen(subcatch > 0, subcatch)
 
         self.Altitude = self.wf_readmap(
             os.path.join(self.Dir, wflow_dem), 0.0, fail=True
-        ) * pcr.scalar(
-            pcr.defined(subcatch)
+        ) * scalar(
+            defined(subcatch)
         )  #: The digital elevation map (DEM)
         self.TopoId = self.wf_readmap(
             os.path.join(self.Dir, wflow_subcatch), 0.0, fail=True
@@ -323,11 +322,11 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.LandUse = self.wf_readmap(
             os.path.join(self.Dir, wflow_landuse), 0.0, fail=True
         )  #: Map with lan-use/cover classes
-        self.LandUse = pcr.cover(self.LandUse, pcr.nominal(pcr.ordinal(subcatch) > 0))
+        self.LandUse = cover(self.LandUse, nominal(ordinal(subcatch) > 0))
         self.Soil = self.wf_readmap(
             os.path.join(self.Dir, wflow_soil), 0.0, fail=True
         )  #: Map with soil classes
-        self.Soil = pcr.cover(self.Soil, pcr.nominal(pcr.ordinal(subcatch) > 0))
+        self.Soil = cover(self.Soil, nominal(ordinal(subcatch) > 0))
         self.OutputLoc = self.wf_readmap(
             os.path.join(self.Dir, wflow_gauges), 0.0, fail=True
         )  #: Map with locations of output gauge(s)
@@ -349,7 +348,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             os.path.join(self.Dir, wflow_subcatch), 0.0, fail=True
         )  # location of subcatchment
 
-        self.ZeroMap = 0.0 * pcr.scalar(pcr.defined(self.Altitude))  # map with only zero's
+        self.ZeroMap = 0.0 * scalar(defined(self.Altitude))  # map with only zero's
 
         # 3: Input time series ###################################################
         self.P_mapstack = self.Dir + configget(
@@ -367,8 +366,8 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.TEMP = self.ZeroMap
         # Set static initial values here #########################################
 
-        self.Latitude = pcr.ycoordinate(pcr.boolean(self.Altitude))
-        self.Longitude = pcr.xcoordinate(pcr.boolean(self.Altitude))
+        self.Latitude = ycoordinate(boolean(self.Altitude))
+        self.Longitude = xcoordinate(boolean(self.Altitude))
 
         self.logger.info("Linking parameters to landuse, catchment and soil...")
 
@@ -584,7 +583,7 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         if self.reinit == 1:
             self.logger.info("Setting initial conditions to default (zero!)")
-            self.FreeWater = pcr.cover(0.0)  #: Water on surface (state variable [mm])
+            self.FreeWater = cover(0.0)  #: Water on surface (state variable [mm])
             self.SoilMoisture = self.FC  #: Soil moisture (state variable [mm])
             self.UpperZoneStorage = (
                 0.2 * self.FC
@@ -592,7 +591,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.LowerZoneStorage = 1.0 / (
                 3.0 * self.K2
             )  #: Storage in Uppe Zone (state variable [mm])
-            self.DrySnow = pcr.cover(0.0)  #: Snow amount (state variable [mm])
+            self.DrySnow = cover(0.0)  #: Snow amount (state variable [mm])
         else:
             self.wf_resume(os.path.join(self.Dir, "instate"))
 
@@ -638,22 +637,22 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         # Apply correction factor to precipitation
         self.Precipitation = self.PCORR * self.Precipitation
-        self.Temperature = pcr.cover(self.wf_readmap(self.TEMP_mapstack, 10.0), 10.0)
+        self.Temperature = cover(self.wf_readmap(self.TEMP_mapstack, 10.0), 10.0)
         self.Temperature = self.Temperature + self.TempCor
 
         # Multiply input parameters with a factor (for calibration etc) -p option in command line (no also in ini)
 
         self.wf_multparameters()
 
-        RainFrac = pcr.ifthenelse(
+        RainFrac = ifthenelse(
             1.0 * self.TTI == 0.0,
-            pcr.ifthenelse(self.Temperature <= self.TT, pcr.scalar(0.0), pcr.scalar(1.0)),
-            pcr.min(
-                (self.Temperature - (self.TT - self.TTI / 2.0)) / self.TTI, pcr.scalar(1.0)
+            ifthenelse(self.Temperature <= self.TT, scalar(0.0), scalar(1.0)),
+            min(
+                (self.Temperature - (self.TT - self.TTI / 2.0)) / self.TTI, scalar(1.0)
             ),
         )
-        RainFrac = pcr.max(
-            RainFrac, pcr.scalar(0.0)
+        RainFrac = max(
+            RainFrac, scalar(0.0)
         )  # fraction of precipitation which falls as rain
         SnowFrac = 1.0 - RainFrac  # fraction of self.Precipitation which falls as snow
         self.Precipitation = (
@@ -662,58 +661,58 @@ class WflowModel(pcraster.framework.DynamicModel):
         )  # different correction for rainfall and snowfall
 
         self.PotEvaporation = (
-            pcr.exp(-self.EPF * self.Precipitation) * self.ECORR * self.PotEvaporation
+            exp(-self.EPF * self.Precipitation) * self.ECORR * self.PotEvaporation
         )  # correction for potential evaporation on wet days
         self.PotEvaporation = self.CEVPF * self.PotEvaporation  # Correct per landuse
 
         SnowFall = SnowFrac * self.Precipitation  #: snowfall depth
         RainFall = RainFrac * self.Precipitation  #: rainfall depth
-        PotSnowMelt = pcr.ifthenelse(
+        PotSnowMelt = ifthenelse(
             self.Temperature > self.TT,
             self.CFMAX * (self.Temperature - self.TT),
-            pcr.scalar(0.0),
+            scalar(0.0),
         )  # Potential snow melt, based on temperature
-        PotRefreezing = pcr.ifthenelse(
+        PotRefreezing = ifthenelse(
             self.Temperature < self.TT,
             self.CFMAX * self.CFR * (self.TT - self.Temperature),
             0.0,
         )  # Potential refreezing, based on temperature
 
-        Refreezing = pcr.ifthenelse(
-            self.Temperature < self.TT, pcr.min(PotRefreezing, self.FreeWater), 0.0
+        Refreezing = ifthenelse(
+            self.Temperature < self.TT, min(PotRefreezing, self.FreeWater), 0.0
         )  # actual refreezing
-        self.SnowMelt = pcr.min(PotSnowMelt, self.DrySnow)  # actual snow melt
+        self.SnowMelt = min(PotSnowMelt, self.DrySnow)  # actual snow melt
         self.DrySnow = (
             self.DrySnow + SnowFall + Refreezing - self.SnowMelt
         )  # dry snow content
         self.FreeWater = self.FreeWater - Refreezing  # free water content in snow
         MaxFreeWater = self.DrySnow * self.WHC
         self.FreeWater = self.FreeWater + self.SnowMelt + RainFall
-        InSoil = pcr.max(
+        InSoil = max(
             self.FreeWater - MaxFreeWater, 0.0
         )  # abundant water in snow pack which goes into soil
         self.FreeWater = self.FreeWater - InSoil
 
         # Soil and evaporation
         soil_wetness = (self.SoilMoisture / self.FC) ** self.BETA
-        soil_wetness = pcr.max(pcr.min(soil_wetness, 1.0), 0.0)
+        soil_wetness = max(min(soil_wetness, 1.0), 0.0)
         recharge = (self.Precipitation + InSoil) * soil_wetness
         self.SoilMoisture = self.SoilMoisture + self.Precipitation + InSoil - recharge
         excess = self.SoilMoisture - self.FC
-        excess = pcr.max(excess, 0.0)
+        excess = max(excess, 0.0)
         self.SoilMoisture = self.SoilMoisture - excess
         evapfactor = self.SoilMoisture / (self.LP * self.FC)
-        evapfactor = pcr.min(pcr.max(evapfactor, 0.0), 1.0)
+        evapfactor = min(max(evapfactor, 0.0), 1.0)
         # ----------------
         self.ActEvap = self.PotEvaporation * evapfactor
-        self.ActEvap = pcr.min(self.SoilMoisture, self.ActEvap)
+        self.ActEvap = min(self.SoilMoisture, self.ActEvap)
         self.SoilMoisture = self.SoilMoisture - self.ActEvap
 
         # Groundwater boxes
         self.UpperZoneStorage = self.UpperZoneStorage + recharge + excess
-        self.actPERC = pcr.min(self.UpperZoneStorage, self.PERC)
+        self.actPERC = min(self.UpperZoneStorage, self.PERC)
         self.UpperZoneStorage = self.UpperZoneStorage - self.actPERC
-        self.Q0 = self.K0 * pcr.max(self.UpperZoneStorage - self.UZL, 0.0)
+        self.Q0 = self.K0 * max(self.UpperZoneStorage - self.UZL, 0.0)
         self.UpperZoneStorage = self.UpperZoneStorage - self.Q0
         self.Q1 = self.K1 * self.UpperZoneStorage
         self.UpperZoneStorage = self.UpperZoneStorage - self.Q1
@@ -723,7 +722,7 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         DirectRunoffStorage = self.Q0 + self.Q1 + self.Q2
 
-        self.InwaterMM = pcr.max(0.0, DirectRunoffStorage)
+        self.InwaterMM = max(0.0, DirectRunoffStorage)
         self.Inwater = self.InwaterMM * self.ToCubic
         self.QuickFlowCubic = (self.Q0 + self.Q1) * self.ToCubic
         self.BaseFlowCubic = self.Q2 * self.ToCubic

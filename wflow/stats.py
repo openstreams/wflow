@@ -63,7 +63,7 @@ def get_mean(values, N="", NoData=NoDataVal, Skip=""):
     Nact = 0
     Nskip = 0
     for i in range(N):
-        if values[i] != NoData and not np.isnan(values[i]):
+        if values[i] != NoData and not isnan(values[i]):
             if Skip and values[i] == Skip:
                 Nskip = Nskip + 1
             else:
@@ -86,7 +86,7 @@ def get_median(values, N="", NoData=NoDataVal):
     new_value = []
     Nact = 0
     for i in range(N):
-        if values[i] != NoData and not np.isnan(values[i]):
+        if values[i] != NoData and not isnan(values[i]):
             new_value = new_value + [values[i]]
             Nact = Nact + 1
     if Nact > 0:
@@ -113,7 +113,7 @@ def get_var(values, N="", mean="", NoData=NoDataVal):
     var = 0
     Nact = 0
     for i in range(N):
-        if values[i] != NoData and not np.isnan(values[i]):
+        if values[i] != NoData and not isnan(values[i]):
             var = var + (values[i] - mean) * (values[i] - mean)
             Nact = Nact + 1
     if Nact > 1:
@@ -137,12 +137,12 @@ def get_stdev(values, N="", mean="", NoData=NoDataVal):
     stdev = 0
     Nact = 0
     for i in range(N):
-        if values[i] != NoData and not np.isnan(values[i]):
+        if values[i] != NoData and not isnan(values[i]):
             stdev = stdev + (values[i] - mean) * (values[i] - mean)
             Nact = Nact + 1
     if Nact > 1:
         stdev = stdev / (Nact - 1)
-        stdev = math.sqrt(stdev)
+        stdev = sqrt(stdev)
     else:
         stdev = NoData
     return (stdev, Nact)
@@ -164,7 +164,7 @@ def get_skew(values, N="", mean="", stdev="", NoData=NoDataVal):
     skew = 0
     Nact = 0
     for i in range(N):
-        if values[i] != NoData and not np.isnan(values[i]):
+        if values[i] != NoData and not isnan(values[i]):
             skew = skew + (values[i] - mean) ** 3
             Nact = Nact + 1
     if (stdev ** 3 * (Nact - 1) * (Nact - 2)) != 0:
@@ -184,7 +184,7 @@ def get_sum(values, N="", NoData=NoDataVal):
     sum = 0
     Nact = 0
     for i in range(N):
-        if values[i] != NoData and not np.isnan(values[i]):
+        if values[i] != NoData and not isnan(values[i]):
             sum = sum + values[i]
             Nact = Nact + 1
     if Nact == 0:
@@ -208,7 +208,7 @@ def get_min(values, N="", NoData=NoDataVal):
         min = values[pos]
         minpos = pos
         for i in range(pos, N):
-            if values[i] != NoData and not np.isnan(values[i]):
+            if values[i] != NoData and not isnan(values[i]):
                 if values[i] < min:
                     min = values[i]
                     minpos = i
@@ -238,7 +238,7 @@ def get_max(values, N="", NoData=NoDataVal):
         maxpos = 0
         Nact = 0
         for i in range(pos, N):
-            if values[i] != NoData and not np.isnan(values[i]):
+            if values[i] != NoData and not isnan(values[i]):
                 if values[i] > max:
                     max = values[i]
                     maxpos = i
@@ -262,7 +262,7 @@ def get_count_over_threshold(values, threshold, N="", NoData=NoDataVal):
     count = 0
     Nact = 0
     for i in range(N):
-        if values[i] != NoData and not np.isnan(values[i]):
+        if values[i] != NoData and not isnan(values[i]):
             if values[i] >= threshold:
                 count = count + 1
             Nact = Nact + 1
@@ -344,8 +344,8 @@ def get_bias(Avalues, Bvalues, N="", NoData=NoDataVal):
     bias = 0
     Nact = 0
     for i in range(N):
-        if (Avalues[i] != NoData and not np.isnan(Avalues[i])) and (
-            Bvalues[i] != NoData and not np.isnan(Avalues[i])
+        if (Avalues[i] != NoData and not isnan(Avalues[i])) and (
+            Bvalues[i] != NoData and not isnan(Avalues[i])
         ):
             bias = bias + (Avalues[i] - Bvalues[i])
             Nact = Nact + 1
@@ -367,15 +367,15 @@ def get_root_mean_square(Avalues, Bvalues, N="", NoData=NoDataVal):
     rmse = 0
     Nact = 0
     for i in range(N):
-        if (Avalues[i] != NoData and not np.isnan(Avalues[i])) and (
-            Bvalues[i] != NoData and not np.isnan(Avalues[i])
+        if (Avalues[i] != NoData and not isnan(Avalues[i])) and (
+            Bvalues[i] != NoData and not isnan(Avalues[i])
         ):
             rmse = rmse + (Avalues[i] - Bvalues[i]) * (Avalues[i] - Bvalues[i])
             Nact = Nact + 1
     if Nact == 0:
         rmse = NoData
     else:
-        rmse = math.sqrt(rmse / Nact)
+        rmse = sqrt(rmse / Nact)
     return (rmse, Nact)
 
 
@@ -390,15 +390,15 @@ def get_mean_absolute_error(Avalues, Bvalues, N="", NoData=NoDataVal):
     abserr = 0
     Nact = 0
     for i in range(N):
-        if (Avalues[i] != NoData and not np.isnan(Avalues[i])) and (
-            Bvalues[i] != NoData and not np.isnan(Avalues[i])
+        if (Avalues[i] != NoData and not isnan(Avalues[i])) and (
+            Bvalues[i] != NoData and not isnan(Avalues[i])
         ):
-            abserr = abserr + math.fabs(Avalues[i] - Bvalues[i])
+            abserr = abserr + fabs(Avalues[i] - Bvalues[i])
             Nact = Nact + 1
     if Nact == 0:
         abserr = NoData
     else:
-        abserr = math.sqrt(abserr / Nact)
+        abserr = sqrt(abserr / Nact)
     return (abserr, Nact)
 
 
@@ -413,8 +413,8 @@ def get_max_absolute_error(Avalues, Bvalues, N="", NoData=NoDataVal):
     absmax = []
     Nact = 0
     for i in range(N):
-        if (Avalues[i] != NoData and not np.isnan(Avalues[i])) and (
-            Bvalues[i] != NoData and not np.isnan(Avalues[i])
+        if (Avalues[i] != NoData and not isnan(Avalues[i])) and (
+            Bvalues[i] != NoData and not isnan(Avalues[i])
         ):
             absmax = absmax + [fabs(Avalues[i] - Bvalues[i])]
             Nact = Nact + 1
@@ -438,8 +438,8 @@ def get_nash_sutcliffe(Avalues, Bvalues, N="", NoData=NoDataVal):
     Nact = 0
     mean_val = get_mean(Avalues, NoData=NoData)[0]
     for i in range(N):
-        if (Avalues[i] != NoData and not np.isnan(Avalues[i])) and (
-            Bvalues[i] != NoData and not np.isnan(Avalues[i])
+        if (Avalues[i] != NoData and not isnan(Avalues[i])) and (
+            Bvalues[i] != NoData and not isnan(Avalues[i])
         ):
             num = num + (Avalues[i] - Bvalues[i]) * (Avalues[i] - Bvalues[i])
             denom = denom + (Avalues[i] - mean_val) * (Avalues[i] - mean_val)
@@ -464,7 +464,7 @@ def get_peak_diff(Avalues, Bvalues, N="", NoData=NoDataVal):
         return (NoData, Nact)
     else:
         Nact = (Aact + Bact) / 2
-        return (math.fabs(max_A - max_B), Nact)
+        return (fabs(max_A - max_B), Nact)
 
 
 def get_number_of_sign_changes(Avalues, Bvalues, N="", NoData=NoDataVal):
@@ -476,17 +476,17 @@ def get_number_of_sign_changes(Avalues, Bvalues, N="", NoData=NoDataVal):
     if not N:
         N = len(Avalues)
     if Avalues[0] != Bvalues[0]:
-        sign = (Avalues[0] - Bvalues[0]) / math.fabs(Avalues[0] - Bvalues[0])
+        sign = (Avalues[0] - Bvalues[0]) / fabs(Avalues[0] - Bvalues[0])
     else:
         sign = 1
     NSC = 0
     Nact = 0
     for i in range(N):
-        if (Avalues[i] != NoData and not np.isnan(Avalues[i])) and (
-            Bvalues[i] != NoData and not np.isnan(Avalues[i])
+        if (Avalues[i] != NoData and not isnan(Avalues[i])) and (
+            Bvalues[i] != NoData and not isnan(Avalues[i])
         ):
             if Avalues[i] != Bvalues[i]:
-                curr_sign = (Avalues[i] - Bvalues[i]) / math.fabs(Avalues[i] - Bvalues[i])
+                curr_sign = (Avalues[i] - Bvalues[i]) / fabs(Avalues[i] - Bvalues[i])
             else:
                 curr_sign = sign
             if curr_sign != sign:
@@ -512,7 +512,7 @@ def get_peak_threshold_diff(Avalues, Bvalues, threshold, N="", NoData=NoDataVal)
     if Aact == 0 or Bact == 0:
         return (NoData, 0)
     else:
-        return (math.fabs(Apeaks - Bpeaks), (Aact + Bact) / 2)
+        return (fabs(Apeaks - Bpeaks), (Aact + Bact) / 2)
 
 
 def get_covariance(Avalues, Bvalues, N="", NoData=NoDataVal):
@@ -633,7 +633,7 @@ def filter_threshold(values, threshold, FILTER="ABOVE", N="", NoData=NoDataVal):
     Npeaks = 0
     Nact = 0
     for i in range(N):
-        if values[i] != NoData and not np.isnan(values[i]):
+        if values[i] != NoData and not isnan(values[i]):
             if FILTER == "ABOVE":
                 if values[i] >= threshold:
                     Npeaks = Npeaks + 1

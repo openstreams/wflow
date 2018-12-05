@@ -1,12 +1,11 @@
 import configparser
 import json
 import logging
-import os
 
 import numpy as np
 import wflow.bmi
 import wflow.wflow_bmi as wfbmi
-import pcraster as pcr
+from pcraster import *
 from wflow.pcrut import setlogger
 
 
@@ -144,8 +143,8 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
                     else:
                         ind = [list(ind_temp[0]), list(ind_temp[1])]
                 elif exchange_from[2].endswith("map"):
-                    map_temp = pcr.readmap(mappingdir + exchange_from[2])
-                    map_flip = np.flipud(pcr.pcr2numpy(map_temp, 0))
+                    map_temp = readmap(mappingdir + exchange_from[2])
+                    map_flip = np.flipud(pcr2numpy(map_temp, 0))
                     ind_temp = np.where(map_flip == 1)
                     ind = [list(ind_temp[0]), list(ind_temp[1])]
                 self.indices_from.append(ind)
@@ -166,8 +165,8 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
                     else:
                         ind = [list(ind_temp[0]), list(ind_temp[1])]
                 elif exchange_to[2].endswith("map"):
-                    map_temp = pcr.readmap(mappingdir + exchange_to[2])
-                    map_flip = np.flipud(pcr.pcr2numpy(map_temp, 0))
+                    map_temp = readmap(mappingdir + exchange_to[2])
+                    map_flip = np.flipud(pcr2numpy(map_temp, 0))
                     ind_temp = np.where(map_flip == 1)
                     ind = [list(ind_temp[0]), list(ind_temp[1])]
                 self.indices_to.append(ind)
@@ -560,7 +559,7 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         for key, value in self.bmimodels.items():
             st.append(self.bmimodels[key].get_start_time())
 
-        return np.array(st).max()
+        return numpy.array(st).max()
 
     def get_current_time(self):
         """
@@ -586,7 +585,7 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         for key, value in self.bmimodels.items():
             st.append(self.bmimodels[key].get_end_time())
 
-        return np.array(st).min()
+        return numpy.array(st).min()
 
     def get_time_step(self):
         """
@@ -598,7 +597,7 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         for key, value in self.bmimodels.items():
             st.append(self.bmimodels[key].get_time_step())
 
-        return max(st)
+        return max(st)[0]
 
     def get_time_units(self):
         """
@@ -626,8 +625,8 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         if cname[0] in self.bmimodels:
             tmp = self.bmimodels[cname[0]].get_value(cname[1])
             if self.wrtodisk:
-                pcr.report(
-                    pcr.numpy2pcr(pcr.Scalar, tmp, -999),
+                report(
+                    numpy2pcr(Scalar, tmp, -999),
                     long_var_name + "_get_" + str(self.get_current_time()) + ".map",
                 )
             return tmp
@@ -649,8 +648,8 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         if cname[0] in self.bmimodels:
             tmp = self.bmimodels[cname[0]].get_value(cname[1])
             if self.wrtodisk:
-                pcr.report(
-                    pcr.numpy2pcr(pcr.Scalar, tmp, -999),
+                report(
+                    numpy2pcr(Scalar, tmp, -999),
                     long_var_name + "_get_" + str(self.get_current_time()) + ".map",
                 )
             return self.bmimodels[cname[0]].get_value_at_indices(cname[1], inds)
@@ -673,7 +672,7 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
             self.bmimodels[cname[0]].set_value_at_indices(cname[1], inds, src)
             if self.wrtodisk:
                 npmap = self.bmimodels[cname[0]].getnumpy(cname[1], inds, src)
-                pcr.report(
+                report(
                     self.bmimodels[cname[0]].get_value(cname[1]),
                     long_var_name + "_set_" + str(self.get_current_time()) + ".map",
                 )
@@ -817,8 +816,8 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         if cname[0] in self.bmimodels:
             self.bmimodels[cname[0]].set_value(cname[1], src)
             if self.wrtodisk:
-                pcr.report(
-                    pcr.numpy2pcr(pcr.Scalar, src, -999),
+                report(
+                    numpy2pcr(Scalar, src, -999),
                     long_var_name + "_set_" + str(self.get_current_time()) + ".map",
                 )
 

@@ -44,9 +44,9 @@ def snow_no_reservoir(self, k):
     except:
         JarvisCoefficients.calcEpSnowHour(self, k)
     self.PotEvaporation = self.EpHour
-    self.PotEvaporation = pcr.cover(pcr.ifthenelse(self.EpHour > 0, self.EpHour, 0), 0)
+    self.PotEvaporation = cover(ifthenelse(self.EpHour > 0, self.EpHour, 0), 0)
 
-    self.Qw_[k] = pcr.max(self.PrecipitationSnow, 0)
+    self.Qw_[k] = max(self.PrecipitationSnow, 0)
     self.Ew_[k] = 0.0
     self.Sw[k] = 0.0
     self.wbSw_[k] = (
@@ -62,29 +62,29 @@ def snow(self, k):
     """
     JarvisCoefficients.calcEpSnow(self, k)
     self.PotEvaporation = self.EpHour
-    self.PotEvaporation = pcr.cover(pcr.ifthenelse(self.EpHour > 0, self.EpHour, 0), 0)
+    self.PotEvaporation = cover(ifthenelse(self.EpHour > 0, self.EpHour, 0), 0)
 
     self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow
 
-    self.Ew1 = pcr.max(pcr.min(self.PotEvaporation, self.Sw[k]), 0)
-    self.Qw1 = pcr.max(self.Fm[k] * (self.Temperature - self.Tm[k]), 0)
+    self.Ew1 = max(min(self.PotEvaporation, self.Sw[k]), 0)
+    self.Qw1 = max(self.Fm[k] * (self.Temperature - self.Tm[k]), 0)
 
     self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow - self.Ew1 - self.Qw1
 
-    self.Sw_diff = pcr.ifthenelse(self.Sw[k] < 0, self.Sw[k], 0)
+    self.Sw_diff = ifthenelse(self.Sw[k] < 0, self.Sw[k], 0)
     self.Ew = (
         self.Ew1
-        + (self.Ew1 / pcr.ifthenelse(self.Ew1 + self.Qw1 > 0, self.Ew1 + self.Qw1, 1))
+        + (self.Ew1 / ifthenelse(self.Ew1 + self.Qw1 > 0, self.Ew1 + self.Qw1, 1))
         * self.Sw_diff
     )
     self.Qw = (
         self.Qw1
-        + (self.Qw1 / pcr.ifthenelse(self.Ew1 + self.Qw1 > 0, self.Ew1 + self.Qw1, 1))
+        + (self.Qw1 / ifthenelse(self.Ew1 + self.Qw1 > 0, self.Ew1 + self.Qw1, 1))
         * self.Sw_diff
     )
     self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow - self.Ew - self.Qw
-    self.Sw[k] = pcr.ifthenelse(self.Sw[k] < 0, 0, self.Sw[k])
-    self.Sw_diff2 = pcr.ifthen(self.Sw[k] < 0, self.Sw[k])
+    self.Sw[k] = ifthenelse(self.Sw[k] < 0, 0, self.Sw[k])
+    self.Sw_diff2 = ifthen(self.Sw[k] < 0, self.Sw[k])
 
     self.wbSw_[k] = (
         self.PrecipitationSnow - self.Ew - self.Qw - self.Sw[k] + self.Sw_t[k]
@@ -104,30 +104,30 @@ def snow_rain(self, k):
 
     JarvisCoefficients.calcEpSnow(self, k)
     # self.PotEvaporation = self.EpHour
-    self.PotEvaporation = pcr.cover(pcr.ifthenelse(self.EpHour > 0, self.EpHour, 0), 0)
+    self.PotEvaporation = cover(ifthenelse(self.EpHour > 0, self.EpHour, 0), 0)
 
     self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow
 
-    self.Fm2 = pcr.max(self.Fm[k] * self.Precipitation, self.Fm[k])
-    self.Ew1 = pcr.max(pcr.min(self.PotEvaporation, self.Sw[k]), 0)
-    self.Qw1 = pcr.max(pcr.min(self.Fm2 * (self.Temperature - self.Tm[k]), self.Sw[k]), 0)
+    self.Fm2 = max(self.Fm[k] * self.Precipitation, self.Fm[k])
+    self.Ew1 = max(min(self.PotEvaporation, self.Sw[k]), 0)
+    self.Qw1 = max(min(self.Fm2 * (self.Temperature - self.Tm[k]), self.Sw[k]), 0)
 
     self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow - self.Ew1 - self.Qw1
 
-    self.Sw_diff = pcr.ifthenelse(self.Sw[k] < 0, self.Sw[k], 0)
+    self.Sw_diff = ifthenelse(self.Sw[k] < 0, self.Sw[k], 0)
     self.Ew = (
         self.Ew1
-        + (self.Ew1 / pcr.ifthenelse(self.Ew1 + self.Qw1 > 0, self.Ew1 + self.Qw1, 1))
+        + (self.Ew1 / ifthenelse(self.Ew1 + self.Qw1 > 0, self.Ew1 + self.Qw1, 1))
         * self.Sw_diff
     )
     self.Qw = (
         self.Qw1
-        + (self.Qw1 / pcr.ifthenelse(self.Ew1 + self.Qw1 > 0, self.Ew1 + self.Qw1, 1))
+        + (self.Qw1 / ifthenelse(self.Ew1 + self.Qw1 > 0, self.Ew1 + self.Qw1, 1))
         * self.Sw_diff
     )
     self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow - self.Ew - self.Qw
-    self.Sw[k] = pcr.ifthenelse(self.Sw[k] < 0, 0, self.Sw[k])
-    self.Sw_diff2 = pcr.ifthen(self.Sw[k] < 0, self.Sw[k])
+    self.Sw[k] = ifthenelse(self.Sw[k] < 0, 0, self.Sw[k])
+    self.Sw_diff2 = ifthen(self.Sw[k] < 0, self.Sw[k])
 
     self.wbSw_[k] = (
         self.PrecipitationSnow - self.Ew - self.Qw - self.Sw[k] + self.Sw_t[k]
@@ -146,30 +146,30 @@ def snow_rain_hourlyEp(self, k):
     """
 
     JarvisCoefficients.calcEpSnowHour(self, k)
-    self.PotEvaporation = pcr.cover(pcr.ifthenelse(self.EpHour > 0, self.EpHour, 0), 0)
+    self.PotEvaporation = cover(ifthenelse(self.EpHour > 0, self.EpHour, 0), 0)
 
     self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow
 
-    self.Fm2 = pcr.max(self.Fm[k] * self.Precipitation, self.Fm[k])
-    self.Ew1 = pcr.max(pcr.min(self.PotEvaporation, self.Sw[k]), 0)
-    self.Qw1 = pcr.max(pcr.min(self.Fm2 * (self.Temperature - self.Tm[k]), self.Sw[k]), 0)
+    self.Fm2 = max(self.Fm[k] * self.Precipitation, self.Fm[k])
+    self.Ew1 = max(min(self.PotEvaporation, self.Sw[k]), 0)
+    self.Qw1 = max(min(self.Fm2 * (self.Temperature - self.Tm[k]), self.Sw[k]), 0)
 
     self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow - self.Ew1 - self.Qw1
 
-    self.Sw_diff = pcr.ifthenelse(self.Sw[k] < 0, self.Sw[k], 0)
+    self.Sw_diff = ifthenelse(self.Sw[k] < 0, self.Sw[k], 0)
     self.Ew = (
         self.Ew1
-        + (self.Ew1 / pcr.ifthenelse(self.Ew1 + self.Qw1 > 0, self.Ew1 + self.Qw1, 1))
+        + (self.Ew1 / ifthenelse(self.Ew1 + self.Qw1 > 0, self.Ew1 + self.Qw1, 1))
         * self.Sw_diff
     )
     self.Qw = (
         self.Qw1
-        + (self.Qw1 / pcr.ifthenelse(self.Ew1 + self.Qw1 > 0, self.Ew1 + self.Qw1, 1))
+        + (self.Qw1 / ifthenelse(self.Ew1 + self.Qw1 > 0, self.Ew1 + self.Qw1, 1))
         * self.Sw_diff
     )
     self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow - self.Ew - self.Qw
-    self.Sw[k] = pcr.ifthenelse(self.Sw[k] < 0, 0, self.Sw[k])
-    self.Sw_diff2 = pcr.ifthen(self.Sw[k] < 0, self.Sw[k])
+    self.Sw[k] = ifthenelse(self.Sw[k] < 0, 0, self.Sw[k])
+    self.Sw_diff2 = ifthen(self.Sw[k] < 0, self.Sw[k])
 
     self.wbSw_[k] = (
         self.PrecipitationSnow - self.Ew - self.Qw - self.Sw[k] + self.Sw_t[k]
@@ -189,30 +189,30 @@ def snow_rain_Tsurf(self, k):
 
     JarvisCoefficients.calcEpSnow(self, k)
     # self.PotEvaporation = self.EpHour
-    self.PotEvaporation = pcr.cover(pcr.ifthenelse(self.EpHour > 0, self.EpHour, 0), 0)
+    self.PotEvaporation = cover(ifthenelse(self.EpHour > 0, self.EpHour, 0), 0)
 
     self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow
 
-    self.Fm2 = pcr.max(self.Fm[k] * self.Precipitation, self.Fm[k])
-    self.Ew1 = pcr.max(pcr.min(self.PotEvaporation, self.Sw[k]), 0)
-    self.Qw1 = pcr.max(pcr.min(self.Fm2 * (self.TempSurf - self.Tm[k]), self.Sw[k]), 0)
+    self.Fm2 = max(self.Fm[k] * self.Precipitation, self.Fm[k])
+    self.Ew1 = max(min(self.PotEvaporation, self.Sw[k]), 0)
+    self.Qw1 = max(min(self.Fm2 * (self.TempSurf - self.Tm[k]), self.Sw[k]), 0)
 
     self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow - self.Ew1 - self.Qw1
 
-    self.Sw_diff = pcr.ifthenelse(self.Sw[k] < 0, self.Sw[k], 0)
+    self.Sw_diff = ifthenelse(self.Sw[k] < 0, self.Sw[k], 0)
     self.Ew = (
         self.Ew1
-        + (self.Ew1 / pcr.ifthenelse(self.Ew1 + self.Qw1 > 0, self.Ew1 + self.Qw1, 1))
+        + (self.Ew1 / ifthenelse(self.Ew1 + self.Qw1 > 0, self.Ew1 + self.Qw1, 1))
         * self.Sw_diff
     )
     self.Qw = (
         self.Qw1
-        + (self.Qw1 / pcr.ifthenelse(self.Ew1 + self.Qw1 > 0, self.Ew1 + self.Qw1, 1))
+        + (self.Qw1 / ifthenelse(self.Ew1 + self.Qw1 > 0, self.Ew1 + self.Qw1, 1))
         * self.Sw_diff
     )
     self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow - self.Ew - self.Qw
-    self.Sw[k] = pcr.ifthenelse(self.Sw[k] < 0, 0, self.Sw[k])
-    self.Sw_diff2 = pcr.ifthen(self.Sw[k] < 0, self.Sw[k])
+    self.Sw[k] = ifthenelse(self.Sw[k] < 0, 0, self.Sw[k])
+    self.Sw_diff2 = ifthen(self.Sw[k] < 0, self.Sw[k])
 
     self.wbSw_[k] = (
         self.PrecipitationSnow - self.Ew - self.Qw - self.Sw[k] + self.Sw_t[k]
@@ -231,31 +231,31 @@ def snow_rain_TsurfAir(self, k):
     """
     JarvisCoefficients.calcEpSnow(self, k)
     # self.PotEvaporation = self.EpHour
-    self.PotEvaporation = pcr.cover(pcr.ifthenelse(self.EpHour > 0, self.EpHour, 0), 0)
+    self.PotEvaporation = cover(ifthenelse(self.EpHour > 0, self.EpHour, 0), 0)
 
     self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow
     self.Temp = (self.TempSurf + self.Temperature) / 2
 
-    self.Fm2 = pcr.max(self.Fm[k] * self.Precipitation, self.Fm[k])
-    self.Ew1 = pcr.max(pcr.min(self.PotEvaporation, self.Sw[k]), 0)
-    self.Qw1 = pcr.max(pcr.min(self.Fm2 * (self.Temp - self.Tm[k]), self.Sw[k]), 0)
+    self.Fm2 = max(self.Fm[k] * self.Precipitation, self.Fm[k])
+    self.Ew1 = max(min(self.PotEvaporation, self.Sw[k]), 0)
+    self.Qw1 = max(min(self.Fm2 * (self.Temp - self.Tm[k]), self.Sw[k]), 0)
 
     self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow - self.Ew1 - self.Qw1
 
-    self.Sw_diff = pcr.ifthenelse(self.Sw[k] < 0, self.Sw[k], 0)
+    self.Sw_diff = ifthenelse(self.Sw[k] < 0, self.Sw[k], 0)
     self.Ew = (
         self.Ew1
-        + (self.Ew1 / pcr.ifthenelse(self.Ew1 + self.Qw1 > 0, self.Ew1 + self.Qw1, 1))
+        + (self.Ew1 / ifthenelse(self.Ew1 + self.Qw1 > 0, self.Ew1 + self.Qw1, 1))
         * self.Sw_diff
     )
     self.Qw = (
         self.Qw1
-        + (self.Qw1 / pcr.ifthenelse(self.Ew1 + self.Qw1 > 0, self.Ew1 + self.Qw1, 1))
+        + (self.Qw1 / ifthenelse(self.Ew1 + self.Qw1 > 0, self.Ew1 + self.Qw1, 1))
         * self.Sw_diff
     )
     self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow - self.Ew - self.Qw
-    self.Sw[k] = pcr.ifthenelse(self.Sw[k] < 0, 0, self.Sw[k])
-    self.Sw_diff2 = pcr.ifthen(self.Sw[k] < 0, self.Sw[k])
+    self.Sw[k] = ifthenelse(self.Sw[k] < 0, 0, self.Sw[k])
+    self.Sw_diff2 = ifthen(self.Sw[k] < 0, self.Sw[k])
 
     self.wbSw_[k] = (
         self.PrecipitationSnow - self.Ew - self.Qw - self.Sw[k] + self.Sw_t[k]
@@ -274,30 +274,30 @@ def snow_rain_Tsurf_noEw(self, k):
     """
     JarvisCoefficients.calcEpSnow(self, k)
     # self.PotEvaporation = self.EpHour
-    self.PotEvaporation = pcr.cover(pcr.ifthenelse(self.EpHour > 0, self.EpHour, 0), 0)
+    self.PotEvaporation = cover(ifthenelse(self.EpHour > 0, self.EpHour, 0), 0)
 
     self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow
 
-    self.Fm2 = pcr.max(self.Fm[k] * self.Precipitation, self.Fm[k])
+    self.Fm2 = max(self.Fm[k] * self.Precipitation, self.Fm[k])
     self.Ew1 = 0
-    self.Qw1 = pcr.max(pcr.min(self.Fm2 * (self.TempSurf - self.Tm[k]), self.Sw[k]), 0)
+    self.Qw1 = max(min(self.Fm2 * (self.TempSurf - self.Tm[k]), self.Sw[k]), 0)
 
     self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow - self.Ew1 - self.Qw1
 
-    self.Sw_diff = pcr.ifthenelse(self.Sw[k] < 0, self.Sw[k], 0)
+    self.Sw_diff = ifthenelse(self.Sw[k] < 0, self.Sw[k], 0)
     self.Ew = (
         self.Ew1
-        + (self.Ew1 / pcr.ifthenelse(self.Ew1 + self.Qw1 > 0, self.Ew1 + self.Qw1, 1))
+        + (self.Ew1 / ifthenelse(self.Ew1 + self.Qw1 > 0, self.Ew1 + self.Qw1, 1))
         * self.Sw_diff
     )
     self.Qw = (
         self.Qw1
-        + (self.Qw1 / pcr.ifthenelse(self.Ew1 + self.Qw1 > 0, self.Ew1 + self.Qw1, 1))
+        + (self.Qw1 / ifthenelse(self.Ew1 + self.Qw1 > 0, self.Ew1 + self.Qw1, 1))
         * self.Sw_diff
     )
     self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow - self.Ew - self.Qw
-    self.Sw[k] = pcr.ifthenelse(self.Sw[k] < 0, 0, self.Sw[k])
-    self.Sw_diff2 = pcr.ifthen(self.Sw[k] < 0, self.Sw[k])
+    self.Sw[k] = ifthenelse(self.Sw[k] < 0, 0, self.Sw[k])
+    self.Sw_diff2 = ifthen(self.Sw[k] < 0, self.Sw[k])
 
     self.wbSw_[k] = (
         self.PrecipitationSnow - self.Ew - self.Qw - self.Sw[k] + self.Sw_t[k]
@@ -315,32 +315,32 @@ def snowHour(self, k):
     """
     #    JarvisCoefficients.calcEpSnowHour(self,k)
     #    self.PotEvaporation = self.EpHour
-    #    self.PotEvaporation = pcr.ifthenelse(self.EpHour > 0, self.EpHour, 0)
+    #    self.PotEvaporation = ifthenelse(self.EpHour > 0, self.EpHour, 0)
 
     self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow
 
-    self.Ew1 = pcr.max(pcr.min(self.PotEvaporation, self.Sw[k]), 0)
+    self.Ew1 = max(min(self.PotEvaporation, self.Sw[k]), 0)
     #    self.Ew1 = 0
-    self.Qw1 = pcr.max(self.Fm[k] * (self.Temperature - self.Tm[k]), 0)
+    self.Qw1 = max(self.Fm[k] * (self.Temperature - self.Tm[k]), 0)
 
     self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow - self.Ew1 - self.Qw1
 
-    self.Sw_diff = pcr.ifthenelse(self.Sw[k] < 0, self.Sw[k], 0)
+    self.Sw_diff = ifthenelse(self.Sw[k] < 0, self.Sw[k], 0)
     self.Ew = (
         self.Ew1
-        + (self.Ew1 / pcr.ifthenelse(self.Ew1 + self.Qw1 > 0, self.Ew1 + self.Qw1, 1))
+        + (self.Ew1 / ifthenelse(self.Ew1 + self.Qw1 > 0, self.Ew1 + self.Qw1, 1))
         * self.Sw_diff
     )
     self.Qw = (
         self.Qw1
-        + (self.Qw1 / pcr.ifthenelse(self.Ew1 + self.Qw1 > 0, self.Ew1 + self.Qw1, 1))
+        + (self.Qw1 / ifthenelse(self.Ew1 + self.Qw1 > 0, self.Ew1 + self.Qw1, 1))
         * self.Sw_diff
     )
     self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow - self.Ew - self.Qw
-    self.Sw[k] = pcr.ifthenelse(self.Sw[k] < 0, 0, self.Sw[k])
-    self.Sw_diff2 = pcr.ifthen(self.Sw[k] < 0, self.Sw[k])
+    self.Sw[k] = ifthenelse(self.Sw[k] < 0, 0, self.Sw[k])
+    self.Sw_diff2 = ifthen(self.Sw[k] < 0, self.Sw[k])
 
-    #    if any(pcr.pcr2numpy(self.Sw[k],np.nan) > 0):
+    #    if any(pcr2numpy(self.Sw[k],nan) > 0):
     #        pdb.set_trace()
     self.wbSw_[k] = (
         self.PrecipitationSnow - self.Ew - self.Qw - self.Sw[k] + self.Sw_t[k]
@@ -350,5 +350,5 @@ def snowHour(self, k):
     self.Qw_[k] = self.Qw
 
 
-#    if any(pcr.pcr2numpy(self.Qw,np.nan) > 0):
+#    if any(pcr2numpy(self.Qw,nan) > 0):
 #        pdb.set_trace()

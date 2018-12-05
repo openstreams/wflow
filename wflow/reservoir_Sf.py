@@ -71,7 +71,7 @@ def fastRunoff_lag2(self, k):
     """
 
     if self.FR_L:
-        self.Qu = pcr.areatotal(self.Qu_[k] * self.percentArea, pcr.nominal(self.TopoId))
+        self.Qu = areatotal(self.Qu_[k] * self.percentArea, nominal(self.TopoId))
     else:
         self.Qu = self.Qu_[k]
 
@@ -84,9 +84,9 @@ def fastRunoff_lag2(self, k):
             self.Sf[k] = self.Sf[k] + self.QfinLag - self.Qf
 
             self.convQu[k].insert(
-                0, 0 * pcr.scalar(self.catchArea)
+                0, 0 * scalar(self.catchArea)
             )  # convolution Qu for following time steps
-            self.Tfmap = self.Tf[k] * pcr.scalar(self.catchArea)
+            self.Tfmap = self.Tf[k] * scalar(self.catchArea)
             del self.convQu[k][-1]
             temp = [
                 self.convQu[k][i]
@@ -140,8 +140,8 @@ def fastRunoff_lag_forAgri_combined(self, k):
     """
 
     if self.FR_L:
-        self.Qu = pcr.areatotal(self.Qu_[k] * self.percentArea, pcr.nominal(self.TopoId))
-        self.Qa = pcr.areatotal(self.Qa_[k] * self.percentArea, pcr.nominal(self.TopoId))
+        self.Qu = areatotal(self.Qu_[k] * self.percentArea, nominal(self.TopoId))
+        self.Qa = areatotal(self.Qa_[k] * self.percentArea, nominal(self.TopoId))
     else:
         self.Qu = self.Qu_[k]
         self.Qa = self.Qa_[k]
@@ -155,9 +155,9 @@ def fastRunoff_lag_forAgri_combined(self, k):
             self.Sf[k] = self.Sf[k] + self.QfinLag - self.Qf
 
             self.convQu[k].insert(
-                0, 0 * pcr.scalar(self.catchArea)
+                0, 0 * scalar(self.catchArea)
             )  # convolution Qu for following time steps
-            self.Tfmap = self.Tf[k] * pcr.scalar(self.catchArea)
+            self.Tfmap = self.Tf[k] * scalar(self.catchArea)
             del self.convQu[k][-1]
             temp = [
                 self.convQu[k][i]
@@ -203,7 +203,7 @@ def fastRunoff_lag_agriDitch(self, k):
     """
 
     if self.FR_L:
-        self.Qa = pcr.areatotal(self.Qa_[k] * self.percentArea, pcr.nominal(self.TopoId))
+        self.Qa = areatotal(self.Qa_[k] * self.percentArea, nominal(self.TopoId))
     else:
         self.Qa = self.Qa_[k]
 
@@ -217,9 +217,9 @@ def fastRunoff_lag_agriDitch(self, k):
         self.Sfa[k] = self.Sfa[k] + self.QfainLag - self.Qfa
 
         self.convQa[k].insert(
-            0, 0 * pcr.scalar(self.catchArea)
+            0, 0 * scalar(self.catchArea)
         )  # convolution Qu for following time steps
-        self.Tfmap = self.Tfa[k] * pcr.scalar(self.catchArea)
+        self.Tfmap = self.Tfa[k] * scalar(self.catchArea)
         del self.convQa[k][-1]
         temp = [
             self.convQa[k][i]
@@ -262,7 +262,7 @@ def fastRunoff_lag_agriDitch_reInfilt(self, k):
     """
 
     if self.FR_L:
-        self.Qa = pcr.areatotal(self.Qa_[k] * self.percentArea, pcr.nominal(self.TopoId))
+        self.Qa = areatotal(self.Qa_[k] * self.percentArea, nominal(self.TopoId))
     else:
         self.Qa = self.Qa_[k]
 
@@ -271,13 +271,13 @@ def fastRunoff_lag_agriDitch_reInfilt(self, k):
     if self.convQa[k]:
         self.QfainLag = self.convQa[k][-1]
         self.Qfa = self.Sfa[k] * self.Kfa[k]
-        self.Percfa = pcr.ifthenelse(self.Ft_[k] == 1, self.Sfa[k] * self.perc[k] * 200, 0)
+        self.Percfa = ifthenelse(self.Ft_[k] == 1, self.Sfa[k] * self.perc[k] * 200, 0)
         self.Sfa[k] = self.Sfa[k] + self.QfainLag - self.Qfa - self.Percfa
 
         self.convQa[k].insert(
-            0, 0 * pcr.scalar(self.catchArea)
+            0, 0 * scalar(self.catchArea)
         )  # convolution Qu for following time steps
-        self.Tfmap = self.Tfa[k] * pcr.scalar(self.catchArea)
+        self.Tfmap = self.Tfa[k] * scalar(self.catchArea)
         del self.convQa[k][-1]
         temp = [
             self.convQa[k][i]
@@ -289,7 +289,7 @@ def fastRunoff_lag_agriDitch_reInfilt(self, k):
 
     else:
         self.Qfa = self.Sfa[k] * self.Kfa[k]
-        self.Percfa = pcr.ifthenelse(self.Ft_[k] == 1, self.Sfa[k] * self.perc[k] * 200, 0)
+        self.Percfa = ifthenelse(self.Ft_[k] == 1, self.Sfa[k] * self.perc[k] * 200, 0)
         self.Sfa[k] = self.Sfa[k] + self.Qfain - self.Qfa - self.Percfa
 
     self.wbSfa_[k] = (
@@ -313,23 +313,23 @@ def routingQf_combined(self):
     travel time for a calcultation cell
     """
 
-    if np.nansum(pcr.pcr2numpy(self.Transit, np.nan)) > 0:
+    if nansum(pcr2numpy(self.Transit, NaN)) > 0:
         self.Qflag = self.trackQ[0]  # first bucket is transferred to outlet
         self.trackQ.append(
-            0 * pcr.scalar(self.catchArea)
+            0 * scalar(self.catchArea)
         )  # add new bucket for present time step
         del self.trackQ[0]  # remove first bucket (transferred to outlet)
         temp = [
             self.trackQ[i]
-            + pcr.ifthenelse(
-                pcr.rounddown(self.Transit) == i * pcr.scalar(self.catchArea),
-                (self.Transit - i * pcr.scalar(self.catchArea))
+            + ifthenelse(
+                rounddown(self.Transit) == i * scalar(self.catchArea),
+                (self.Transit - i * scalar(self.catchArea))
                 * self.Qftotal
                 / 1000
                 * self.surfaceArea,
-                pcr.ifthenelse(
-                    pcr.roundup(self.Transit) == i * pcr.scalar(self.catchArea),
-                    (i * pcr.scalar(self.catchArea) - self.Transit)
+                ifthenelse(
+                    roundup(self.Transit) == i * scalar(self.catchArea),
+                    (i * scalar(self.catchArea) - self.Transit)
                     * self.Qftotal
                     / 1000
                     * self.surfaceArea,
@@ -351,8 +351,8 @@ def routingQf_combined(self):
         self.Qflag_ / self.timestepsecs
         + self.Qs_ / 1000 * self.surfaceArea / self.timestepsecs
     )
-    self.QLagTot = pcr.areatotal(
-        self.Qtlag, pcr.nominal(self.TopoId)
+    self.QLagTot = areatotal(
+        self.Qtlag, nominal(self.TopoId)
     )  # catchment total runoff with looptijd
 
 
@@ -365,7 +365,7 @@ def routingQf_Qs_grid(self):
     self.Qtotal = (
         self.Qtot / 1000 * self.surfaceArea / self.timestepsecs
     )  # total local discharge in m3/s
-    self.QtotNoRout = pcr.accuflux(self.TopoLdd, self.Qtotal)
+    self.QtotNoRout = accuflux(self.TopoLdd, self.Qtotal)
     self.Qstate_t = self.Qstate
     self.Qtest = self.Qstate + self.Qtotal
     self.Qrout = accutraveltimeflux(
@@ -381,8 +381,8 @@ def routingQf_Qs_grid(self):
     # water balance of flux routing
     self.dSdt = self.Qstate - self.Qstate_t
     self.WB_rout = (
-        pcr.accuflux(self.TopoLdd, self.Qtotal - self.dSdt) - self.Qrout
-    ) / pcr.accuflux(self.TopoLdd, self.Qtotal)
+        accuflux(self.TopoLdd, self.Qtotal - self.dSdt) - self.Qrout
+    ) / accuflux(self.TopoLdd, self.Qtotal)
 
 
 def routingQf_Qs_grid_mm(self):
@@ -392,7 +392,7 @@ def routingQf_Qs_grid_mm(self):
     """
     self.Qtot = self.Qftotal + self.Qs_  # total local discharge in mm/hour
     self.Qtotal = self.Qtot
-    self.QtotNoRout = pcr.accuflux(self.TopoLdd, self.Qtotal)
+    self.QtotNoRout = accuflux(self.TopoLdd, self.Qtotal)
     self.Qstate_t = self.Qstate
     self.Qtest = self.Qstate + self.Qtotal
     self.Qrout = accutraveltimeflux(
@@ -408,8 +408,8 @@ def routingQf_Qs_grid_mm(self):
     # water balance of flux routing
     self.dSdt = self.Qstate - self.Qstate_t
     self.WB_rout = (
-        pcr.accuflux(self.TopoLdd, self.Qtotal - self.dSdt) - self.Qrout
-    ) / pcr.accuflux(self.TopoLdd, self.Qtotal)
+        accuflux(self.TopoLdd, self.Qtotal - self.dSdt) - self.Qrout
+    ) / accuflux(self.TopoLdd, self.Qtotal)
 
 
 def kinematic_wave_routing(self):
@@ -419,11 +419,11 @@ def kinematic_wave_routing(self):
     )  # total local discharge in m3/s
     # self.Qstate_t = self.Qstate
 
-    self.Qtotal = pcr.max(0, self.Qtotal)  # no neg kin wave -- check ! TODO
+    self.Qtotal = max(0, self.Qtotal)  # no neg kin wave -- check ! TODO
     q = self.Qtotal / self.DCL
     self.OldSurfaceRunoff = self.Qstate
 
-    self.Qstate = pcr.kinematic(
+    self.Qstate = kinematic(
         self.TopoLdd,
         self.Qstate,
         q,
@@ -442,7 +442,7 @@ def kinematic_wave_routing(self):
     self.Qtlag = self.Qstate
 
     self.updateRunOff()
-    InflowKinWaveCell = pcr.upstream(self.TopoLdd, self.Qstate)
+    InflowKinWaveCell = upstream(self.TopoLdd, self.Qstate)
     self.MassBalKinWave = (
         (self.KinWaveVolume - self.OldKinWaveVolume) / self.timestepsecs
         + InflowKinWaveCell

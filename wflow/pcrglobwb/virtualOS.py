@@ -1815,7 +1815,7 @@ def waterBalance(
     # print "Water balance for %s on %s: %f mm !!! " %(processName,dateStr,maxWBError * 1000)
     # pcr.report(wb,"%s-WaterBalanceError-%s" %(processName,dateStr))
 
-    # npWBMError = pcr.pcr2numpy(wb, -9999)
+    # npWBMError = pcr2numpy(wb, -9999)
     # (nr, nc) = np.shape(npWBMError)
     # for r in range(0, nr):
     # for c in range(0, nc):

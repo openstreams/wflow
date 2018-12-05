@@ -32,8 +32,8 @@ def groundWater_no_reservoir(self):
     self.QsinTemp = sum(
         [a * b for a, b in zip(self.QsinClass, self.percent)]
     )  # fluxes are summed per cell according to percentage of class
-    self.Qsin = pcr.areatotal(
-        self.QsinTemp * self.percentArea, pcr.nominal(self.TopoId)
+    self.Qsin = areatotal(
+        self.QsinTemp * self.percentArea, nominal(self.TopoId)
     )  # areatotal is taken, according to area percentage of cell
 
     self.Qs = self.Qsin
@@ -56,18 +56,18 @@ def groundWaterCombined3(self):
     self.QsinTemp = sum(
         [a * b for a, b in zip(self.QsinClass, self.percent)]
     )  # fluxes are summed per cell according to percentage of class
-    self.Qsin = pcr.areatotal(
-        self.QsinTemp * self.percentArea, pcr.nominal(self.TopoId)
+    self.Qsin = areatotal(
+        self.QsinTemp * self.percentArea, nominal(self.TopoId)
     )  # areatotal is taken, according to area percentage of cell
 
     self.Qs = self.Ss * self.Ks[0]
-    # self.Ss = self.Ss * pcr.exp(-self.Ks[0]) + self.Qsin
+    # self.Ss = self.Ss * exp(-self.Ks[0]) + self.Qsin
 
     # add a gain/lossterm based on constant value
-    self.Gain = pcr.ifthenelse(
+    self.Gain = ifthenelse(
         self.Closure < 0.0, -min(self.Ss, -self.Closure), self.Closure
     )  # if negative, limited by storage in Ss
-    self.Ss = self.Ss * pcr.exp(-self.Ks[0]) + self.Qsin + self.Gain
+    self.Ss = self.Ss * exp(-self.Ks[0]) + self.Qsin + self.Gain
 
     self.wbSs = self.Qsin - self.Qs - self.Ss + self.Ss_t + self.Gain
 
