@@ -201,7 +201,7 @@ def simplereservoir_routing(
     :return: storage (m^3), outflow (m^3/s), PercentageFull (0-1), Release (m^3/sec)
     """
 
-    inflow = pcr.ifthen(pcr.boolean(ReserVoirLocs), inflow)
+    inflow = ifthen(boolean(ReserVoirLocs), inflow)
 
     oldstorage = storage
     storage = (
@@ -211,17 +211,17 @@ def simplereservoir_routing(
 
     percfull = ((storage + oldstorage) * 0.5) / maxstorage
     # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
-    fac = pcr.sCurve(percfull, a=minimum_full_perc, c=30.0)
-    demandRelease = pcr.min(fac * demand * timestepsecs, storage)
+    fac = sCurve(percfull, a=minimum_full_perc, c=30.0)
+    demandRelease = min(fac * demand * timestepsecs, storage)
     storage = storage - demandRelease
 
     # Re-determine percfull
     percfull = ((storage + oldstorage) * 0.5) / maxstorage
 
-    wantrel = pcr.max(0.0, storage - (maxstorage * target_perc_full))
+    wantrel = max(0.0, storage - (maxstorage * target_perc_full))
     # Assume extra maximum Q if spilling
     overflowQ = (percfull - 1.0) * (storage - maxstorage)
-    torelease = pcr.min(wantrel, overflowQ + maximum_Q * timestepsecs)
+    torelease = min(wantrel, overflowQ + maximum_Q * timestepsecs)
     storage = storage - torelease
     outflow = (torelease + demandRelease) / timestepsecs
     percfull = storage / maxstorage
