@@ -796,7 +796,7 @@ class WflowModel(DynamicModel):
 
         # only run the reservoir module if needed
         if self.nrresSimple > 0:
-            self.ReservoirVolume, self.OutflowSR, self.ResPercFull, self.DemandRelease = simplereservoir_routing(
+            self.ReservoirVolume, self.OutflowSR, self.ResPercFull, self.ResPrecipSR, self.ResEvapSR, self.DemandRelease = simplereservoir(
                 self.ReservoirVolume,
                 self.SurfaceRunoff,
                 self.ResSimpleArea,
@@ -806,11 +806,13 @@ class WflowModel(DynamicModel):
                 self.ResDemand,
                 self.ResTargetMinFrac,
                 self.ReserVoirSimpleLocs,
+                self.Precipitation,
+                self.PotenEvap,
                 self.ReservoirSimpleAreas,
                 timestepsecs=self.timestepsecs,
             )
             self.OutflowDwn = upstream(
-                self.TopoLddOrg, cover(self.OutflowSR, scalar(0.0))
+                self.TopoLddOrg, cover(self.Outflow, scalar(0.0))
             )
             self.Inflow = self.OutflowDwn + cover(self.Inflow, self.ZeroMap)
         else:
