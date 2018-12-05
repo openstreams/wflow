@@ -14,26 +14,10 @@ pcrasterlib = sys.argv[-1]
 # list identical make_wflow_exe script with --normal
 # except for the wtools scripts
 scriptpaths = [
-    'openda_bmi/opendapy.py',
-    'Scripts/bmi2runner.py',
-    'Scripts/pcr2netcdf.py',
     'Scripts/wflow_flood.py',
-    'Scripts/wflow_prepare_step1.py',
-    'Scripts/wflow_prepare_step2.py',
-    'Scripts/wflow_sbm_rtc.py',
     'wflow/wflow_adapt.py',
-    'wflow/wflow_delwaq.py',
-    'wflow/wflow_floodmap.py',
-    'wflow/wflow_gr4.py',
-    'wflow/wflow_hbv.py',
-    'wflow/wflow_lintul.py',
-    'wflow/wflow_pcrglobwb.py',
     'wflow/wflow_routing.py',
     'wflow/wflow_sbm.py',
-    'wflow/wflow_sphy.py',
-    'wflow/wflow_topoflex.py',
-    'wflow/wflow_w3ra.py',
-    'wflow/wflow_wave.py',
 ]
 
 
