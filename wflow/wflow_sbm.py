@@ -2909,7 +2909,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 self.InflowKinWaveCell = pcr.upstream(
                     self.TopoLdd, self.OldSurfaceRunoff
                 )
-                deltasup = float(pcr.mapmaximum(abs(oldsup - self.SurfaceWaterSupply)))
+                deltasup = float(pcr.mapmaximum(pcr.abs(oldsup - self.SurfaceWaterSupply)))
 
                 if deltasup < self.breakoff or self.nrit >= self.maxitsupply:
                     break
