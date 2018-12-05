@@ -22,17 +22,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-import os
+import pcraster as pcr
+from . import virtualOS as vos
 
-from wflow.wf_DynamicFramework import configget
-from wflow.wf_DynamicFramework import configsection
+import logging
+
+logger = logging.getLogger("wflow_pcrglobwb")
+
+from .ncConverter import *
 
 from . import landCover as lc
 from . import parameterSoilAndTopo as parSoilAndTopo
-from .ncConverter import *
 
-logger = logging.getLogger("wflow_pcrglobwb")
+import os
+from wflow.wf_DynamicFramework import configsection
+from wflow.wf_DynamicFramework import configget
 
 
 class LandSurface(object):

@@ -33,13 +33,17 @@ $Id: wflow_lib.py 808 2013-10-04 19:42:43Z schelle $
 $Rev: 808 $
 """
 
-import gzip
-import os.path
-import zipfile
 
-import numpy as np
+import os
+import os.path
+import sys
+
 import osgeo.gdal as gdal
+from osgeo.gdalconst import *
+from pcraster import *
 from pcraster.framework import *
+import numpy as np
+import gzip, zipfile
 
 
 def pt_flow_in_river(ldd, river):

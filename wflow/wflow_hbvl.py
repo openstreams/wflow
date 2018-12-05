@@ -74,11 +74,18 @@ wflow_hbv::
 
 """
 
+import os
 import os.path
+import getopt
 
 from wflow.wf_DynamicFramework import *
-
+from wflow.wf_DynamicFramework import *
+from wflow.wflow_adapt import *
 from .wflow_adapt import *
+
+# import scipy
+# import pcrut
+
 
 wflow = "wflow_hbv"
 

@@ -25,7 +25,12 @@ that may be used within the wflow models
 
 from numpy import *
 
+
+from pcraster import *
 from pcraster.framework import *
+
+
+# import scipy
 
 
 def rainfall_interception_hbv(Rainfall, PotEvaporation, Cmax, InterceptionStorage):

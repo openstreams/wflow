@@ -1,12 +1,14 @@
-import configparser
-import json
-import logging
-
-import numpy as np
 import wflow.bmi
 import wflow.wflow_bmi as wfbmi
-from pcraster import *
+
+import wflow
+import os
 from wflow.pcrut import setlogger
+import configparser
+import logging
+import numpy as np
+import json
+from pcraster import *
 
 
 def iniFileSetUp(configfile):

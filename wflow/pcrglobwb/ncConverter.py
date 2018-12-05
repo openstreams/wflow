@@ -23,14 +23,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
-
-import cftime
 import netCDF4 as nc
+import cftime
 import numpy as np
 import pcraster as pcr
-
 from . import virtualOS as vos
-
 
 # TODO: defined the dictionary (e.g. filecache = dict()) to avoid open and closing files
 

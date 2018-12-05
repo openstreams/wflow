@@ -49,19 +49,22 @@ $Rev: 915 $
      
 """
 
-import configparser
-import getopt
-import logging
-import logging.handlers
-import os
-import shutil
-import sys
-from datetime import *
+import getopt, sys, os
+
 from xml.etree.ElementTree import *
 
+from datetime import *
+
+import shutil
+from glob import *
+import logging
+import logging.handlers
+import configparser
 import numpy
-import wflow.pcrut as pcrut
+
 import wflow.wflow_lib as wflow_lib
+import wflow.pcrut as pcrut
+
 
 outMaps = ["run.xml", "lev.xml"]
 iniFile = "wflow_sbm.ini"

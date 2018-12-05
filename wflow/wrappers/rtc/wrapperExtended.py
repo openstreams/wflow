@@ -1,3 +1,4 @@
+import bmi
 import bmi.wrapper
 
 

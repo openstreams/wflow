@@ -42,12 +42,14 @@ run the wflow_prepare scripts twice to create the different models.
 """
 
 
-import getopt
-import glob
-import os.path
-import shlex
-
 from wflow.wflow_lib import *
+
+
+import os, sys, shlex, time
+import os.path
+import glob
+import getopt
+import subprocess
 
 
 def usage(*args):

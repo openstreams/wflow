@@ -55,10 +55,13 @@ wflow_snow [-h][-v level][-F runinfofile][-L logfile][-C casename][-R runId]
     
 """
 
-import getopt
-import os.path
 
+import os
+import os.path
+import getopt
 from wflow.wf_DynamicFramework import *
+import wflow.pcrut as pcrut
+
 
 wflow = "wflow_pack: "
 wflowVersion = (
