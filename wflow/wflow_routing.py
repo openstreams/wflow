@@ -308,6 +308,12 @@ class WflowModel(DynamicModel):
         wflow_riverwidth = configget(
             self.config, "model", "wflow_riverwidth", "staticmaps/wflow_riverwidth.map"
         )
+        wflow_streamorder = configget(
+            self.config,
+            "model",
+            "wflow_streamorder",
+            "staticmaps/wflow_streamorder.map",
+        )
         wflow_floodplainwidth = configget(
             self.config,
             "model",
