@@ -249,18 +249,17 @@ class WflowModel(DynamicModel):
         self.logger.info("running for " + str(self.nrTimeSteps()) + " timesteps")
 
         # Set and get defaults from ConfigFile here ###################################
-        self.maxitsupply = int(configget(self.config, "model", "maxitsupply", "5"))
-        # max number of iteration in abstraction calculations
+
+        self.Tslice = int(configget(self.config, "model", "Tslice", "1"))
         self.reinit = int(configget(self.config, "run", "reinit", "0"))
         self.OverWriteInit = int(configget(self.config, "model", "OverWriteInit", "0"))
         self.updating = int(configget(self.config, "model", "updating", "0"))
         self.updateFile = configget(self.config, "model", "updateFile", "no_set")
-        self.Tslice = int(configget(self.config, "model", "Tslice", "1"))
+        self.maxitsupply = int(configget(self.config, "model", "maxitsupply", "5"))
+        # max number of iteration in abstraction calculations
+        self.NRiverMethod = int(configget(self.config, "model", "nrivermethod", "1"))
         self.sCatch = int(configget(self.config, "model", "sCatch", "0"))
         self.intbl = configget(self.config, "model", "intbl", "intbl")
-        self.timestepsecs = int(
-            configget(self.config, "model", "timestepsecs", "86400")
-        )
         sizeinmetres = int(configget(self.config, "layout", "sizeinmetres", "0"))
         alf = float(configget(self.config, "model", "Alpha", "60"))
         Qmax = float(configget(self.config, "model", "AnnualDischarge", "300"))
@@ -269,11 +268,11 @@ class WflowModel(DynamicModel):
         self.MaxUpdMult = float(configget(self.config, "model", "MaxUpdMult", "1.3"))
         self.MinUpdMult = float(configget(self.config, "model", "MinUpdMult", "0.7"))
         self.UpFrac = float(configget(self.config, "model", "UpFrac", "0.8"))
+        WIMaxScale = float(configget(self.config, "model", "WIMaxScale", "0.8"))
         self.SubCatchFlowOnly = int(
             configget(self.config, "model", "SubCatchFlowOnly", "0")
         )
 
-        WIMaxScale = float(configget(self.config, "model", "WIMaxScale", "0.8"))
 
         # static maps to use (normally default)
         wflow_subcatch = configget(
@@ -450,13 +449,18 @@ class WflowModel(DynamicModel):
             self.Soil,
             0.072,
         )  # Manning overland flow
-        self.NRiver = self.readtblDefault(
-            self.Dir + "/" + self.intbl + "/N_River.tbl",
-            self.LandUse,
-            subcatch,
-            self.Soil,
-            0.036,
-        )  # Manning river
+        if self.NRiverMethod == 1:
+            self.NRiver = self.readtblDefault(
+                self.Dir + "/" + self.intbl + "/N_River.tbl",
+                self.LandUse,
+                subcatch,
+                self.Soil,
+                0.036,
+            )  # Manning river
+        if self.NRiverMethod == 2:
+            self.NRiver = self.readtblFlexDefault(
+                self.Dir + "/" + self.intbl + "/N_River.tbl", 0.036, wflow_streamorder
+            )
         self.NFloodPlain = self.readtblDefault(
             self.Dir + "/" + self.intbl + "/N_FloodPlain.tbl",
             self.LandUse,
