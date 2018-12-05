@@ -69,6 +69,7 @@ from wflow.wf_DynamicFramework import *
 from wflow.wflow_funcs import *
 from wflow.wflow_adapt import *
 
+import pcraster as pcr
 
 wflow = "wflow_routing: "
 
