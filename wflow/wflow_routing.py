@@ -468,13 +468,19 @@ class WflowModel(DynamicModel):
             self.NRiver = self.readtblFlexDefault(
                 self.Dir + "/" + self.intbl + "/N_River.tbl", 0.036, wflow_streamorder
             )
-        self.NFloodPlain = self.readtblDefault(
-            self.Dir + "/" + self.intbl + "/N_FloodPlain.tbl",
-            self.LandUse,
-            subcatch,
-            self.Soil,
-            self.NRiver * 2.0,
-        )  # Manning river
+        if self.NRiverMethod == 1:
+            self.NFloodPlain = self.readtblDefault(
+                self.Dir + "/" + self.intbl + "/N_FloodPlain.tbl",
+                self.LandUse,
+                subcatch,
+                self.Soil,
+                self.NRiver * 2.0,
+            )  # Manning river for floodplain
+        if self.NRiverMethod == 2:
+            self.NFloodPlain = self.readtblFlexDefault(
+                self.Dir + "/" + self.intbl + "/N_FloodPlain.tbl", self.NRiver * 2.0, wflow_streamorder
+            )
+
         self.Slope = pcr.slope(self.Altitude)
         # self.Slope=pcr.ifthen(pcr.boolean(self.TopoId),pcr.max(0.001,self.Slope*celllength()/self.reallength))
         self.Slope = pcr.max(0.00001, self.Slope * pcr.celllength() / self.reallength)
