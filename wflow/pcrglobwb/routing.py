@@ -25,7 +25,6 @@
 import os
 
 from pcraster.framework import *
-import pcraster as pcr
 
 import logging
 
@@ -33,6 +32,7 @@ logger = logging.getLogger("wflow_pcrglobwb")
 
 from . import virtualOS as vos
 from .ncConverter import *
+import pcraster as pcr
 
 from . import waterBodies
 

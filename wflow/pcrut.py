@@ -13,6 +13,7 @@ from pcraster import *
 
 from pcraster import *
 from pcraster.framework import *
+import pcraster as pcr
 import logging
 import logging.handlers
 

@@ -42,6 +42,7 @@ import osgeo.gdal as gdal
 from osgeo.gdalconst import *
 from pcraster import *
 from pcraster.framework import *
+import pcraster as pcr
 import numpy as np
 import gzip, zipfile
 

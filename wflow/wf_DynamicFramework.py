@@ -26,6 +26,7 @@ import logging
 import pcraster
 from pcraster.framework import *
 from .wflow_lib import *
+import pcraster as pcr
 import time
 import calendar
 import datetime
