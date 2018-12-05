@@ -257,8 +257,12 @@ class netcdfoutput:
         cellsize = pcr.clone().cellSize()
         yupper = pcr.clone().north()
         xupper = pcr.clone().west()
-        x = pcr.pcr2numpy(pcr.xcoordinate(pcr.boolean(pcr.cover(1.0))), np.nan)[0, :]
-        y = pcr.pcr2numpy(pcr.ycoordinate(pcr.boolean(pcr.cover(1.0))), np.nan)[:, 0]
+        x = pcr.pcr2numpy(
+            pcr.xcoordinate(pcr.boolean(pcr.cover(1.0))), np.nan
+        )[0, :]
+        y = pcr.pcr2numpy(
+            pcr.ycoordinate(pcr.boolean(pcr.cover(1.0))), np.nan
+        )[:, 0]
 
         # Shift one timestep as we output at the end
         # starttime = starttime + dt.timedelta(seconds=timestepsecs)
@@ -439,8 +443,12 @@ class netcdfoutputstatic:
         cellsize = pcr.clone().cellSize()
         yupper = pcr.clone().north()
         xupper = pcr.clone().west()
-        x = pcr.pcr2numpy(pcr.xcoordinate(pcr.boolean(pcr.cover(1.0))), np.nan)[0, :]
-        y = pcr.pcr2numpy(pcr.ycoordinate(pcr.boolean(pcr.cover(1.0))), np.nan)[:, 0]
+        x = pcr.pcr2numpy(
+            pcr.xcoordinate(pcr.boolean(pcr.cover(1.0))), np.nan
+        )[0, :]
+        y = pcr.pcr2numpy(
+            pcr.ycoordinate(pcr.boolean(pcr.cover(1.0))), np.nan
+        )[:, 0]
 
         # Shift one timestep as we output at the end
         # starttime = starttime + dt.timedelta(seconds=timestepsecs)
@@ -594,9 +602,7 @@ class netcdfinput:
         maxmb = 40
 
         self.maxlentime = len(self.dataset.variables["time"])
-        self.maxsteps = np.minimum(
-            maxmb * len(a) / floatspermb + 1, self.maxlentime - 1
-        )
+        self.maxsteps = np.minimum(maxmb * len(a) / floatspermb + 1, self.maxlentime - 1)
         self.fstep = 0
         self.lstep = self.fstep + self.maxsteps
         self.offset = 0
@@ -637,8 +643,12 @@ class netcdfinput:
             else:
                 self.flip = True
 
-        x = pcr.pcr2numpy(pcr.xcoordinate(pcr.boolean(pcr.cover(1.0))), np.nan)[0, :]
-        y = pcr.pcr2numpy(pcr.ycoordinate(pcr.boolean(pcr.cover(1.0))), np.nan)[:, 0]
+        x = pcr.pcr2numpy(
+            pcr.xcoordinate(pcr.boolean(pcr.cover(1.0))), np.nan
+        )[0, :]
+        y = pcr.pcr2numpy(
+            pcr.ycoordinate(pcr.boolean(pcr.cover(1.0))), np.nan
+        )[:, 0]
 
         # Get average cell size
         acc = (
@@ -855,8 +865,12 @@ class netcdfinputstates:
             else:
                 self.flip = True
 
-        x = pcr.pcr2numpy(pcr.xcoordinate(pcr.boolean(pcr.cover(1.0))), np.nan)[0, :]
-        y = pcr.pcr2numpy(pcr.ycoordinate(pcr.boolean(pcr.cover(1.0))), np.nan)[:, 0]
+        x = pcr.pcr2numpy(
+            pcr.xcoordinate(pcr.boolean(pcr.cover(1.0))), np.nan
+        )[0, :]
+        y = pcr.pcr2numpy(
+            pcr.ycoordinate(pcr.boolean(pcr.cover(1.0))), np.nan
+        )[:, 0]
 
         # Get average cell size
         acc = (
@@ -986,8 +1000,12 @@ class netcdfinputstatic:
         except:
             self.y = self.dataset.variables["lat"][:]
 
-        x = pcr.pcr2numpy(pcr.xcoordinate(pcr.boolean(pcr.cover(1.0))), np.nan)[0, :]
-        y = pcr.pcr2numpy(pcr.ycoordinate(pcr.boolean(pcr.cover(1.0))), np.nan)[:, 0]
+        x = pcr.pcr2numpy(
+            pcr.xcoordinate(pcr.boolean(pcr.cover(1.0))), np.nan
+        )[0, :]
+        y = pcr.pcr2numpy(
+            pcr.ycoordinate(pcr.boolean(pcr.cover(1.0))), np.nan
+        )[:, 0]
 
         (self.latidx,) = np.logical_and(self.x >= x.min(), self.x < x.max()).nonzero()
         (self.lonidx,) = np.logical_and(self.y >= x.min(), self.y < y.max()).nonzero()

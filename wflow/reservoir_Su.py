@@ -211,19 +211,13 @@ def unsatZone_LP_beta_Jarvis(self, k):
     self.Su_diff = pcr.ifthenelse(self.Su[k] < 0, self.Su[k], 0)
     self.Qu = (
         self.Qu1
-        + (
-            self.Qu1
-            / pcr.ifthenelse(self.Qu1 + self.Perc1 > 0, self.Qu1 + self.Perc1, 1)
-        )
+        + (self.Qu1 / pcr.ifthenelse(self.Qu1 + self.Perc1 > 0, self.Qu1 + self.Perc1, 1))
         * self.Su_diff
     )
     self.Perc = pcr.ifthenelse(
         self.Perc1 > 0,
         self.Perc1
-        + (
-            self.Perc1
-            / pcr.ifthenelse(self.Qu1 + self.Perc1 > 0, self.Qu1 + self.Perc1, 1)
-        )
+        + (self.Perc1 / pcr.ifthenelse(self.Qu1 + self.Perc1 > 0, self.Qu1 + self.Perc1, 1))
         * self.Su_diff,
         self.Perc1,
     )

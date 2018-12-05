@@ -596,9 +596,7 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
 
         self._update_time_from_DT()
 
-        self.TheClone = (
-            pcr.scalar(pcr.xcoordinate((pcr.spatial(pcr.boolean(1.0))))) * 0.0
-        )
+        self.TheClone = pcr.scalar(pcr.xcoordinate((pcr.spatial(pcr.boolean(1.0))))) * 0.0
 
     def _update_time_from_DT(self):
         """
@@ -929,9 +927,7 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
             cmask = self._userModel().TopoId
 
             cmask = pcr.ifthen(cmask > 0, cmask)
-            totalzeromap = pcr.pcr2numpy(
-                pcr.maptotal(pcr.scalar(pcr.defined(cmask))), 0
-            )
+            totalzeromap = pcr.pcr2numpy(pcr.maptotal(pcr.scalar(pcr.defined(cmask))), 0)
             resttotal = pcr.pcr2numpy(pcr.maptotal(pcr.scalar(pcr.defined(rest))), 0)
 
             if resttotal[0, 0] < totalzeromap[0, 0]:
@@ -990,9 +986,7 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
             rest = pcr.cover(pcr.readmap(mapname), default)
         else:
             if os.path.isfile(pathtotbl):
-                rest = pcr.lookupscalar(
-                    pathtotbl, landuse, subcatch, soil, pcr.cover(0.0) + n
-                )
+                rest = pcr.lookupscalar(pathtotbl, landuse, subcatch, soil, pcr.cover(0.0) + n)
                 self.logger.info("Creating map from table: " + pathtotbl)
             else:
                 self.logger.warning(
@@ -1006,9 +1000,7 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
             cmask = self._userModel().TopoId
 
             cmask = pcr.ifthen(cmask > 0, cmask)
-            totalzeromap = pcr.pcr2numpy(
-                pcr.maptotal(pcr.scalar(pcr.defined(cmask))), 0
-            )
+            totalzeromap = pcr.pcr2numpy(pcr.maptotal(pcr.scalar(pcr.defined(cmask))), 0)
             resttotal = pcr.pcr2numpy(pcr.maptotal(pcr.scalar(pcr.defined(rest))), 0)
 
             if resttotal[0, 0] < totalzeromap[0, 0]:
@@ -2011,13 +2003,7 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
                     nr = nr + 1
                 else:
                     if nr > 0:
-                        self.logger.info(
-                            "state variable "
-                            + str(var)
-                            + " contains "
-                            + str(nr)
-                            + " state files (stack)"
-                        )
+                        self.logger.info("state variable " + str(var) + " contains " + str(nr) + " state files (stack)")
                     stop = 1
 
             if nr == 0:
@@ -3012,9 +2998,7 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
 
         if hasattr(self._userModel(), "_inDynamic"):
             if self._userModel()._inDynamic() or self._inUpdateWeight():
-                newName = pcraster.framework.generateNameT(
-                    name, self._userModel().currentTimeStep()
-                )
+                newName = pcraster.framework.generateNameT(name, self._userModel().currentTimeStep())
 
         if newName == "":  # For files from suspend
             newName = name

@@ -817,9 +817,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         # Hence in LINTUL3, some processes are still controlled directly by TSUM and some are controlled by its derived variable DVS
         # – a somewhat confusing situation that offers scope for future improvement.
         # After anthesis DVS proceeds at a different rate (DVS_gen) than before (DVS_veg). Throughout crop development DVS is calculated as the DVS_veg + DVS_gen.
-        DVS_veg = (
-            self.TSUM / self.TSUMAN * pcr.ifthenelse(CropHarvNow, pcr.scalar(0.0), 1.0)
-        )
+        DVS_veg = self.TSUM / self.TSUMAN * pcr.ifthenelse(CropHarvNow, pcr.scalar(0.0), 1.0)
         DVS_gen = (1.0 + (self.TSUM - self.TSUMAN) / self.TSUMMT) * pcr.ifthenelse(
             CropHarvNow, pcr.scalar(0.0), 1.0
         )
@@ -883,9 +881,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         DLV = (DLVS + DLVNS) * pcr.scalar(Not_Finished)
         RWLVG = pcr.ifthenelse(EMERG, GTOTAL * FLV - DLV, pcr.scalar(0.0))
         self.WLVG = (
-            self.WLVG
-            + pcr.ifthenelse(CropStartNow, self.WLVGI, pcr.scalar(0.0))
-            + RWLVG
+            self.WLVG + pcr.ifthenelse(CropStartNow, self.WLVGI, pcr.scalar(0.0)) + RWLVG
         ) * (1.0 - pcr.scalar(CropHarvNow))
         self.WLVD = (self.WLVD + DLV) * (1.0 - pcr.scalar(CropHarvNow))
 
@@ -921,9 +917,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         # Total daily decrease in LAI due to leaf death (aging, mutual shading, N shortage):
         DLAI = (DLAIS + DLAINS) * pcr.scalar(Not_Finished)
         # The initial LAI (LAII, transplanted rice) is added to GLAI at crop establishment, not in below state equation as done by Shibu et al. (2010).
-        self.LAI = (self.LAI + GLAI - DLAI) * pcr.ifthenelse(
-            CropHarvNow, pcr.scalar(0.0), 1.0
-        )
+        self.LAI = (self.LAI + GLAI - DLAI) * pcr.ifthenelse(CropHarvNow, pcr.scalar(0.0), 1.0)
 
         # Daily death rate of roots: if self.DVS >= self.DVSDR, a fraction self.DRRT of the roots is dying every day:
         DRRT = pcr.ifthenelse(Roots_Dying, self.WRT * self.RDRRT, pcr.scalar(0.0))

@@ -170,9 +170,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 + (self.ChannelForm * self.WaterLevelDyn * 2.0)
                 + self.ChannelBottomWidth
             ) / 2.0
-            self.AChannel = (
-                pcr.min(self.WaterLevelDyn, self.ChannelDepth) * ChannelSurface
-            )
+            self.AChannel = pcr.min(self.WaterLevelDyn, self.ChannelDepth) * ChannelSurface
             self.AFloodplain = pcr.max(
                 (self.WaterLevelDyn - self.ChannelDepth) * self.FloodplainWidth, 0.0
             )
@@ -274,9 +272,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.FloodPlainVol = self.AFloodplain * self.ChannelLength
             self.ChannelVol = self.AChannel * self.ChannelLength
             fxboun = pcr.ifthen(self.dynHBoundary > 0, pcr.scalar(levelBoun))
-            self.WaterLevelDyn = pcr.cover(
-                pcr.ifthen(fxboun > 0, fxboun), self.WaterLevelDyn
-            )
+            self.WaterLevelDyn = pcr.cover(pcr.ifthen(fxboun > 0, fxboun), self.WaterLevelDyn)
 
     def stateVariables(self):
         """ 
@@ -409,9 +405,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         if wflow_dynriver == "not_set":
             self.DynRiver = pcr.boolean(self.River)
         else:
-            self.DynRiver = pcr.boolean(
-                pcr.readmap(os.path.join(self.Dir, wflow_dynriver))
-            )
+            self.DynRiver = pcr.boolean(pcr.readmap(os.path.join(self.Dir, wflow_dynriver)))
 
         self.ChannelDepth = pcrut.readmapSave(
             self.Dir + "/staticmaps/ChannelDepth.map", 8.0
@@ -429,9 +423,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.ChannelRoughness = pcrut.readmapSave(
             self.Dir + "/staticmaps/ChannelRoughness.map", 0.03
         )
-        self.ChannelRoughness = self.ChannelRoughness * pcr.scalar(
-            pcr.boolean(self.DynRiver)
-        )
+        self.ChannelRoughness = self.ChannelRoughness * pcr.scalar(pcr.boolean(self.DynRiver))
         # COnvert to chezy
         # self.ChannelRoughness = 1.49/self.ChannelRoughness
         self.ChannelLength = self.DCL * pcr.scalar(pcr.boolean(self.DynRiver))
@@ -449,9 +441,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             * pcr.scalar(pcr.boolean(self.DynRiver)),
         )
 
-        self.Structures = pcr.boolean(
-            self.ZeroMap * pcr.scalar(pcr.boolean(self.DynRiver))
-        )
+        self.Structures = pcr.boolean(self.ZeroMap * pcr.scalar(pcr.boolean(self.DynRiver)))
         self.StructureA = self.ZeroMap * pcr.scalar(pcr.boolean(self.DynRiver))
         self.StructureB = self.ZeroMap * pcr.scalar(pcr.boolean(self.DynRiver))
         self.StructureCrestLevel = self.ZeroMap * pcr.scalar(pcr.boolean(self.DynRiver))
@@ -506,9 +496,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         #: here which pick upt the variable save by a call to wf_suspend()
         if self.reinit == 1:
             self.logger.info("Setting initial conditions to default (zero!)")
-            self.WaterLevelDyn = (self.ZeroMap + 0.1) * pcr.scalar(
-                pcr.boolean(self.River)
-            )
+            self.WaterLevelDyn = (self.ZeroMap + 0.1) * pcr.scalar(pcr.boolean(self.River))
             self.SurfaceRunoffDyn = self.ZeroMap * pcr.scalar(pcr.boolean(self.River))
 
         else:

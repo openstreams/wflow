@@ -126,7 +126,7 @@ def rainfall_interception_modrut(
     pt = 0.1 * p
 
     # Amount of P that falls on the canopy
-    Pfrac = pcr.max((1 - p - pt), 0) * Precipitation
+    Pfrac = pcr.max((1 - p - pt),0) * Precipitation
 
     # S cannot be larger than Cmax, no gravity drainage below that
     DD = pcr.ifthenelse(CanopyStorage > Cmax, CanopyStorage - Cmax, 0.0)

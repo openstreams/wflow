@@ -110,9 +110,7 @@ def snow_rain(self, k):
 
     self.Fm2 = pcr.max(self.Fm[k] * self.Precipitation, self.Fm[k])
     self.Ew1 = pcr.max(pcr.min(self.PotEvaporation, self.Sw[k]), 0)
-    self.Qw1 = pcr.max(
-        pcr.min(self.Fm2 * (self.Temperature - self.Tm[k]), self.Sw[k]), 0
-    )
+    self.Qw1 = pcr.max(pcr.min(self.Fm2 * (self.Temperature - self.Tm[k]), self.Sw[k]), 0)
 
     self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow - self.Ew1 - self.Qw1
 
@@ -154,9 +152,7 @@ def snow_rain_hourlyEp(self, k):
 
     self.Fm2 = pcr.max(self.Fm[k] * self.Precipitation, self.Fm[k])
     self.Ew1 = pcr.max(pcr.min(self.PotEvaporation, self.Sw[k]), 0)
-    self.Qw1 = pcr.max(
-        pcr.min(self.Fm2 * (self.Temperature - self.Tm[k]), self.Sw[k]), 0
-    )
+    self.Qw1 = pcr.max(pcr.min(self.Fm2 * (self.Temperature - self.Tm[k]), self.Sw[k]), 0)
 
     self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow - self.Ew1 - self.Qw1
 

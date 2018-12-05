@@ -71,9 +71,7 @@ def fastRunoff_lag2(self, k):
     """
 
     if self.FR_L:
-        self.Qu = pcr.areatotal(
-            self.Qu_[k] * self.percentArea, pcr.nominal(self.TopoId)
-        )
+        self.Qu = pcr.areatotal(self.Qu_[k] * self.percentArea, pcr.nominal(self.TopoId))
     else:
         self.Qu = self.Qu_[k]
 
@@ -142,12 +140,8 @@ def fastRunoff_lag_forAgri_combined(self, k):
     """
 
     if self.FR_L:
-        self.Qu = pcr.areatotal(
-            self.Qu_[k] * self.percentArea, pcr.nominal(self.TopoId)
-        )
-        self.Qa = pcr.areatotal(
-            self.Qa_[k] * self.percentArea, pcr.nominal(self.TopoId)
-        )
+        self.Qu = pcr.areatotal(self.Qu_[k] * self.percentArea, pcr.nominal(self.TopoId))
+        self.Qa = pcr.areatotal(self.Qa_[k] * self.percentArea, pcr.nominal(self.TopoId))
     else:
         self.Qu = self.Qu_[k]
         self.Qa = self.Qa_[k]
@@ -209,9 +203,7 @@ def fastRunoff_lag_agriDitch(self, k):
     """
 
     if self.FR_L:
-        self.Qa = pcr.areatotal(
-            self.Qa_[k] * self.percentArea, pcr.nominal(self.TopoId)
-        )
+        self.Qa = pcr.areatotal(self.Qa_[k] * self.percentArea, pcr.nominal(self.TopoId))
     else:
         self.Qa = self.Qa_[k]
 
@@ -270,9 +262,7 @@ def fastRunoff_lag_agriDitch_reInfilt(self, k):
     """
 
     if self.FR_L:
-        self.Qa = pcr.areatotal(
-            self.Qa_[k] * self.percentArea, pcr.nominal(self.TopoId)
-        )
+        self.Qa = pcr.areatotal(self.Qa_[k] * self.percentArea, pcr.nominal(self.TopoId))
     else:
         self.Qa = self.Qa_[k]
 
@@ -281,9 +271,7 @@ def fastRunoff_lag_agriDitch_reInfilt(self, k):
     if self.convQa[k]:
         self.QfainLag = self.convQa[k][-1]
         self.Qfa = self.Sfa[k] * self.Kfa[k]
-        self.Percfa = pcr.ifthenelse(
-            self.Ft_[k] == 1, self.Sfa[k] * self.perc[k] * 200, 0
-        )
+        self.Percfa = pcr.ifthenelse(self.Ft_[k] == 1, self.Sfa[k] * self.perc[k] * 200, 0)
         self.Sfa[k] = self.Sfa[k] + self.QfainLag - self.Qfa - self.Percfa
 
         self.convQa[k].insert(
@@ -301,9 +289,7 @@ def fastRunoff_lag_agriDitch_reInfilt(self, k):
 
     else:
         self.Qfa = self.Sfa[k] * self.Kfa[k]
-        self.Percfa = pcr.ifthenelse(
-            self.Ft_[k] == 1, self.Sfa[k] * self.perc[k] * 200, 0
-        )
+        self.Percfa = pcr.ifthenelse(self.Ft_[k] == 1, self.Sfa[k] * self.perc[k] * 200, 0)
         self.Sfa[k] = self.Sfa[k] + self.Qfain - self.Qfa - self.Percfa
 
     self.wbSfa_[k] = (
