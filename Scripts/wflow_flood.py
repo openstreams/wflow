@@ -541,23 +541,23 @@ def main():
                         )
                     )
                     terrain = rasterband_dem.ReadAsArray(
-                        x_start - x_overlap_min,
-                        y_start - y_overlap_min,
-                        (x_end + x_overlap_max) - (x_start - x_overlap_min),
-                        (y_end + y_overlap_max) - (y_start - y_overlap_min),
+                        float(x_start - x_overlap_min),
+                        float(y_start - y_overlap_min),
+                        int((x_end + x_overlap_max) - (x_start - x_overlap_min)),
+                        int((y_end + y_overlap_max) - (y_start - y_overlap_min)),
                     )
 
                     drainage = rasterband_ldd.ReadAsArray(
-                        x_start - x_overlap_min,
-                        y_start - y_overlap_min,
-                        (x_end + x_overlap_max) - (x_start - x_overlap_min),
-                        (y_end + y_overlap_max) - (y_start - y_overlap_min),
+                        float(x_start - x_overlap_min),
+                        float(y_start - y_overlap_min),
+                        int((x_end + x_overlap_max) - (x_start - x_overlap_min)),
+                        int((y_end + y_overlap_max) - (y_start - y_overlap_min)),
                     )
                     stream = rasterband_stream.ReadAsArray(
-                        x_start - x_overlap_min,
-                        y_start - y_overlap_min,
-                        (x_end + x_overlap_max) - (x_start - x_overlap_min),
-                        (y_end + y_overlap_max) - (y_start - y_overlap_min),
+                        float(x_start - x_overlap_min),
+                        float(y_start - y_overlap_min),
+                        int((x_end + x_overlap_max) - (x_start - x_overlap_min)),
+                        int((y_end + y_overlap_max) - (y_start - y_overlap_min)),
                     )
                     # write to temporary file
                     terrain_temp_file = os.path.join(
@@ -670,7 +670,7 @@ def main():
                         0 + x_overlap_min : -x_overlap_max,
                     ]
 
-                    band_hand.WriteArray(hand_cut, x_start, y_start)
+                    band_hand.WriteArray(hand_cut, float(x_start), float(y_start))
                     os.unlink(terrain_temp_file)
                     os.unlink(drainage_temp_file)
                     os.unlink(stream_temp_file)
@@ -764,7 +764,7 @@ def main():
                 units=a.variables["time"].units,
                 calendar=a.variables["time"].calendar,
             )
-            time = [time_list[len(time_list) / 2]]
+            time = [time_list[len(time_list) // 2]]
         else:
             time = [dt.datetime.strptime(options.time, "%Y%m%d%H%M%S")]
 
@@ -890,16 +890,16 @@ def main():
             )
 
             drainage = rasterband_ldd.ReadAsArray(
-                x_start - x_overlap_min,
-                y_start - y_overlap_min,
-                (x_end + x_overlap_max) - (x_start - x_overlap_min),
-                (y_end + y_overlap_max) - (y_start - y_overlap_min),
+                float(x_start - x_overlap_min),
+                float(y_start - y_overlap_min),
+                int((x_end + x_overlap_max) - (x_start - x_overlap_min)),
+                int((y_end + y_overlap_max) - (y_start - y_overlap_min)),
             )
             stream = rasterband_stream.ReadAsArray(
-                x_start - x_overlap_min,
-                y_start - y_overlap_min,
-                (x_end + x_overlap_max) - (x_start - x_overlap_min),
-                (y_end + y_overlap_max) - (y_start - y_overlap_min),
+                float(x_start - x_overlap_min),
+                float(y_start - y_overlap_min),
+                int((x_end + x_overlap_max) - (x_start - x_overlap_min)),
+                int((y_end + y_overlap_max) - (y_start - y_overlap_min)),
             )
 
             # stream_max = np.minimum(stream.max(), options.max_strahler)
@@ -975,10 +975,10 @@ def main():
                     )
                 ds_hand, rasterband_hand = inun_lib.get_gdal_rasterband(hand_file)
                 hand = rasterband_hand.ReadAsArray(
-                    x_start - x_overlap_min,
-                    y_start - y_overlap_min,
-                    (x_end + x_overlap_max) - (x_start - x_overlap_min),
-                    (y_end + y_overlap_max) - (y_start - y_overlap_min),
+                    float(x_start - x_overlap_min),
+                    float(y_start - y_overlap_min),
+                    int((x_end + x_overlap_max) - (x_start - x_overlap_min)),
+                    int((y_end + y_overlap_max) - (y_start - y_overlap_min)),
                 )
                 print(
                     (
@@ -1045,7 +1045,7 @@ def main():
             ]
             # inundation_cut
             if options.out_format == 0:
-                band_inun.WriteArray(inundation_cut, x_start, y_start)
+                band_inun.WriteArray(inundation_cut, float(x_start), float(y_start))
                 band_inun.FlushCache()
             else:
                 # with netCDF, data is up-side-down.
