@@ -10,30 +10,35 @@ from osgeo import gdal
 # Set these for your installation
 
 pcrasterlib = sys.argv[-1]
+datas = [(gdal.GetConfigOption("GDAL_DATA"), "gdal-data")]
+# prevent unintentionally adding the entire workdir
+if pyproj_datadir != "":
+    datas.append((pyproj_datadir, "proj-data"))
+
 
 # list identical make_wflow_exe script with --normal
 # except for the wtools scripts
 scriptpaths = [
-    'openda_bmi/opendapy.py',
-    'Scripts/bmi2runner.py',
-    'Scripts/pcr2netcdf.py',
-    'Scripts/wflow_flood.py',
-    'Scripts/wflow_prepare_step1.py',
-    'Scripts/wflow_prepare_step2.py',
-    'Scripts/wflow_sbm_rtc.py',
-    'wflow/wflow_adapt.py',
-    'wflow/wflow_delwaq.py',
-    'wflow/wflow_floodmap.py',
-    'wflow/wflow_gr4.py',
-    'wflow/wflow_hbv.py',
-    'wflow/wflow_lintul.py',
-    'wflow/wflow_pcrglobwb.py',
-    'wflow/wflow_routing.py',
-    'wflow/wflow_sbm.py',
-    'wflow/wflow_sphy.py',
-    'wflow/wflow_topoflex.py',
-    'wflow/wflow_w3ra.py',
-    'wflow/wflow_wave.py',
+    "openda_bmi/opendapy.py",
+    "Scripts/bmi2runner.py",
+    "Scripts/pcr2netcdf.py",
+    "Scripts/wflow_flood.py",
+    "Scripts/wflow_prepare_step1.py",
+    "Scripts/wflow_prepare_step2.py",
+    "Scripts/wflow_sbm_rtc.py",
+    "wflow/wflow_adapt.py",
+    "wflow/wflow_delwaq.py",
+    "wflow/wflow_floodmap.py",
+    "wflow/wflow_gr4.py",
+    "wflow/wflow_hbv.py",
+    "wflow/wflow_lintul.py",
+    "wflow/wflow_pcrglobwb.py",
+    "wflow/wflow_routing.py",
+    "wflow/wflow_sbm.py",
+    "wflow/wflow_sphy.py",
+    "wflow/wflow_topoflex.py",
+    "wflow/wflow_w3ra.py",
+    "wflow/wflow_wave.py",
 ]
 
 
@@ -46,18 +51,19 @@ def do_analysis(scriptpath):
     """Run PyInstaller Analysis"""
     # note that the datas locations have to be set again in __init__.py
     # if they are to work in a bundled folder
-    return Analysis([scriptpath],
-                    binaries=[(pcrasterlib, '.')],
-                    # TODO check if still necessary in PyInstaller 3.3 after
-                    # https://github.com/pyinstaller/pyinstaller/pull/2401
-                    # Though this seems more solid, submit as hook patch?
-                    datas=[(gdal.GetConfigOption('GDAL_DATA'), 'gdal-data'),
-                           (pyproj_datadir, 'proj-data')],
-                    hiddenimports=[# in opendapy.py: importlib.import_module(sys.argv[3])
-                                   # for wflow this would always be wflow.wflow_bmi
-                                   'wflow.wflow_bmi',
-                                   'wflow.wflow_bmi_combined'
-                                   ])
+    return Analysis(
+        [scriptpath],
+        binaries=[(pcrasterlib, ".")],
+        # TODO check if still necessary in PyInstaller 3.3 after
+        # https://github.com/pyinstaller/pyinstaller/pull/2401
+        # Though this seems more solid, submit as hook patch?
+        datas=datas,
+        hiddenimports=[  # in opendapy.py: importlib.import_module(sys.argv[3])
+            # for wflow this would always be wflow.wflow_bmi
+            "wflow.wflow_bmi",
+            "wflow.wflow_bmi_combined",
+        ],
+    )
 
 
 def do_analysis_bare(scriptpath):
@@ -74,29 +80,30 @@ def do_pyz(a):
 def do_exe(apyz):
     # unpack tuple created by zip
     a, pyz = apyz
-    return EXE(pyz, a.scripts,
-               exclude_binaries=True,
-               name=scriptname(a.inputs[0]),
-               upx=False,
-               icon='logo.ico')
+    return EXE(
+        pyz,
+        a.scripts,
+        exclude_binaries=True,
+        name=scriptname(a.inputs[0]),
+        upx=False,
+        icon="logo.ico",
+    )
 
 
 def do_collect(aexe):
     # unpack tuple created by zip
     a, exe = aexe
-    return COLLECT(exe,
-                   a.binaries,
-                   a.zipfiles,
-                   a.datas,
-                   name=scriptname(a.inputs[0]),
-                   upx=False)
+    return COLLECT(
+        exe, a.binaries, a.zipfiles, a.datas, name=scriptname(a.inputs[0]), upx=False
+    )
 
 
 if len(scriptpaths) == 1:
     analist = [do_analysis(scriptpaths[0])]
 else:
-    analist = [do_analysis(scriptpaths[0])] + \
-        list(map(do_analysis_bare, scriptpaths[1:]))
+    analist = [do_analysis(scriptpaths[0])] + list(
+        map(do_analysis_bare, scriptpaths[1:])
+    )
 
 pyzlist = list(map(do_pyz, analist))
 exelist = list(map(do_exe, zip(analist, pyzlist)))
@@ -106,7 +113,7 @@ collist = list(map(do_collect, zip(analist, exelist)))
 # Replace with MERGE when this issue is fixed
 # https://github.com/pyinstaller/pyinstaller/issues/1527
 for scriptpath in scriptpaths:
-    srcdir = os.path.join('dist', scriptname(scriptpath))
+    srcdir = os.path.join("dist", scriptname(scriptpath))
     # only copy if new or newer
-    copy_tree(srcdir, 'dist', update=1)
+    copy_tree(srcdir, "dist", update=1)
     remove_tree(srcdir)
