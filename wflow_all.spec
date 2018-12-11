@@ -1,15 +1,16 @@
 # -*- mode: python -*-
 
 import os
-import sys
+import pathlib
 import shutil
 from distutils.dir_util import copy_tree, remove_tree
-from pyproj import pyproj_datadir
+
 from osgeo import gdal
+from pyproj import pyproj_datadir
 
-# Set these for your installation
+import pcraster
 
-pcrasterlib = sys.argv[-1]
+pcrasterlib = pathlib.Path(pcraster.__file__).parents[2] / "lib"
 datas = [(gdal.GetConfigOption("GDAL_DATA"), "gdal-data")]
 # prevent unintentionally adding the entire workdir
 if pyproj_datadir != "":
