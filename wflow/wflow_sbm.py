@@ -87,11 +87,11 @@ usage
 import os.path
 
 import numpy as np
-import pcraster as pcr
 import pcraster.framework
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
 from wflow.wflow_funcs import *
+import pcraster as pcr
 
 wflow = "wflow_sbm: "
 
@@ -1788,6 +1788,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         :var self.CanopyStorage: Amount of water on the Canopy [mm]
         :var self.RunoffCoeff: Runoff coefficient (Q/P) for each cell taking into account the whole upstream area [-]
         :var self.SurfaceWaterSupply: the negative Inflow (water demand) that could be met from the surfacewater [m^3/s]
+        :var self.Recharge: simple recharge to groundwater (transfer - capillary flux - saturated act evap) [mm]
 
 
         Static variables
@@ -2427,6 +2428,9 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         sumLayer = self.ZeroMap
 
+        # Calculate simple recharge to groundwater
+        self.Recharge = self.Transfer - self.CapFlux - self.ActEvapSat
+        
         # Now add capflux to the layers one by one (from bottom to top)
         for n in np.arange(len(self.UStoreLayerThickness) - 1, -1, -1):
 
