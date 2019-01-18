@@ -55,6 +55,8 @@ the following models:
 
 -  the wflow\_floodmap model (a flood mapping model that can use the output of the wflow\_wave model or de wflow\_routing model).
 
+-  the wflow\_sediment model (an experimental erosion and sediment dynamics model that uses the output of the wflow\_sbm model).
+
 The low level api and links to other frameworks allow the models to be
 linked as part of larger modelling systems:
 
@@ -217,7 +219,13 @@ The wflow\_floodmap model
    :maxdepth: 2
 
    wflow_floodmap
+   
+The wflow\_sediment model
+=========================
+.. toctree::
+   :maxdepth: 2
 
+   wflow_sediment  
 
 The framework and settings for the framework
 ============================================
