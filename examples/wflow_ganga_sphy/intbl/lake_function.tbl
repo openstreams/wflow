@@ -1,0 +1,6 @@
+# LAKE FUNCTIONS LOOKUP TABLE. Create a table file with for each lake a function that should be
+# used for the Q(h)-, S(h)-, and h(S)-relation. Format should be as shown below. The first line should
+# not be in the table file and the # marks should be removed:
+# ID    #qh_func (1=exp, 2=1_order poly, 3=2_order poly,4=3_order poly)   #sh_func   #hs_func
+# -99   1                                                                 2          3
+# 1     value1                                                            value2     etc 

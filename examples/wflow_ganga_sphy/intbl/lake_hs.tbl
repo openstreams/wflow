@@ -1,0 +1,7 @@
+# HS-PARAMETERS LOOKUP TABLE. Create a table file with for each lake the parameters for the h(S)-relation,
+# depending on the function that should be used (as determined above). Use missing values (1e31) if the
+# parameter is inappropriate for the function to be used. Format should be as shown below. The first line
+# should not be in the table file and the # marks should be removed:
+# ID   #exp_a   #exp_b   #pol_b   #pol_a1   #pol_a2   #pol_a3
+# -99   1        2        3        4         5         6 
+# 1     1e31     1e31     value1   value2    value3    1e31

@@ -1,0 +1,8 @@
+# RESERVOIR FUNCTION AND STORAGE LOOKUP TABLE. Create a table file containing the reservoir function to be
+# used (simple or advanced) and the initial storage volumes (Mm3) for each resservoir that can be found in
+# the ResId map. Format should be as shown below. The first line should not be in the table file and 
+# the # marks should be removed:
+# ID   #Simple or advanced [1,2]   #Stor_init [Mm3]  #RainRA_init [Mm3]    #SnowRA_init [Mm3]    #GlacRA_init [Mm3]    #BaseRA_init [Mm3]
+# -99  1                           2                 3                     4                     5                     6
+# 1    1                           value1            value2                etc                   etc                   etc
+# 6    2                           etc               etc                   etc                   etc                   etc

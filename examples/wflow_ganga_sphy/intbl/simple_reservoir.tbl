@@ -1,0 +1,8 @@
+# SIMPLE RESERVOIR PARAMETERS. Create a lookup table file containing the parameters to be used for the
+# reservoirs that should be modeled as simple reservoir (Hanasaki et al (2006), which are defined in 
+# the table shown above. Format should be as shown below. The first line should not be in the table file and 
+# the # marks should be removed:
+# ID   #Kr     #Smax [Mm3]
+# -99  1       2
+# 1    value1  value2
+# etc  etc     etc

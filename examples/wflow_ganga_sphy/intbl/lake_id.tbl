@@ -1,0 +1,6 @@
+# LAKE STORAGE LOOKUP TABLE. Create a table file containing initial storage volumes (Mm3) for each
+# lake that can be found in the LakeId map. Format should be as shown below. The first line should
+# not be in the table file and the # marks should be removed:
+# ID    #Stor_init [Mm3]   #RainRA_init [Mm3]   #SnowRA_init [Mm3]   #GlacRA_init [Mm3]   #BaseRA_init [Mm3]
+# -99   1                 2                     3                     4                     5
+# 1     value1            value2                etc                   etc                   etc
