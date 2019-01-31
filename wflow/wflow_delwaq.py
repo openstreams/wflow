@@ -341,7 +341,12 @@ def dw_mkDelwaqPointers(ldd, amap, difboun, layers):
     lowerck = np.absolute(np_ptid) == np.absolute(np_flowto)
     # mak epointer matrix and add to zero zolumns
     orgpointer = np.hstack(
-        (np_ptid, np_flowto, np.zeros((len(np_flowto), 1)), np.zeros((len(np_flowto), 1)))
+        (
+            np_ptid,
+            np_flowto,
+            np.zeros((len(np_flowto), 1)),
+            np.zeros((len(np_flowto), 1)),
+        )
     )
     pointer = orgpointer.copy()
     # Pointer labels:
@@ -377,7 +382,9 @@ def dw_mkDelwaqPointers(ldd, amap, difboun, layers):
         if bouns == 1:
             extraboun = np.hstack((bounid, cells, zzerocol, zzerocol))
         else:
-            extraboun = np.vstack((extraboun, np.hstack((bounid, cells, zzerocol, zzerocol))))
+            extraboun = np.vstack(
+                (extraboun, np.hstack((bounid, cells, zzerocol, zzerocol)))
+            )
         pointer_labels = np.hstack((pointer_labels, zzerocol[:, 0] + bouns))
         bouns = bouns + 1
         start = start + len(cells)
@@ -1474,7 +1481,9 @@ def main():
 
             # volume for each timestep and number of segments
 
-            logger.info("Writing volumes.dat. Nr of points: " + str(np.size(volume_block)))
+            logger.info(
+                "Writing volumes.dat. Nr of points: " + str(np.size(volume_block))
+            )
             dw_WriteSegmentOrExchangeData(
                 i, dwdir + "/includes_flow/volume.dat", volume_block, 1, WriteAscii
             )

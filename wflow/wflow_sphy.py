@@ -43,6 +43,7 @@ wflow = "wflow_sphy"
 updateCols = []  #: columns used in updating
 """ Column used in updating """
 
+
 def usage(*args):
     """
     Print usage information
@@ -72,7 +73,7 @@ class WflowModel(DynamicModel):
         self.Dir = os.path.abspath(Dir)
         self.configfile = configfile
         self.SaveDir = os.path.join(self.Dir, self.runId)
-    
+
     def stateVariables(self):
         """
       returns a list of state variables that are essential to the model.
@@ -100,13 +101,8 @@ class WflowModel(DynamicModel):
              baseflow waters in lakes and reservoirs [m3]
 
       """
-        states = [
-            "RootWater",
-            "SubWater",
-            "CapRise",
-            "RootDrain"
-            ]
-        
+        states = ["RootWater", "SubWater", "CapRise", "RootDrain"]
+
         if self.DynVegFLAG == 1:
             states.append("Scanopy")
         if self.GroundFLAG == 1:
@@ -117,7 +113,7 @@ class WflowModel(DynamicModel):
             states.extend(["SnowStore", "SnowWatStore"])
         if self.GlacFLAG == 1:
             states.append("GlacFrac")
-        if (self.RoutFLAG == 1 or self.LakeFLAG == 1 or self.ResFLAG == 1):
+        if self.RoutFLAG == 1 or self.LakeFLAG == 1 or self.ResFLAG == 1:
             states.append("QRAold")
             if self.RainRA_FLAG == 1:
                 states.append("RainRAold")
@@ -127,7 +123,7 @@ class WflowModel(DynamicModel):
                 states.append("GlacRAold")
             if self.BaseRA_FLAG == 1:
                 states.append("BaseRAold")
-        if (self.LakeFLAG == 1 or self.ResFLAG == 1):
+        if self.LakeFLAG == 1 or self.ResFLAG == 1:
             states.append("StorRES")
             if self.RainRA_FLAG == 1:
                 states.append("RainRAstor")
@@ -137,10 +133,9 @@ class WflowModel(DynamicModel):
                 states.append("GlacRAstor")
             if self.BaseRA_FLAG == 1:
                 states.append("BaseRAstor")
-        
-        
+
         return states
-    
+
     # The following are made to better connect to deltashell/openmi
     def supplyCurrentTime(self):  # - this may not be required
         """
@@ -152,7 +147,7 @@ class WflowModel(DynamicModel):
         return self.currentTimeStep() * int(
             configget(self.config, "model", "timestepsecs", "86400")
         )
-        
+
     def parameters(self):
         """
     Define all model parameters here that the framework should handle for the model
@@ -171,11 +166,14 @@ class WflowModel(DynamicModel):
             self.config, "inputmapstacks", "Prec", "/inmaps/prec"
         )  # timeseries for rainfall
         self.Tair_mapstack = self.Dir + configget(
-            self.config, "inputmapstacks", "Tair", "/inmaps/tavg")
+            self.config, "inputmapstacks", "Tair", "/inmaps/tavg"
+        )
         self.Tmax_mapstack = self.Dir + configget(
-            self.config, "inputmapstacks", "Tmax", "/inmaps/tmax")
+            self.config, "inputmapstacks", "Tmax", "/inmaps/tmax"
+        )
         self.Tmin_mapstack = self.Dir + configget(
-            self.config, "inputmapstacks", "Tmin", "/inmaps/tmin")
+            self.config, "inputmapstacks", "Tmin", "/inmaps/tmin"
+        )
 
         # Meteo and other forcing
         modelparameters.append(
@@ -198,7 +196,7 @@ class WflowModel(DynamicModel):
                 lookupmaps=[],
             )
         )
-        
+
         modelparameters.append(
             self.ParamType(
                 name="Tmax",
@@ -219,10 +217,9 @@ class WflowModel(DynamicModel):
                 lookupmaps=[],
             )
         )
-        
+
         return modelparameters
-    
-    
+
     def suspend(self):
         """
       Suspends the model to disk. All variables needed to restart the model
@@ -239,8 +236,7 @@ class WflowModel(DynamicModel):
         if self.fewsrun:
             self.logger.info("Saving initial conditions for FEWS...")
             self.wf_suspend(os.path.join(self.Dir, "outstate"))
-            
-    
+
     def initial(self):
 
         global statistics
@@ -250,14 +246,14 @@ class WflowModel(DynamicModel):
         setglobaloption("unittrue")
 
         self.thestep = scalar(0)
-        
+
         self.logger.info("running for " + str(self.nrTimeSteps()) + " timesteps")
 
         # Set and get defaults from ConfigFile here ###################################
         self.reinit = int(configget(self.config, "run", "reinit", "0"))
         self.fewsrun = int(configget(self.config, "run", "fewsrun", "0"))
         self.OverWriteInit = int(configget(self.config, "model", "OverWriteInit", "0"))
-        
+
         # Print model info
         print(
             "The Spatial Processes in HYdrology (SPHY) model is "
@@ -265,7 +261,7 @@ class WflowModel(DynamicModel):
         )
         print("Version 2.1")
         print(" ")
-        
+
         # Read the modules to be used
         self.GlacFLAG = int(configget(self.config, "model", "GlacFLAG", "0"))
         self.SnowFLAG = int(configget(self.config, "model", "SnowFLAG", "0"))
@@ -275,18 +271,18 @@ class WflowModel(DynamicModel):
         self.DynVegFLAG = int(configget(self.config, "model", "DynVegFLAG", "0"))
         self.GroundFLAG = int(configget(self.config, "model", "GroundFLAG", "0"))
         # Optional modules
-        if (self.GroundFLAG == 0):
+        if self.GroundFLAG == 0:
             self.SeepStatFLAG = int(configget(self.config, "model", "SeepStatic", "0"))
         if self.DynVegFLAG == 0:
             self.KcStatFLAG = int(configget(self.config, "model", "KCstatic", "0"))
         self.ETREF_FLAG = int(configget(self.config, "model", "ETREF_FLAG", "0"))
-        
-        if (self.RoutFLAG == 1 or self.LakeFLAG == 1 or self.ResFLAG == 1):
+
+        if self.RoutFLAG == 1 or self.LakeFLAG == 1 or self.ResFLAG == 1:
             self.SnowRA_FLAG = int(configget(self.config, "model", "SnowRA_FLAG", "0"))
             self.RainRA_FLAG = int(configget(self.config, "model", "RainRA_FLAG", "0"))
             self.GlacRA_FLAG = int(configget(self.config, "model", "GlacRA_FLAG", "0"))
             self.BaseRA_FLAG = int(configget(self.config, "model", "BaseRA_FLAG", "0"))
-        
+
         # import the required modules
         import datetime, calendar
         from wflow.sphy import reporting as reporting
@@ -309,7 +305,7 @@ class WflowModel(DynamicModel):
         self.rootzone = rootzone
         self.subzone = subzone
         del datetime, calendar, pi, reporting, timecalc, ET, rootzone, subzone
-        
+
         # -import additional modules if required
         if self.GlacFLAG == 1:
             self.SnowFLAG = 1
@@ -334,12 +330,12 @@ class WflowModel(DynamicModel):
             self.lakes = lakes
             del lakes
         if self.ResFLAG == 1:
-            import wflow.sphy.reservoirs as reservoirs # import reservoir module
+            import wflow.sphy.reservoirs as reservoirs  # import reservoir module
 
             self.reservoirs = reservoirs
             del reservoirs
         if self.LakeFLAG == 1 or self.ResFLAG == 1:
-            import wflow.sphy.advanced_routing as advanced_routing # overwrite the simple routing scheme
+            import wflow.sphy.advanced_routing as advanced_routing  # overwrite the simple routing scheme
 
             self.routing = advanced_routing
             del advanced_routing
@@ -354,8 +350,7 @@ class WflowModel(DynamicModel):
 
             self.groundwater = groundwater
             del groundwater
-        
-        
+
         # -set the global options
         setglobaloption("radians")
         # -set the 2000 julian date number
@@ -364,24 +359,18 @@ class WflowModel(DynamicModel):
         self.mm_rep_FLAG = int(configget(self.config, "model", "mm_rep_FLAG", "1"))
         # -convert flow from m3/s to mm
         self.ToMM = 1000 * 3600 * 24 / cellarea()
-        
+
         # static maps to use (normally default)
-        wflow_dem = configget(
-            self.config, "model", "dem", "staticmaps/dem.map"
-        )
-        wflow_slope = configget(
-            self.config, "model", "slope", "staticmaps/slope.map"
-        )
+        wflow_dem = configget(self.config, "model", "dem", "staticmaps/dem.map")
+        wflow_slope = configget(self.config, "model", "slope", "staticmaps/slope.map")
         wflow_locs = configget(
             self.config, "model", "locations", "staticmaps/outlets.map"
         )
         wflow_landuse = configget(
             self.config, "model", "landuse", "staticmaps/landuse.map"
         )
-        wflow_ldd = configget(
-            self.config, "model", "flowdir", "staticmaps/ldd.map"
-        )
-        
+        wflow_ldd = configget(self.config, "model", "flowdir", "staticmaps/ldd.map")
+
         wflow_rootF = configget(
             self.config, "model", "RootFieldMap", "staticmaps/root_field.map"
         )
@@ -406,11 +395,9 @@ class WflowModel(DynamicModel):
         wflow_subK = configget(
             self.config, "model", "SubKsat", "staticmaps/sub_ksat.map"
         )
-        
+
         # 2: Input base maps ########################################################
-        self.DEM = self.wf_readmap(
-            os.path.join(self.Dir, wflow_dem), 0.0, fail=True
-        )
+        self.DEM = self.wf_readmap(os.path.join(self.Dir, wflow_dem), 0.0, fail=True)
         self.Slope = self.wf_readmap(
             os.path.join(self.Dir, wflow_slope), 0.0, fail=True
         )
@@ -423,7 +410,7 @@ class WflowModel(DynamicModel):
         self.FlowDir = self.wf_readmap(
             os.path.join(self.Dir, wflow_ldd), 0.0, fail=False
         )
-        
+
         self.RootFieldMap = self.wf_readmap(
             os.path.join(self.Dir, wflow_rootF), 0.35, fail=False
         )
@@ -448,26 +435,24 @@ class WflowModel(DynamicModel):
         self.SubKsat = self.wf_readmap(
             os.path.join(self.Dir, wflow_subK), 10, fail=False
         )
-        
-        
+
         # Set static initial values here #########################################
         self.ZeroMap = 0.0 * scalar(self.DEM)  # map with only zero's
         self.Latitude = ycoordinate(boolean(self.ZeroMap))
-        self.Longitude = xcoordinate(boolean(self.ZeroMap)) 
+        self.Longitude = xcoordinate(boolean(self.ZeroMap))
 
         # Read parameters NEW Method
         self.logger.info("Linking parameters to landuse, catchment and soil...")
         self.wf_updateparameters()
 
         self.wf_multparameters()
-        
-        
+
         # Set static initial variables
         self.RootDrainVel = self.RootKsat * self.Slope
-        
-        if (self.GroundFLAG == 0):
+
+        if self.GroundFLAG == 0:
             self.SubDrainVel = self.SubKsat * self.Slope
-        
+
         # -calculate soil properties
         self.RootField = self.RootFieldMap * self.RootDepthFlat
         self.RootSat = self.RootSatMap * self.RootDepthFlat
@@ -477,17 +462,18 @@ class WflowModel(DynamicModel):
         self.SubField = self.SubFieldMap * self.SubDepthFlat
         self.RootTT = (self.RootSat - self.RootField) / self.RootKsat
         self.SubTT = (self.SubSat - self.SubField) / self.SubKsat
-        
+
         # soil max and soil min for scaling of gwl if groundwater module is not used
         if self.GroundFLAG == 0:
             self.SoilMax = self.RootSat + self.SubSat
             self.SoilMin = self.RootDry + self.SubField
-        
+
         if self.ETREF_FLAG == 0:
             from wflow.sphy import hargreaves
+
             self.Hargreaves = hargreaves
             del hargreaves
-            
+
         setglobaloption("matrixtable")
         # -read lake maps and parameters if lake module is used
         if self.LakeFLAG == 1:
@@ -574,7 +560,6 @@ class WflowModel(DynamicModel):
                 self.QFRAC = ifthenelse(self.ResID != 0, scalar(0), self.QFRAC)
             else:
                 self.QFRAC = ifthenelse(self.ResID != 0, scalar(0), 1)
-        
 
     def default_summarymaps(self):  ##-maybe not needed. check later
         """
@@ -590,13 +575,10 @@ class WflowModel(DynamicModel):
         if self.GlacFLAG == 1:
             lst = ["self.GlacFrac"]
         else:
-            lst =[]
+            lst = []
 
-        return lst        
-            
+        return lst
 
-        
-    
     def resume(self):
         """ read initial state maps (they are output of a previous call to suspend()) """
 
@@ -614,7 +596,7 @@ class WflowModel(DynamicModel):
                 # -initial canopy storage
                 self.Scanopy = self.ZeroMap
                 # -initial ndvi if first map is not provided
-                #self.ndviOld = scalar((self.NDVImax + self.NDVImin) / 2)
+                # self.ndviOld = scalar((self.NDVImax + self.NDVImin) / 2)
             # -initial groundwater properties
             if self.GroundFLAG == 1:
                 self.GwRecharge = self.ZeroMap + 2.0
@@ -630,56 +612,97 @@ class WflowModel(DynamicModel):
             # -initial glacier properties
             if self.GlacFLAG == 1:
                 self.GlacFrac = self.ZeroMap
-            # -initial routed total runoff 
-            if (self.RoutFLAG == 1 or self.LakeFLAG == 1 or self.ResFLAG == 1):
+            # -initial routed total runoff
+            if self.RoutFLAG == 1 or self.LakeFLAG == 1 or self.ResFLAG == 1:
                 self.QRAold = self.ZeroMap
                 self.RainRAold = self.ZeroMap
                 self.SnowRAold = self.ZeroMap
                 self.GlacRAold = self.ZeroMap
                 self.BaseRAold = self.ZeroMap
             # -initial storage in lakes and reservoirs
-            if (self.LakeFLAG == 1 or self.ResFLAG == 1):
+            if self.LakeFLAG == 1 or self.ResFLAG == 1:
                 # -Read initial storages from table/reservoir file
-                self.StorRES = self.ZeroMap                
-                self.RainRAstor = self.ZeroMap               
+                self.StorRES = self.ZeroMap
+                self.RainRAstor = self.ZeroMap
                 self.SnowRAstor = self.ZeroMap
-                self.GlacRAstor = self.ZeroMap                
-                self.BaseRAstor = self.ZeroMap                                
-                
+                self.GlacRAstor = self.ZeroMap
+                self.BaseRAstor = self.ZeroMap
+
                 # -Read initial storages from table/reservoir file
                 if self.LakeFLAG == 1:
                     LakeStor_Tab = os.path.join(self.Dir, "lake_id.tbl")
                     if os.path.exists(LakeStor_Tab):
-                        self.StorRES = self.StorRES + cover(lookupscalar(LakeStor_Tab, 1, self.LakeID), 0) * 10 ** 6  # convert to m3
-                        self.RainRAstor = self.RainRAstor + cover(lookupscalar(LakeStor_Tab, 2, self.LakeID), 0) * 10 ** 6
-                        self.SnowRAstor = self.SnowRAstor + cover(lookupscalar(LakeStor_Tab, 3, self.LakeID), 0) * 10 ** 6
-                        self.GlacRAstor = self.GlacRAstor + cover(lookupscalar(LakeStor_Tab, 4, self.LakeID), 0) * 10 ** 6
-                        self.BaseRAstor = self.BaseRAstor + cover(lookupscalar(LakeStor_Tab, 5, self.LakeID), 0) * 10 ** 6
+                        self.StorRES = (
+                            self.StorRES
+                            + cover(lookupscalar(LakeStor_Tab, 1, self.LakeID), 0)
+                            * 10 ** 6
+                        )  # convert to m3
+                        self.RainRAstor = (
+                            self.RainRAstor
+                            + cover(lookupscalar(LakeStor_Tab, 2, self.LakeID), 0)
+                            * 10 ** 6
+                        )
+                        self.SnowRAstor = (
+                            self.SnowRAstor
+                            + cover(lookupscalar(LakeStor_Tab, 3, self.LakeID), 0)
+                            * 10 ** 6
+                        )
+                        self.GlacRAstor = (
+                            self.GlacRAstor
+                            + cover(lookupscalar(LakeStor_Tab, 4, self.LakeID), 0)
+                            * 10 ** 6
+                        )
+                        self.BaseRAstor = (
+                            self.BaseRAstor
+                            + cover(lookupscalar(LakeStor_Tab, 5, self.LakeID), 0)
+                            * 10 ** 6
+                        )
                     else:
-                        self.logger.debug("Initial default state lake_id.tbl not found returning 0.0")
+                        self.logger.debug(
+                            "Initial default state lake_id.tbl not found returning 0.0"
+                        )
                 if self.ResFLAG == 1:
                     ResStor_Tab = os.path.join(self.Dir, "reservoir_id.tbl")
                     if os.path.exists(ResStor_Tab):
-                        self.StorRES = self.StorRES + cover(lookupscalar(ResStor_Tab, 2, self.ResID), 0) * 10 ** 6 
-                        self.RainRAstor = self.RainRAstor + cover(lookupscalar(ResStor_Tab, 3, self.ResID), 0) * 10 ** 6 
-                        self.SnowRAstor = self.SnowRAstor + cover(lookupscalar(ResStor_Tab, 4, self.ResID), 0) * 10 ** 6 
-                        self.GlacRAstor = self.GlacRAstor + cover(lookupscalar(ResStor_Tab, 5, self.ResID), 0) * 10 ** 6 
-                        self.BaseRAstor = self.BaseRAstor + cover(lookupscalar(ResStor_Tab, 6, self.ResID), 0) * 10 ** 6 
+                        self.StorRES = (
+                            self.StorRES
+                            + cover(lookupscalar(ResStor_Tab, 2, self.ResID), 0)
+                            * 10 ** 6
+                        )
+                        self.RainRAstor = (
+                            self.RainRAstor
+                            + cover(lookupscalar(ResStor_Tab, 3, self.ResID), 0)
+                            * 10 ** 6
+                        )
+                        self.SnowRAstor = (
+                            self.SnowRAstor
+                            + cover(lookupscalar(ResStor_Tab, 4, self.ResID), 0)
+                            * 10 ** 6
+                        )
+                        self.GlacRAstor = (
+                            self.GlacRAstor
+                            + cover(lookupscalar(ResStor_Tab, 5, self.ResID), 0)
+                            * 10 ** 6
+                        )
+                        self.BaseRAstor = (
+                            self.BaseRAstor
+                            + cover(lookupscalar(ResStor_Tab, 6, self.ResID), 0)
+                            * 10 ** 6
+                        )
                     else:
-                        self.logger.debug("Initial default state res_id.tbl not found returning 0.0")
-            
+                        self.logger.debug(
+                            "Initial default state res_id.tbl not found returning 0.0"
+                        )
 
         else:
             self.wf_resume(os.path.join(self.Dir, "instate"))
-        
+
         # -initial water storage in rootzone + subsoil
         self.SoilWater = self.RootWater + self.SubWater
-        
+
         if self.SnowFLAG == 1:
             self.TotalSnowStore = self.SnowStore + self.SnowWatStore
-        
 
-        
     def dynamic(self):
 
         self.wf_updateparameters()  # read forcing an dynamic parameters
@@ -690,12 +713,12 @@ class WflowModel(DynamicModel):
         if self.SnowFLAG == 0:
             self.SnowStore = scalar(0)
         SnowFrac = ifthenelse(self.SnowStore > 0, scalar(1 - self.GlacFrac), 0)
-        RainFrac = ifthenelse(self.SnowStore == 0, scalar(1 - self.GlacFrac), 0)        
-        
+        RainFrac = ifthenelse(self.SnowStore == 0, scalar(1 - self.GlacFrac), 0)
+
         # -Read the precipitation time-series
         self.Precip = self.Prec
         self.PrecipF = self.Prec * (1 - self.GlacFrac)
-        
+
         # -Temperature and reference evapotranspiration
         Temp = self.Tair
         if self.ETREF_FLAG == 0:
@@ -704,10 +727,10 @@ class WflowModel(DynamicModel):
             self.ETref = self.Hargreaves.Hargreaves(
                 pcr, self.Hargreaves.extrarad(self, pcr), Temp, TempMax, TempMin
             )
-        
+
         # -Interception and effective precipitation
         # -Update canopy storage
-        if self.DynVegFLAG == 1:            
+        if self.DynVegFLAG == 1:
             # -fill missing ndvi values with ndvi base
             self.NDVI = ifthenelse(defined(self.NDVI) == 1, self.NDVI, self.NDVIbase)
             # -calculate the vegetation parameters
@@ -741,7 +764,6 @@ class WflowModel(DynamicModel):
 
             # -canopy storage
             self.Scanopy = intercep[2]
-                
 
         # Snow and rain
         if self.SnowFLAG == 1:
@@ -749,21 +771,31 @@ class WflowModel(DynamicModel):
             self.Snow = ifthenelse(Temp >= self.Tcrit, 0, self.Precip)
             self.SnowF = self.Snow * (1 - self.GlacFrac)
             self.Rain = ifthenelse(Temp < self.Tcrit, 0, self.Precip)
-            
+
             # -Snow melt
             PotSnowMelt = self.snow.PotSnowMelt(pcr, Temp, self.DDFS)
             self.ActSnowMelt = self.snow.ActSnowMelt(pcr, self.SnowStore, PotSnowMelt)
             self.ActSnowMeltF = self.ActSnowMelt * SnowFrac
             # -Update snow store
             self.SnowStore = self.snow.SnowStoreUpdate(
-                pcr, self.SnowStore, self.Snow, self.ActSnowMelt, Temp, self.SnowWatStore
+                pcr,
+                self.SnowStore,
+                self.Snow,
+                self.ActSnowMelt,
+                Temp,
+                self.SnowWatStore,
             )
             # -Caclulate the maximum amount of water that can be stored in snowwatstore
             MaxSnowWatStore = self.snow.MaxSnowWatStorage(self.SnowSC, self.SnowStore)
             OldSnowWatStore = self.SnowWatStore
             # -Calculate the actual amount of water stored in snowwatstore
             self.SnowWatStore = self.snow.SnowWatStorage(
-                pcr, Temp, MaxSnowWatStore, self.SnowWatStore, self.ActSnowMelt, self.Rain
+                pcr,
+                Temp,
+                MaxSnowWatStore,
+                self.SnowWatStore,
+                self.ActSnowMelt,
+                self.Rain,
             )
             # -Changes in total water storage in snow (SnowStore and SnowWatStore)
             OldTotalSnowStore = self.TotalSnowStore
@@ -786,7 +818,7 @@ class WflowModel(DynamicModel):
             OldTotalSnowStore = 0
             self.TotalSnowStore = 0
         self.RainF = self.Rain * (1 - self.GlacFrac)
-        
+
         # -Glacier calculations
         if self.GlacFLAG == 1:
             # -Glacier melt from clean ice glaciers
@@ -804,8 +836,8 @@ class WflowModel(DynamicModel):
         else:
             self.GlacR = 0
             self.GlacMelt = 0
-            self.GlacPerc = 0   
-            
+            self.GlacPerc = 0
+
         # -Potential evapotranspiration (THIS SHOULD STILL BE IMPROVED WITH DYNAMIC VEGETATION MODULE)
         self.ETpot = self.ET.ETpot(self.ETref, self.Kc)
         self.ETpotF = self.ETpot * RainFrac
@@ -848,8 +880,8 @@ class WflowModel(DynamicModel):
         )
         self.rootpercF = self.rootperc * (1 - self.GlacFrac)
         # -Update rootwater content
-        self.RootWater = self.RootWater - self.rootperc    
-        
+        self.RootWater = self.RootWater - self.rootperc
+
         # -Sub soil calculations
         self.SubWater = self.SubWater + self.rootperc
         if self.GroundFLAG == 0:
@@ -865,7 +897,7 @@ class WflowModel(DynamicModel):
             self.RootField,
         )
         self.CapRiseF = self.CapRise * (1 - self.GlacFrac)
-        
+
         # -Update sub soil water content
         self.SubWater = self.SubWater - self.CapRise
         if (
@@ -889,7 +921,7 @@ class WflowModel(DynamicModel):
             )
             # -Update sub soil water content
             self.SubWater = self.SubWater - self.SubDrain
-            
+
         # -Changes in soil water storage
         OldSoilWater = self.SoilWater
         self.SoilWater = (self.RootWater + self.SubWater) * (1 - self.GlacFrac)
@@ -900,7 +932,7 @@ class WflowModel(DynamicModel):
         self.RootD = self.RootDrain * (1 - self.GlacFrac)
         # -Rain runoff
         self.RainR = self.RootR + self.RootD
-        
+
         # -Groundwater calculations
         if self.GroundFLAG == 1:
             GwOld = self.Gw
@@ -920,7 +952,10 @@ class WflowModel(DynamicModel):
             self.H_gw = self.groundwater.HLevel(
                 pcr, self.H_gw, self.alphaGw, self.GwRecharge, self.YieldGw
             )
-            self.GWL = ((self.SubDepthFlat + self.RootDepthFlat + self.GwDepth) / 1000 - self.H_gw) * (-1)
+            self.GWL = (
+                (self.SubDepthFlat + self.RootDepthFlat + self.GwDepth) / 1000
+                - self.H_gw
+            ) * (-1)
         else:
             # -Use drainage from subsoil as baseflow
             self.BaseR = self.SubDrain
@@ -931,8 +966,8 @@ class WflowModel(DynamicModel):
             )  # scale between 0 (dry) and 1 (wet)
             self.GWL = self.GWL_base - (SoilRel - 0.5) * self.GWL_base
 
-        self.TotRF = self.BaseR + self.RainR + self.SnowR + self.GlacR          
-        
+        self.TotRF = self.BaseR + self.RainR + self.SnowR + self.GlacR
+
         # -Water balance
         if self.GroundFLAG == 1:
             self.waterbalance = (
@@ -964,7 +999,9 @@ class WflowModel(DynamicModel):
             # -Update storage in lakes/reservoirs (m3) with specific runoff
             self.StorRES = self.StorRES + ifthenelse(
                 self.QFRAC == 0,
-                0.001 * cellarea() * (self.BaseR + self.RainR + self.GlacR + self.SnowR),
+                0.001
+                * cellarea()
+                * (self.BaseR + self.RainR + self.GlacR + self.SnowR),
                 0,
             )
             OldStorage = self.StorRES
@@ -984,13 +1021,15 @@ class WflowModel(DynamicModel):
                 self.StorRES = tempvar[1]
                 self.Qout = self.lakes.QLake(self, pcr, LakeLevel)
             else:
-                self.Qout = self.reservoirs.QRes(self, pcr)      
-        
+                self.Qout = self.reservoirs.QRes(self, pcr)
+
             # -Calculate volume available for routing (=outflow lakes/reservoir + cell specific runoff)
             RunoffVolume = upstream(self.FlowDir, self.Qout) + ifthenelse(
                 self.QFRAC == 0,
                 0,
-                0.001 * cellarea() * (self.BaseR + self.RainR + self.GlacR + self.SnowR),
+                0.001
+                * cellarea()
+                * (self.BaseR + self.RainR + self.GlacR + self.SnowR),
             )
             # -Routing of total flow
             tempvar = self.routing.ROUT(
@@ -999,8 +1038,8 @@ class WflowModel(DynamicModel):
             self.StorRES = tempvar[0]
             self.Q = tempvar[1]
             self.Qin = tempvar[2]
-            self.QRAold = self.Q     
-        
+            self.QRAold = self.Q
+
             # -Routing of individual contributers
             # -Snow routing
             if self.SnowRA_FLAG == 1 and self.SnowFLAG == 1:
@@ -1013,13 +1052,18 @@ class WflowModel(DynamicModel):
                     self.QFRAC == 0, 0, 0.001 * cellarea() * self.SnowR
                 )
                 tempvar = self.routing.ROUT(
-                    self, pcr, cRunoffVolume, self.SnowRAold, self.cQout, self.SnowRAstor
+                    self,
+                    pcr,
+                    cRunoffVolume,
+                    self.SnowRAold,
+                    self.cQout,
+                    self.SnowRAstor,
                 )
                 self.SnowRAstor = tempvar[0]
                 self.SnowRA = tempvar[1]
                 self.cQin = tempvar[2]
-                self.SnowRAold = self.SnowRA      
-        
+                self.SnowRAold = self.SnowRA
+
             # -Rain routing
             if self.RainRA_FLAG == 1:
                 self.RainRAstor = self.RainRAstor + ifthenelse(
@@ -1031,14 +1075,19 @@ class WflowModel(DynamicModel):
                     self.QFRAC == 0, 0, 0.001 * cellarea() * self.RainR
                 )
                 tempvar = self.routing.ROUT(
-                    self, pcr, cRunoffVolume, self.RainRAold, self.cQout, self.RainRAstor
+                    self,
+                    pcr,
+                    cRunoffVolume,
+                    self.RainRAold,
+                    self.cQout,
+                    self.RainRAstor,
                 )
                 self.RainRAstor = tempvar[0]
                 self.RainRA = tempvar[1]
                 self.cQin = tempvar[2]
                 self.RainRAold = self.RainRA
-                
-             # -Glacier routing
+
+            # -Glacier routing
             if self.GlacRA_FLAG == 1 and self.GlacFLAG == 1:
                 self.GlacRAstor = self.GlacRAstor + ifthenelse(
                     self.QFRAC == 0, self.GlacR * 0.001 * cellarea(), 0
@@ -1049,13 +1098,18 @@ class WflowModel(DynamicModel):
                     self.QFRAC == 0, 0, 0.001 * cellarea() * self.GlacR
                 )
                 tempvar = self.routing.ROUT(
-                    self, pcr, cRunoffVolume, self.GlacRAold, self.cQout, self.GlacRAstor
+                    self,
+                    pcr,
+                    cRunoffVolume,
+                    self.GlacRAold,
+                    self.cQout,
+                    self.GlacRAstor,
                 )
                 self.GlacRAstor = tempvar[0]
                 self.GlacRA = tempvar[1]
                 self.cQin = tempvar[2]
                 self.GlacRAold = self.GlacRA
-                
+
             # -Baseflow routing
             if self.BaseRA_FLAG == 1:
                 self.BaseRAstor = self.BaseRAstor + ifthenelse(
@@ -1067,13 +1121,18 @@ class WflowModel(DynamicModel):
                     self.QFRAC == 0, 0, 0.001 * cellarea() * self.BaseR
                 )
                 tempvar = self.routing.ROUT(
-                    self, pcr, cRunoffVolume, self.BaseRAold, self.cQout, self.BaseRAstor
+                    self,
+                    pcr,
+                    cRunoffVolume,
+                    self.BaseRAold,
+                    self.cQout,
+                    self.BaseRAstor,
                 )
                 self.BaseRAstor = tempvar[0]
                 self.BaseRA = tempvar[1]
                 self.cQin = tempvar[2]
                 self.BaseRAold = self.BaseRA
-                
+
         # -Normal routing module
         elif self.RoutFLAG == 1:
             # -Rout total runoff
@@ -1091,7 +1150,7 @@ class WflowModel(DynamicModel):
                     pcr, self.SnowR, self.SnowRAold, self.FlowDir, self.kx
                 )
                 self.SnowRAold = self.SnowRA
-                
+
             # -Rain routing
             if self.RainRA_FLAG == 1:
                 self.RainRA = self.routing.ROUT(
@@ -1109,10 +1168,9 @@ class WflowModel(DynamicModel):
                 self.BaseRA = self.routing.ROUT(
                     pcr, self.BaseR, self.BaseRAold, self.FlowDir, self.kx
                 )
-                self.BaseRAold = self.BaseRA             
-                
-                
-                
+                self.BaseRAold = self.BaseRA
+
+
 # The main function is used to run the program from the command line
 
 
@@ -1258,4 +1316,3 @@ def main(argv=None):
 
 if __name__ == "__main__":
     main()
-                

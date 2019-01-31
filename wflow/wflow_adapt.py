@@ -150,7 +150,7 @@ def log2xml(logfile, xmldiag):
                 'http://fews.wldelft.nl/schemas/version1.0/pi-schemas/pi_diag.xsd" version="1.2">\n'
             )
             for aline in lines:
-                translator = aline.maketrans('', '',"><&\"'")
+                translator = aline.maketrans("", "", "><&\"'")
                 alineesc = aline.translate(translator)
                 fo.write(alineesc)
             fo.write("</Diag>\n")

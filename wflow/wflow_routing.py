@@ -407,7 +407,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.xl, self.yl, self.reallength = pcrut.detRealCellLength(
             self.ZeroMap, sizeinmetres
         )
-        
+
         # Check if we have reservoirs
         if hasattr(self, "ReserVoirSimpleLocs"):
             tt = pcr.pcr2numpy(self.ReserVoirSimpleLocs, 0.0)
@@ -937,7 +937,9 @@ class WflowModel(pcraster.framework.DynamicModel):
                 self.InflowKinWaveCell = pcr.upstream(
                     self.TopoLdd, self.OldSurfaceRunoff
                 )
-                deltasup = float(pcr.mapmaximum(pcr.abs(oldsup - self.SurfaceWaterSupply)))
+                deltasup = float(
+                    pcr.mapmaximum(pcr.abs(oldsup - self.SurfaceWaterSupply))
+                )
 
                 if deltasup < self.breakoff or self.nrit >= self.maxitsupply:
                     break

@@ -2430,7 +2430,7 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         # Calculate simple recharge to groundwater
         self.Recharge = self.Transfer - self.CapFlux - self.ActEvapSat
-        
+
         # Now add capflux to the layers one by one (from bottom to top)
         for n in np.arange(len(self.UStoreLayerThickness) - 1, -1, -1):
 
@@ -2913,7 +2913,9 @@ class WflowModel(pcraster.framework.DynamicModel):
                 self.InflowKinWaveCell = pcr.upstream(
                     self.TopoLdd, self.OldSurfaceRunoff
                 )
-                deltasup = float(pcr.mapmaximum(pcr.abs(oldsup - self.SurfaceWaterSupply)))
+                deltasup = float(
+                    pcr.mapmaximum(pcr.abs(oldsup - self.SurfaceWaterSupply))
+                )
 
                 if deltasup < self.breakoff or self.nrit >= self.maxitsupply:
                     break

@@ -636,15 +636,20 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
                     setattr(
                         self._userModel(),
                         var,
-                        getattr(self._userModel(), var) * float(self.modelparameters_changes_timestep[cmdd].split('*')[1]) #self.modelparameters_changes_timestep[cmdd],
+                        getattr(self._userModel(), var)
+                        * float(
+                            self.modelparameters_changes_timestep[cmdd].split("*")[1]
+                        ),  # self.modelparameters_changes_timestep[cmdd],
                     )
                     self.logger.warning(
                         "Variable change (apply_timestep) applied to "
-                        + str(var) + " with factor" + self.modelparameters_changes_timestep[cmdd].split('*')[1]
+                        + str(var)
+                        + " with factor"
+                        + self.modelparameters_changes_timestep[cmdd].split("*")[1]
                     )
 
         if self._userModel()._inInitial():
-#            import pdb; pdb.set_trace()
+            #            import pdb; pdb.set_trace()
             for cmdd in self.modelparameters_changes_once:
                 var = cmdd.replace("self._userModel().", "").strip()
                 if not hasattr(self._userModel(), var):
@@ -654,13 +659,17 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
                     )
                 else:
                     setattr(
-                        self._userModel(), var, getattr(self._userModel(), var) * float(self.modelparameters_changes_once[cmdd].split('*')[1])
+                        self._userModel(),
+                        var,
+                        getattr(self._userModel(), var)
+                        * float(self.modelparameters_changes_once[cmdd].split("*")[1]),
                     )
                     self.logger.warning(
                         "Variable change (apply_once) applied to "
-                        + str(var) + " with factor" + self.modelparameters_changes_once[cmdd].split('*')[1]
+                        + str(var)
+                        + " with factor"
+                        + self.modelparameters_changes_once[cmdd].split("*")[1]
                     )
-
 
     def wf_updateparameters(self):
         """
