@@ -5,6 +5,7 @@ import shutil
 import string
 import numpy
 import numpy.ma
+import numpy as np
 from pcraster import *
 from frameworkBase import generateNameS, generateNameT, generateNameST
 import generalfunctions, regression

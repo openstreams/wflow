@@ -173,7 +173,7 @@ def dw_WriteBoundlist(fname, pointer, areas, inflowtypes):
     nr_inflowtypes = len(inflowtypes)
 
     # for i in range(nr_inflowtypes-1):
-    #    totareas = vstack((totareas,areas))
+    #    totareas = np.vstack((totareas,areas))
     totareas = areas
 
     arid = 0
@@ -181,22 +181,22 @@ def dw_WriteBoundlist(fname, pointer, areas, inflowtypes):
         if pointer[i, 1] < 0:
             print(
                 "'BD_"
-                + str(absolute(pointer[i, 1]))
+                + str(np.absolute(pointer[i, 1]))
                 + "'  '"
-                + str(absolute(pointer[i, 1]))
+                + str(np.absolute(pointer[i, 1]))
                 + "'"
                 + " 'Outflow'",
                 file=exfile,
             )
         elif pointer[i, 0] < 0:
-            # ar = int(absolute(totareas[arid]))
+            # ar = int(np.absolute(totareas[arid]))
             ar = totareas[arid]
             print(
                 "'BD_"
-                + str(absolute(pointer[i, 0]))
+                + str(np.absolute(pointer[i, 0]))
                 + "' "
                 + "'"
-                + str(absolute(pointer[i, 0]))
+                + str(np.absolute(pointer[i, 0]))
                 + "'"
                 + " 'Area_"
                 + str(ar)
@@ -244,10 +244,10 @@ def dw_WriteSegmentOrExchangeData(ttime, fname, datablock, boundids, WriteAscii=
     # First convert the array to a 32 bit float
     totareas = datablock
     for i in range(boundids - 1):
-        totareas = vstack((totareas, datablock))
+        totareas = np.vstack((totareas, datablock))
 
-    artow = np.array(totareas, dtype=float32).copy()
-    timear = np.array(ttime, dtype=int32)
+    artow = np.array(totareas, dtype=np.float32).copy()
+    timear = np.array(ttime, dtype=np.int32)
     if os.path.isfile(fname):  # append to existing file
         fp = open(fname, "ab")
         tstr = timear.tostring() + artow.tostring()
@@ -327,58 +327,58 @@ def dw_mkDelwaqPointers(ldd, amap, difboun, layers):
 
     # remove all non-active cells
     np_catchid = np_catchid[np_catchid > 0.0]
-    np_upbound = np_upbound[isfinite(np_upbound)]
-    np_flowto = np_flowto[isfinite(np_flowto)]
-    np_ptid = np_ptid[isfinite(np_ptid)]
+    np_upbound = np_upbound[np.isfinite(np_upbound)]
+    np_flowto = np_flowto[np.isfinite(np_flowto)]
+    np_ptid = np_ptid[np.isfinite(np_ptid)]
     np_flowto = np_flowto.reshape(len(np_flowto), 1)
     np_ptid = np_ptid.reshape(len(np_ptid), 1)
     np_catchid = np_catchid.reshape(len(np_catchid), 1)
     # Now make catchid a list
     np_catchid = np_catchid.flatten()
-    np_catchid = np.array(int_(np_catchid), dtype="|S").tolist()
+    np_catchid = np.array(np.int_(np_catchid), dtype="|S").tolist()
     # find all downstream segments (flowto == ptid)
     # now set the flowto points (outflows, usually just one) also to negative
-    lowerck = absolute(np_ptid) == absolute(np_flowto)
+    lowerck = np.absolute(np_ptid) == np.absolute(np_flowto)
     # mak epointer matrix and add to zero zolumns
-    orgpointer = hstack(
-        (np_ptid, np_flowto, zeros((len(np_flowto), 1)), zeros((len(np_flowto), 1)))
+    orgpointer = np.hstack(
+        (np_ptid, np_flowto, np.zeros((len(np_flowto), 1)), np.zeros((len(np_flowto), 1)))
     )
     pointer = orgpointer.copy()
     # Pointer labels:
     #    negative: outflow boundary
     #    zero    : internal flow
     #    positive: inflow boundary
-    pointer_labels = zeros((len(np_flowto)), dtype=numpy.int)
+    pointer_labels = np.zeros((len(np_flowto)), dtype=numpy.int)
     extraboun = []
     # Add the inflow boundaries here.
     cells = pointer[:, 0]
     cells = cells.reshape(len(cells), 1)
     bounid = cells.copy()
-    zzerocol = zeros((len(np_flowto), 1), dtype=numpy.int)
+    zzerocol = np.zeros((len(np_flowto), 1), dtype=numpy.int)
 
     # outflow to pointer
     # point -> - point
     lopt = np_ptid[lowerck]
     lopt = lopt.reshape(len(lopt), 1)
-    zerocol = zeros((len(lopt), 1))
+    zerocol = np.zeros((len(lopt), 1))
     lowerids = np.arange(1, len(lopt) + 1) * -1
-    # of = hstack((lopt,lopt * -1.0,zerocol,zerocol))
+    # of = np.hstack((lopt,lopt * -1.0,zerocol,zerocol))
     lowerids = lowerids.reshape(len(lowerids), 1)
-    of = hstack((lopt, lowerids, zerocol, zerocol))
+    of = np.hstack((lopt, lowerids, zerocol, zerocol))
 
     # Now remove double pointer to itself and replace by lower boundary
     lowerck = pointer[:, 0] == pointer[:, 1]
     pointer[lowerck, :] = of
     pointer_labels[lowerck] = -1
-    start = absolute(lowerids.min()) + 1
+    start = np.absolute(lowerids.min()) + 1
     bouns = 1
     for idd in range(1, difboun + 1):
         bounid = np.arange(start, (len(cells) + start)).reshape((len(cells), 1)) * -1.0
         if bouns == 1:
-            extraboun = hstack((bounid, cells, zzerocol, zzerocol))
+            extraboun = np.hstack((bounid, cells, zzerocol, zzerocol))
         else:
-            extraboun = vstack((extraboun, hstack((bounid, cells, zzerocol, zzerocol))))
-        pointer_labels = hstack((pointer_labels, zzerocol[:, 0] + bouns))
+            extraboun = np.vstack((extraboun, np.hstack((bounid, cells, zzerocol, zzerocol))))
+        pointer_labels = np.hstack((pointer_labels, zzerocol[:, 0] + bouns))
         bouns = bouns + 1
         start = start + len(cells)
 
@@ -386,20 +386,20 @@ def dw_mkDelwaqPointers(ldd, amap, difboun, layers):
     for idd in range(1, difboun + 1):
         ct = list(np_catchid)
         print("ct: ")
-        print(unique(ct))
+        print(np.unique(ct))
         for i in range(0, len(np_catchid)):
             ct[i] = np_catchid[i] + "_" + str(idd)
         res = res + ct
-    print(unique(res))
+    print(np.unique(res))
     np_catchid = res
-    # pointer = vstack((pointer,extraboun))
+    # pointer = np.vstack((pointer,extraboun))
     # now catchment id's
-    # zerocol = zeros((len(np_catchid),1))
-    # extraboun= hstack((np_catchid,cells,zerocol,zerocol))
+    # zerocol = np.zeros((len(np_catchid),1))
+    # extraboun= np.hstack((np_catchid,cells,zerocol,zerocol))
     # print np_catchid
 
     if len(extraboun) > 0:
-        pointer = vstack((pointer, extraboun))
+        pointer = np.vstack((pointer, extraboun))
 
     return ptid, pointer, pointer_labels, np_ptid.flatten(), np_catchid
 
@@ -410,7 +410,7 @@ def dw_pcrToDataBlock(pcrmap):
     missing values are removed. Used for generating delwaq data
     """
     ttar = pcr.pcr2numpy(pcrmap, np.nan).flatten()
-    ttar = ttar[isfinite(ttar)]
+    ttar = ttar[np.isfinite(ttar)]
 
     return ttar
 
@@ -568,13 +568,13 @@ def dw_Write_B2_outlocs(fname, gauges, segs):
     np_gauges = pcr.pcr2numpy(gauges, np.nan).flatten()
     np_segs = pcr.pcr2numpy(segs, np.nan).flatten()
 
-    np_gauges = np_gauges[isfinite(np_gauges)]
-    np_segs = np_segs[isfinite(np_segs)]
+    np_gauges = np_gauges[np.isfinite(np_gauges)]
+    np_segs = np_segs[np.isfinite(np_segs)]
 
     if len(np_segs) != len(np_gauges):
         logger.error("Gauges and segments do not match!")
 
-    pts = size(np_segs)
+    pts = np.size(np_segs)
     exfile = open(fname, "w")
     print("%d ; nr of locations" % pts, file=exfile)
     print("; 'outlocname' numberofsegments segment list", file=exfile)
@@ -1363,7 +1363,7 @@ def main():
 
     thecells = pcr.pcr2numpy(modelmap, np.nan).flatten()
     nrcells = len(thecells)
-    nractcells = len(thecells[isfinite(thecells)])
+    nractcells = len(thecells[np.isfinite(thecells)])
 
     logger.info("Total number gridcells (including inactive): " + str(nrcells))
     logger.info("Total number of used gridcells: " + str(nractcells))
@@ -1374,7 +1374,7 @@ def main():
     upar = pcr.pcr2numpy(pcr.scalar(upbound), np.nan).flatten()
     logger.info(
         "Number of upstream cells (without upstream connection): "
-        + str(len(upar[isfinite(upar)]))
+        + str(len(upar[np.isfinite(upar)]))
     )
     pcr.report(upbound, dwdir + "/debug/upbound.map")
 
@@ -1425,15 +1425,15 @@ def main():
     internalflowlength = pcr.readmap(caseId + "/" + runId + "/outsum/DCL.map")
     surface_map = internalflowwidth * internalflowlength
     surface_block = dw_pcrToDataBlock(surface_map)
-    logger.info("Writing surface.dat. Nr of points: " + str(size(surface_block)))
+    logger.info("Writing surface.dat. Nr of points: " + str(np.size(surface_block)))
     dw_WriteSegmentOrExchangeData(
         0, dwdir + "/includes_flow/surface.dat", surface_block, 1, WriteAscii
     )
 
     # create dummy length file
-    length_block = zeros(pointer.shape[0] * 2) + 0.5
+    length_block = np.zeros(pointer.shape[0] * 2) + 0.5
     # write  length file
-    logger.info("Writing length.dat. Nr of points: " + str(size(length_block)))
+    logger.info("Writing length.dat. Nr of points: " + str(np.size(length_block)))
     dw_WriteSegmentOrExchangeData(
         0, dwdir + "/includes_flow/length.dat", length_block, 1, WriteAscii
     )
@@ -1474,7 +1474,7 @@ def main():
 
             # volume for each timestep and number of segments
 
-            logger.info("Writing volumes.dat. Nr of points: " + str(size(volume_block)))
+            logger.info("Writing volumes.dat. Nr of points: " + str(np.size(volume_block)))
             dw_WriteSegmentOrExchangeData(
                 i, dwdir + "/includes_flow/volume.dat", volume_block, 1, WriteAscii
             )
@@ -1498,14 +1498,14 @@ def main():
                 thesource = read_timestep(nc, source, ts, logger, caseId, runId)
                 thesource = zero_map + thesource
                 flow_block_IN = dw_pcrToDataBlock(thesource)
-                flowblock = hstack((flowblock, flow_block_IN))
-                area_block = hstack((area_block, surface_block))
+                flowblock = np.hstack((flowblock, flow_block_IN))
+                area_block = np.hstack((area_block, surface_block))
 
-            logger.info("Writing flow.dat. Nr of points: " + str(size(flowblock)))
+            logger.info("Writing flow.dat. Nr of points: " + str(np.size(flowblock)))
             dw_WriteSegmentOrExchangeData(
                 i, dwdir + "/includes_flow/flow.dat", flowblock, 1, WriteAscii
             )
-            logger.info("Writing area.dat. Nr of points: " + str(size(area_block)))
+            logger.info("Writing area.dat. Nr of points: " + str(np.size(area_block)))
             dw_WriteSegmentOrExchangeData(
                 i, dwdir + "/includes_flow/area.dat", area_block, 1, WriteAscii
             )
@@ -1528,22 +1528,22 @@ def main():
         i = i + timestepsecs
         logger.info("Writing last step..")
 
-        logger.info("Writing area.dat. Nr of points: " + str(size(area_block)))
+        logger.info("Writing area.dat. Nr of points: " + str(np.size(area_block)))
         dw_WriteSegmentOrExchangeData(
             i, dwdir + "/includes_flow/area.dat", area_block, 1, WriteAscii
         )
 
-        # logger.info("Writing surface.dat. Nr of points: " + str(size(surface_block)))
+        # logger.info("Writing surface.dat. Nr of points: " + str(np.size(surface_block)))
         # dw_WriteSegmentOrExchangeData(i,dwdir + '/includes_flow/surface.dat',surface_block,1,WriteAscii)
 
-        logger.info("Writing flow.dat. Nr of points: " + str(size(flowblock)))
+        logger.info("Writing flow.dat. Nr of points: " + str(np.size(flowblock)))
         dw_WriteSegmentOrExchangeData(
             i, dwdir + "/includes_flow/flow.dat", flowblock, 1, WriteAscii
         )
 
         volume_map = read_timestep(nc, "voln", ts, logger, caseId, runId)
         volume_block = dw_pcrToDataBlock(volume_map)
-        logger.info("Writing volumes.dat. Nr of points: " + str(size(volume_block)))
+        logger.info("Writing volumes.dat. Nr of points: " + str(np.size(volume_block)))
         dw_WriteSegmentOrExchangeData(
             i, dwdir + "/includes_flow/volume.dat", volume_block, 1, WriteAscii
         )

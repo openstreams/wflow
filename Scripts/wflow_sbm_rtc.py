@@ -11,6 +11,7 @@ import getopt
 
 from wflow.wf_DynamicFramework import *
 
+import pcraster as pcr
 import wflow.wflow_bmi as bmi
 import logging
 import wflow.wflow_adapt as adapter
@@ -181,11 +182,11 @@ if LA_dt != RTC_dt:
 
 
 # In[]:  Read and map reservoir inflow and outflow locations
-Reservoir_inflow = pcr2numpy(
-    scalar(pcraster.readmap(os.path.abspath(inflow_map))), np.NaN
+Reservoir_inflow = pcr.pcr2numpy(
+    pcr.scalar(pcr.readmap(os.path.abspath(inflow_map))), np.NaN
 )
-Reservoir_outflow = pcr2numpy(
-    scalar(pcraster.readmap(os.path.abspath(outflow_map))), np.NaN
+Reservoir_outflow = pcr.pcr2numpy(
+    pcr.scalar(pcr.readmap(os.path.abspath(outflow_map))), np.NaN
 )
 
 inflow_list = list(np.unique(Reservoir_inflow[~np.isnan(Reservoir_inflow)]))
@@ -193,10 +194,10 @@ outflow_list = list(np.unique(Reservoir_outflow[~np.isnan(Reservoir_outflow)]))
 
 
 # In[]:  Overwrite TopoLdd with modified version
-ldd = pcraster.pcr2numpy(
-    pcraster.readmap(os.path.join(dir_wflow, ldd_map)), np.NaN
+ldd = pcr.pcr2numpy(
+    pcr.readmap(os.path.join(dir_wflow, ldd_map)), np.NaN
 ).astype(np.float32)
-LA_model.set_value("TopoLdd", flipud(ldd).copy())
+LA_model.set_value("TopoLdd", np.flipud(ldd).copy())
 
 
 ########################################################################
@@ -212,15 +213,15 @@ while t < min(LA_end, RTC_end):
         toread = gettimestepfname(
             thisstack, os.path.join(dir_wflow, "inmaps"), timecounter + 1
         )
-        inmstackbuf[thisstack] = flipud(
-            pcr2numpy(scalar(pcraster.readmap(os.path.abspath(toread))), -999.0)
+        inmstackbuf[thisstack] = np.flipud(
+            pcr.pcr2numpy(pcr.scalar(pcr.readmap(os.path.abspath(toread))), -999.0)
         ).copy()
         LA_model.set_value(thisstack, inmstackbuf[thisstack])
 
     print("calculation timestep = " + str(timecounter))
 
     # Get the inflow from the wflow model runoff map and map
-    inflowQ = flipud(LA_model.get_value("SurfaceRunoff")).copy()
+    inflowQ = np.flipud(LA_model.get_value("SurfaceRunoff")).copy()
 
     # Map the sum of WFlow Inflow to RTC
     for idx, wflow_id in enumerate(id_in_wflow):
@@ -239,10 +240,10 @@ while t < min(LA_end, RTC_end):
         rtc_id = id_out_rtc[id_out_wflow.index(str(wflow_id))]
         Qout = RTC_model.get_var(rtc_id)
         Qout = 300.0
-        if isfinite(Qout):  # no nan's into wflow
+        if np.isfinite(Qout):  # no nan's into wflow
             inflowfield[Reservoir_outflow == int(wflow_id)] += Qout
 
-    LA_model.set_value("IF", flipud(inflowfield).copy())
+    LA_model.set_value("IF", np.flipud(inflowfield).copy())
     # This not not bmi but needed to update the kinematic wave reservoir
     LA_model.update()
     t += LA_dt

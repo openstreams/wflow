@@ -584,10 +584,10 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.sh = {}
             res_ids = pcr.ifthen(self.ResStorFunc == 2, self.ReserVoirComplexLocs)
             np_res_ids = pcr.pcr2numpy(res_ids, 0)
-            np_res_ids_u = np.unique(np_res_ids[nonzero(np_res_ids)])
+            np_res_ids_u = np.unique(np_res_ids[np.nonzero(np_res_ids)])
             if np.size(np_res_ids_u) > 0:
-                for item in nditer(np_res_ids_u):
-                    self.sh[int(item)] = loadtxt(
+                for item in np.nditer(np_res_ids_u):
+                    self.sh[int(item)] = np.loadtxt(
                         self.Dir
                         + "/"
                         + self.intbl
@@ -598,10 +598,10 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.hq = {}
             res_ids = pcr.ifthen(self.ResOutflowFunc == 1, self.ReserVoirComplexLocs)
             np_res_ids = pcr.pcr2numpy(res_ids, 0)
-            np_res_ids_u = np.unique(np_res_ids[nonzero(np_res_ids)])
-            if size(np_res_ids_u) > 0:
-                for item in nditer(np_res_ids_u):
-                    self.hq[int(item)] = loadtxt(
+            np_res_ids_u = np.unique(np_res_ids[np.nonzero(np_res_ids)])
+            if np.size(np_res_ids_u) > 0:
+                for item in np.nditer(np_res_ids_u):
+                    self.hq[int(item)] = np.loadtxt(
                         self.Dir
                         + "/"
                         + self.intbl

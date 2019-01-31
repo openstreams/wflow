@@ -70,6 +70,7 @@ import datetime as dt
 import getopt
 import sys
 from numpy import *
+import numpy as np
 import netCDF4 as nc4
 import cftime
 import osgeo.gdal as gdal
@@ -126,7 +127,7 @@ def writeMap(fileName, fileFormat, x, y, data, FillVal):
     # get rasterband entry
     TempBand = TempDataset.GetRasterBand(1)
     # fill rasterband with array
-    TempBand.WriteArray(data.astype(float32), 0, 0)
+    TempBand.WriteArray(data.astype(np.float32), 0, 0)
     TempBand.FlushCache()
     TempBand.SetNoDataValue(FillVal)
 
@@ -357,7 +358,7 @@ def write_netcdf_timeseries(
         latlen = len(nc_trg.variables["lat"])
         lonlen = len(nc_trg.variables["lon"])
 
-    timestepbuffer = zeros((bufsize, latlen, lonlen))
+    timestepbuffer = np.zeros((bufsize, latlen, lonlen))
 
     # now loop over all time steps, check the date and write valid dates to a list, write time series to PCRaster maps
     for nn, curTime in enumerate(timeList):

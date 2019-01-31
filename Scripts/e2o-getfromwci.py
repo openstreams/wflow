@@ -7,6 +7,7 @@ from osgeo.gdalconst import *
 
 # Uncomment these if needed
 from numpy import *
+import numpy as np
 from scipy import *
 from matplotlib import *
 from pylab import *
@@ -136,7 +137,7 @@ for year in years:
         if len(tot) == 0:
             tot = p_mean.copy()
         else:
-            tot = hstack((tot, p_mean))
+            tot = np.hstack((tot, p_mean))
 
         arcnt = 0
         for a in timeObj:
@@ -152,7 +153,7 @@ for year in years:
                 "PCRaster",
                 lon,
                 lat[::-1],
-                flipud(p_select[arcnt, :, :]),
+                np.flipud(p_select[arcnt, :, :]),
                 -999.0,
             )
             arcnt = arcnt + 1
