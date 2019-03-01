@@ -978,7 +978,7 @@ class LandSurface(object):
         window_size = 1.25 * pcr.clone().cellSize()
         window_size = pcr.min(
             window_size,
-            pcr.min(pcr.clone().nrRows(), pcr.clone().nrCols())
+            pcr.min(pcr.scalar(pcr.clone().nrRows()), pcr.scalar(pcr.clone().nrCols()))
             * pcr.clone().cellSize(),
         )
         try:

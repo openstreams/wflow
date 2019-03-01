@@ -1133,7 +1133,7 @@ def readPCRmapClone(
         PCRmap = (
             None
         )  # 29 July: I made an experiment by changing the type of this object.
-    elif not re.match(r"[0-9.-]*$", v):
+    elif not re.match(r"[0-9.-]*$", str(v)):
         if absolutePath != None:
             v = getFullPath(v, absolutePath)
         # print(v)
