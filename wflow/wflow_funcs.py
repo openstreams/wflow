@@ -152,7 +152,7 @@ def kin_wave(rnodes, rnodes_up, Qold, q, Alpha, Beta, DCL, River, deltaT):
 
 
 @jit(nopython=True)
-def kinematic_wave_ssf(ssf_in, ssf_old, zi_old, r, Ks_hor, Ks , slope, neff, f, D, dt, dx, w, ssf_max):
+def kinematic_wave_ssf(ssf_in, ssf_old, zi_old, r, Ks_hor, Ks ,slope ,neff, f, D, dt, dx, w, ssf_max):
     
     epsilon = 1e-6
     MAX_ITERS = 3000
@@ -164,7 +164,7 @@ def kinematic_wave_ssf(ssf_in, ssf_old, zi_old, r, Ks_hor, Ks , slope, neff, f, 
         ssf_n = (ssf_in + ssf_old)/2.
         count = 0        
         
-        zi = zi_old - (ssf_in + r*dx - ssf_n)/(w*dx)/neff         
+        zi = max(zi_old - (ssf_in + r*dx - ssf_n)/(w*dx)/neff, D)       
         Cn = (Ks_hor*Ks*np.exp(-f*zi)*slope)/neff      
         c = (dt/dx)*ssf_in + 1./Cn*ssf_old + dt*(r)
     
@@ -178,7 +178,7 @@ def kinematic_wave_ssf(ssf_in, ssf_old, zi_old, r, Ks_hor, Ks , slope, neff, f, 
                 
         while abs(fQ) > epsilon and count < MAX_ITERS:
             
-            zi = zi_old - (ssf_in + r*dx - ssf_n)/(w*dx)/neff
+            zi = max(zi_old - (ssf_in + r*dx - ssf_n)/(w*dx)/neff, D)
             Cn = (Ks_hor*Ks*np.exp(-f*zi)*slope)/neff
             c = (dt/dx)*ssf_in + 1./Cn*ssf_old + dt*(r)
             
