@@ -5,7 +5,7 @@ channels:
   - defaults
 
 dependencies:
-  - python>=3.6
+  - python=3.6
   - numpy>=1.12
   - scipy>=1.0
   - gdal>=2.2.4

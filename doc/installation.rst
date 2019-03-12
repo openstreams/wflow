@@ -1,7 +1,7 @@
 Installation
 ============
 
-The main dependencies for wflow are an installation of Python 3.6+, and PCRaster 4.2+.
+The main dependencies for wflow are an installation of Python 3.6, and PCRaster 4.2+.
 Only 64 bit OS/Python is supported.
 
 *Installing Python*

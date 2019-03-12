@@ -23,7 +23,7 @@ setup(
     author_email="wflow@deltares.nl",
     url="http://wflow.readthedocs.io/",
     license="GPL",
-    python_requires=">=3.6",
+    python_requires="==3.6",
     install_requires=[
         "numpy",
         "scipy",
