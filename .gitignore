@@ -67,3 +67,12 @@ ENV/
 
 # PyCharm
 .idea
+
+# wflow
+*.csv
+*.nc
+*.tss
+*.ini
+*.map
+runinfo
+intbl
