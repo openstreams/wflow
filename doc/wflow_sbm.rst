@@ -144,19 +144,24 @@ using the local drainage network. To use it set the variable MassWasting in the 
 
 Glaciers
 --------
-If snow modeling is enabled Glacier modelling can also be enabled by including the following three entries
-in the modelparameters section:
+wflow\_sbm can model glacier processes if the snow model is enabled. Glacier modelling is very close to 
+snow modelling and considers two main processes: glacier build-up from snow turning into firn/ice (using 
+the HBV-light model) and glacier melt (using a temperature degree-day model).
 
-::
-    [modelparameters]
-    GlacierFrac=staticmaps/GlacierFrac.map,staticmap,0.0,0
-    G_TT=intbl/G_TT.tbl,tbl,0.0,1,staticmaps/GlacierFrac.map
-    G_Cfmax=intbl/G_Cfmax.tbl,tbl,3.0,1,staticmaps/GlacierFrac.map
+The definition of glacier boundaries and initial volume is defined in two staticmaps. *GlacierFrac* is a map 
+that gives the fraction of each grid cell covered by a glacier as a number between zero and one. *GlacierStore* 
+is a state map that gives the amount of water (in mm w.e.) within the glaciers at each gridcell. Because the 
+glacier store (GlacierStore.map) cannot be initialized by running the model for a couple of years, a default 
+initial state map should be supplied by placing a GlacierStore.map file in the staticmaps directory. These two 
+maps are prepared from available glacier datasets.
 
+First, a fixed fraction of the snowpack on top of the glacier is converted into ice for each timestep and added 
+to the glacier store using the HBV-light model (Seibert et al.,2017). This fraction, defined in the lookup table 
+*G_SIfrac*, typically ranges from 0.001 to 0.006.
 
-*GlacierFrac* is a map that gives the fraction of each grid cell covered by a glacier as a number between zero and one.
-Furthermore two lookup tables must be defined: *G\_TT* and *G\_Cfmax*. If the air temperature,
-:math:`T_{a}`, is below  :math:`G\_TT (\approx0^{o}C)`
+Then, when the snowpack on top of the glacier is almost all melted (snow cover < 10 mm), glacier melt is enabled 
+and estimated with a degree-day model. If the air temperature,
+:math:`T_{a}`, is below a certain threshold  :math:`G\_TT (\approx0^{o}C)`
 precipitation occurs as snowfall, whereas it occurs as rainfall if
 :math:`T_{a}\geq G\_TT`.
 
@@ -164,19 +169,28 @@ With this the rate of glacier melt in mm is estimated as:
 
 .. math::
 
-    Q_{m}  =  cfmax(T_{a}-G\_TT)\;\;;T_{a}>G\_TT
+    Q_{m}  =  G\_Cfmax(T_{a}-G\_TT)\;\;;T_{a}>G\_TT
 
-where :math:`Q_{m}` is the rate of glacier meltand $cfmax$ is the melting factor in :math:`mm/(^{o}C*day)`.
+where :math:`Q_{m}` is the rate of glacier melt and :math:`G\_Cfmax` is the melting factor in :math:`mm/(^{o}C*day)`.
+Parameters *G_TT* and *G_Cfmax* are defined in two lookup tables. *G_TT* can be taken as equal to the snow TT parameter.
+Values of the melting factor normally varies from one glacier to another and some values are reported in the literature. 
+*G_Cfmax* can also be estimated by multiplying snow Cfmax by a factor between 1 and 2, to take into account the higher 
+albedo of ice compared to snow. 
 
-Accumulated snow on top of the glacier is converted to ice (and will thus become part of the glacier store) if
-the total snow depth > 8300 mm. An S-curve is used to smooth the transition. A maximum of 8mm/day can be converted to ice.
 
-.. plot:: plots/glacier-plot.py
+If snow modeling is enabled, Glacier modelling can also be enabled by including the following four entries in the 
+modelparameters section:
 
+::
 
-Becuase the glacier store (GlacierStore.map) cannot be initialized by running the model a couple of year a default
-initial state map should be supplied by placing a GlacierStore.map file in the staticmaps directory. This map gives
-the amount of water (in mm) within the Glaciers at each gridcell)
+    [modelparameters]
+    GlacierFrac=staticmaps/GlacierFrac.map,staticmap,0.0,0
+    G_TT=intbl/G_TT.tbl,tbl,0.0,1,staticmaps/GlacierFrac.map
+    G_Cfmax=intbl/G_Cfmax.tbl,tbl,3.0,1,staticmaps/GlacierFrac.map
+	G_SIfrac=intbl/G_SIfrac.tbl,tbl,0.001,1,staticmaps/GlacierFrac.map
+
+The initial glacier volume GlacierStore.map should also be added in the staticmaps folder.
+
 
 The rainfall interception model
 -------------------------------

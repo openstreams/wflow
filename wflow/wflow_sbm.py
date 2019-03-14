@@ -383,31 +383,6 @@ def SnowPackHBV(Snow, SnowWater, Precipitation, Temperature, TTI, TT, TTM, Cfmax
     return Snow, SnowWater, SnowMelt, RainFall, SnowFall
 
 
-def GlacierMelt(GlacierStore, Snow, Temperature, TT, Cfmax):
-    """
-    Glacier modelling using a Temperature degree factor. Melting
-    only occurs if the snow cover > 10 mm
-
-
-    :ivar GlacierStore:
-    :ivar Snow: Snow pack on top of Glacier
-    :ivar Temperature:
-
-    :returns: GlacierStore,GlacierMelt,
-    """
-
-    PotMelt = pcr.ifthenelse(
-        Temperature > TT, Cfmax * (Temperature - TT), pcr.scalar(0.0)
-    )  # Potential snow melt, based on temperature
-
-    GlacierMelt = pcr.ifthenelse(
-        Snow > 10.0, pcr.min(PotMelt, GlacierStore), pcr.cover(0.0)
-    )  # actual Glacier melt
-    GlacierStore = GlacierStore - GlacierMelt  # dry snow content
-
-    return GlacierStore, GlacierMelt
-
-
 class WflowModel(pcraster.framework.DynamicModel):
     """
     .. versionchanged:: 0.91
@@ -1886,33 +1861,21 @@ class WflowModel(pcraster.framework.DynamicModel):
             if hasattr(self, "GlacierFrac"):
                 """
                 Run Glacier module and add the snowpack on-top of it.
-                Snow becomes ice when pressure is about 830 k/m^2, e.g 8300 mm
-                If below that a max amount of 2mm/day can be converted to glacier-ice
+                Estimate the fraction of snow turned into ice (HBV-light).
+                Estimate glacier melt.
+                glacierHBV function in wflow_lib.py
                 """
-                # TODO: document glacier module
-                self.snowdist = sCurve(self.Snow, a=8300.0, c=0.06)
-                self.Snow2Glacier = pcr.ifthenelse(
-                    self.Snow > 8300, self.snowdist * (self.Snow - 8300), self.ZeroMap
-                )
 
-                self.Snow2Glacier = pcr.ifthenelse(
-                    self.GlacierFrac > 0.0, self.Snow2Glacier, self.ZeroMap
-                )
-                # Max conversion to 8mm/day
-                self.Snow2Glacier = (
-                    pcr.min(self.Snow2Glacier, 8.0)
-                    * self.timestepsecs
-                    / self.basetimestep
-                )
-
-                self.Snow = self.Snow - (self.Snow2Glacier * self.GlacierFrac)
-
-                self.GlacierStore, self.GlacierMelt = GlacierMelt(
-                    self.GlacierStore + self.Snow2Glacier,
+                self.Snow, self.Snow2Glacier, self.GlacierStore, self.GlacierMelt = glacierHBV(
+                    self.GlacierFrac,
+                    self.GlacierStore,
                     self.Snow,
                     self.Temperature,
                     self.G_TT,
                     self.G_Cfmax,
+                    self.G_SIfrac,
+                    self.timestepsecs,
+                    self.basetimestep
                 )
                 # Convert to mm per grid cell and add to snowmelt
                 self.GlacierMelt = self.GlacierMelt * self.GlacierFrac

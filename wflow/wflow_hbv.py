@@ -169,6 +169,9 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         if hasattr(self, "ReserVoirComplexLocs"):
             states.append("ReservoirWaterLevel")
+            
+        if hasattr(self, "GlacierFrac"):
+            states.append("GlacierStore")
 
         return states
 
@@ -337,6 +340,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         pcr.setglobaloption("unittrue")
 
         self.thestep = pcr.scalar(0)
+        self.basetimestep = 86400
 
         #: files to be used in case of timesries (scalar) input to the model
 
@@ -1027,6 +1031,11 @@ class WflowModel(pcraster.framework.DynamicModel):
                 self.ReservoirVolume = self.ResMaxVolume * self.ResTargetFullFrac
             if hasattr(self, "ReserVoirComplexLocs"):
                 self.ReservoirWaterLevel = pcr.cover(0.0)
+            if hasattr(self, "GlacierFrac"):
+                self.GlacierStore = self.wf_readmap(
+                    os.path.join(self.Dir, "staticmaps", "GlacierStore.map"),
+                    55.0 * 1000,
+                )
         else:
             self.wf_resume(os.path.join(self.Dir, "instate"))
 
@@ -1190,6 +1199,7 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         self.SnowCover = pcr.ifthenelse(self.DrySnow > 0, pcr.scalar(1), pcr.scalar(0))
         self.NrCell = pcr.areatotal(self.SnowCover, self.TopoId)
+        
 
         # first part of precipitation is intercepted
         # Interception=pcr.min(InSoil,self.ICF-self.InterceptionStorage)#: Interception in mm/timestep
@@ -1219,6 +1229,31 @@ class WflowModel(pcraster.framework.DynamicModel):
         else:
             SnowFluxFrac = self.ZeroMap
             MaxFlux = self.ZeroMap
+            
+        if hasattr(self, "GlacierFrac"):
+            """
+            Run Glacier module and add the snowpack on-top of it.
+            Estimate the fraction of snow turned into ice (HBV-light).
+            Estimate glacier melt.
+            glacierHBV function in wflow_lib.py
+            """
+
+            self.DrySnow, self.Snow2Glacier, self.GlacierStore, self.GlacierMelt = glacierHBV(
+                self.GlacierFrac,
+                self.GlacierStore,
+                self.DrySnow,
+                self.Temperature,
+                self.G_TT,
+                self.G_Cfmax,
+                self.G_SIfrac,
+                self.timestepsecs,
+                self.basetimestep
+            )
+            # Convert to mm per grid cell and add to snowmelt
+            self.GlacierMelt = self.GlacierMelt * self.GlacierFrac
+            self.FreeWater = (
+                self.FreeWater + self.GlacierMelt
+            )
 
         # IntEvap=pcr.min(self.InterceptionStorage,self.PotEvaporation)  #: Evaporation from interception storage
         # self.InterceptionStorage=self.InterceptionStorage-IntEvap

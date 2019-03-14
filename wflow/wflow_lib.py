@@ -322,6 +322,61 @@ def complexreservoir(
 
 Verbose = 0
 
+def glacierHBV(GlacierFrac, 
+                GlacierStore, 
+                Snow, 
+                Temperature, 
+                TT, 
+                Cfmax, 
+                G_SIfrac,
+                timestepsecs,
+                basetimestep):
+    """
+    Run Glacier module and add the snowpack on-top of it.
+    First, a fraction of the snowpack is converted into ice using the HBV-light
+    model (fraction between 0.001-0.005 per day).
+    Glacier melting is modelled using a Temperature degree factor and only
+    occurs if the snow cover < 10 mm.
+
+
+    :ivar GlacierFrac: Fraction of wflow cell covered by glaciers
+    :ivar GlacierStore: Volume of the galcier in the cell in mm w.e.
+    :ivar Snow: Snow pack on top of Glacier
+    :ivar Temperature: Air temperature
+    :ivar TT: Temperature threshold for ice melting
+    :ivar Cfmax: Ice degree-day factor in mm/(°C/day)
+    :ivar G_SIfrac: Fraction of the snow part turned into ice each timestep
+    :ivar timestepsecs: Model timestep in seconds
+    :ivar basetimestep: Model base timestep (86 400 seconds)
+
+    :returns: Snow,Snow2Glacier,GlacierStore,GlacierMelt,
+    """
+    
+    #Fraction of the snow transformed into ice (HBV-light model)
+    Snow2Glacier = G_SIfrac * Snow
+
+    Snow2Glacier = pcr.ifthenelse(
+        GlacierFrac > 0.0, Snow2Glacier, pcr.scalar(0.0)
+    )
+    # Max conversion to 8mm/day
+    Snow2Glacier = (
+        pcr.min(Snow2Glacier, 8.0) * timestepsecs / basetimestep
+    )
+
+    Snow = Snow - (Snow2Glacier * GlacierFrac)
+    GlacierStore = GlacierStore + Snow2Glacier
+
+    PotMelt = pcr.ifthenelse(
+        Temperature > TT, Cfmax * (Temperature - TT), pcr.scalar(0.0)
+    )  # Potential snow melt, based on temperature
+
+    GlacierMelt = pcr.ifthenelse(
+        Snow < 10.0, pcr.min(PotMelt, GlacierStore), pcr.cover(0.0)
+    )  # actual Glacier melt
+    GlacierStore = GlacierStore - GlacierMelt  # dry snow content
+
+    return Snow, Snow2Glacier, GlacierStore, GlacierMelt
+
 
 def lddcreate_save(
     lddname,
