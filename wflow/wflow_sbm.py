@@ -223,7 +223,7 @@ def actEvap_unsat_SBM(
 
 
 @jit(nopython=True)    
-def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, timestepsecs, basetimestep, deltaT, nrpaddyirri, shape, TransferMethod, ust=0):
+def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, timestepsecs, basetimestep, deltaT, nrpaddyirri, shape, TransferMethod, reInfilt, ust=0):
         
     shape_layer = layer['UStoreLayerThickness'].shape
     
@@ -256,7 +256,7 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, timestepsecs, 
                 
             z = L.cumsum()
                 
-            ActEvapUStore = 0.0
+            dyn['ActEvapUStore'][idx] = 0.0
             
             if static['River'][idx]:
                 ind = np.where(ldd_[nbs] != ldd_[idx])
@@ -266,17 +266,26 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, timestepsecs, 
                 ssf_in = np.sum((1-chanperc)*ssf_new[nbs])
                 dyn['ssf_toriver'][idx] = np.sum((chanperc)*ssf_new[nbs])/(1000*1000*1000)/timestepsecs
                 
-                qo_in = np.sum((1-chanperc)*qo_new[nbs])
-                dyn['qo_toriver'][idx] = np.sum(chanperc*qo_new[nbs])
+                if static['SW'][idx] > 0:
+                    qo_in = np.sum((1-chanperc)*qo_new[nbs])
+                    dyn['qo_toriver'][idx] = np.sum(chanperc*qo_new[nbs])
+                else:
+                    qo_in = 0.0
+                    dyn['qo_toriver'][idx] = np.sum(qo_new[nbs])    
             else:
                 ssf_in = np.sum(ssf_new[nbs])
                 qo_in = np.sum(qo_new[nbs])
             
             dyn['CellInFlow'][idx] = ssf_in
-            UStoreCapacity = static['SoilWaterCapacity'][idx] - dyn['SatWaterDepth'][idx] - layer['UStoreLayerDepth'][:,idx].sum()
+            dyn['Qo_in'][idx] = qo_in
+            UStoreCapacity = static['SoilWaterCapacity'][idx] - dyn['SatWaterDepth'][idx] - layer['UStoreLayerDepth'][n,idx].sum()
             
-            Qo_inMM = qo_in * timestepsecs / (static['xl'][idx]*static['yl'][idx]) * 1000 
-            
+            if reInfilt:
+                Qo_inMM = ((qo_in * timestepsecs) / (static['xl'][idx]*static['yl'][idx])) * 1000
+                qo_in = 0.0
+            else:
+                Qo_inMM = 0.0
+                        
             SoilInf = (dyn['AvailableForInfiltration'][idx] + Qo_inMM) * (1 - static['PathFrac'][idx])
             PathInf = (dyn['AvailableForInfiltration'][idx] + Qo_inMM) * static['PathFrac'][idx]
             if modelSnow:
@@ -315,14 +324,13 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, timestepsecs, 
                     if shape_layer[0] == 1:
                         soilevapsat = 0.0
                     else:
-                        if len(L)==1:
+                        if len(L) == 1:
                             soilevapsat = dyn['restEvap'][idx] * min(1.0, (layer['UStoreLayerThickness'][m,idx] - dyn['zi'][idx])/ layer['UStoreLayerThickness'][m,idx])
                             soilevapsat = min(soilevapsat, (layer['UStoreLayerThickness'][m,idx] - dyn['zi'][idx]) * (static['thetaS'][idx] - static['thetaR'][idx]))
                         else:
                            soilevapsat = 0.0 
                     
                     dyn['soilevap'][idx] = soilevapunsat + soilevapsat
-                    
                     dyn['SatWaterDepth'][idx] = dyn['SatWaterDepth'][idx] - soilevapsat
                     
                     # evaporation available for transpiration
@@ -350,8 +358,8 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, timestepsecs, 
                                 st = layer['KsatVerFrac'][m,idx] * static['KsatVer'][idx] * (min(layer['UStoreLayerDepth'][m,idx],L[m]*(static['thetaS'][idx]-static['thetaR'][idx]))/Sd)   
                         else:    
                             st = layer['KsatVerFrac'][m,idx] * static['KsatVer'][idx] * np.exp(-static['f'][idx] * z[m]) * min((layer['UStoreLayerDepth'][m,idx]/(L[m] * (static['thetaS'][idx]-static['thetaR'][idx])))**layer['c'][m,idx],1.0)
-                        ast = min(st,layer['UStoreLayerDepth'][m,idx])
-                        layer['UStoreLayerDepth'][m,idx] = layer['UStoreLayerDepth'][m,idx] - ast
+                            ast = min(st,layer['UStoreLayerDepth'][m,idx])
+                            layer['UStoreLayerDepth'][m,idx] = layer['UStoreLayerDepth'][m,idx] - ast
                     else: 
                         ast = 0.0
                     
@@ -366,6 +374,7 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, timestepsecs, 
                         ast = min(st,layer['UStoreLayerDepth'][m,idx])
                     else:
                         ast = 0.0
+                    
                     layer['UStoreLayerDepth'][m,idx] = layer['UStoreLayerDepth'][m,idx] - ast
                     
             dyn['Transfer'][idx] = ast
@@ -382,7 +391,7 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, timestepsecs, 
             
             UStoreCapacity = static['SoilWaterCapacity'][idx] - dyn['SatWaterDepth'][idx] - layer['UStoreLayerDepth'][n,idx].sum()
             
-            MaxCapFlux = max(0.0, min(Ksat, ActEvapUStore, UStoreCapacity, dyn['SatWaterDepth'][idx]))
+            MaxCapFlux = max(0.0, min(Ksat, dyn['ActEvapUStore'][idx], UStoreCapacity, dyn['SatWaterDepth'][idx]))
             
             if dyn['zi'][idx] > static['ActRootingDepth'][idx]:
                 CapFluxScale = static['CapScale'][idx] / (static['CapScale'][idx] + dyn['zi'][idx] - static['ActRootingDepth'][idx]) * timestepsecs / basetimestep
@@ -406,7 +415,6 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, timestepsecs, 
             dyn['ActLeakage'][idx] = max(0.0, min(static['MaxLeakage'][idx], DeepTransfer))
                                                   
             r = (ast - actCapFlux - dyn['ActLeakage'][idx] - dyn['ActEvapSat'][idx] - soilevapsat) * static['DW'][idx]*1000
-                       
             ssf_new[idx], dyn['zi'][idx], ExfiltSatWater = kinematic_wave_ssf(ssf_in, dyn['ssf'][idx], dyn['zi'][idx], r, static['KsatHorFrac'][idx], 
                                               static['KsatVer'][idx], static['slope'][idx], static['neff'][idx], static['f'][idx], 
                                               static['SoilThickness'][idx], deltaT, static['DL'][idx]*1000, static['DW'][idx]*1000, static['ssfmax'][idx])
@@ -429,10 +437,9 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, timestepsecs, 
                 layer['UStoreLayerDepth'][k,idx] = layer['UStoreLayerDepth'][k,idx] - ExfiltFromUstore
                 if k > 0:
                     layer['UStoreLayerDepth'][k-1,idx] = layer['UStoreLayerDepth'][k-1,idx] + ExfiltFromUstore
-                    
 
             dyn['ExfiltWater'][idx] = ExfiltSatWater + ExfiltFromUstore
-            dyn['ExcessWater'][idx] = dyn['AvailableForInfiltration'][idx] - InfiltSoilPath + du    
+            dyn['ExcessWater'][idx] = dyn['AvailableForInfiltration'][idx] + Qo_inMM - InfiltSoilPath + du    
             dyn['ActInfilt'][idx] = InfiltSoilPath - du
             
             dyn['SoilWatbal'][idx] = (dyn['ActInfilt'][idx] - ((dyn['SatWaterDepth'][idx] + layer['UStoreLayerDepth'][:,idx].sum()) - (sumUSold +SWDold)) +
@@ -448,7 +455,7 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, timestepsecs, 
             dyn['InwaterO'][idx] = max(dyn['ExfiltWater'][idx] + dyn['ExcessWater'][idx] + dyn['RunoffLandCells'][idx] - dyn['ActEvapOpenWaterLand'][idx] - ponding_add, 0.0) * (static['xl'][idx] * static['yl'][idx]) * 0.001 / timestepsecs
             q = dyn['InwaterO'][idx] / static['DL'][idx]
             
-            qo_new[idx] = kinematic_wave(0.0, dyn['LandRunoff'][idx], q, dyn['AlphaL'][idx], static['Beta'][idx], timestepsecs, static['DL'][idx])
+            qo_new[idx] = kinematic_wave(qo_in, dyn['LandRunoff'][idx], q, dyn['AlphaL'][idx], static['Beta'][idx], timestepsecs, static['DL'][idx])
             
             # volumetric water contents per soil layer and root zone            
             for k in range(layer['UStoreLayerThickness'][:,idx].size):
@@ -614,7 +621,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         
         self.dyn['AlphaR'] = pcr.pcr2numpy(self.AlphaR,self.mv).ravel()
         
-        self.WaterLevelL = (self.AlphaL * pow(self.LandRunoff, self.Beta)) / self.SW
+        self.WaterLevelL = pcr.ifthenelse( self.SW > 0, (self.AlphaL * pow(self.LandRunoff, self.Beta)) / self.SW, 0.0)
         
         Pl = self.SW + (2 * self.WaterLevelL)
         # Alpha
@@ -1727,12 +1734,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         )
         
         self.WaterFrac = pcr.max(self.WaterFrac - self.RiverFrac, 0)
-
-                
-            
         
-        #self.WaterFrac = pcr.min(1.0, self.WaterFrac + self.RiverFrac)
-
         # term for Alpha
         # Correct slope for extra length of the river in a gridcel
         riverslopecor = drainlength / self.DCL
@@ -1769,7 +1771,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.DW = (self.xl * self.yl)/self.DL
         
         # width for overland kinematic reservoir        
-        self.SW = pcr.ifthenelse(self.River, self.DW - self.RiverWidth, self.DW)
+        self.SW = pcr.ifthenelse(self.River, pcr.max(self.DW - self.RiverWidth,0), self.DW)
         
         layer_dtype = np.dtype(
                 [('c', np.float64),
@@ -1902,7 +1904,8 @@ class WflowModel(pcraster.framework.DynamicModel):
                  ('RootStore_unsat', np.float64),
                  ('CellInFlow', np.float64),
                  ('InwaterO', np.float64),
-                 ('SoilWatbal', np.float64)
+                 ('SoilWatbal', np.float64),
+                 ('Qo_in', np.float64),
                  ])        
         
         self.dyn = np.zeros(np_zeros.size, dtype=dyn_dtype)
@@ -1953,6 +1956,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             "self.reallength",
             "self.DCL",
             "self.Bw",
+            "self.SW",
             "self.PathInfiltExceeded",
             "self.SoilInfiltExceeded",
             "self.DW",
@@ -2317,6 +2321,9 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.dyn['ActEvapOpenWaterLand'] = pcr.pcr2numpy(self.ActEvapOpenWaterLand,self.mv).ravel()
 
         self.RestEvap = self.PotTransSoil - self.ActEvapOpenWaterRiver - self.ActEvapOpenWaterLand
+        
+        ###added lines below for testing###
+        self.pcrRestEvap = self.RestEvap
 
         self.ActEvapPond = self.ZeroMap
         if self.nrpaddyirri > 0:
@@ -2406,6 +2413,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                                              self.nrpaddyirri,
                                              self.shape,
                                              self.TransferMethod,
+                                             self.reInfilt,
                                              self.UST
                                              )
 
@@ -2422,10 +2430,11 @@ class WflowModel(pcraster.framework.DynamicModel):
         
         # Determine transpiration
         self.Transpiration = (pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ActEvapUStore'].reshape(self.shape)),self.mv) + 
-                              pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ActEvapSat'].reshape(self.shape)),self.mv))
-                                      
+                              pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ActEvapSat'].reshape(self.shape)),self.mv))              
+                      
         self.ActEvap = (
-                pcr.numpy2pcr(pcr.Scalar,self.dyn['soilevap'].reshape(self.shape),self.mv)
+                pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['soilevap'].reshape(self.shape)),self.mv)
+                + self.Transpiration
                 + self.ActEvapOpenWaterRiver
                 + self.ActEvapOpenWaterLand
                 + self.ActEvapPond
@@ -2662,10 +2671,15 @@ class WflowModel(pcraster.framework.DynamicModel):
         )
         
 
-        self.InwaterL = pcr.numpy2pcr(pcr.Scalar, np.copy(self.dyn['InwaterO'].reshape(self.shape)), self.mv)
-        
+        self.InwaterL = pcr.numpy2pcr(pcr.Scalar, np.copy(self.dyn['InwaterO'].reshape(self.shape)), self.mv)        
+        if self.reInfilt:
+            self.InflowKinWaveCellLand = self.ZeroMap
+        else:
+            self.InflowKinWaveCellLand = pcr.numpy2pcr(pcr.Scalar, np.copy(self.dyn['Qo_in'].reshape(self.shape)), self.mv)
+                        
         self.MassBalKinWaveL = (
             (-self.KinWaveVolumeL + self.OldKinWaveVolumeL) / self.timestepsecs
+            + self.InflowKinWaveCellLand
             + self.InwaterL
             - self.LandRunoff
         )

@@ -144,7 +144,7 @@ def kin_wave(rnodes, rnodes_up, Qold, q, Alpha, Beta, DCL, River, deltaT):
         for j in range(len(rnodes[i])):
             idx = rnodes[i][j]
             nbs = rnodes_up[i][j]
-            #if River[idx]:
+
             Qin = np.sum(Qnew[nbs])
             Qnew[idx] = kinematic_wave(Qin, Qold[idx], q[idx], Alpha[idx], Beta[idx], deltaT, DCL[idx])
     # remove last value from array and reshape to original format
@@ -157,16 +157,16 @@ def kinematic_wave_ssf(ssf_in, ssf_old, zi_old, r, Ks_hor, Ks ,slope ,neff, f, D
     epsilon = 1e-6
     MAX_ITERS = 3000
         
-    if ((ssf_in+ssf_old+r) == 0.):
+    if (max(ssf_in+ssf_old+r,0.) == 0.):
         return 0., D, 0.
     else:
         #initial estimate
         ssf_n = (ssf_in + ssf_old)/2.
         count = 0        
         
-        zi = max(zi_old - (ssf_in + r*dx - ssf_n)/(w*dx)/neff, D)       
-        Cn = (Ks_hor*Ks*np.exp(-f*zi)*slope)/neff      
-        c = (dt/dx)*ssf_in + 1./Cn*ssf_old + dt*(r)
+        zi = np.log(f*ssf_n/(w*Ks_hor*Ks*slope) + np.exp(-f*D))/-f
+        Cn = (Ks_hor*Ks*slope)/neff * np.exp(-f*zi)     
+        c = (dt/dx)*ssf_in + 1./Cn*ssf_n + dt*(r-(zi_old-zi)*neff*w)
     
         fQ = (dt/dx)*ssf_n + 1./Cn*ssf_n - c      
         dfQ = (dt/dx) + 1./Cn        
@@ -178,9 +178,9 @@ def kinematic_wave_ssf(ssf_in, ssf_old, zi_old, r, Ks_hor, Ks ,slope ,neff, f, D
                 
         while abs(fQ) > epsilon and count < MAX_ITERS:
             
-            zi = max(zi_old - (ssf_in + r*dx - ssf_n)/(w*dx)/neff, D)
-            Cn = (Ks_hor*Ks*np.exp(-f*zi)*slope)/neff
-            c = (dt/dx)*ssf_in + 1./Cn*ssf_old + dt*(r)
+            zi = np.log(f*ssf_n/(w*Ks_hor*Ks*slope) + np.exp(-f*D))/-f
+            Cn = (Ks_hor*Ks*slope)/neff * np.exp(-f*zi) 
+            c = (dt/dx)*ssf_in + 1./Cn*ssf_n + dt*(r-(zi_old-zi)*neff*w)
             
             fQ = (dt/dx)*ssf_n + 1./Cn*ssf_n - c
             dfQ = (dt/dx) + 1./Cn          
@@ -193,8 +193,8 @@ def kinematic_wave_ssf(ssf_in, ssf_old, zi_old, r, Ks_hor, Ks ,slope ,neff, f, D
             count = count + 1
         
         ssf_n =  min(ssf_n,(ssf_max*w))
-        zi = zi_old - (ssf_in + r*dx - ssf_n)/(w*dx)/neff
-        exfilt = min(0,zi) * -neff
+        #exfilt = min(0,zi) * -neff
+        exfilt = min(zi_old - (ssf_in + r*dx - ssf_n)/(w*dx)/neff,0.0) * -neff
         zi = max(0,zi)
         
         return ssf_n, zi, exfilt   
