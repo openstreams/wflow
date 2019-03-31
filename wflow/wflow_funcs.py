@@ -134,21 +134,35 @@ def kinematic_wave(Qin,Qold,q,alpha,beta,deltaT,deltaX):
 
 
 @jit(nopython=True)
-def kin_wave(rnodes, rnodes_up, Qold, q, Alpha, Beta, DCL, River, deltaT):
-    shape = Qold.shape
-    # flat new state
-    Qnew = np.zeros(Qold.size, dtype=np.float64)
-    # append zero to end to deal with nodata (-1) in indices
-    Qnew = np.concatenate((Qnew, np.array([0], dtype=np.float64)))
-    for i in range(len(rnodes)):
-        for j in range(len(rnodes[i])):
-            idx = rnodes[i][j]
-            nbs = rnodes_up[i][j]
+def kin_wave(rnodes, rnodes_up, Qold, q, Alpha, Beta, DCL, River, Bw, AlpTermR, AlpPow, deltaT, it=1):
+    
+    acc_flow = np.zeros(Qold.size, dtype=np.float64)
+    acc_flow = np.concatenate((acc_flow, np.array([0], dtype=np.float64)))
 
-            Qin = np.sum(Qnew[nbs])
-            Qnew[idx] = kinematic_wave(Qin, Qold[idx], q[idx], Alpha[idx], Beta[idx], deltaT, DCL[idx])
+
+    for v in range(0,it):
+        shape = Qold.shape
+        # flat new state
+        Qnew = np.zeros(Qold.size, dtype=np.float64)
+        # append zero to end to deal with nodata (-1) in indices
+        Qnew = np.concatenate((Qnew, np.array([0], dtype=np.float64)))
+
+        for i in range(len(rnodes)):
+            for j in range(len(rnodes[i])):
+                idx = rnodes[i][j]
+                nbs = rnodes_up[i][j]
+    
+                Qin = np.sum(Qnew[nbs])
+                Qnew[idx] = kinematic_wave(Qin, Qold[idx], q[idx], Alpha[idx], Beta[idx], deltaT/it, DCL[idx])
+        
+                acc_flow[idx] = acc_flow[idx] + Qnew[idx] * (deltaT/it)
+                WaterLevelR = (Alpha[idx] * np.power(Qnew[idx], Beta[idx])) / Bw[idx]
+                Pr = Bw[idx] + (2.0 * WaterLevelR)
+                Alpha[idx] = AlpTermR[idx] * np.power(Pr, AlpPow[idx])
+                Qold[idx]= Qnew[idx]
     # remove last value from array and reshape to original format
-    return Qnew[:-1].reshape(shape)
+    return acc_flow[:-1].reshape(shape)
+    #return Qnew[:-1].reshape(shape)
 
 
 @jit(nopython=True)
