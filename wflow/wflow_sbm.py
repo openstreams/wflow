@@ -222,7 +222,7 @@ def actEvap_unsat_SBM(
     return UStoreDepth, sumActEvapUStore, RestPotEvap
 
 
-@jit(nopython=False)    
+@jit(nopython=True)    
 def infiltration(AvailableForInfiltration, PathFrac, cf_soil, TSoil,InfiltCapSoil,InfiltCapPath, UStoreCapacity, modelSnow ):
     
     SoilInf = AvailableForInfiltration  * (1 - PathFrac)
@@ -239,7 +239,7 @@ def infiltration(AvailableForInfiltration, PathFrac, cf_soil, TSoil,InfiltCapSoi
     return InfiltSoilPath
 
 
-@jit(nopython=False)  
+@jit(nopython=True)  
 def unsatzone_flow(UStoreLayerDepth, InfiltSoilPath, L, z, KsatVerFrac, c, KsatVer, f, thetaS, thetaR, SoilWaterCapacity, SWDold, shape_layer, TransferMethod, idx, toSatZone=1):
     
     m = 0
@@ -279,7 +279,7 @@ def unsatzone_flow(UStoreLayerDepth, InfiltSoilPath, L, z, KsatVerFrac, c, KsatV
     return ast, UStoreLayerDepth
     
     
-@jit(nopython=False)    
+@jit(nopython=True)    
 def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, timestepsecs, basetimestep, deltaT, nrpaddyirri, shape, TransferMethod, reInfilt, it_kinL=1, ust=0):
         
     shape_layer = layer['UStoreLayerThickness'].shape
@@ -501,7 +501,7 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, timestepsecs, 
 
     q = dyn['InwaterO'] / static['DL']
     for v in range(0,it_kinL):
-                
+	
         qo_new = np.zeros(dyn['LandRunoff'].size, dtype=dyn['LandRunoff'].dtype)
         qo_new = np.concatenate((qo_new, np.array([0], dtype=dyn['LandRunoff'].dtype)))
         
@@ -2533,7 +2533,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 it_kinL = int(1.25*(np.nanpercentile(np_courantL,90)))
             except:
                 it_kinL = int(max(self.timestepsecs / 3600.0, 1.0))
-                
+
         ssf, qo, self.dyn, self.layer  = sbm_cell(self.nodes, 
                                              self.nodes_up,
                                              self.np_ldd.ravel(),
@@ -2661,6 +2661,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         
         RiverRunoff = pcr.pcr2numpy(self.RiverRunoff,self.mv).ravel()
         
+        it_kinR=1
         if self.kinwaveIters == 1:
             self.celerityR = pcr.ifthen(self.WaterLevelR >= 0.05, self.Beta * self.WaterLevelR**(2.0/3.0) * ((self.riverSlope**(0.5))/self.NRiver))
             self.courantR = (self.timestepsecs / self.DCL) * self.celerityR
@@ -2671,7 +2672,6 @@ class WflowModel(pcraster.framework.DynamicModel):
             except:
                 it_kinR = int(max(self.timestepsecs / 3600.0, 1.0))
             
-        it_kinR=1       
         acc_flow = kin_wave(
                 self.rnodes,
                 self.rnodes_up,
