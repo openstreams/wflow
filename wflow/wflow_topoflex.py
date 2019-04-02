@@ -16,12 +16,23 @@ wflow_topoflex  -C case -R Runid -c inifile
 
 """
 
+import wflow.reservoir_Si as reservoir_Si
+import wflow.reservoir_Sa as reservoir_Sa
+import wflow.reservoir_Sw as reservoir_Sw
+import wflow.reservoir_Su as reservoir_Su
+import wflow.reservoir_Sf as reservoir_Sf
+import wflow.reservoir_Ss as reservoir_Ss
+import wflow.JarvisCoefficients as JarvisCoefficients
+
+
 import os.path
 from copy import deepcopy as copylist
 
 import pcraster.framework
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
+
+import pcraster as pcr
 
 # TODO: see below
 """
@@ -1281,7 +1292,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.PrecipTotal = (
             self.Precipitation
         )  # NB: self.PrecipTotal is the precipitation as in the inmaps and self.Precipitation is in fact self.Rainfall !!!!
-        if self.selectSw[0] > 0:
+        if self.selectSw[0] is not None:
             self.Precipitation = pcr.ifthenelse(
                 self.Temperature >= self.Tt[0], self.PrecipTotal, 0
             )

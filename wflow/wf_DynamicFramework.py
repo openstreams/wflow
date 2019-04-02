@@ -1811,11 +1811,19 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
                         )
 
                 else:
-                    tmpvar = reduce(
-                        getattr,
-                        self.varnamecsv[a].replace("self._userModel().", "").split("."),
-                        self._userModel(),
-                    )
+                    # this is added for flextopo -- because list of variables for different classes
+                    if '[' in self.varnamecsv[a].replace("self._userModel().", ""):
+                        listnr = self.varnamecsv[a].replace("self._userModel().", "").split('[')[-1].split(']')[0]
+                        varname = self.varnamecsv[a].replace("self._userModel().", "").split('[')[0]
+                        tmpvar = getattr(self._userModel(),varname)[int(listnr)]
+                        
+                    else:
+                        tmpvar = reduce(
+                            getattr,
+                            self.varnamecsv[a].replace("self._userModel().", "").split("."),
+                            self._userModel(),
+                        )
+                        
             except:
                 found = 0
                 self.logger.fatal(
