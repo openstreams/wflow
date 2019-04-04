@@ -14,7 +14,7 @@ Created on Thu Apr 03 16:31:35 2014
 List all function versions
 """
 
-
+import pcraster as pcr
 try:
     from wflow.wf_DynamicFramework import *
 except ImportError:
@@ -746,7 +746,7 @@ def agriZone_hourlyEp_Sa_beta_frostSamax(self, k):
     self.Fa1 = pcr.ifthenelse(
         self.SaN > 0,
         self.Fmin[k]
-        + (self.Fmax[k] - self.Fmin[k]) * e ** (-self.decF[k] * (1 - self.SaN)),
+        + (self.Fmax[k] - self.Fmin[k]) * pcr.exp((-self.decF[k] * (1 - self.SaN))),
         0,
     )
 

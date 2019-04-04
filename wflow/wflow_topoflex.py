@@ -612,11 +612,11 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.LandUse = pcr.ordinal(
             self.wf_readmap(os.path.join(self.Dir, wflow_landuse), 0.0, fail=True)
         )  #: Map with lan-use/cover classes
-        self.LandUse = pcr.cover(self.LandUse, pcr.ordinal(ordinal(subcatch) > 0))
+        self.LandUse = pcr.cover(self.LandUse, pcr.ordinal(pcr.ordinal(subcatch) > 0))
         self.Soil = pcr.ordinal(
             self.wf_readmap(os.path.join(self.Dir, wflow_soil), 0.0, fail=True)
         )  #: Map with soil classes
-        self.Soil = pcr.cover(self.Soil, pcr.ordinal(ordinal(subcatch) > 0))
+        self.Soil = pcr.cover(self.Soil, pcr.ordinal(pcr.ordinal(subcatch) > 0))
         self.TopoId = pcr.ifthen(pcr.scalar(self.TopoId) > 0, self.TopoId)
         self.surfaceArea = pcr.scalar(
             pcr.readmap(os.path.join(self.Dir, wflow_surfaceArea))
