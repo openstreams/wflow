@@ -65,7 +65,7 @@ def groundWaterCombined3(self):
 
     # add a gain/lossterm based on constant value
     self.Gain = pcr.ifthenelse(
-        self.Closure < 0.0, -min(self.Ss, -self.Closure), self.Closure
+        self.Closure < 0.0, -pcr.min(self.Ss, -self.Closure), self.Closure
     )  # if negative, limited by storage in Ss
     self.Ss = self.Ss * pcr.exp(-self.Ks[0]) + self.Qsin + self.Gain
 
