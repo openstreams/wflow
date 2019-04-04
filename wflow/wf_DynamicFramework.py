@@ -652,6 +652,19 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
             #            import pdb; pdb.set_trace()
             for cmdd in self.modelparameters_changes_once:
                 var = cmdd.replace("self._userModel().", "").strip()
+                
+                #statement below added for topoflex                 
+                if '[' in var:
+                    listnr = var.split('[')[-1].split(']')[0]
+                    varname = var.split('[')[0]
+                    mapmult = getattr(self._userModel(), varname)[int(listnr)] * float(self.modelparameters_changes_once[cmdd].split('*')[1])
+                    getattr(self._userModel(), varname)[int(listnr)] = mapmult                    
+
+                    self.logger.warning(
+                        "Variable change (apply_once) applied to "
+                        + str(var) + " with factor" + self.modelparameters_changes_once[cmdd].split('*')[1]
+                    )
+                    
                 if not hasattr(self._userModel(), var):
                     self.logger.error(
                         "Variable change ((apply_once) could not be applied to "
