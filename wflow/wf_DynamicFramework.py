@@ -1853,7 +1853,13 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
         for a in toprint:
             b = a.replace("self.", "")
             try:
-                pcrmap = getattr(self._userModel(), b)
+                #below if statement for topoflex lists code 
+                if '[' in str(b):
+                    listnr = str(b).split('[')[-1].split(']')[0]
+                    varname = str(b).split('[')[0]
+                    pcrmap = getattr(self._userModel(),varname)[int(listnr)]
+                else:
+                    pcrmap = getattr(self._userModel(), b)
 
                 self.reportStatic(
                     pcrmap,
@@ -1970,6 +1976,13 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
                             self._userModel(),
                         )
                         report = True
+                
+                #add lines below for topoflex
+                elif '[' in str(a.replace("self.", "")):
+                    listnr = str(a.replace("self.", "")).split('[')[-1].split(']')[0]
+                    varname = str(a.replace("self.", "")).split('[')[0]
+                    thevar = getattr(self._userModel(),varname)[int(listnr)]
+                    report = True
 
                 elif hasattr(self._userModel(), a.replace("self.", "")):
                     thevar = getattr(self._userModel(), a.replace("self.", ""))
