@@ -382,10 +382,10 @@ def routingQf_Qs_grid(self):
     self.QtotNoRout = pcr.accuflux(self.TopoLdd, self.Qtotal)
     self.Qstate_t = self.Qstate
     self.Qtest = self.Qstate + self.Qtotal
-    self.Qrout = accutraveltimeflux(
+    self.Qrout = pcr.accutraveltimeflux(
         self.TopoLdd, self.Qstate + self.Qtotal, self.velocity
     )
-    self.Qstate = accutraveltimestate(
+    self.Qstate = pcr.accutraveltimestate(
         self.TopoLdd, self.Qstate + self.Qtotal, self.velocity
     )
 
@@ -409,10 +409,10 @@ def routingQf_Qs_grid_mm(self):
     self.QtotNoRout = pcr.accuflux(self.TopoLdd, self.Qtotal)
     self.Qstate_t = self.Qstate
     self.Qtest = self.Qstate + self.Qtotal
-    self.Qrout = accutraveltimeflux(
+    self.Qrout = pcr.accutraveltimeflux(
         self.TopoLdd, self.Qstate + self.Qtotal, self.velocity
     )
-    self.Qstate = accutraveltimestate(
+    self.Qstate = pcr.accutraveltimestate(
         self.TopoLdd, self.Qstate + self.Qtotal, self.velocity
     )
 

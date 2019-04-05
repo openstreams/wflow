@@ -16,12 +16,24 @@ wflow_topoflex  -C case -R Runid -c inifile
 
 """
 
+import wflow.reservoir_Si as reservoir_Si
+import wflow.reservoir_Sa as reservoir_Sa
+import wflow.reservoir_Sw as reservoir_Sw
+import wflow.reservoir_Su as reservoir_Su
+import wflow.reservoir_Sf as reservoir_Sf
+import wflow.reservoir_Ss as reservoir_Ss
+import wflow.JarvisCoefficients as JarvisCoefficients
+
+
 import os.path
 from copy import deepcopy as copylist
 
 import pcraster.framework
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
+
+import pcraster as pcr
+import numpy as np
 
 # TODO: see below
 """
@@ -601,11 +613,11 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.LandUse = pcr.ordinal(
             self.wf_readmap(os.path.join(self.Dir, wflow_landuse), 0.0, fail=True)
         )  #: Map with lan-use/cover classes
-        self.LandUse = pcr.cover(self.LandUse, pcr.ordinal(ordinal(subcatch) > 0))
+        self.LandUse = pcr.cover(self.LandUse, pcr.ordinal(pcr.ordinal(subcatch) > 0))
         self.Soil = pcr.ordinal(
             self.wf_readmap(os.path.join(self.Dir, wflow_soil), 0.0, fail=True)
         )  #: Map with soil classes
-        self.Soil = pcr.cover(self.Soil, pcr.ordinal(ordinal(subcatch) > 0))
+        self.Soil = pcr.cover(self.Soil, pcr.ordinal(pcr.ordinal(subcatch) > 0))
         self.TopoId = pcr.ifthen(pcr.scalar(self.TopoId) > 0, self.TopoId)
         self.surfaceArea = pcr.scalar(
             pcr.readmap(os.path.join(self.Dir, wflow_surfaceArea))
@@ -1281,7 +1293,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.PrecipTotal = (
             self.Precipitation
         )  # NB: self.PrecipTotal is the precipitation as in the inmaps and self.Precipitation is in fact self.Rainfall !!!!
-        if self.selectSw[0] > 0:
+        if self.selectSw[0] is not None:
             self.Precipitation = pcr.ifthenelse(
                 self.Temperature >= self.Tt[0], self.PrecipTotal, 0
             )
@@ -1368,21 +1380,21 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.trackQWB_t = (sum(self.trackQ_t) / self.surfaceArea) * 1000
         self.WB = (
             self.Precipitation
-            - sum(multiply(self.Ei_, self.percent))
-            - sum(multiply(self.Eu_, self.percent))
+            - sum(np.multiply(self.Ei_, self.percent))
+            - sum(np.multiply(self.Eu_, self.percent))
             - self.QtlagWB
-            - sum(multiply(self.Si, self.percent))
-            + sum(multiply(self.Si_t, self.percent))
-            - sum(multiply(self.Su, self.percent))
-            + sum(multiply(self.Su_t, self.percent))
-            - sum(multiply(self.Sf, self.percent))
-            + sum(multiply(self.Sf_t, self.percent))
-            - sum(multiply(self.Ss, self.percent))
-            + sum(multiply(self.Ss_t, self.percent))
+            - sum(np.multiply(self.Si, self.percent))
+            + sum(np.multiply(self.Si_t, self.percent))
+            - sum(np.multiply(self.Su, self.percent))
+            + sum(np.multiply(self.Su_t, self.percent))
+            - sum(np.multiply(self.Sf, self.percent))
+            + sum(np.multiply(self.Sf_t, self.percent))
+            - sum(np.multiply(self.Ss, self.percent))
+            + sum(np.multiply(self.Ss_t, self.percent))
             - self.trackQWB
             + self.trackQWB_t
-            - sum(multiply(self.convQuWB, self.percent))
-            + sum(multiply(self.convQuWB_t, self.percent))
+            - sum(np.multiply(self.convQuWB, self.percent))
+            + sum(np.multiply(self.convQuWB_t, self.percent))
         )
 
         #    #fuxes and states in m3/h
@@ -1390,74 +1402,74 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.PrecipTotal / 1000 * self.surfaceArea, pcr.nominal(self.TopoId)
         )
         self.Ei = pcr.areatotal(
-            sum(multiply(self.Ei_, self.percent)) / 1000 * self.surfaceArea,
+            sum(np.multiply(self.Ei_, self.percent)) / 1000 * self.surfaceArea,
             pcr.nominal(self.TopoId),
         )
         self.Ea = pcr.areatotal(
-            sum(multiply(self.Ea_, self.percent)) / 1000 * self.surfaceArea,
+            sum(np.multiply(self.Ea_, self.percent)) / 1000 * self.surfaceArea,
             pcr.nominal(self.TopoId),
         )
         self.Eu = pcr.areatotal(
-            sum(multiply(self.Eu_, self.percent)) / 1000 * self.surfaceArea,
+            sum(np.multiply(self.Eu_, self.percent)) / 1000 * self.surfaceArea,
             pcr.nominal(self.TopoId),
         )
         self.Ew = pcr.areatotal(
-            sum(multiply(self.Ew_, self.percent)) / 1000 * self.surfaceArea,
+            sum(np.multiply(self.Ew_, self.percent)) / 1000 * self.surfaceArea,
             pcr.nominal(self.TopoId),
         )
         self.EwiCorr = pcr.areatotal(
-            sum(multiply(multiply(self.Ew_, self.lamdaS / self.lamda), self.percent))
+            sum(np.multiply(np.multiply(self.Ew_, self.lamdaS / self.lamda), self.percent))
             / 1000
             * self.surfaceArea,
             pcr.nominal(self.TopoId),
         )
         self.Qtot = self.QLagTot * self.timestepsecs
         self.SiWB = pcr.areatotal(
-            sum(multiply(self.Si, self.percent)) / 1000 * self.surfaceArea,
+            sum(np.multiply(self.Si, self.percent)) / 1000 * self.surfaceArea,
             pcr.nominal(self.TopoId),
         )
         self.Si_WB = pcr.areatotal(
-            sum(multiply(self.Si_t, self.percent)) / 1000 * self.surfaceArea,
+            sum(np.multiply(self.Si_t, self.percent)) / 1000 * self.surfaceArea,
             pcr.nominal(self.TopoId),
         )
         self.SuWB = pcr.areatotal(
-            sum(multiply(self.Su, self.percent)) / 1000 * self.surfaceArea,
+            sum(np.multiply(self.Su, self.percent)) / 1000 * self.surfaceArea,
             pcr.nominal(self.TopoId),
         )
         self.Su_WB = pcr.areatotal(
-            sum(multiply(self.Su_t, self.percent)) / 1000 * self.surfaceArea,
+            sum(np.multiply(self.Su_t, self.percent)) / 1000 * self.surfaceArea,
             pcr.nominal(self.TopoId),
         )
         self.SaWB = pcr.areatotal(
-            sum(multiply(self.Sa, self.percent)) / 1000 * self.surfaceArea,
+            sum(np.multiply(self.Sa, self.percent)) / 1000 * self.surfaceArea,
             pcr.nominal(self.TopoId),
         )
         self.Sa_WB = pcr.areatotal(
-            sum(multiply(self.Sa_t, self.percent)) / 1000 * self.surfaceArea,
+            sum(np.multiply(self.Sa_t, self.percent)) / 1000 * self.surfaceArea,
             pcr.nominal(self.TopoId),
         )
         self.SfWB = pcr.areatotal(
-            sum(multiply(self.Sf, self.percent)) / 1000 * self.surfaceArea,
+            sum(np.multiply(self.Sf, self.percent)) / 1000 * self.surfaceArea,
             pcr.nominal(self.TopoId),
         )
         self.Sf_WB = pcr.areatotal(
-            sum(multiply(self.Sf_t, self.percent)) / 1000 * self.surfaceArea,
+            sum(np.multiply(self.Sf_t, self.percent)) / 1000 * self.surfaceArea,
             pcr.nominal(self.TopoId),
         )
         self.SfaWB = pcr.areatotal(
-            sum(multiply(self.Sfa, self.percent)) / 1000 * self.surfaceArea,
+            sum(np.multiply(self.Sfa, self.percent)) / 1000 * self.surfaceArea,
             pcr.nominal(self.TopoId),
         )
         self.Sfa_WB = pcr.areatotal(
-            sum(multiply(self.Sfa_t, self.percent)) / 1000 * self.surfaceArea,
+            sum(np.multiply(self.Sfa_t, self.percent)) / 1000 * self.surfaceArea,
             pcr.nominal(self.TopoId),
         )
         self.SwWB = pcr.areatotal(
-            sum(multiply(self.Sw, self.percent)) / 1000 * self.surfaceArea,
+            sum(np.multiply(self.Sw, self.percent)) / 1000 * self.surfaceArea,
             pcr.nominal(self.TopoId),
         )
         self.Sw_WB = pcr.areatotal(
-            sum(multiply(self.Sw_t, self.percent)) / 1000 * self.surfaceArea,
+            sum(np.multiply(self.Sw_t, self.percent)) / 1000 * self.surfaceArea,
             pcr.nominal(self.TopoId),
         )
         self.SsWB = pcr.areatotal(
@@ -1467,25 +1479,25 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.Ss_t / 1000 * self.surfaceArea, pcr.nominal(self.TopoId)
         )
         self.convQuWB = pcr.areatotal(
-            sum(multiply([sum(self.convQu[i]) for i in self.Classes], self.percent))
+            sum(np.multiply([sum(self.convQu[i]) for i in self.Classes], self.percent))
             / 1000
             * self.surfaceArea,
             pcr.nominal(self.TopoId),
         )
         self.convQu_WB = pcr.areatotal(
-            sum(multiply([sum(self.convQu_t[i]) for i in self.Classes], self.percent))
+            sum(np.multiply([sum(self.convQu_t[i]) for i in self.Classes], self.percent))
             / 1000
             * self.surfaceArea,
             pcr.nominal(self.TopoId),
         )
         self.convQaWB = pcr.areatotal(
-            sum(multiply([sum(self.convQa[i]) for i in self.Classes], self.percent))
+            sum(np.multiply([sum(self.convQa[i]) for i in self.Classes], self.percent))
             / 1000
             * self.surfaceArea,
             pcr.nominal(self.TopoId),
         )
         self.convQa_WB = pcr.areatotal(
-            sum(multiply([sum(self.convQa_t[i]) for i in self.Classes], self.percent))
+            sum(np.multiply([sum(self.convQa_t[i]) for i in self.Classes], self.percent))
             / 1000
             * self.surfaceArea,
             pcr.nominal(self.TopoId),
@@ -1494,14 +1506,14 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.trackQ_WB = pcr.areatotal(sum(self.trackQ_t), pcr.nominal(self.TopoId))
         if self.selectRout == "kinematic_wave_routing":
             self.QstateWB = pcr.areatotal(
-                sum(self.Qstate_new) * self.timestepsecs, pcr.nominal(self.TopoId)
+                self.Qstate_new * self.timestepsecs, pcr.nominal(self.TopoId)
             )
         else:
             self.QstateWB = pcr.areatotal(
-                sum(self.Qstate) * self.timestepsecs, pcr.nominal(self.TopoId)
+                self.Qstate * self.timestepsecs, pcr.nominal(self.TopoId)
             )  # dit moet Qstate_new zijn ipv Qstate als je met de kin wave werkt en waterbalans wilt laten sluiten TODO aanpassen zodat het nog steeds werkt voor eerdere routing !!!
         self.Qstate_WB = pcr.areatotal(
-            sum(self.Qstate_t) * self.timestepsecs, pcr.nominal(self.TopoId)
+            self.Qstate_t * self.timestepsecs, pcr.nominal(self.TopoId)
         )
         #        self.QstateWB = pcr.areatotal(sum(self.Qstate) * 0.0405, pcr.nominal(self.TopoId))
         #        self.Qstate_WB = pcr.areatotal(sum(self.Qstate_t) * 0.0405, pcr.nominal(self.TopoId))
@@ -1546,10 +1558,10 @@ class WflowModel(pcraster.framework.DynamicModel):
         )  # accumulated rainfall for water balance (m/h)
         self.sumevap = (
             self.sumevap
-            + sum(multiply(self.Ei_, self.percent))
-            + sum(multiply(self.Eu_, self.percent))
-            + sum(multiply(self.Ea_, self.percent))
-            + sum(multiply(self.Ew_, self.percent))
+            + sum(np.multiply(self.Ei_, self.percent))
+            + sum(np.multiply(self.Eu_, self.percent))
+            + sum(np.multiply(self.Ea_, self.percent))
+            + sum(np.multiply(self.Ew_, self.percent))
         )  # accumulated evaporation for water balance (m/h)
         try:
             self.sumpotevap = (
@@ -1562,8 +1574,8 @@ class WflowModel(pcraster.framework.DynamicModel):
         )  # accumulated runoff for water balance (m/h)
         self.sumwb = self.sumwb + self.WB
 
-        self.sumE = sum(multiply(self.Ei_, self.percent)) + sum(
-            multiply(self.Eu_, self.percent)
+        self.sumE = sum(np.multiply(self.Ei_, self.percent)) + sum(
+            np.multiply(self.Eu_, self.percent)
         )
 
         self.QCatchmentMM = self.Qstate * self.QMMConvUp

@@ -652,6 +652,19 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
             #            import pdb; pdb.set_trace()
             for cmdd in self.modelparameters_changes_once:
                 var = cmdd.replace("self._userModel().", "").strip()
+                
+                #statement below added for topoflex                 
+                if '[' in var:
+                    listnr = var.split('[')[-1].split(']')[0]
+                    varname = var.split('[')[0]
+                    mapmult = getattr(self._userModel(), varname)[int(listnr)] * float(self.modelparameters_changes_once[cmdd].split('*')[1])
+                    getattr(self._userModel(), varname)[int(listnr)] = mapmult                    
+
+                    self.logger.warning(
+                        "Variable change (apply_once) applied to "
+                        + str(var) + " with factor" + self.modelparameters_changes_once[cmdd].split('*')[1]
+                    )
+                    
                 if not hasattr(self._userModel(), var):
                     self.logger.error(
                         "Variable change ((apply_once) could not be applied to "
@@ -1811,11 +1824,19 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
                         )
 
                 else:
-                    tmpvar = reduce(
-                        getattr,
-                        self.varnamecsv[a].replace("self._userModel().", "").split("."),
-                        self._userModel(),
-                    )
+                    # this is added for flextopo -- because list of variables for different classes
+                    if '[' in self.varnamecsv[a].replace("self._userModel().", ""):
+                        listnr = self.varnamecsv[a].replace("self._userModel().", "").split('[')[-1].split(']')[0]
+                        varname = self.varnamecsv[a].replace("self._userModel().", "").split('[')[0]
+                        tmpvar = getattr(self._userModel(),varname)[int(listnr)]
+                        
+                    else:
+                        tmpvar = reduce(
+                            getattr,
+                            self.varnamecsv[a].replace("self._userModel().", "").split("."),
+                            self._userModel(),
+                        )
+                        
             except:
                 found = 0
                 self.logger.fatal(
@@ -1845,7 +1866,13 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
         for a in toprint:
             b = a.replace("self.", "")
             try:
-                pcrmap = getattr(self._userModel(), b)
+                #below if statement for topoflex lists code 
+                if '[' in str(b):
+                    listnr = str(b).split('[')[-1].split(']')[0]
+                    varname = str(b).split('[')[0]
+                    pcrmap = getattr(self._userModel(),varname)[int(listnr)]
+                else:
+                    pcrmap = getattr(self._userModel(), b)
 
                 self.reportStatic(
                     pcrmap,
@@ -1962,6 +1989,13 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
                             self._userModel(),
                         )
                         report = True
+                
+                #add lines below for topoflex
+                elif '[' in str(a.replace("self.", "")):
+                    listnr = str(a.replace("self.", "")).split('[')[-1].split(']')[0]
+                    varname = str(a.replace("self.", "")).split('[')[0]
+                    thevar = getattr(self._userModel(),varname)[int(listnr)]
+                    report = True
 
                 elif hasattr(self._userModel(), a.replace("self.", "")):
                     thevar = getattr(self._userModel(), a.replace("self.", ""))
