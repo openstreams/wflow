@@ -16,6 +16,6 @@ COPY . /opt/wflow/
 WORKDIR /opt/wflow
 RUN python3 setup.py install
 VOLUME /data
-ENV PYTHONPATH /opt/pcraster-4.2.1/bin
+ENV PYTHONPATH /opt/pcraster-4.2.1/build/bin
 WORKDIR /
 ENTRYPOINT ["python3","/usr/local/bin/wflow_sbm.py","-C","/data"]
