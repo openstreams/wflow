@@ -30,6 +30,7 @@ setup(
         "gdal",
         "netCDF4",
         "cftime",
+		"numba",
         "pyproj",
         "python-dateutil",
     ],

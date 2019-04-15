@@ -13,6 +13,7 @@ dependencies:
   - cftime>=1.0.1
   - pyproj>=1.9
   - thrift>=0.11
+  - numba>=0.43
   - pyinstaller>=3.3
   - versioneer>=0.18
   - setuptools>=38
