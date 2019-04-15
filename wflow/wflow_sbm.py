@@ -1876,7 +1876,8 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.static['InfiltCapSoil'] = pcr.pcr2numpy(self.InfiltCapSoil, self.mv).ravel()
         self.static['InfiltCapPath'] = pcr.pcr2numpy(self.InfiltCapPath, self.mv).ravel()
         self.static['PathFrac'] = pcr.pcr2numpy(self.PathFrac, self.mv).ravel()
-        self.static['cf_soil'] = pcr.pcr2numpy(self.cf_soil, self.mv).ravel()
+        if self.modelSnow:
+            self.static['cf_soil'] = pcr.pcr2numpy(self.cf_soil, self.mv).ravel()
         self.static['neff'] = pcr.pcr2numpy(self.neff, self.mv).ravel()
         self.static['slope'] = pcr.pcr2numpy(self.Slope, self.mv).ravel()
         self.static['MaxLeakage'] = pcr.pcr2numpy(self.MaxLeakage, self.mv).ravel()

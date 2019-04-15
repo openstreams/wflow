@@ -64,7 +64,7 @@ class MyTest(unittest.TestCase):
             os.path.join(caseName, runId, "wbsoil.csv"), delimiter=","
         )
         print("Checking soil water budget ....")
-        self.assertAlmostEqual(0.0026834408363356488, my_data[:, 2].sum(), places=4)
+        self.assertAlmostEqual(1.3444056218487373e-11, my_data[:, 2].sum(), places=4)
         print("Checking precip sum ....")
         my_data = np.genfromtxt(os.path.join(caseName, runId, "P.csv"), delimiter=",")
         self.assertAlmostEqual(sump, my_data[:, 2].sum())
