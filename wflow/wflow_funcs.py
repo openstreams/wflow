@@ -22,7 +22,196 @@ that may be used within the wflow models
 
 """
 
+from numba import jit
+import math
+import numpy as np
 import pcraster as pcr
+
+
+@jit(nopython=True)
+def _up_nb(ldd_f, idx0, shape, _ldd_us, sr=1):
+    """returns a numpy array with 1d indices of upstream neighbors on a ldd
+    """
+    nrow, ncol = shape
+    r = idx0 // ncol
+    c = idx0 % ncol
+    wdw_idx = list()
+    i = 0
+    for dr in range(-sr, sr+1):
+        row = r + dr
+        if row >= 0 and row < nrow:
+            for dc in range(-sr, sr+1):
+                col = c + dc
+                if col >= 0 and col < ncol:
+                    idx = idx0 + dc + dr*ncol
+                    if ldd_f[idx] == _ldd_us[i]:
+                        wdw_idx.append(idx)
+                i += 1
+        else:
+            i += sr*2+1
+    return np.array(wdw_idx, dtype=np.int32)
+
+
+@jit(nopython=True)
+def set_dd(ldd, _ldd_us, river, pit_value=5):
+    """set drainage direction network from downstream to upstream
+    """
+    shape = ldd.shape
+    ldd = ldd.flatten()
+    river = np.concatenate((river, np.array([0], dtype=river.dtype)))
+    nodes = list()
+    nodes_up = list()
+    rnodes = list()
+    rnodes_up = list()
+    
+    idx_ds_ = np.where(ldd==np.array(pit_value).astype(ldd.dtype))[0].astype(np.int32)
+    
+    for c, idx_ in enumerate(idx_ds_):
+        idx_ds = np.array([idx_])
+        
+        # move upstream
+        while True:
+            nodes.append(idx_ds)
+            idx_r_ds = idx_ds[np.where(river[idx_ds])]
+            if idx_r_ds.size > 0:
+                rnodes.append(idx_r_ds)
+                r_nbs_up = np.ones((idx_r_ds.size, 8), dtype=np.int32)*-1
+            idx_next = list()
+            nbs_up = np.ones((idx_ds.size, 8), dtype=np.int32)*-1
+            j = 0
+            for i, idx in enumerate(idx_ds):
+                idx_up = _up_nb(ldd, idx, shape, _ldd_us)
+                if np.any(idx_up):
+                    idx_next.extend(idx_up)
+                    nbs_up[i, :idx_up.size] = idx_up
+                    if river[idx]:
+                        idx_r_up = idx_up[np.where(river[idx_up])]
+                        r_nbs_up[j, :idx_r_up.size] = idx_r_up
+                        j = j + 1
+            nodes_up.append(nbs_up)
+            if idx_r_ds.size > 0:
+                rnodes_up.append(r_nbs_up)
+            if len(idx_next) == 0:
+                break
+            idx_ds = np.array(idx_next, dtype=np.int32)
+    return nodes[::-1], nodes_up[::-1], rnodes[::-1], rnodes_up[::-1]
+
+
+@jit(nopython=True)
+def kinematic_wave(Qin,Qold,q,alpha,beta,deltaT,deltaX):
+    
+    epsilon = 1e-12
+    MAX_ITERS = 3000
+
+    if ((Qin+Qold+q) == 0.):
+        return 0.
+    else:
+        #common terms
+        ab_pQ = alpha*beta*pow(((Qold+Qin)/2.),beta-1.)
+        deltaTX = deltaT/deltaX
+        C = deltaTX*Qin + alpha*pow(Qold,beta) + deltaT*q
+        
+        Qkx   = (deltaTX * Qin + Qold * ab_pQ + deltaT * q) / (deltaTX + ab_pQ)
+        
+        if math.isnan(Qkx):
+            Qkx = 0.
+        
+        Qkx   = max(Qkx, 1e-30)
+        fQkx  = deltaTX * Qkx + alpha * pow(Qkx, beta) - C
+        dfQkx = deltaTX + alpha * beta * pow(Qkx, beta - 1.)
+        Qkx   = Qkx - fQkx / dfQkx
+        Qkx   = max(Qkx, 1e-30)
+        count = 0
+        
+        while abs(fQkx) > epsilon and count < MAX_ITERS:
+            fQkx  = deltaTX * Qkx + alpha * pow(Qkx, beta) - C
+            dfQkx = deltaTX + alpha * beta * pow(Qkx, beta - 1.)
+            Qkx  =  Qkx - fQkx / dfQkx
+            Qkx   = max(Qkx, 1e-30)
+            count = count + 1
+          
+        return Qkx
+
+
+@jit(nopython=True)
+def kin_wave(rnodes, rnodes_up, Qold, q, Alpha, Beta, DCL, River, Bw, AlpTermR, AlpPow, deltaT, it=1):
+    
+    acc_flow = np.zeros(Qold.size, dtype=np.float64)
+    acc_flow = np.concatenate((acc_flow, np.array([0], dtype=np.float64)))
+
+
+    for v in range(0,it):
+        shape = Qold.shape
+        # flat new state
+        Qnew = np.zeros(Qold.size, dtype=np.float64)
+        # append zero to end to deal with nodata (-1) in indices
+        Qnew = np.concatenate((Qnew, np.array([0], dtype=np.float64)))
+
+        for i in range(len(rnodes)):
+            for j in range(len(rnodes[i])):
+                idx = rnodes[i][j]
+                nbs = rnodes_up[i][j]
+    
+                Qin = np.sum(Qnew[nbs])
+                Qnew[idx] = kinematic_wave(Qin, Qold[idx], q[idx], Alpha[idx], Beta[idx], deltaT/it, DCL[idx])
+        
+                acc_flow[idx] = acc_flow[idx] + Qnew[idx] * (deltaT/it)
+                WaterLevelR = (Alpha[idx] * np.power(Qnew[idx], Beta[idx])) / Bw[idx]
+                Pr = Bw[idx] + (2.0 * WaterLevelR)
+                Alpha[idx] = AlpTermR[idx] * np.power(Pr, AlpPow[idx])
+                Qold[idx]= Qnew[idx]
+    # remove last value from array and reshape to original format
+    return acc_flow[:-1].reshape(shape)
+    #return Qnew[:-1].reshape(shape)
+
+
+@jit(nopython=True)
+def kinematic_wave_ssf(ssf_in, ssf_old, zi_old, r, Ks_hor, Ks ,slope ,neff, f, D, dt, dx, w, ssf_max):
+    
+    epsilon = 1e-6
+    MAX_ITERS = 3000
+        
+    if (max(ssf_in+ssf_old+r,0.) == 0.):
+        return 0., D, 0.
+    else:
+        #initial estimate
+        ssf_n = (ssf_in + ssf_old)/2.
+        count = 0        
+        
+        zi = np.log(f*ssf_n/(w*Ks_hor*Ks*slope) + np.exp(-f*D))/-f
+        Cn = (Ks_hor*Ks*slope)/neff * np.exp(-f*zi)     
+        c = (dt/dx)*ssf_in + 1./Cn*ssf_n + dt*(r-(zi_old-zi)*neff*w)
+    
+        fQ = (dt/dx)*ssf_n + 1./Cn*ssf_n - c      
+        dfQ = (dt/dx) + 1./Cn        
+        ssf_n =  ssf_n - (fQ/dfQ)
+        
+        if math.isnan(ssf_n):
+            ssf_n = 0.
+        ssf_n   = max(ssf_n, 1e-30)
+                
+        while abs(fQ) > epsilon and count < MAX_ITERS:
+            
+            zi = np.log(f*ssf_n/(w*Ks_hor*Ks*slope) + np.exp(-f*D))/-f
+            Cn = (Ks_hor*Ks*slope)/neff * np.exp(-f*zi) 
+            c = (dt/dx)*ssf_in + 1./Cn*ssf_n + dt*(r-(zi_old-zi)*neff*w)
+            
+            fQ = (dt/dx)*ssf_n + 1./Cn*ssf_n - c
+            dfQ = (dt/dx) + 1./Cn          
+            ssf_n =  ssf_n - (fQ/dfQ)
+            
+            if math.isnan(ssf_n):
+                ssf_n = 0.
+            ssf_n   = max(ssf_n, 1e-30)
+
+            count = count + 1
+        
+        ssf_n =  min(ssf_n,(ssf_max*w))
+        #exfilt = min(0,zi) * -neff
+        exfilt = min(zi_old - (ssf_in + r*dx - ssf_n)/(w*dx)/neff,0.0) * -neff
+        zi = max(0,zi)
+        
+        return ssf_n, zi, exfilt   
 
 
 def rainfall_interception_hbv(Rainfall, PotEvaporation, Cmax, InterceptionStorage):

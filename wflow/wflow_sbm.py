@@ -93,10 +93,13 @@ from wflow.wflow_adapt import *
 from wflow.wflow_funcs import *
 import pcraster as pcr
 
+import pdb
+import math
+from numba import jit
+
 wflow = "wflow_sbm: "
 
 updateCols = []
-
 
 def usage(*args):
     sys.stdout = sys.stderr
@@ -107,31 +110,47 @@ def usage(*args):
     sys.exit(0)
 
 
-def actEvap_sat_SBM(RootingDepth, WTable, FirstZoneDepth, PotTrans, smoothpar):
-    # Step 1 from saturated zone, use rootingDepth as a limiting factor
-    # new method:
-    # use sCurve to determine if the roots are wet.At the moment this ise set
-    # to be a 0-1 curve
-    wetroots = sCurve(WTable, a=RootingDepth, c=smoothpar)
-    ActEvapSat = pcr.min(PotTrans * wetroots, FirstZoneDepth)
+def estimate_iterations_kin_wave(waterlevel, Beta, Slope, N, timestepsecs, dx, mv, threshold):
+    
+    celerity = pcr.ifthen(waterlevel >= threshold, Beta * waterlevel**(2.0/3.0) * ((Slope**(0.5))/N))
+    courant = (timestepsecs / dx) * celerity
+    np_courant = pcr.pcr2numpy(courant, mv)
+    np_courant[np_courant==mv] = np.nan
+    try:
+        it_kin = int(1.25*(np.nanpercentile(np_courant,90)))
+    except:
+        it_kin = int(max(timestepsecs / 3600.0, 1.0))
+    
+    return it_kin
 
-    FirstZoneDepth = FirstZoneDepth - ActEvapSat
-    RestPotEvap = PotTrans - ActEvapSat
 
-    return RestPotEvap, FirstZoneDepth, ActEvapSat
+@jit(nopython=True)
+def _sCurve(X, a=0.0, b=1.0, c=1.0):
+    """
+    sCurve function:
+
+    Input:
+        - X input map
+        - C determines the steepness or "stepwiseness" of the curve.
+          The higher C the sharper the function. A negative C reverses the function.
+        - b determines the amplitude of the curve
+        - a determines the centre level (default = 0)
+
+    Output:
+        - result
+    """
+    s = 1.0 / (b + np.exp(-c * (X - a)))
+
+    return s
 
 
+@jit(nopython=True)
 def actEvap_unsat_SBM(
     RootingDepth,
-    WTable,
     UStoreDepth,
-    zi_layer,
     UStoreLayerThickness,
     sumLayer,
     RestPotEvap,
-    maskLayer,
-    ZeroMap,
-    layerIndex,
     sumActEvapUStore,
     c,
     L,
@@ -151,7 +170,7 @@ def actEvap_unsat_SBM(
 
     Input:
 
-        - RootingDepth,WTable, UStoreDepth,FirstZoneDepth, PotTrans, smoothpar
+        - RootingDepth, UStoreDepth, FirstZoneDepth, PotTrans, smoothpar
 
     Output:
 
@@ -162,15 +181,10 @@ def actEvap_unsat_SBM(
     if ust >= 1:
         AvailCap = UStoreDepth * 0.99
     else:
-        AvailCap = pcr.ifthenelse(
-            layerIndex < zi_layer,
-            pcr.min(
-                1.0, pcr.max(0.0, (RootingDepth - sumLayer) / UStoreLayerThickness)
-            ),
-            pcr.min(
-                1.0, pcr.max(0.0, (RootingDepth - sumLayer) / (WTable + 1 - sumLayer))
-            ),
-        )
+        if L > 0:
+            AvailCap = min(1.0, max(0.0, (RootingDepth - sumLayer) / L))
+        else:
+            AvailCap = 0.0
 
     MaxExtr = AvailCap * UStoreDepth
 
@@ -189,139 +203,350 @@ def actEvap_unsat_SBM(
 
     # According to Brooks-Corey
     par_lambda = 2 / (c - 3)
-    L = pcr.cover(L, 0)
-    UStoreDepth = pcr.cover(UStoreDepth, 0)
-    vwc = pcr.ifthenelse(L > 0, UStoreDepth / L, 0)
-    vwc = pcr.ifthenelse(vwc > 0, vwc, 0.0000001)
+    if L > 0.0:
+        vwc = UStoreDepth / L
+    else:
+        vwc = 0.0
+    vwc = max(vwc, 0.0000001)
     head = hb / (
         ((vwc) / (thetaS - thetaR)) ** (1 / par_lambda)
     )  # Note that in the original formula, thetaR is extracted from vwc, but thetaR is not part of the numerical vwc calculation
-    head = pcr.ifthenelse(head <= hb, 1, head)
-    head = pcr.cover(head, 0)
+    head = max(head,hb)
 
     # Transform h to a reduction coefficient value according to Feddes et al. (1978).
-    alpha = pcr.ifthenelse(
-        head <= h1,
-        0,
-        pcr.ifthenelse(
-            head >= h4,
-            0,
-            pcr.ifthenelse(
-                head < h2,
-                (head - h1) / (h2 - h1),
-                pcr.ifthenelse(head > h3, 1 - (head - h3) / (h4 - h3), 1),
-            ),
-        ),
-    )
+    if(head <= h1):
+        alpha = 0
+    elif(head >= h4):
+        alpha = 0
+    elif((head < h2) & (head > h1)):
+        alpha = (head - h1) / (h2 - h1)
+    elif((head > h3) & (head < h4)):
+        alpha = 1 - (head - h3) / (h4 - h3)
+    else:
+        alpha = 1
 
-    ActEvapUStore = (
-        pcr.ifthenelse(
-            layerIndex > zi_layer, ZeroMap, pcr.min(MaxExtr, RestPotEvap, UStoreDepth)
-        )
-    ) * alpha
+    ActEvapUStore = (min(MaxExtr, RestPotEvap, UStoreDepth)) * alpha
 
-    UStoreDepth = pcr.ifthenelse(
-        layerIndex > zi_layer, maskLayer, UStoreDepth - ActEvapUStore
-    )
+    UStoreDepth = UStoreDepth - ActEvapUStore
 
     RestPotEvap = RestPotEvap - ActEvapUStore
     sumActEvapUStore = ActEvapUStore + sumActEvapUStore
 
-    return UStoreDepth, sumActEvapUStore, RestPotEvap, ActEvapUStore
+    return UStoreDepth, sumActEvapUStore, RestPotEvap
 
 
-def soilevap_SBM_unsat(
-    CanopyGapFraction,
-    PotTransSoil,
-    SoilWaterCapacity,
-    SatWaterDepth,
-    UStoreLayerDepth,
-    zi,
-    thetaS,
-    thetaR,
-    UStoreLayerThickness,
-):
-    # Split between bare soil and vegetation
-    # potsoilevap = (1.0 - CanopyGapFraction) * PotTransSoil
-
-    # PotTrans = CanopyGapFraction * PotTransSoil
-    SaturationDeficit = SoilWaterCapacity - SatWaterDepth
-
-    # Linear reduction of soil moisture evaporation based on deficit
-    soilevap = pcr.ifthenelse(
-        len(UStoreLayerThickness) == 1,
-        PotTransSoil * pcr.min(1.0, SaturationDeficit / SoilWaterCapacity),
-        PotTransSoil
-        * pcr.min(
-            1.0,
-            pcr.ifthenelse(
-                zi >= UStoreLayerThickness[0],
-                UStoreLayerDepth[0] / (UStoreLayerThickness[0] * (thetaS - thetaR)),
-                UStoreLayerDepth[0] / ((zi + 1.0) * (thetaS - thetaR)),
-            ),
-        ),
-    )
-
-    return soilevap
+@jit(nopython=True)    
+def infiltration(AvailableForInfiltration, PathFrac, cf_soil, TSoil,InfiltCapSoil,InfiltCapPath, UStoreCapacity, modelSnow ):
+    
+    SoilInf = AvailableForInfiltration  * (1 - PathFrac)
+    PathInf = AvailableForInfiltration * PathFrac
+    if modelSnow:
+        bb = 1.0 / (1.0 - cf_soil)
+        soilInfRedu = _sCurve(TSoil, a=0.0, b=bb, c=8.0)
+    else:
+        soilInfRedu = 1.0
+    MaxInfiltSoil = min(InfiltCapSoil * soilInfRedu, SoilInf)
+    MaxInfiltPath = min(InfiltCapPath * soilInfRedu, PathInf)      
+    InfiltSoilPath = min(MaxInfiltPath + MaxInfiltSoil, max(0.0, UStoreCapacity))
+    
+    return InfiltSoilPath
 
 
-def soilevap_SBM_sat(
-    PotTransSoil, zi, thetaS, thetaR, UStoreLayerThickness, UStoreLayerDepth
-):
-    # Follows after soilevap_SBM_unsat and requires the PotTranSoil that remains after
-    # soilevap_SBM_unsat.
-    # soilevap_SBM_sat only takes place in the upper layer.
+@jit(nopython=True)  
+def unsatzone_flow(UStoreLayerDepth, InfiltSoilPath, L, z, KsatVerFrac, c, KsatVer, f, thetaS, thetaR, SoilWaterCapacity, SWDold, shape_layer, TransferMethod):
+    
+    m = 0
+    UStoreLayerDepth[m] = UStoreLayerDepth[m] + InfiltSoilPath
+    
+    if L[m] > 0.0:
+        #sbm option for vertical transfer (only for 1 layer)                        
+        if (TransferMethod == 1 and shape_layer == 1):
+            Sd = SoilWaterCapacity - SWDold
+            if Sd <= 0.00001:
+                st = 0.0
+            else:
+                st = KsatVerFrac[m] * KsatVer * (min(UStoreLayerDepth[m],L[m]*(thetaS-thetaR))/Sd)   
+        else:    
+            st = KsatVerFrac[m] * KsatVer * np.exp(-f * z[m]) * min((UStoreLayerDepth[m]/(L[m] * (thetaS-thetaR)))**c[m],1.0)
+            ast = min(st,UStoreLayerDepth[m])                         
+            UStoreLayerDepth[m] = UStoreLayerDepth[m] - ast
+    else: 
+        ast = 0.0
+            
+                
+    for m in range(1,len(L)):
+        
+        UStoreLayerDepth[m] = UStoreLayerDepth[m] + ast
 
-    # Only works when more than 1 layer is used, otherwise soilevap_sat equals 0.
-    # PotTranSoil is reduced when there is either no saturated water layer in the
-    # upper soil layer (reduced to zero), or when the saturated layer is only a
-    # fraction of the upper soil layer (reduced to that fraction).
+        if L[m] > 0.0:
+            st = KsatVerFrac[m] * KsatVer * np.exp(-f* z[m]) * min((UStoreLayerDepth[m]/(L[m] * (thetaS-thetaR)))**c[m],1.0)
+            ast = min(st,UStoreLayerDepth[m])
+        else:
+            ast = 0.0
+        
+        UStoreLayerDepth[m] = UStoreLayerDepth[m] - ast
+                    
+    return ast, UStoreLayerDepth
+    
+    
+@jit(nopython=True)    
+def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, timestepsecs, basetimestep, deltaT, nrpaddyirri, shape, TransferMethod, it_kinL=1, ust=0):
+        
+    shape_layer = layer['UStoreLayerThickness'].shape
+    
+    # flat new state
+    ssf_new = np.zeros(dyn['ssf'].size, dtype=dyn['ssf'].dtype)
 
-    # In case water is ponding, zi is negative - Start with setting negative values
-    # to 0.0 to assure positive soilevap values
-    zi = pcr.ifthenelse(zi < 0.0, 0.0, zi)
+    qo_new = np.zeros(dyn['LandRunoff'].size, dtype=dyn['LandRunoff'].dtype)
+    qo_new = np.concatenate((qo_new, np.array([0], dtype=dyn['LandRunoff'].dtype)))
 
-    # Calculate soilevap
-    soilevap_sat = pcr.ifthenelse(
-        len(UStoreLayerThickness) == 1,
-        0.0,
-        PotTransSoil
-        * pcr.min(
-            1.0,
-            pcr.ifthenelse(
-                zi >= UStoreLayerThickness[0],
-                0.0,
-                (UStoreLayerThickness[0] - zi) / UStoreLayerThickness[0],
-            ),
-        ),
-    )
+    
+    # append zero to end to deal with nodata (-1) in indices
+    ssf_new = np.concatenate((ssf_new, np.array([0], dtype=dyn['ssf'].dtype)))
+    ldd_ = np.concatenate((ldd, np.array([0], dtype=ldd.dtype)))
+    slope_ = np.concatenate((static['slope'], np.array([0], dtype=static['slope'].dtype)))
+    
+    SWDold = np.zeros(dyn['ssf'].size, dtype=dyn['ssf'].dtype)
+    sumUSold = np.zeros(dyn['ssf'].size, dtype=dyn['ssf'].dtype)    
+    
+    for i in range(len(nodes)):
+        for j in range(len(nodes[i])):
+            idx = nodes[i][j]
+            nbs = nodes_up[i][j]
+                        
+            sumlayer = np.unique(layer['UStoreLayerThickness'][:,idx].cumsum())
+            sumlayer_0 = np.concatenate((np.array([0.0]), sumlayer))
+            SWDold[idx] = dyn['SatWaterDepth'][idx] 
+            sumUSold[idx] = layer['UStoreLayerDepth'][:,idx].sum()
+            
+            n = np.where(dyn['zi'][idx] > sumlayer_0)[0]     
+            if len(n) > 1:     
+                L = np.concatenate((layer['UStoreLayerThickness'][n[0:-1],idx], np.array([dyn['zi'][idx] - sumlayer_0[n[-1]]]))).astype(np.float64)
+            else:
+                L = np.array([dyn['zi'][idx]]).astype(np.float64)
+            z = L.cumsum()
+                
+            dyn['ActEvapUStore'][idx] = 0.0
+            
+            if static['River'][idx]:
+                ind = np.where(ldd_[nbs] != ldd_[idx])
+                chanperc = np.zeros(ldd_[nbs].size)
+                chanperc[ind] = slope_[nbs][ind]/(slope_[idx]+slope_[nbs][ind]) 
+            
+                ssf_in = np.sum((1-chanperc)*ssf_new[nbs])
+                dyn['ssf_toriver'][idx] = np.sum((chanperc)*ssf_new[nbs])/(1000*1000*1000)/timestepsecs
+                   
+            else:
+                ssf_in = np.sum(ssf_new[nbs])
+            
+            dyn['CellInFlow'][idx] = ssf_in
 
-    # Set soilevap to demand (soilevap_sat) or, if less than the demand, the depth
-    # of the saturated water layer
-    soilevapsat = pcr.ifthenelse(
-        len(UStoreLayerThickness) == 1,
-        0.0,
-        pcr.min(
-            soilevap_sat,
-            pcr.ifthenelse(
-                zi >= UStoreLayerThickness[0],
-                0.0,
-                (UStoreLayerThickness[0] - zi) * (thetaS - thetaR),
-            ),
-        ),
-    )
+            UStoreCapacity = static['SoilWaterCapacity'][idx] - dyn['SatWaterDepth'][idx] - layer['UStoreLayerDepth'][n,idx].sum()
+            
+            InfiltSoilPath = infiltration(dyn['AvailableForInfiltration'][idx], static['PathFrac'][idx], static['cf_soil'][idx], 
+                                          dyn['TSoil'][idx],static['InfiltCapSoil'][idx],static['InfiltCapPath'][idx],UStoreCapacity, modelSnow)
+            
+            dyn['InfiltSoilPath'][idx] = InfiltSoilPath
+            
+            # unsat fluxes first
+            ast, layer['UStoreLayerDepth'][:,idx] = unsatzone_flow(layer['UStoreLayerDepth'][:,idx], InfiltSoilPath, L, z, layer['KsatVerFrac'][:,idx], layer['c'][:,idx], static['KsatVer'][idx], static['f'][idx],
+                                         static['thetaS'][idx], static['thetaR'][idx], static['SoilWaterCapacity'][idx], SWDold[idx], shape_layer[0], TransferMethod)
+            dyn['Transfer'][idx] = ast
+            
+            # then evaporation from layers
+            for k in range(len(L)):
+                if k==0:
+                    SaturationDeficit = static['SoilWaterCapacity'][idx] - dyn['SatWaterDepth'][idx]
+                                        
+                    if shape_layer[0] == 1:
+                        soilevapunsat = dyn['restEvap'][idx] * min(1.0, SaturationDeficit / static['SoilWaterCapacity'][idx])
+                    else:
+                        if len(L) == 1:
+                            if dyn['zi'][idx] > 0:
+                                soilevapunsat = dyn['restEvap'][idx] * min(1.0, layer['UStoreLayerDepth'][k,idx]/dyn['zi'][idx])
+                            else:
+                               soilevapunsat = 0.0 
+                        else:
+                            soilevapunsat = dyn['restEvap'][idx] * min(1.0, layer['UStoreLayerDepth'][k,idx]/(layer['UStoreLayerThickness'][k,idx]*(static['thetaS'][idx]-static['thetaR'][idx])))
+ 
+                    soilevapunsat = min(soilevapunsat, layer['UStoreLayerDepth'][k,idx])
+                    dyn['restEvap'][idx] = dyn['restEvap'][idx] - soilevapunsat                        
+                    layer['UStoreLayerDepth'][k,idx] = layer['UStoreLayerDepth'][k,idx] - soilevapunsat
+                    
+                    if shape_layer[0] == 1:
+                        soilevapsat = 0.0
+                    else:
+                        if len(L) == 1:
+                            soilevapsat = dyn['restEvap'][idx] * min(1.0, (layer['UStoreLayerThickness'][k,idx] - dyn['zi'][idx])/ layer['UStoreLayerThickness'][k,idx])
+                            soilevapsat = min(soilevapsat, (layer['UStoreLayerThickness'][k,idx] - dyn['zi'][idx]) * (static['thetaS'][idx] - static['thetaR'][idx]))
+                        else:
+                           soilevapsat = 0.0 
+                    
+                    
+                    dyn['soilevap'][idx] = soilevapunsat + soilevapsat
+                    dyn['SatWaterDepth'][idx] = dyn['SatWaterDepth'][idx] - soilevapsat
+                    
+                    # evaporation available for transpiration
+                    PotTrans = dyn['PotTransSoil'][idx] - dyn['soilevap'][idx] - dyn['ActEvapOpenWaterLand'][idx]
 
-    return soilevapsat
+                    # evaporation from saturated store
+                    wetroots = _sCurve(dyn['zi'][idx], a=static['ActRootingDepth'][idx], c=static['rootdistpar'][idx])
+                    dyn['ActEvapSat'][idx] = min(PotTrans * wetroots, dyn['SatWaterDepth'][idx])
+                    dyn['SatWaterDepth'][idx] = dyn['SatWaterDepth'][idx] - dyn['ActEvapSat'][idx]              
+                    RestPotEvap = PotTrans - dyn['ActEvapSat'][idx]
 
+                    # actual evaporation from UStore
+                    layer['UStoreLayerDepth'][k,idx], dyn['ActEvapUStore'][idx], RestPotEvap = actEvap_unsat_SBM(static['ActRootingDepth'][idx], layer['UStoreLayerDepth'][k,idx], layer['UStoreLayerThickness'][k,idx], 
+                                                                          sumlayer[k], RestPotEvap, dyn['ActEvapUStore'][idx], layer['c'][k,idx], L[k], static['thetaS'][idx], static['thetaR'][idx], ust) 
+                    
+                else:
+                    # actual evaporation from UStore
+                    layer['UStoreLayerDepth'][k,idx], dyn['ActEvapUStore'][idx], RestPotEvap = actEvap_unsat_SBM(static['ActRootingDepth'][idx], layer['UStoreLayerDepth'][k,idx], layer['UStoreLayerThickness'][k,idx], 
+                                                                          sumlayer[k], RestPotEvap, dyn['ActEvapUStore'][idx], layer['c'][k,idx], L[k], static['thetaS'][idx], static['thetaR'][idx], ust) 
 
-def sum_UstoreLayerDepth(UStoreLayerThickness, ZeroMap, UStoreLayerDepth):
-    sum_UstoreLayerDepth = ZeroMap
-    for n in np.arange(0, len(UStoreLayerThickness)):
-        sum_UstoreLayerDepth = sum_UstoreLayerDepth + pcr.cover(
-            UStoreLayerDepth[n], ZeroMap
-        )
+            #check soil moisture balance per layer
+            du = 0.0
+            for k in range(L.size-1,-1,-1):
+                du = max(0,layer['UStoreLayerDepth'][k,idx] - L[k]*(static['thetaS'][idx]-static['thetaR'][idx]))
+                layer['UStoreLayerDepth'][k,idx] = layer['UStoreLayerDepth'][k,idx] - du
+                if k > 0:
+                    layer['UStoreLayerDepth'][k-1,idx] = layer['UStoreLayerDepth'][k-1,idx] + du
+            
+            Ksat = layer['KsatVerFrac'][len(L)-1,idx] * static['KsatVer'][idx] * np.exp(-static['f'][idx] * dyn['zi'][idx])  
+            
+            UStoreCapacity = static['SoilWaterCapacity'][idx] - dyn['SatWaterDepth'][idx] - layer['UStoreLayerDepth'][n,idx].sum()
+            
+            MaxCapFlux = max(0.0, min(Ksat, dyn['ActEvapUStore'][idx], UStoreCapacity, dyn['SatWaterDepth'][idx]))
+            
+            if dyn['zi'][idx] > static['ActRootingDepth'][idx]:
+                CapFluxScale = static['CapScale'][idx] / (static['CapScale'][idx] + dyn['zi'][idx] - static['ActRootingDepth'][idx]) * timestepsecs / basetimestep
+            else:
+                CapFluxScale = 0.0
+                    
+            CapFlux = MaxCapFlux * CapFluxScale
+            
+            netCapflux = CapFlux
+            actCapFlux = 0.0
+            for k in range(L.size-1,-1,-1):
+                toadd = min(netCapflux, max(L[k]*(static['thetaS'][idx]-static['thetaR'][idx]) - layer['UStoreLayerDepth'][k,idx], 0.0))
+                layer['UStoreLayerDepth'][k,idx] = layer['UStoreLayerDepth'][k,idx] + toadd
+                netCapflux = netCapflux - toadd
+                actCapFlux = actCapFlux + toadd
+            
+            dyn['CapFlux'][idx] = actCapFlux
+                        
+            DeepKsat = static['KsatVer'][idx] * np.exp(-static['f'][idx] * static['SoilThickness'][idx])
+            DeepTransfer = min(dyn['SatWaterDepth'][idx], DeepKsat)
+            dyn['ActLeakage'][idx] = max(0.0, min(static['MaxLeakage'][idx], DeepTransfer))
+                                                  
+            r = (ast - actCapFlux - dyn['ActLeakage'][idx] - dyn['ActEvapSat'][idx] - soilevapsat) * static['DW'][idx]*1000
+            ssf_new[idx], dyn['zi'][idx], ExfiltSatWater = kinematic_wave_ssf(ssf_in, dyn['ssf'][idx], dyn['zi'][idx], r, static['KsatHorFrac'][idx], 
+                                              static['KsatVer'][idx], static['slope'][idx], static['neff'][idx], static['f'][idx], 
+                                              static['SoilThickness'][idx], deltaT, static['DL'][idx]*1000, static['DW'][idx]*1000, static['ssfmax'][idx])
+            
+            dyn['zi'][idx] = min(dyn['zi'][idx], static['SoilThickness'][idx])
+            dyn['SatWaterDepth'][idx] =  (static['SoilThickness'][idx] - dyn['zi'][idx]) * (static['thetaS'][idx] - static['thetaR'][idx])         
+                        
+            n_new = np.where(dyn['zi'][idx] > sumlayer_0)[0]           
+            if len(n_new) > 1:     
+                L_new = np.concatenate((layer['UStoreLayerThickness'][n_new[0:-1],idx], np.array([dyn['zi'][idx] - sumlayer_0[n_new[-1]]]))).astype(np.float64)
+            else:
+                L_new = np.array([dyn['zi'][idx]]).astype(np.float64)                
+                   
+            ExfiltFromUstore = 0.0
+            for k in range(L.size-1,-1,-1):
+                if (np.where(n_new == k))[0].size > 0:
+                    ExfiltFromUstore = max(0,layer['UStoreLayerDepth'][k,idx] - L_new[k]*(static['thetaS'][idx]-static['thetaR'][idx]))
+                else:
+                    ExfiltFromUstore = layer['UStoreLayerDepth'][k,idx]                
+                layer['UStoreLayerDepth'][k,idx] = layer['UStoreLayerDepth'][k,idx] - ExfiltFromUstore
+                if k > 0:
+                    layer['UStoreLayerDepth'][k-1,idx] = layer['UStoreLayerDepth'][k-1,idx] + ExfiltFromUstore
 
-    return sum_UstoreLayerDepth
+            dyn['ExfiltWater'][idx] = ExfiltSatWater + ExfiltFromUstore
+            dyn['ExcessWater'][idx] = dyn['AvailableForInfiltration'][idx] - InfiltSoilPath + du    
+            dyn['ActInfilt'][idx] = InfiltSoilPath - du
+            
+            ponding_add = 0
+            if nrpaddyirri > 0:
+                if static['h_p'][idx] > 0:
+                    ponding_add = min(dyn['ExfiltWater'][idx] + dyn['ExcessWater'][idx], static['h_p'][idx] - dyn['PondingDepth'][idx])
+                    dyn['PondingDepth'][idx] = dyn['PondingDepth'][idx] + ponding_add
+            
+            dyn['InwaterO'][idx] = max(dyn['ExfiltWater'][idx] + dyn['ExcessWater'][idx] + dyn['RunoffLandCells'][idx] - dyn['ActEvapOpenWaterLand'][idx] - ponding_add, 0.0) * (static['xl'][idx] * static['yl'][idx]) * 0.001 / timestepsecs
+            
+            dyn['sumUStoreLayerDepth'][idx] = layer['UStoreLayerDepth'][:,idx].sum()
+            
+            # volumetric water contents per soil layer and root zone            
+            for k in range(layer['UStoreLayerThickness'][:,idx].size):
+                if (np.where(n_new == k))[0].size > 0:
+                    if layer['UStoreLayerThickness'][k,idx] > 0:
+                        layer['vwc'][k,idx] =  (layer['UStoreLayerDepth'][k,idx] + (layer['UStoreLayerThickness'][k,idx] - L_new[k]) * (static['thetaS'][idx] - static['thetaR'][idx])) / layer['UStoreLayerThickness'][k,idx] + static['thetaR'][idx]
+                else:
+                    layer['vwc'][k,idx] = static['thetaS'][idx]
+                
+                layer['vwc_perc'][k,idx] = (layer['vwc'][k,idx]/static['thetaS'][idx]) * 100.0
+                
+                
+            rootStore_unsat = 0
+            for k in range(L_new.size):
+                if L_new[k] > 0:
+                    rootStore_unsat =  rootStore_unsat + (max(0.0, static['ActRootingDepth'][idx] - sumlayer_0[k])/L_new[k]) * layer['UStoreLayerDepth'][k,idx]
+
+            dyn['RootStore_unsat'][idx] = rootStore_unsat 
+            
+            
+    
+    acc_flow = np.zeros(dyn['LandRunoff'].size, dtype=dyn['LandRunoff'].dtype)
+    acc_flow = np.concatenate((acc_flow, np.array([0], dtype=dyn['LandRunoff'].dtype)))
+    qo_toriver_acc = np.copy(acc_flow)
+
+    q = dyn['InwaterO'] / static['DL']
+    for v in range(0,it_kinL):
+	
+        qo_new = np.zeros(dyn['LandRunoff'].size, dtype=dyn['LandRunoff'].dtype)
+        qo_new = np.concatenate((qo_new, np.array([0], dtype=dyn['LandRunoff'].dtype)))
+        
+        for i in range(len(nodes)):
+            for j in range(len(nodes[i])):
+                idx = nodes[i][j]
+                nbs = nodes_up[i][j]
+                
+                if static['River'][idx]:
+                    ind = np.where(ldd_[nbs] != ldd_[idx])
+                    chanperc = np.zeros(ldd_[nbs].size)
+                    chanperc[ind] = slope_[nbs][ind]/(slope_[idx]+slope_[nbs][ind]) 
+ 
+                    if static['SW'][idx] > 0.0:
+                        qo_in = np.sum((1-chanperc)*qo_new[nbs])
+                        qo_toriver_vol = np.sum(chanperc*qo_new[nbs]) * (timestepsecs/it_kinL)
+                    else:
+                        qo_in = 0.0
+                        qo_toriver_vol = np.sum(qo_new[nbs]) * (timestepsecs/it_kinL)
+                else:
+                    qo_in = np.sum(qo_new[nbs])
+                    qo_toriver_vol = 0.0
+
+                    
+                qo_new[idx] = kinematic_wave(qo_in, dyn['LandRunoff'][idx], q[idx], dyn['AlphaL'][idx], static['Beta'][idx], timestepsecs/it_kinL, static['DL'][idx])
+                                
+                acc_flow[idx] = acc_flow[idx] + qo_new[idx] * (timestepsecs/it_kinL)
+                dyn['Qo_in'][idx] = dyn['Qo_in'][idx] + qo_in * (timestepsecs/it_kinL)
+                qo_toriver_acc[idx] = qo_toriver_acc[idx] + qo_toriver_vol
+                if static['SW'][idx] > 0:
+                    WaterLevelL = (dyn['AlphaL'][idx] * np.power(qo_new[idx], static['Beta'][idx])) / static['SW'][idx]
+                Pl = static['SW'][idx] + (2.0 * WaterLevelL)
+                dyn['AlphaL'][idx] = static['AlpTermR'][idx] * np.power(Pl, static['AlpPow'][idx])
+                dyn['LandRunoff'][idx]= qo_new[idx]
+    qo_new = acc_flow/timestepsecs
+    dyn['qo_toriver'][:] = qo_toriver_acc[:-1]/timestepsecs
+    dyn['Qo_in'][:] = dyn['Qo_in'][:] / timestepsecs
+    
+    dyn['SoilWatbal'][:] = (dyn['ActInfilt'][:] - ((dyn['SatWaterDepth'][:] + dyn['sumUStoreLayerDepth'][:]) - (sumUSold[:] + SWDold[:])) +
+                  (dyn['CellInFlow'][:]-ssf_new[:-1])/(static['DW'][:]*static['DL'][:]*1000*1000) - dyn['ExfiltWater'][:] - dyn['soilevap'][:] - dyn['ActEvapUStore'][:] -
+                  dyn['ActEvapSat'][:] - dyn['ActLeakage'][:])
+    
+    return ssf_new[:-1], qo_new[:-1], dyn, layer
 
 
 def SnowPackHBV(Snow, SnowWater, Precipitation, Temperature, TTI, TT, TTM, Cfmax, WHC):
@@ -426,18 +651,32 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         return Et_diff, m3sec
 
+
     def updateRunOff(self):
         """
       Updates the kinematic wave reservoir. Should be run after updates to Q
       """
-        self.WaterLevel = (self.Alpha * pow(self.SurfaceRunoff, self.Beta)) / self.Bw
+        self.WaterLevelR = (self.AlphaR * pow(self.RiverRunoff, self.Beta)) / self.Bw
         # wetted perimeter (m)
-        P = self.Bw + (2 * self.WaterLevel)
+        Pr = self.Bw + (2 * self.WaterLevelR)
         # Alpha
-        self.Alpha = self.AlpTerm * pow(P, self.AlpPow)
-        self.OldKinWaveVolume = self.KinWaveVolume
-        self.KinWaveVolume = self.WaterLevel * self.Bw * self.DCL
-
+        self.AlphaR = self.AlpTermR * pow(Pr, self.AlpPow)
+        self.OldKinWaveVolumeR = self.KinWaveVolumeR
+        self.KinWaveVolumeR = self.WaterLevelR * self.Bw * self.DCL
+        
+        self.dyn['AlphaR'] = pcr.pcr2numpy(self.AlphaR,self.mv).ravel()
+        
+        self.WaterLevelL = pcr.ifthenelse( self.SW > 0, (self.AlphaL * pow(self.LandRunoff, self.Beta)) / self.SW, 0.0)
+        
+        Pl = self.SW + (2 * self.WaterLevelL)
+        # Alpha
+        self.AlphaL = self.AlpTermL * pow(Pl, self.AlpPow)
+        self.OldKinWaveVolumeL = self.KinWaveVolumeL
+        self.KinWaveVolumeL = self.WaterLevelL * self.SW * self.DL
+        
+        self.dyn['AlphaL'] = pcr.pcr2numpy(self.AlphaL,self.mv).ravel()       
+        
+        
     def stateVariables(self):
         """
         returns a list of state variables that are essential to the model.
@@ -445,9 +684,11 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         This function is specific for each model and **must** be present.
 
-       :var self.SurfaceRunoff: Surface runoff in the kin-wave resrvoir [m^3/s]
+       :var self.RiverRunoff: Surface runoff in the kin-wave resrvoir [m^3/s]
+       :var self.LandRunoff: Surface runoff in the kin-wave resrvoir [m^3/s]
        :var self.SurfaceRunoffDyn: Surface runoff in the dyn-wave resrvoir [m^3/s]
-       :var self.WaterLevel: Water level in the kin-wave resrvoir [m]
+       :var self.WaterLevelR: Water level in the river kin-wave reservoir [m]
+       :var self.WaterLevelL: Water level in the land kin-wave reservoir [m]
        :var self.WaterLevelDyn: Water level in the dyn-wave resrvoir [m^]
        :var self.Snow: Snow pack [mm]
        :var self.SnowWater: Snow pack water [mm]
@@ -459,14 +700,17 @@ class WflowModel(pcraster.framework.DynamicModel):
        :var self.GlacierStore: Thickness of the Glacier in a gridcell [mm]
        """
         states = [
-            "SurfaceRunoff",
-            "WaterLevel",
+            "RiverRunoff",
+            "WaterLevelR",
+            "LandRunoff",
+            "WaterLevelL",
             "SatWaterDepth",
             "Snow",
             "TSoil",
             "UStoreLayerDepth",
             "SnowWater",
             "CanopyStorage",
+            "SubsurfaceFlow",
         ]
         if hasattr(self, "GlacierFrac"):
             states.append("GlacierStore")
@@ -695,6 +939,9 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.basetimestep = 86400
         self.SSSF = False
         pcr.setglobaloption("unittrue")
+        
+        self.mv = -999
+        self.count = 0
 
         self.logger.info("running for " + str(self.nrTimeSteps()) + " timesteps")
 
@@ -705,28 +952,21 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.OverWriteInit = int(configget(self.config, "model", "OverWriteInit", "0"))
         self.updating = int(configget(self.config, "model", "updating", "0"))
         self.updateFile = configget(self.config, "model", "updateFile", "no_set")
-        self.LateralMethod = int(configget(self.config, "model", "lateralmethod", "1"))
         self.TransferMethod = int(
-            configget(self.config, "model", "transfermethod", "1")
+            configget(self.config, "model", "transfermethod", "0")
         )
         self.maxitsupply = int(configget(self.config, "model", "maxitsupply", "5"))
         self.UST = int(configget(self.config, "model", "Whole_UST_Avail", "0"))
         self.NRiverMethod = int(configget(self.config, "model", "nrivermethod", "1"))
-
-        if self.LateralMethod == 1:
+        self.kinwaveIters = int(configget(self.config, "model", "kinwaveIters", "0"))        
+        if self.kinwaveIters == 1:
             self.logger.info(
-                "Applying the original topog_sbm lateral transfer formulation"
-            )
-        elif self.LateralMethod == 2:
-            self.logger.warning("Using alternate wflow lateral transfer formulation")
-
+                "Using sub timestep for kinematic wave (iterate)"
+            )            
         if self.TransferMethod == 1:
             self.logger.info(
                 "Applying the original topog_sbm vertical transfer formulation"
             )
-        elif self.TransferMethod == 2:
-            self.logger.warning("Using alternate wflow vertical transfer formulation")
-
         self.sCatch = int(configget(self.config, "model", "sCatch", "0"))
         self.intbl = configget(self.config, "model", "intbl", "intbl")
 
@@ -744,9 +984,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         # self.ExternalQbase=int(configget(self.config,'model','ExternalQbase','0'))
         self.waterdem = int(configget(self.config, "model", "waterdem", "0"))
         WIMaxScale = float(configget(self.config, "model", "WIMaxScale", "0.8"))
-        self.reInfilt = int(configget(self.config, "model", "reInfilt", "0"))
         self.MassWasting = int(configget(self.config, "model", "MassWasting", "0"))
-
         self.nrLayers = int(configget(self.config, "model", "nrLayers", "1"))
 
         # static maps to use (normally default)
@@ -917,6 +1155,7 @@ class WflowModel(pcraster.framework.DynamicModel):
 
             self.Cmax = self.Sl * self.LAI + self.Swood
             self.CanopyGapFraction = pcr.exp(-self.Kext * self.LAI)
+            self.np_CanopyGapFraction = pcr.pcr2numpy(self.CanopyGapFraction,self.mv)
             # TODO: Add MAXLAI and CWf lookup
         else:
             self.Cmax = self.readtblDefault(
@@ -933,6 +1172,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 self.Soil,
                 0.1,
             )
+            
             self.EoverR = self.readtblDefault(
                 self.Dir + "/" + self.intbl + "/EoverR.tbl",
                 self.LandUse,
@@ -1034,6 +1274,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.Soil,
             2000.0,
         )
+                
         self.thetaR = self.readtblDefault(
             self.Dir + "/" + self.intbl + "/thetaR.tbl",
             self.LandUse,
@@ -1041,6 +1282,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.Soil,
             0.01,
         )
+        
         self.thetaS = self.readtblDefault(
             self.Dir + "/" + self.intbl + "/thetaS.tbl",
             self.LandUse,
@@ -1048,6 +1290,8 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.Soil,
             0.6,
         )
+        
+        
         # minimum thickness of soild
         self.SoilMinThickness = self.readtblDefault(
             self.Dir + "/" + self.intbl + "/SoilMinThickness.tbl",
@@ -1091,6 +1335,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         # Check of we have paddy irrigation areas
         tt = pcr.pcr2numpy(self.IrrigationPaddyAreas, 0.0)
         self.nrpaddyirri = tt.max()
+            
 
         self.Beta = pcr.scalar(0.6)  # For sheetflow
 
@@ -1212,7 +1457,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.Slope = pcr.max(0.00001, self.Slope * pcr.celllength() / self.reallength)
         Terrain_angle = pcr.scalar(pcr.atan(self.Slope))
 
-        self.N = pcr.ifthenelse(self.River, self.NRiver, self.N)
+        #self.N = pcr.ifthenelse(self.River, self.NRiver, self.N)
 
         if hasattr(self, "ReserVoirSimpleLocs") or hasattr(
             self, "ReserVoirComplexLocs"
@@ -1327,16 +1572,10 @@ class WflowModel(pcraster.framework.DynamicModel):
             ** (-0.1875)
             * self.N ** (0.375)
         )
+        # should use NRiver here!!!
         # Use supplied riverwidth if possible, else calulate
         self.RiverWidth = pcr.ifthenelse(self.RiverWidth <= 0.0, W, self.RiverWidth)
-
-        # Only allow reinfiltration in river cells by default
-
-        if not hasattr(self, "MaxReinfilt"):
-            self.MaxReinfilt = pcr.ifthenelse(
-                self.River, self.ZeroMap + 999.0, self.ZeroMap
-            )
-
+        
         # soil thickness based on topographical index (see Environmental modelling: finding simplicity in complexity)
         # 1: calculate wetness index
         # 2: Scale the capacity (now actually a max capacity) based on the index, also apply a minmum capacity
@@ -1352,82 +1591,20 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.SoilWaterCapacity = self.SoilThickness * (self.thetaS - self.thetaR)
 
         # determine number of layers based on total soil thickness
-        # assign thickness, unsaturated water store and transfer to these layers (initializing)
         UStoreLayerThickness = configget(
             self.config, "model", "UStoreLayerThickness", "0"
         )
         if UStoreLayerThickness != "0":
-            self.USatLayers = len(UStoreLayerThickness.split(","))
-            self.maxLayers = self.USatLayers + 1
+            self.nrLayers = len(UStoreLayerThickness.split(","))
+            self.maxLayers = self.nrLayers + 1
         else:
             UStoreLayerThickness = self.SoilThickness
-            self.USatLayers = 1
-            self.maxLayers = self.USatLayers
-
-        self.UStoreLayerThickness = []
-        self.UStoreLayerDepth = []
-        self.T = []
-        self.maskLayer = []
-
-        self.SumThickness = self.ZeroMap
-        self.nrLayersMap = self.ZeroMap
-
-        for n in np.arange(0, self.maxLayers):
-            self.SumLayer = self.SumThickness
-            if self.USatLayers > 1 and n < self.USatLayers:
-                UstoreThick_temp = (
-                    float(UStoreLayerThickness.split(",")[n]) + self.ZeroMap
-                )
-                UstoreThick = pcr.min(
-                    UstoreThick_temp, pcr.max(self.SoilThickness - self.SumLayer, 0.0)
-                )
-            else:
-                UstoreThick_temp = pcr.mapmaximum(self.SoilThickness) - self.SumLayer
-                UstoreThick = pcr.min(
-                    UstoreThick_temp, pcr.max(self.SoilThickness - self.SumLayer, 0.0)
-                )
-
-            self.SumThickness = UstoreThick_temp + self.SumThickness
-            self.nrLayersMap = pcr.ifthenelse(
-                (self.SoilThickness >= self.SumThickness)
-                | (self.SoilThickness - self.SumLayer > self.ZeroMap),
-                self.nrLayersMap + 1,
-                self.nrLayersMap,
-            )
-
-            self.UStoreLayerThickness.append(
-                pcr.ifthenelse(
-                    (self.SumThickness <= self.SoilThickness)
-                    | (self.SoilThickness - self.SumLayer > self.ZeroMap),
-                    UstoreThick,
-                    0.0,
-                )
-            )
-            self.UStoreLayerDepth.append(
-                pcr.ifthen(
-                    (self.SumThickness <= self.SoilThickness)
-                    | (self.SoilThickness - self.SumLayer > self.ZeroMap),
-                    self.SoilThickness * 0.0,
-                )
-            )
-            self.T.append(
-                pcr.ifthen(
-                    (self.SumThickness <= self.SoilThickness)
-                    | (self.SoilThickness - self.SumLayer > self.ZeroMap),
-                    self.SoilThickness * 0.0,
-                )
-            )
-            self.maskLayer.append(
-                pcr.ifthen(
-                    (self.SumThickness <= self.SoilThickness)
-                    | (self.SoilThickness - self.SumLayer > self.ZeroMap),
-                    self.SoilThickness * 0.0,
-                )
-            )
+            self.nrLayers = 1
+            self.maxLayers = self.nrLayers
 
         self.KsatVerFrac = []
         self.c = []
-        for n in np.arange(0, len(self.UStoreLayerThickness)):
+        for n in range(self.maxLayers):
             self.KsatVerFrac.append(
                 self.readtblLayersDefault(
                     self.Dir + "/" + self.intbl + "/KsatVerFrac.tbl",
@@ -1525,14 +1702,16 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.ToCubic = (
             self.reallength * self.reallength * 0.001
         ) / self.timestepsecs  # m3/s
-        self.KinWaveVolume = self.ZeroMap
-        self.OldKinWaveVolume = self.ZeroMap
+        self.KinWaveVolumeR = self.ZeroMap
+        self.OldKinWaveVolumeR = self.ZeroMap
+        self.KinWaveVolumeL = self.ZeroMap
+        self.OldKinWaveVolumeL = self.ZeroMap
+        
         self.sumprecip = self.ZeroMap  # accumulated rainfall for water balance
         self.sumevap = self.ZeroMap  # accumulated evaporation for water balance
         self.sumrunoff = self.ZeroMap  # accumulated runoff for water balance
         self.sumint = self.ZeroMap  # accumulated interception for water balance
         self.sumleakage = self.ZeroMap
-        self.CumReinfilt = self.ZeroMap
         self.sumoutflow = self.ZeroMap
         self.sumsnowmelt = self.ZeroMap
         self.CumRad = self.ZeroMap
@@ -1590,21 +1769,202 @@ class WflowModel(pcraster.framework.DynamicModel):
                 self.River, (self.RiverWidth * self.DCL) / (self.xl * self.yl), 0
             ),
         )
-        self.WaterFrac = pcr.min(1.0, self.WaterFrac + self.RiverFrac)
-
+        
+        self.WaterFrac = pcr.max(self.WaterFrac - self.RiverFrac, 0)
+        
         # term for Alpha
         # Correct slope for extra length of the river in a gridcel
         riverslopecor = drainlength / self.DCL
         # pcr.report(riverslopecor,"cor.map")
         # pcr.report(self.Slope * riverslopecor,"slope.map")
-        self.AlpTerm = pow((self.N / (pcr.sqrt(self.Slope * riverslopecor))), self.Beta)
+        self.AlpTermR = pow((self.NRiver / (pcr.sqrt(self.Slope * riverslopecor))), self.Beta)
+        self.riverSlope = self.Slope * riverslopecor
         # power for Alpha
         self.AlpPow = (2.0 / 3.0) * self.Beta
         # initial approximation for Alpha
+        
+        self.AlpTermL = pow((self.N / (pcr.sqrt(self.Slope))), self.Beta)
+        
         # calculate catchmentsize
         self.upsize = pcr.catchmenttotal(self.xl * self.yl, self.TopoLdd)
         self.csize = pcr.areamaximum(self.upsize, self.TopoId)
+        
         self.wf_multparameters()
+        
+        # determine flow network and upstream nodes
+        self.np_ldd = pcr.pcr2numpy(self.TopoLdd, self.mv)
+        # ldd definitie
+        _ldd = np.array([[7, 8, 9], [4, 5, 6], [1, 2, 3]])
+        _ldd_us = np.fliplr(np.flipud(_ldd)).flatten()
+        _ldd_us = np.where(_ldd_us==5, 0, _ldd_us)
+
+        # convert pcr objects to numpy for kinemativ wave surface water
+        np_zeros = pcr.pcr2numpy(self.ZeroMap, self.mv).ravel()
+        np_2d_zeros = pcr.pcr2numpy(self.ZeroMap, self.mv)
+        
+        self.neff = (self.thetaS - self.thetaR)
+        self.f = pcr.abs((self.thetaS - self.thetaR) /self.M)
+        
+        self.DL = detdrainlength(self.TopoLdd, self.xl, self.yl)
+        self.DW = (self.xl * self.yl)/self.DL
+        
+        # width for overland kinematic reservoir        
+        self.SW = pcr.ifthenelse(self.River, pcr.max(self.DW - self.RiverWidth,0), self.DW)
+        
+        layer_dtype = np.dtype(
+                [('c', np.float64),
+                 ('UStoreLayerDepth', np.float64),
+                 ('st', np.float64),
+                 ('KsatVerFrac', np.float64),
+                 ('ActEvapUstore', np.float64),
+                 ('vwc', np.float64),
+                 ('vwc_perc', np.float64),
+                 ('UStoreLayerThickness', np.float64),
+                 ('UStest', np.float64)
+                ])        
+        
+        self.layer = np.zeros((self.maxLayers,np_zeros.size), dtype=layer_dtype)       
+        
+        for n in range(self.maxLayers):
+            self.layer['c'][n] = pcr.pcr2numpy(self.c[n], self.mv).ravel()
+            self.layer['KsatVerFrac'][n] = pcr.pcr2numpy(self.KsatVerFrac[n], self.mv).ravel()
+        
+        static_dtype = np.dtype(
+                [('KsatVer', np.float64),
+                 ('KsatHorFrac', np.float64),
+                 ('f', np.float64),
+                 ('thetaS', np.float64),
+                 ('thetaR', np.float64),
+                 ('SoilThickness', np.float64),
+                 ('InfiltCapSoil', np.float64),
+                 ('PathFrac', np.float64),
+                 ('InfiltCapPath', np.float64),
+                 ('cf_soil', np.float64),
+                 ('neff', np.float64),
+                 ('slope', np.float64),
+                 ('SoilWaterCapacity', np.float64),
+                 ('MaxLeakage', np.float64),
+                 ('CanopyGapFraction', np.float64),
+                 ('CapScale', np.float64),
+                 ('rootdistpar', np.float64),
+                 ('River', np.float64),
+                 ('DL', np.float64),
+                 ('DW', np.float64),
+                 ('SW', np.float64),
+                 ('Beta', np.float64),
+                 ('DCL', np.float64),
+                 ('reallength', np.float64),
+                 ('RootingDepth', np.float64),
+                 ('ActRootingDepth', np.float64),
+                 ('ssfmax', np.float64),
+                 ('xl', np.float64),
+                 ('yl', np.float64),
+                 ('h_p', np.float64),
+                 ('Bw', np.float64),
+                 ('AlpPow', np.float64),
+                 ('AlpTermR', np.float64)
+                 ])
+        
+            
+        self.static = np.zeros(np_zeros.size, dtype=static_dtype)   
+        self.static['KsatVer'] = pcr.pcr2numpy(self.KsatVer, self.mv).ravel()
+        self.static['KsatHorFrac'] = pcr.pcr2numpy(self.KsatHorFrac, self.mv).ravel()
+        self.static['f'] = pcr.pcr2numpy(self.f, self.mv).ravel()
+        self.static['thetaS'] = pcr.pcr2numpy(self.thetaS, self.mv).ravel()
+        self.static['thetaR'] = pcr.pcr2numpy(self.thetaR, self.mv).ravel()
+        self.static['SoilThickness'] = pcr.pcr2numpy(self.SoilThickness, self.mv).ravel()
+        self.static['InfiltCapSoil'] = pcr.pcr2numpy(self.InfiltCapSoil, self.mv).ravel()
+        self.static['InfiltCapPath'] = pcr.pcr2numpy(self.InfiltCapPath, self.mv).ravel()
+        self.static['PathFrac'] = pcr.pcr2numpy(self.PathFrac, self.mv).ravel()
+        self.static['cf_soil'] = pcr.pcr2numpy(self.cf_soil, self.mv).ravel()
+        self.static['neff'] = pcr.pcr2numpy(self.neff, self.mv).ravel()
+        self.static['slope'] = pcr.pcr2numpy(self.Slope, self.mv).ravel()
+        self.static['MaxLeakage'] = pcr.pcr2numpy(self.MaxLeakage, self.mv).ravel()
+        self.static['SoilWaterCapacity'] = pcr.pcr2numpy(self.SoilWaterCapacity, self.mv).ravel()
+        self.static['CanopyGapFraction'] = pcr.pcr2numpy(self.CanopyGapFraction, self.mv).ravel()
+        self.static['CapScale'] = pcr.pcr2numpy(self.CapScale, self.mv).ravel()
+        self.static['rootdistpar'] = pcr.pcr2numpy(self.rootdistpar, self.mv).ravel()
+        self.static['River'] = pcr.pcr2numpy(self.River, self.mv).ravel()
+        self.static['DL'] = pcr.pcr2numpy(self.DL, self.mv).ravel()
+        self.static['DW'] = pcr.pcr2numpy(self.DW, self.mv).ravel()
+        self.static['SW'] = pcr.pcr2numpy(self.SW, self.mv).ravel()
+        self.static['Beta'] = pcr.pcr2numpy(self.Beta, self.mv).ravel()
+        self.static['DCL'] = pcr.pcr2numpy(self.DCL, self.mv).ravel()
+        self.static['reallength'] = pcr.pcr2numpy(self.reallength, self.mv).ravel()
+        self.static['xl'] = pcr.pcr2numpy(self.xl, self.mv).ravel()
+        self.static['yl'] = pcr.pcr2numpy(self.yl, self.mv).ravel()
+        self.static['RootingDepth'] = pcr.pcr2numpy(self.RootingDepth, self.mv).ravel()
+        self.static['h_p'] = pcr.pcr2numpy(self.h_p, self.mv).ravel()
+        self.static['Bw'] = pcr.pcr2numpy(self.Bw, self.mv).ravel()
+        self.static['AlpPow'] = pcr.pcr2numpy(self.AlpPow, self.mv).ravel()
+        self.static['AlpTermR'] = pcr.pcr2numpy(self.AlpTermR, self.mv).ravel()
+        self.static['ssfmax'] = ((self.static['KsatHorFrac'] * self.static['KsatVer'] * self.static['slope']) / self.static['f'] * (np.exp(0)-np.exp(-self.static['f'] * self.static['SoilThickness'])))        
+
+        # implement layers as numpy arrays              
+        np_SumThickness = np_zeros
+        nrLayersMap = np_zeros  
+        for n in np.arange(0, self.maxLayers):
+            np_sumL = np_SumThickness
+            if self.nrLayers > 1 and n < self.nrLayers:
+                UstoreThick_temp = (
+                    float(UStoreLayerThickness.split(",")[n]) + np_zeros
+                )
+                UstoreThick = np.minimum(UstoreThick_temp,np.maximum(self.static['SoilThickness']-np_sumL,0.0))
+            else:
+                UstoreThick_temp = np.maximum(self.static['SoilThickness'] - np_sumL,0.0)
+                UstoreThick = np.maximum(self.static['SoilThickness']-np_sumL, 0.0)                   
+            
+            np_SumThickness = UstoreThick_temp + np_SumThickness
+            
+            nrLayersMap = np.where(self.static['SoilThickness'] - np_sumL > 0.0, nrLayersMap + 1.0, nrLayersMap)
+            
+            self.layer['UStoreLayerThickness'][n] = UstoreThick
+        
+        dyn_dtype = np.dtype(
+                [('restEvap', np.float64),
+                 ('AvailableForInfiltration', np.float64),
+                 ('TSoil', np.float64),
+                 ('zi', np.float64),
+                 ('SatWaterDepth', np.float64),
+                 ('ssf', np.float64),
+                 ('LandRunoff', np.float64),
+                 ('PotTransSoil', np.float64),
+                 ('ActEvapOpenWaterLand', np.float64),
+                 ('RiverRunoff', np.float64),
+                 ('AlphaL', np.float64),
+                 ('AlphaR', np.float64),
+                 ('ExcessWater', np.float64),
+                 ('ExfiltWater', np.float64),
+                 ('soilevap', np.float64),
+                 ('Transfer', np.float64),
+                 ('CapFlux', np.float64),
+                 ('qo_toriver', np.float64),
+                 ('ssf_toriver', np.float64),
+                 ('ActEvapUStore', np.float64),
+                 ('ActEvapSat', np.float64),
+                 ('ActInfilt', np.float64),
+                 ('RunoffLandCells', np.float64),
+                 ('ActLeakage', np.float64),
+                 ('PondingDepth', np.float64),
+                 ('RootStore_unsat', np.float64),
+                 ('CellInFlow', np.float64),
+                 ('InwaterO', np.float64),
+                 ('SoilWatbal', np.float64),
+                 ('Qo_in', np.float64),
+                 ('WaterLevelL', np.float64),
+                 ('InfiltSoilPath',np.float64),
+                 ('sumUStoreLayerDepth', np.float64),
+                 ('SatWaterDepthOld', np.float64),
+                 ('sumUStoreLayerDepthOld', np.float64),
+                 ('InfiltWater', np.float64)
+                 ])        
+        
+        self.dyn = np.zeros(np_zeros.size, dtype=dyn_dtype)
+        
+        self.shape = np_2d_zeros.shape
+        
+        self.nodes, self.nodes_up, self.rnodes, self.rnodes_up = set_dd(self.np_ldd, _ldd_us, self.static['River'])
+                
         # Save some summary maps
         self.logger.info("Saving summary maps...")
 
@@ -1647,8 +2007,11 @@ class WflowModel(pcraster.framework.DynamicModel):
             "self.reallength",
             "self.DCL",
             "self.Bw",
+            "self.SW",
             "self.PathInfiltExceeded",
             "self.SoilInfiltExceeded",
+            "self.DW",
+            "self.DL",
         ]
 
         return lst
@@ -1659,12 +2022,20 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.logger.info("Setting initial conditions to default")
             self.SatWaterDepth = self.SoilWaterCapacity * 0.85
 
-            # for n in np.arange(0,self.nrLayers):
-            #    self.UStoreLayerDepth[n] = self.ZeroMap
-            # TODO: move UStoreLayerDepth from initial to here
+            self.zi = pcr.max(
+                    0.0, self.SoilThickness - self.SatWaterDepth / (self.thetaS - self.thetaR)
+                    )
+            
+            self.SubsurfaceFlow = ((self.KsatHorFrac * self.KsatVer * self.Slope)/ pcr.abs(self.f))* (pcr.exp(-pcr.abs(self.f)*(self.zi)) - pcr.exp(-pcr.abs(self.f)*(self.SoilThickness))) * self.DW * 1000
 
-            self.WaterLevel = self.ZeroMap
-            self.SurfaceRunoff = self.ZeroMap
+            for n in range(self.maxLayers):
+                self.UStoreLayerDepth.append(self.ZeroMap)
+
+            self.WaterLevelR = self.ZeroMap
+            self.WaterLevelL = self.ZeroMap
+            self.RiverRunoff = self.ZeroMap
+            self.LandRunoff = self.ZeroMap
+            
             self.Snow = self.ZeroMap
             self.SnowWater = self.ZeroMap
             self.TSoil = self.ZeroMap + 10.0
@@ -1672,29 +2043,46 @@ class WflowModel(pcraster.framework.DynamicModel):
             if hasattr(self, "ReserVoirSimpleLocs"):
                 self.ReservoirVolume = self.ResMaxVolume * self.ResTargetFullFrac
             if hasattr(self, "ReserVoirComplexLocs"):
-                self.ReservoirWaterLevel = pcr.cover(0.0)
+                #self.ReservoirWaterLevel = pcr.cover(0.0)
+                self.ReservoirWaterLevel = self.wf_readmap(       
+                    os.path.join(self.Dir, "staticmaps", "ReservoirWaterLevel.map"),
+                    400.0,                )
             if hasattr(self, "GlacierFrac"):
                 self.GlacierStore = self.wf_readmap(
                     os.path.join(self.Dir, "staticmaps", "GlacierStore.map"),
-                    55.0 * 1000,
+                    55.0 * 100
+                        
                 )
             if self.nrpaddyirri > 0:
                 self.PondingDepth = self.ZeroMap
-
+ 
         else:
             self.logger.info("Setting initial conditions from state files")
             self.wf_resume(os.path.join(self.Dir, "instate"))
 
-        P = self.Bw + (2.0 * self.WaterLevel)
-        self.Alpha = self.AlpTerm * pow(P, self.AlpPow)
-        self.OldSurfaceRunoff = self.SurfaceRunoff
+        Pr = self.Bw + (2.0 * self.WaterLevelR)
+        self.AlphaR = self.AlpTermR * pow(Pr, self.AlpPow)
+        self.dyn['AlphaR'] = pcr.pcr2numpy(self.AlphaR, self.mv).ravel()
+        
+        Pl = self.SW + (2.0 * self.WaterLevelL)
+        self.AlphaL = self.AlpTermL * pow(Pl, self.AlpPow)
+        self.dyn['AlphaL'] = pcr.pcr2numpy(self.AlphaL, self.mv).ravel()
+        
+        self.OldLandRunoff = self.LandRunoff
+        self.LandRunoffMM = self.LandRunoff * self.QMMConv
+        # Determine initial kinematic wave volume overland
+        self.KinWaveVolumeL = self.WaterLevelL * self.SW * self.DL
+        self.OldKinWaveVolumeL = self.KinWaveVolumeL
+        
+        self.OldRiverRunoff = self.RiverRunoff
 
-        self.SurfaceRunoffMM = self.SurfaceRunoff * self.QMMConv
+        self.RiverRunoffMM = self.RiverRunoff * self.QMMConv
         # Determine initial kinematic wave volume
-        self.KinWaveVolume = self.WaterLevel * self.Bw * self.DCL
-        self.OldKinWaveVolume = self.KinWaveVolume
+        self.KinWaveVolumeR = self.WaterLevelR * self.Bw * self.DCL
+        self.OldKinWaveVolumeR = self.KinWaveVolumeR
 
-        self.QCatchmentMM = self.SurfaceRunoff * self.QMMConvUp
+        self.QCatchmentMM = self.RiverRunoff * self.QMMConvUp
+       
         self.InitialStorage = (
             self.SatWaterDepth
             + sum_list_cover(self.UStoreLayerDepth, self.ZeroMap)
@@ -1721,7 +2109,7 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def dynamic(self):
         """
-        Stuf that is done for each timestep of the model
+        Stuff that is done for each timestep of the model
 
         Below a list of variables that can be save to disk as maps or as
         timeseries (see ini file for syntax):
@@ -1740,7 +2128,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         :var self.soilevap: base soil evaporation [mm]
         :var self.Interception: Actual rainfall interception [mm]
         :var self.ActEvap: Actual evaporation (transpiration + Soil evap + open water evap) [mm]
-        :var self.SurfaceRunoff: Surface runoff in the kinematic wave [m^3/s]
+        :var self.RiverRunoff: Surface runoff in the kinematic wave [m^3/s]
         :var self.SurfaceRunoffDyn: Surface runoff in the dyn-wave resrvoir [m^3/s]
         :var self.SurfaceRunoffCatchmentMM: Surface runoff in the dyn-wave reservoir expressed in mm over the upstream (catchment) area
         :var self.WaterLevelDyn: Water level in the dyn-wave resrvoir [m^]
@@ -1787,6 +2175,9 @@ class WflowModel(pcraster.framework.DynamicModel):
             ##TODO: add MAXLAI and CWf
             self.Cmax = self.Sl * self.LAI + self.Swood
             self.CanopyGapFraction = pcr.exp(-self.Kext * self.LAI)
+            
+            self.np_CanopyGapFraction = pcr.pcr2numpy(self.CanopyGapFraction,self.mv)
+            
             self.Ewet = (1 - pcr.exp(-self.Kext * self.LAI)) * self.PotenEvap
             self.EoverR = pcr.ifthenelse(
                 self.Precipitation > 0.0,
@@ -1925,97 +2316,52 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.ThroughFall + self.StemFlow + self.IRSupplymm
         )
         self.oldIRSupplymm = self.IRSupplymm
+        
+        self.UstoreDepth = sum_list_cover(self.UStoreLayerDepth, self.ZeroMap)
 
         UStoreCapacity = (
             self.SoilWaterCapacity
             - self.SatWaterDepth
-            - sum_list_cover(self.UStoreLayerDepth, self.ZeroMap)
+            - self.UstoreDepth
         )
 
         # Runoff from water bodies and river network
-        self.RunoffOpenWater = (
-            pcr.min(1.0, self.RiverFrac + self.WaterFrac)
+        self.RunoffRiverCells = (
+            pcr.min(1.0, self.RiverFrac)
             * self.AvailableForInfiltration
         )
+        self.RunoffLandCells = (
+            pcr.min(1.0, self.WaterFrac)
+            * self.AvailableForInfiltration
+        )
+        
+        self.dyn['RunoffLandCells'] = pcr.pcr2numpy(self.RunoffLandCells,self.mv).ravel()
+        
         # self.RunoffOpenWater = self.ZeroMap
-        self.AvailableForInfiltration = (
-            self.AvailableForInfiltration - self.RunoffOpenWater
+        self.AvailableForInfiltration = pcr.max(
+            self.AvailableForInfiltration - self.RunoffRiverCells - self.RunoffLandCells, 0.0
         )
 
-        if self.RunoffGenSigmaFunction:
-            self.AbsoluteGW = self.DemMax - (self.zi * self.GWScale)
-            # Determine saturated fraction of cell
-            self.SubCellFrac = sCurve(self.AbsoluteGW, c=self.CC, a=self.Altitude + 1.0)
-            # Make sure total of SubCellFRac + WaterFRac + RiverFrac <=1 to avoid double counting
-            Frac_correction = pcr.ifthenelse(
-                (self.SubCellFrac + self.RiverFrac + self.WaterFrac) > 1.0,
-                self.SubCellFrac + self.RiverFrac + self.WaterFrac - 1.0,
-                0.0,
-            )
-            self.SubCellRunoff = (
-                self.SubCellFrac - Frac_correction
-            ) * self.AvailableForInfiltration
-            self.SubCellGWRunoff = pcr.min(
-                self.SubCellFrac * self.SatWaterDepth,
-                pcr.max(
-                    0.0,
-                    self.SubCellFrac
-                    * self.Slope
-                    * self.KsatVer
-                    * self.KsatHorFrac
-                    * pcr.exp(-self.f * self.zi),
-                ),
-            )
-            self.SatWaterDepth = self.SatWaterDepth - self.SubCellGWRunoff
-            self.AvailableForInfiltration = (
-                self.AvailableForInfiltration - self.SubCellRunoff
-            )
-        else:
-            self.AbsoluteGW = self.DemMax - (self.zi * self.GWScale)
-            self.SubCellFrac = pcr.spatial(pcr.scalar(0.0))
-            self.SubCellGWRunoff = pcr.spatial(pcr.scalar(0.0))
-            self.SubCellRunoff = pcr.spatial(pcr.scalar(0.0))
-
-        # First determine if the soil infiltration capacity can deal with the
-        # amount of water
-        # split between infiltration in undisturbed soil and compacted areas (paths)
-        SoilInf = self.AvailableForInfiltration * (1 - self.PathFrac)
-        PathInf = self.AvailableForInfiltration * self.PathFrac
-        if self.modelSnow:
-            bb = 1.0 / (1.0 - self.cf_soil)
-            soilInfRedu = sCurve(self.TSoil, a=self.ZeroMap, b=bb, c=8.0) + self.cf_soil
-        else:
-            soilInfRedu = 1.0
-        MaxInfiltSoil = pcr.min(self.InfiltCapSoil * soilInfRedu, SoilInf)
-        self.SoilInfiltExceeded = self.SoilInfiltExceeded + pcr.scalar(
-            self.InfiltCapSoil * soilInfRedu < SoilInf
-        )
-
-        MaxInfiltPath = pcr.min(self.InfiltCapPath * soilInfRedu, PathInf)
-        self.PathInfiltExceeded = self.PathInfiltExceeded + pcr.scalar(
-            self.InfiltCapPath * soilInfRedu < PathInf
-        )
-
-        InfiltSoilPath = pcr.min(
-            MaxInfiltPath + MaxInfiltSoil, pcr.max(0.0, UStoreCapacity)
-        )
-        self.In = InfiltSoilPath
-        self.ActInfilt = InfiltSoilPath  # JS Ad this to be compatible with rest
-
-        self.SumThickness = self.ZeroMap
-        self.ZiLayer = self.ZeroMap
 
         # Limit rootingdepth (if set externally)
-        self.ActRootingDepth = pcr.min(self.SoilThickness * 0.99, self.ActRootingDepth)
+        self.ActRootingDepth = pcr.min(self.SoilThickness * 0.99, self.ActRootingDepth)       
+        self.static['ActRootingDepth'] = pcr.pcr2numpy(self.ActRootingDepth,self.mv).ravel()
 
-        # Determine Open Water EVAP based on waterfrac. Later subtract this from water that
+        # Determine Open Water EVAP based on riverfrac and waterfrac. Later subtract this from water that
         # enters the Kinematic wave
-        self.ActEvapOpenWater = pcr.min(
-            self.WaterLevel * 1000.0 * self.WaterFrac,
+        self.ActEvapOpenWaterRiver = pcr.min(
+            self.WaterLevelR * 1000.0 * self.RiverFrac,
+            self.RiverFrac * self.PotTransSoil,
+        )
+        
+        self.ActEvapOpenWaterLand = pcr.min(
+            self.WaterLevelL * 1000.0 * self.WaterFrac,
             self.WaterFrac * self.PotTransSoil,
         )
+            
+        self.dyn['ActEvapOpenWaterLand'] = pcr.pcr2numpy(self.ActEvapOpenWaterLand,self.mv).ravel()
 
-        self.RestEvap = self.PotTransSoil - self.ActEvapOpenWater
+        self.RestEvap = self.PotTransSoil - self.ActEvapOpenWaterRiver - self.ActEvapOpenWaterLand
 
         self.ActEvapPond = self.ZeroMap
         if self.nrpaddyirri > 0:
@@ -2023,719 +2369,14 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.PondingDepth = self.PondingDepth - self.ActEvapPond
             self.RestEvap = self.RestEvap - self.ActEvapPond
 
-        # Go from top to bottom layer
-        self.zi_t = self.zi
-        for n in np.arange(0, len(self.UStoreLayerThickness)):
-            # Find layer with  zi level
-            self.ZiLayer = pcr.ifthenelse(
-                self.zi > self.SumThickness,
-                pcr.min(self.ZeroMap + float(n), self.nrLayersMap - 1),
-                self.ZiLayer,
-            )
-
-            self.SumThickness = self.UStoreLayerThickness[n] + self.SumThickness
-
-        self.SaturationDeficit = self.SoilWaterCapacity - self.SatWaterDepth
-
         # evap available for soil evaporation
         self.RestEvap = self.RestEvap * self.CanopyGapFraction
-
-        self.ActEvapUStore = self.ZeroMap
-
-        self.SumThickness = self.ZeroMap
-        l_Thickness = []
-        self.storage = []
-        l_T = []
-        for n in np.arange(0, len(self.UStoreLayerThickness)):
-            l_T.append(self.SumThickness)
-            self.SumLayer = self.SumThickness
-            self.SumThickness = self.UStoreLayerThickness[n] + self.SumThickness
-
-            l_Thickness.append(self.SumThickness)
-            # Height of unsat zone in layer n
-            self.L = pcr.ifthenelse(
-                self.ZiLayer == float(n),
-                pcr.ifthenelse(
-                    self.ZeroMap + float(n) > 0, self.zi - l_Thickness[n - 1], self.zi
-                ),
-                self.UStoreLayerThickness[n],
-            )
-            # Depth for calculation of vertical fluxes (bottom layer or zi)
-            self.z = pcr.ifthenelse(
-                self.ZiLayer == float(n), self.zi, self.SumThickness
-            )
-            self.storage.append(self.L * (self.thetaS - self.thetaR))
-
-            # First layer is treated differently than layers below first layer
-            if n == 0:
-                DownWard = InfiltSoilPath  # MaxInfiltPath+MaxInfiltSoil
-                self.UStoreLayerDepth[n] = self.UStoreLayerDepth[n] + DownWard
-                self.soilevapunsat = soilevap_SBM_unsat(
-                    self.CanopyGapFraction,
-                    self.RestEvap,
-                    self.SoilWaterCapacity,
-                    self.SatWaterDepth,
-                    self.UStoreLayerDepth,
-                    self.zi,
-                    self.thetaS,
-                    self.thetaR,
-                    self.UStoreLayerThickness,
-                )
-                # assume soil evaporation is from first soil layer
-                if self.nrpaddyirri > 0:
-                    self.soilevapunsat = pcr.ifthenelse(
-                        self.PondingDepth > 0.0,
-                        0.0,
-                        pcr.min(self.soilevapunsat, self.UStoreLayerDepth[0]),
-                    )
-                else:
-                    self.soilevapunsat = pcr.min(
-                        self.soilevapunsat, self.UStoreLayerDepth[n]
-                    )
-
-                # The remaining 'RestEvap' can be used for evaporation from the saturated layer
-                self.RestEvap = self.RestEvap - self.soilevapunsat
-                self.soilevapsat = soilevap_SBM_sat(
-                    self.RestEvap,
-                    self.zi,
-                    self.thetaS,
-                    self.thetaR,
-                    self.UStoreLayerThickness,
-                    self.UStoreLayerDepth,
-                )
-
-                # Total soil evaporation from the first soil layer
-                self.soilevap = self.soilevapunsat + self.soilevapsat
-
-                # Recalculate the water depths in the unsaturated and saturated buckets
-                self.UStoreLayerDepth[n] = self.UStoreLayerDepth[n] - self.soilevapunsat
-                self.SatWaterDepth = self.SatWaterDepth - self.soilevapsat
-
-                # evap available for transpiration
-                self.PotTrans = (
-                    self.PotTransSoil - self.soilevap - self.ActEvapOpenWater
-                )
-                self.RestPotEvap, self.SatWaterDepth, self.ActEvapSat = actEvap_sat_SBM(
-                    self.ActRootingDepth,
-                    self.zi,
-                    self.SatWaterDepth,
-                    self.PotTrans,
-                    self.rootdistpar,
-                )
-                self.UStoreLayerDepth[
-                    n
-                ], self.ActEvapUStore, self.RestPotEvap, self.ET = actEvap_unsat_SBM(
-                    self.ActRootingDepth,
-                    self.zi,
-                    self.UStoreLayerDepth[n],
-                    self.ZiLayer,
-                    self.UStoreLayerThickness[n],
-                    self.SumLayer,
-                    self.RestPotEvap,
-                    self.maskLayer[n],
-                    self.ZeroMap,
-                    self.ZeroMap + float(n),
-                    self.ActEvapUStore,
-                    self.c[n],
-                    self.L,
-                    self.thetaS,
-                    self.thetaR,
-                    self.UST,
-                )
-
-                if len(self.UStoreLayerThickness) > 1:
-                    st = (
-                        self.KsatVerFrac[n]
-                        * self.KsatVer
-                        * pcr.exp(-self.f * self.z)
-                        * pcr.min(
-                            (
-                                (
-                                    self.UStoreLayerDepth[n]
-                                    / (self.L * (self.thetaS - self.thetaR))
-                                )
-                                ** self.c[n]
-                            ),
-                            1.0,
-                        )
-                    )
-                    self.T[n] = pcr.ifthenelse(
-                        self.SaturationDeficit <= 0.00001,
-                        0.0,
-                        pcr.min(self.UStoreLayerDepth[n], st),
-                    )
-                    self.T[n] = pcr.ifthenelse(
-                        self.ZiLayer == float(n), self.maskLayer[n], self.T[n]
-                    )
-                    self.UStoreLayerDepth[n] = self.UStoreLayerDepth[n] - self.T[n]
-            else:
-                self.UStoreLayerDepth[n] = pcr.ifthenelse(
-                    self.ZiLayer < float(n),
-                    self.maskLayer[n],
-                    self.UStoreLayerDepth[n] + self.T[n - 1],
-                )
-                self.UStoreLayerDepth[
-                    n
-                ], self.ActEvapUStore, self.RestPotEvap, self.ET = actEvap_unsat_SBM(
-                    self.ActRootingDepth,
-                    self.zi,
-                    self.UStoreLayerDepth[n],
-                    self.ZiLayer,
-                    self.UStoreLayerThickness[n],
-                    self.SumLayer,
-                    self.RestPotEvap,
-                    self.maskLayer[n],
-                    self.ZeroMap,
-                    self.ZeroMap + float(n),
-                    self.ActEvapUStore,
-                    self.c[n],
-                    self.L,
-                    self.thetaS,
-                    self.thetaR,
-                    self.UST,
-                )
-                st = (
-                    self.KsatVerFrac[n]
-                    * self.KsatVer
-                    * pcr.exp(-self.f * self.z)
-                    * pcr.min(
-                        (
-                            (
-                                self.UStoreLayerDepth[n]
-                                / (self.L * (self.thetaS - self.thetaR))
-                            )
-                            ** self.c[n]
-                        ),
-                        1.0,
-                    )
-                )
-
-                # Transfer in layer with zi is not yet substracted from layer (set to zero)
-                self.T[n] = pcr.ifthenelse(
-                    self.ZiLayer <= float(n),
-                    self.maskLayer[n],
-                    pcr.min(self.UStoreLayerDepth[n], st),
-                )
-                self.UStoreLayerDepth[n] = pcr.ifthenelse(
-                    self.ZiLayer < float(n),
-                    self.maskLayer[n],
-                    self.UStoreLayerDepth[n] - self.T[n],
-                )
-
-        # Determine transpiration
-        self.Transpiration = self.ActEvapUStore + self.ActEvapSat
-        self.ActEvap = (
-            self.Transpiration
-            + self.soilevap
-            + self.ActEvapOpenWater
-            + self.ActEvapPond
-        )
-
-        # Run only if we have irrigation areas or an externally given demand, determine irrigation demand based on potrans and acttrans
-        if self.nrirri > 0 or hasattr(self, "IrriDemandExternal"):
-            if not hasattr(self, "IrriDemandExternal"):  # if not given
-                self.IrriDemand, self.IrriDemandm3 = self.irrigationdemand(
-                    self.PotTrans, self.Transpiration, self.IrrigationAreas
-                )
-                IRDemand = (
-                    idtoid(
-                        self.IrrigationAreas,
-                        self.IrrigationSurfaceIntakes,
-                        self.IrriDemandm3,
-                    )
-                    * -1.0
-                )
-            else:
-                IRDemand = self.IrriDemandExternal
-            # loop over irrigation areas and assign Q to linked river extraction points
-            self.Inflow = pcr.cover(IRDemand, self.Inflow)
-
-        ##########################################################################
-        # Transfer of water from unsaturated to saturated store...################
-        ##########################################################################
-        # Determine saturation deficit. NB, as noted by Vertessy and Elsenbeer 1997
-        # this deficit does NOT take into account the water in the unsaturated zone
-
-        # Optional Macrco-Pore transfer (not yet implemented for # layers > 1)
-        self.MporeTransfer = self.ActInfilt * self.MporeFrac
-        self.SatWaterDepth = self.SatWaterDepth + self.MporeTransfer
-        # self.UStoreLayerDepth = self.UStoreLayerDepth - self.MporeTransfer
-
-        self.SaturationDeficit = self.SoilWaterCapacity - self.SatWaterDepth
-
-        Ksat = self.ZeroMap
-        for n in np.arange(0, len(self.UStoreLayerThickness)):
-            Ksat = Ksat + pcr.ifthenelse(
-                self.ZiLayer == float(n),
-                self.KsatVerFrac[n] * self.KsatVer * pcr.exp(-self.f * self.zi),
-                0.0,
-            )
-
-        self.DeepKsat = self.KsatVer * pcr.exp(-self.f * self.SoilThickness)
-
-        # now the actual transfer to the saturated store from layers with zi
-        self.Transfer = self.ZeroMap
-        for n in np.arange(0, len(self.UStoreLayerThickness)):
-            if self.TransferMethod == 1:
-                self.L = pcr.ifthen(
-                    self.ZiLayer == float(n),
-                    pcr.ifthenelse(
-                        self.ZeroMap + float(n) > 0,
-                        self.zi - l_Thickness[n - 1],
-                        self.zi,
-                    ),
-                )
-                self.Transfer = self.Transfer + pcr.ifthenelse(
-                    self.ZiLayer == float(n),
-                    pcr.min(
-                        pcr.cover(self.UStoreLayerDepth[n], 0.0),
-                        pcr.ifthenelse(
-                            self.SaturationDeficit <= 0.00001,
-                            0.0,
-                            self.KsatVerFrac[n]
-                            * self.KsatVer
-                            * pcr.exp(-self.f * self.zi)
-                            * (
-                                pcr.min(
-                                    pcr.cover(self.UStoreLayerDepth[n], 0.0),
-                                    (self.L + 0.0001) * (self.thetaS - self.thetaR),
-                                )
-                            )
-                            / (self.SaturationDeficit + 1),
-                        ),
-                    ),
-                    0.0,
-                )
-
-            if self.TransferMethod == 2:
-                self.L = pcr.ifthen(
-                    self.ZiLayer == float(n),
-                    pcr.ifthenelse(
-                        self.ZeroMap + float(n) > 0,
-                        self.zi - l_Thickness[n - 1],
-                        self.zi,
-                    ),
-                )
-                st = pcr.ifthen(
-                    self.ZiLayer == float(n),
-                    self.KsatVer
-                    * pcr.exp(-self.f * self.zi)
-                    * pcr.min(
-                        (
-                            self.UStoreLayerDepth[n]
-                            / ((self.L + 0.0001) * (self.thetaS - self.thetaR))
-                        ),
-                        1.0,
-                    )
-                    ** self.c[n],
-                )
-                self.Transfer = self.Transfer + pcr.ifthenelse(
-                    self.ZiLayer == float(n),
-                    pcr.min(
-                        self.UStoreLayerDepth[n],
-                        pcr.ifthenelse(self.SaturationDeficit <= 0.00001, 0.0, st),
-                    ),
-                    0.0,
-                )
-
-        # check soil moisture
-        self.ToExtra = self.ZeroMap
-
-        for n in np.arange(len(self.UStoreLayerThickness) - 1, -1, -1):
-            # self.UStoreLayerDepth[n] = pcr.ifthenelse(self.ZiLayer<=n, self.UStoreLayerDepth[n] + self.ToExtra,self.UStoreLayerDepth[n])
-            diff = pcr.ifthenelse(
-                self.ZiLayer == float(n),
-                pcr.max(
-                    0.0,
-                    (pcr.cover(self.UStoreLayerDepth[n], 0.0) - self.Transfer)
-                    - self.storage[n],
-                ),
-                pcr.max(
-                    self.ZeroMap,
-                    pcr.cover(self.UStoreLayerDepth[n], 0.0)
-                    - pcr.ifthenelse(self.zi <= l_T[n], 0.0, self.storage[n]),
-                ),
-            )
-            self.ToExtra = pcr.ifthenelse(diff > 0, diff, self.ZeroMap)
-            self.UStoreLayerDepth[n] = self.UStoreLayerDepth[n] - diff
-
-            if n > 0:
-                self.UStoreLayerDepth[n - 1] = (
-                    self.UStoreLayerDepth[n - 1] + self.ToExtra
-                )
-
-            # self.UStoreLayerDepth[n] = pcr.ifthenelse(self.ZiLayer<=n, self.UStoreLayerDepth[n]-diff,self.UStoreLayerDepth[n])
-
-        SatFlow = self.ToExtra
-        UStoreCapacity = (
-            self.SoilWaterCapacity
-            - self.SatWaterDepth
-            - sum_list_cover(self.UStoreLayerDepth, self.ZeroMap)
-        )
-
-        MaxCapFlux = pcr.max(
-            0.0, pcr.min(Ksat, self.ActEvapUStore, UStoreCapacity, self.SatWaterDepth)
-        )
-
-        # No capilary flux is roots are in water, max flux if very near to water, lower flux if distance is large
-        CapFluxScale = pcr.ifthenelse(
-            self.zi > self.ActRootingDepth,
-            self.CapScale
-            / (self.CapScale + self.zi - self.ActRootingDepth)
-            * self.timestepsecs
-            / self.basetimestep,
-            0.0,
-        )
-        self.CapFlux = MaxCapFlux * CapFluxScale
-        ToAdd = self.CapFlux
-
-        sumLayer = self.ZeroMap
-
-        # Calculate simple recharge to groundwater
-        self.Recharge = self.Transfer - self.CapFlux - self.ActEvapSat
-
-        # Now add capflux to the layers one by one (from bottom to top)
-        for n in np.arange(len(self.UStoreLayerThickness) - 1, -1, -1):
-
-            L = pcr.ifthenelse(
-                self.ZiLayer == float(n),
-                pcr.ifthenelse(
-                    self.ZeroMap + float(n) > 0, self.zi - l_Thickness[n - 1], self.zi
-                ),
-                self.UStoreLayerThickness[n],
-            )
-            thisLayer = pcr.ifthenelse(
-                self.ZiLayer <= float(n),
-                pcr.min(
-                    ToAdd,
-                    pcr.max(
-                        L * (self.thetaS - self.thetaR) - self.UStoreLayerDepth[n], 0.0
-                    ),
-                ),
-                0.0,
-            )
-            self.UStoreLayerDepth[n] = pcr.ifthenelse(
-                self.ZiLayer <= float(n),
-                self.UStoreLayerDepth[n] + thisLayer,
-                self.UStoreLayerDepth[n],
-            )
-            ToAdd = ToAdd - pcr.cover(thisLayer, 0.0)
-            sumLayer = sumLayer + pcr.cover(thisLayer, 0.0)
-
-        # Determine Ksat at base
-        self.DeepTransfer = pcr.min(self.SatWaterDepth, self.DeepKsat)
-        # ActLeakage = 0.0
-        # Now add leakage. to deeper groundwater
-        self.ActLeakage = pcr.cover(
-            pcr.max(0.0, pcr.min(self.MaxLeakage, self.DeepTransfer)), 0
-        )
-        self.Percolation = pcr.cover(
-            pcr.max(0.0, pcr.min(self.MaxPercolation, self.DeepTransfer)), 0
-        )
-
-        # self.ActLeakage = pcr.ifthenelse(self.Seepage > 0.0, -1.0 * self.Seepage, self.ActLeakage)
-        self.SatWaterDepth = (
-            self.SatWaterDepth
-            + self.Transfer
-            - sumLayer
-            - self.ActLeakage
-            - self.Percolation
-        )
-
-        for n in np.arange(0, len(self.UStoreLayerThickness)):
-            self.UStoreLayerDepth[n] = pcr.ifthenelse(
-                self.ZiLayer == float(n),
-                self.UStoreLayerDepth[n] - self.Transfer,
-                self.UStoreLayerDepth[n],
-            )
-
-        # Determine % saturated taking into account subcell fraction
-        self.Sat = pcr.max(
-            self.SubCellFrac,
-            pcr.scalar(self.SatWaterDepth >= (self.SoilWaterCapacity * 0.999)),
-        )
-
-        ##########################################################################
-        # Horizontal (downstream) transport of water #############################
-        ##########################################################################
-
-        self.zi = pcr.max(
-            0.0, self.SoilThickness - self.SatWaterDepth / (self.thetaS - self.thetaR)
-        )  # Determine actual water depth
-
-        # Re-Determine saturation deficit. NB, as noted by Vertessy and Elsenbeer 1997
-        # this deficit does NOT take into account the water in the unsaturated zone
-        self.SaturationDeficit = self.SoilWaterCapacity - self.SatWaterDepth
-
-        # self.logger.debug("Waterdem set to Altitude....")
-        self.WaterDem = self.Altitude - (self.zi * 0.001)
-        self.waterSlope = pcr.max(
-            0.000001, pcr.slope(self.WaterDem) * pcr.celllength() / self.reallength
-        )
-        if self.waterdem:
-            self.waterLdd = pcr.lddcreate(self.WaterDem, 1e35, 1e35, 1e35, 1e35)
-            # waterLdd = pcr.lddcreate(waterDem,1,1,1,1)
-
-        # TODO: We should make a couple of itterations here...
-
-        if self.waterdem:
-            if self.LateralMethod == 1:
-                Lateral = (
-                    self.KsatHorFrac
-                    * self.KsatVer
-                    * self.waterSlope
-                    * pcr.exp(-self.SaturationDeficit / self.M)
-                )
-            elif self.LateralMethod == 2:
-                # Lateral = Ksat * self.waterSlope
-                Lateral = (
-                    self.KsatHorFrac
-                    * self.KsatVer
-                    * (
-                        pcr.exp(-self.f * self.zi)
-                        - pcr.exp(-self.f * self.SoilThickness)
-                    )
-                    * (1 / self.f)
-                    / (self.SoilThickness - self.zi)
-                    * self.waterSlope
-                )
-
-            MaxHor = pcr.max(0.0, pcr.min(Lateral, self.SatWaterDepth))
-            self.SatWaterFlux = pcr.accucapacityflux(
-                self.waterLdd, self.SatWaterDepth, MaxHor
-            )
-            self.SatWaterDepth = pcr.accucapacitystate(
-                self.waterLdd, self.SatWaterDepth, MaxHor
-            )
-        else:
-            #
-            # MaxHor = pcr.max(0,pcr.min(self.KsatVer * self.Slope * pcr.exp(-SaturationDeficit/self.M),self.SatWaterDepth*(self.thetaS-self.thetaR))) * timestepsecs/basetimestep
-            # MaxHor = pcr.max(0.0, pcr.min(self.KsatVer * self.Slope * pcr.exp(-selield' object does not support item assignmentf.SaturationDeficit / self.M),
-            #                      self.SatWaterDepth))
-            if self.LateralMethod == 1:
-                Lateral = (
-                    self.KsatHorFrac
-                    * self.KsatVer
-                    * self.waterSlope
-                    * pcr.exp(-self.SaturationDeficit / self.M)
-                )
-            elif self.LateralMethod == 2:
-                # Lateral = Ksat * self.waterSlope
-                Lateral = (
-                    self.KsatHorFrac
-                    * self.KsatVer
-                    * (
-                        pcr.exp(-self.f * self.zi)
-                        - pcr.exp(-self.f * self.SoilThickness)
-                    )
-                    * (1 / self.f)
-                    / (self.SoilThickness - self.zi + 1.0)
-                    * self.waterSlope
-                )
-
-            MaxHor = pcr.max(0.0, pcr.min(Lateral, self.SatWaterDepth))
-
-            # MaxHor = self.ZeroMap
-            self.SatWaterFlux = pcr.accucapacityflux(
-                self.TopoLdd, self.SatWaterDepth, MaxHor
-            )
-            self.SatWaterDepth = pcr.accucapacitystate(
-                self.TopoLdd, self.SatWaterDepth, MaxHor
-            )
-
-        ##########################################################################
-        # Determine returnflow from first zone          ##########################
-        ##########################################################################
-        self.ExfiltWaterFrac = sCurve(
-            self.SatWaterDepth, a=self.SoilWaterCapacity, c=5.0
-        )
-        self.ExfiltWater = self.ExfiltWaterFrac * (
-            self.SatWaterDepth - self.SoilWaterCapacity
-        )
-        # self.ExfiltWater=ifthenelse (self.SatWaterDepth - self.SoilWaterCapacity > 0 , self.SatWaterDepth - self.SoilWaterCapacity , 0.0)
-        self.SatWaterDepth = self.SatWaterDepth - self.ExfiltWater
-
-        # Re-determine UStoreCapacity
-        self.zi = pcr.max(
-            0.0, self.SoilThickness - self.SatWaterDepth / (self.thetaS - self.thetaR)
-        )  # Determine actual water depth
-
-        self.SumThickness = self.ZeroMap
-        self.ZiLayer = self.ZeroMap
-        for n in np.arange(0, len(self.UStoreLayerThickness)):
-            # Find layer with  zi level
-            self.ZiLayer = pcr.ifthenelse(
-                self.zi > self.SumThickness,
-                pcr.min(self.ZeroMap + float(n), self.nrLayersMap - 1),
-                self.ZiLayer,
-            )
-
-            self.SumThickness = self.UStoreLayerThickness[n] + self.SumThickness
-
-        self.SumThickness = self.ZeroMap
-        l_Thickness = []
-        self.storage = []
-        self.L = []
-        l_T = []
-
-        # redistribute soil moisture (balance)
-        for n in np.arange(len(self.UStoreLayerThickness)):
-            self.SumLayer = self.SumThickness
-            l_T.append(self.SumThickness)
-            self.SumThickness = self.UStoreLayerThickness[n] + self.SumThickness
-
-            l_Thickness.append(self.SumThickness)
-            # Height of unsat zone in layer n
-            self.L.append(
-                pcr.ifthenelse(
-                    self.ZiLayer == float(n),
-                    pcr.ifthenelse(
-                        self.ZeroMap + float(n) > 0,
-                        self.zi - l_Thickness[n - 1],
-                        self.zi,
-                    ),
-                    self.UStoreLayerThickness[n],
-                )
-            )
-
-            self.storage.append(self.L[n] * (self.thetaS - self.thetaR))
-
-        self.ExfiltFromUstore = self.ZeroMap
-
-        for n in np.arange(len(self.UStoreLayerThickness) - 1, -1, -1):
-            diff = pcr.max(
-                self.ZeroMap,
-                pcr.cover(self.UStoreLayerDepth[n], 0.0)
-                - pcr.ifthenelse(self.zi <= l_T[n], 0.0, self.storage[n]),
-            )
-            self.ExfiltFromUstore = pcr.ifthenelse(diff > 0, diff, self.ZeroMap)
-            self.UStoreLayerDepth[n] = self.UStoreLayerDepth[n] - diff
-
-            if n > 0:
-                self.UStoreLayerDepth[n - 1] = (
-                    self.UStoreLayerDepth[n - 1] + self.ExfiltFromUstore
-                )
-
-        # Re-determine UStoreCapacityield' object does not support item assignment
-        UStoreCapacity = (
-            self.SoilWaterCapacity
-            - self.SatWaterDepth
-            - sum_list_cover(self.UStoreLayerDepth, self.ZeroMap)
-        )
-
-        # self.AvailableForInfiltration = self.AvailableForInfiltration - InfiltSoilPath - SatFlow #MaxInfiltPath+MaxInfiltSoil + SatFlow
-
-        self.ActInfilt = (
-            InfiltSoilPath - SatFlow
-        )  # MaxInfiltPath+MaxInfiltSoil - SatFlow
-
-        self.InfiltExcess = self.AvailableForInfiltration - InfiltSoilPath + SatFlow
-
-        self.ExcessWater = self.AvailableForInfiltration - InfiltSoilPath + SatFlow
-
-        self.CumInfiltExcess = self.CumInfiltExcess + self.InfiltExcess
-
-        # self.ExfiltFromUstore = pcr.ifthenelse(self.zi == 0.0,self.ExfiltFromUstore,self.ZeroMap)
-
-        self.ExfiltWater = self.ExfiltWater + self.ExfiltFromUstore
-
-        self.inund = self.ExfiltWater + self.ExcessWater
-
-        ponding_add = self.ZeroMap
-        if self.nrpaddyirri > 0:
-            ponding_add = pcr.cover(
-                pcr.min(
-                    pcr.ifthen(self.h_p > 0, self.inund), self.h_p - self.PondingDepth
-                ),
-                0.0,
-            )
-            self.PondingDepth = self.PondingDepth + ponding_add
-            irr_depth = (
-                pcr.ifthenelse(
-                    self.PondingDepth < self.h_min, self.h_max - self.PondingDepth, 0.0
-                )
-                * self.CRPST
-            )
-            sqmarea = pcr.areatotal(
-                self.reallength * self.reallength, self.IrrigationPaddyAreas
-            )
-            self.IrriDemandm3 = pcr.cover((irr_depth / 1000.0) * sqmarea, 0)
-            IRDemand = idtoid(
-                self.IrrigationPaddyAreas,
-                self.IrrigationSurfaceIntakes,
-                self.IrriDemandm3,
-            ) * (-1.0 / self.timestepsecs)
-
-            self.IRDemand = IRDemand
-            self.Inflow = pcr.cover(IRDemand, self.Inflow)
-            self.irr_depth = irr_depth
-
-        UStoreCapacity = (
-            self.SoilWaterCapacity
-            - self.SatWaterDepth
-            - sum_list_cover(self.UStoreLayerDepth, self.ZeroMap)
-        )
-        self.UStoreDepth = sum_list_cover(self.UStoreLayerDepth, self.ZeroMap)
-
-        Ksat = self.KsatVer * pcr.exp(-self.f * self.zi)
-
-        SurfaceWater = self.WaterLevel / 1000.0  # SurfaceWater (mm)
-        self.CumSurfaceWater = self.CumSurfaceWater + SurfaceWater
-
-        # Estimate water that may re-infiltrate
-        # - Never more that 70% of the available water
-        # - self.MaxReinFilt: a map with reinfilt locations (usually the river mak) can be supplied)
-        # - take into account that the river may not cover the whole cell
-        if self.reInfilt:
-            self.reinfiltwater = pcr.min(
-                self.MaxReinfilt,
-                pcr.max(
-                    0,
-                    pcr.min(
-                        SurfaceWater * self.RiverWidth / self.reallength * 0.7,
-                        pcr.min(
-                            self.InfiltCapSoil * (1.0 - self.PathFrac), UStoreCapacity
-                        ),
-                    ),
-                ),
-            )
-            self.CumReinfilt = self.CumReinfilt + self.reinfiltwater
-            # TODO: This still has to be reworked fro the differnt layers
-            self.UStoreDepth = self.UStoreDepth + self.reinfiltwater
-        else:
-            self.reinfiltwater = self.ZeroMap
-
-        # The Max here may lead to watbal error. However, if inwaterMMM becomes < 0, the kinematic wave becomes very slow......
-        if self.reInfilt:
-            self.InwaterMM = (
-                self.ExfiltWater
-                + self.ExcessWater
-                + self.SubCellRunoff
-                + self.SubCellGWRunoff
-                + self.RunoffOpenWater
-                - self.reinfiltwater
-                - self.ActEvapOpenWater
-                - ponding_add
-            )
-        else:
-            self.InwaterMM = pcr.max(
-                0.0,
-                self.ExfiltWater
-                + self.ExcessWater
-                + self.SubCellRunoff
-                + self.SubCellGWRunoff
-                + self.RunoffOpenWater
-                - self.reinfiltwater
-                - self.ActEvapOpenWater
-                - ponding_add,
-            )
-        self.Inwater = self.InwaterMM * self.ToCubic  # m3/s
-
+        
         # only run the reservoir module if needed
         if self.nrresSimple > 0:
             self.ReservoirVolume, self.OutflowSR, self.ResPercFull, self.ResPrecipSR, self.ResEvapSR, self.DemandRelease = simplereservoir(
                 self.ReservoirVolume,
-                self.SurfaceRunoff,
+                self.RiverRunoff + self.LandRunoff + self.SubsurfaceFlow/1000/1000/1000/self.timestepsecs,
                 self.ResSimpleArea,
                 self.ResMaxVolume,
                 self.ResTargetFullFrac,
@@ -2765,7 +2406,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 self.hq,
                 self.Res_b,
                 self.Res_e,
-                self.SurfaceRunoff,
+                self.RiverRunoff + self.LandRunoff + self.SubsurfaceFlow/1000/1000/1000/self.timestepsecs,
                 self.ReserVoirPrecip,
                 self.ReserVoirPotEvap,
                 self.ReservoirComplexAreas,
@@ -2778,24 +2419,146 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.Inflow = self.OutflowDwn + pcr.cover(self.Inflow, self.ZeroMap)
         else:
             self.Inflow = pcr.cover(self.Inflow, self.ZeroMap)
+        
+        
+        # convert to numpy for numba        
+        self.dyn['AvailableForInfiltration'] = pcr.pcr2numpy(self.AvailableForInfiltration, self.mv).ravel()
+        self.dyn['zi'] = pcr.pcr2numpy(self.zi,self.mv).ravel()
+        self.dyn['SatWaterDepth'] = pcr.pcr2numpy(self.SatWaterDepth,self.mv).ravel()
+        self.dyn['restEvap'] = pcr.pcr2numpy(self.RestEvap,self.mv).ravel()
+        self.dyn['PotTransSoil'] = pcr.pcr2numpy(self.PotTransSoil,self.mv).ravel()
+        self.dyn['TSoil'] = pcr.pcr2numpy(self.TSoil, self.mv).ravel()
+        self.dyn['ssf'] = pcr.pcr2numpy(self.SubsurfaceFlow,self.mv).ravel()
+        self.dyn['WaterLevelL'] = pcr.pcr2numpy(self.WaterLevelL,self.mv).ravel()
+        self.dyn['Qo_in'] = self.dyn['Qo_in'] * 0.0
+        
+        if self.nrpaddyirri > 0:
+            self.dyn['PondingDepth'] = pcr.pcr2numpy(self.PondingDepth,self.mv).ravel()
+    
+        for i in range(self.maxLayers):
+            self.layer['UStoreLayerDepth'][i] = pcr.pcr2numpy(self.UStoreLayerDepth[i],self.mv).ravel()
+        
+        self.dyn['LandRunoff'] = pcr.pcr2numpy(self.LandRunoff,self.mv).ravel()
+        self.dyn['sumUStoreLayerDepth'] = pcr.pcr2numpy(self.UstoreDepth,self.mv).ravel()
 
+        it_kinL = 1
+        if self.kinwaveIters == 1:
+            it_kinL = estimate_iterations_kin_wave(self.WaterLevelL, self.Beta, self.Slope, self.N, self.timestepsecs, self.DL, self.mv, 0.01)
+        
+        ssf, qo, self.dyn, self.layer  = sbm_cell(self.nodes, 
+                                             self.nodes_up,
+                                             self.np_ldd.ravel(),
+                                             self.layer,
+                                             self.static,
+                                             self.dyn,
+                                             self.modelSnow, 
+                                             self.timestepsecs, 
+                                             self.basetimestep,
+                                             1.0,
+                                             self.nrpaddyirri,
+                                             self.shape,
+                                             self.TransferMethod,
+                                             it_kinL,
+                                             self.UST
+                                             )
+
+        self.SubsurfaceFlow = pcr.numpy2pcr(pcr.Scalar,ssf.reshape(self.shape),self.mv)
+        self.LandRunoff = pcr.numpy2pcr(pcr.Scalar,qo.reshape(self.shape),self.mv)
+        self.zi = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['zi'].reshape(self.shape)),self.mv)
+        self.SatWaterDepth = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['SatWaterDepth'].reshape(self.shape)),self.mv)
+        self.UstoreDepth = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['sumUStoreLayerDepth'].reshape(self.shape)),self.mv)
+        self.CapFlux = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['CapFlux'].reshape(self.shape)),self.mv)
+        self.Transfer = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['Transfer'].reshape(self.shape)),self.mv)
+        
+        for i in range(self.maxLayers):
+            self.UStoreLayerDepth[i] = pcr.numpy2pcr(pcr.Scalar,np.copy(self.layer['UStoreLayerDepth'][i].reshape(self.shape)),self.mv)
+                    
+        if self.nrpaddyirri > 0:
+            self.PondingDepth = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['PondingDepth'].reshape(self.shape)),self.mv)
+        
+        # Determine transpiration
+        self.Transpiration = (pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ActEvapUStore'].reshape(self.shape)),self.mv) + 
+                              pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ActEvapSat'].reshape(self.shape)),self.mv))              
+                      
+        self.ActEvap = (
+                pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['soilevap'].reshape(self.shape)),self.mv)
+                + self.Transpiration
+                + self.ActEvapOpenWaterRiver
+                + self.ActEvapOpenWaterLand
+                + self.ActEvapPond
+                )
+
+        # Run only if we have irrigation areas or an externally given demand, determine irrigation demand based on potrans and acttrans
+        if self.nrirri > 0 or hasattr(self, "IrriDemandExternal"):
+            if not hasattr(self, "IrriDemandExternal"):  # if not given
+                self.IrriDemand, self.IrriDemandm3 = self.irrigationdemand(
+                    self.PotTrans, self.Transpiration, self.IrrigationAreas
+                )
+                IRDemand = (
+                    idtoid(
+                        self.IrrigationAreas,
+                        self.IrrigationSurfaceIntakes,
+                        self.IrriDemandm3,
+                    )
+                    * -1.0
+                )
+            else:
+                IRDemand = self.IrriDemandExternal
+            # loop over irrigation areas and assign Q to linked river extraction points
+            self.Inflow = pcr.cover(IRDemand, self.Inflow)
+        
+                
+        if self.nrpaddyirri > 0:
+            irr_depth = (
+                pcr.ifthenelse(
+                    self.PondingDepth < self.h_min, self.h_max - self.PondingDepth, 0.0
+                )
+                * self.CRPST
+            )
+            sqmarea = pcr.areatotal(
+                self.reallength * self.reallength, self.IrrigationPaddyAreas
+            )
+            self.IrriDemandm3 = pcr.cover((irr_depth / 1000.0) * sqmarea, 0)
+            IRDemand = idtoid(
+                self.IrrigationPaddyAreas,
+                self.IrrigationSurfaceIntakes,
+                self.IrriDemandm3,
+            ) * (-1.0 / self.timestepsecs)
+
+            self.IRDemand = IRDemand
+            self.Inflow = pcr.cover(IRDemand, self.Inflow)
+            self.irr_depth = irr_depth
+
+
+        SurfaceWater = self.WaterLevelR / 1000.0  # SurfaceWater (mm)
+        self.CumSurfaceWater = self.CumSurfaceWater + SurfaceWater
+        
+        self.InwaterMM = self.RunoffRiverCells - self.ActEvapOpenWaterRiver
+        
+        self.qo_toriver = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['qo_toriver'].reshape(self.shape)),self.mv)
+        self.ssf_toriver = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ssf_toriver'].reshape(self.shape)),self.mv)     
+        self.Inwater = self.InwaterMM * self.ToCubic + self.qo_toriver + self.ssf_toriver # m3/s
+
+        self.ExfiltWater = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ExfiltWater'].reshape(self.shape)),self.mv)
+        self.InfiltExcess = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ExcessWater'].reshape(self.shape)),self.mv)
+        self.ActInfilt = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ActInfilt'].reshape(self.shape)),self.mv)
+        self.ActLeakage = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ActLeakage'].reshape(self.shape)),self.mv)
+        self.soilevap = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['soilevap'].reshape(self.shape)),self.mv)
+          
         self.ExfiltWaterCubic = self.ExfiltWater * self.ToCubic
-        self.SubCellGWRunoffCubic = self.SubCellGWRunoff * self.ToCubic
-        self.SubCellRunoffCubic = self.SubCellRunoff * self.ToCubic
         self.InfiltExcessCubic = self.InfiltExcess * self.ToCubic
-        self.ReinfiltCubic = -1.0 * self.reinfiltwater * self.ToCubic
-        # self.Inwater = self.Inwater + self.Inflow  # Add abstractions/inflows in m^3/sec
+
 
         # Check if we do not try to abstract more runoff then present
         self.InflowKinWaveCell = pcr.upstream(
-            self.TopoLdd, self.SurfaceRunoff
+            self.TopoLdd, self.RiverRunoff
         )  # NG The extraction should be equal to the discharge upstream cell. You should not make the abstraction depended on the downstream cell, because they are correlated. During a stationary sum they will get equal to each other.
         MaxExtract = self.InflowKinWaveCell + self.Inwater  # NG
         # MaxExtract = self.SurfaceRunoff + self.Inwater
         self.SurfaceWaterSupply = pcr.ifthenelse(
             self.Inflow < 0.0, pcr.min(MaxExtract, -1.0 * self.Inflow), self.ZeroMap
         )
-        self.OldSurfaceRunoff = self.SurfaceRunoff  # NG Store for iteration
+        self.OldRiverRunoff = self.RiverRunoff  # NG Store for iteration
         self.OldInwater = self.Inwater
         self.Inwater = self.Inwater + pcr.ifthenelse(
             self.SurfaceWaterSupply > 0, -1.0 * self.SurfaceWaterSupply, self.Inflow
@@ -2804,19 +2567,34 @@ class WflowModel(pcraster.framework.DynamicModel):
         ##########################################################################
         # Runoff calculation via Kinematic wave ##################################
         ##########################################################################
-        # per distance along stream
-        q = self.Inwater / self.DCL
-        # discharge (m3/s)
-        self.SurfaceRunoff = pcr.kinematic(
-            self.TopoLdd,
-            self.SurfaceRunoff,
-            q,
-            self.Alpha,
-            self.Beta,
-            self.Tslice,
-            self.timestepsecs,
-            self.DCL,
-        )  # m3/s
+        
+        qr = self.Inwater/self.DCL     
+        qr_np =  pcr.pcr2numpy(qr,self.mv).ravel()
+        
+        RiverRunoff = pcr.pcr2numpy(self.RiverRunoff,self.mv).ravel()
+        
+        it_kinR=1
+        if self.kinwaveIters == 1:
+            it_kinR = estimate_iterations_kin_wave(self.WaterLevelR, self.Beta, self.riverSlope, self.NRiver, self.timestepsecs, self.DCL, self.mv, 0.05)
+            
+        acc_flow = kin_wave(
+                self.rnodes,
+                self.rnodes_up,
+                RiverRunoff,
+                qr_np,
+                self.dyn['AlphaR'],
+                self.static['Beta'],
+                self.static['DCL'],
+                self.static['River'],
+                self.static['Bw'],
+                self.static['AlpTermR'],
+                self.static['AlpPow'],
+                self.timestepsecs,
+                it_kinR)
+            
+        Qriver = acc_flow/self.timestepsecs
+        self.RiverRunoff = pcr.numpy2pcr(pcr.Scalar, np.copy(Qriver).reshape(self.shape),self.mv)
+
 
         # If inflow is negative we have abstractions. Check if demand can be met (by looking
         # at the flow in the upstream cell) and iterate if needed
@@ -2826,7 +2604,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             while True:
                 self.nrit += 1
                 oldsup = self.SurfaceWaterSupply
-                self.InflowKinWaveCell = pcr.upstream(self.TopoLdd, self.SurfaceRunoff)
+                self.InflowKinWaveCell = pcr.upstream(self.TopoLdd, self.RiverRunoff)
                 ##########################################################################
                 # Iterate to make a better estimation for the supply #####################
                 # (Runoff calculation via Kinematic wave) ################################
@@ -2858,37 +2636,52 @@ class WflowModel(pcraster.framework.DynamicModel):
                 )
                 # per distance along stream
                 q = self.Inwater / self.DCL
-                # discharge (m3/s)
-                self.SurfaceRunoff = pcr.kinematic(
-                    self.TopoLdd,
-                    self.OldSurfaceRunoff,
-                    q,
-                    self.Alpha,
-                    self.Beta,
-                    self.Tslice,
-                    self.timestepsecs,
-                    self.DCL,
-                )  # m3/s
-                self.SurfaceRunoffMM = (
-                    self.SurfaceRunoff * self.QMMConv
+                np_RiverRunoff = pcr.pcr2numpy(self.RiverRunoff,self.mv)
+                q_np = pcr.prc2numpy(q, self.mv)
+
+                if self.kinwaveIters == 1:
+                    it_kinR = estimate_iterations_kin_wave(self.WaterLevelR, self.Beta, self.riverSlope, self.NRiver, self.timestepsecs, self.DCL, self.mv, 0.05)
+                
+                acc_flow = kin_wave(
+                        self.rnodes,
+                        self.rnodes_up,
+                        RiverRunoff,
+                        qr_np,
+                        self.dyn['AlphaR'],
+                        self.static['Beta'],
+                        self.static['DCL'],
+                        self.static['River'],
+                        self.static['Bw'],
+                        self.static['AlpTermR'],
+                        self.static['AlpPow'],
+                        self.timestepsecs,
+                        it_kinR)
+                    
+                Qriver = acc_flow/self.timestepsecs
+                self.RiverRunoff = pcr.numpy2pcr(pcr.Scalar, np.copy(Qriver).reshape(self.shape),self.mv)
+                                
+                self.RiverRunoffMM = (
+                    self.RiverRunoff * self.QMMConv
                 )  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
 
                 self.InflowKinWaveCell = pcr.upstream(
-                    self.TopoLdd, self.OldSurfaceRunoff
+                    self.TopoLdd, self.OldRiverRunoff
                 )
-                deltasup = float(
-                    pcr.mapmaximum(pcr.abs(oldsup - self.SurfaceWaterSupply))
-                )
+                deltasup = float(pcr.mapmaximum(pcr.abs(oldsup - self.SurfaceWaterSupply)))
 
                 if deltasup < self.breakoff or self.nrit >= self.maxitsupply:
                     break
 
-            self.InflowKinWaveCell = pcr.upstream(self.TopoLdd, self.SurfaceRunoff)
+            self.InflowKinWaveCell = pcr.upstream(self.TopoLdd, self.RiverRunoff)
             self.updateRunOff()
         else:
-            self.SurfaceRunoffMM = (
-                self.SurfaceRunoff * self.QMMConv
+            self.RiverRunoffMM = (
+                self.RiverRunoff * self.QMMConv
             )  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
+            self.LandRunoffMM = (
+                self.LandRunoff * self.QMMConv
+            )  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)    
+        
             self.updateRunOff()
 
         # Now add the supply that is linked to irrigation areas to extra precip
@@ -2925,15 +2718,32 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.IRSupplymm = pcr.cover(
                 ((IRSupplymm * self.timestepsecs * 1000) / sqmarea), 0.0
             )
-
-        self.MassBalKinWave = (
-            (-self.KinWaveVolume + self.OldKinWaveVolume) / self.timestepsecs
-            + self.InflowKinWaveCell
-            + self.Inwater
-            - self.SurfaceRunoff
+            
+        #Inflow in kin wave is updated with the new surface runoff of the current timestep
+        self.InflowKinWaveCell = pcr.upstream(
+            self.TopoLdd, self.RiverRunoff
         )
 
-        Runoff = self.SurfaceRunoff
+
+        self.MassBalKinWaveR = (
+            (-self.KinWaveVolumeR + self.OldKinWaveVolumeR) / self.timestepsecs
+            + self.InflowKinWaveCell
+            + self.Inwater
+            - self.RiverRunoff
+        )
+        
+
+        self.InwaterL = pcr.numpy2pcr(pcr.Scalar, np.copy(self.dyn['InwaterO'].reshape(self.shape)), self.mv)
+        self.InflowKinWaveCellLand = pcr.numpy2pcr(pcr.Scalar, np.copy(self.dyn['Qo_in'].reshape(self.shape)), self.mv)
+                                
+        self.MassBalKinWaveL = (
+            (-self.KinWaveVolumeL + self.OldKinWaveVolumeL) / self.timestepsecs
+            + self.InflowKinWaveCellLand
+            + self.InwaterL
+            - self.LandRunoff
+        )
+
+        Runoff = self.RiverRunoff
 
         # Updating
         # --------
@@ -2951,7 +2761,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             # For missing gauges 1.0 is assumed (no change).
             # UpDiff = pcr.areamaximum(QM,  self.UpdateMap) - pcr.areamaximum(self.SurfaceRunoffMM, self.UpdateMap)
             UpRatio = pcr.areamaximum(self.QM, self.UpdateMap) / pcr.areamaximum(
-                self.SurfaceRunoffMM, self.UpdateMap
+                self.RiverRunoffMM, self.UpdateMap
             )
 
             UpRatio = pcr.cover(pcr.areaaverage(UpRatio, self.TopoId), 1.0)
@@ -2976,12 +2786,12 @@ class WflowModel(pcraster.framework.DynamicModel):
             # Update the kinematic wave reservoir up to a maximum upstream distance
             MM = (1.0 - self.UpRatioKyn) / self.UpdMaxDist
             self.UpRatioKyn = MM * self.DistToUpdPt + self.UpRatioKyn
-            self.SurfaceRunoff = self.SurfaceRunoff * self.UpRatioKyn
-            self.SurfaceRunoffMM = (
-                self.SurfaceRunoff * self.QMMConv
+            self.RiverRunoff = self.RiverRunoff * self.UpRatioKyn
+            self.RiverRunoffMM = (
+                self.RiverRunoff * self.QMMConv
             )  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
             self.updateRunOff()
-            Runoff = self.SurfaceRunoff
+            Runoff = self.RiverRunoff
 
         # Determine Soil moisture profile
         # self.vwc, self.vwcRoot: volumetric water content [m3/m3] per soil layer and root zone (including thetaR and saturated store)
@@ -2989,85 +2799,34 @@ class WflowModel(pcraster.framework.DynamicModel):
         # self.RootStore_sat: root water storage [mm] in saturated store (excluding thetaR)
         # self.RootStore_unsat: root water storage [mm] in unsaturated store (excluding thetaR)
         # self.RootStore: total root water storage [mm] (excluding thetaR)
-
+        
+        self.vwc = []
+        self.vwc_perc = []
         self.RootStore_sat = pcr.max(0.0, self.ActRootingDepth - self.zi) * (
             self.thetaS - self.thetaR
         )
-
-        self.RootStore_unsat = self.ZeroMap
-        self.SumThickness = self.ZeroMap
-        self.vwc = []
-        self.vwc_perc = []
-
-        for n in np.arange(len(self.UStoreLayerThickness)):
-
-            fracRoot = pcr.ifthenelse(
-                self.ZiLayer > float(n),
-                pcr.min(
-                    1.0,
-                    pcr.max(
-                        0.0,
-                        (pcr.min(self.ActRootingDepth, self.zi) - self.SumThickness)
-                        / self.UStoreLayerThickness[n],
-                    ),
-                ),
-                pcr.min(
-                    1.0,
-                    pcr.max(
-                        0.0,
-                        (self.ActRootingDepth - self.SumThickness)
-                        / (self.zi + 1 - self.SumThickness),
-                    ),
-                ),
-            )
-
-            self.SumThickness = self.UStoreLayerThickness[n] + self.SumThickness
-
-            self.vwc.append(
-                pcr.ifthenelse(
-                    self.ZiLayer > float(n),
-                    self.UStoreLayerDepth[n] / self.UStoreLayerThickness[n]
-                    + self.thetaR,
-                    (
-                        (
-                            (
-                                self.UStoreLayerDepth[n]
-                                + (self.thetaS - self.thetaR)
-                                * pcr.min(
-                                    self.UStoreLayerThickness[n],
-                                    (self.SumThickness - self.zi),
-                                )
-                            )
-                            / self.UStoreLayerThickness[n]
-                        )
-                        + self.thetaR
-                    ),
-                )
-            )
-
-            self.vwc_perc.append((self.vwc[n] / self.thetaS) * 100.0)
-
-            self.RootStore_unsat = self.RootStore_unsat + pcr.cover(
-                fracRoot * self.UStoreLayerDepth[n], 0.0
-            )
-
+        self.RootStore_unsat = pcr.numpy2pcr(pcr.Scalar, np.copy(self.dyn['RootStore_unsat'].reshape(self.shape)), self.mv)
+         
+        for i in range(self.maxLayers):
+            self.vwc.append(pcr.numpy2pcr(pcr.Scalar,np.copy(self.layer['vwc'][i].reshape(self.shape)),self.mv))
+            self.vwc_perc.append(pcr.numpy2pcr(pcr.Scalar,np.copy(self.layer['vwc_perc'][i].reshape(self.shape)),self.mv))
+            
         self.RootStore = self.RootStore_sat + self.RootStore_unsat
         self.vwcRoot = self.RootStore / self.ActRootingDepth + self.thetaR
         self.vwc_percRoot = (self.vwcRoot / self.thetaS) * 100.0
+        
 
         # 2:
         ##########################################################################
         # water balance ###########################################
         ##########################################################################
 
-        self.QCatchmentMM = self.SurfaceRunoff * self.QMMConvUp
+        self.QCatchmentMM = self.RiverRunoff * self.QMMConvUp
         self.RunoffCoeff = (
             self.QCatchmentMM
             / pcr.catchmenttotal(self.PrecipitationPlusMelt, self.TopoLdd)
             / pcr.catchmenttotal(pcr.cover(1.0), self.TopoLdd)
         )
-        # self.AA = pcr.catchmenttotal(self.PrecipitationPlusMelt, self.TopoLdd)
-        # self.BB = pcr.catchmenttotal(pcr.cover(1.0), self.TopoLdd)
         # Single cell based water budget. snow not included yet.
 
         self.CellStorage = (
@@ -3077,18 +2836,17 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.sumUstore = sum_list_cover(self.UStoreLayerDepth, self.ZeroMap)
 
         self.DeltaStorage = self.CellStorage - self.OrgStorage
+        self.SatWaterFlux = self.SubsurfaceFlow /(self.xl*1000*self.yl*1000)
         OutFlow = self.SatWaterFlux
-        if self.waterdem:
-            CellInFlow = pcr.upstream(self.waterLdd, pcr.scalar(self.SatWaterFlux))
-        else:
-            CellInFlow = pcr.upstream(self.TopoLdd, pcr.scalar(self.SatWaterFlux))
+            
+        CellInFlow = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['CellInFlow'].reshape(self.shape)),self.mv)
+        self.CellInFlow = CellInFlow
 
         self.CumOutFlow = self.CumOutFlow + OutFlow
         self.CumActInfilt = self.CumActInfilt + self.ActInfilt
         self.CumCellInFlow = self.CumCellInFlow + CellInFlow
         self.CumPrec = self.CumPrec + self.Precipitation
         self.CumEvap = self.CumEvap + self.ActEvap
-        self.CumPotenTrans = self.CumPotenTrans + self.PotTrans
         self.CumPotenEvap = self.CumPotenEvap + self.PotenEvap
 
         self.CumInt = self.CumInt + self.Interception
@@ -3097,20 +2855,11 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.Snow > 0.0, self.ZeroMap + 1.0, self.ZeroMap
         )
         self.CumLeakage = self.CumLeakage + self.ActLeakage
-        self.CumInwaterMM = self.CumInwaterMM + self.InwaterMM
         self.CumExfiltWater = self.CumExfiltWater + self.ExfiltWater
-
-        self.SoilWatbal = (
-            self.ActInfilt
-            + self.reinfiltwater
-            + CellInFlow
-            - self.Transpiration
-            - self.soilevap
-            - self.ExfiltWater
-            - self.SubCellGWRunoff
-            - self.DeltaStorage
-            - self.SatWaterFlux
-        )
+        
+        
+        self.SoilWatbal = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['SoilWatbal'].reshape(self.shape)),self.mv)
+        
         self.InterceptionWatBal = (
             self.PrecipitationPlusMelt
             - self.Interception
@@ -3118,19 +2867,22 @@ class WflowModel(pcraster.framework.DynamicModel):
             - self.ThroughFall
             - (self.OldCanopyStorage - self.CanopyStorage)
         )
+        
         self.SurfaceWatbal = (
             self.PrecipitationPlusMelt
             + self.oldIRSupplymm
             - self.Interception
-            - self.ExcessWater
-            - self.RunoffOpenWater
-            - self.SubCellRunoff
+            - self.InfiltExcess
+            - self.RunoffRiverCells 
+            - self.RunoffLandCells
             - self.ActInfilt
             - (self.OldCanopyStorage - self.CanopyStorage)
         )
 
         self.watbal = self.SoilWatbal + self.SurfaceWatbal
-
+        
+        self.count = self.count + 1
+        
 
 def main(argv=None):
     """
