@@ -110,6 +110,20 @@ def usage(*args):
     sys.exit(0)
 
 
+def estimate_iterations_kin_wave(waterlevel, Beta, Slope, N, timestepsecs, dx, mv, threshold):
+    
+    celerity = pcr.ifthen(waterlevel >= threshold, Beta * waterlevel**(2.0/3.0) * ((Slope**(0.5))/N))
+    courant = (timestepsecs / dx) * celerity
+    np_courant = pcr.pcr2numpy(courant, mv)
+    np_courant[np_courant==mv] = np.nan
+    try:
+        it_kin = int(1.25*(np.nanpercentile(np_courant,90)))
+    except:
+        it_kin = int(max(timestepsecs / 3600.0, 1.0))
+    
+    return it_kin
+
+
 @jit(nopython=True)
 def _sCurve(X, a=0.0, b=1.0, c=1.0):
     """
@@ -129,7 +143,6 @@ def _sCurve(X, a=0.0, b=1.0, c=1.0):
 
     return s
 
-    
 
 @jit(nopython=True)
 def actEvap_unsat_SBM(
@@ -338,6 +351,7 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, timestepsecs, 
             # unsat fluxes first
             ast, layer['UStoreLayerDepth'][:,idx] = unsatzone_flow(layer['UStoreLayerDepth'][:,idx], InfiltSoilPath, L, z, layer['KsatVerFrac'][:,idx], layer['c'][:,idx], static['KsatVer'][idx], static['f'][idx],
                                          static['thetaS'][idx], static['thetaR'][idx], static['SoilWaterCapacity'][idx], SWDold[idx], shape_layer[0], TransferMethod)
+            dyn['Transfer'][idx] = ast
             
             # then evaporation from layers
             for k in range(len(L)):
@@ -969,20 +983,15 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.maxitsupply = int(configget(self.config, "model", "maxitsupply", "5"))
         self.UST = int(configget(self.config, "model", "Whole_UST_Avail", "0"))
         self.NRiverMethod = int(configget(self.config, "model", "nrivermethod", "1"))
-        self.kinwaveIters = int(configget(self.config, "model", "kinwaveIters", "0"))
-        
+        self.kinwaveIters = int(configget(self.config, "model", "kinwaveIters", "0"))        
         if self.kinwaveIters == 1:
             self.logger.info(
                 "Using sub timestep for kinematic wave (iterate)"
-            )
-            
+            )            
         if self.TransferMethod == 1:
             self.logger.info(
                 "Applying the original topog_sbm vertical transfer formulation"
             )
-        elif self.TransferMethod == 2:
-            self.logger.warning("Using alternate wflow vertical transfer formulation")
-
         self.sCatch = int(configget(self.config, "model", "sCatch", "0"))
         self.intbl = configget(self.config, "model", "intbl", "intbl")
 
@@ -1588,7 +1597,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             ** (-0.1875)
             * self.N ** (0.375)
         )
-# should use NRiver here!!!
+        # should use NRiver here!!!
         # Use supplied riverwidth if possible, else calulate
         self.RiverWidth = pcr.ifthenelse(self.RiverWidth <= 0.0, W, self.RiverWidth)
         
@@ -2471,15 +2480,8 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         it_kinL = 1
         if self.kinwaveIters == 1:
-            self.celerityL = pcr.ifthen(self.WaterLevelL >= 0.01, self.Beta * self.WaterLevelL**(2.0/3.0) * ((self.Slope**(0.5))/self.N))
-            self.courantL = (self.timestepsecs / self.DL) * self.celerityL
-            np_courantL = pcr.pcr2numpy(self.courantL, self.mv)
-            np_courantL[np_courantL==self.mv] = np.nan
-            try:
-                it_kinL = int(1.25*(np.nanpercentile(np_courantL,90)))
-            except:
-                it_kinL = int(max(self.timestepsecs / 3600.0, 1.0))
-
+            it_kinL = estimate_iterations_kin_wave(self.WaterLevelL, self.Beta, self.Slope, self.N, self.timestepsecs, self.DL, self.mv, 0.01)
+        
         ssf, qo, self.dyn, self.layer  = sbm_cell(self.nodes, 
                                              self.nodes_up,
                                              self.np_ldd.ravel(),
@@ -2502,6 +2504,8 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.zi = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['zi'].reshape(self.shape)),self.mv)
         self.SatWaterDepth = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['SatWaterDepth'].reshape(self.shape)),self.mv)
         self.UstoreDepth = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['sumUStoreLayerDepth'].reshape(self.shape)),self.mv)
+        self.CapFlux = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['CapFlux'].reshape(self.shape)),self.mv)
+        self.Transfer = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['Transfer'].reshape(self.shape)),self.mv)
         
         for i in range(self.maxLayers):
             self.UStoreLayerDepth[i] = pcr.numpy2pcr(pcr.Scalar,np.copy(self.layer['UStoreLayerDepth'][i].reshape(self.shape)),self.mv)
@@ -2601,21 +2605,14 @@ class WflowModel(pcraster.framework.DynamicModel):
         # Runoff calculation via Kinematic wave ##################################
         ##########################################################################
         
-        qr = (self.Inwater)/self.DCL     
+        qr = self.Inwater/self.DCL     
         qr_np =  pcr.pcr2numpy(qr,self.mv).ravel()
         
         RiverRunoff = pcr.pcr2numpy(self.RiverRunoff,self.mv).ravel()
         
         it_kinR=1
         if self.kinwaveIters == 1:
-            self.celerityR = pcr.ifthen(self.WaterLevelR >= 0.05, self.Beta * self.WaterLevelR**(2.0/3.0) * ((self.riverSlope**(0.5))/self.NRiver))
-            self.courantR = (self.timestepsecs / self.DCL) * self.celerityR
-            np_courantR = pcr.pcr2numpy(self.courantR, self.mv)
-            np_courantR[np_courantR==self.mv] = np.nan
-            try:
-                it_kinR = int(1.25*(np.nanpercentile(np_courantR,90)))
-            except:
-                it_kinR = int(max(self.timestepsecs / 3600.0, 1.0))
+            it_kinR = estimate_iterations_kin_wave(self.WaterLevelR, self.Beta, self.riverSlope, self.NRiver, self.timestepsecs, self.DCL, self.mv, 0.05)
             
         acc_flow = kin_wave(
                 self.rnodes,
@@ -2678,20 +2675,28 @@ class WflowModel(pcraster.framework.DynamicModel):
                 q = self.Inwater / self.DCL
                 np_RiverRunoff = pcr.pcr2numpy(self.RiverRunoff,self.mv)
                 q_np = pcr.prc2numpy(q, self.mv)
+
+                if self.kinwaveIters == 1:
+                    it_kinR = estimate_iterations_kin_wave(self.WaterLevelR, self.Beta, self.riverSlope, self.NRiver, self.timestepsecs, self.DCL, self.mv, 0.05)
                 
-                RiverRunoff = kin_wave(
+                acc_flow = kin_wave(
                         self.rnodes,
                         self.rnodes_up,
-                        np_RiverRunoff,
-                        q_np,
+                        RiverRunoff,
+                        qr_np,
                         self.dyn['AlphaR'],
                         self.static['Beta'],
-                        self.timestepsecs,
                         self.static['DCL'],
-                        self.shape)
-                
-                self.RiverRunoff = pcr.numpy2pcr(pcr.Scalar, RiverRunoff, self.mv)                
-                
+                        self.static['River'],
+                        self.static['Bw'],
+                        self.static['AlpTermR'],
+                        self.static['AlpPow'],
+                        self.timestepsecs,
+                        it_kinR)
+                    
+                Qriver = acc_flow/self.timestepsecs
+                self.RiverRunoff = pcr.numpy2pcr(pcr.Scalar, np.copy(Qriver).reshape(self.shape),self.mv)
+                                
                 self.RiverRunoffMM = (
                     self.RiverRunoff * self.QMMConv
                 )  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
