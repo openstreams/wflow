@@ -7,7 +7,7 @@ from distutils.dir_util import copy_tree, remove_tree
 
 from osgeo import gdal
 import pyproj
-pyproj_datadir = pyproj.datadir.get_data_dir()
+pyproj_datadir = pyproj.datadir.pyproj_datadir
 
 import pcraster
 
