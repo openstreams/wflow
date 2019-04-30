@@ -116,12 +116,13 @@ def estimate_iterations_kin_wave(waterlevel, Beta, Slope, N, timestepsecs, dx, m
     courant = (timestepsecs / dx) * celerity
     np_courant = pcr.pcr2numpy(courant, mv)
     np_courant[np_courant==mv] = np.nan
+    min_it_kin = int(max(timestepsecs / 3600.0, 1.0))
     try:
         it_kin = int(1.25*(np.nanpercentile(np_courant,90)))
     except:
-        it_kin = int(max(timestepsecs / 3600.0, 1.0))
+        it_kin = min_it_kin
     
-    return it_kin
+    return max(min_it_kin,it_kin)
 
 
 @jit(nopython=True)
@@ -2638,7 +2639,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 # per distance along stream
                 q = self.Inwater / self.DCL
                 np_RiverRunoff = pcr.pcr2numpy(self.RiverRunoff,self.mv)
-                q_np = pcr.prc2numpy(q, self.mv)
+                q_np = pcr.pcr2numpy(q, self.mv)
 
                 if self.kinwaveIters == 1:
                     it_kinR = estimate_iterations_kin_wave(self.WaterLevelR, self.Beta, self.riverSlope, self.NRiver, self.timestepsecs, self.DCL, self.mv, 0.05)
