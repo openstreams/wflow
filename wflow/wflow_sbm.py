@@ -110,19 +110,18 @@ def usage(*args):
     sys.exit(0)
 
 
-def estimate_iterations_kin_wave(waterlevel, Beta, Slope, N, timestepsecs, dx, mv, threshold):
+def estimate_iterations_kin_wave(Q, Beta, alpha, timestepsecs, dx, mv):
     
-    celerity = pcr.ifthen(waterlevel >= threshold, Beta * waterlevel**(2.0/3.0) * ((Slope**(0.5))/N))
+    celerity = pcr.ifthen(Q > 0.0, 1.0 / (alpha * Beta * Q**(Beta-1)))
     courant = (timestepsecs / dx) * celerity
     np_courant = pcr.pcr2numpy(courant, mv)
     np_courant[np_courant==mv] = np.nan
-    min_it_kin = int(max(timestepsecs / 3600.0, 1.0))
     try:
-        it_kin = int(1.25*(np.nanpercentile(np_courant,90)))
+        it_kin = int(1.25*(np.nanpercentile(np_courant,95)))
     except:
-        it_kin = min_it_kin
+        it_kin = 1
     
-    return max(min_it_kin,it_kin)
+    return it_kin
 
 
 @jit(nopython=True)
@@ -1571,7 +1570,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             * Qscale ** (0.375)
             * (pcr.max(0.0001, pcr.windowaverage(self.Slope, pcr.celllength() * 4.0)))
             ** (-0.1875)
-            * self.N ** (0.375)
+            * self.NRiver ** (0.375)
         )
         # should use NRiver here!!!
         # Use supplied riverwidth if possible, else calulate
@@ -2445,7 +2444,7 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         it_kinL = 1
         if self.kinwaveIters == 1:
-            it_kinL = estimate_iterations_kin_wave(self.WaterLevelL, self.Beta, self.Slope, self.N, self.timestepsecs, self.DL, self.mv, 0.01)
+            it_kinL = estimate_iterations_kin_wave(self.LandRunoff, self.Beta, self.AlphaL, self.timestepsecs, self.DL, self.mv)
         
         ssf, qo, self.dyn, self.layer  = sbm_cell(self.nodes, 
                                              self.nodes_up,
@@ -2577,7 +2576,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         
         it_kinR=1
         if self.kinwaveIters == 1:
-            it_kinR = estimate_iterations_kin_wave(self.WaterLevelR, self.Beta, self.riverSlope, self.NRiver, self.timestepsecs, self.DCL, self.mv, 0.05)
+            it_kinR = estimate_iterations_kin_wave(self.RiverRunoff, self.Beta, self.AlphaR, self.timestepsecs, self.DCL, self.mv)
             
         acc_flow = kin_wave(
                 self.rnodes,
@@ -2642,7 +2641,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 q_np = pcr.pcr2numpy(q, self.mv)
 
                 if self.kinwaveIters == 1:
-                    it_kinR = estimate_iterations_kin_wave(self.WaterLevelR, self.Beta, self.riverSlope, self.NRiver, self.timestepsecs, self.DCL, self.mv, 0.05)
+                    it_kinR = estimate_iterations_kin_wave(self.RiverRunoff, self.Beta, self.AlphaR, self.timestepsecs, self.DCL, self.mv)
                 
                 acc_flow = kin_wave(
                         self.rnodes,
