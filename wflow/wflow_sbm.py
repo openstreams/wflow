@@ -236,11 +236,11 @@ def actEvap_unsat_SBM(
 
 
 @jit(nopython=True)    
-def infiltration(AvailableForInfiltration, PathFrac, cf_soil, TSoil,InfiltCapSoil,InfiltCapPath, UStoreCapacity, modelSnow ):
+def infiltration(AvailableForInfiltration, PathFrac, cf_soil, TSoil,InfiltCapSoil,InfiltCapPath, UStoreCapacity, modelSnow, soilInfReduction):
     
     SoilInf = AvailableForInfiltration  * (1 - PathFrac)
     PathInf = AvailableForInfiltration * PathFrac
-    if modelSnow:
+    if modelSnow & soilInfReduction:
         bb = 1.0 / (1.0 - cf_soil)
         soilInfRedu = _sCurve(TSoil, a=0.0, b=bb, c=8.0)
     else:
@@ -290,7 +290,7 @@ def unsatzone_flow(UStoreLayerDepth, InfiltSoilPath, L, z, KsatVerFrac, c, KsatV
     
     
 @jit(nopython=True)    
-def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, timestepsecs, basetimestep, deltaT, nrpaddyirri, shape, TransferMethod, it_kinL=1, ust=0):
+def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, soilInfReduction, timestepsecs, basetimestep, deltaT, nrpaddyirri, shape, TransferMethod, it_kinL=1, ust=0):
         
     shape_layer = layer['UStoreLayerThickness'].shape
     
@@ -344,7 +344,7 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, timestepsecs, 
             UStoreCapacity = static['SoilWaterCapacity'][idx] - dyn['SatWaterDepth'][idx] - layer['UStoreLayerDepth'][n,idx].sum()
             
             InfiltSoilPath = infiltration(dyn['AvailableForInfiltration'][idx], static['PathFrac'][idx], static['cf_soil'][idx], 
-                                          dyn['TSoil'][idx],static['InfiltCapSoil'][idx],static['InfiltCapPath'][idx],UStoreCapacity, modelSnow)
+                                          dyn['TSoil'][idx],static['InfiltCapSoil'][idx],static['InfiltCapPath'][idx],UStoreCapacity, modelSnow, soilInfReduction)
             
             dyn['InfiltSoilPath'][idx] = InfiltSoilPath
             
@@ -971,6 +971,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.intbl = configget(self.config, "model", "intbl", "intbl")
 
         self.modelSnow = int(configget(self.config, "model", "ModelSnow", "1"))
+        self.soilInfReduction = int(configget(self.config, "model", "soilInfRedu", "1"))
         sizeinmetres = int(configget(self.config, "layout", "sizeinmetres", "0"))
         alf = float(configget(self.config, "model", "Alpha", "60"))
         # TODO: make this into a list for all gauges or a map
@@ -1434,17 +1435,17 @@ class WflowModel(pcraster.framework.DynamicModel):
                 * self.timestepsecs
                 / self.basetimestep
             )
-
-            self.cf_soil = pcr.min(
-                0.99,
-                self.readtblDefault(
-                    self.Dir + "/" + self.intbl + "/cf_soil.tbl",
-                    self.LandUse,
-                    subcatch,
-                    self.Soil,
-                    0.038,
-                ),
-            )  # Ksat reduction factor fro frozen soi
+            if self.soilInfReduction:
+                self.cf_soil = pcr.min(
+                    0.99,
+                    self.readtblDefault(
+                        self.Dir + "/" + self.intbl + "/cf_soil.tbl",
+                        self.LandUse,
+                        subcatch,
+                        self.Soil,
+                        0.038,
+                    ),
+                )  # Ksat reduction factor fro frozen soi
             # We are modelling gletchers
 
         # Determine real slope and cell length
@@ -1467,13 +1468,15 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         if hasattr(self, "ReserVoirSimpleLocs"):
             # Check if we have simple and or complex reservoirs
+            self.ReserVoirSimpleLocs = pcr.nominal(self.ReserVoirSimpleLocs)
+            self.ReservoirSimpleAreas = pcr.nominal(self.ReservoirSimpleAreas)
             tt_simple = pcr.pcr2numpy(self.ReserVoirSimpleLocs, 0.0)
             self.nrresSimple = tt_simple.max()
             self.ReserVoirLocs = self.ReserVoirLocs + pcr.cover(
                 pcr.scalar(self.ReserVoirSimpleLocs)
             )
             areamap = self.reallength * self.reallength
-            res_area = pcr.areatotal(pcr.spatial(areamap), pcr.nominal(self.ReservoirSimpleAreas))
+            res_area = pcr.areatotal(pcr.spatial(areamap), self.ReservoirSimpleAreas)
 
             resarea_pnt = pcr.ifthen(pcr.boolean(self.ReserVoirSimpleLocs), res_area)
             self.ResSimpleArea = pcr.ifthenelse(
@@ -1490,6 +1493,8 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.nrresSimple = 0
 
         if hasattr(self, "ReserVoirComplexLocs"):
+            self.ReservoirComplexAreas = pcr.nominal(self.ReservoirComplexAreas)
+            self.ReserVoirComplexLocs = pcr.nominal(self.ReserVoirComplexLocs)
             tt_complex = pcr.pcr2numpy(self.ReserVoirComplexLocs, 0.0)
             self.nrresComplex = tt_complex.max()
             self.ReserVoirLocs = self.ReserVoirLocs + pcr.cover(
@@ -1562,8 +1567,11 @@ class WflowModel(pcraster.framework.DynamicModel):
         # Alf ranges from 5 to > 60. 5 for hardrock. large values for sediments
         # "Noah J. Finnegan et al 2005 Controls on the channel width of rivers:
         # Implications for modeling fluvial incision of bedrock"
-
-        upstr = pcr.catchmenttotal(1, self.TopoLdd)
+        
+        if (self.nrresSimple + self.nrresComplex) > 0:
+            upstr = pcr.catchmenttotal(1, self.TopoLddOrg)
+        else:
+            upstr = pcr.catchmenttotal(1, self.TopoLdd)
         Qscale = upstr / pcr.mapmaximum(upstr) * Qmax
         W = (
             (alf * (alf + 2.0) ** (0.6666666667)) ** (0.375)
@@ -1876,7 +1884,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.static['InfiltCapSoil'] = pcr.pcr2numpy(self.InfiltCapSoil, self.mv).ravel()
         self.static['InfiltCapPath'] = pcr.pcr2numpy(self.InfiltCapPath, self.mv).ravel()
         self.static['PathFrac'] = pcr.pcr2numpy(self.PathFrac, self.mv).ravel()
-        if self.modelSnow:
+        if self.modelSnow & self.soilInfReduction:
             self.static['cf_soil'] = pcr.pcr2numpy(self.cf_soil, self.mv).ravel()
         self.static['neff'] = pcr.pcr2numpy(self.neff, self.mv).ravel()
         self.static['slope'] = pcr.pcr2numpy(self.Slope, self.mv).ravel()
@@ -2387,7 +2395,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 self.ReserVoirSimpleLocs,
                 self.ReserVoirPrecip,
                 self.ReserVoirPotEvap,
-                pcr.nominal(self.ReservoirSimpleAreas),
+                self.ReservoirSimpleAreas,
                 timestepsecs=self.timestepsecs,
             )
             self.OutflowDwn = pcr.upstream(
@@ -2452,7 +2460,8 @@ class WflowModel(pcraster.framework.DynamicModel):
                                              self.layer,
                                              self.static,
                                              self.dyn,
-                                             self.modelSnow, 
+                                             self.modelSnow,
+                                             self.soilInfReduction,
                                              self.timestepsecs, 
                                              self.basetimestep,
                                              1.0,
