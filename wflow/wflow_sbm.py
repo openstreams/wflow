@@ -1473,7 +1473,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 pcr.scalar(self.ReserVoirSimpleLocs)
             )
             areamap = self.reallength * self.reallength
-            res_area = pcr.areatotal(pcr.spatial(areamap), self.ReservoirSimpleAreas)
+            res_area = pcr.areatotal(pcr.spatial(areamap), pcr.nominal(self.ReservoirSimpleAreas))
 
             resarea_pnt = pcr.ifthen(pcr.boolean(self.ReserVoirSimpleLocs), res_area)
             self.ResSimpleArea = pcr.ifthenelse(
@@ -2387,7 +2387,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 self.ReserVoirSimpleLocs,
                 self.ReserVoirPrecip,
                 self.ReserVoirPotEvap,
-                self.ReservoirSimpleAreas,
+                pcr.nominal(self.ReservoirSimpleAreas),
                 timestepsecs=self.timestepsecs,
             )
             self.OutflowDwn = pcr.upstream(
