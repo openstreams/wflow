@@ -117,7 +117,7 @@ def estimate_iterations_kin_wave(Q, Beta, alpha, timestepsecs, dx, mv):
     np_courant = pcr.pcr2numpy(courant, mv)
     np_courant[np_courant==mv] = np.nan
     try:
-        it_kin = int(1.25*(np.nanpercentile(np_courant,95)))
+        t_kin = int(np.ceil(1.25*(np.nanpercentile(np_courant,95))))
     except:
         it_kin = 1
     
