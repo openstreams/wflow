@@ -214,12 +214,15 @@ def actEvap_unsat_SBM(
     head = max(head,hb)
 
     # Transform h to a reduction coefficient value according to Feddes et al. (1978).
+    # For now: no reduction for head < h2 until following improvements (todo):
+    #       - reduction only applied to crops
+    #       - improved drainage concept of areas with low slope values (these areas are too wet)
     if(head <= h1):
-        alpha = 0
+        alpha = 1 #0
     elif(head >= h4):
         alpha = 0
     elif((head < h2) & (head > h1)):
-        alpha = (head - h1) / (h2 - h1)
+        alpha = 1 #(head - h1) / (h2 - h1)
     elif((head > h3) & (head < h4)):
         alpha = 1 - (head - h3) / (h4 - h3)
     else:
