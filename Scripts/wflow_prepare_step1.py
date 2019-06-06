@@ -43,6 +43,7 @@ import getopt
 import configparser
 import sys
 import gc
+import pcraster as pcr
 
 
 def usage(*args):
@@ -113,13 +114,13 @@ def main():
         if o == "-f":
             recreate = True
 
-    tr.setglobaloption("unitcell")
+    pcr.setglobaloption("unitcell")
     os.chdir(workdir)
 
     config = OpenConf(workdir + "/" + inifile)
 
     masterdem = configget(config, "files", "masterdem", "dem.map")
-    tr.setclone(masterdem)
+    pcr.setclone(masterdem)
 
     strRiver = int(configget(config, "settings", "riverorder", "4"))
 
@@ -148,7 +149,7 @@ def main():
         int(configget(config, "settings", "snapgaugestoriver", "1"))
     )
     lddglobaloption = configget(config, "settings", "lddglobaloption", "lddout")
-    tr.setglobaloption(lddglobaloption)
+    pcr.setglobaloption(lddglobaloption)
     lu_water = configget(config, "files", "lu_water", "")
     lu_paved = configget(config, "files", "lu_paved", "")
 
@@ -176,11 +177,11 @@ def main():
             + "/dem_scaled.map"
         )
         print("Reading dem...")
-        dem = tr.readmap(step1dir + "/dem_scaled.map")
+        dem = pcr.readmap(step1dir + "/dem_scaled.map")
         ldddem = dem
     else:
         print ("Reading dem...")
-        dem = tr.readmap(masterdem)
+        dem = pcr.readmap(masterdem)
         ldddem = dem
 
     try:
@@ -189,9 +190,9 @@ def main():
         print("No catchment mask...")
     else:
         print("clipping DEM with mask.....")
-        mask = tr.readmap(catchmask)
-        ldddem = tr.ifthen(tr.boolean(mask), ldddem)
-        dem = tr.ifthen(tr.boolean(mask), dem)
+        mask = pcr.readmap(catchmask)
+        ldddem = pcr.ifthen(pcr.boolean(mask), ldddem)
+        dem = pcr.ifthen(pcr.boolean(mask), dem)
 
     # See if there is a shape file of the river to burn in
     try:
@@ -212,9 +213,9 @@ def main():
             exit(1)
 
         outletpointmap = tr.points_to_map(dem, outletpointX, outletpointY, 0.5)
-        tr.report(outletpointmap, step1dir + "/outletpoint.map")
+        pcr.report(outletpointmap, step1dir + "/outletpoint.map")
         # rivshpattr = config.get("files","riverattr")
-        tr.report(dem * 0.0, step1dir + "/nilmap.map")
+        pcr.report(dem * 0.0, step1dir + "/nilmap.map")
         thestr = (
             "gdal_translate -of GTiff "
             + step1dir
@@ -241,15 +242,15 @@ def main():
             + "/riverburn.map"
         )
         os.system(thestr)
-        riverburn = tr.readmap(step1dir + "/riverburn.map")
+        riverburn = pcr.readmap(step1dir + "/riverburn.map")
         # Determine regional slope assuming that is the way the river should run
         # Determine regional slope assuming that is the way the river should run
-        # tr.setglobaloption("unitcell")
-        # demregional=tr.windowaverage(dem,100)
-        ldddem = tr.ifthenelse(riverburn >= 1.0, dem - 1000, dem)
+        # pcr.setglobaloption("unitcell")
+        # demregional=pcr.windowaverage(dem,100)
+        ldddem = pcr.ifthenelse(riverburn >= 1.0, dem - 1000, dem)
 
-    tr.setglobaloption("unittrue")
-    upscalefactor = int(csize / tr.celllength())
+    pcr.setglobaloption("unittrue")
+    upscalefactor = int(csize / pcr.celllength())
 
     print("Creating ldd...")
     ldd = tr.lddcreate_save(
@@ -263,13 +264,13 @@ def main():
     )
 
     print("Determining streamorder...")
-    stro = tr.streamorder(ldd)
-    tr.report(stro, step1dir + "/streamorder.map")
-    strdir = tr.ifthen(stro >= strRiver, stro)
-    tr.report(strdir, step1dir + "/streamorderrive.map")
-    tr.report(tr.boolean(tr.ifthen(stro >= strRiver, stro)), step1dir + "/rivers.map")
+    stro = pcr.streamorder(ldd)
+    pcr.report(stro, step1dir + "/streamorder.map")
+    strdir = pcr.ifthen(stro >= strRiver, stro)
+    pcr.report(strdir, step1dir + "/streamorderrive.map")
+    pcr.report(pcr.boolean(pcr.ifthen(stro >= strRiver, stro)), step1dir + "/rivers.map")
 
-    tr.setglobaloption("unittrue")
+    pcr.setglobaloption("unittrue")
     # outlet (and other gauges if given)
     # TODO: check is x/y set if not skip this
     print("Outlet...")
@@ -278,13 +279,13 @@ def main():
 
     if snapgaugestoriver:
         print("Snapping gauges to nearest river cells...")
-        tr.report(outlmap, step1dir + "/orggauges.map")
+        pcr.report(outlmap, step1dir + "/orggauges.map")
         outlmap = tr.snaptomap(outlmap, strdir)
 
     # noutletmap = tr.points_to_map(dem,XX,YY,0.5)
-    # tr.report(noutletmap,'noutlet.map')
+    # pcr.report(noutletmap,'noutlet.map')
 
-    tr.report(outlmap, step1dir + "/gauges.map")
+    pcr.report(outlmap, step1dir + "/gauges.map")
 
     # check if there is a pre-define catchment map
     try:
@@ -293,8 +294,8 @@ def main():
         print("No catchment mask, finding outlet")
         # Find catchment (overall)
         outlet = tr.find_outlet(ldd)
-        sub = tr.subcatch(ldd, outlet)
-        tr.report(sub, step1dir + "/catchment_overall.map")
+        sub = pcr.subcatch(ldd, outlet)
+        pcr.report(sub, step1dir + "/catchment_overall.map")
     else:
         print("reading and converting catchment mask.....")
         os.system(
@@ -306,55 +307,55 @@ def main():
             + step1dir
             + "/catchment_overall.map"
         )
-        sub = tr.readmap(step1dir + "/catchment_overall.map")
+        sub = pcr.readmap(step1dir + "/catchment_overall.map")
 
     print("Scatch...")
-    sd = tr.subcatch(ldd, tr.ifthen(outlmap > 0, outlmap))
-    tr.report(sd, step1dir + "/scatch.map")
+    sd = pcr.subcatch(ldd, pcr.ifthen(outlmap > 0, outlmap))
+    pcr.report(sd, step1dir + "/scatch.map")
 
-    tr.setglobaloption("unitcell")
+    pcr.setglobaloption("unitcell")
     print("Upscalefactor: " + str(upscalefactor))
 
     if upscalefactor > 1:
         gc.collect()
         print("upscale river length1 (checkerboard map)...")
         ck = tr.checkerboard(dem, upscalefactor)
-        tr.report(ck, step1dir + "/ck.map")
-        tr.report(dem, step1dir + "/demck.map")
+        pcr.report(ck, step1dir + "/ck.map")
+        pcr.report(dem, step1dir + "/demck.map")
         print("upscale river length2...")
         fact = tr.area_riverlength_factor(ldd, ck, upscalefactor)
-        tr.report(fact, step1dir + "/riverlength_fact.map")
+        pcr.report(fact, step1dir + "/riverlength_fact.map")
 
         # print("make dem statistics...")
-        dem_ = tr.areaaverage(dem, ck)
-        tr.report(dem_, step1dir + "/demavg.map")
+        dem_ = pcr.areaaverage(dem, ck)
+        pcr.report(dem_, step1dir + "/demavg.map")
 
         print("Create DEM statistics...")
-        dem_ = tr.areaminimum(dem, ck)
-        tr.report(dem_, step1dir + "/demmin.map")
-        dem_ = tr.areamaximum(dem, ck)
-        tr.report(dem_, step1dir + "/demmax.map")
+        dem_ = pcr.areaminimum(dem, ck)
+        pcr.report(dem_, step1dir + "/demmin.map")
+        dem_ = pcr.areamaximum(dem, ck)
+        pcr.report(dem_, step1dir + "/demmax.map")
         # calculate percentiles
-        order = tr.areaorder(dem, ck)
-        n = tr.areatotal(tr.spatial(tr.scalar(1.0)), ck)
+        order = pcr.areaorder(dem, ck)
+        n = pcr.areatotal(pcr.spatial(pcr.scalar(1.0)), ck)
         #: calculate 25 percentile
         perc = tr.area_percentile(dem, ck, n, order, 25.0)
-        tr.report(perc, step1dir + "/dem25.map")
+        pcr.report(perc, step1dir + "/dem25.map")
         perc = tr.area_percentile(dem, ck, n, order, 10.0)
-        tr.report(perc, step1dir + "/dem10.map")
+        pcr.report(perc, step1dir + "/dem10.map")
         perc = tr.area_percentile(dem, ck, n, order, 50.0)
-        tr.report(perc, step1dir + "/dem50.map")
+        pcr.report(perc, step1dir + "/dem50.map")
         perc = tr.area_percentile(dem, ck, n, order, 33.0)
-        tr.report(perc, step1dir + "/dem33.map")
+        pcr.report(perc, step1dir + "/dem33.map")
         perc = tr.area_percentile(dem, ck, n, order, 66.0)
-        tr.report(perc, step1dir + "/dem66.map")
+        pcr.report(perc, step1dir + "/dem66.map")
         perc = tr.area_percentile(dem, ck, n, order, 75.0)
-        tr.report(perc, step1dir + "/dem75.map")
+        pcr.report(perc, step1dir + "/dem75.map")
         perc = tr.area_percentile(dem, ck, n, order, 90.0)
-        tr.report(perc, step1dir + "/dem90.map")
+        pcr.report(perc, step1dir + "/dem90.map")
     else:
         print("No fancy scaling done. Going strait to step2....")
-        tr.report(dem, step1dir + "/demavg.map")
+        pcr.report(dem, step1dir + "/demavg.map")
         Xul = float(config.get("settings", "Xul"))
         Yul = float(config.get("settings", "Yul"))
         Xlr = float(config.get("settings", "Xlr"))
@@ -372,7 +373,7 @@ def main():
         )
         # gdalstr = "gdal_translate  -a_ullr " + str(Xul) + " " + str(Yul) + " " +str(Xlr) + " " +str(Ylr) + " -of PCRaster  "
         print(gdalstr)
-        tr.report(tr.cover(1.0), step1dir + "/wflow_riverlength_fact.map")
+        pcr.report(pcr.cover(1.0), step1dir + "/wflow_riverlength_fact.map")
         # Now us gdat tp convert the maps
         os.system(
             gdalstr
@@ -426,9 +427,9 @@ def main():
             lumap = config.get("files", "landuse")
         except:
             print("no landuse map...creating uniform map")
-            # clone=tr.readmap(step2dir + "/wflow_dem.map")
-            tr.setclone(step2dir + "/wflow_dem.map")
-            tr.report(tr.nominal(1), step2dir + "/wflow_landuse.map")
+            # clone=pcr.readmap(step2dir + "/wflow_dem.map")
+            pcr.setclone(step2dir + "/wflow_dem.map")
+            pcr.report(pcr.nominal(1), step2dir + "/wflow_landuse.map")
         else:
             os.system(
                 "resample --clone "
@@ -444,8 +445,8 @@ def main():
             soilmap = config.get("files", "soil")
         except:
             print("no soil map..., creating uniform map")
-            tr.setclone(step2dir + "/wflow_dem.map")
-            tr.report(tr.nominal(1), step2dir + "/wflow_soil.map")
+            pcr.setclone(step2dir + "/wflow_dem.map")
+            pcr.report(pcr.nominal(1), step2dir + "/wflow_soil.map")
         else:
             os.system(
                 "resample --clone "

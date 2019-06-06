@@ -31,6 +31,7 @@ import os.path
 import getopt
 import configparser
 import sys
+import pcraster as pcr
 
 tr.Verbose = 1
 
@@ -257,7 +258,7 @@ def main():
     outflowdepth = float(configget(config, "settings", "lddoutflowdepth", "1E35"))
     lddmethod = configget(config, "settings", "lddmethod", "dem")
     lddglobaloption = configget(config, "settings", "lddglobaloption", "lddout")
-    tr.setglobaloption(lddglobaloption)
+    pcr.setglobaloption(lddglobaloption)
 
     nrrow = round(abs(Yul - Ylr) / csize)
     nrcol = round(abs(Xlr - Xul) / csize)
@@ -278,7 +279,7 @@ def main():
     )
 
     os.system(mapstr)
-    tr.setclone(step2dir + "/cutout.map")
+    pcr.setclone(step2dir + "/cutout.map")
 
     lu_water = configget(config, "files", "lu_water", "")
     lu_paved = configget(config, "files", "lu_paved", "")
@@ -310,8 +311,8 @@ def main():
         lumap = config.get("files", "landuse")
     except:
         print("no landuse map...creating uniform map")
-        clone = tr.readmap(step2dir + "/cutout.map")
-        tr.report(tr.nominal(clone), step2dir + "/wflow_landuse.map")
+        clone = pcr.readmap(step2dir + "/cutout.map")
+        pcr.report(pcr.nominal(clone), step2dir + "/wflow_landuse.map")
     else:
         os.system(
             "resample --clone "
@@ -327,8 +328,8 @@ def main():
         soilmap = config.get("files", "soil")
     except:
         print("no soil map..., creating uniform map")
-        clone = tr.readmap(step2dir + "/cutout.map")
-        tr.report(tr.nominal(clone), step2dir + "/wflow_soil.map")
+        clone = pcr.readmap(step2dir + "/cutout.map")
+        pcr.report(pcr.nominal(clone), step2dir + "/wflow_soil.map")
     else:
         os.system(
             "resample --clone "
@@ -342,13 +343,13 @@ def main():
 
     resamplemaps(step1dir, step2dir)
 
-    dem = tr.readmap(step2dir + "/wflow_dem.map")
-    demmin = tr.readmap(step2dir + "/wflow_demmin.map")
-    demmax = tr.readmap(step2dir + "/wflow_demmax.map")
-    # catchcut = tr.readmap(step2dir + "/catchment_cut.map")
-    catchcut = tr.readmap(step2dir + "/cutout.map")
+    dem = pcr.readmap(step2dir + "/wflow_dem.map")
+    demmin = pcr.readmap(step2dir + "/wflow_demmin.map")
+    demmax = pcr.readmap(step2dir + "/wflow_demmax.map")
+    # catchcut = pcr.readmap(step2dir + "/catchment_cut.map")
+    catchcut = pcr.readmap(step2dir + "/cutout.map")
     # now apply the area of interest (catchcut) to the DEM
-    # dem=tr.ifthen(catchcut >=1 , dem)
+    # dem=pcr.ifthen(catchcut >=1 , dem)
     #
 
     # See if there is a shape file of the river to burn in
@@ -356,11 +357,11 @@ def main():
         rivshp = config.get("files", "river")
     except:
         print("no river file specified")
-        riverburn = tr.readmap(step2dir + "/wflow_riverburnin.map")
+        riverburn = pcr.readmap(step2dir + "/wflow_riverburnin.map")
     else:
         print("river file speficied.....")
         # rivshpattr = config.get("files","riverattr")
-        tr.report(dem * 0.0, step2dir + "/nilmap.map")
+        pcr.report(dem * 0.0, step2dir + "/nilmap.map")
         thestr = (
             "gdal_translate -of GTiff "
             + step2dir
@@ -387,25 +388,25 @@ def main():
             + "/wflow_riverburnin.map"
         )
         os.system(thestr)
-        riverburn = tr.readmap(step2dir + "/wflow_riverburnin.map")
-        # ldddem = tr.ifthenelse(riverburn >= 1.0, dem -1000 , dem)
+        riverburn = pcr.readmap(step2dir + "/wflow_riverburnin.map")
+        # ldddem = pcr.ifthenelse(riverburn >= 1.0, dem -1000 , dem)
 
     # Only burn within the original catchment
-    riverburn = tr.ifthen(tr.scalar(catchcut) >= 1, riverburn)
+    riverburn = pcr.ifthen(pcr.scalar(catchcut) >= 1, riverburn)
     # Now setup a very high wall around the catchment that is scale
     # based on the distance to the catchment so that it slopes away from the
     # catchment
     if lddmethod != "river":
         print("Burning in highres-river ...")
-        disttocatch = tr.spread(tr.nominal(catchcut), 0.0, 1.0)
-        demmax = tr.ifthenelse(
-            tr.scalar(catchcut) >= 1.0,
+        disttocatch = pcr.spread(pcr.nominal(catchcut), 0.0, 1.0)
+        demmax = pcr.ifthenelse(
+            pcr.scalar(catchcut) >= 1.0,
             demmax,
-            demmax + (tr.celllength() * 100.0) / disttocatch,
+            demmax + (pcr.celllength() * 100.0) / disttocatch,
         )
-        tr.setglobaloption("unitcell")
-        # demregional=tr.windowaverage(demmin,100)
-        demburn = tr.cover(tr.ifthen(tr.boolean(riverburn), demmin - 100.0), demmax)
+        pcr.setglobaloption("unitcell")
+        # demregional=pcr.windowaverage(demmin,100)
+        demburn = pcr.cover(pcr.ifthen(pcr.boolean(riverburn), demmin - 100.0), demmax)
     else:
         print("using average dem..")
         demburn = dem
@@ -422,37 +423,37 @@ def main():
 
     # Find catchment (overall)
     outlet = tr.find_outlet(ldd)
-    sub = tr.subcatch(ldd, outlet)
-    tr.report(sub, step2dir + "/wflow_catchment.map")
-    tr.report(outlet, step2dir + "/wflow_outlet.map")
+    sub = pcr.subcatch(ldd, outlet)
+    pcr.report(sub, step2dir + "/wflow_catchment.map")
+    pcr.report(outlet, step2dir + "/wflow_outlet.map")
 
     # make river map
-    strorder = tr.streamorder(ldd)
-    tr.report(strorder, step2dir + "/wflow_streamorder.map")
+    strorder = pcr.streamorder(ldd)
+    pcr.report(strorder, step2dir + "/wflow_streamorder.map")
 
-    river = tr.ifthen(tr.boolean(strorder >= strRiver), strorder)
-    tr.report(river, step2dir + "/wflow_river.map")
+    river = pcr.ifthen(pcr.boolean(strorder >= strRiver), strorder)
+    pcr.report(river, step2dir + "/wflow_river.map")
 
     # make subcatchments
     # os.system("col2map --clone " + step2dir + "/cutout.map gauges.col " + step2dir + "/wflow_gauges.map")
     exec("X=np.array(" + gauges_x + ")")
     exec("Y=np.array(" + gauges_y + ")")
 
-    tr.setglobaloption("unittrue")
+    pcr.setglobaloption("unittrue")
 
     outlmap = tr.points_to_map(dem, X, Y, 0.5)
-    tr.report(outlmap, step2dir + "/wflow_gauges_.map")
+    pcr.report(outlmap, step2dir + "/wflow_gauges_.map")
 
     if snapgaugestoriver:
         print("Snapping gauges to river")
-        tr.report(outlmap, step2dir + "/wflow_orggauges.map")
+        pcr.report(outlmap, step2dir + "/wflow_orggauges.map")
         outlmap = tr.snaptomap(outlmap, river)
 
-    outlmap = tr.ifthen(outlmap > 0, outlmap)
-    tr.report(outlmap, step2dir + "/wflow_gauges.map")
+    outlmap = pcr.ifthen(outlmap > 0, outlmap)
+    pcr.report(outlmap, step2dir + "/wflow_gauges.map")
 
-    scatch = tr.subcatch(ldd, outlmap)
-    tr.report(scatch, step2dir + "/wflow_subcatch.map")
+    scatch = pcr.subcatch(ldd, outlmap)
+    pcr.report(scatch, step2dir + "/wflow_subcatch.map")
 
 
 if __name__ == "__main__":
