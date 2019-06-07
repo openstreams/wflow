@@ -43,6 +43,7 @@ import getopt
 import configparser
 import sys
 import gc
+import numpy as np
 import pcraster as pcr
 
 
@@ -153,9 +154,9 @@ def main():
     lu_water = configget(config, "files", "lu_water", "")
     lu_paved = configget(config, "files", "lu_paved", "")
 
-    # X/Y coordinates of the gauges the system
-    exec("X=np.array(" + gauges_x + ")")
-    exec("Y=np.array(" + gauges_y + ")")
+    # X/Y coordinates of the gauges the system    
+    X = np.fromstring(gauges_x, sep=',')
+    Y = np.fromstring(gauges_y, sep=',')
 
     tr.Verbose = 1
 
@@ -294,7 +295,7 @@ def main():
         print("No catchment mask, finding outlet")
         # Find catchment (overall)
         outlet = tr.find_outlet(ldd)
-        sub = pcr.subcatch(ldd, outlet)
+        sub = tr.subcatch(ldd, outlet)
         pcr.report(sub, step1dir + "/catchment_overall.map")
     else:
         print("reading and converting catchment mask.....")
@@ -310,7 +311,7 @@ def main():
         sub = pcr.readmap(step1dir + "/catchment_overall.map")
 
     print("Scatch...")
-    sd = pcr.subcatch(ldd, pcr.ifthen(outlmap > 0, outlmap))
+    sd = tr.subcatch(ldd, pcr.ifthen(outlmap > 0, outlmap))
     pcr.report(sd, step1dir + "/scatch.map")
 
     pcr.setglobaloption("unitcell")

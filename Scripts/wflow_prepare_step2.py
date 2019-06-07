@@ -31,6 +31,7 @@ import os.path
 import getopt
 import configparser
 import sys
+import numpy as np
 import pcraster as pcr
 
 tr.Verbose = 1
@@ -423,7 +424,7 @@ def main():
 
     # Find catchment (overall)
     outlet = tr.find_outlet(ldd)
-    sub = pcr.subcatch(ldd, outlet)
+    sub = tr.subcatch(ldd, outlet)
     pcr.report(sub, step2dir + "/wflow_catchment.map")
     pcr.report(outlet, step2dir + "/wflow_outlet.map")
 
@@ -436,8 +437,8 @@ def main():
 
     # make subcatchments
     # os.system("col2map --clone " + step2dir + "/cutout.map gauges.col " + step2dir + "/wflow_gauges.map")
-    exec("X=np.array(" + gauges_x + ")")
-    exec("Y=np.array(" + gauges_y + ")")
+    X = np.fromstring(gauges_x, sep=',')
+    Y = np.fromstring(gauges_y, sep=',')
 
     pcr.setglobaloption("unittrue")
 
@@ -452,7 +453,7 @@ def main():
     outlmap = pcr.ifthen(outlmap > 0, outlmap)
     pcr.report(outlmap, step2dir + "/wflow_gauges.map")
 
-    scatch = pcr.subcatch(ldd, outlmap)
+    scatch = tr.subcatch(ldd, outlmap)
     pcr.report(scatch, step2dir + "/wflow_subcatch.map")
 
 
