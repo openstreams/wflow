@@ -696,7 +696,7 @@ class WflowModel(pcraster.framework.DynamicModel):
        :var self.Snow: Snow pack [mm]
        :var self.SnowWater: Snow pack water [mm]
        :var self.TSoil: Top soil temperature [oC]
-       :var self.UStoreDepth: Water in the Unsaturated Store [mm]
+       :var self.UStoreLayerDepth: Water in the Unsaturated Store, per layer [mm]
        :var self.SatWaterDepth: Water in the saturated store [mm]
        :var self.CanopyStorage: Amount of water on the Canopy [mm]
        :var self.ReservoirVolume: Volume of each reservoir [m^3]
@@ -2151,7 +2151,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         :var self.ActInfilt: Actual infiltration into the unsaturated zone [mm]
         :var self.CanopyStorage: actual canopystorage (only for subdaily timesteps) [mm]
         :var self.SatWaterDepth: Amount of water in the saturated store [mm]
-        :var self.UStoreDepth: Amount of water in the unsaturated store [mm]
+        :var self.UStoreLayerDepth: Amount of water in the unsaturated store, per layer [mm]
         :var self.zi: depth of the water table in mm below the surface [mm]
         :var self.Snow: Snow depth [mm]
         :var self.SnowWater: water content of the snow [mm]
@@ -2329,12 +2329,12 @@ class WflowModel(pcraster.framework.DynamicModel):
         )
         self.oldIRSupplymm = self.IRSupplymm
         
-        self.UstoreDepth = sum_list_cover(self.UStoreLayerDepth, self.ZeroMap)
+        self.UStoreDepth = sum_list_cover(self.UStoreLayerDepth, self.ZeroMap)
 
         UStoreCapacity = (
             self.SoilWaterCapacity
             - self.SatWaterDepth
-            - self.UstoreDepth
+            - self.UStoreDepth
         )
 
         # Runoff from water bodies and river network
@@ -2451,7 +2451,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.layer['UStoreLayerDepth'][i] = pcr.pcr2numpy(self.UStoreLayerDepth[i],self.mv).ravel()
         
         self.dyn['LandRunoff'] = pcr.pcr2numpy(self.LandRunoff,self.mv).ravel()
-        self.dyn['sumUStoreLayerDepth'] = pcr.pcr2numpy(self.UstoreDepth,self.mv).ravel()
+        self.dyn['sumUStoreLayerDepth'] = pcr.pcr2numpy(self.UStoreDepth,self.mv).ravel()
 
         it_kinL = 1
         if self.kinwaveIters == 1:
@@ -2479,7 +2479,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.LandRunoff = pcr.numpy2pcr(pcr.Scalar,qo.reshape(self.shape),self.mv)
         self.zi = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['zi'].reshape(self.shape)),self.mv)
         self.SatWaterDepth = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['SatWaterDepth'].reshape(self.shape)),self.mv)
-        self.UstoreDepth = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['sumUStoreLayerDepth'].reshape(self.shape)),self.mv)
+        self.UStoreDepth = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['sumUStoreLayerDepth'].reshape(self.shape)),self.mv)
         self.CapFlux = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['CapFlux'].reshape(self.shape)),self.mv)
         self.Transfer = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['Transfer'].reshape(self.shape)),self.mv)
         
