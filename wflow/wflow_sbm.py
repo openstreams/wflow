@@ -390,7 +390,7 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, soilInfReducti
                     dyn['SatWaterDepth'][idx] = dyn['SatWaterDepth'][idx] - soilevapsat
                     
                     # evaporation available for transpiration
-                    PotTrans = dyn['PotTransSoil'][idx] - dyn['soilevap'][idx] - dyn['ActEvapOpenWaterLand'][idx]
+                    PotTrans = dyn['PotTransSoil'][idx] - dyn['soilevap'][idx] - dyn['ActEvapOpenWaterLand'][idx] - dyn['ActEvapOpenWaterRiver'][idx]
 
                     # evaporation from saturated store
                     wetroots = _sCurve(dyn['zi'][idx], a=static['ActRootingDepth'][idx], c=static['rootdistpar'][idx])
@@ -1942,6 +1942,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                  ('LandRunoff', np.float64),
                  ('PotTransSoil', np.float64),
                  ('ActEvapOpenWaterLand', np.float64),
+                 ('ActEvapOpenWaterRiver', np.float64),
                  ('RiverRunoff', np.float64),
                  ('AlphaL', np.float64),
                  ('AlphaR', np.float64),
@@ -2372,6 +2373,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         )
             
         self.dyn['ActEvapOpenWaterLand'] = pcr.pcr2numpy(self.ActEvapOpenWaterLand,self.mv).ravel()
+        self.dyn['ActEvapOpenWaterRiver'] = pcr.pcr2numpy(self.ActEvapOpenWaterRiver,self.mv).ravel()
 
         self.RestEvap = self.PotTransSoil - self.ActEvapOpenWaterRiver - self.ActEvapOpenWaterLand
 
