@@ -400,12 +400,12 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, soilInfReducti
 
                     # actual evaporation from UStore
                     layer['UStoreLayerDepth'][k,idx], dyn['ActEvapUStore'][idx], RestPotEvap = actEvap_unsat_SBM(static['ActRootingDepth'][idx], layer['UStoreLayerDepth'][k,idx], layer['UStoreLayerThickness'][k,idx], 
-                                                                          sumlayer[k], RestPotEvap, dyn['ActEvapUStore'][idx], layer['c'][k,idx], L[k], static['thetaS'][idx], static['thetaR'][idx], ust) 
+                                                                          sumlayer_0[k], RestPotEvap, dyn['ActEvapUStore'][idx], layer['c'][k,idx], L[k], static['thetaS'][idx], static['thetaR'][idx], ust) 
                     
                 else:
                     # actual evaporation from UStore
                     layer['UStoreLayerDepth'][k,idx], dyn['ActEvapUStore'][idx], RestPotEvap = actEvap_unsat_SBM(static['ActRootingDepth'][idx], layer['UStoreLayerDepth'][k,idx], layer['UStoreLayerThickness'][k,idx], 
-                                                                          sumlayer[k], RestPotEvap, dyn['ActEvapUStore'][idx], layer['c'][k,idx], L[k], static['thetaS'][idx], static['thetaR'][idx], ust) 
+                                                                          sumlayer_0[k], RestPotEvap, dyn['ActEvapUStore'][idx], layer['c'][k,idx], L[k], static['thetaS'][idx], static['thetaR'][idx], ust) 
 
             #check soil moisture balance per layer
             du = 0.0
