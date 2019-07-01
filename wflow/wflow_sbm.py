@@ -307,7 +307,7 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, soilInfReducti
     # append zero to end to deal with nodata (-1) in indices
     ssf_new = np.concatenate((ssf_new, np.array([0], dtype=dyn['ssf'].dtype)))
     ldd_ = np.concatenate((ldd, np.array([0], dtype=ldd.dtype)))
-    slope_ = np.concatenate((static['slope'], np.array([0], dtype=static['slope'].dtype)))
+    slope_ = np.concatenate((static['landSlope'], np.array([0], dtype=static['landSlope'].dtype)))
     
     SWDold = np.zeros(dyn['ssf'].size, dtype=dyn['ssf'].dtype)
     sumUSold = np.zeros(dyn['ssf'].size, dtype=dyn['ssf'].dtype)    
@@ -444,7 +444,7 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, soilInfReducti
                                                   
             r = (ast - actCapFlux - dyn['ActLeakage'][idx] - dyn['ActEvapSat'][idx] - soilevapsat) * static['DW'][idx]*1000
             ssf_new[idx], dyn['zi'][idx], ExfiltSatWater = kinematic_wave_ssf(ssf_in, dyn['ssf'][idx], dyn['zi'][idx], r, static['KsatHorFrac'][idx], 
-                                              static['KsatVer'][idx], static['slope'][idx], static['neff'][idx], static['f'][idx], 
+                                              static['KsatVer'][idx], static['landSlope'][idx], static['neff'][idx], static['f'][idx], 
                                               static['SoilThickness'][idx], deltaT, static['DL'][idx]*1000, static['DW'][idx]*1000, static['ssfmax'][idx])
             
             dyn['zi'][idx] = min(dyn['zi'][idx], static['SoilThickness'][idx])
@@ -539,7 +539,7 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, soilInfReducti
                 if static['SW'][idx] > 0:
                     WaterLevelL = (dyn['AlphaL'][idx] * np.power(qo_new[idx], static['Beta'][idx])) / static['SW'][idx]
                 Pl = static['SW'][idx] + (2.0 * WaterLevelL)
-                dyn['AlphaL'][idx] = static['AlpTermR'][idx] * np.power(Pl, static['AlpPow'][idx])
+                dyn['AlphaL'][idx] = static['AlpTermL'][idx] * np.power(Pl, static['AlpPow'][idx])
                 dyn['LandRunoff'][idx]= qo_new[idx]
     qo_new = acc_flow/timestepsecs
     dyn['qo_toriver'][:] = qo_toriver_acc[:-1]/timestepsecs
@@ -662,7 +662,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.WaterLevelR = (self.AlphaR * pow(self.RiverRunoff, self.Beta)) / self.Bw
         # wetted perimeter (m)
         Pr = self.Bw + (2 * self.WaterLevelR)
-        # Alpha
+        # Alpha River
         self.AlphaR = self.AlpTermR * pow(Pr, self.AlpPow)
         self.OldKinWaveVolumeR = self.KinWaveVolumeR
         self.KinWaveVolumeR = self.WaterLevelR * self.Bw * self.DCL
@@ -672,7 +672,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.WaterLevelL = pcr.ifthenelse( self.SW > 0, (self.AlphaL * pow(self.LandRunoff, self.Beta)) / self.SW, 0.0)
         
         Pl = self.SW + (2 * self.WaterLevelL)
-        # Alpha
+        # Alpha Land
         self.AlphaL = self.AlpTermL * pow(Pl, self.AlpPow)
         self.OldKinWaveVolumeL = self.KinWaveVolumeL
         self.KinWaveVolumeL = self.WaterLevelL * self.SW * self.DL
@@ -1457,9 +1457,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.ZeroMap, sizeinmetres
         )
         self.Slope = pcr.slope(self.Altitude)
-        # self.Slope=pcr.ifthen(pcr.boolean(self.TopoId),pcr.max(0.001,self.Slope*celllength()/self.reallength))
         self.Slope = pcr.max(0.00001, self.Slope * pcr.celllength() / self.reallength)
-        Terrain_angle = pcr.scalar(pcr.atan(self.Slope))
 
         #self.N = pcr.ifthenelse(self.River, self.NRiver, self.N)
 
@@ -1565,39 +1563,6 @@ class WflowModel(pcraster.framework.DynamicModel):
             tt_filter = pcr.pcr2numpy(self.filter_P_PET, 1.0)
             self.filterResArea = tt_filter.min()
 
-        # Determine river width from DEM, upstream area and yearly average discharge
-        # Scale yearly average Q at outlet with upstream are to get Q over whole catchment
-        # Alf ranges from 5 to > 60. 5 for hardrock. large values for sediments
-        # "Noah J. Finnegan et al 2005 Controls on the channel width of rivers:
-        # Implications for modeling fluvial incision of bedrock"
-        
-        if (self.nrresSimple + self.nrresComplex) > 0:
-            upstr = pcr.catchmenttotal(1, self.TopoLddOrg)
-        else:
-            upstr = pcr.catchmenttotal(1, self.TopoLdd)
-        Qscale = upstr / pcr.mapmaximum(upstr) * Qmax
-        W = (
-            (alf * (alf + 2.0) ** (0.6666666667)) ** (0.375)
-            * Qscale ** (0.375)
-            * (pcr.max(0.0001, pcr.windowaverage(self.Slope, pcr.celllength() * 4.0)))
-            ** (-0.1875)
-            * self.NRiver ** (0.375)
-        )
-        # should use NRiver here!!!
-        # Use supplied riverwidth if possible, else calulate
-        self.RiverWidth = pcr.ifthenelse(self.RiverWidth <= 0.0, W, self.RiverWidth)
-        
-        # soil thickness based on topographical index (see Environmental modelling: finding simplicity in complexity)
-        # 1: calculate wetness index
-        # 2: Scale the capacity (now actually a max capacity) based on the index, also apply a minmum capacity
-        WI = pcr.ln(
-            pcr.accuflux(self.TopoLdd, 1) / self.Slope
-        )  # Topographical wetnesss. Scale WI by zone/subcatchment assuming these ara also geological units
-        WIMax = pcr.areamaximum(WI, self.TopoId) * WIMaxScale
-        self.SoilThickness = pcr.max(
-            pcr.min(self.SoilThickness, (WI / WIMax) * self.SoilThickness),
-            self.SoilMinThickness,
-        )
 
         self.SoilWaterCapacity = self.SoilThickness * (self.thetaS - self.thetaR)
 
@@ -1757,11 +1722,34 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.Aspect,
             pcr.areaaverage(self.Aspect, self.TopoId),
         )
+        
         # Set DCL to riverlength if that is longer that the basic length calculated from grid
         drainlength = detdrainlength(self.TopoLdd, self.xl, self.yl)
-
-        # Multiply with Factor (taken from upscaling operation, defaults to 1.0 if no map is supplied
+        # Multiply with Factor (taken from upscaling operation, defaults to 1.0 if no map is supplied)
         self.DCL = drainlength * pcr.max(1.0, self.RiverLengthFac)
+        # Correct slope for extra length of the river in a gridcel
+        riverslopecor = drainlength / self.DCL
+        self.riverSlope = self.Slope * riverslopecor
+
+        # Determine river width from DEM, upstream area and yearly average discharge
+        # Scale yearly average Q at outlet with upstream are to get Q over whole catchment
+        # Alf ranges from 5 to > 60. 5 for hardrock. large values for sediments
+        # "Noah J. Finnegan et al 2005 Controls on the channel width of rivers:
+        # Implications for modeling fluvial incision of bedrock"
+        if (self.nrresSimple + self.nrresComplex) > 0:
+            upstr = pcr.catchmenttotal(1, self.TopoLddOrg)
+        else:
+            upstr = pcr.catchmenttotal(1, self.TopoLdd)
+        Qscale = upstr / pcr.mapmaximum(upstr) * Qmax
+        W = (
+            (alf * (alf + 2.0) ** (0.6666666667)) ** (0.375)
+            * Qscale ** (0.375)
+            * (pcr.max(0.0001, pcr.windowaverage(self.riverSlope, pcr.celllength() * 4.0)))
+            ** (-0.1875)
+            * self.NRiver ** (0.375)
+        )
+        # Use supplied riverwidth if possible, else calulate
+        self.RiverWidth = pcr.ifthenelse(self.RiverWidth <= 0.0, W, self.RiverWidth)
 
         self.DCL = pcr.max(self.DCL, self.RiverLength)  # m
 
@@ -1782,23 +1770,35 @@ class WflowModel(pcraster.framework.DynamicModel):
         )
         
         self.WaterFrac = pcr.max(self.WaterFrac - self.RiverFrac, 0)
+
+        # term for Alpha (River)
+        self.AlpTermR = pow((self.NRiver / (pcr.sqrt(self.riverSlope))), self.Beta)
         
-        # term for Alpha
-        # Correct slope for extra length of the river in a gridcel
-        riverslopecor = drainlength / self.DCL
-        # pcr.report(riverslopecor,"cor.map")
-        # pcr.report(self.Slope * riverslopecor,"slope.map")
-        self.AlpTermR = pow((self.NRiver / (pcr.sqrt(self.Slope * riverslopecor))), self.Beta)
-        self.riverSlope = self.Slope * riverslopecor
         # power for Alpha
         self.AlpPow = (2.0 / 3.0) * self.Beta
-        # initial approximation for Alpha
         
-        self.AlpTermL = pow((self.N / (pcr.sqrt(self.Slope))), self.Beta)
+        # Slope land surface either provided as map, or based om DEM (default)
+        self.landSlope = pcr.max(0.00001, self.wf_readmap(os.path.join(self.Dir, "staticmaps/Slope.map"), self.Slope))
+        
+        # term for Alpha (Land)
+        self.AlpTermL = pow((self.N / (pcr.sqrt(self.landSlope))), self.Beta)
         
         # calculate catchmentsize
         self.upsize = pcr.catchmenttotal(self.xl * self.yl, self.TopoLdd)
         self.csize = pcr.areamaximum(self.upsize, self.TopoId)
+        
+        # soil thickness based on topographical index (see Environmental modelling: finding simplicity in complexity)
+        # 1: calculate wetness index
+        # 2: Scale the capacity (now actually a max capacity) based on the index, also apply a minmum capacity
+        WI = pcr.ln(
+            pcr.accuflux(self.TopoLdd, 1) / self.landSlope
+        )  # Topographical wetnesss. Scale WI by zone/subcatchment assuming these ara also geological units
+        WIMax = pcr.areamaximum(WI, self.TopoId) * WIMaxScale
+        self.SoilThickness = pcr.max(
+            pcr.min(self.SoilThickness, (WI / WIMax) * self.SoilThickness),
+            self.SoilMinThickness,
+        )
+        
         
         self.wf_multparameters()
         
@@ -1852,7 +1852,8 @@ class WflowModel(pcraster.framework.DynamicModel):
                  ('InfiltCapPath', np.float64),
                  ('cf_soil', np.float64),
                  ('neff', np.float64),
-                 ('slope', np.float64),
+                 ('landSlope', np.float64),
+                 ('riverSlope', np.float64),
                  ('SoilWaterCapacity', np.float64),
                  ('MaxLeakage', np.float64),
                  ('CanopyGapFraction', np.float64),
@@ -1873,7 +1874,8 @@ class WflowModel(pcraster.framework.DynamicModel):
                  ('h_p', np.float64),
                  ('Bw', np.float64),
                  ('AlpPow', np.float64),
-                 ('AlpTermR', np.float64)
+                 ('AlpTermR', np.float64),
+                 ('AlpTermL', np.float64)
                  ])
         
             
@@ -1890,7 +1892,8 @@ class WflowModel(pcraster.framework.DynamicModel):
         if self.modelSnow & self.soilInfReduction:
             self.static['cf_soil'] = pcr.pcr2numpy(self.cf_soil, self.mv).ravel()
         self.static['neff'] = pcr.pcr2numpy(self.neff, self.mv).ravel()
-        self.static['slope'] = pcr.pcr2numpy(self.Slope, self.mv).ravel()
+        self.static['landSlope'] = pcr.pcr2numpy(self.landSlope, self.mv).ravel()
+        self.static['riverSlope'] = pcr.pcr2numpy(self.riverSlope, self.mv).ravel()
         self.static['MaxLeakage'] = pcr.pcr2numpy(self.MaxLeakage, self.mv).ravel()
         self.static['SoilWaterCapacity'] = pcr.pcr2numpy(self.SoilWaterCapacity, self.mv).ravel()
         self.static['CanopyGapFraction'] = pcr.pcr2numpy(self.CanopyGapFraction, self.mv).ravel()
@@ -1910,7 +1913,8 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.static['Bw'] = pcr.pcr2numpy(self.Bw, self.mv).ravel()
         self.static['AlpPow'] = pcr.pcr2numpy(self.AlpPow, self.mv).ravel()
         self.static['AlpTermR'] = pcr.pcr2numpy(self.AlpTermR, self.mv).ravel()
-        self.static['ssfmax'] = ((self.static['KsatHorFrac'] * self.static['KsatVer'] * self.static['slope']) / self.static['f'] * (np.exp(0)-np.exp(-self.static['f'] * self.static['SoilThickness'])))        
+        self.static['AlpTermL'] = pcr.pcr2numpy(self.AlpTermL, self.mv).ravel()
+        self.static['ssfmax'] = ((self.static['KsatHorFrac'] * self.static['KsatVer'] * self.static['landSlope']) / self.static['f'] * (np.exp(0)-np.exp(-self.static['f'] * self.static['SoilThickness'])))        
 
         # implement layers as numpy arrays              
         np_SumThickness = np_zeros
@@ -2010,7 +2014,8 @@ class WflowModel(pcraster.framework.DynamicModel):
             "self.M",
             "self.SoilWaterCapacity",
             "self.et_RefToPot",
-            "self.Slope",
+            "self.riverSlope",
+            "self.landSlope",
             "self.CC",
             "self.N",
             "self.RiverFrac",
@@ -2039,7 +2044,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                     0.0, self.SoilThickness - self.SatWaterDepth / (self.thetaS - self.thetaR)
                     )
             
-            self.SubsurfaceFlow = ((self.KsatHorFrac * self.KsatVer * self.Slope)/ pcr.abs(self.f))* (pcr.exp(-pcr.abs(self.f)*(self.zi)) - pcr.exp(-pcr.abs(self.f)*(self.SoilThickness))) * self.DW * 1000
+            self.SubsurfaceFlow = ((self.KsatHorFrac * self.KsatVer * self.landSlope)/ pcr.abs(self.f))* (pcr.exp(-pcr.abs(self.f)*(self.zi)) - pcr.exp(-pcr.abs(self.f)*(self.SoilThickness))) * self.DW * 1000
 
             for n in range(self.maxLayers):
                 self.UStoreLayerDepth.append(self.ZeroMap)
@@ -2250,7 +2255,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             if self.MassWasting:
                 # Masswasting of dry snow
                 # 5.67 = tan 80 graden
-                SnowFluxFrac = pcr.min(0.5, self.Slope / 5.67) * pcr.min(
+                SnowFluxFrac = pcr.min(0.5, self.landSlope / 5.67) * pcr.min(
                     1.0, self.Snow / MaxSnowPack
                 )
                 MaxFlux = SnowFluxFrac * self.Snow
