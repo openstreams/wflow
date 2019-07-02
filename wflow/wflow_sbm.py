@@ -321,7 +321,8 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, soilInfReducti
             sumlayer_0 = np.concatenate((np.array([0.0]), sumlayer))
             SWDold[idx] = dyn['SatWaterDepth'][idx] 
             sumUSold[idx] = layer['UStoreLayerDepth'][:,idx].sum()
-            
+
+            # Identify which layers contain the unsaturated zone
             n = np.where(dyn['zi'][idx] > sumlayer_0)[0]     
             if len(n) > 1:     
                 L = np.concatenate((layer['UStoreLayerThickness'][n[0:-1],idx], np.array([dyn['zi'][idx] - sumlayer_0[n[-1]]]))).astype(np.float64)
@@ -343,36 +344,48 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, soilInfReducti
                 ssf_in = np.sum(ssf_new[nbs])
             
             dyn['CellInFlow'][idx] = ssf_in
-
-            UStoreCapacity = static['SoilWaterCapacity'][idx] - dyn['SatWaterDepth'][idx] - layer['UStoreLayerDepth'][n,idx].sum()
             
+            # Calculate the initial capacity of the unsaturated store U 
+            UStoreCapacity = static['SoilWaterCapacity'][idx] - dyn['SatWaterDepth'][idx] - layer['UStoreLayerDepth'][n,idx].sum()
+
+            # Calculate the infiltration flux into the soil column
             InfiltSoilPath = infiltration(dyn['AvailableForInfiltration'][idx], static['PathFrac'][idx], static['cf_soil'][idx], 
                                           dyn['TSoil'][idx],static['InfiltCapSoil'][idx],static['InfiltCapPath'][idx],UStoreCapacity, modelSnow, soilInfReduction)
             
             dyn['InfiltSoilPath'][idx] = InfiltSoilPath
             
-            # unsat fluxes first
+            # Using the surface infiltration rate, calculate the flow rate between the different soil layers that contain unsaturated storage assuming gravity based flow only,
+            # estimate the gravity based flux rate to the saturated zone (ast) and the updated unsaturated storage for each soil layer.
             ast, layer['UStoreLayerDepth'][:,idx] = unsatzone_flow(layer['UStoreLayerDepth'][:,idx], InfiltSoilPath, L, z, layer['KsatVerFrac'][:,idx], layer['c'][:,idx], static['KsatVer'][idx], static['f'][idx],
                                          static['thetaS'][idx], static['thetaR'][idx], static['SoilWaterCapacity'][idx], SWDold[idx], shape_layer[0], TransferMethod)
             dyn['Transfer'][idx] = ast
             
-            # then evaporation from layers
+            # then evapotranspiration from layers
             for k in range(len(L)):
+                # For the most upper layer
                 if k==0:
+                    # Calculate saturation deficity (SC = SWC - S) 
                     SaturationDeficit = static['SoilWaterCapacity'][idx] - dyn['SatWaterDepth'][idx]
-                                        
+
+                    # First calculate the evaporation of unsaturated storage into the atmosphere from the layer closest to the surface
+                    # In case of a s single soil layer
                     if shape_layer[0] == 1:
                         soilevapunsat = dyn['restEvap'][idx] * min(1.0, SaturationDeficit / static['SoilWaterCapacity'][idx])
                     else:
+                        #In case only the most upper soil layer contains unsaturated storage
                         if len(L) == 1:
+                            # Check if groundwater level lies below the surface
                             if dyn['zi'][idx] > 0:
                                 soilevapunsat = dyn['restEvap'][idx] * min(1.0, layer['UStoreLayerDepth'][k,idx]/dyn['zi'][idx])
                             else:
                                soilevapunsat = 0.0 
                         else:
+                            # In case first layer contains no saturated storage
                             soilevapunsat = dyn['restEvap'][idx] * min(1.0, layer['UStoreLayerDepth'][k,idx]/(layer['UStoreLayerThickness'][k,idx]*(static['thetaS'][idx]-static['thetaR'][idx])))
- 
+                            
+                    # Ensure that the unsaturated evaporation rate does not exceed the available unsaturated moisture
                     soilevapunsat = min(soilevapunsat, layer['UStoreLayerDepth'][k,idx])
+                    # Update the additional atmospheric demand
                     dyn['restEvap'][idx] = dyn['restEvap'][idx] - soilevapunsat                        
                     layer['UStoreLayerDepth'][k,idx] = layer['UStoreLayerDepth'][k,idx] - soilevapunsat
                     
@@ -401,7 +414,7 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, soilInfReducti
                     # actual evaporation from UStore
                     layer['UStoreLayerDepth'][k,idx], dyn['ActEvapUStore'][idx], RestPotEvap = actEvap_unsat_SBM(static['ActRootingDepth'][idx], layer['UStoreLayerDepth'][k,idx], layer['UStoreLayerThickness'][k,idx], 
                                                                           sumlayer_0[k], RestPotEvap, dyn['ActEvapUStore'][idx], layer['c'][k,idx], L[k], static['thetaS'][idx], static['thetaR'][idx], ust) 
-                    
+                # For the layers below  
                 else:
                     # actual evaporation from UStore
                     layer['UStoreLayerDepth'][k,idx], dyn['ActEvapUStore'][idx], RestPotEvap = actEvap_unsat_SBM(static['ActRootingDepth'][idx], layer['UStoreLayerDepth'][k,idx], layer['UStoreLayerThickness'][k,idx], 
