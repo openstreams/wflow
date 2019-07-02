@@ -166,7 +166,7 @@ def kin_wave(rnodes, rnodes_up, Qold, q, Alpha, Beta, DCL, River, Bw, AlpTermR, 
 
 
 @jit(nopython=True)
-def kinematic_wave_ssf(ssf_in, ssf_old, zi_old, r, Ks_hor, Ks ,slope ,neff, f, D, dt, dx, w, ssf_max):
+def kinematic_wave_ssf(ssf_in, ssf_old, zi_old, r, Ks_hor, Ks, slope, neff, f, D, dt, dx, w, ssf_max):
     
     epsilon = 1e-6
     MAX_ITERS = 3000
@@ -175,40 +175,58 @@ def kinematic_wave_ssf(ssf_in, ssf_old, zi_old, r, Ks_hor, Ks ,slope ,neff, f, D
         return 0., D, 0.
     else:
         #initial estimate
-        ssf_n = (ssf_in + ssf_old)/2.
-        count = 0        
+        ssf_n = (ssf_old + ssf_in)/2.0
+        count = 0
         
-        zi = np.log(f*ssf_n/(w*Ks_hor*Ks*slope) + np.exp(-f*D))/-f
-        Cn = (Ks_hor*Ks*slope)/neff * np.exp(-f*zi)     
-        c = (dt/dx)*ssf_in + 1./Cn*ssf_n + dt*(r-(zi_old-zi)*neff*w)
-    
-        fQ = (dt/dx)*ssf_n + 1./Cn*ssf_n - c      
-        dfQ = (dt/dx) + 1./Cn        
+        # Estimate zi on the basis of the waterbalance of a single grid cell delta z = (Qlat,up + Recharge - Qlat,down ) / (Area * EffectivePorosity )            
+        zi = zi_old - (ssf_in + r*dx - ssf_n)/(w*dx)/neff
+        # Reciprocal of derivative delta Q/ delta z_i, constrained w.r.t. neff on the basis of the continuity equation
+        Cn = (Ks_hor*Ks*np.exp(-f*zi)*slope)/neff
+        # Constant term of the continuity equation for first Newton-Raphson iteration 
+        c = (dt/dx)*ssf_in + (1./Cn)*ssf_old +  dt*(r)
+
+        # Continuity equation of which solution should be zero
+        fQ = (dt/dx)*ssf_n + (1./Cn)*ssf_n - c
+        # Derivative of the continuity equation w.r.t. Q_out for iteration 1
+        dfQ = (dt/dx) +  1/Cn
+        # Update lateral outflow estimate ssf_n (Q_out) for iteration 1
         ssf_n =  ssf_n - (fQ/dfQ)
-        
+
+        # Check whether ssf_n is reasonable
         if math.isnan(ssf_n):
             ssf_n = 0.
         ssf_n   = max(ssf_n, 1e-30)
-                
+        
+        # Start while loop of Newton-Raphson iteration m until continuity equation approaches zero        
         while abs(fQ) > epsilon and count < MAX_ITERS:
-            
-            zi = np.log(f*ssf_n/(w*Ks_hor*Ks*slope) + np.exp(-f*D))/-f
-            Cn = (Ks_hor*Ks*slope)/neff * np.exp(-f*zi) 
-            c = (dt/dx)*ssf_in + 1./Cn*ssf_n + dt*(r-(zi_old-zi)*neff*w)
-            
-            fQ = (dt/dx)*ssf_n + 1./Cn*ssf_n - c
-            dfQ = (dt/dx) + 1./Cn          
+            # Estimate zi on the basis of the waterbalance of a single grid cell delta z = (Qlat,up + Recharge - Qlat,down ) / (Area * EffectivePorosity )            
+            zi = zi_old - (ssf_in + r*dx - ssf_n)/(w*dx)/neff
+            # Reciprocal of derivative delta Q/ delta z_i, constrained w.r.t. neff on the basis of the continuity equation
+            Cn = (Ks_hor*Ks*np.exp(-f*zi)*slope)/neff
+            # Constant term of the continuity equation for given Newton-Raphson iteration m
+            c = (dt/dx)*ssf_in + (1./Cn)*ssf_old +  dt*(r)
+    
+            # Continuity equation of which solution should be zero
+            fQ = (dt/dx)*ssf_n + (1./Cn)*ssf_n - c
+            # Derivative of the continuity equation w.r.t. Q_out for iteration m+1
+            dfQ = (dt/dx) +  1./Cn         
+            # Update lateral outflow estimate ssf_n (Q_out) for iteration m+1
             ssf_n =  ssf_n - (fQ/dfQ)
             
+            # Check whether ssf_n is reasonable
             if math.isnan(ssf_n):
                 ssf_n = 0.
             ssf_n   = max(ssf_n, 1e-30)
-
+            # Upload count
             count = count + 1
-        
+
+        # Constrain the lateral flow rate ssf_n
         ssf_n =  min(ssf_n,(ssf_max*w))
-        #exfilt = min(0,zi) * -neff
-        exfilt = min(zi_old - (ssf_in + r*dx - ssf_n)/(w*dx)/neff,0.0) * -neff
+        # On the basis of the lateral flow rate, estimate the groundwater level.
+        zi = zi_old - (ssf_in + r*dx - ssf_n)/(w*dx)/neff
+
+        # In case the groundwater level lies above surface (saturation excess conditions), calculate the exfiltration rate and set groundwater back to zero.     
+        exfilt = min( zi,0.0) * -neff
         zi = max(0,zi)
         
         return ssf_n, zi, exfilt   
