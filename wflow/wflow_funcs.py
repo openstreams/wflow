@@ -171,7 +171,7 @@ def kinematic_wave_ssf(ssf_in, ssf_old, zi_old, r, Ks_hor, Ks, slope, neff, f, D
     epsilon = 1e-6
     MAX_ITERS = 3000
         
-    if (max(ssf_in+ssf_old+r,0.) == 0.):
+    if ((ssf_in+ssf_old) == 0. and (r <= 0)):
         return 0., D, 0.
     else:
         #initial estimate
