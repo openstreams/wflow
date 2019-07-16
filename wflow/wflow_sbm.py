@@ -1576,6 +1576,20 @@ class WflowModel(pcraster.framework.DynamicModel):
             tt_filter = pcr.pcr2numpy(self.filter_P_PET, 1.0)
             self.filterResArea = tt_filter.min()
 
+        # Slope land surface either provided as map, or based om DEM (default)
+        self.landSlope = pcr.max(0.00001, self.wf_readmap(os.path.join(self.Dir, "staticmaps/Slope.map"), self.Slope))            
+
+        # soil thickness based on topographical index (see Environmental modelling: finding simplicity in complexity)
+        # 1: calculate wetness index
+        # 2: Scale the capacity (now actually a max capacity) based on the index, also apply a minmum capacity
+        WI = pcr.ln(
+            pcr.accuflux(self.TopoLdd, 1) / self.landSlope
+        )  # Topographical wetnesss. Scale WI by zone/subcatchment assuming these ara also geological units
+        WIMax = pcr.areamaximum(WI, self.TopoId) * WIMaxScale
+        self.SoilThickness = pcr.max(
+            pcr.min(self.SoilThickness, (WI / WIMax) * self.SoilThickness),
+            self.SoilMinThickness,
+        )        
 
         self.SoilWaterCapacity = self.SoilThickness * (self.thetaS - self.thetaR)
 
