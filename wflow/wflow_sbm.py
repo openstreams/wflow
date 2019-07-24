@@ -1750,6 +1750,8 @@ class WflowModel(pcraster.framework.DynamicModel):
             pcr.areaaverage(self.Aspect, self.TopoId),
         )
         
+        # Factor on river length (self.RiverLengthFac) only used in combination with
+        # calculated (by wflow_sbm) slope    
         # Set DCL to riverlength if that is longer that the basic length calculated from grid
         drainlength = detdrainlength(self.TopoLdd, self.xl, self.yl)
         # Multiply with Factor (taken from upscaling operation, defaults to 1.0 if no map is supplied)
@@ -1757,6 +1759,12 @@ class WflowModel(pcraster.framework.DynamicModel):
         # Correct slope for extra length of the river in a gridcel
         riverslopecor = drainlength / self.DCL
         self.riverSlope = self.Slope * riverslopecor
+        
+        # If river slope available as map, also provide river length 
+        self.riverSlope = pcr.max(0.00001, self.wf_readmap(os.path.join(self.Dir, "staticmaps/RiverSlope.map"), self.riverSlope))
+        if os.path.isfile(os.path.join(self.Dir, wflow_riverlength)):
+            self.DCL = self.RiverLength # m
+
 
         # Determine river width from DEM, upstream area and yearly average discharge
         # Scale yearly average Q at outlet with upstream are to get Q over whole catchment
@@ -1777,9 +1785,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         )
         # Use supplied riverwidth if possible, else calulate
         self.RiverWidth = pcr.ifthenelse(self.RiverWidth <= 0.0, W, self.RiverWidth)
-
-        self.DCL = pcr.max(self.DCL, self.RiverLength)  # m
-
+        
         # water depth (m)
         # set width for kinematic wave to cell width for all cells
         self.Bw = detdrainwidth(self.TopoLdd, self.xl, self.yl)

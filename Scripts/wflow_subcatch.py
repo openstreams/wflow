@@ -43,6 +43,8 @@ import os.path
 import glob
 import getopt
 import subprocess
+import shutil
+import pcraster as pcr
 
 
 def usage(*args):
@@ -171,8 +173,8 @@ def main():
                 except Exception as e:
                     good = 0
                     print("Skipping: " + mfile + " exception: " + str(e))
-
-                if xn == None:
+                
+                if xn.size == 0:
                     good = 0
                     print("Skipping: " + mfile + " size does not match...")
 
@@ -184,12 +186,12 @@ def main():
                         )
                     else:
                         writeMap(ofile, "PCRaster", xn, yn, datan, FillVal)
-
+                    
                     # Assume ldd and repair
-                    if data.dtype == np.uint8:
-                        myldd = ldd(readmap(ofile))
-                        myldd = lddrepair(myldd)
-                        report(myldd, ofile)
+                    if (data.dtype == np.uint8 and 'wflow_ldd.map' in mfile):
+                        myldd = pcr.ldd(pcr.readmap(ofile))
+                        myldd = pcr.lddrepair(myldd)
+                        pcr.report(myldd, ofile)
 
         for mfile in glob.glob(ddir + "/*.[0-9][0-9][0-9]"):
             if not os.path.exists(mfile.replace(caseName, caseNameNew)):
@@ -203,7 +205,7 @@ def main():
                     good = 0
                     print("Skipping: " + mfile + " exception: " + str(e))
 
-                if xn == None:
+                if xn.size == 0:
                     good = 0
                     print("Skipping: " + mfile + " size does not match...")
 
