@@ -2121,14 +2121,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         )
         # TOPOG_SBM type soil stuff
         self.f = (self.thetaS - self.thetaR) / self.M
-        # NOTE:: This line used to be in the initial section. As a result
-        # simulations will now be different as it used to be before
-        # the rescaling of the FirstZoneThickness
-        self.GWScale = (
-            (self.DemMax - self.DrainageBase)
-            / self.SoilThickness
-            / self.RunoffGeneratingGWPerc
-        )
+
 
     def dynamic(self):
         """
