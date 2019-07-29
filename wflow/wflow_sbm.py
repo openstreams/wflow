@@ -1632,19 +1632,6 @@ class WflowModel(pcraster.framework.DynamicModel):
         # limit roots to top 99% of first zone
         self.RootingDepth = pcr.min(self.SoilThickness * 0.99, self.RootingDepth)
 
-        # subgrid runoff generation, determine CC (sharpness of S-Curve) for upper
-        # en lower part and take average
-        self.DemMax = pcr.readmap(self.Dir + "/staticmaps/wflow_demmax")
-        self.DrainageBase = pcr.readmap(self.Dir + "/staticmaps/wflow_demmin")
-        self.CClow = pcr.min(
-            100.0,
-            -pcr.ln(1.0 / 0.1 - 1) / pcr.min(-0.1, self.DrainageBase - self.Altitude),
-        )
-        self.CCup = pcr.min(
-            100.0, -pcr.ln(1.0 / 0.1 - 1) / pcr.min(-0.1, self.Altitude - self.DemMax)
-        )
-        self.CC = (self.CClow + self.CCup) * 0.5
-
         # Which columns/gauges to use/ignore in updating
         self.UpdateMap = self.ZeroMap
 
@@ -2035,7 +2022,6 @@ class WflowModel(pcraster.framework.DynamicModel):
             "self.et_RefToPot",
             "self.riverSlope",
             "self.landSlope",
-            "self.CC",
             "self.N",
             "self.RiverFrac",
             "self.WaterFrac",
