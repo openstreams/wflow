@@ -9,9 +9,9 @@ __all__ = [
 import os
 import sys
 
-import osgeo.gdal as gdal
 
 if getattr(sys, "frozen", False):
+    import osgeo.gdal as gdal
     # running in a bundle
     # sys._MEIPASS is set by PyInstaller
     basedir = getattr(sys, "_MEIPASS", None)

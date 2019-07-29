@@ -87,10 +87,10 @@ usage
 import os.path
 
 import numpy as np
-import pcraster.framework
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
 from wflow.wflow_funcs import *
+import pcraster.framework
 import pcraster as pcr
 
 import pdb

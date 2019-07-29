@@ -24,10 +24,10 @@ from collections import namedtuple
 from functools import reduce
 
 import numpy as np
-import pcraster as pcr
-import pcraster.framework
 from wflow import __version__
 from wflow.wf_netcdfio import *
+import pcraster as pcr
+import pcraster.framework
 
 from . import pcrut
 from . import wflow_adapt
