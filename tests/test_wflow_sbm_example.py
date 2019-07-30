@@ -51,7 +51,7 @@ class MyTest(unittest.TestCase):
         os.chdir(orgdir)
 
         print("Checking specific runoff ....")
-        self.assertAlmostEqual(0.05006520387314595, my_data[:, 2].sum(), places=4)
+        self.assertAlmostEqual(0.04674493891434395, my_data[:, 2].sum(), places=4)
 
 
 if __name__ == "__main__":
