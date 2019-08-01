@@ -82,8 +82,12 @@ wflow_hbv::
 import os.path
 
 import pcraster.framework
+import pcraster as pcr
+import numpy as np
+
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
+from wflow.wflow_funcs import *
 
 wflow = "wflow_hbv"
 
@@ -341,6 +345,9 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         self.thestep = pcr.scalar(0)
         self.basetimestep = 86400
+        
+        self.mv = -999
+        self.count = 0
 
         #: files to be used in case of timesries (scalar) input to the model
 
@@ -372,6 +379,12 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.OverWriteInit = int(configget(self.config, "model", "OverWriteInit", "0"))
         self.updating = int(configget(self.config, "model", "updating", "0"))
         self.updateFile = configget(self.config, "model", "updateFile", "no_set")
+        
+        self.kinwaveIters = int(configget(self.config, "model", "kinwaveIters", "0"))        
+        if self.kinwaveIters == 1:
+            self.logger.info(
+                "Using sub timestep for kinematic wave (iterate)"
+            ) 
 
         self.sCatch = int(configget(self.config, "model", "sCatch", "0"))
         self.intbl = configget(self.config, "model", "intbl", "intbl")
@@ -393,6 +406,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.SubCatchFlowOnly = int(
             configget(self.config, "model", "SubCatchFlowOnly", "0")
         )
+        self.NRiverMethod = int(configget(self.config, "model", "nrivermethod", "1"))
 
         # static maps to use (normally default)
         wflow_subcatch = configget(
@@ -436,6 +450,9 @@ class WflowModel(pcraster.framework.DynamicModel):
         )
         wflow_riverwidth = configget(
             self.config, "model", "wflow_riverwidth", "staticmaps/wflow_riverwidth.map"
+        )
+        wflow_streamorder = configget(
+            self.config, "model", "wflow_streamorder", "staticmaps/wflow_streamorder.map"
         )
 
         # 2: Input base maps ########################################################
@@ -551,12 +568,18 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.Dir + "/" + self.intbl + "/N.tbl", self.LandUse, subcatch, self.Soil
         )  # Manning overland flow
         """ *Parameter:* Manning's N for all non-river cells """
-        self.NRiver = pcr.lookupscalar(
-            self.Dir + "/" + self.intbl + "/N_River.tbl",
-            self.LandUse,
-            subcatch,
-            self.Soil,
-        )  # Manning river
+        if self.NRiverMethod == 1:
+            self.NRiver = self.readtblDefault(
+                self.Dir + "/" + self.intbl + "/N_River.tbl",
+                self.LandUse,
+                subcatch,
+                self.Soil,
+                0.036,
+            )  # Manning river
+        if self.NRiverMethod == 2:
+            self.NRiver = self.readtblFlexDefault(
+                self.Dir + "/" + self.intbl + "/N_River.tbl", 0.036, wflow_streamorder
+            ) #Read from streamorder instead of landuse, subcatch and soil
         """ Manning's N for all cells that are marked as a river """
 
         self.wf_updateparameters()
@@ -974,6 +997,46 @@ class WflowModel(pcraster.framework.DynamicModel):
         # calculate catchmentsize
         self.upsize = pcr.catchmenttotal(self.xl * self.yl, self.TopoLdd)
         self.csize = pcr.areamaximum(self.upsize, self.TopoId)
+        
+        
+        ##### Set variables and framework for kinematic wave with iterations #####
+        # convert pcr objects to numpy for kinemativ wave surface water
+        np_zeros = pcr.pcr2numpy(self.ZeroMap, self.mv).ravel()
+        np_2d_zeros = pcr.pcr2numpy(self.ZeroMap, self.mv)
+        self.shape = np_2d_zeros.shape
+        
+        static_dtype = np.dtype(
+                [('River', np.float64),
+                 ('Beta', np.float64),
+                 ('DCL', np.float64),
+                 ('Bw', np.float64),
+                 ('AlpPow', np.float64),
+                 ('AlpTerm', np.float64)
+                 ])
+                    
+        self.static = np.zeros(np_zeros.size, dtype=static_dtype)   
+        self.static['River'] = pcr.pcr2numpy(self.River, self.mv).ravel()
+        self.static['Beta'] = pcr.pcr2numpy(self.Beta, self.mv).ravel()
+        self.static['DCL'] = pcr.pcr2numpy(self.DCL, self.mv).ravel()
+        self.static['Bw'] = pcr.pcr2numpy(self.Bw, self.mv).ravel()
+        self.static['AlpPow'] = pcr.pcr2numpy(self.AlpPow, self.mv).ravel()
+        self.static['AlpTerm'] = pcr.pcr2numpy(self.AlpTerm, self.mv).ravel()
+        
+        dyn_dtype = np.dtype(
+                [('SurfaceRunoff', np.float64),
+                 ('Alpha', np.float64)
+                 ])        
+        
+        self.dyn = np.zeros(np_zeros.size, dtype=dyn_dtype)
+        
+        # determine flow network and upstream nodes
+        self.np_ldd = pcr.pcr2numpy(self.TopoLdd, self.mv)
+        # ldd definitie
+        _ldd = np.array([[7, 8, 9], [4, 5, 6], [1, 2, 3]])
+        _ldd_us = np.fliplr(np.flipud(_ldd)).flatten()
+        _ldd_us = np.where(_ldd_us==5, 0, _ldd_us)
+        
+        self.nodes, self.nodes_up, self.rnodes, self.rnodes_up = set_dd(self.np_ldd, _ldd_us, self.static['River'])
 
         self.logger.info("End of initial section.")
 
@@ -1432,17 +1495,47 @@ class WflowModel(pcraster.framework.DynamicModel):
         # per distance along stream
         q = self.Inwater / self.DCL + self.ForecQ_qmec / self.DCL
         self.OldSurfaceRunoff = self.SurfaceRunoff
+        
+        #Kinematic wave runoff iterations
+        it_kinR=1
+        if self.kinwaveIters == 1:
+            it_kinR = estimate_iterations_kin_wave(self.SurfaceRunoff, self.Beta, self.Alpha, self.timestepsecs, self.DCL, self.mv)
+            
+        #Convert from pcr to numpy for the kinematic wave function
+        q_np =  pcr.pcr2numpy(q,self.mv).ravel()        
+        SurfaceRunoff = pcr.pcr2numpy(self.SurfaceRunoff,self.mv).ravel()
+        self.dyn['Alpha'] = pcr.pcr2numpy(self.Alpha, self.mv).ravel()
+        
+        #Run the kinematic wave
+        acc_flow = kin_wave(
+                self.rnodes,
+                self.rnodes_up,
+                SurfaceRunoff,
+                q_np,
+                self.dyn['Alpha'],
+                self.static['Beta'],
+                self.static['DCL'],
+                self.static['River'],
+                self.static['Bw'],
+                self.static['AlpTerm'],
+                self.static['AlpPow'],
+                self.timestepsecs,
+                it_kinR) # m3/s
 
-        self.SurfaceRunoff = pcr.kinematic(
-            self.TopoLdd,
-            self.SurfaceRunoff,
-            q,
-            self.Alpha,
-            self.Beta,
-            self.Tslice,
-            self.timestepsecs,
-            self.DCL,
-        )  # m3/s
+#        self.SurfaceRunoff = pcr.kinematic(
+#            self.TopoLdd,
+#            self.SurfaceRunoff,
+#            q,
+#            self.Alpha,
+#            self.Beta,
+#            self.Tslice,
+#            self.timestepsecs,
+#            self.DCL,
+#        )  # m3/s
+#        
+        Qsurface = acc_flow/self.timestepsecs
+        self.SurfaceRunoff = pcr.numpy2pcr(pcr.Scalar, np.copy(Qsurface).reshape(self.shape),self.mv)
+                
         self.SurfaceRunoffMM = (
             self.SurfaceRunoff * self.QMMConv
         )  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)

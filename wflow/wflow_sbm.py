@@ -110,19 +110,6 @@ def usage(*args):
     sys.exit(0)
 
 
-def estimate_iterations_kin_wave(Q, Beta, alpha, timestepsecs, dx, mv):
-    
-    celerity = pcr.ifthen(Q > 0.0, 1.0 / (alpha * Beta * Q**(Beta-1)))
-    courant = (timestepsecs / dx) * celerity
-    np_courant = pcr.pcr2numpy(courant, mv)
-    np_courant[np_courant==mv] = np.nan
-    try:
-        it_kin = int(np.ceil(1.25*(np.nanpercentile(np_courant,95))))
-    except:
-        it_kin = 1
-    
-    return it_kin
-
 
 @jit(nopython=True)
 def _sCurve(X, a=0.0, b=1.0, c=1.0):
@@ -240,7 +227,8 @@ def actEvap_unsat_SBM(
 
 @jit(nopython=True)    
 def infiltration(AvailableForInfiltration, PathFrac, cf_soil, TSoil,InfiltCapSoil,InfiltCapPath, UStoreCapacity, modelSnow, soilInfReduction):
-    
+    # First determine if the soil infiltration capacity can deal with the amount of water
+    # split between infiltration in undisturbed soil and compacted areas (paths)
     SoilInf = AvailableForInfiltration  * (1 - PathFrac)
     PathInf = AvailableForInfiltration * PathFrac
     if modelSnow & soilInfReduction:
@@ -252,7 +240,14 @@ def infiltration(AvailableForInfiltration, PathFrac, cf_soil, TSoil,InfiltCapSoi
     MaxInfiltPath = min(InfiltCapPath * soilInfRedu, PathInf)      
     InfiltSoilPath = min(MaxInfiltPath + MaxInfiltSoil, max(0.0, UStoreCapacity))
     
-    return InfiltSoilPath
+    if (MaxInfiltPath + MaxInfiltSoil) > 0.0:
+        InfiltSoil = MaxInfiltSoil * min(1.0, max(0.0, UStoreCapacity)/(MaxInfiltPath + MaxInfiltSoil))
+        InfiltPath = MaxInfiltPath * min(1.0, max(0.0, UStoreCapacity)/(MaxInfiltPath + MaxInfiltSoil))
+    else:
+        InfiltSoil = 0.0
+        InfiltPath = 0.0
+    
+    return InfiltSoilPath, InfiltSoil, InfiltPath, SoilInf, PathInf
 
 
 @jit(nopython=True)  
@@ -349,10 +344,12 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, soilInfReducti
             UStoreCapacity = static['SoilWaterCapacity'][idx] - dyn['SatWaterDepth'][idx] - layer['UStoreLayerDepth'][n,idx].sum()
 
             # Calculate the infiltration flux into the soil column
-            InfiltSoilPath = infiltration(dyn['AvailableForInfiltration'][idx], static['PathFrac'][idx], static['cf_soil'][idx], 
+            InfiltSoilPath, InfiltSoil, InfiltPath, SoilInf, PathInf = infiltration(dyn['AvailableForInfiltration'][idx], static['PathFrac'][idx], static['cf_soil'][idx], 
                                           dyn['TSoil'][idx],static['InfiltCapSoil'][idx],static['InfiltCapPath'][idx],UStoreCapacity, modelSnow, soilInfReduction)
             
             dyn['InfiltSoilPath'][idx] = InfiltSoilPath
+            dyn['SoilInf'][idx] = SoilInf
+            dyn['PathInf'][idx] = PathInf
             
             # Using the surface infiltration rate, calculate the flow rate between the different soil layers that contain unsaturated storage assuming gravity based flow only,
             # estimate the gravity based flux rate to the saturated zone (ast) and the updated unsaturated storage for each soil layer.
@@ -400,6 +397,8 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, soilInfReducti
                     
                     
                     dyn['soilevap'][idx] = soilevapunsat + soilevapsat
+                    dyn['soilevapunsat'][idx] = soilevapunsat
+                    dyn['soilevapsat'][idx] = soilevapsat
                     dyn['SatWaterDepth'][idx] = dyn['SatWaterDepth'][idx] - soilevapsat
                     
                     # evaporation available for transpiration
@@ -480,8 +479,22 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, soilInfReducti
                     layer['UStoreLayerDepth'][k-1,idx] = layer['UStoreLayerDepth'][k-1,idx] + ExfiltFromUstore
 
             dyn['ExfiltWater'][idx] = ExfiltSatWater + ExfiltFromUstore
+            dyn['ExfiltSatWater'][idx] = ExfiltSatWater
+            dyn['ExfiltFromUstore'][idx] = ExfiltFromUstore
+            
             dyn['ExcessWater'][idx] = dyn['AvailableForInfiltration'][idx] - InfiltSoilPath + du    
             dyn['ActInfilt'][idx] = InfiltSoilPath - du
+            
+            #Separation between compacted and non compacted areas (correction with the satflow du)
+            if (InfiltSoil + InfiltPath) > 0.0:
+                dyn['ActInfiltSoil'][idx] = InfiltSoil - du * InfiltSoil / (InfiltPath + InfiltSoil)
+                dyn['ActInfiltPath'][idx] = InfiltPath - du * InfiltPath / (InfiltPath + InfiltSoil)
+            else:
+                dyn['ActInfiltSoil'][idx] = 0.0
+                dyn['ActInfiltPath'][idx] = 0.0
+                
+            dyn['ExcessWaterSoil'][idx] = max(SoilInf - dyn['ActInfiltSoil'][idx], 0.0)
+            dyn['ExcessWaterPath'][idx] = max(PathInf - dyn['ActInfiltPath'][idx], 0.0)
             
             ponding_add = 0
             if nrpaddyirri > 0:
@@ -755,7 +768,7 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         if self.OverWriteInit:
             self.logger.info("Saving initial conditions over start conditions...")
-            self.wf_suspend(self.SaveDir + "/instate/")
+            self.wf_suspend(self.Dir + "/instate/")
 
     def parameters(self):
         """
@@ -1945,6 +1958,8 @@ class WflowModel(pcraster.framework.DynamicModel):
         dyn_dtype = np.dtype(
                 [('restEvap', np.float64),
                  ('AvailableForInfiltration', np.float64),
+                 ('SoilInf', np.float64),
+                 ('PathInf', np.float64),
                  ('TSoil', np.float64),
                  ('zi', np.float64),
                  ('SatWaterDepth', np.float64),
@@ -1957,8 +1972,14 @@ class WflowModel(pcraster.framework.DynamicModel):
                  ('AlphaL', np.float64),
                  ('AlphaR', np.float64),
                  ('ExcessWater', np.float64),
+                 ('ExcessWaterSoil', np.float64),
+                 ('ExcessWaterPath', np.float64),
                  ('ExfiltWater', np.float64),
+                 ('ExfiltSatWater', np.float64),
+                 ('ExfiltFromUstore', np.float64),
                  ('soilevap', np.float64),
+                 ('soilevapunsat', np.float64),
+                 ('soilevapsat', np.float64),
                  ('Transfer', np.float64),
                  ('CapFlux', np.float64),
                  ('qo_toriver', np.float64),
@@ -1966,6 +1987,8 @@ class WflowModel(pcraster.framework.DynamicModel):
                  ('ActEvapUStore', np.float64),
                  ('ActEvapSat', np.float64),
                  ('ActInfilt', np.float64),
+                 ('ActInfiltSoil', np.float64),
+                 ('ActInfiltPath', np.float64),
                  ('RunoffLandCells', np.float64),
                  ('ActLeakage', np.float64),
                  ('PondingDepth', np.float64),
@@ -2562,6 +2585,20 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.ActInfilt = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ActInfilt'].reshape(self.shape)),self.mv)
         self.ActLeakage = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ActLeakage'].reshape(self.shape)),self.mv)
         self.soilevap = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['soilevap'].reshape(self.shape)),self.mv)
+        
+        self.SoilInf = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['SoilInf'].reshape(self.shape)),self.mv)
+        self.PathInf = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['PathInf'].reshape(self.shape)),self.mv)
+        self.InfiltExcessSoil = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ExcessWaterSoil'].reshape(self.shape)),self.mv)
+        self.InfiltExcessPath = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ExcessWaterPath'].reshape(self.shape)),self.mv)
+        self.ActInfiltSoil = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ActInfiltSoil'].reshape(self.shape)),self.mv)
+        self.ActInfiltPath = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ActInfiltPath'].reshape(self.shape)),self.mv)
+        
+        self.ExfiltFromUstore = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ExfiltFromUstore'].reshape(self.shape)),self.mv)
+        self.ExfiltFromSat = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ExfiltSatWater'].reshape(self.shape)),self.mv)
+        self.SumEvapSat = (pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['soilevapsat'].reshape(self.shape)),self.mv) +
+                           pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ActEvapSat'].reshape(self.shape)),self.mv))
+        self.SumEvapUstore = (pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['soilevapunsat'].reshape(self.shape)),self.mv) +
+                           pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ActEvapUStore'].reshape(self.shape)),self.mv))
           
         self.ExfiltWaterCubic = self.ExfiltWater * self.ToCubic
         self.InfiltExcessCubic = self.InfiltExcess * self.ToCubic

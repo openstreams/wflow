@@ -96,6 +96,18 @@ def set_dd(ldd, _ldd_us, river, pit_value=5):
             idx_ds = np.array(idx_next, dtype=np.int32)
     return nodes[::-1], nodes_up[::-1], rnodes[::-1], rnodes_up[::-1]
 
+def estimate_iterations_kin_wave(Q, Beta, alpha, timestepsecs, dx, mv):
+    
+    celerity = pcr.ifthen(Q > 0.0, 1.0 / (alpha * Beta * Q**(Beta-1)))
+    courant = (timestepsecs / dx) * celerity
+    np_courant = pcr.pcr2numpy(courant, mv)
+    np_courant[np_courant==mv] = np.nan
+    try:
+        it_kin = int(np.ceil(1.25*(np.nanpercentile(np_courant,95))))
+    except:
+        it_kin = 1
+    
+    return it_kin
 
 @jit(nopython=True)
 def kinematic_wave(Qin,Qold,q,alpha,beta,deltaT,deltaX):
