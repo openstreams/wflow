@@ -1031,12 +1031,8 @@ class WflowModel(pcraster.framework.DynamicModel):
         
         # determine flow network and upstream nodes
         self.np_ldd = pcr.pcr2numpy(self.TopoLdd, self.mv)
-        # ldd definitie
-        _ldd = np.array([[7, 8, 9], [4, 5, 6], [1, 2, 3]])
-        _ldd_us = np.fliplr(np.flipud(_ldd)).flatten()
-        _ldd_us = np.where(_ldd_us==5, 0, _ldd_us)
-        
-        self.nodes, self.nodes_up, self.rnodes, self.rnodes_up = set_dd(self.np_ldd, _ldd_us, self.static['River'])
+        # initialize us-ds network for all cells
+        self.nodes, self.nodes_up = set_dd(self.np_ldd)
 
         self.logger.info("End of initial section.")
 
@@ -1508,8 +1504,8 @@ class WflowModel(pcraster.framework.DynamicModel):
         
         #Run the kinematic wave
         acc_flow = kin_wave(
-                self.rnodes,
-                self.rnodes_up,
+                self.nodes,
+                self.nodes_up,
                 SurfaceRunoff,
                 q_np,
                 self.dyn['Alpha'],

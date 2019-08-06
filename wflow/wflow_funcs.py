@@ -28,73 +28,60 @@ import numpy as np
 import pcraster as pcr
 
 
+# ldd definitie
+_ldd = np.array([[7, 8, 9], [4, 5, 6], [1, 2, 3]])
+_ldd_us = np.fliplr(np.flipud(_ldd))
+_pits = 5
+
 @jit(nopython=True)
-def _up_nb(ldd_f, idx0, shape, _ldd_us, sr=1):
+def _up_nb(ldd_f, idx0, shape, _ldd_us=_ldd_us):
     """returns a numpy array with 1d indices of upstream neighbors on a ldd
     """
     nrow, ncol = shape
     r = idx0 // ncol
     c = idx0 % ncol
     wdw_idx = list()
-    i = 0
-    for dr in range(-sr, sr+1):
+    for dr in range(-1, 2):
         row = r + dr
-        if row >= 0 and row < nrow:
-            for dc in range(-sr, sr+1):
-                col = c + dc
-                if col >= 0 and col < ncol:
-                    idx = idx0 + dc + dr*ncol
-                    if ldd_f[idx] == _ldd_us[i]:
-                        wdw_idx.append(idx)
-                i += 1
-        else:
-            i += sr*2+1
-    return np.array(wdw_idx, dtype=np.int32)
-
+        for dc in range(-1, 2):
+            col = c + dc
+            if dr == 0 and dc == 0: # skip pit -> return empty array
+                continue
+            elif row < 0 or row >= nrow or col < 0 or col >= ncol: # out of bounds
+                pass
+            else:
+                idx = idx0 + dc + dr*ncol
+                if ldd_f[idx] == _ldd_us[dr+1, dc+1]:
+                    wdw_idx.append(idx)
+    return np.array(wdw_idx, dtype=np.int64)
 
 @jit(nopython=True)
-def set_dd(ldd, _ldd_us, river, pit_value=5):
+def set_dd(ldd, _ldd_us=_ldd_us, pit_value=_pits):
     """set drainage direction network from downstream to upstream
     """
     shape = ldd.shape
-    ldd = ldd.flatten()
-    river = np.concatenate((river, np.array([0], dtype=river.dtype)))
+    ldd = ldd.ravel()
     nodes = list()
     nodes_up = list()
-    rnodes = list()
-    rnodes_up = list()
-    
-    idx_ds_ = np.where(ldd==np.array(pit_value).astype(ldd.dtype))[0].astype(np.int32)
-    
-    for c, idx_ in enumerate(idx_ds_):
-        idx_ds = np.array([idx_])
-        
-        # move upstream
-        while True:
-            nodes.append(idx_ds)
-            idx_r_ds = idx_ds[np.where(river[idx_ds])]
-            if idx_r_ds.size > 0:
-                rnodes.append(idx_r_ds)
-                r_nbs_up = np.ones((idx_r_ds.size, 8), dtype=np.int32)*-1
-            idx_next = list()
-            nbs_up = np.ones((idx_ds.size, 8), dtype=np.int32)*-1
-            j = 0
-            for i, idx in enumerate(idx_ds):
-                idx_up = _up_nb(ldd, idx, shape, _ldd_us)
-                if np.any(idx_up):
-                    idx_next.extend(idx_up)
-                    nbs_up[i, :idx_up.size] = idx_up
-                    if river[idx]:
-                        idx_r_up = idx_up[np.where(river[idx_up])]
-                        r_nbs_up[j, :idx_r_up.size] = idx_r_up
-                        j = j + 1
-            nodes_up.append(nbs_up)
-            if idx_r_ds.size > 0:
-                rnodes_up.append(r_nbs_up)
-            if len(idx_next) == 0:
-                break
-            idx_ds = np.array(idx_next, dtype=np.int32)
-    return nodes[::-1], nodes_up[::-1], rnodes[::-1], rnodes_up[::-1]
+
+    # most downstream indices
+    idx_ds = np.where(ldd==np.array(pit_value).astype(ldd.dtype))[0].astype(np.int64)
+           
+    # move upstream
+    while True:
+        nodes.append(idx_ds)
+        idx_next = list()
+        nbs_up = np.ones((idx_ds.size, 8), dtype=np.int64)*-1
+        for i, idx in enumerate(idx_ds):
+            idx_up = _up_nb(ldd, idx, shape, _ldd_us)
+            if np.any(idx_up):
+                idx_next.extend(idx_up)
+                nbs_up[i, :idx_up.size] = idx_up
+        nodes_up.append(nbs_up)
+        if len(idx_next) == 0:
+            break
+        idx_ds = np.array(idx_next, dtype=np.int64)
+    return nodes[::-1], nodes_up[::-1]
 
 def estimate_iterations_kin_wave(Q, Beta, alpha, timestepsecs, dx, mv):
     
@@ -416,3 +403,19 @@ def bf_threeparam(discharge, k, C, a):
             bf[i] = discharge[i]
 
     return bf
+
+
+@jit(nopython=True)
+def propagate_downstream(rnodes, rnodes_up, material):
+    shape = material.shape
+    material = material.flatten()
+    for i in range(len(rnodes)):
+        for j in range(len(rnodes[i])):
+            idx_ds = rnodes[i][j]
+            idxs_us = rnodes_up[i][j] # NOTE: has nodata (-1) values
+            v = 0
+            for idx_us in idxs_us:
+                if idx_us == -1: break
+                v += material[idx_us]
+            material[idx_ds] += v
+    return material.reshape(shape)
