@@ -2009,7 +2009,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.nodes, self.nodes_up = set_dd(self.np_ldd)
         # initialize us-ds network for river cells only
         np_ldd_riv = self.np_ldd.copy()
-        np_ldd_riv[self.static['River']==0] = self.mv
+        np_ldd_riv.flat[self.static['River']==0] = self.mv
         self.rnodes, self.rnodes_up = set_dd(self.np_ldd_riv)
                 
         # Save some summary maps
