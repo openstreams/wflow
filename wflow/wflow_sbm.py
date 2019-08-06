@@ -1823,8 +1823,6 @@ class WflowModel(pcraster.framework.DynamicModel):
         
         # determine flow network and upstream nodes
         self.np_ldd = pcr.pcr2numpy(self.TopoLdd, self.mv)
-        self.np_ldd_riv = self.np_ldd.copy()
-        self.np_ldd_riv[self.static['River']==0] = self.mv
 
         # convert pcr objects to numpy for kinemativ wave surface water
         np_zeros = pcr.pcr2numpy(self.ZeroMap, self.mv).ravel()
@@ -2010,6 +2008,8 @@ class WflowModel(pcraster.framework.DynamicModel):
         # initialize us-ds network for all cells
         self.nodes, self.nodes_up = set_dd(self.np_ldd)
         # initialize us-ds network for river cells only
+        np_ldd_riv = self.np_ldd.copy()
+        np_ldd_riv[self.static['River']==0] = self.mv
         self.rnodes, self.rnodes_up = set_dd(self.np_ldd_riv)
                 
         # Save some summary maps
