@@ -210,114 +210,221 @@ def lookupResFunc(ReserVoirLocs, values, sh, dirLookup):
     return pcr.numpy2pcr(pcr.Scalar, out, 0)
 
 
-def complexreservoir(
+def naturalLake(
     waterlevel,
-    ReserVoirLocs,
-    LinkedReserVoirLocs,
-    ResArea,
-    ResThreshold,
-    ResStorFunc,
-    ResOutflowFunc,
+    LakeLocs,
+    LinkedLakeLocs,
+    LakeArea,
+    LakeThreshold,
+    LakeStorFunc,
+    LakeOutflowFunc,
     sh,
     hq,
-    res_b,
-    res_e,
+    lake_b,
+    lake_e,
     inflow,
     precip,
     pet,
-    ReservoirComplexAreas,
+    LakeAreasMap,
     JDOY,
     timestepsecs=86400,
 ):
+    
+    """
+    Run Natural Lake module to compute the new waterlevel and outflow.
+    Solves lake water balance with linearisation and iteration procedure,
+    for any rating and storage curve.
+    For the case where storage curve is S = AH and Q=b(H-Ho)^2, uses the direct
+    solution from the Modified Puls Approach (LISFLOOD).
+
+
+    :ivar waterlevel: water level H in the lake
+    :ivar LakeLocs: location of lake's outlet
+    :ivar LinkedLakeLocs: ID of linked lakes
+    :ivar LakeArea: total lake area
+    :ivar LakeThreshold: water level threshold Ho under which outflow is zero
+    :ivar LakeStorFunc: type of lake storage curve
+                        1: S = AH
+                        2: S = f(H) from lake data and interpolation
+    :ivar LakeOutflowFunc: type of lake rating curve
+                           1: Q = f(H) from lake data and interpolation
+                           2: General Q = b(H - Ho)^e
+                           3: Case of Puls Approach Q = b(H - Ho)^2
+    :ivar sh: data for storage curve
+    :ivar hq: data for rating curve
+    :ivar lake_b: rating curve coefficient
+    :ivar lake_e: rating curve exponent
+    :ivar inflow: inflow to the lake (surface runoff + river discharge + seepage)
+    :ivar precip: precipitation map
+    :ivar pet: PET map
+    :ivar LakeAreasMap: lake extent map (for filtering P and PET)
+    :ivar JDOY: Julian Day of Year to read storage/rating curve from data
+    :ivar timestepsecs: model timestep in seconds
+
+    :returns: waterlevel, outflow, prec_av, pet_av, storage
+    """
 
     mv = -999.0
+    LakeZeros = LakeArea * 0.0
+    
+    waterlevel_start = waterlevel
 
-    inflow = pcr.ifthen(pcr.boolean(ReserVoirLocs), inflow)
+    inflow = pcr.ifthen(pcr.boolean(LakeLocs), inflow)
 
     prec_av = pcr.ifthen(
-        pcr.boolean(ReserVoirLocs), pcr.areaaverage(precip, ReservoirComplexAreas)
+        pcr.boolean(LakeLocs), pcr.areaaverage(precip, LakeAreasMap)
     )
     pet_av = pcr.ifthen(
-        pcr.boolean(ReserVoirLocs), pcr.areaaverage(pet, ReservoirComplexAreas)
+        pcr.boolean(LakeLocs), pcr.areaaverage(pet, LakeAreasMap)
     )
+    
+    
+    ### Modified Puls Approach (Burek et al., 2013, LISFLOOD) ###
+    #ResOutflowFunc = 3 
+    
+    #Calculate lake factor and SI parameter
+    LakeFactor = pcr.ifthenelse(
+            LakeOutflowFunc == 3,
+            LakeArea / (timestepsecs * (lake_b) ** 0.5),
+            mv
+            )
+    
+    storage_start = pcr.ifthenelse(
+            LakeStorFunc == 1,
+            LakeArea * waterlevel_start,
+            lookupResFunc(LakeLocs, waterlevel_start, sh, "0-1"),
+            )
 
-    np_reslocs = pcr.pcr2numpy(ReserVoirLocs, 0.0)
-    np_linkedreslocs = pcr.pcr2numpy(LinkedReserVoirLocs, 0.0)
-
-    _outflow = []
-    nr_loop = np.max([int(timestepsecs / 21600), 1])
-    for n in range(0, nr_loop):
-        np_waterlevel = pcr.pcr2numpy(waterlevel, np.nan)
-        np_waterlevel_lower = np_waterlevel.copy()
-
-        for val in np.unique(np_linkedreslocs):
-            if val > 0:
-                np_waterlevel_lower[np_linkedreslocs == val] = np_waterlevel[
-                    np.where(np_reslocs == val)
-                ]
-
-        diff_wl = np_waterlevel - np_waterlevel_lower
-        diff_wl[np.isnan(diff_wl)] = mv
-        np_waterlevel_lower[np.isnan(np_waterlevel_lower)] = mv
-
-        pcr_diff_wl = pcr.numpy2pcr(pcr.Scalar, diff_wl, mv)
-        pcr_wl_lower = pcr.numpy2pcr(pcr.Scalar, np_waterlevel_lower, mv)
-
-        storage_start = pcr.ifthenelse(
-            ResStorFunc == 1,
-            ResArea * waterlevel,
-            lookupResFunc(ReserVoirLocs, waterlevel, sh, "0-1"),
-        )
-
-        outflow = pcr.ifthenelse(
-            ResOutflowFunc == 1,
-            lookupResRegMatr(ReserVoirLocs, waterlevel, hq, JDOY),
+    SIFactor = pcr.ifthenelse(
+            LakeOutflowFunc == 3,
+            ((storage_start + (prec_av-pet_av)*LakeArea/1000.0) / timestepsecs 
+             + inflow),
+            mv
+            )
+    #Adjust SIFactor for ResThreshold != 0
+    SIFactorAdj = SIFactor - LakeArea * LakeThreshold / timestepsecs
+    
+    #Calculate the new lake outflow/waterlevel/storage
+    outflow = pcr.ifthenelse(
+            LakeOutflowFunc == 3,
             pcr.ifthenelse(
-                pcr_diff_wl >= 0,
-                pcr.max(res_b * (waterlevel - ResThreshold) ** res_e, 0),
-                pcr.min(-1 * res_b * (pcr_wl_lower - ResThreshold) ** res_e, 0),
-            ),
-        )
-
-        np_outflow = pcr.pcr2numpy(outflow, np.nan)
-        np_outflow_linked = np_reslocs * 0.0
-
-        with np.errstate(invalid="ignore"):
-            if np_outflow[np_outflow < 0] is not None:
-                np_outflow_linked[
-                    np.in1d(np_reslocs, np_linkedreslocs[np_outflow < 0]).reshape(
-                        np_linkedreslocs.shape
-                    )
-                ] = np_outflow[np_outflow < 0]
-
-        outflow_linked = pcr.numpy2pcr(pcr.Scalar, np_outflow_linked, 0.0)
-
-        fl_nr_loop = float(nr_loop)
-        storage = (
-            storage_start
-            + (inflow * timestepsecs / fl_nr_loop)
-            + (prec_av / fl_nr_loop / 1000.0) * ResArea
-            - (pet_av / fl_nr_loop / 1000.0) * ResArea
-            - (pcr.cover(outflow, 0.0) * timestepsecs / fl_nr_loop)
-            + (pcr.cover(outflow_linked, 0.0) * timestepsecs / fl_nr_loop)
-        )
-
+                    SIFactorAdj > 0.0,
+                    (-LakeFactor + (LakeFactor**2 + 2*SIFactorAdj) ** 0.5) ** 2,
+                    0.0),
+            LakeZeros
+            )
+    storage = pcr.ifthenelse(
+            LakeOutflowFunc == 3,
+            (SIFactor - outflow) * timestepsecs,
+            LakeZeros
+            )
+    waterlevel = pcr.ifthenelse(
+            LakeOutflowFunc == 3,
+            storage / LakeArea,
+            LakeZeros
+            )
+    
+    ### Linearisation and iteration for specific storage/rating curves ###
+    np_lakeoutflowfunc = pcr.pcr2numpy(LakeOutflowFunc, 0.0)
+    if ((bool(np.isin(1, np.unique(np_lakeoutflowfunc)))) or 
+        (bool(np.isin(2, np.unique(np_lakeoutflowfunc))))):
+        
+        np_lakelocs = pcr.pcr2numpy(LakeLocs, 0.0)
+        np_linkedlakelocs = pcr.pcr2numpy(LinkedLakeLocs, 0.0)
+        waterlevel_loop = waterlevel_start
+    
+        _outflow = []
+        nr_loop = np.max([int(timestepsecs / 21600), 1])
+        for n in range(0, nr_loop):
+            np_waterlevel = pcr.pcr2numpy(waterlevel_loop, np.nan)
+            np_waterlevel_lower = np_waterlevel.copy()
+    
+            for val in np.unique(np_linkedlakelocs):
+                if val > 0:
+                    np_waterlevel_lower[np_linkedlakelocs == val] = np_waterlevel[
+                        np.where(np_lakelocs == val)
+                    ]
+    
+            diff_wl = np_waterlevel - np_waterlevel_lower
+            diff_wl[np.isnan(diff_wl)] = mv
+            np_waterlevel_lower[np.isnan(np_waterlevel_lower)] = mv
+    
+            pcr_diff_wl = pcr.numpy2pcr(pcr.Scalar, diff_wl, mv)
+            pcr_wl_lower = pcr.numpy2pcr(pcr.Scalar, np_waterlevel_lower, mv)
+    
+            storage_start_loop = pcr.ifthenelse(
+                LakeStorFunc == 1,
+                LakeArea * waterlevel_loop,
+                lookupResFunc(LakeLocs, waterlevel_loop, sh, "0-1"),
+            )
+    
+            outflow_loop = pcr.ifthenelse(
+                LakeOutflowFunc == 1,
+                lookupResRegMatr(LakeLocs, waterlevel_loop, hq, JDOY),
+                pcr.ifthenelse(
+                    pcr_diff_wl >= 0,
+                    pcr.max(lake_b * (waterlevel_loop - LakeThreshold) ** lake_e, 0),
+                    pcr.min(-1 * lake_b * (pcr_wl_lower - LakeThreshold) ** lake_e, 0),
+                ),
+            )
+    
+            np_outflow = pcr.pcr2numpy(outflow_loop, np.nan)
+            np_outflow_linked = np_lakelocs * 0.0
+    
+            with np.errstate(invalid="ignore"):
+                if np_outflow[np_outflow < 0] is not None:
+                    np_outflow_linked[
+                        np.in1d(np_lakelocs, np_linkedlakelocs[np_outflow < 0]).reshape(
+                            np_linkedlakelocs.shape
+                        )
+                    ] = np_outflow[np_outflow < 0]
+    
+            outflow_linked = pcr.numpy2pcr(pcr.Scalar, np_outflow_linked, 0.0)
+    
+            fl_nr_loop = float(nr_loop)
+            storage_loop = (
+                storage_start_loop
+                + (inflow * timestepsecs / fl_nr_loop)
+                + (prec_av / fl_nr_loop / 1000.0) * LakeArea
+                - (pet_av / fl_nr_loop / 1000.0) * LakeArea
+                - (pcr.cover(outflow_loop, 0.0) * timestepsecs / fl_nr_loop)
+                + (pcr.cover(outflow_linked, 0.0) * timestepsecs / fl_nr_loop)
+            )
+    
+            waterlevel_loop = pcr.ifthenelse(
+                LakeStorFunc == 1,
+                waterlevel_loop + (storage_loop - storage_start_loop) / LakeArea,
+                lookupResFunc(LakeLocs, storage_loop, sh, "1-0"),
+            )
+    
+            np_outflow_nz = np_outflow * 0.0
+            with np.errstate(invalid="ignore"):
+                np_outflow_nz[np_outflow > 0] = np_outflow[np_outflow > 0]
+            _outflow.append(np_outflow_nz)
+    
+        outflow_av_temp = np.average(_outflow, 0)
+        outflow_av_temp[np.isnan(outflow_av_temp)] = mv
+        outflow_av = pcr.numpy2pcr(pcr.Scalar, outflow_av_temp, mv)
+        
+        #Add the discharge/waterlevel/storage from the loop to the one from puls approach
+        outflow = pcr.ifthenelse(
+                LakeOutflowFunc == 3,
+                outflow,
+                outflow_av
+                )
         waterlevel = pcr.ifthenelse(
-            ResStorFunc == 1,
-            waterlevel + (storage - storage_start) / ResArea,
-            lookupResFunc(ReserVoirLocs, storage, sh, "1-0"),
-        )
+                LakeOutflowFunc == 3,
+                waterlevel,
+                waterlevel_loop
+                )
+        storage = pcr.ifthenelse(
+                LakeOutflowFunc == 3,
+                storage,
+                storage_loop
+                )
 
-        np_outflow_nz = np_outflow * 0.0
-        with np.errstate(invalid="ignore"):
-            np_outflow_nz[np_outflow > 0] = np_outflow[np_outflow > 0]
-        _outflow.append(np_outflow_nz)
+    return waterlevel, outflow, prec_av, pet_av, storage
 
-    outflow_av_temp = np.average(_outflow, 0)
-    outflow_av_temp[np.isnan(outflow_av_temp)] = mv
-    outflow_av = pcr.numpy2pcr(pcr.Scalar, outflow_av_temp, mv)
-
-    return waterlevel, outflow_av, prec_av, pet_av, storage
 
 
 Verbose = 0

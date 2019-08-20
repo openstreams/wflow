@@ -726,6 +726,7 @@ class WflowModel(pcraster.framework.DynamicModel):
        :var self.SatWaterDepth: Water in the saturated store [mm]
        :var self.CanopyStorage: Amount of water on the Canopy [mm]
        :var self.ReservoirVolume: Volume of each reservoir [m^3]
+       :var self.LakeWaterLevel: Water level in natural/uncontrolled lakes [m]
        :var self.GlacierStore: Thickness of the Glacier in a gridcell [mm]
        """
         states = [
@@ -747,8 +748,8 @@ class WflowModel(pcraster.framework.DynamicModel):
         if hasattr(self, "ReserVoirSimpleLocs"):
             states.append("ReservoirVolume")
 
-        if hasattr(self, "ReserVoirComplexLocs"):
-            states.append("ReservoirWaterLevel")
+        if hasattr(self, "LakeLocs"):
+            states.append("LakeWaterLevel")
 
         if hasattr(self, "nrpaddyirri"):
             if self.nrpaddyirri > 0:
@@ -1498,7 +1499,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.ReserVoirSimpleLocs = pcr.nominal(self.ReserVoirSimpleLocs)
             self.ReservoirSimpleAreas = pcr.nominal(self.ReservoirSimpleAreas)
             tt_simple = pcr.pcr2numpy(self.ReserVoirSimpleLocs, 0.0)
-            self.nrresSimple = tt_simple.max()
+            self.nrresSimple = np.size(np.where(tt_simple > 0.0)[0])
             self.ReserVoirLocs = self.ReserVoirLocs + pcr.cover(
                 pcr.scalar(self.ReserVoirSimpleLocs)
             )
@@ -1519,61 +1520,88 @@ class WflowModel(pcraster.framework.DynamicModel):
         else:
             self.nrresSimple = 0
 
-        if hasattr(self, "ReserVoirComplexLocs"):
-            self.ReservoirComplexAreas = pcr.nominal(self.ReservoirComplexAreas)
-            self.ReserVoirComplexLocs = pcr.nominal(self.ReserVoirComplexLocs)
-            tt_complex = pcr.pcr2numpy(self.ReserVoirComplexLocs, 0.0)
-            self.nrresComplex = tt_complex.max()
+        if hasattr(self, "LakeLocs"):
+            #add parameter for lake threshold estimation
+            self.estimatelakethresh = int(configget(self.config, "model", "estimatelakethresh", "0"))
+            self.LakeAreasMap = pcr.nominal(self.LakeAreasMap)
+            self.LakeLocs = pcr.nominal(self.LakeLocs)
+            tt_lake = pcr.pcr2numpy(self.LakeLocs, 0.0)
+            #self.nrlake = tt_lake.max()
+            self.nrlake = np.size(np.where(tt_lake > 0.0)[0])
             self.ReserVoirLocs = self.ReserVoirLocs + pcr.cover(
-                pcr.scalar(self.ReserVoirComplexLocs)
+                pcr.scalar(self.LakeLocs)
             )
-            res_area = pcr.cover(pcr.scalar(self.ReservoirComplexAreas), 0.0)
+            lake_area = pcr.cover(pcr.scalar(self.LakeAreasMap), 0.0)
             self.filter_P_PET = pcr.ifthenelse(
-                res_area > 0, res_area * 0.0, self.filter_P_PET
+                lake_area > 0, lake_area * 0.0, self.filter_P_PET
             )
 
             # read files
             self.sh = {}
-            res_ids = pcr.ifthen(self.ResStorFunc == 2, self.ReserVoirComplexLocs)
-            np_res_ids = pcr.pcr2numpy(res_ids, 0)
-            np_res_ids_u = np.unique(np_res_ids[np.nonzero(np_res_ids)])
-            if np.size(np_res_ids_u) > 0:
-                for item in np.nditer(np_res_ids_u):
+            lake_ids = pcr.ifthen(self.LakeStorFunc == 2, self.LakeLocs)
+            np_lake_ids = pcr.pcr2numpy(lake_ids, 0)
+            np_lake_ids_u = np.unique(np_lake_ids[np.nonzero(np_lake_ids)])
+            if np.size(np_lake_ids_u) > 0:
+                for item in np.nditer(np_lake_ids_u):
                     self.sh[int(item)] = np.loadtxt(
                         self.Dir
                         + "/"
                         + self.intbl
-                        + "/Reservoir_SH_"
+                        + "/Lake_SH_"
                         + str(item)
                         + ".tbl"
                     )
             self.hq = {}
-            res_ids = pcr.ifthen(self.ResOutflowFunc == 1, self.ReserVoirComplexLocs)
-            np_res_ids = pcr.pcr2numpy(res_ids, 0)
-            np_res_ids_u = np.unique(np_res_ids[np.nonzero(np_res_ids)])
-            if np.size(np_res_ids_u) > 0:
-                for item in np.nditer(np_res_ids_u):
+            lake_ids = pcr.ifthen(self.LakeOutflowFunc == 1, self.LakeLocs)
+            np_lake_ids = pcr.pcr2numpy(lake_ids, 0)
+            np_lake_ids_u = np.unique(np_lake_ids[np.nonzero(np_lake_ids)])
+            if np.size(np_lake_ids_u) > 0:
+                for item in np.nditer(np_lake_ids_u):
                     self.hq[int(item)] = np.loadtxt(
                         self.Dir
                         + "/"
                         + self.intbl
-                        + "/Reservoir_HQ_"
+                        + "/Lake_HQ_"
                         + str(item)
                         + ".tbl",
                         skiprows=3,
                     )
+                    
+            #Ini for the Modified Puls Approach (Burek et al., 2013, LISFLOOD)
+            #Check which lakes uses the puls approach (ResOutflowFunc = 3)
+            #And if the corresponding res_e=2 and ResStorFunc=2
+            
+            #Update Res_b in ini if ResThreshold different from zero
+            
+            np_lakeoutflowfunc_old = pcr.pcr2numpy(self.LakeOutflowFunc, 0)
+            self.LakeOutflowFunc = pcr.ifthenelse(
+                    pcr.pcrand(self.LakeOutflowFunc == 3, self.LakeStorFunc == 1),
+                    self.LakeOutflowFunc,
+                    2
+                    )
+            self.LakeOutflowFunc = pcr.ifthenelse(
+                    pcr.pcrand(self.LakeOutflowFunc == 3, self.Lake_e != 2),
+                    self.LakeOutflowFunc,
+                    2
+                    )
+            np_lakeoutflowfunc = pcr.pcr2numpy(self.LakeOutflowFunc, 0)
+            if np_lakeoutflowfunc_old.sum() != np_lakeoutflowfunc.sum():
+                self.logger.warning("Lake outflow modelling using the modified puls approach selected "+ 
+                                    "but found contradictory arguments for ResStorFunc/Res_e: "+
+                                    "using the general iteration method instead")
+            
 
         else:
-            self.nrresComplex = 0
+            self.nrlake = 0
 
-        if (self.nrresSimple + self.nrresComplex) > 0:
+        if (self.nrresSimple + self.nrlake) > 0:
             self.ReserVoirLocs = pcr.ordinal(self.ReserVoirLocs)
             self.logger.info(
                 "A total of "
                 + str(self.nrresSimple)
                 + " simple reservoirs and "
-                + str(self.nrresComplex)
-                + " complex reservoirs found."
+                + str(self.nrlake)
+                + " lakes found."
             )
             self.ReserVoirDownstreamLocs = pcr.downstream(
                 self.TopoLdd, self.ReserVoirLocs
@@ -1771,7 +1799,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         # Alf ranges from 5 to > 60. 5 for hardrock. large values for sediments
         # "Noah J. Finnegan et al 2005 Controls on the channel width of rivers:
         # Implications for modeling fluvial incision of bedrock"
-        if (self.nrresSimple + self.nrresComplex) > 0:
+        if (self.nrresSimple + self.nrlake) > 0:
             upstr = pcr.catchmenttotal(1, self.TopoLddOrg)
         else:
             upstr = pcr.catchmenttotal(1, self.TopoLdd)
@@ -1814,6 +1842,31 @@ class WflowModel(pcraster.framework.DynamicModel):
         
         # term for Alpha (Land)
         self.AlpTermL = pow((self.N / (pcr.sqrt(self.landSlope))), self.Beta)
+        
+        #Estimate LakeThreshold depending on outlet characteristics
+        if (self.nrlake > 0 and self.estimatelakethresh == 1):
+            #initial waterLevel
+            level_map_path = self.Dir + "/instate/WaterLevelR.map"
+            if os.path.exists(level_map_path):
+                level_map = pcr.readmap(level_map_path)
+            else:
+                level_map = self.ZeroMap
+            alphaR = self.AlpTermR * (pcr.downstream(self.TopoLdd, (self.Bw+2*level_map))) ** self.AlpPow
+            outletRivLevel = alphaR * self.LakeAvgOut ** self.Beta
+            #Lake Threshold = Lake Level - 130% River Level
+            #130% = Adjustment linked to possible uncertainties in River Level estimation
+            self.LakeThreshold = pcr.ifthenelse(
+                    self.LakeThreshold > 0.0,
+                    self.LakeThreshold,
+                    pcr.max(self.LakeAvgLevel - 1.3 * outletRivLevel, 0.0)
+                    )
+            
+            #Reupdate rating curve coefficient
+            self.Lake_b = pcr.ifthenelse(
+                    self.LakeOutflowFunc == 3,
+                    self.LakeAvgOut / (self.LakeAvgLevel - self.LakeThreshold) ** 2,
+                    self.Lake_b
+                    )
         
         # calculate catchmentsize
         self.upsize = pcr.catchmenttotal(self.xl * self.yl, self.TopoLdd)
@@ -2089,11 +2142,8 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.CanopyStorage = self.ZeroMap
             if hasattr(self, "ReserVoirSimpleLocs"):
                 self.ReservoirVolume = self.ResMaxVolume * self.ResTargetFullFrac
-            if hasattr(self, "ReserVoirComplexLocs"):
-                #self.ReservoirWaterLevel = pcr.cover(0.0)
-                self.ReservoirWaterLevel = self.wf_readmap(       
-                    os.path.join(self.Dir, "staticmaps", "ReservoirWaterLevel.map"),
-                    400.0,                )
+            if hasattr(self, "LakeLocs"):
+                self.LakeWaterLevel = self.LakeAvgLevel
             if hasattr(self, "GlacierFrac"):
                 self.GlacierStore = self.wf_readmap(
                     os.path.join(self.Dir, "staticmaps", "GlacierStore.map"),
@@ -2244,7 +2294,7 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         self.wf_multparameters()
 
-        if (self.nrresSimple + self.nrresComplex) > 0 and self.filterResArea == 0:
+        if (self.nrresSimple + self.nrlake) > 0 and self.filterResArea == 0:
             self.ReserVoirPotEvap = self.PotenEvap
             self.ReserVoirPrecip = self.Precipitation
 
@@ -2413,6 +2463,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         # evap available for soil evaporation
         self.RestEvap = self.RestEvap * self.CanopyGapFraction
         
+        self.Inflow = pcr.cover(self.Inflow, self.ZeroMap)
         # only run the reservoir module if needed
         if self.nrresSimple > 0:
             self.ReservoirVolume, self.OutflowSR, self.ResPercFull, self.ResPrecipSR, self.ResEvapSR, self.DemandRelease = simplereservoir(
@@ -2433,33 +2484,31 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.OutflowDwn = pcr.upstream(
                 self.TopoLddOrg, pcr.cover(self.OutflowSR, pcr.scalar(0.0))
             )
-            self.Inflow = self.OutflowDwn + pcr.cover(self.Inflow, self.ZeroMap)
-        elif self.nrresComplex > 0:
-            self.ReservoirWaterLevel, self.OutflowCR, self.ResPrecipCR, self.ResEvapCR, self.ReservoirVolumeCR = complexreservoir(
-                self.ReservoirWaterLevel,
-                self.ReserVoirComplexLocs,
-                self.LinkedReservoirLocs,
-                self.ResArea,
-                self.ResThreshold,
-                self.ResStorFunc,
-                self.ResOutflowFunc,
+            self.Inflow = self.OutflowDwn + self.Inflow
+        if self.nrlake > 0:
+            self.LakeWaterLevel, self.LakeOutflow, self.LakePrecip, self.LakeEvap, self.LakeVolume = naturalLake(
+                self.LakeWaterLevel,
+                self.LakeLocs,
+                self.LinkedLakeLocs,
+                self.LakeArea,
+                self.LakeThreshold,
+                self.LakeStorFunc,
+                self.LakeOutflowFunc,
                 self.sh,
                 self.hq,
-                self.Res_b,
-                self.Res_e,
+                self.Lake_b,
+                self.Lake_e,
                 self.RiverRunoff + self.LandRunoff + self.SubsurfaceFlow/1000/1000/1000/self.timestepsecs,
                 self.ReserVoirPrecip,
                 self.ReserVoirPotEvap,
-                self.ReservoirComplexAreas,
+                self.LakeAreasMap,
                 self.wf_supplyJulianDOY(),
                 timestepsecs=self.timestepsecs,
             )
             self.OutflowDwn = pcr.upstream(
-                self.TopoLddOrg, pcr.cover(self.OutflowCR, pcr.scalar(0.0))
+                self.TopoLddOrg, pcr.cover(self.LakeOutflow, pcr.scalar(0.0))
             )
-            self.Inflow = self.OutflowDwn + pcr.cover(self.Inflow, self.ZeroMap)
-        else:
-            self.Inflow = pcr.cover(self.Inflow, self.ZeroMap)
+            self.Inflow = self.OutflowDwn + self.Inflow
         
         
         # convert to numpy for numba        
