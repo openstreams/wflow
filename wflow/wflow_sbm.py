@@ -1501,7 +1501,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             tt_simple = pcr.pcr2numpy(self.ReserVoirSimpleLocs, 0.0)
             self.nrresSimple = np.size(np.where(tt_simple > 0.0)[0])
             self.ReserVoirLocs = self.ReserVoirLocs + pcr.cover(
-                pcr.scalar(self.ReserVoirSimpleLocs)
+                pcr.scalar(self.ReserVoirSimpleLocs), 0.0
             )
             areamap = self.reallength * self.reallength
             res_area = pcr.areatotal(pcr.spatial(areamap), self.ReservoirSimpleAreas)
@@ -1529,7 +1529,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             #self.nrlake = tt_lake.max()
             self.nrlake = np.size(np.where(tt_lake > 0.0)[0])
             self.ReserVoirLocs = self.ReserVoirLocs + pcr.cover(
-                pcr.scalar(self.LakeLocs)
+                pcr.scalar(self.LakeLocs), 0.0
             )
             lake_area = pcr.cover(pcr.scalar(self.LakeAreasMap), 0.0)
             self.filter_P_PET = pcr.ifthenelse(
@@ -1571,7 +1571,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             #Check which lakes uses the puls approach (ResOutflowFunc = 3)
             #And if the corresponding res_e=2 and ResStorFunc=2
             
-            #Update Res_b in ini if ResThreshold different from zero
+            #Update Lake_b in ini if ResThreshold different from zero
             
             np_lakeoutflowfunc_old = pcr.pcr2numpy(self.LakeOutflowFunc, 0)
             self.LakeOutflowFunc = pcr.ifthenelse(
@@ -1580,14 +1580,14 @@ class WflowModel(pcraster.framework.DynamicModel):
                     2
                     )
             self.LakeOutflowFunc = pcr.ifthenelse(
-                    pcr.pcrand(self.LakeOutflowFunc == 3, self.Lake_e != 2),
+                    pcr.pcrand(self.LakeOutflowFunc == 3, self.Lake_e == 2.0),
                     self.LakeOutflowFunc,
                     2
                     )
             np_lakeoutflowfunc = pcr.pcr2numpy(self.LakeOutflowFunc, 0)
             if np_lakeoutflowfunc_old.sum() != np_lakeoutflowfunc.sum():
                 self.logger.warning("Lake outflow modelling using the modified puls approach selected "+ 
-                                    "but found contradictory arguments for ResStorFunc/Res_e: "+
+                                    "but found contradictory arguments for LakeStorFunc/Lake_e: "+
                                     "using the general iteration method instead")
             
 
@@ -1813,6 +1813,19 @@ class WflowModel(pcraster.framework.DynamicModel):
         )
         # Use supplied riverwidth if possible, else calulate
         self.RiverWidth = pcr.ifthenelse(self.RiverWidth <= 0.0, W, self.RiverWidth)
+        #Use W instead of RiverWidth for reservoirs and lake cells
+        if self.nrresSimple > 0:
+            self.RiverWidth = pcr.ifthenelse(
+                    pcr.cover(pcr.scalar(self.ReservoirSimpleAreas), 0.0) > 0.0,
+                    W,
+                    self.RiverWidth
+                    )
+        if self.nrlake > 0:
+            self.RiverWidth = pcr.ifthenelse(
+                    pcr.cover(pcr.scalar(self.LakeAreasMap), 0.0) > 0.0,
+                    W,
+                    self.RiverWidth
+                    )
         
         # water depth (m)
         # set width for kinematic wave to cell width for all cells

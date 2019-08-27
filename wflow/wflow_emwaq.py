@@ -75,6 +75,7 @@ from wflow import wf_netcdfio
 
 
 import pandas as pd
+import math
 
 
 wflow = "wflow_emwaq: "
@@ -823,6 +824,7 @@ def dw_WriteHydDef(fname, cells, flux):
 #        savetxt(exfile, cell_list, fmt="%6.10s")
     
     exfile.close()
+    
     
 
 ########################################################################
@@ -1610,6 +1612,8 @@ def dw_WriteSegmentOrExchangeData(ttime, fname, datablock, boundids, WriteAscii=
 
     artow = np.array(totareas, dtype=np.float32).copy()
     timear = np.array(ttime, dtype=np.int32)
+            
+    
     if os.path.isfile(fname):  # append to existing file
         fp = open(fname, "ab")
         tstr = timear.tostring() + artow.tostring()
@@ -1760,6 +1764,73 @@ def read_timestep(nc, var, timestep, logger, caseId, runId):
         return pcrmap
     else:
         return _readTS(caseId + "/" + runId + "/outmaps/" + var, timestep)
+    
+
+########################################################################
+## Functions for emission data                                         #
+########################################################################
+
+def dw_WriteEmiData(caseId, outdir, ptid, cells, modelmap, emiData, comp, Aggregation, logger):
+    """
+    Convert PCRaster emission maps into include files.
+    """
+    
+    for l in range(len(emiData)):
+        #Read the pcr map and convert it to numpy
+        emimap = pcr.readmap((caseId + "/" + emiData.Fileloc[l]))
+        
+        #Transform data for aggregation (default is average)
+        if Aggregation:
+            if emiData.AggType[l] == "total":
+                emimap = pcr.areatotal(emimap, modelmap, Aggregation)
+            else: 
+                emimap = pcr.areaaverage(emimap, modelmap, Aggregation)
+        np_emimap = dw_pcrToDataBlock(emimap, ptid, Aggregation)
+        #Transforms emi data to zeros instead of NaN
+        np_emimap[np.isnan(np_emimap)] = 0.0
+        
+        #Create emi data block for binary data
+        emi_block = []
+        for i in np.arange(0, len(comp)):
+            if comp.ID[i] == emiData.To[l]:
+                emi_block = np.append(emi_block,np_emimap)
+            else:
+                emi_block = np.append(emi_block, np.repeat(0, len(cells)))
+        
+        logger.info("Writing " + emiData.Name[l] + " data")
+        dw_WriteSegmentOrExchangeData(
+            0, outdir + emiData.Name[l] +".dat", emi_block, 1, WriteAscii=False
+        )
+        
+        #For ASCII, maximum length per line is 1000, need to split emission data
+        #Need to reshape the emi data to fit
+        #Calculate max size of characters
+        MaxChar = np.amax([len(x) for x in np_emimap.astype(str)])
+        #Number of values per line is floor(1000/MaxChar)
+        NPRow = math.floor(1000/MaxChar)
+        #Total number of values to write
+        NTOT = len(np_emimap)
+        #Reshape if necessary
+        if NTOT > NPRow:
+            #Number of complete rows
+            NCRow = int(len(np_emimap)/NPRow)
+            np_emimap_1 = np_emimap[0:NCRow*NPRow].reshape(NCRow, NPRow)  
+            np_emimap_2 = np_emimap[NCRow*NPRow:NTOT]
+            np_emimap_2 = np_emimap_2.reshape(1, len(np_emimap_2))
+            
+        #Write the ASCII file
+        exfile = open((outdir + emiData.Name[l] +".inc"), "w")
+        if NTOT > NPRow:
+            np.savetxt(exfile, np_emimap_1.astype(str), fmt="%s")
+            np.savetxt(exfile, np_emimap_2.astype(str), fmt="%s")
+        else:
+            np.savetxt(exfile, np.emimap.astype(str), fmt="%s")        
+        #Put zeros for the remaining compartments
+        if len(comp) > 1:                
+            extra_data = str(int(len(cells)*(len(comp)-1)*4)) + "*0.0"
+            print(extra_data, file=exfile)
+        exfile.close()        
+            
 
 
 ########################################################################
@@ -1978,6 +2049,10 @@ def main(argv=None):
     bound = pd.read_csv(boundFile, sep = sepcsv, header=0)
     fluxFile = caseId + "/" + configget(config, "inputcsv", "fluxes", "/csv/fluxes.csv")
     flux = pd.read_csv(fluxFile, sep = sepcsv, header=0)
+    emiFile = caseId + "/" + configget(config, "inputcsv", "emissions", "/csv/emissions.csv")
+    if os.path.exists(emiFile):
+        includeEmi = True
+        emiData = pd.read_csv(emiFile, sep = sepcsv, header=0)
     
     logger.info("Nb of compartments: " + str(len(comp)))
     logger.info("Nb of boundaries: " + str(len(bound)))
@@ -2054,6 +2129,10 @@ def main(argv=None):
         boundflow_labels = dw_WriteBoundlist(
                 dwdir + "/includes_deltashell/B5_boundlist.inc", flow_labels, pointer_labels, bd_id
         )
+        
+        #Convert emssions map data to inc
+        if includeEmi:
+            dw_WriteEmiData(caseId, dwdir + "/includes_flow/", ptid, cells, modelmap, emiData, comp, Aggregation, logger)
         
         #Fraction files
         if Fraction:
@@ -2352,8 +2431,9 @@ def main(argv=None):
                                 if os.path.exists(level_map_path2):
                                     level_map = level_map + pcr.readmap(level_map_path2)
                             else:
-                                level_mapstack = comp.mapstack[(comp.wflowVar == "WaterLevelR+WaterLevelL" or
-                                                                comp.wflowVar == "WaterLevelL+WaterLevelR")].values
+                                level_mapstack = comp.mapstack[comp.wflowVar == "WaterLevelR+WaterLevelL"].values
+                                if len(level_mapstack) == 0:
+                                    level_mapstack = comp.mapstack[comp.wflowVar == "WaterLevelL+WaterLevelR"].values
                                 level_map = zeroMap*0.0
                                 wflowVars = level_mapstack[0].split("+")
                                 for v in range(len(wflowVars)):
