@@ -988,11 +988,21 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.maxitsupply = int(configget(self.config, "model", "maxitsupply", "5"))
         self.UST = int(configget(self.config, "model", "Whole_UST_Avail", "0"))
         self.NRiverMethod = int(configget(self.config, "model", "nrivermethod", "1"))
-        self.kinwaveIters = int(configget(self.config, "model", "kinwaveIters", "0"))        
+        self.kinwaveIters = int(configget(self.config, "model", "kinwaveIters", "0"))
+        self.kinwaveRiverTstep = int(configget(self.config, "model", "kinwaveRiverTstep", "0"))
+        self.kinwaveLandTstep = int(configget(self.config, "model", "kinwaveLandTstep", "0"))        
         if self.kinwaveIters == 1:
             self.logger.info(
                 "Using sub timestep for kinematic wave (iterate)"
-            )            
+            )
+            if self.kinwaveRiverTstep > 0:
+                self.logger.info(
+                    "Using a fixed timestep (seconds) for kinematic wave river flow: " + str(self.kinwaveRiverTstep)
+                )
+            if self.kinwaveLandTstep > 0:
+                self.logger.info(
+                    "Using a fixed timestep (seconds) for kinematic wave overland flow: " + str(self.kinwaveRiverTstep)
+                )                
         if self.TransferMethod == 1:
             self.logger.info(
                 "Applying the original topog_sbm vertical transfer formulation"
@@ -2546,8 +2556,11 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         it_kinL = 1
         if self.kinwaveIters == 1:
-            it_kinL = estimate_iterations_kin_wave(self.LandRunoff, self.Beta, self.AlphaL, self.timestepsecs, self.DL, self.mv)
-        
+            if self.kinwaveLandTstep == 0:
+                it_kinL = estimate_iterations_kin_wave(self.LandRunoff, self.Beta, self.AlphaL, self.timestepsecs, self.DL, self.mv)
+            else:
+                it_kinL = int(np.ceil(self.timestepsecs/self.kinwaveLandTstep))
+                
         ssf, qo, self.dyn, self.layer  = sbm_cell(self.nodes, 
                                              self.nodes_up,
                                              self.np_ldd.ravel(),
@@ -2691,10 +2704,13 @@ class WflowModel(pcraster.framework.DynamicModel):
         
         RiverRunoff = pcr.pcr2numpy(self.RiverRunoff,self.mv).ravel()
         
-        it_kinR=1
+        it_kinR = 1
         if self.kinwaveIters == 1:
-            it_kinR = estimate_iterations_kin_wave(self.RiverRunoff, self.Beta, self.AlphaR, self.timestepsecs, self.DCL, self.mv)
-            
+            if self.kinwaveRiverTstep == 0:
+                it_kinR = estimate_iterations_kin_wave(self.RiverRunoff, self.Beta, self.AlphaR, self.timestepsecs, self.DCL, self.mv)
+            else:
+                it_kinR = int(np.ceil(self.timestepsecs/self.kinwaveRiverTstep))
+                
         acc_flow = kin_wave(
                 self.rnodes,
                 self.rnodes_up,
@@ -2758,8 +2774,11 @@ class WflowModel(pcraster.framework.DynamicModel):
                 q_np = pcr.pcr2numpy(q, self.mv)
 
                 if self.kinwaveIters == 1:
-                    it_kinR = estimate_iterations_kin_wave(self.RiverRunoff, self.Beta, self.AlphaR, self.timestepsecs, self.DCL, self.mv)
-                
+                    if self.kinwaveRiverTstep == 0:
+                        it_kinR = estimate_iterations_kin_wave(self.RiverRunoff, self.Beta, self.AlphaR, self.timestepsecs, self.DCL, self.mv)
+                    else:
+                        it_kinR = int(np.ceil(self.timestepsecs/self.kinwaveRiverTstep))
+                                
                 acc_flow = kin_wave(
                         self.rnodes,
                         self.rnodes_up,

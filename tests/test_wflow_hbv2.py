@@ -68,8 +68,7 @@ class MyTest(unittest.TestCase):
 
         my_data = np.genfromtxt(os.path.join(caseName, runId, "run.csv"), delimiter=",")
         print("Checking  discharge ....")
-        self.assertAlmostEqual(1811.1795542081197, my_data[:, 2].mean(), places=4)
-
+        self.assertAlmostEqual(1811.1795022010804, my_data[:, 2].mean(), places=4)      
 
 if __name__ == "__main__":
     unittest.main()
