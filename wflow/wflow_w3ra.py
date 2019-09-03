@@ -1051,9 +1051,13 @@ def main(argv=None):
             usage()
             return
 
-    opts, args = getopt.getopt(argv, "C:S:T:c:s:R:")
+    opts, args = getopt.getopt(argv, "C:S:T:c:s:R:",['version'])
 
     for o, a in opts:
+        if o == "--version":
+            import wflow
+            print("wflow version: ", wflow.__version__)
+            sys.exit(0)
         if o == "-C":
             caseName = a
         if o == "-R":

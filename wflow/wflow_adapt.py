@@ -539,7 +539,7 @@ def main():
     netcdfoutput = False
 
     try:
-        opts, _ = getopt.getopt(sys.argv[1:], "-M:-t:-s:-o:-r:-w:-C:-I:R:")
+        opts, _ = getopt.getopt(sys.argv[1:], "-M:-t:-s:-o:-r:-w:-C:-I:R:",['version'])
     except getopt.GetoptError as err:
         # print help information and exit:
         print(str(err))
@@ -575,6 +575,10 @@ def main():
             iniFile = a
         elif o in ("-M"):
             mode = a
+        elif o == "--version":
+            import wflow
+            print("wflow version: ", wflow.__version__)
+            sys.exit(0)
         else:
             assert False, "unhandled option"
 

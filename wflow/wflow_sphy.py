@@ -1202,7 +1202,7 @@ def main(argv=None):
     ## Main model starts here
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, "c:QXS:F:hC:Ii:T:R:u:s:P:p:Xx:U:fl:L:")
+        opts, args = getopt.getopt(argv, "c:QXS:F:hC:Ii:T:R:u:s:P:p:Xx:U:fl:L:",['version'])
     except getopt.error as msg:
         pcrut.usage(msg)
 
@@ -1210,7 +1210,10 @@ def main(argv=None):
         if o == "-F":
             runinfoFile = a
             fewsrun = True
-
+        if o == "--version":
+            import wflow
+            print("wflow version: ", wflow.__version__)
+            sys.exit(0)
         if o == "-C":
             caseName = a
         if o == "-R":

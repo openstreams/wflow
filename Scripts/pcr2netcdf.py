@@ -534,7 +534,7 @@ def main(argv=None):
     ## Main model starts here
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, "c:S:E:N:I:O:b:t:F:zs:d:YP:Mi:C:")
+        opts, args = getopt.getopt(argv, "c:S:E:N:I:O:b:t:F:zs:d:YP:Mi:C:",['version'])
     except getopt.error as msg:
         usage(msg)
 
@@ -581,6 +581,10 @@ def main(argv=None):
                 mapstackname = flst
                 var = flst
                 varname = flst
+        if o == "--version":
+            import wflow
+            print("wflow version: ", wflow.__version__)
+            sys.exit(0)
 
     # Use first timestep as clone-map
     logger = setlogger("pcr2netcdf.log", "pcr2netcdf", thelevel=logging.DEBUG)

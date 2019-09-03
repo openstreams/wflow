@@ -3049,7 +3049,7 @@ def main(argv=None):
     ## Process command-line options                                        #
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, "XL:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:")
+        opts, args = getopt.getopt(argv, "XL:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:", ['version'])
     except getopt.error as msg:
         pcrut.usage(msg)
 
@@ -3070,6 +3070,10 @@ def main(argv=None):
             _NoOverWrite = 0
         if o == "-l":
             exec("loglevel = logging." + a)
+        if o == "--version":
+            import wflow
+            print("wflow version: ", wflow.__version__)
+            sys.exit(0)
 
     starttime = dt.datetime(1990, 1, 1)
 

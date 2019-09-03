@@ -100,7 +100,7 @@ def runCommands(commands, maxCpu):
 def main():
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "fhC:N:I:s:M:")
+        opts, args = getopt.getopt(sys.argv[1:], "fhC:N:I:s:M:",['version'])
     except getopt.error as msg:
         usage(msg)
 
@@ -127,6 +127,10 @@ def main():
             force = True
         if o == "-M":
             maxcpu = int(a)
+        if o == "--version":
+            import wflow
+            print("wflow version: ", wflow.__version__)
+            sys.exit(0)
 
     dirs = [
         "/intbl/",

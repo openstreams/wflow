@@ -1004,13 +1004,17 @@ x
     ## Process command-line options                                        #
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, "F:C:S:T:c:s:R:l")
+        opts, args = getopt.getopt(argv, "F:C:S:T:c:s:R:l",['version'])
     except getopt.error as msg:
         pcrut.usage(msg)
 
     for o, a in opts:
         if o == "-C":
             caseName = a
+        if o == "--version":
+            import wflow
+            print("wflow version: ", wflow.__version__)
+            sys.exit(0)
         if o == "-R":
             runId = a
         if o == "-c":

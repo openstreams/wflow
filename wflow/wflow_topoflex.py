@@ -1617,12 +1617,11 @@ def main(argv=None):
 
     try:
         opts, args = getopt.getopt(
-            argv, "C:S:T:Ic:s:R:fl:L:P:p:i:"
+            argv, "C:S:T:Ic:s:R:fl:L:P:p:i:",['version']
         )  # 'XF:L:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:')
     except getopt.error as msg:
         pcrut.usage(msg)
 
-    print(opts)
     for o, a in opts:
         if o == "-C":
             caseName = a
@@ -1643,6 +1642,10 @@ def main(argv=None):
             LogFileName = a
         if o == "-l":
             exec("loglevel = logging." + a)
+        if o == "--version":
+            import wflow
+            print("wflow version: ", wflow.__version__)
+            sys.exit(0)
 
     if len(argv) <= 1:
         usage()

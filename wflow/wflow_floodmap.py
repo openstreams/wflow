@@ -367,7 +367,7 @@ def main(argv=None):
             usage()
             return
 
-    opts, args = getopt.getopt(argv, "C:S:T:c:s:R:fIs:l:")
+    opts, args = getopt.getopt(argv, "C:hS:T:c:s:R:fIs:l:",['version'])
 
     for o, a in opts:
         if o == "-C":
@@ -384,9 +384,12 @@ def main(argv=None):
             _lastTimeStep = int(a)
         if o == "-S":
             _firstTimeStep = int(a)
-
-    if len(opts) <= 1:
-        usage()
+        if o == "-h":
+            usage()
+        if o == "--version":
+            import wflow
+            print("wflow version: ", wflow.__version__)
+            sys.exit(0)
 
     if _lastTimeStep < _firstTimeStep:
         print(

@@ -53,7 +53,7 @@ def main(argv=None):
     ## Process command-line options                                        #
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, "c:l:")
+        opts, args = getopt.getopt(argv, "c:l:",['version'])
     except getopt.error as msg:
         usage(msg)
 
@@ -63,6 +63,10 @@ def main(argv=None):
             configfile = a
         if o == "-l":
             exec("loglevel = logging." + a)
+        if o == "--version":
+            import wflow
+            print("wflow version: ", wflow.__version__)
+            sys.exit(0)
 
     combilogger = pcrut.setlogger(
         "bmi2runner.log", "bmi2runner_logging", thelevel=loglevel

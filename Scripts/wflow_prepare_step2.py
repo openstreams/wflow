@@ -201,7 +201,7 @@ def main():
     inifile = "wflow_prepare.ini"
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "W:hI:f")
+        opts, args = getopt.getopt(sys.argv[1:], "W:hI:f", ['version'])
     except getopt.error as msg:
         usage(msg)
 
@@ -214,6 +214,10 @@ def main():
             usage()
         if o == "-f":
             recreate = True
+        if o == "--version":
+            import wflow
+            print("wflow version: ", wflow.__version__)
+            sys.exit(0)
 
     os.chdir(workdir)
 

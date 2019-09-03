@@ -44,7 +44,7 @@ def main(argv=None):
             return
 
     try:
-        opts, args = getopt.getopt(argv, "X:I:S")
+        opts, args = getopt.getopt(argv, "X:I:S",['version'])
     except getopt.error as msg:
         pcrut.usage(msg)
 
@@ -58,6 +58,10 @@ def main(argv=None):
             timestepsecs = a
         if o == "-s":
             timestepsecs = a
+        if o == "--version":
+            import wflow
+            print("wflow version: ", wflow.__version__)
+            sys.exit(0)
 
     wf.tss_topixml(tssfile, xmlfile, "wflow", parameter, startdate, timestepsecs)
 
