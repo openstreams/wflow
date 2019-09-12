@@ -132,10 +132,9 @@ def _sCurve(X, a=0.0, b=1.0, c=1.0):
 
 
 @jit(nopython=True)
-def actEvap_unsat_SBM(
+def actTransp_unsat_SBM(
     RootingDepth,
-    UStoreDepth,
-    UStoreLayerThickness,
+    UStoreLayerDepth,
     sumLayer,
     RestPotEvap,
     sumActEvapUStore,
@@ -143,47 +142,40 @@ def actEvap_unsat_SBM(
     L,
     thetaS,
     thetaR,
-    ust=0,
-):
+    hb,
+    ust=0):
+    
     """
-    Actual evaporation function:
+    Actual transpiration function for unsaturated zone:
 
-    - first try to get demand from the saturated zone, using the rootingdepth as a limiting factor
-    - secondly try to get the remaining water from the unsaturated store
-    - it uses an S-Curve the make sure roots het wet/dry gradually (basically)
-      representing a root-depth distribution
- 
-      if ust is True, all ustore is deems to be avaiable fro the roots a
+      if ust is True, all ustore is available for transpiration
 
     Input:
 
-        - RootingDepth, UStoreDepth, FirstZoneDepth, PotTrans, smoothpar
+        - RootingDepth, UStoreLayerDepth, sumLayer (depth (z) of upper boundary unsaturated layer),
+          RestPotEvap (remaining evaporation), sumActEvapUStore (cumulative actual transpiration (more than one UStore layers))
+          c (Brooks-Corey coefficient), L (thickness of unsaturated zone), thetaS, thetaR, hb (air entry pressure), ust
 
     Output:
 
-        - ActEvap,  FirstZoneDepth,  UStoreDepth ActEvapUStore
+        - UStoreLayerDepth,  sumActEvapUStore, ActEvapUStore
     """
 
     # AvailCap is fraction of unsat zone containing roots
     if ust >= 1:
-        AvailCap = UStoreDepth * 0.99
+        AvailCap = UStoreLayerDepth * 0.99
     else:
         if L > 0:
             AvailCap = min(1.0, max(0.0, (RootingDepth - sumLayer) / L))
         else:
             AvailCap = 0.0
 
-    MaxExtr = AvailCap * UStoreDepth
-
-    # Calculate the reduction of RestPotEvap due to differences in rooting density in the soil column
-    # The used model is based on Vrugt et al. (2001) and uses as input parameters for z* and Pz the
-    # values of Hoffman and van Genuchten (z* = 0.20 and Pz = 1.00)
+    MaxExtr = AvailCap * UStoreLayerDepth
 
     # Next step is to make use of the Feddes curve in order to decrease ActEvapUstore when soil moisture values
     # occur above or below ideal plant growing conditions (see also Feddes et al., 1978). h1-h4 values are
     # actually negative, but all values are made positive for simplicity.
-    hb = 1  # cm (pF 1 for atmospheric pressure)
-    h1 = 1  # cm
+    h1 = hb  # cm (air entry pressure)
     h2 = 100  # cm (pF 2 for field capacity)
     h3 = 400  # cm (pF 3, critical pF value)
     h4 = 15849  # cm (pF 4.2, wilting point)
@@ -191,7 +183,7 @@ def actEvap_unsat_SBM(
     # According to Brooks-Corey
     par_lambda = 2 / (c - 3)
     if L > 0.0:
-        vwc = UStoreDepth / L
+        vwc = UStoreLayerDepth / L
     else:
         vwc = 0.0
     vwc = max(vwc, 0.0000001)
@@ -201,28 +193,27 @@ def actEvap_unsat_SBM(
     head = max(head,hb)
 
     # Transform h to a reduction coefficient value according to Feddes et al. (1978).
-    # For now: no reduction for head < h2 until following improvements (todo):
+    # For now: no reduction for head < h2 until following improvement (todo):
     #       - reduction only applied to crops
-    #       - improved drainage concept of areas with low slope values (these areas are too wet)
     if(head <= h1):
-        alpha = 1 #0
+        alpha = 1
     elif(head >= h4):
         alpha = 0
     elif((head < h2) & (head > h1)):
-        alpha = 1 #(head - h1) / (h2 - h1)
+        alpha = 1
     elif((head > h3) & (head < h4)):
         alpha = 1 - (head - h3) / (h4 - h3)
     else:
         alpha = 1
 
-    ActEvapUStore = (min(MaxExtr, RestPotEvap, UStoreDepth)) * alpha
+    ActEvapUStore = (min(MaxExtr, RestPotEvap, UStoreLayerDepth)) * alpha
 
-    UStoreDepth = UStoreDepth - ActEvapUStore
+    UStoreLayerDepth = UStoreLayerDepth - ActEvapUStore
 
     RestPotEvap = RestPotEvap - ActEvapUStore
     sumActEvapUStore = ActEvapUStore + sumActEvapUStore
 
-    return UStoreDepth, sumActEvapUStore, RestPotEvap
+    return UStoreLayerDepth, sumActEvapUStore, RestPotEvap
 
 
 @jit(nopython=True)    
@@ -246,8 +237,10 @@ def infiltration(AvailableForInfiltration, PathFrac, cf_soil, TSoil,InfiltCapSoi
     else:
         InfiltSoil = 0.0
         InfiltPath = 0.0
+        
+    InfiltExcess = (SoilInf - MaxInfiltSoil) + (PathInf - MaxInfiltPath)
     
-    return InfiltSoilPath, InfiltSoil, InfiltPath, SoilInf, PathInf
+    return InfiltSoilPath, InfiltSoil, InfiltPath, SoilInf, PathInf, InfiltExcess
 
 
 @jit(nopython=True)  
@@ -318,7 +311,7 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, soilInfReducti
             sumUSold[idx] = layer['UStoreLayerDepth'][:,idx].sum()
 
             # Identify which layers contain the unsaturated zone
-            n = np.where(dyn['zi'][idx] > sumlayer_0)[0]     
+            n = np.where(dyn['zi'][idx] > sumlayer_0)[0]
             if len(n) > 1:     
                 L = np.concatenate((layer['UStoreLayerThickness'][n[0:-1],idx], np.array([dyn['zi'][idx] - sumlayer_0[n[-1]]]))).astype(np.float64)
             else:
@@ -344,10 +337,11 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, soilInfReducti
             UStoreCapacity = static['SoilWaterCapacity'][idx] - dyn['SatWaterDepth'][idx] - layer['UStoreLayerDepth'][n,idx].sum()
 
             # Calculate the infiltration flux into the soil column
-            InfiltSoilPath, InfiltSoil, InfiltPath, SoilInf, PathInf = infiltration(dyn['AvailableForInfiltration'][idx], static['PathFrac'][idx], static['cf_soil'][idx], 
+            InfiltSoilPath, InfiltSoil, InfiltPath, SoilInf, PathInf, InfiltExcess = infiltration(dyn['AvailableForInfiltration'][idx], static['PathFrac'][idx], static['cf_soil'][idx], 
                                           dyn['TSoil'][idx],static['InfiltCapSoil'][idx],static['InfiltCapPath'][idx],UStoreCapacity, modelSnow, soilInfReduction)
             
             dyn['InfiltSoilPath'][idx] = InfiltSoilPath
+            dyn['InfiltExcess'][idx] = InfiltExcess
             dyn['SoilInf'][idx] = SoilInf
             dyn['PathInf'][idx] = PathInf
             
@@ -373,7 +367,7 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, soilInfReducti
                         if len(L) == 1:
                             # Check if groundwater level lies below the surface
                             if dyn['zi'][idx] > 0:
-                                soilevapunsat = dyn['restEvap'][idx] * min(1.0, layer['UStoreLayerDepth'][k,idx]/dyn['zi'][idx])
+                                soilevapunsat = dyn['restEvap'][idx] * min(1.0, layer['UStoreLayerDepth'][k,idx]/(dyn['zi'][idx]*(static['thetaS'][idx]-static['thetaR'][idx])))
                             else:
                                soilevapunsat = 0.0 
                         else:
@@ -404,20 +398,20 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, soilInfReducti
                     # evaporation available for transpiration
                     PotTrans = dyn['PotTransSoil'][idx] - dyn['soilevap'][idx] - dyn['ActEvapOpenWaterLand'][idx] - dyn['ActEvapOpenWaterRiver'][idx]
 
-                    # evaporation from saturated store
+                    # transpiration from saturated store
                     wetroots = _sCurve(dyn['zi'][idx], a=static['ActRootingDepth'][idx], c=static['rootdistpar'][idx])
                     dyn['ActEvapSat'][idx] = min(PotTrans * wetroots, dyn['SatWaterDepth'][idx])
-                    dyn['SatWaterDepth'][idx] = dyn['SatWaterDepth'][idx] - dyn['ActEvapSat'][idx]              
+                    dyn['SatWaterDepth'][idx] = dyn['SatWaterDepth'][idx] - dyn['ActEvapSat'][idx]
                     RestPotEvap = PotTrans - dyn['ActEvapSat'][idx]
 
-                    # actual evaporation from UStore
-                    layer['UStoreLayerDepth'][k,idx], dyn['ActEvapUStore'][idx], RestPotEvap = actEvap_unsat_SBM(static['ActRootingDepth'][idx], layer['UStoreLayerDepth'][k,idx], layer['UStoreLayerThickness'][k,idx], 
-                                                                          sumlayer_0[k], RestPotEvap, dyn['ActEvapUStore'][idx], layer['c'][k,idx], L[k], static['thetaS'][idx], static['thetaR'][idx], ust) 
+                    # actual transpiration from UStore
+                    layer['UStoreLayerDepth'][k,idx], dyn['ActEvapUStore'][idx], RestPotEvap = actTransp_unsat_SBM(static['ActRootingDepth'][idx], layer['UStoreLayerDepth'][k,idx], 
+                                                                          sumlayer_0[k], RestPotEvap, dyn['ActEvapUStore'][idx], layer['c'][k,idx], L[k], static['thetaS'][idx], static['thetaR'][idx], static['AirEntryPressure'][idx], ust)
                 # For the layers below  
                 else:
-                    # actual evaporation from UStore
-                    layer['UStoreLayerDepth'][k,idx], dyn['ActEvapUStore'][idx], RestPotEvap = actEvap_unsat_SBM(static['ActRootingDepth'][idx], layer['UStoreLayerDepth'][k,idx], layer['UStoreLayerThickness'][k,idx], 
-                                                                          sumlayer_0[k], RestPotEvap, dyn['ActEvapUStore'][idx], layer['c'][k,idx], L[k], static['thetaS'][idx], static['thetaR'][idx], ust) 
+                    # actual transpiration from UStore
+                    layer['UStoreLayerDepth'][k,idx], dyn['ActEvapUStore'][idx], RestPotEvap = actTransp_unsat_SBM(static['ActRootingDepth'][idx], layer['UStoreLayerDepth'][k,idx], 
+                                                                          sumlayer_0[k], RestPotEvap, dyn['ActEvapUStore'][idx], layer['c'][k,idx], L[k], static['thetaS'][idx], static['thetaR'][idx], static['AirEntryPressure'][idx], ust)
 
             #check soil moisture balance per layer
             du = 0.0
@@ -482,7 +476,7 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, soilInfReducti
             dyn['ExfiltSatWater'][idx] = ExfiltSatWater
             dyn['ExfiltFromUstore'][idx] = ExfiltFromUstore
             
-            dyn['ExcessWater'][idx] = dyn['AvailableForInfiltration'][idx] - InfiltSoilPath + du    
+            dyn['ExcessWater'][idx] = dyn['AvailableForInfiltration'][idx] - InfiltSoilPath - InfiltExcess + du    
             dyn['ActInfilt'][idx] = InfiltSoilPath - du
             
             #Separation between compacted and non compacted areas (correction with the satflow du)
@@ -502,7 +496,7 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, soilInfReducti
                     ponding_add = min(dyn['ExfiltWater'][idx] + dyn['ExcessWater'][idx], static['h_p'][idx] - dyn['PondingDepth'][idx])
                     dyn['PondingDepth'][idx] = dyn['PondingDepth'][idx] + ponding_add
             
-            dyn['InwaterO'][idx] = max(dyn['ExfiltWater'][idx] + dyn['ExcessWater'][idx] + dyn['RunoffLandCells'][idx] - dyn['ActEvapOpenWaterLand'][idx] - ponding_add, 0.0) * (static['xl'][idx] * static['yl'][idx]) * 0.001 / timestepsecs
+            dyn['InwaterO'][idx] = max(dyn['ExfiltWater'][idx] + dyn['ExcessWater'][idx] + dyn['InfiltExcess'][idx] + dyn['RunoffLandCells'][idx] - dyn['ActEvapOpenWaterLand'][idx] - ponding_add, 0.0) * (static['xl'][idx] * static['yl'][idx]) * 0.001 / timestepsecs
             
             dyn['sumUStoreLayerDepth'][idx] = layer['UStoreLayerDepth'][:,idx].sum()
             
@@ -1011,7 +1005,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.intbl = configget(self.config, "model", "intbl", "intbl")
 
         self.modelSnow = int(configget(self.config, "model", "ModelSnow", "1"))
-        self.soilInfReduction = int(configget(self.config, "model", "soilInfRedu", "1"))
+        self.soilInfReduction = int(configget(self.config, "model", "soilInfRedu", "0"))
         sizeinmetres = int(configget(self.config, "layout", "sizeinmetres", "0"))
         alf = float(configget(self.config, "model", "Alpha", "60"))
         # TODO: make this into a list for all gauges or a map
@@ -1122,10 +1116,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.wf_readmap(os.path.join(self.Dir, wflow_inflow), 0.0)
         )  # location abstractions/inflows.
         self.RiverWidth = self.wf_readmap(os.path.join(self.Dir, wflow_riverwidth), 0.0)
-        # Experimental
-        self.RunoffGenSigmaFunction = int(
-            configget(self.config, "model", "RunoffGenSigmaFunction", "0")
-        )
+        
         self.SubCatchFlowOnly = int(
             configget(self.config, "model", "SubCatchFlowOnly", "0")
         )
@@ -1158,15 +1149,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         # Read parameters NEW Method
         self.logger.info("Linking parameters to landuse, catchment and soil...")
         self.wf_updateparameters()
-
-        self.RunoffGeneratingGWPerc = self.readtblDefault(
-            self.Dir + "/" + self.intbl + "/RunoffGeneratingGWPerc.tbl",
-            self.LandUse,
-            subcatch,
-            self.Soil,
-            0.1,
-        )
-
+        
         if hasattr(self, "LAI"):
             # Sl must also be defined
             if not hasattr(self, "Sl"):
@@ -1232,15 +1215,23 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.Soil,
             750.0,
         )  # rooting depth
-        #: rootdistpar determien how roots are linked to water table.
-
+        
+        self.AirEntryPressure = self.readtblDefault(
+            self.Dir + "/" + self.intbl + "/AirEntryPressure.tbl",
+            self.LandUse,
+            subcatch,
+            self.Soil,
+            10.0,
+        )  # air entry pressure (cm) of soil (Brooks-Corey)
+        
+        #rootdistpar determine how roots are linked to water table.
         self.rootdistpar = self.readtblDefault(
             self.Dir + "/" + self.intbl + "/rootdistpar.tbl",
             self.LandUse,
             subcatch,
             self.Soil,
             -8000,
-        )  # rrootdistpar
+        )  # rootdistpar
 
         # Soil parameters
         # infiltration capacity if the soil [mm/day]
@@ -1485,9 +1476,8 @@ class WflowModel(pcraster.framework.DynamicModel):
                         self.Soil,
                         0.038,
                     ),
-                )  # Ksat reduction factor fro frozen soi
-            # We are modelling gletchers
-
+                )  # Soil infiltration reduction factor for frozen soil
+                
         # Determine real slope and cell length
 
         self.xl, self.yl, self.reallength = pcrut.detRealCellLength(
@@ -1958,6 +1948,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                  ('DCL', np.float64),
                  ('reallength', np.float64),
                  ('RootingDepth', np.float64),
+                 ('AirEntryPressure', np.float64),
                  ('ActRootingDepth', np.float64),
                  ('ssfmax', np.float64),
                  ('xl', np.float64),
@@ -2000,14 +1991,15 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.static['xl'] = pcr.pcr2numpy(self.xl, self.mv).ravel()
         self.static['yl'] = pcr.pcr2numpy(self.yl, self.mv).ravel()
         self.static['RootingDepth'] = pcr.pcr2numpy(self.RootingDepth, self.mv).ravel()
+        self.static['AirEntryPressure'] = pcr.pcr2numpy(self.AirEntryPressure, self.mv).ravel()
         self.static['h_p'] = pcr.pcr2numpy(self.h_p, self.mv).ravel()
         self.static['Bw'] = pcr.pcr2numpy(self.Bw, self.mv).ravel()
         self.static['AlpPow'] = pcr.pcr2numpy(self.AlpPow, self.mv).ravel()
         self.static['AlpTermR'] = pcr.pcr2numpy(self.AlpTermR, self.mv).ravel()
         self.static['AlpTermL'] = pcr.pcr2numpy(self.AlpTermL, self.mv).ravel()
-        self.static['ssfmax'] = ((self.static['KsatHorFrac'] * self.static['KsatVer'] * self.static['landSlope']) / self.static['f'] * (np.exp(0)-np.exp(-self.static['f'] * self.static['SoilThickness'])))        
+        self.static['ssfmax'] = ((self.static['KsatHorFrac'] * self.static['KsatVer'] * self.static['landSlope']) / self.static['f'] * (np.exp(0)-np.exp(-self.static['f'] * self.static['SoilThickness'])))
 
-        # implement layers as numpy arrays              
+        # implement layers as numpy arrays
         np_SumThickness = np_zeros
         nrLayersMap = np_zeros  
         for n in np.arange(0, self.maxLayers):
@@ -2043,6 +2035,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                  ('RiverRunoff', np.float64),
                  ('AlphaL', np.float64),
                  ('AlphaR', np.float64),
+                 ('InfiltExcess', np.float64),
                  ('ExcessWater', np.float64),
                  ('ExcessWaterSoil', np.float64),
                  ('ExcessWaterPath', np.float64),
@@ -2091,7 +2084,6 @@ class WflowModel(pcraster.framework.DynamicModel):
         # Save some summary maps
         self.logger.info("Saving summary maps...")
 
-        # self.IF = self.ZeroMap
         self.logger.info("End of initial section")
 
     def default_summarymaps(self):
@@ -2657,7 +2649,8 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.Inwater = self.InwaterMM * self.ToCubic + self.qo_toriver + self.ssf_toriver # m3/s
 
         self.ExfiltWater = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ExfiltWater'].reshape(self.shape)),self.mv)
-        self.InfiltExcess = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ExcessWater'].reshape(self.shape)),self.mv)
+        self.InfiltExcess = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['InfiltExcess'].reshape(self.shape)),self.mv)
+        self.ExcessWater = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ExcessWater'].reshape(self.shape)),self.mv)
         self.ActInfilt = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ActInfilt'].reshape(self.shape)),self.mv)
         self.ActLeakage = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ActLeakage'].reshape(self.shape)),self.mv)
         self.soilevap = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['soilevap'].reshape(self.shape)),self.mv)
