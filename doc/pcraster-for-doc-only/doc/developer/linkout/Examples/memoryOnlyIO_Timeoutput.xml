@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<script xmlns="http://www.pcraster.nl/pcrxml"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.pcraster.nl/pcrxml PCRaster.xsd">
+<!--
+  -->
+<executionOptions>
+  <!-- unitcell coorlr -->
+ <trueCellUnits>false</trueCellUnits>
+ <cellCoordinate>LowerRight</cellCoordinate>
+</executionOptions>
+<areaMap>
+  <nrRows>5</nrRows>
+  <nrCols>5</nrCols>
+</areaMap>
+<definition name="tss">
+  <scriptOutput><memoryExchange>0</memoryExchange></scriptOutput>
+</definition>
+<timer>
+ <integer>
+   <start>1</start>
+   <end>2</end>
+ </integer>
+</timer>
+<model>
+ <textModel>
+timer 1 2 1;
+initial
+ memOutputDynamic = ycoordinate(1);
+ report outId = nominal(memOutputDynamic);
+dynamic
+ memOutputDynamic = memOutputDynamic*time();
+ report tss = timeoutput(outId,memOutputDynamic);
+ </textModel>
+</model>
+</script>

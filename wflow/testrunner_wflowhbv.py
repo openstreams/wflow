@@ -31,7 +31,7 @@ to the controlling application.
 """
 
 
-from .wflow_hbv import *
+from wflow.wflow_hbv import *
 
 npmap0 = []
 ltt = []

@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<script xmlns="http://www.pcraster.nl/pcrxml"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.pcraster.nl/pcrxml PCRaster.xsd">
+<definition name="ecotoop">
+ <scriptInput><external>ecotoop.map</external></scriptInput>
+</definition>
+<definition name="ecotoop2">
+ <scriptInput><external>ecotoop2.map</external></scriptInput>
+</definition>
+<definition name="habschik">
+ <scriptOutput><external>habschik.map</external></scriptOutput>
+</definition>
+<definition name="habschik2">
+ <scriptOutput><external>habschik2.map</external></scriptOutput>
+</definition>
+<definition name="gS">
+ <relation>
+  <lookupTable>
+   <lookupRow><lookupColumn>0       </lookupColumn></lookupRow>
+   <lookupRow><lookupColumn>&lt;0  ,0.2 ] </lookupColumn></lookupRow>
+   <lookupRow><lookupColumn>&lt;0.2 ,0.4] </lookupColumn></lookupRow>
+   <lookupRow><lookupColumn>&lt;0.4 ,0.6] </lookupColumn></lookupRow>
+   <lookupRow><lookupColumn>&lt;0.6 ,0.8] </lookupColumn></lookupRow>
+   <lookupRow><lookupColumn>&lt;0.8 ,1  ] </lookupColumn></lookupRow>
+  </lookupTable>
+ </relation>
+</definition>
+<definition name="oS">
+ <relation>
+  <lookupTable>
+   <lookupRow><lookupColumn>&lt;0.25,   ] </lookupColumn></lookupRow>
+   <lookupRow><lookupColumn>&lt;0.3 ,   ] </lookupColumn></lookupRow>
+  </lookupTable>
+ </relation>
+</definition>
+<definition name="kS">
+ <relation>
+  <lookupTable>
+   <lookupRow><lookupColumn>0</lookupColumn></lookupRow>
+   <lookupRow><lookupColumn>1</lookupColumn></lookupRow>
+   <lookupRow><lookupColumn>2</lookupColumn></lookupRow>
+   <lookupRow><lookupColumn>3</lookupColumn></lookupRow>
+   <lookupRow><lookupColumn>4</lookupColumn></lookupRow>
+   <lookupRow><lookupColumn>5</lookupColumn></lookupRow>
+  </lookupTable>
+ </relation>
+</definition>
+
+<definition name='test0'>
+<scriptOutput>
+ <external>allStatisticsResults/kruis3Tbl.txt</external>
+</scriptOutput>
+</definition>
+
+<definition name='test1'>
+<scriptOutput>
+ <external>allStatisticsResults/kruis3_GrensOverlapTbl.txt</external>
+</scriptOutput>
+</definition>
+
+<definition name='test2'>
+<scriptOutput>
+ <external>allStatisticsResults/kruis3_R_Tbl.txt</external>
+</scriptOutput>
+</definition>
+
+<definition name='test3'>
+<scriptOutput>
+ <external>allStatisticsResults/type1_geenKlassenTbl.txt</external>
+</scriptOutput>
+</definition>
+
+<definition name='test4'>
+<scriptOutput>
+ <external>allStatisticsResults/type1_metKlassenTbl.txt</external>
+</scriptOutput>
+</definition>
+
+<definition name='test5'>
+<scriptOutput>
+ <external>allStatisticsResults/type2Tbl.txt</external>
+</scriptOutput>
+</definition>
+
+<definition name='test6'>
+<scriptOutput>
+ <external>allStatisticsResults/kruis1_geenKlassenTbl.txt</external>
+</scriptOutput>
+</definition>
+
+<definition name='test7'>
+<scriptOutput>
+ <external>allStatisticsResults/kruis1_metRijKlassenTbl.txt</external>
+</scriptOutput>
+</definition>
+
+<definition name='test8'>
+<scriptOutput>
+ <external>allStatisticsResults/kruis2_geenKlassenTbl.txt</external>
+</scriptOutput>
+</definition>
+
+<definition name='test9'>
+<scriptOutput>
+ <external>allStatisticsResults/kruis2_R_geenKlassenTbl.txt</external>
+</scriptOutput>
+</definition>
+
+<definition name='test10'>
+<scriptOutput>
+ <external>allStatisticsResults/kruis2_metKlassenTbl.txt</external>
+</scriptOutput>
+</definition>
+
+<definition name='test11'>
+<scriptOutput>
+ <external>allStatisticsResults/negeerGrenzenTbl.txt</external>
+</scriptOutput>
+</definition>
+
+<definition name='test12'>
+<scriptOutput>
+ <external>allStatisticsResults/type2DubbelTbl.txt</external>
+</scriptOutput>
+</definition>
+
+<definition name='test13'>
+<scriptOutput>
+ <external>allStatisticsResults/kruis3_rijIsKolTbl.txt</external>
+</scriptOutput>
+</definition>
+
+<definition name='test14'>
+<scriptOutput>
+ <external>allStatisticsResults/kruis3_rijIsKol2Tbl.txt</external>
+</scriptOutput>
+</definition>
+
+<definition name='test15'>
+<scriptOutput>
+ <external>allStatisticsResults/KGTbl.txt</external>
+</scriptOutput>
+</definition>
+
+<definition name='test16'>
+<scriptOutput>
+ <external>allStatisticsResults/KG_R_Tbl.txt</external>
+</scriptOutput>
+</definition>
+
+<definition name='test17'>
+<scriptOutput>
+ <external>allStatisticsResults/KGBuitenGrenzenTbl.txt</external>
+</scriptOutput>
+</definition>
+
+<definition name='test18'>
+<scriptOutput>
+ <external>allStatisticsResults/KGOverlapGrenzenTbl.txt</external>
+</scriptOutput>
+</definition>
+
+<definition name='test19'>
+<scriptOutput>
+ <external>allStatisticsResults/GGTbl.txt</external>
+</scriptOutput>
+</definition>
+
+<definition name='test20'>
+<scriptOutput>
+ <external>allStatisticsResults/GGOverlapGrenzenTbl.txt</external>
+</scriptOutput>
+</definition>
+
+<definition name='test21'>
+<scriptOutput>
+ <external>allStatisticsResults/GG2OverlapGrenzenTbl.txt</external>
+</scriptOutput>
+</definition>
+
+<definition name='test22'>
+<scriptOutput>
+ <external>allStatisticsResults/type2_2XTbl.txt</external>
+</scriptOutput>
+</definition>
+ <textStatistics name='test0'>
+   <textStatisticsSubject fieldRef='habschik' intervalRef='gS'/>
+   <textStatisticsSubject fieldRef='habschik2' />
+ </textStatistics>
+
+ <textStatistics name='test1'>
+   <textStatisticsSubject fieldRef='habschik2' intervalRef='oS'/>
+   <textStatisticsSubject fieldRef='habschik' />
+ </textStatistics>
+
+ <textStatistics name='test2'>
+   <textStatisticsSubject fieldRef='habschik2' />
+   <textStatisticsSubject fieldRef='habschik' intervalRef='gS'/>
+ </textStatistics>
+ <textStatistics name='test3'>
+   <textStatisticsSubject fieldRef='ecotoop' />
+ </textStatistics>
+ <textStatistics name='test4'>
+   <textStatisticsSubject fieldRef='ecotoop' intervalRef='kS'/>
+ </textStatistics>
+ <textStatistics name='test5'>
+   <textStatisticsSubject fieldRef='habschik' />
+ </textStatistics>
+ <textStatistics name='test6'>
+   <textStatisticsSubject fieldRef='ecotoop' />
+   <textStatisticsSubject fieldRef='ecotoop2' />
+ </textStatistics>
+
+ <textStatistics name='test7'>
+   <textStatisticsSubject fieldRef='ecotoop' intervalRef='kS'/>
+   <textStatisticsSubject fieldRef='ecotoop2' />
+ </textStatistics>
+
+ <textStatistics name='test8'>
+   <textStatisticsSubject fieldRef='ecotoop' />
+   <textStatisticsSubject fieldRef='habschik' />
+ </textStatistics>
+
+ <textStatistics name='test9'>
+   <textStatisticsSubject fieldRef='habschik' />
+   <textStatisticsSubject fieldRef='ecotoop' />
+ </textStatistics>
+ <textStatistics name='test10'>
+   <textStatisticsSubject fieldRef='ecotoop' intervalRef='kS'/>
+   <textStatisticsSubject fieldRef='habschik' />
+ </textStatistics>
+
+ <textStatistics name='test11'>
+   <textStatisticsSubject fieldRef='ecotoop' intervalRef='gS'/>
+   <textStatisticsSubject fieldRef='habschik' />
+ </textStatistics>
+ <textStatistics name='test12'>
+   <textStatisticsSubject fieldRef='habschik' />
+   <textStatisticsSubject fieldRef='habschik2' />
+ </textStatistics>
+ <textStatistics name='test13'>
+   <textStatisticsSubject fieldRef='habschik' intervalRef='gS'/>
+ </textStatistics>
+
+ <textStatistics name='test14'>
+   <textStatisticsSubject fieldRef='habschik' intervalRef='gS'/>
+   <textStatisticsSubject fieldRef='habschik' />
+ </textStatistics>
+
+ <textStatistics name='test15'>
+   <textStatisticsSubject fieldRef='ecotoop' />
+   <textStatisticsSubject fieldRef='habschik' intervalRef='gS'/>
+ </textStatistics>
+
+ <textStatistics name='test16'>
+   <textStatisticsSubject fieldRef='habschik' intervalRef='gS'/>
+   <textStatisticsSubject fieldRef='ecotoop' />
+ </textStatistics>
+
+ <textStatistics name='test17'>
+   <textStatisticsSubject fieldRef='ecotoop' />
+   <textStatisticsSubject fieldRef='habschik2' intervalRef='gS'/>
+ </textStatistics>
+
+ <textStatistics name='test18'>
+   <textStatisticsSubject fieldRef='ecotoop' />
+   <textStatisticsSubject fieldRef='habschik2' intervalRef='oS'/>
+ </textStatistics>
+
+ <textStatistics name='test19'>
+   <textStatisticsSubject fieldRef='habschik' intervalRef='gS'/>
+   <textStatisticsSubject fieldRef='habschik2' intervalRef='gS'/>
+ </textStatistics>
+
+ <textStatistics name='test20'>
+   <textStatisticsSubject fieldRef='habschik' intervalRef='gS'/>
+   <textStatisticsSubject fieldRef='habschik2' intervalRef='oS'/>
+ </textStatistics>
+
+ <textStatistics name='test21'>
+   <textStatisticsSubject fieldRef='habschik2' intervalRef='oS'/>
+   <textStatisticsSubject fieldRef='habschik' intervalRef='gS'/>
+ </textStatistics>
+ <textStatistics name='test22'>
+   <textStatisticsSubject fieldRef='habschik2' />
+   <textStatisticsSubject fieldRef='habschik' />
+ </textStatistics>
+</script>

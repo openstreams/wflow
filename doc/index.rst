@@ -108,7 +108,7 @@ version 4.0 Beta (www.pcraster.eu).
 
 The wflow\_sbm model maximises the use of available spatial data.
 Soil depth, for example, is estimated from the DEM using a topographic
-wetness index . The model is derived from the [CQFLOW]_ model that has
+wetness index . The model is derived from the :cite:`1987:nelson` model that has
 been applied in various countries, most notably in Central America. The
 wflow\_hbv model is derived from the HBV-96 model but does not
 include the routing functions, instead it uses the same kinematic wave
@@ -121,199 +121,39 @@ allows for rapid development. In order to run
 the model both PCRaster 4.* and Python 2.7 are needed. At the moment
 only 64 bit versions are  supported.
 
-
-
-Installation
-============
 .. toctree::
+   :hidden:
    :maxdepth: 2
 
-   installation
+   installation.rst
+   wflow_usage.rst
+   wflow_building.rst
+   faq.rst
+   index_models.rst
+   wf_DynamicFramework.rst
+   wflow_adapt.rst
+   index_modules_libs.rst
+   index_bmi.rst
+   wflow_modelbuilder.rst
+   Release notes <release_notes.rst>
+   OpenDA <wflow_openda.rst>
 
-
-How to use the models
-=====================
-.. toctree::
-   :maxdepth: 2
-
-   wflow_usage
-
-
-Building a model
-================
-.. toctree::
-   :maxdepth: 2
-
-   wflow_building
-
-
-FAQ
-===
-.. toctree::
-   :maxdepth: 2
-
-   faq
-
-The wflow\_hbv model
-====================
-.. toctree::
-   :maxdepth: 2
-
-   wflow_hbv
-
-
-
-The wflow\_sbm model
-====================
-.. toctree::
-   :maxdepth: 2
-
-   wflow_sbm
-
-The wflow\_sbm_old model
-========================
-.. toctree::
-   :maxdepth: 2
-
-   wflow_sbm_old
-
-
-The wflow\_gr4 model
-====================
-.. toctree::
-   :maxdepth: 2
-
-   wflow_gr4
-
-The wflow\_W3RA model
-=====================
-.. toctree::
-   :maxdepth: 2
-
-   wflow_W3RA
-
-The wflow\_Topoflex model
-=========================
-.. toctree::
-   :maxdepth: 2
-
-   wflow_topoflex
-
-The wflow\_routing model
-========================
-.. toctree::
-   :maxdepth: 2
-
-   wflow_routing
-
-The wflow\_wave model
-=====================
-.. toctree::
-   :maxdepth: 2
-
-   wflow_wave
-
-The wflow\_floodmap model
-=========================
-.. toctree::
-   :maxdepth: 2
-
-   wflow_floodmap
-   
-The wflow\_sediment model
-=========================
-.. toctree::
-   :maxdepth: 2
-
-   wflow_sediment  
-
-The framework and settings for the framework
-============================================
-.. toctree::
-   :maxdepth: 2
-
-   wf_DynamicFramework
-
-The wflow Delft-FEWS adapter
-============================
-.. toctree::
-   :maxdepth: 2
-
-   wflow_adapt
-
-
-wflow modules and libraries
-===========================
-.. toctree::
-   :maxdepth: 2
-
-   wflow_fit
-   wflow_lib
-   wflow_delwaq
-
-
-BMI: Basic modeling interface
-=============================
-.. toctree::
-   :maxdepth: 2
-
-   wflow_bmi
-   wflow_bmi_combined
-   bmi2runner
-
-
-Using the wflow modelbuilder
-============================
-.. toctree::
-   :maxdepth: 2
-
-   wflow_modelbuilder
-
-   
-Adding a new model yourself using the framework
-===============================================
-.. toctree::
-   :maxdepth: 2
-
-   framework
-
-
-
-
-Release notes
-=============
-.. toctree::
-   :maxdepth: 2
-
-   release_notes
-
-
-OpenDA
-======
-.. toctree::
-   :maxdepth: 2
-
-   wflow_openda
-
-
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 
 
 References
 ==========
 
-.. [CQFLOW] Köhler, L., Mulligan, M., Schellekens, J., Schmid, S. and
-    Tobón, C.: Final Technical Report DFID-FRP Project no. R7991 Hydrological
-    impacts of converting tropical montane cloud forest to pasture, with
-    initial reference to northern Costa Rica.,, 2006.
+.. bibliography:: refs.bib
+   :cited:
+   \begin{thebibliography}{1}
+  \bibitem{1987:nelson}
+  Edward~Nelson
+  \newblock {\em Radically Elementary Probability Theory}.
+  \newblock Princeton University Press, 1987.
+    \end{thebibliography}
+
+.. [CQFLOW] Köhler, L., Mulligan, M., Schellekens, J., Schmid, S. and Tobón, C.: Final Technical Report DFID-FRP Project no. R7991 Hydrological
+impacts of converting tropical montane cloud forest to pasture, withinitial reference to northern Costa Rica. 2006.
 
 
 Papers/reports using wflow

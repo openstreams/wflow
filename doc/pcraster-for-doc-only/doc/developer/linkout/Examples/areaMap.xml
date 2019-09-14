@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- bugzilla PCRaster bug 77 
+     run a model, that has no map input,
+     thus nr or rows and columns needs to be
+     picked up by areaMap section
+  -->
+<script xmlns="http://www.pcraster.nl/pcrxml" xsi:schemaLocation="http://www.pcraster.nl/pcrxml PCRaster.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <executionOptions>
+    <useDiskStorage />
+  </executionOptions>
+  <areaMap>
+    <fieldReference ref="areaMap" />
+  </areaMap>
+  <definition name="areaMap">
+    <scriptInput>
+      <external>ecotoop2.map</external>
+    </scriptInput>
+  </definition>
+  <definition name="result">
+    <scriptOutput>
+      <external>result.map</external>
+    </scriptOutput>
+  </definition>
+  <model>
+    <textModel>
+result = cellarea();
+</textModel>
+  </model>
+</script>

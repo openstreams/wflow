@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<script xmlns="http://www.pcraster.nl/pcrxml"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.pcraster.nl/pcrxml PCRaster.xsd">
+<!-- Add 2 maps in memory
+  -->
+<areaMap>
+  <nrRows>5</nrRows>
+  <nrCols>5</nrCols>
+</areaMap>
+<definition name="memInput">
+  <field>
+   <spatialType>Spatial</spatialType>
+  </field>
+  <scriptInput><memoryExchange>0</memoryExchange></scriptInput>
+</definition>
+<definition name="memOutput">
+  <scriptOutput><memoryExchange>1</memoryExchange></scriptOutput>
+</definition>
+<model>
+ <textModel>memOutput = memInput+3;</textModel>
+</model>
+</script>

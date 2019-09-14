@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<script xmlns="http://www.pcraster.nl/pcrxml" xsi:schemaLocation="http://www.pcraster.nl/pcrxml PCRaster.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<!--  Statistics on bil format
+      was bug in new xml api before Tue Mar 27 2007
+      now solved
+  -->
+ <executionOptions>
+   <outputMapFormat>
+     <bandMapFormat />
+   </outputMapFormat>
+ </executionOptions>
+ <definition name="invoer">
+   <scriptInput>
+     <external>ecotoop2Bil.bil</external>
+   </scriptInput>
+ </definition>
+ <definition name="out_ecotoop2">
+   <scriptOutput>
+     <external>ecotoop2Bil.txt</external>
+   </scriptOutput>
+ </definition>
+ <textStatistics name="out_ecotoop2">
+   <textStatisticsSubject fieldRef="invoer" />
+ </textStatistics>
+</script>

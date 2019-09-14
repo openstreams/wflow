@@ -1,3 +1,4 @@
+============
 Installation
 ============
 
@@ -22,7 +23,7 @@ makes installation of required dependencies easier using the conda package manag
 
 
 Install as a conda environment
-------------------------------
+==============================
 
 The easiest and most robust way to install wflow is by installing it in a separate
 conda environment. In the root repository directory there is an ``environment.yml`` file.
@@ -46,7 +47,7 @@ https://conda.io/docs/user-guide/tasks/manage-environments.html
 
 
 Install using pip
------------------
+=================
 
 Besides the recommended conda environment setup described above, you can also install
 wflow with ``pip``. For the more difficult to install Python dependencies, it is best to
@@ -74,7 +75,7 @@ a zip archive from GitHub: https://github.com/openstreams/wflow/archive/master.z
 
 
 Check if the installation is successful
----------------------------------------
+=======================================
 
 To check it the install is successful, go to the examples directory and run the following command:
 
@@ -83,7 +84,7 @@ To check it the install is successful, go to the examples directory and run the 
 This should run without errors.
 
 Linux
------
+=====
 
 Although you can get everything with the python packages bundled with most linux distributions
 (CentOS, Ubuntu, etc) we have found that the easiest way is to install the linux version of Anaconda
@@ -93,6 +94,6 @@ Since version 4.2, compiled versions of PCRaster are no longer distributed, so i
 need to be built following the instructions given at http://pcraster.geo.uu.nl/getting-started/pcraster-on-linux/
 
 OSX
----
+===
 Unfortunately there is no pcraster build for osx yet. If anybody wants to pick this up please let
 the guys at pcraster.eu know!

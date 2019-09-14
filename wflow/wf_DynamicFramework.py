@@ -29,9 +29,9 @@ from wflow.wf_netcdfio import *
 import pcraster as pcr
 import pcraster.framework
 
-from . import pcrut
-from . import wflow_adapt
-from .wflow_lib import *
+from wflow import pcrut
+from wflow import wflow_adapt
+from wflow.wflow_lib import *
 import time  # last to prevent clobbering by *
 
 

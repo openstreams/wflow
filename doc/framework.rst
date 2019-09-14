@@ -1,3 +1,7 @@
+===============================================
+Adding a new model yourself using the framework
+===============================================
+
 Using the framework
 ===================
 
