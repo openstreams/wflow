@@ -1,7 +1,6 @@
 The wflow_hbv model
 ===================
 
-
 Introduction
 ------------
 
@@ -401,21 +400,4 @@ Description of the python module
 
 .. automodule:: wflow_hbv
 	:members:
-    
-
-
-
-    
-        
-
-
-
-
-
-
-
-
-
-    
-
 

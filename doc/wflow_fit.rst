@@ -91,21 +91,6 @@ Description of the python module
 
 .. automodule:: wflow_fit
 	:members:
-    
 
-
-
-    
-        
-
-
-
-
-
-
-
-
-
-    
 
 

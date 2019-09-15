@@ -19,10 +19,7 @@ widely. The main differences are:
 
 + Wflow routes water over a D8 network while topog uses an element 
   network based on contour lines and trajectories.
-
-+ The (optional) addition of sub-cell runoff to be able to 
-  run on larger grid sizes
-
+  
 
 The sections below describe the working of the model in more detail.
 
@@ -37,16 +34,18 @@ The sections below describe the working of the model in more detail.
 Limitations
 ~~~~~~~~~~~
 
-The wflow\_sbm concept has been developed steep catchments and relatively thin soils. In addition, the numerical
-solution of the soil water flow is a simple explicit scheme and the lateral groundwater flow follows topography rather than true
-hydraulic head. Although the waterdem=1 option forces the model to recalculate the flow direction each timestep -- thus giving
-a more realistic groundwater flow -- the following limitation apply:
+The wflow\_sbm concept uses the kinematic wave approach for channel, overland and lateral subsurface flow, assuming that the
+topography controls water flow mostly. This assumption holds for steep terrain, but in less steep terrain the hydraulic gradient
+is likely not equal to the surface slope (subsurface flow), or pressure differences and inertial momentum cannot be neglected (channel and overland flow).
+In addition, while the kinemative wave equations are solved with a nonlinear scheme using Newton's method (Chow, 1988), other model 
+equations are solved through a simple explicit scheme. In summary the following limitations apply:
 
-+ Results for deep soils > 2m may be unrealistic (also due to the simple representation of the unsaturated zone)
++ Channel flow, and to a lesser degree overland flow, may be unrealistic in terrain that is not steep, 
+  and where pressure forces and inertial momentum are important
 
-+ The lateral movement of groundwater may be very wrong in terrain that is not steep (use the waterdem=1 option)
++ The lateral movement of subsurface flow may be very wrong in terrain that is not steep
 
-+ The simple numerical solution means that results from a daily timestep model may be  different from those
++ The simple numerical solution means that results from a daily timestep model may be different from those
   with an hourly timestep. This can also cause water budget problems
 
 
@@ -187,7 +186,7 @@ modelparameters section:
     GlacierFrac=staticmaps/GlacierFrac.map,staticmap,0.0,0
     G_TT=intbl/G_TT.tbl,tbl,0.0,1,staticmaps/GlacierFrac.map
     G_Cfmax=intbl/G_Cfmax.tbl,tbl,3.0,1,staticmaps/GlacierFrac.map
-	G_SIfrac=intbl/G_SIfrac.tbl,tbl,0.001,1,staticmaps/GlacierFrac.map
+    G_SIfrac=intbl/G_SIfrac.tbl,tbl,0.001,1,staticmaps/GlacierFrac.map
 
 The initial glacier volume GlacierStore.map should also be added in the staticmaps folder.
 
@@ -262,7 +261,7 @@ you must define the LAI variable to the model (as in the example below).
     [modelparameters]
     LAI=inmaps/clim/LAI,monthlyclim,1.0,1
     Sl=inmaps/clim/LCtoSpecificLeafStorage.tbl,tbl,0.5,1,inmaps/clim/LC.map
-    Kext=inmaps/clim/LCtoSpecificLeafStorage.tbl,tbl,0.5,1,inmaps/clim/LC.map
+    Kext=inmaps/clim/LCtoExtinctionCoefficient.tbl,tbl,0.5,1,inmaps/clim/LC.map
     Swood=inmaps/clim/LCtoBranchTrunkStorage.tbl,tbl,0.5,1,inmaps/clim/LC.map
 
 Here LAI refers to a MAP with LAI (in this case one per month), Sl to a lookuptable
@@ -370,10 +369,6 @@ The table below show how k is related to land cover:
     16 	0.6	Barren or Sparsely Vegetated
 
 
-
-
-
-
 The modified rutter model
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -444,26 +439,36 @@ The soil model
 Infiltration
 ~~~~~~~~~~~~
 
-If the surface is (partly) saturated the rainfall that falls onto the
-saturated area is added to the surface runoff component. Infiltration of
-the remaining water is determined as follows:
+If the surface is (partly) saturated the throughfall and stemflow that falls onto the
+saturated area is added to the river runoff component (based on fraction rivers, self.RiverFrac)
+and to the overland runoff component (based on open water fraction (self.WaterFrac) minus self.RiverFrac). 
+Infiltration of the remaining water is determined as follows:
 
-First the soil infiltration capacity is adjusted in case the soil is
-frozen. The remaining storage capacity of the unsaturated store is
-determined. The infiltrating water is split is two parts, the part that
+The soil infiltration capacity can be adjusted in case the soil is frozen, this is optional and can be set
+in the ini file as follows:
+
+::
+
+    [model]
+    soilInfRedu = 1
+
+The remaining storage capacity of the unsaturated store is determined. 
+The infiltrating water is split in two parts, the part that
 falls on compacted areas and the part that falls on non-compacted areas.
-First the amount of water that infiltrates in non-compacted areas is
-calculated by taking the minimum of the remaining storage capacity, the
-maximum soil infiltration rate and the water on non-compacted areas.
-After adding the infiltrated water to the unsaturated store the same is
-done for the compacted areas after updating the remaining storage
-capacity.
+The maximum amount of water that can infiltrate in these areas is calculated by taking 
+the minimum of the maximum infiltration rate (InfiltCapsoil for non-compacted areas 
+and InfiltCapPath for compacted areas) and the water on these areas. The water that can
+actual infiltrate is calculated by taking the minimum of the total maximum infiltration rate
+(compacted and non-compacted areas) and the remaining storage capacity.
 
-
+Infiltration excess occurs when the infiltration capacity is smaller then the throughfall and stemflow rate.
+This amount of water (self.InfiltExcess) becomes overland flow (infiltration excess overland flow). Saturation excess
+occurs when the (upper) soil becomes saturated and water cannot infiltrate anymore. This amount of water
+(self.ExcessWater) becomes overland flow (saturation excess overland flow).
 
 The wflow\_sbm soil water accounting scheme
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-A detailed description of the SBM model has been given by [vertessy]_. Briefly:
+A detailed description of the Topog_SBM model has been given by [vertessy]_. Briefly:
 the soil is considered as a bucket with a certain depth
 (:math:`z_{t}`), divided into a saturated store (:math:`S`) and an
 unsaturated store (:math:`U`), the magnitudes of which are expressed
@@ -499,9 +504,40 @@ whole is defined as:
     S_{d}=(\theta_{s}-\theta_{r})z_{t}-S
 
 
-All infiltrating rainfall enters the :math:`U` store first. The
-transfer of water from the :math:`U` store to the :math:`S` store
-(:math:`st`) is controlled by the saturated hydraulic conductivity {}
+All infiltrating water enters the :math:`U` store first. The unsaturated layer can be
+split-up in different layers, by providing the thickness [mm] of the layers in the
+ini file. The following example specifies three layers (from top to bottom) of 100, 300
+and 800 mm: 
+
+::
+
+    [model]
+    UStoreLayerThickness = 100,300,800
+
+The code checks for each grid cell the specified layers against the SoilThickness, and adds
+or removes (partly) layer(s) based on the SoilThickness.
+
+Assuming a unit head gradient, the transfer of water (:math:`st`) from a :math:`U` store layer is controlled by 
+the saturated hydraulic conductivity :math:`K_{sat}` at depth :math:`z` (bottom layer) or :math:`z_{i}`,
+the effective saturation degree of the layer, and a Brooks-Corey power coefficient (parameter :math:`c`)
+based on the pore size distribution index :math:`\lambda` (Brooks and Corey (1964)):
+
+.. math::
+
+    st=K_{\mathit{sat}}\left(\frac{\theta-\theta_{r}}{\theta_{s}-\theta_{r}}\right)^{c}
+    
+    c=\frac{2+3\lambda}{\lambda}
+
+When the unsaturated layer is not split-up into different layers, it is possible to use
+the original Topog_SBM vertical transfer formulation, by specifying in the ini file:
+
+::
+
+    [model]
+    transfermethod = 1
+
+The transfer of water from the :math:`U` store to the :math:`S` store
+(:math:`st`) is in that case controlled by the saturated hydraulic conductivity :math:`K_{sat}`
 at depth :math:`z_{i}` and the ratio between :math:`U` and
 :math:`S_{d}`: 
 
@@ -509,8 +545,6 @@ at depth :math:`z_{i}` and the ratio between :math:`U` and
 
     st=K_{\mathit{sat}}\frac{U_{s}}{S_{d}}
 
-Hence, as the saturation deficit becomes smaller, the rate of the
-transfer between the :math:`U` and :math:`S` stores increases.
 
 .. figure:: _images/wflow_soil.png
 
@@ -521,13 +555,13 @@ the model according to:
 
 .. math::
 
-	`K_{sat}=K_{0}e^{(-fz)}`
+    K_{sat}=K_{0}e^{(-fz)}
 
 where:
 
     :math:`K_{0}` is the saturated conductivity at the soil surface and
 
-    :math:`f` is a scaling parameter [:math:`m^{-1}`]
+    :math:`f` is a scaling parameter [:math:`mm^{-1}`]
 
 The scaling parameter :math:`f` is defined by:
 
@@ -535,7 +569,7 @@ The scaling parameter :math:`f` is defined by:
 
 with :math:`\theta_{s}` and :math:`\theta_{r}` as defined
 previously and :math:`M` representing a model parameter (expressed in
-meters).
+millimeter).
 
 
 Figure: Plot of the relation between depth and conductivity for different values of M
@@ -543,86 +577,195 @@ Figure: Plot of the relation between depth and conductivity for different values
 .. plot:: plots/m-plot.py
 
 
-The :math:`S` store can be drained laterally via subsurface flow
-according to: 
+The :math:`S` store can be drained laterally by applying the kinematic wave approach to
+saturated downslope subsurface flow per unit width of slope :math:`w` according to: 
 
-:math:`sf=K_{0}\mathit{tan}(\beta)e^{-S_{d}/M}`
+:math:`q=\frac{K_{0}\mathit{tan(\beta)}}{f}(e^{(-fz_{i})}-e^{(-fz_{t})})`
 
 where:
 
     :math:`\beta` is element slope angle [deg.]
 
-    :math:`sf` is the calculated subsurface flow [:math:`m^{2}d^{-1}`]
+    :math:`q` is the calculated subsurface flow [:math:`mm^{2}d^{-1}`]
 
-    :math:`S_{d}` is the saturation deficit defined as:    (:math:`(\theta_{s}-\theta_{r})z_{t}-S`)
+with :math:`K_{0}`, :math:`z_{i}` and :math:`z_{t}` as defined previously. 
 
-with :math:`M` and :math:`S_{d}` as defined previously. A schematic
-representation of the various hydrological processes and pathways
-modelled by SBM (infiltration, exfiltration, Hortonian and saturation
-overland flow, subsurface flow) is provided by Vertessy (1999).
+Combining with the following continuity equation:
+
+:math:`(\theta_s-\theta_r)\frac{\partial h}{\partial t} = -w\frac{\partial q}{\partial x} + wr`
+
+and substituting for :math:`h (\frac{\partial q}{\partial h})`, gives:
+
+:math:`w \frac{\partial q}{\partial t} = -cw\frac{\partial q}{\partial x} + cwr`
+
+where celerity :math:`c = \frac{K_{0}\mathit{tan(\beta)}}{(\theta_s-\theta_r)} e^{(-fz_{i})}`
+
+The kinematic wave equation for lateral subsurface flow is solved iteratively using Newton's method.
+
+.. note::
+
+    For the lateral subsurface flow kinematic wave the model timestep is not adjusted. For certain model timestep
+    and model grid size combinations this may result in loss of accuracy.
 
 
 Transpiration and soil evaporation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The potential eveporation left over after the interception is split
-in potential soil evaporation and potential transpiration base on the canopy gap fraction (assumed to be identical
+The potential eveporation left over after interception and open water evaporation (rivers and water bodies) is split
+in potential soil evaporation and potential transpiration based on the canopy gap fraction (assumed to be identical
 to the amount of bare soil).
 
-Soi evaporation is scaled according to:
+For the case of one single soil layer, soil evaporation is scaled according to:
 
-:math:`soilevap = potensoilevap * SaturationDeficit/SoilWaterCapacity`
+:math:`soilevap = potensoilevap \frac{SaturationDeficit}{SoilWaterCapacity}`
 
 As such, evaporation will be potential if the soil is fully wetted and it decreases linear
 with increasing soil moisture deficit.
 
-The original SBM model does not include transpiration or a notion of
-capilary rise. In  wflow\_sbm  transpiration is first taken from the
-:math:`S` store if the roots reach the water table :math:`z_{i}`. If
-the :math:`S` store cannot satisfy the demand the :math:`U` store is
-used next. First the number of wet roots is determined (going from 1 to 0) using
-an sigmoid function as follows:
+For more than one soil layer, soil evaporation is only provided from the upper soil layer (often 100 mm) 
+and soil evaporation is split in evaporation from the unsaturated store and evaporation from the saturated 
+store. First water is evaporated water from the unsaturated store.  Then the remaining potential soil evaporation
+can be used for evaporation from the saturated store. This is only possible, when the water table is present 
+in the upper soil layer (very wet conditions). Both the evaporation from the unsaturated store and the evaporation
+from the saturated store are limited by the minimum of the remaining potential soil evaporation and the available water
+in the unsaturated/saturated zone of the upper soil layer. Also for multiple soil layers, the evaporation
+(both unsaturated and saturated) decreases linearly with decreasing water availability.
+
+The original Topog_SBM model does not include transpiration or a notion of capilary rise. In  wflow\_sbm  transpiration is 
+first taken from the :math:`S` store if the roots reach the water table :math:`z_{i}`. If the :math:`S` store cannot satisfy
+the demand the :math:`U` store is used next. First the number of wet roots is determined (going from 1 to 0) using
+a sigmoid function as follows:
 
 .. math::
 
     WetRoots = 1.0/(1.0 + e^{-SharpNess (WaterTable - RootingDepth)})
 
 Here the sharpness parameter (by default a large negative value, -80000.0) parameter determines if there is a
-stepwise output or a more gradual output (default is stepwise). WaterTable is the level of the Water table in the
-gridcell in mm below the surface, RootingDepth is the maximum depth of the roots also in mm below the surface. For
+stepwise output or a more gradual output (default is stepwise). WaterTable is the level of the water table in the
+grid cell in mm below the surface, RootingDepth is the maximum depth of the roots also in mm below the surface. For
 all values of WaterTable smaller that RootingDepth a value of 1 is returned if they are equal a value of 0.5 is
 returned if the WaterTable is larger than the RootingDepth a value of 0 is returned. The returned WetRoots fraction
 is multiplied by the potential evaporation (and limited by the available water in saturated zone) to get the
-transpiration from the saturated part of the soil.
+transpiration from the saturated part of the soil:
 
-Figure: Plot showing the fraction of wet roots for different values of c 
-for a RootingDepth of 275mm 
+::
+
+    # evaporation from saturated store
+    wetroots = _sCurve(dyn['zi'][idx], a=static['ActRootingDepth'][idx], c=static['rootdistpar'][idx])
+    dyn['ActEvapSat'][idx] = min(PotTrans * wetroots, dyn['SatWaterDepth'][idx])
+    dyn['SatWaterDepth'][idx] = dyn['SatWaterDepth'][idx] - dyn['ActEvapSat'][idx]              
+    RestPotEvap = PotTrans - dyn['ActEvapSat'][idx]
+
+Figure: Plot showing the fraction of wet roots for different values of c for a RootingDepth of 275 mm 
 
 .. plot:: plots/s-curve-soil.py
 
 
-
-Next the remaining potential evaporation is used to extract water from the 
-unsaturated store:
+Next the remaining potential evaporation is used to extract water from the unsaturated store. The fraction of roots 
+(AvailCap) that cover the unsaturated zone for each soil layer is used to calculate the potential root water 
+extraction rate (MaxExtr):
 
 ::
 
-    wetroots = sCurve(WTable, a=RootingDepth, c=smoothpar)
-    ActEvapSat = min(PotTrans * wetroots, SatWaterDepth)
-    SatWaterDepth = SatWaterDepth - ActEvapSat
-    RestPotEvap = PotTrans - ActEvapSat
+    MaxExtr = AvailCap * UstoreLayerDepth
+  
 
-    # now try unsat store
-    AvailCap = max(0.0,ifthenelse(WTable < RootingDepth,  cover(1.0),  RootingDepth/(WTable + 1.0)))
-    MaxExtr = AvailCap * UStoreDepth
-    ActEvapUStore = min(MaxExtr, RestPotEvap, UStoreDepth)
-    UStoreDepth = UStoreDepth - ActEvapUStore
+When setting Whole_UST_Avail to 1 in the ini file as follows, the complete unsaturated storage is available for transpiration:
 
-    ActEvap = ActEvapSat + ActEvapUStore
+::
 
+    [model]
+    Whole_UST_Avail = 1
+  
+Next, the Feddes root water uptake reduction model (Feddes et al. (1978)) is used to calculate a reduction coefficient as a
+function of soil water pressure. Soil water pressure is calculated following Brooks and Corey (1964):
 
-Remaining evaporative demand is split between  evaporation of open water and soil evaporation. This first amount
-is subtracted from the water that would otherwise enter the kinematic wave.
+.. math::
+
+    \frac{(\theta-\theta_r)}{(\theta_s-\theta_r)} =  \Bigg\lbrace{\left(\frac{h_b}{h}\right)^{\lambda}, h > h_b \atop 1 , h \leq h_b}
+
+where:
+
+    :math:`h` is the pressure head (cm), :math:`h_b` is the air entry pressure head, and :math:`\theta`, :math:`\theta_s`, 
+    :math:`\theta_r` and :math:`\lambda` as previously defined.
+
+Feddes (1978) described a transpiration reduction-curve for the reduction coefficient :math:`\alpha`, as a function of :math:`h`.
+Below, the function in wflow_sbm, that calculates for the actual transpiration from the unsaturated zone layer(s).
+
+::
+
+    def actTransp_unsat_SBM(RootingDepth, UStoreLayerDepth, sumLayer, RestPotEvap, sumActEvapUStore, c, L,
+    thetaS, thetaR, hb, ust=0):
+    
+    """
+    Actual transpiration function for unsaturated zone:
+
+      if ust is True, all ustore is available for transpiration
+
+    Input:
+
+        - RootingDepth, UStoreLayerDepth, sumLayer (depth (z) of upper boundary unsaturated layer),
+          RestPotEvap (remaining evaporation), sumActEvapUStore (cumulative actual transpiration (more than one UStore layers))
+          c (Brooks-Corey coefficient), L (thickness of unsaturated zone), thetaS, thetaR, hb (air entry pressure), ust
+
+    Output:
+
+        - UStoreLayerDepth,  sumActEvapUStore, ActEvapUStore
+    """
+
+    # AvailCap is fraction of unsat zone containing roots
+    if ust >= 1:
+        AvailCap = UStoreLayerDepth * 0.99
+    else:
+        if L > 0:
+            AvailCap = min(1.0, max(0.0, (RootingDepth - sumLayer) / L))
+        else:
+            AvailCap = 0.0
+
+    MaxExtr = AvailCap * UStoreLayerDepth
+
+    # Next step is to make use of the Feddes curve in order to decrease ActEvapUstore when soil moisture values
+    # occur above or below ideal plant growing conditions (see also Feddes et al., 1978). h1-h4 values are
+    # actually negative, but all values are made positive for simplicity.
+    h1 = hb  # cm (air entry pressure)
+    h2 = 100  # cm (pF 2 for field capacity)
+    h3 = 400  # cm (pF 3, critical pF value)
+    h4 = 15849  # cm (pF 4.2, wilting point)
+
+    # According to Brooks-Corey
+    par_lambda = 2 / (c - 3)
+    if L > 0.0:
+        vwc = UStoreLayerDepth / L
+    else:
+        vwc = 0.0
+    vwc = max(vwc, 0.0000001)
+    head = hb / (
+        ((vwc) / (thetaS - thetaR)) ** (1 / par_lambda)
+    )  # Note that in the original formula, thetaR is extracted from vwc, but thetaR is not part of the numerical vwc calculation
+    head = max(head,hb)
+
+    # Transform h to a reduction coefficient value according to Feddes et al. (1978).
+    # For now: no reduction for head < h2 until following improvement (todo):
+    #       - reduction only applied to crops
+    if(head <= h1):
+        alpha = 1
+    elif(head >= h4):
+        alpha = 0
+    elif((head < h2) & (head > h1)):
+        alpha = 1
+    elif((head > h3) & (head < h4)):
+        alpha = 1 - (head - h3) / (h4 - h3)
+    else:
+        alpha = 1
+
+    ActEvapUStore = (min(MaxExtr, RestPotEvap, UStoreLayerDepth)) * alpha
+
+    UStoreLayerDepth = UStoreLayerDepth - ActEvapUStore
+
+    RestPotEvap = RestPotEvap - ActEvapUStore
+    sumActEvapUStore = ActEvapUStore + sumActEvapUStore
+
+    return UStoreLayerDepth, sumActEvapUStore, RestPotEvap
 
 Capilary rise is determined using the following approach:
 first the :math:`K_{sat}` is determined at the water table
@@ -632,160 +775,34 @@ the :math:`U` store, the available water in the :math:`S` store and
 the deficit of the :math:`U` store. Finally the potential rise is
 scaled using the distance between the roots and the water table using:
 
-    :math:`CS=CSF/(CSF+z_{i}-RT)`
+    :math:`CSF=CS/(CS+z_{i}-RT)`
 
-in which :math:`CS` is the scaling factor to multiply the potential
-rise with, :math:`CSF` is a model parameter (default = 100, use
+in which :math:`CSF` is the scaling factor to multiply the potential
+rise with, :math:`CS` is a model parameter (default = 100, use
 CapScale.tbl to set differently) and :math:`RT` the rooting depth. If
 the roots reach the water table (:math:`RT>z_{i}`) :math:`CS` is set
 to zero thus setting the capilary rise to zero.
-
-#. Water in the saturated store is transferred laterally along the DEM
-   using the following steps:
-
-   #. a maximum flux for each cell is determined by determining the {}
-      over the saturated part and the available water in each cell
-
-   #. water is routed downslope (using the PCRaster accucapacityflux
-      operator) by multiplying the {} by the slope and limiting the flux
-      maximum determined in the previous step
-
-   #. the program can either use the DEM to route the water or (more
-      appropriate in flat areas) the actual slope of the water table.
-      The latter option slows down the program considerably
-
-#. surplus water in cells as a result of the previous step is added to
-   the kinematic wave reservoir
-
-
 
 
 Leakage
 ~~~~~~~
 
-If the MaxLeakage parameter may is set > 0  water is lost from the Saturated zone and runs out of the model.
+If the MaxLeakage parameter is set > 0, water is lost from the saturated zone and runs out of the model.
 
 Soil temperature
 ~~~~~~~~~~~~~~~~
 
 The near surface soil temperature is modelled using a simple equation [Wigmosta]_:
 
-	.. math:: T_s^{t} = T_s^{t-1} + w  (T_a - T_s^{t-1})  
+.. math:: T_s^{t} = T_s^{t-1} + w  (T_a - T_s^{t-1})  
 
-where :math:`T_s^{t}`  is the near-surface soil temperature at time t, :math:`T_a` is air temperature and :math:`w` is a
-weighting coefficient determined through calibration (default is 0.1125 for daily timesteps, 0.9 for 3-hourly timesteps)
+where :math:`T_s^{t}` is the near-surface soil temperature at time t, :math:`T_a` is air temperature and :math:`w` is a
+weighting coefficient determined through calibration (default is 0.1125 for daily timesteps).
 
-if T_s < 0 than a K_{sat} reduction factor (default 0.038) is applied. An S-curve (see plot below)
-is used to make a smooth transition (a  c-factor of 8 is used).
+if T_s < 0 than a reduction factor is applied to the maximum infiltration rate (InfiltCapSoil and InfiltCapPath).
+A S-curve (see plot below) is used to make a smooth transition (a c-factor of 8 is used).
 
 .. plot:: plots/s-curve-freezingsoil.py
-
-
-Sub-grid runoff generation
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Sub-grid runoff generaten can be switched on on off in the configuration file. In 
-general this feature is used if the grid cell size is relatively larger compared
-to the variation of topography. In addition you will need to have information
-on the distribution of altitude within a grid-cell. Depending on the topography sub-grid
-runoff generation may be useful around 1x1km and larger.
-
-The basis is formed by a sigmoid (:math:`S`) function that is fitted using 
-a 10, 50 and 90 percentile  DEM. The :math:`S` function is defined as:
-
-    .. math:: S = 1.0/(b + e^{(-c (X - a))}) 
-
-Where:
-
-    X = input variable (in this case the absolute scaled groundwater level)
-
-    b = 1.0 
-
-    c = sharpness parameter. Higher values give sharper step
-
-    a = centre-point of the curve (normally the 50% DEM)
-
-The :math:`c` parameter is estimated by reversing the function above to:
-
-    .. math:: c = log(1.0/p - 1)/(dem_{p} - dem_{50})
-
-where:
-
-    percentile is the percentile of :math:`dem_{p}`
-
-    :math:`dem_{50}` is the average altitude in the gridcell
-
-    :math:`dem_{p}` is the altitude below with percentile (p) cells of the dem
-    are found
-    
-
-The outcome of the :math:`S` will range from 0 to 1 for inputs ranging from the 
-minimum altitude to the maximum altitude (within the gridcell). Thereore,
-the calculated groundwater levels within the cell are scale to match the minimum and 
-maximum altitude within the cell using:
-
-.. math:: G_s = (A_{max}-A_{min})/FZT/GWPerc
-
-where:
-    
-    :math:`G_s` is the scaling factor
-    
-    :math:`A_{max}` the maximum altitude within the cell
-
-    :math:`A_{min}` the minumum altitude within the cell
-
-    :math:`FZT` the total thickness of the soil in the model
-
-    :math:`GWperc` is a dimensionless parameter (from >0 to 1) that determines which 
-    part of the soil profile generates runoff. If it is 1 runoff is generated whenever 
-    there is groundwater in the system. If it is 0.1 only the top 10 % of the
-    soil profile generated runoff
-
-::
-
-    self.DemMax=readmap(self.Dir + "/staticmaps/wflow_demmax")  
-    self.DrainageBase=readmap(self.Dir + "/staticmaps/wflow_demmin")        
-    self.CC = min(100.0,-log(1.0/0.1 - 1)/min(-0.1,self.DrainageBase - self.Altitude))
-    self.GWScale = (self.DemMax-self.DrainageBase)/self.SoilThickness / self.RunoffGeneratingGWPerc
-
-
-
-
-.. note::
-
-    The model determines the C for the upper half and the lower half of the curve
-     seperate and averages the results.
-
-.. warning::
-
-    This is an poorly tested feature
-
-In the dynamic section of the model the absolute groundwater level is determined and scaled before it is fed into the
-:math:`S` curve function. The result is a estimated saturated fraction within a the gridcell. The saturated fraction is
-used to generated Saturation Overland Flow (SOF) and generate ouflow from the groundwater reservoir:
-
-1. The saturated conductivity for the average groundwaterlevel is determined
-2. The available water at the surface is multiplied by the saturated fraction and
-   added to the kinematic wave reservoir (SOF)
-3. Outflow from the groundwater reservoir is determined using average slope multiplied 
-   by the conductivity and the saturated fraction limited by the amount of water 
-   in the groundwater reservoir.
- 
-
-
-in dynamic::
-
-            self.AbsoluteGW = self.DemMax - (self.zi * self.GWScale)
-            # Determine saturated fraction of cell
-            self.SubCellFrac = sCurve(self.AbsoluteGW, c=self.CC, a=self.Altitude + 1.0)
-            # Make sure total of SubCellFRac + WaterFRac + RiverFrac <=1 to avoid double counting
-            Frac_correction = ifthenelse((self.SubCellFrac + self.RiverFrac + self.WaterFrac) > 1.0,
-                                                     self.SubCellFrac + self.RiverFrac + self.WaterFrac - 1.0, 0.0)
-            self.SubCellRunoff = (self.SubCellFrac - Frac_correction) * self.AvailableForInfiltration
-            self.SubCellGWRunoff = min(self.SubCellFrac * self.SatWaterDepth,
-                                       max(0.0,self.SubCellFrac * self.Slope * self.KsatVer * \
-                                           self.KsatHorFrac * exp(-self.f * self.zi)))
-
 
 
 Irrigation and water demand
@@ -802,19 +819,21 @@ For both options a fraction of the supplied water can be put back into the river
 
 The following maps and variables can be defined:
 
-:wflow_irrigationareas.map:
-    Map of areas where irrigation is applied. Each area has a unique id. The areas do not need to be continuous but
-    all cells with the same id are assumed to belong to the same irrigation area.
+**wflow_irrigationareas.map**:
 
-:wflow_irrisurfaceintake.map:
-    Map of intake points at the river(s). The id of each point should correspond to the id of an area in the
-    wflow_irrigationareas map.
+    Map of areas where irrigation is applied. Each area has a unique id. The areas do not need to be continuous
+    but all cells with the same id are assumed to belong to the same irrigation area.
 
-:wflow_irrisurfacereturns.map:
+**wflow_irrisurfaceintake.map**: 
+
+    Map of intake points at the river(s). The id of each point should correspond to the id of an area in the wflow_irrigationareas map.
+
+**wflow_irrisurfacereturns.map**:
+
     Map of water return points at the river(s). The id of each point should correspond to the id of an area in the
     wflow_irrigationareas map or/and the wflow_irrisurfaceintake.map.
 
-:IrriDemandExternal: Irrigation demand supplied to the model. This can be doen by adding an entry to the
+**IrriDemandExternal**: Irrigation demand supplied to the model. This can be doen by adding an entry to the
     modelparameters section. if this is doen the irrigation demand supplied here is used and it is NOT determined
     by the model. Water demand should be given with a negative sign! See below for and example entry
     in the modelparameters section: ::
@@ -828,8 +847,7 @@ The following maps and variables can be defined:
         IrriDemandExternal=/inmaps/IRD,timeseries,-34.0,0
 
 
-
-:DemandReturnFlowFraction: Fraction of the supplied water the returns back into the river system (between 0 and 1).
+**DemandReturnFlowFraction**: Fraction of the supplied water the returns back into the river system (between 0 and 1).
     This fraction must  be supplied at the  wflow_irrisurfaceintakes.map locations but the water that is returned
     to the river will be returned at the wflow_irrisurfacereturns.map locations. If this variable is not defined
     the default is 0.0. See below for an example entry in the modelparameters section: ::
@@ -843,8 +861,7 @@ The following maps and variables can be defined:
     :align: center
 
     Figure showing the three maps that define the irrigation intake points areas and return flow locations.
-
-
+    
 The  irrigation model can be used in the following two modes:
 
 1. An external water demand is given (the user has specified the IrriDemandExternal variable). In this case the demand
@@ -862,62 +879,37 @@ The  irrigation model can be used in the following two modes:
    This option has only be tested in combination with a monthly LAI climatology as input. If a DemandReturnFlowFraction
    is defined this fraction is the supply is returned to the river at the wflow_irrisurfacereturns.map points.
 
-Bifurcations
----------------------------
-
-A PCRaster local drainage direction (ldd) map only allows for one downstream neighbour cell. Bifurcations can be included in WFlow
-by providing the following files:
- 
-:wflow_bifurcations.map: PCRaster ordinal map, identifying all bifurcations; cells having two downstream neighbours, 
-   of which only on is represented by the ldd.
-
-:wflow_bifurcations_ds.map: PCRaster ordinal map, identifying the locations in the bifurcation canal to which a part of the 
-   main river runoff (self.SurfaceRunoff), at the location of bifurcation, is to be diverted to. The IDs in this map match the IDs in 
-   wflow_bifurcations.map
-
-:Bifurcations.tbl: a table with the part of the discharge (self.SurfaceRunoff) at the location of the bifurcation, specified 
-   in wflow_bifurcations.map, which is diverted to the location specified in wflow_bifurcations_ds.map. The table consists of 
-   two columns: (1) a column with the bifurcation ID matching the IDs in both map-files and (2) the part of self.SurfaceRunoff 
-   at the bifurcation to be diverted to the bifurcation canal at the location specified in wflow_bifurcations_ds.map.
-
-Example of a tbl-file::
-
-        1 0.5
-        2 0.3
-
-The locations in wflow_bifurcations.map are interpreted as sinks, where a part of the total flow will be extracted. 
-The locations in wflow_bifurcations_ds.map are interpreted as sources, where a the extracted part will be supplied.
-
-.. figure:: _images/wflow_bifurcation.png
-    :width: 640px
-    :align: center
-
-    Figure showing (left) wflow_bifurcations.map, (middle) wflow_bifurcations_ds.map, (right) wflow_ldd.map
 
 Kinematic wave and River Width
 ------------------------------
 
-
-The river width is determined from the DEM the upstream area and yearly
-average discharge ([Finnegan]_):
+The river width is determined from the DEM the upstream area and yearly average discharge ([Finnegan]_):
 
 .. math:
 
     W = [\alpha (\alpha + 2)^{2/3}]^{3/8} Q^{3/8} S^{-3/16} n^{3/8}
 
-The early average Q at outlet is scaled for each point in the drainage network 
+The yearly average Q at outlet is scaled for each point in the drainage network 
 with the upstream area. :math:`\alpha` ranges from 5 to > 60. Here 5 is used for hardrock,
-largre values are used for sediments
+large values are used for sediments.
   
 
 Implementation::
 
-    upstr = catchmenttotal(1, self.TopoLdd)
-    Qscale = upstr/mapmaximum(upstr) * Qmax
-    W = (alf * (alf + 2.0)**(0.6666666667))**(0.375) * Qscale**(0.375) *\
-         (max(0.0001,windowaverage(self.Slope,celllength() * 4.0)))**(-0.1875) *\
-         self.N **(0.375)
-    RiverWidth = W
+        if (self.nrresSimple + self.nrlake) > 0:
+            upstr = pcr.catchmenttotal(1, self.TopoLddOrg)
+        else:
+            upstr = pcr.catchmenttotal(1, self.TopoLdd)
+        Qscale = upstr / pcr.mapmaximum(upstr) * Qmax
+        W = (
+            (alf * (alf + 2.0) ** (0.6666666667)) ** (0.375)
+            * Qscale ** (0.375)
+            * (pcr.max(0.0001, pcr.windowaverage(self.riverSlope, pcr.celllength() * 4.0)))
+            ** (-0.1875)
+            * self.NRiver ** (0.375)
+        )
+        # Use supplied riverwidth if possible, else calulate
+        self.RiverWidth = pcr.ifthenelse(self.RiverWidth <= 0.0, W, self.RiverWidth)
  
 
 The table below list commonly used Manning's N values (in the N_River .tbl file). 
@@ -971,17 +963,17 @@ onlys shows the soil and Kinematic wave reservoir, not the canopy model.
     node[shape=record];
     UStoreDepth [shape=box];
     OutSide [style=dotted];
-    SoilWaterDepth [shape=box];
-    UStoreDepth -> SoilWaterDepth [label="Transfer [mm]"];
-    SoilWaterDepth -> UStoreDepth [label="CapFlux [mm]"];        
-    SoilWaterDepth ->KinematicWaveStore [label="ExfiltWaterCubic [m^3/s]"];
+    SatWaterDepth [shape=box];
+    UStoreDepth -> SatWaterDepth [label="Transfer [mm]"];
+    SatWaterDepth -> UStoreDepth [label="CapFlux [mm]"];        
+    SatWaterDepth -> KinWaveStoreLand [label="ExfiltWater [mm]"];
     "OutSide" -> UStoreDepth [label="ActInfilt [mm]"];
-    UStoreDepth -> OutSide [label="ActEvapUStore [mm]"];
-    SoilWaterDepth -> OutSide [label="ActEvap-ActEvapUStore [mm]"];
-    SoilWaterDepth -> KinematicWaveStore [label="SubCellGWRunoffCubic [m^3/s]"];
-    "OutSide" -> KinematicWaveStore [label="SubCellRunoffCubic [m^3/s]"];
-    "OutSide" -> KinematicWaveStore [label="RunoffOpenWater [m^3/s]"] ;
-    "OutSide" -> KinematicWaveStore [label="FreeWaterDepthCubic [m^3/s]"] ;
+    UStoreDepth -> OutSide [label="SumEvapUstore [mm]"];
+    SatWaterDepth -> OutSide [label="SumEvapSat [mm]"];
+    "OutSide" -> KinWaveStoreLand [label="InWaterL [m^{3}/s]"];
+    KinWaveStoreLand -> KinWaveStoreRiver [label="qo_toriver [m^{3}/s]"]
+    SatWaterDepth -> KinWaveStoreRiver [label="ssf_toriver [m^{3}/s]"]
+    "OutSide" -> KinWaveStoreRiver [label="RunoffOpenWaterRiver [m^3/s]"] ;
     
 
 
