@@ -21,7 +21,7 @@ dependencies:
   - python-dateutil>=2.7
   - sphinx
   - sphinx_rtd_theme
-  - matpotlib
+  - matplotlib
   - pip:
     - bmi-python
     - wflow
