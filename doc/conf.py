@@ -34,9 +34,6 @@ class Mock(MagicMock):
 
 # Mock modules so that we can build on readthedocs.org
 MOCK_MODULES = [
-    "_pcraster",
-    "_pcraster_modflow",
-    "PCRaster.NumPy",
     "osgeo.gdal",
     "osgeo.gdalconst",
     "osgeo",
@@ -44,8 +41,9 @@ MOCK_MODULES = [
     "netCDF4",
     "netCDF4_utils",
     "netcdftime",
-    "PCRaster",
-    "PCRaster.Framework",
+    "pcraster.framework",
+    "pcraster._pcraster",
+    "pcraster",
     "pyproj",
 ]
 
@@ -56,7 +54,6 @@ sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath("pcraster-for-doc-only/python"))
 sys.path.insert(0, os.path.abspath("../wflow"))
 sys.path.insert(0, os.path.abspath(".."))
 sys.path.insert(0, os.path.abspath("../Scripts"))

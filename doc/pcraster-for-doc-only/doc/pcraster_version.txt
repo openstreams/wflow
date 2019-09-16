@@ -1,3 +1,0 @@
-PCRaster version  4.2.1
-built on 13.12.2018
-using branch '4.2' with commit '1b3ad81' (1b3ad8144f55794eb8baf62144186339bbf87da0)
