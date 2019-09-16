@@ -253,7 +253,7 @@ The volume of water which becomes available for runoff, :math:`S_{dr}+SP`,
 is transferred to the runoff response routine. In this routine the
 runoff delay is simulated through the use of a number of linear reservoirs. 
 
-Two linear reservoir are defined to simulate the different runoff
+Two linear reservoirs are defined to simulate the different runoff
 processes: the upper zone (generating quick runoff and interflow)
 and the lower zone (generating slow runoff). The available runoff
 water from the soil routine (i.e. direct runoff, :math:`S_{dr}`, and seepage,

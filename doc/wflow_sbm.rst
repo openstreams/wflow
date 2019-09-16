@@ -15,7 +15,7 @@ widely. The main differences are:
 
 + The addition of evapotranspiration losses
 
-+ The addition of a percolary rise
++ The addition of a capilary rise
 
 + Wflow routes water over a D8 network while topog uses an element 
   network based on contour lines and trajectories.

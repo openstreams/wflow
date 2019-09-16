@@ -18,7 +18,7 @@ to a Delft-FEWS runinfo.xml file can be given. An example is shown below.
 ::
 
     [run]
-    # either a runinfo file or a start and end-time are required
+    #either a runinfo file or a start and end-time are required
     #runinfofile=runinfo.xml
     starttime= 1995-01-31 00:00:00
     endtime= 1995-02-28 00:00:00
