@@ -3003,6 +3003,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             + self.oldIRSupplymm
             - self.Interception
             - self.InfiltExcess
+            - self.ExcessWater
             - self.RunoffRiverCells 
             - self.RunoffLandCells
             - self.ActInfilt

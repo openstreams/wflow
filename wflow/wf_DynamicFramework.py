@@ -2174,6 +2174,8 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
         dimensions are assumed. if the name of the maps contains the string "LDD" or "ldd"
         the maps is assumed to be an LDD maps and an lddrepair call is made,
         assume -999 as missing value
+        also checks if map contains int at end, then map is part of List object:
+        map_0 is part of self.map[0]
 
         Input:
             - mapname - string with name of map
@@ -2191,20 +2193,27 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
             if "LDD" in mapname.upper():
                 setattr(self._userModel(), mapname, pcr.lddrepair(pcr.ldd(arpcr)))
             else:
-                setattr(self._userModel(), mapname, arpcr)
-
+                if mapname.split('_')[-1].isdigit():
+                    getattr(self._userModel(), mapname.split('_')[0])[int(mapname.split('_')[-1])] = arpcr
+                else:
+                    setattr(self._userModel(), mapname, arpcr)
             return 1
         else:
             self.logger.debug(
                 mapname + " is not defined in the usermodel: setting anyway"
             )
-            setattr(self._userModel(), mapname, arpcr)
+            if mapname.split('_')[-1].isdigit():
+                getattr(self._userModel(), mapname.split('_')[0])[int(mapname.split('_')[-1])] = arpcr
+            else:
+                setattr(self._userModel(), mapname, arpcr)
             return 0
 
     def wf_setValuesAsPcrMap(self, mapname, pcrmap):
         """
         set a map with values from a pcrmap. Current settings for
         dimensions are assumed.
+        also checks if map contains int at end, then map is part of List object:
+        map_0 is part of self.map[0]
 
         Input:
             - mapname - string with name of map
@@ -2217,13 +2226,19 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
         self.setviaAPI[mapname] = 1
 
         if hasattr(self._userModel(), mapname):
-            setattr(self._userModel(), mapname, arpcr)
+            if mapname.split('_')[-1].isdigit():
+                getattr(self._userModel(), mapname.split('_')[0])[int(mapname.split('_')[-1])] = arpcr
+            else:
+                setattr(self._userModel(), mapname, arpcr)
             return 1
         else:
             self.logger.debug(
                 mapname + " is not defined in the usermodel: setting anyway"
             )
-            setattr(self._userModel(), mapname, arpcr)
+            if mapname.split('_')[-1].isdigit():
+                getattr(self._userModel(), mapname.split('_')[0])[int(mapname.split('_')[-1])] = arpcr
+            else:
+                setattr(self._userModel(), mapname, arpcr)
             return 0
 
     def wf_setValues(self, mapname, values):
@@ -2232,6 +2247,8 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
         value. In case a single value is specified the value will be distributed
         uniformly over the map. Current settings for
         dimensions are assumed.
+        also checks if map contains int at end, then map is part of List object:
+        map_0 is part of self.map[0]
 
         Input:
             - mapname - string with name of map
@@ -2250,19 +2267,27 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
             arpcr = pcr.cover(pcr.scalar(values))
 
         if hasattr(self._userModel(), mapname):
-            setattr(self._userModel(), mapname, arpcr)
+            if mapname.split('_')[-1].isdigit():
+                getattr(self._userModel(), mapname.split('_')[0])[int(mapname.split('_')[-1])] = arpcr
+            else:
+                setattr(self._userModel(), mapname, arpcr)
             return 1
         else:
             self.logger.debug(
                 mapname + " is not defined in the usermodel: setting anyway"
             )
-            setattr(self._userModel(), mapname, arpcr)
+            if mapname.split('_')[-1].isdigit():
+                getattr(self._userModel(), mapname.split('_')[0])[int(mapname.split('_')[-1])] = arpcr
+            else:
+                setattr(self._userModel(), mapname, arpcr)
             return 0
 
     def wf_setValueRowCol(self, mapname, value, row, col):
         """
         set single value in a map on row, col (0 based). All other values in the
         map remain the same. Numbering starts at the upper left corner.
+        also checks if map contains int at end, then map is part of List object:
+        map_0 is part of self.map[0]
 
         Input:
             - mapname - string with name of map
@@ -2274,10 +2299,16 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
         """
         self.setviaAPI[mapname] = 1
         if hasattr(self._userModel(), mapname):
-            ar = pcr.pcr2numpy(getattr(self._userModel(), mapname), -999)
+            if mapname.split('_')[-1].isdigit():
+                ar = pcr.pcr2numpy(getattr(self._userModel(), mapname.split('_')[0])[int(mapname.split('_')[-1])])
+            else:
+                ar = pcr.pcr2numpy(getattr(self._userModel(), mapname), -999)
             ar[row, col] = value
             arpcr = pcr.numpy2pcr(pcr.Scalar, ar.copy(), -999)
-            setattr(self._userModel(), mapname, arpcr)
+            if mapname.split('_')[-1].isdigit():
+                getattr(self._userModel(), mapname.split('_')[0])[int(mapname.split('_')[-1])] = arpcr
+            else:
+                setattr(self._userModel(), mapname, arpcr)
             return 1
         else:
             self.logger.debug(
@@ -2289,6 +2320,8 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
         """
         set single value in a map on xcor, ycor (0 based). All other values in the
         map remain the same.
+        Also checks if map contains int at end, then map is part of List object:
+        map_0 is part of self.map[0]
 
         Input:
             - mapname - string with name of map
@@ -2300,14 +2333,20 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
         """
         self.setviaAPI[mapname] = 1
         if hasattr(self._userModel(), mapname):
-            pcrmap = getattr(self._userModel(), mapname)
+            if mapname.split('_')[-1].isdigit():
+                pcrmap = getattr(self._userModel(), mapname.split('_')[0])[int(mapname.split('_')[-1])]
+            else:
+                pcrmap = getattr(self._userModel(), mapname)
             ar = pcr.pcr2numpy(pcr.scalar(pcrmap), -999)
             row, col = getRowColPoint(pcrmap, xcor, ycor)
             ar[row, col] = value
             save("tt.np", ar)
             pcrmap = pcr.numpy2pcr(pcr.Scalar, ar.copy(), -999)
             pcr.report(pcrmap, "zz.map")
-            setattr(self._userModel(), mapname, pcrmap)
+            if mapname.split('_')[-1].isdigit():
+                getattr(self._userModel(), mapname.split('_')[0])[int(mapname.split('_')[-1])] = pcrmap
+            else:
+                setattr(self._userModel(), mapname, pcrmap)
             return 1
         else:
             self.logger.debug(mapname + " is not defined in the usermodel")
@@ -2491,7 +2530,9 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
         Returns a numpy array (matrix) for the specified map and the current
         timestep. If the maps is not dynamic the current status of the map is
         returns which may be undefined for maps that are filled with data
-        at the end of a run
+        at the end of a run.
+        Also checks if map contains int at end, then map is part of List object:
+        map_0 is part of self.map[0]
         Missing value is -999
 
         Input:
@@ -2500,8 +2541,12 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
         Output:
             - numpy array
         """
+        
         if hasattr(self._userModel(), mapname):
-            pcrmap = getattr(self._userModel(), mapname)
+            if mapname.split('_')[-1].isdigit():
+                pcrmap = getattr(self._userModel(), mapname.split('_')[0])[int(mapname.split('_')[-1])]
+            else:
+                pcrmap = getattr(self._userModel(), mapname)
             if isinstance(pcrmap, pcraster._pcraster.Field):
                 tt = pcr.pcr2numpy(pcrmap, -999.0)
                 retval = np.flipud(tt).copy()
