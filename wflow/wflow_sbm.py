@@ -246,38 +246,43 @@ def infiltration(AvailableForInfiltration, PathFrac, cf_soil, TSoil,InfiltCapSoi
 @jit(nopython=True)  
 def unsatzone_flow(UStoreLayerDepth, InfiltSoilPath, L, z, KsatVerFrac, c, KsatVer, f, thetaS, thetaR, SoilWaterCapacity, SWDold, shape_layer, TransferMethod):
     
-    m = 0
-    UStoreLayerDepth[m] = UStoreLayerDepth[m] + InfiltSoilPath
-    
-    if L[m] > 0.0:
-        #sbm option for vertical transfer (only for 1 layer)                        
-        if (TransferMethod == 1 and shape_layer == 1):
-            Sd = SoilWaterCapacity - SWDold
-            if Sd <= 0.00001:
-                st = 0.0
-            else:
-                st = KsatVerFrac[m] * KsatVer * (min(UStoreLayerDepth[m],L[m]*(thetaS-thetaR))/Sd)   
-        else:    
-            st = KsatVerFrac[m] * KsatVer * np.exp(-f * z[m]) * min((UStoreLayerDepth[m]/(L[m] * (thetaS-thetaR)))**c[m],1.0)
-            ast = min(st,UStoreLayerDepth[m])                         
-            UStoreLayerDepth[m] = UStoreLayerDepth[m] - ast
-    else: 
-        ast = 0.0
-            
-                
-    for m in range(1,len(L)):
+    # iterate in time based on infiltration amount (steps of 2 mm)
+    its = max(int(math.ceil(InfiltSoilPath/2)),1)
+    ast_ = 0
+    for i in range(0,its):
+        m = 0
+        UStoreLayerDepth[m] = UStoreLayerDepth[m] + InfiltSoilPath/its
         
-        UStoreLayerDepth[m] = UStoreLayerDepth[m] + ast
-
         if L[m] > 0.0:
-            st = KsatVerFrac[m] * KsatVer * np.exp(-f* z[m]) * min((UStoreLayerDepth[m]/(L[m] * (thetaS-thetaR)))**c[m],1.0)
-            ast = min(st,UStoreLayerDepth[m])
-        else:
+            #sbm option for vertical transfer (only for 1 layer)
+            if (TransferMethod == 1 and shape_layer == 1):
+                Sd = SoilWaterCapacity - SWDold
+                if Sd <= 0.00001:
+                    st = 0.0
+                else:
+                    st = KsatVerFrac[m] * KsatVer/its * (min(UStoreLayerDepth[m],L[m]*(thetaS-thetaR))/Sd)
+            else:    
+                st = KsatVerFrac[m] * KsatVer/its * np.exp(-f * z[m]) * min((UStoreLayerDepth[m]/(L[m] * (thetaS-thetaR)))**c[m],1.0)
+                ast = min(st,UStoreLayerDepth[m])
+                UStoreLayerDepth[m] = UStoreLayerDepth[m] - ast
+        else: 
             ast = 0.0
-        
-        UStoreLayerDepth[m] = UStoreLayerDepth[m] - ast
+                
                     
-    return ast, UStoreLayerDepth
+        for m in range(1,len(L)):
+            
+            UStoreLayerDepth[m] = UStoreLayerDepth[m] + ast
+
+            if L[m] > 0.0:
+                st = KsatVerFrac[m] * KsatVer/its * np.exp(-f* z[m]) * min((UStoreLayerDepth[m]/(L[m] * (thetaS-thetaR)))**c[m],1.0)
+                ast = min(st,UStoreLayerDepth[m])
+            else:
+                ast = 0.0
+            
+            UStoreLayerDepth[m] = UStoreLayerDepth[m] - ast
+        ast_ = ast_ + ast
+        
+    return ast_, UStoreLayerDepth
     
     
 @jit(nopython=True)    
