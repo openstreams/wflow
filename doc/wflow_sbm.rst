@@ -882,8 +882,10 @@ The  irrigation model can be used in the following two modes:
 
 Kinematic wave and River Width
 ------------------------------
-
-The river width is determined from the DEM the upstream area and yearly average discharge ([Finnegan]_):
+Both overland flow (for non-river cells) and river discharge are routed through the catchment using the kinematic wave equation.
+Width and length characteristics of non-river cells use the grid cell dimensions. For river cells, both width and maps can
+either be supplied by separate maps or determined from the grid cell dimension for river length and from the DEM, the upstream area and yearly average discharge for
+the river width ([Finnegan]_):
 
 .. math:
 
@@ -932,6 +934,9 @@ significantly higher. (Use N.tbl for non-river cells and N_River.tbl for river c
     "*Mountain streams*"
     "bottom: gravels, cobbles, and few  boulders", 0.03, 0.04, 0.05 
     "bottom: cobbles with large boulders", 0.04,  0.05, 0.07 
+
+Natural lakes and reservoirs can also be added to the model and taken into account during the routing process. For more information,
+see the documentation of the wflow_funcs module.
  
 Subcatchment flow
 -----------------

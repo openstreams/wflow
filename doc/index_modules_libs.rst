@@ -6,4 +6,6 @@ Wflow modules and libraries
 
     wflow_fit.rst
     wflow_lib.rst
+    wflow_funcs.rst
     wflow_delwaq.rst
+    wflow_emwaq.rst

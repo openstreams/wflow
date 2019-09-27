@@ -1804,8 +1804,8 @@ def dw_WriteEmiData(caseId, outdir, ptid, cells, modelmap, emiData, comp, Aggreg
         
         #For ASCII, maximum length per line is 1000, need to split emission data
         #Need to reshape the emi data to fit
-        #Calculate max size of characters
-        MaxChar = np.amax([len(x) for x in np_emimap.astype(str)])
+        #Calculate max size of characters (+1 for space)
+        MaxChar = np.amax([len(x) for x in np_emimap.astype(str)])+1
         #Number of values per line is floor(1000/MaxChar)
         NPRow = math.floor(1000/MaxChar)
         #Total number of values to write
@@ -2311,8 +2311,8 @@ def main(argv=None):
                             else:
                                 volume_map = zeroMap*0.0
                                 wflowVars = comp.wflowVar[c].split("+")
-                                for i in range(len(wflowVars)):
-                                    volume_map_path = caseId + "/instate/" + wflowVars[i] + ".map"
+                                for wv in range(len(wflowVars)):
+                                    volume_map_path = caseId + "/instate/" + wflowVars[wv] + ".map"
                                     if os.path.exists(volume_map_path):
                                         volume_map = volume_map + pcr.readmap(volume_map_path)
                     
@@ -2320,8 +2320,8 @@ def main(argv=None):
                         else:
                             volume_map = zeroMap*0.0
                             wflowVars = comp.mapstack[c].split("+")
-                            for i in range(len(wflowVars)):
-                                volume_map = volume_map + read_timestep(nc, wflowVars[i], (ts - 1), logger, caseId, runId)    
+                            for wv in range(len(wflowVars)):
+                                volume_map = volume_map + read_timestep(nc, wflowVars[wv], (ts - 1), logger, caseId, runId)    
                     
                         #If needed, convert volume in mm or m to m3
                         if comp.Unit[c] == "mm" or comp.Unit[c] == "m":
@@ -2340,7 +2340,7 @@ def main(argv=None):
                 
                     #logger.info("Writing volumes.dat. Nr of points: " + str(size(volume_block)))
                     dw_WriteSegmentOrExchangeData(
-                        i, dwdir + "/includes_flow/volume.dat", volume_block, 1, WriteAscii
+                        float(i), dwdir + "/includes_flow/volume.dat", volume_block, 1, WriteAscii
                     )
                 
                 #Flow data, exchange area and velocity

@@ -1,7 +1,7 @@
 The wflow_sediment Model
 ========================
 
-.. note::
+.. warning::
 
     Experimental version
 	
@@ -90,20 +90,30 @@ and sand content) and correponding values are defined in EUROSEM user guide (Mor
 in wflow_sediment, the mean value of the detachability shown in the table below are used. Soil texture is derived 
 from the topsoil clay and silt content from SoilGrids (Hengl et al, 2017).
 
-.. csv-table:: Mean detachability of soil depending on its texture (Morgan et al, 1998).
-    :header: "Texture (USDA system)",  "Mean detachability :math:`k` (g/J)"
-    :widths: 40,40
-	:align: center
+Table: Mean detachability of soil depending on its texture (Morgan et al, 1998).
 
-    "Clay", "2.0"
-	"Clay Loam", "1.7"
-	"Silt", "1.2"
-	"Silt Loam", "1.5"
-	"Loam", "2.0"
-	"Sandy Loam", "2.6"
-	"Loamy Sand", "3.0"
-	"Fine Sand", "3.5"
-	"Sand", "1.9"
++------------------------------------+------------------------------------+	
+| Texture (USDA system)              | Mean detachability :math:`k` (g/J) |
++====================================+====================================+	
+| Clay                               |                              2.0   |
++------------------------------------+------------------------------------+
+| Clay Loam                          |                              1.7   |
++------------------------------------+------------------------------------+
+| Silt                               |                              1.2   |
++------------------------------------+------------------------------------+
+| Silt Loam                          |                              1.5   |
++------------------------------------+------------------------------------+
+| Loam                               |                              2.0   |
++------------------------------------+------------------------------------+
+| Sandy Loam                         |                              2.6   |
++------------------------------------+------------------------------------+
+| Loamy Sand                         |                              3.0   |
++------------------------------------+------------------------------------+
+| Fine Sand                          |                              3.5   |
++------------------------------------+------------------------------------+
+| Sand                               |                              1.9   |
++------------------------------------+------------------------------------+
+
 
 Rainfall erosion is handled differently in ANSWERS. There, the impacts of vegetation and soil properties are handled 
 through the USLE coefficients in the equation (Beasley et al, 1991):
@@ -114,7 +124,7 @@ through the USLE coefficients in the equation (Beasley et al, 1991):
 
 where :math:`D_{R}` is the soil detachment by rainfall (here in kg min\ :math:`^{-1}`), :math:`C_{USLE}` is the 
 soil cover-management factor from the USLE equation, :math:`K_{USLE}` is the soil erodibility factor from the USLE 
-equation, :math:`A_{i}` is the area of the cell (m:math:`^{2}`) and :math:`R_{i}` is the rainfall intensity (here 
+equation, :math:`A_{i}` is the area of the cell (m :math:`^{2}`) and :math:`R_{i}` is the rainfall intensity (here 
 in mm min\ :math:`^{-1}`). In wflow_sediment, there are several methods available to estimate the :math:`C` and
 :math:`K` factors from the USLE. They can come from user input maps, for example maps resulting from Panagos & al.’s 
 recent studies for Europe (Panagos et al, 2015) (Ballabio et al, 2016). To get an estimate of the :math:`C` factor 
@@ -130,6 +140,9 @@ diameter. :math:`K` estimation from topsoil composition is estimated with the eq
 .. math::
 
    K_{USLE} = \left\{ 0.2 + 0.3exp\left[-0.0256SAN\frac{(1-SIL)}{100}\right] \right\} \left(\frac{SIL}{CLA+SIL}\right)^{0.3}
+   
+.. math::
+
    * \left(1-\frac{0.25OC}{OC+exp(3.72-2.95OC)}\right) * \left(1-\frac{0.75SN}{SN+exp(-5.51+22.9SN)}\right)
 
 where :math:`CLA`, :math:`SIL`, :math:`SAN` are respectively the clay, silt and sand fractions of the topsoil (%) from SoilGrids,
@@ -142,35 +155,67 @@ can also be estimated from the soil mean geometric diameter using the formulatio
 
 where :math:`D_{g}` is the soil geometric mean diameter (mm) estimated from topsoil clay, silt, sand fraction.
 
-.. csv-table:: Estimation of USLE C factor per Globcover land use type
-    :header: "GlobCover Value",  "Globcover label", ":math:`C_{USLE}`"
-    :widths: 10,80,10
-	:align: center
+Table: Estimation of USLE C factor per Globcover land use type
 
-	"11", "Post-flooding or irrigated croplands (or aquatic)", "0.2"
-	"14", "Rainfed croplands", "0.35"
-	"20", "Mosaic cropland (50-70\%) / vegetation (grassland/shrubland/forest) (20-50\%)", "0.27"
-	"30", "Mosaic vegetation (grassland/shrubland/forest) (50-70\%) / cropland (20-50\%)", "0.25"
-	"40", "Closed to open (>15\%) broadleaved evergreen or semi-deciduous forest (>5m)", "0.0065"
-	"50", "Closed (>40\%) broadleaved deciduous forest (>5m)", "0.001"
-	"60", "Open (15-40\%) broadleaved deciduous forest/woodland (>5m)", "0.01"
-	"70", "Closed (>40\%) needleleaved evergreen forest (>5m)", "0.001"
-	"90", "Open (15-40\%) needleleaved deciduous or evergreen forest (>5m)", "0.01"
-	"100", "Closed to open (>15\%) mixed broadleaved and needleleaved forest (>5m)", "0.02"
-	"110", "Mosaic forest or shrubland (50-70\%) / grassland (20-50\%)", "0.015"
-	"120", "Mosaic grassland (50-70\%) / forest or shrubland (20-50\%)", "0.03"
-	"130", "Closed to open (>15\%) (broadleaved or needleleaved, evergreen or deciduous) shrubland (<5m)", "0.035"
-	"140", "Closed to open (>15\%) herbaceous vegetation (grassland, savannas or lichens/mosses)", "0.05"
-	"150", "Sparse (<15\%) vegetation", "0.35"
-	"160", "Closed to open (>15\%) broadleaved forest regularly flooded (semi-permanently or temporarily) - Fresh or brackish water", "0.001"
-	"170", "Closed (>40\%) broadleaved forest or shrubland permanently flooded - Saline or brackish water", "0.0005"
-	"180", "Closed to open (>15\%) grassland or woody vegetation on regularly flooded or waterlogged soil - Fresh, brackish or saline water", "0.04"
-	"190", "Artificial surfaces and associated areas (Urban areas >50\%)", "0.0"
-	"200", "Bare areas", "0.0"
-	"210", "Water bodies", "0.0"
-	"220", "Permanent snow and ice", "0.0"
-	"230", "No data (burnt areas, clouds,…)", "0.0"
-	
++-----------------+------------------------------------------------------------------------+------------------+
+| GlobCover Value | Globcover label                                                        | :math:`C_{USLE}` |
++=================+========================================================================+==================+
+|             11  | Post-flooding or irrigated croplands (or aquatic)                      | 0.2              |
++-----------------+------------------------------------------------------------------------+------------------+
+|             14  | Rainfed croplands                                                      | 0.35             |
++-----------------+------------------------------------------------------------------------+------------------+
+|             20  | Mosaic cropland (50-70\%) /                                            | 0.27             |
+|                 | vegetation (grassland/shrubland/forest) (20-50\%)                      |                  |
++-----------------+------------------------------------------------------------------------+------------------+
+|             30  | Mosaic vegetation (grassland/shrubland/forest)                         | 0.25             |
+|                 | (50-70\%) / cropland (20-50\%)                                         |                  |
++-----------------+------------------------------------------------------------------------+------------------+
+|             40  | Closed to open (>15\%) broadleaved evergreen or                        | 0.0065           |
+|                 | semi-deciduous forest (>5m)                                            |                  |
++-----------------+------------------------------------------------------------------------+------------------+
+|             50  | Closed (>40\%) broadleaved deciduous forest (>5m)                      | 0.001            |
++-----------------+------------------------------------------------------------------------+------------------+
+|             60  | Open (15-40\%) broadleaved deciduous forest/woodland (>5m)             | 0.01             |
++-----------------+------------------------------------------------------------------------+------------------+
+|             70  | Closed (>40\%) needleleaved evergreen forest (>5m)                     | 0.001            |
++-----------------+------------------------------------------------------------------------+------------------+
+|             90  | Open (15-40\%) needleleaved deciduous or evergreen forest (>5m)        | 0.01             |
++-----------------+------------------------------------------------------------------------+------------------+
+|            100  | Closed to open (>15\%) mixed broadleaved and needleleaved forest (>5m) | 0.02             |
++-----------------+------------------------------------------------------------------------+------------------+
+|            110  | Mosaic forest or shrubland (50-70\%) / grassland (20-50\%)             | 0.015            |
++-----------------+------------------------------------------------------------------------+------------------+
+|            120  | Mosaic grassland (50-70\%) / forest or shrubland (20-50\%)             | 0.03             |
++-----------------+------------------------------------------------------------------------+------------------+
+|            130  | Closed to open (>15\%) (broadleaved or needleleaved,                   | 0.035            |
+|                 | evergreen or deciduous) shrubland (<5m)                                |                  |
++-----------------+------------------------------------------------------------------------+------------------+
+|            140  | Closed to open (>15\%) herbaceous vegetation                           | 0.05             |
+|                 | (grassland, savannas or lichens/mosses)                                |                  |
++-----------------+------------------------------------------------------------------------+------------------+
+|            150  | Sparse (<15\%) vegetation                                              | 0.35             |
++-----------------+------------------------------------------------------------------------+------------------+
+|            160  | Closed to open (>15\%) broadleaved forest regularly flooded            | 0.001            |
+|                 | (semi-permanently or temporarily) - Fresh or brackish water            |                  |
++-----------------+------------------------------------------------------------------------+------------------+
+|            170  | Closed (>40\%) broadleaved forest or shrubland permanently flooded -   | 0.0005           |
+|                 | Saline or brackish water                                               |                  |
++-----------------+------------------------------------------------------------------------+------------------+
+|            180  | Closed to open (>15\%) grassland or woody vegetation on regularly      | 0.04             |
+|                 | flooded or waterlogged soil - Fresh, brackish or saline water          |                  |
++-----------------+------------------------------------------------------------------------+------------------+
+|            190  | Artificial surfaces and associated areas (Urban areas >50\%)           | 0.0              |
++-----------------+------------------------------------------------------------------------+------------------+
+|            200  | Bare areas                                                             | 0.0              |
++-----------------+------------------------------------------------------------------------+------------------+
+|            210  | Water bodies                                                           | 0.0              |
++-----------------+------------------------------------------------------------------------+------------------+
+|            220  | Permanent snow and ice                                                 | 0.0              |
++-----------------+------------------------------------------------------------------------+------------------+
+|            230  | No data (burnt areas, clouds,…)                                        | 0.0              |
++-----------------+------------------------------------------------------------------------+------------------+
+
+
 
 Overland flow erosion
 `````````````````````
@@ -185,8 +230,8 @@ by overland flow is modelled as in ANSWERS with (Beasley et al, 1991):
 
 where :math:`D_{F}` is soil detachment by flow (kg min\ :math:`^{-1}`), :math:`C_{USLE}` and 
 :math:`K_{USLE}` are the USLE cover and soil erodibility factors, :math:`A_{i}` is the cell area 
-(m:math:`^{2}`), :math:`S` is the slope gradient and :math:`q` is the overland flow rate per unit 
-width (m:math:`^{2}` min\ :math:`^{-1}`). The USLE :math:`C` and :math:`K` factors can be 
+(m\ :math:`^{2}`), :math:`S` is the slope gradient and :math:`q` is the overland flow rate per unit 
+width (m\ :math:`^{2}` min\ :math:`^{-1}`). The USLE :math:`C` and :math:`K` factors can be 
 estimated with the same methods as for rainfall erosion and here the slope gradient is obtained 
 from the sinus rather than the tangent of the slope angle.	
 
@@ -203,15 +248,15 @@ particle differentiation  (Govers equation can still be used if wflow_sediment i
 model inland processes with no particle differentiation). For land cells, wflow_sediment assumes
 that erosion can mobilize 5 classes of sediment:
 
--  Clay (mean diameter of 2 :math:`\mu`m)
+-  Clay (mean diameter of 2 :math:`\mu` m)
 
--  Silt (mean diameter of 10 :math:`\mu`m)
+-  Silt (mean diameter of 10 :math:`\mu` m)
 
--  Sand (mean diameter of 200 :math:`\mu`m)
+-  Sand (mean diameter of 200 :math:`\mu` m)
 
--  Small aggregates (mean diameter of 30 :math:`\mu`m)
+-  Small aggregates (mean diameter of 30 :math:`\mu` m)
 
--  Large aggregates (mean diameter of 500 :math:`\mu`m).
+-  Large aggregates (mean diameter of 500 :math:`\mu` m).
 
 To deduce the amount of small and large aggregates from topsoil clay, silt and sand contents, 
 the following equations from the SWAT model are used (Neitsch et al, 2011):
@@ -222,11 +267,9 @@ the following equations from the SWAT model are used (Neitsch et al, 2011):
 
 .. math:: PCL = 0.20CLA
 
-.. math::
-
-   SAG = 2.0CLA for CLA < 0.25 
-       = 0.28(CLA-0.25)+0.5 for  0.25 \leq CLA \leq 0.5
-       = 0.57 for CLA > 0.5
+.. math:: SAG = 2.0CLA for CLA < 0.25 
+.. math:: SAG = 0.28(CLA-0.25)+0.5 for  0.25 \leq CLA \leq 0.5
+.. math:: SAG = 0.57 for CLA > 0.5
 
 .. math:: LAG = 1 - PSA - PSI - PCL - SAG
 
@@ -379,20 +422,20 @@ river channel). Available transport capacity equations are:
 
    .. math::
 
-       log\left(C_{ppm}\right) = 5.435-0.286log\frac{\omega_{s,50}D_{50}}{\nu}-0.457log\frac{u_{*}}{\omega_{s,50}} \\
+       log\left(C_{ppm}\right) = 5.435 - 0.286log\frac{\omega_{s,50}D_{50}}{\nu}-0.457log\frac{u_{*}}{\omega_{s,50}} \\
        +\left(1.799-0.409log\frac{\omega_{s,50}D_{50}}{\nu}-0.314log\frac{u_{*}}{\omega_{s,50}}\right)log\left(\frac{uS}{\omega_{s,50}}-\frac{u_{cr}S}{\omega_{s,50}}\right)
 
    And the gravel equation (:math:`2 \leq D_{50} < 10 mm`) is:
 
    .. math::
 
-       log\left(C_{ppm}\right) = 6.681-0.633log\frac{\omega_{s,50}D_{50}}{\nu}-4.816log\frac{u_{*}}{\omega_{s,50}} \\
+       log\left(C_{ppm}\right) = 6.681 - 0.633log\frac{\omega_{s,50}D_{50}}{\nu}-4.816log\frac{u_{*}}{\omega_{s,50}} \\
        +\left(2.784-0.305log\frac{\omega_{s,50}D_{50}}{\nu}-0.282log\frac{u_{*}}{\omega_{s,50}}\right)log\left(\frac{uS}{\omega_{s,50}}-\frac{u_{cr}S}{\omega_{s,50}}\right)
 
    where :math:`C_{ppm}` is sediment concentration in parts per million by
    weight, :math:`\omega_{s,50}` is the settling velocity of a particle
    with the median riverbed diameter estimated with Stokes (m/s),
-   :math:`\nu` is the kinematic viscosity of the fluid (m:math:`^{2}`/s),
+   :math:`\nu` is the kinematic viscosity of the fluid (m\ :math:`^{2}`/s),
    :math:`u_{*}` is the shear velocity (:math:`\sqrt{gR_{H}S}` in m/s with
    :math:`R_{H}` the hydraulic radius of the river) and :math:`u_{cr}` is
    the critical velocity (m/s, equation can be found in Hessel, 2007).
@@ -441,12 +484,12 @@ bank is prone to erosion, they are calculated from the equations(Neitsch et al, 
 
 where :math:`E_{R}` is the potential bed/bank erosion rates (tons),
 :math:`k_{d}` is the erodibility of the bed/bank material
-(cm:math:`^{3}` N\ :math:`^{-1}` s\ :math:`^{-1}`), :math:`\tau_{e}` is
+(cm\ :math:`^{3}` N\ :math:`^{-1}` s\ :math:`^{-1}`), :math:`\tau_{e}` is
 the effective shear stress from the flow on the bed/bank
-(N/m:math:`^{2}`), :math:`\tau_{cr}` is the critical shear stress for
-erosion to happen (N/m:math:`^{2}`), :math:`L`, :math:`W` and :math:`h`
+(N/m\ :math:`^{2}`), :math:`\tau_{cr}` is the critical shear stress for
+erosion to happen (N/m\ :math:`^{2}`), :math:`L`, :math:`W` and :math:`h`
 are the channel length, width and water height (m), :math:`\rho_{b}` is
-the bulk density of the bed/bank of the river (g/cm:math:`^{3}`) and
+the bulk density of the bed/bank of the river (g/cm\ :math:`^{3}`) and
 :math:`\Delta t` is the model timestep (s).
 
 In wflow_sediment, the erodibility of the bed/bank are approximated
@@ -492,15 +535,19 @@ respectively 1.5 and 1.4 g/cm\ :math:`^{3}`.
    "Sparse trees", "5.40"
    "Dense trees", "19.20"
  
-Composition of the river bed/bank depending on the median diameter (Neitsch et al, 2011) 
+Table : Composition of the river bed/bank depending on the median diameter (Neitsch et al, 2011) 
+
 +--------------------+--------------+-------+----------+---------------+
 |Sediment Fraction   | :math:`d_{50}` (:math:`\mu`\ m)                 |
 +                    +--------------+-------+----------+---------------+               
 |                    |:math:`\leq` 5|5 to 50|50 to 2000|:math:`>`\ 2000|
 +====================+==============+=======+==========+===============+
 |Sand                | 0.15         | 0.15  |  0.65    |  0.15         |
++--------------------+--------------+-------+----------+---------------+
 |Silt                | 0.15         | 0.65  | 0.15     | 0.15          |
++--------------------+--------------+-------+----------+---------------+
 |Clay                | 0.65         | 0.15  | 0.15     | 0.05          |
++--------------------+--------------+-------+----------+---------------+
 |Gravel              | 0.05         | 0.05  | 0.05     | 0.65          |
 +--------------------+--------------+-------+----------+---------------+
 
@@ -580,7 +627,8 @@ A mass balance is then used to calculate the amount of sediment
 remaining in the cell at the end of the timestep
 :math:`(sed_{riv})_{t}`:
 
-.. math:: (sed_{riv})_{t} = (sed_{riv})_{t-1} + (sed_{land})_{t} + upstream\left[(sed_{out})_{t-1}\right] + (sed_{erod})_{t} - (sed_{dep})_{t} - (sed_{out})_{t}
+.. math:: (sed_{riv})_{t} = (sed_{riv})_{t-1} + (sed_{land})_{t} + upstream\left[(sed_{out})_{t-1}\right] \\
+ + (sed_{erod})_{t} - (sed_{dep})_{t} - (sed_{out})_{t}
 
 Finally, the different processes happening for a land cell in the river
 part of wflow_sediment are summarized in the figure below:
@@ -612,8 +660,8 @@ where :math:`TE` is the trapping efficiency of the lake/reservoir (or
 the fraction of particles trapped), :math:`\omega_{s}` is the particle
 velocity from Stokes (m/s), :math:`u_{cr,res}` is the reservoir’s
 critical settling velocity (m/s) which is equal to the reservoir’s
-outflow :math:`Q_{out,res}` (m:math:`^{3}`/s) divided by the reservoir’s
-surface area :math:`A_{res}` (m:math:`^{2}`).
+outflow :math:`Q_{out,res}` (m\ :math:`^{3}`/s) divided by the reservoir’s
+surface area :math:`A_{res}` (m\ :math:`^{2}`).
 
 
 Configuration
@@ -687,12 +735,14 @@ Setting the ini file
 As for wflow\_sbm, the setting up of the wflow\_sediment model is also done via an ini 
 file and its different sections. A complete example is given in the wflow examples folder. 
 The main sections and options needed are:
+
 -  **inputmapstacks**: Links to the dynamic outputs of the wflow_sbm run
    either stored as maps in the outmaps folder of the sbm run or in the
    netcdf file. Dynamic data needed are Precipitation, SurfaceRunoff,
    WaterLevel and Interception.
    
-::	
+::
+	
 	[inputmapstacks]
 	# Outputs from wflow_sbm
 	Precipitation		= /inmaps/P
@@ -732,6 +782,7 @@ The main sections and options needed are:
    Bagnold, 3 for Kodatie, 4 for Yang and 5 for Molinas and Wu).
    
 ::
+
 	# Model parameters and settings
 	[model]
 	modeltype= sediment
@@ -758,7 +809,6 @@ The main sections and options needed are:
 	#1=Engelund and Hansen ; 2=Bagnold ; 3=Kodatie ; 4=Yang ; 5=Molinas and Wu
 	rivtransportmethod = 2
 	#sCatch = 0
-
 	#Model maps from wflow_sbm
 	wflow_dem = staticmaps/wflow_dem.map
 	wflow_landuse = staticmaps/wflow_landuse.map
@@ -770,12 +820,10 @@ The main sections and options needed are:
 	wflow_riverwidth = staticmaps/wflow_riverwidth.map
 	wflow_dcl = staticmaps/DCL.map
 	wflow_streamorder = staticmaps/wflow_streamorder.map
-
 	#Additional model maps for wflow_sediment
 	wflow_clay = staticmaps/percent_clay.map
 	wflow_silt = staticmaps/percent_silt.map
 	wflow_oc = staticmaps/percent_oc.map
-
 	wflow_canopyheight = staticmaps/canopy_height.map   
 
 -  **layout**: Specifies if the cell size is given in lat-lon
@@ -785,6 +833,7 @@ The main sections and options needed are:
    dynamic data to save from the wflow_sediment run. These are:
 
 ::
+
 	##### Output grids #####
 	[outputmaps]
 	#Gross precipitation [mm] (input)
@@ -848,8 +897,7 @@ command line requires:
 -  -c option stating the link to the wflow_sediment ini file.
 
 
-Running the model
-`````````````````
+
 As in wflow_sbm, the outputs of the wflow_sediment model can both be
 dynamic netcdf/pcraster maps data, static data, or dynamic data for
 points/areas of interest. The main outputs variables are soil loss by
@@ -876,107 +924,118 @@ least 6 months depending on the size of the model).
 
 References
 ----------
-..	K.C. Abbaspour, J. Yang, I. Maximov, R. Siber, K. Bogner, J. Mieleitner, J.
+
+-	K.C. Abbaspour, J. Yang, I. Maximov, R. Siber, K. Bogner, J. Mieleitner, J.
 	Zobrist, and R.Srinivasan. Modelling hydrology and water quality in the pre-alpine/alpine Thur
 	watershed using SWAT. Journal of Hydrology, 333(2-4):413-430, 2007. 10.1016/j.jhydrol.2006.09.014
   
-..	C. Ballabio, P. Panagos, and L. Monatanarella. Mapping topsoil physical properties at European
+-	C. Ballabio, P. Panagos, and L. Monatanarella. Mapping topsoil physical properties at European
 	scale using the LUCAS database. Geoderma, 261:110-123, 2016. 10.1016/j.geoderma.2015.07.006
   
-..	D.B Beasley and L.F Huggins. ANSWERS - Users Manual. Technical report, EPA, 1991.
+-	D.B Beasley and L.F Huggins. ANSWERS - Users Manual. Technical report, EPA, 1991.
 
-..	P. Borrelli, M. Marker, P. Panagos, and B. Schutt. Modeling soil erosion and river
+-	P. Borrelli, M. Marker, P. Panagos, and B. Schutt. Modeling soil erosion and river
 	sediment yield for an intermountain drainage basin of the Central Apennines, Italy. Catena, 114:45-58,
 	2014. 10.1016/j.catena.2013.10.007
 	  
-..	C. Bosco, D. De Rigo, O. Dewitte, J. Poesen, and P. Panagos. Modelling soil erosion at European scale:
+-	C. Bosco, D. De Rigo, O. Dewitte, J. Poesen, and P. Panagos. Modelling soil erosion at European scale:
 	Towards harmonization and reproducibility. Natural Hazards and Earth System Sciences, 15(2):225-245,
 	2015. 10.5194/nhess-15-225-2015
 	  
-..	C.J Brandt. Simulation of the size distribution and erosivity of raindrops and throughfall drops. Earth
+-	C.J Brandt. Simulation of the size distribution and erosivity of raindrops and throughfall drops. Earth
 	Surface Processes and Landforms, 15(8):687-698, dec 1990.
 	  
-..	K. Chadli. Estimation of soil loss using RUSLE model for Sebou watershed (Morocco). Modeling Earth
+-	K. Chadli. Estimation of soil loss using RUSLE model for Sebou watershed (Morocco). Modeling Earth
 	Systems and Environment, 2(2):51, 2016. 10.1007/s40808-016-0105-y
 	  
-..	F. Engelund and E. Hansen. A monograph on sediment transport in alluvial streams. Technical University
+-	F. Engelund and E. Hansen. A monograph on sediment transport in alluvial streams. Technical University
 	of Denmark 0stervoldgade 10, Copenhagen K., 1967.
 	 
-..	G R Foster. Modeling the erosion process. Hydrologic modeling of small watersheds, pages 295-380, 1982.
+-	G R Foster. Modeling the erosion process. Hydrologic modeling of small watersheds, pages 295-380, 1982.
 
-..	A. Gericke. Soil loss estimation and empirical relationships for sediment delivery ratios of European
+-	A. Gericke. Soil loss estimation and empirical relationships for sediment delivery ratios of European
 	river catchments. International Journal of River Basin Management, 2015. 10.1080/15715124.2014.1003302
 	  
-..	G. Govers. Empirical relationships for the transport capacity of overland 
+-	G. Govers. Empirical relationships for the transport capacity of overland 
 	flow. IAHS Publication, (January 1990):45-63 ST, 1990.
 	  
-..	G.J Hanson and A Simon. Erodibility of cohesive streambeds in the loess area of the midwestern USA.
+-	G.J Hanson and A Simon. Erodibility of cohesive streambeds in the loess area of the midwestern USA.
 	Hydrological Processes, 15(May 1999):23-38, 2001.
 	 
-..	T. Hengl, J. Mendes De Jesus, G.B.M. Heuvelink, M. Ruiperez Gonzalez, M.
+-	T. Hengl, J. Mendes De Jesus, G.B.M. Heuvelink, M. Ruiperez Gonzalez, M.
 	Kilibarda, A. Blagotic, W. Shangguan, M. N. Wright, X. Geng, B. Bauer-
 	Marschallinger, M.A. Guevara, R. Vargas, R.A. MacMillan, N.H. Batjes, J.G.B.
 	Leenaars, E. Ribeiro, I. Wheeler, S. Mantel, and B. Kempen. SoilGrids250m: Global gridded
 	soil information based on machine learning. PLoS ONE, 12(2), 2017. 10.1371/journal.pone.0169748
 	  
-..	R Hessel and V Jetten. Suitability of transport equations in modelling soil erosion for a small Loess
+-	R Hessel and V Jetten. Suitability of transport equations in modelling soil erosion for a small Loess
 	Plateau catchment. Engineering Geology, 91(1):56-71, 2007. 10.1016/j.enggeo.2006.12.013
 	  
-..	J.P Julian, and R. Torres. Hydraulic erosion of cohesive riverbanks. Geomorphology, 76:193-206,
+-	J.P Julian, and R. Torres. Hydraulic erosion of cohesive riverbanks. Geomorphology, 76:193-206,
 	2006. 10.1016/j.geomorph.2005.11.003
 	  
-..	D.W. Knight, J.D. Demetriou, and M.E. Hamed. Boundary Shear in Smooth Rectangular
+-	D.W. Knight, J.D. Demetriou, and M.E. Hamed. Boundary Shear in Smooth Rectangular
 	Channels. J. Hydraul. Eng., 110(4):405-422, 1984. 10.1061/(ASCE)0733-9429(1987)113:1(120)
 	  
-..	L.D.K. Mansoor, M.D. Matlock, E.C. Cummings, and L.L. Nalley. Quantifying and mapping
+-	L.D.K. Mansoor, M.D. Matlock, E.C. Cummings, and L.L. Nalley. Quantifying and mapping
 	multiple ecosystem services change in West Africa. Agriculture, Ecosystems and Environment, 165:6-18,
 	2013. 10.1016/j.agee.2012.12.001
 	  
-..	Q Morgan, J.N Smith, R.E Govers, G Poesen, J.W.A Auerswald, K Chisci, G Torri, D Styczen,
+-	Q Morgan, J.N Smith, R.E Govers, G Poesen, J.W.A Auerswald, K Chisci, G Torri, D Styczen,
 	and M E Folly. The European soil erosion model (EUROSEM): documentation and user guide. Technical
 	report, 1998.
 	  
-..	S.L Neitsch, J.G Arnold, J.R Kiniry, and J.R Williams. SWAT Theoretical Documentation Version 2009.
+-	S.L Neitsch, J.G Arnold, J.R Kiniry, and J.R Williams. SWAT Theoretical Documentation Version 2009.
 	Texas Water Resources Institute, pages 1-647, 2011. 10.1016/j.scitotenv.2015.11.063
 	  
-..	C. Oeurng, S. Sauvage, and J.M. Sanchez-Perez. Assessment of hydrology, sediment
+-	C. Oeurng, S. Sauvage, and J.M. Sanchez-Perez. Assessment of hydrology, sediment
 	and particulate organic carbon yield in a large agricultural catchment using the SWAT model. Journal of
 	Hydrology, 401:145-153, 2011. 10.1016/j.hydrol.2011.02.017
 	  
-..	P. Panagos, P. Borrelli, K. Meusburger, C. Alewell, E. Lugato, and L.
+-	P. Panagos, P. Borrelli, K. Meusburger, C. Alewell, E. Lugato, and L.
 	Montanarella. Estimating the soil erosion cover-management factor at the European scale. Land Use
 	Policy, 48:38-50, 2015. 10.1016/j.landusepol.2015.05.021
 	  
-..	K Renard, Gr Foster, Ga Weesies, Dk McCool, and Dc Yoder. Predicting soil erosion by water: a guide to
+-	K Renard, Gr Foster, Ga Weesies, Dk McCool, and Dc Yoder. Predicting soil erosion by water: a guide to
 	conservation planning with the Revised Universal Soil Loss Equation (RUSLE). Washington, 1997.
 	  
-..	M. Simard, N.Pinto, J. B. Fisher, and A. Baccini. Mapping forest canopy height
+-	M. Simard, N.Pinto, J. B. Fisher, and A. Baccini. Mapping forest canopy height
 	globally with spaceborne lidar. Journal of Geophysical Research: Biogeosciences, 2011. 10.1029/2011JG001708
 	  
-..	A. Simon, N. Pollen-Bankhead, and R.E Thomas. Development and application of a
+-	A. Simon, N. Pollen-Bankhead, and R.E Thomas. Development and application of a
 	deterministic bank stability and toe erosion model for stream restoration. Geophysical Monograph Series,
 	194:453-474, 2011. 10.1029/2010GM001006
 	  
-..	D. Torri, M. Sfalanga, and M. Del Sette. Splash detachment: Runoff depth and soil cohesion. Catena,
+-	D. Torri, M. Sfalanga, and M. Del Sette. Splash detachment: Runoff depth and soil cohesion. Catena,
 	14(1-3):149-155, 1987. 10.1016/S0341-8162(87)80013-9
 	  
-..	J. de Vente, J. Poesen, G. Govers, and C. Boix-Fayos. The implications of data selection for
+-	J. de Vente, J. Poesen, G. Govers, and C. Boix-Fayos. The implications of data selection for
 	regional erosion and sediment yield modelling. Earth Surface Processes and Landforms, 34(15):1994-2007,
 	2009. 10.1002/esp.1884
 	  
-..	G. Verstraeten and J. Poesen. Estimating trap efficiency of small reservoirs and ponds: methods and
+-	G. Verstraeten and J. Poesen. Estimating trap efficiency of small reservoirs and ponds: methods and
 	implications for the assessment of sediment yield. Progress in Physical Geography, 24(2):219-251, 2000. 10.1177/030913330002400204
 	  
-..	O. Vigiak, A. Malago, F. Bouraoui, M. Vanmaercke, and J. Poesen. Adapting SWAT
+-	O. Vigiak, A. Malago, F. Bouraoui, M. Vanmaercke, and J. Poesen. Adapting SWAT
 	hillslope erosion model to predict sediment concentrations and yields in large Basins. Science of the Total
 	Environment, 538:855-875, 2015. 10.1016/j.scitotenv.2015.08.095
 	  
-..	O. Vigiak, A. Malago, F. Bouraoui, M. Vanmaercke, F. Obreja, J. Poesen, H.
+-	O. Vigiak, A. Malago, F. Bouraoui, M. Vanmaercke, F. Obreja, J. Poesen, H.
 	Habersack, J. Feher, and S. Groselj. Modelling sediment fluxes in the Danube River Basin with
 	SWAT. Science of the Total Environment, 2017. 10.1016/j.scitotenv.2017.04.236
 	  
-..	J.R. Williams, K.G. Renard, and P.T. Dyke. EPIC A new method for assessing erosion's effect on soil
+-	J.R. Williams, K.G. Renard, and P.T. Dyke. EPIC A new method for assessing erosion's effect on soil
 	productivity. Journal of Soil and Water Conservation, 38(5):381-383, sep 1983.
 	  
-..	D. Yang, S. Kanae, T. Oki, T. Koike, and K. Musiake. Global potential soil erosion
+-	D. Yang, S. Kanae, T. Oki, T. Koike, and K. Musiake. Global potential soil erosion
 	with reference to land use and climate changes. Hydrological Processes, 17(14):2913-2928, 2003. 10.1002/hyp.1441
+
+wflow_sediment module documentation
+-----------------------------------
+
+.. automodule:: wflow_sediment
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+    .. autoattribute:: usage

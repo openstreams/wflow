@@ -577,64 +577,6 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, soilInfReducti
     return ssf_new[:-1], qo_new[:-1], dyn, layer
 
 
-def SnowPackHBV(Snow, SnowWater, Precipitation, Temperature, TTI, TT, TTM, Cfmax, WHC):
-    """
-    HBV Type snowpack modelling using a Temperature degree factor. All correction
-    factors (RFCF and SFCF) are set to 1. The refreezing efficiency factor is set to 0.05.
-
-    :param Snow:
-    :param SnowWater:
-    :param Precipitation:
-    :param Temperature:
-    :param TTI:
-    :param TT:
-    :param TTM:
-    :param Cfmax:
-    :param WHC:
-    :return: Snow,SnowMelt,Precipitation
-    """
-
-    RFCF = 1.0  # correction factor for rainfall
-    CFR = 0.05000  # refreeing efficiency constant in refreezing of freewater in snow
-    SFCF = 1.0  # correction factor for snowfall
-
-    RainFrac = pcr.ifthenelse(
-        1.0 * TTI == 0.0,
-        pcr.ifthenelse(Temperature <= TT, pcr.scalar(0.0), pcr.scalar(1.0)),
-        pcr.min((Temperature - (TT - TTI / 2)) / TTI, pcr.scalar(1.0)),
-    )
-    RainFrac = pcr.max(
-        RainFrac, pcr.scalar(0.0)
-    )  # fraction of precipitation which falls as rain
-    SnowFrac = 1 - RainFrac  # fraction of precipitation which falls as snow
-    Precipitation = (
-        SFCF * SnowFrac * Precipitation + RFCF * RainFrac * Precipitation
-    )  # different correction for rainfall and snowfall
-
-    SnowFall = SnowFrac * Precipitation  # snowfall depth
-    RainFall = RainFrac * Precipitation  # rainfall depth
-    PotSnowMelt = pcr.ifthenelse(
-        Temperature > TTM, Cfmax * (Temperature - TTM), pcr.scalar(0.0)
-    )  # Potential snow melt, based on temperature
-    PotRefreezing = pcr.ifthenelse(
-        Temperature < TTM, Cfmax * CFR * (TTM - Temperature), 0.0
-    )  # Potential refreezing, based on temperature
-    Refreezing = pcr.ifthenelse(
-        Temperature < TTM, pcr.min(PotRefreezing, SnowWater), 0.0
-    )  # actual refreezing
-    # No landuse correction here
-    SnowMelt = pcr.min(PotSnowMelt, Snow)  # actual snow melt
-    Snow = Snow + SnowFall + Refreezing - SnowMelt  # dry snow content
-    SnowWater = SnowWater - Refreezing  # free water content in snow
-    MaxSnowWater = Snow * WHC  # Max water in the snow
-    SnowWater = (
-        SnowWater + SnowMelt + RainFall
-    )  # Add all water and potentially supersaturate the snowpack
-    RainFall = pcr.max(SnowWater - MaxSnowWater, 0.0)  # rain + surpluss snowwater
-    SnowWater = SnowWater - RainFall
-
-    return Snow, SnowWater, SnowMelt, RainFall, SnowFall
-
 
 class WflowModel(pcraster.framework.DynamicModel):
     """

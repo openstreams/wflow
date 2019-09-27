@@ -20,6 +20,9 @@ wflow_funcs -  hydrological functions library
 In addition this library contain a number of hydrological functions
 that may be used within the wflow models
 
+It contains both the kinematic wave, interception, snow/glaciers and
+reservoirs/lakes modules.
+
 """
 
 from numba import jit
@@ -82,6 +85,11 @@ def set_dd(ldd, _ldd_us=_ldd_us, pit_value=_pits):
             break
         idx_ds = np.array(idx_next, dtype=np.int64)
     return nodes[::-1], nodes_up[::-1]
+
+
+###############################################################################
+# Kinematic wave modules                                                      #
+###############################################################################
 
 def estimate_iterations_kin_wave(Q, Beta, alpha, timestepsecs, dx, mv):
     
@@ -236,6 +244,10 @@ def kinematic_wave_ssf(ssf_in, ssf_old, zi_old, r, Ks_hor, Ks, slope, neff, f, D
         
         return ssf_n, zi, exfilt   
 
+
+###############################################################################
+# Rainfall interception modules                                               #
+###############################################################################
 
 def rainfall_interception_hbv(Rainfall, PotEvaporation, Cmax, InterceptionStorage):
     """
@@ -419,3 +431,474 @@ def propagate_downstream(rnodes, rnodes_up, material):
                 v += material[idx_us]
             material[idx_ds] += v
     return material.reshape(shape)
+
+
+
+###############################################################################
+# Snow and glaciers modules                                                   #
+###############################################################################
+
+def SnowPackHBV(Snow, SnowWater, Precipitation, Temperature, TTI, TT, TTM, Cfmax, WHC):
+    """
+    HBV Type snowpack modelling using a Temperature degree factor. All correction
+    factors (RFCF and SFCF) are set to 1. The refreezing efficiency factor is set to 0.05.
+
+    :param Snow:
+    :param SnowWater:
+    :param Precipitation:
+    :param Temperature:
+    :param TTI:
+    :param TT:
+    :param TTM:
+    :param Cfmax:
+    :param WHC:
+    :return: Snow,SnowMelt,Precipitation
+    """
+
+    RFCF = 1.0  # correction factor for rainfall
+    CFR = 0.05000  # refreeing efficiency constant in refreezing of freewater in snow
+    SFCF = 1.0  # correction factor for snowfall
+
+    RainFrac = pcr.ifthenelse(
+        1.0 * TTI == 0.0,
+        pcr.ifthenelse(Temperature <= TT, pcr.scalar(0.0), pcr.scalar(1.0)),
+        pcr.min((Temperature - (TT - TTI / 2)) / TTI, pcr.scalar(1.0)),
+    )
+    RainFrac = pcr.max(
+        RainFrac, pcr.scalar(0.0)
+    )  # fraction of precipitation which falls as rain
+    SnowFrac = 1 - RainFrac  # fraction of precipitation which falls as snow
+    Precipitation = (
+        SFCF * SnowFrac * Precipitation + RFCF * RainFrac * Precipitation
+    )  # different correction for rainfall and snowfall
+
+    SnowFall = SnowFrac * Precipitation  # snowfall depth
+    RainFall = RainFrac * Precipitation  # rainfall depth
+    PotSnowMelt = pcr.ifthenelse(
+        Temperature > TTM, Cfmax * (Temperature - TTM), pcr.scalar(0.0)
+    )  # Potential snow melt, based on temperature
+    PotRefreezing = pcr.ifthenelse(
+        Temperature < TTM, Cfmax * CFR * (TTM - Temperature), 0.0
+    )  # Potential refreezing, based on temperature
+    Refreezing = pcr.ifthenelse(
+        Temperature < TTM, pcr.min(PotRefreezing, SnowWater), 0.0
+    )  # actual refreezing
+    # No landuse correction here
+    SnowMelt = pcr.min(PotSnowMelt, Snow)  # actual snow melt
+    Snow = Snow + SnowFall + Refreezing - SnowMelt  # dry snow content
+    SnowWater = SnowWater - Refreezing  # free water content in snow
+    MaxSnowWater = Snow * WHC  # Max water in the snow
+    SnowWater = (
+        SnowWater + SnowMelt + RainFall
+    )  # Add all water and potentially supersaturate the snowpack
+    RainFall = pcr.max(SnowWater - MaxSnowWater, 0.0)  # rain + surpluss snowwater
+    SnowWater = SnowWater - RainFall
+
+    return Snow, SnowWater, SnowMelt, RainFall, SnowFall
+
+
+def glacierHBV(GlacierFrac, 
+                GlacierStore, 
+                Snow, 
+                Temperature, 
+                TT, 
+                Cfmax, 
+                G_SIfrac,
+                timestepsecs,
+                basetimestep):
+    """
+    Run Glacier module and add the snowpack on-top of it.
+    First, a fraction of the snowpack is converted into ice using the HBV-light
+    model (fraction between 0.001-0.005 per day).
+    Glacier melting is modelled using a Temperature degree factor and only
+    occurs if the snow cover < 10 mm.
+
+
+    :ivar GlacierFrac: Fraction of wflow cell covered by glaciers
+    :ivar GlacierStore: Volume of the galcier in the cell in mm w.e.
+    :ivar Snow: Snow pack on top of Glacier
+    :ivar Temperature: Air temperature
+    :ivar TT: Temperature threshold for ice melting
+    :ivar Cfmax: Ice degree-day factor in mm/(°C/day)
+    :ivar G_SIfrac: Fraction of the snow part turned into ice each timestep
+    :ivar timestepsecs: Model timestep in seconds
+    :ivar basetimestep: Model base timestep (86 400 seconds)
+
+    :returns: Snow,Snow2Glacier,GlacierStore,GlacierMelt,
+    """
+    
+    #Fraction of the snow transformed into ice (HBV-light model)
+    Snow2Glacier = G_SIfrac * Snow
+
+    Snow2Glacier = pcr.ifthenelse(
+        GlacierFrac > 0.0, Snow2Glacier, pcr.scalar(0.0)
+    )
+    # Max conversion to 8mm/day
+    Snow2Glacier = (
+        pcr.min(Snow2Glacier, 8.0) * timestepsecs / basetimestep
+    )
+
+    Snow = Snow - (Snow2Glacier * GlacierFrac)
+    GlacierStore = GlacierStore + Snow2Glacier
+
+    PotMelt = pcr.ifthenelse(
+        Temperature > TT, Cfmax * (Temperature - TT), pcr.scalar(0.0)
+    )  # Potential snow melt, based on temperature
+
+    GlacierMelt = pcr.ifthenelse(
+        Snow < 10.0, pcr.min(PotMelt, GlacierStore), pcr.cover(0.0)
+    )  # actual Glacier melt
+    GlacierStore = GlacierStore - GlacierMelt  # dry snow content
+
+    return Snow, Snow2Glacier, GlacierStore, GlacierMelt
+
+
+
+###############################################################################
+# Lake and reservoirmodules                                                   #
+###############################################################################
+    
+def sCurve(X, a=0.0, b=1.0, c=1.0):
+    """
+    sCurve function:
+
+    Input:
+        - X input map
+        - C determines the steepness or "stepwiseness" of the curve.
+          The higher C the sharper the function. A negative C reverses the function.
+        - b determines the amplitude of the curve
+        - a determines the centre level (default = 0)
+
+    Output:
+        - result
+    """
+    try:
+        s = 1.0 / (b + pcr.exp(-c * (X - a)))
+    except:
+        s = 1.0 / (b + pcr.exp(-c * (X - a)))
+    return s
+
+    
+def lookupResRegMatr(ReserVoirLocs, values, hq, JDOY):
+
+    np_res_ids = pcr.pcr2numpy(ReserVoirLocs, 0)
+    npvalues = pcr.pcr2numpy(values, 0)
+    out = np.copy(npvalues) * 0.0
+
+    if len(hq) > 0:
+        for key in hq:
+            value = npvalues[np.where(np_res_ids == key)]
+
+            val = np.interp(value, hq[key][:, 0], hq[key][:, JDOY])
+
+            out[np.where(np_res_ids == key)] = val
+
+    return pcr.numpy2pcr(pcr.Scalar, out, 0)
+
+
+def lookupResFunc(ReserVoirLocs, values, sh, dirLookup):
+
+    np_res_ids = pcr.pcr2numpy(ReserVoirLocs, 0)
+    npvalues = pcr.pcr2numpy(values, 0)
+    out = np.copy(npvalues) * 0.0
+
+    if len(sh) > 0:
+        for key in sh:
+            value = npvalues[np.where(np_res_ids == key)]
+
+            if dirLookup == "0-1":
+                val = np.interp(value, sh[key][:, 0], sh[key][:, 1])
+            if dirLookup == "1-0":
+                val = np.interp(value, sh[key][:, 1], sh[key][:, 0])
+
+            out[np.where(np_res_ids == key)] = val
+
+    return pcr.numpy2pcr(pcr.Scalar, out, 0)
+
+
+def naturalLake(
+    waterlevel,
+    LakeLocs,
+    LinkedLakeLocs,
+    LakeArea,
+    LakeThreshold,
+    LakeStorFunc,
+    LakeOutflowFunc,
+    sh,
+    hq,
+    lake_b,
+    lake_e,
+    inflow,
+    precip,
+    pet,
+    LakeAreasMap,
+    JDOY,
+    timestepsecs=86400,
+):
+    
+    """
+    Run Natural Lake module to compute the new waterlevel and outflow.
+    Solves lake water balance with linearisation and iteration procedure,
+    for any rating and storage curve.
+    For the case where storage curve is S = AH and Q=b(H-Ho)^2, uses the direct
+    solution from the Modified Puls Approach (LISFLOOD).
+
+
+    :ivar waterlevel: water level H in the lake
+    :ivar LakeLocs: location of lake's outlet
+    :ivar LinkedLakeLocs: ID of linked lakes
+    :ivar LakeArea: total lake area
+    :ivar LakeThreshold: water level threshold Ho under which outflow is zero
+    :ivar LakeStorFunc: type of lake storage curve
+                        1: S = AH
+                        2: S = f(H) from lake data and interpolation
+    :ivar LakeOutflowFunc: type of lake rating curve
+                           1: Q = f(H) from lake data and interpolation
+                           2: General Q = b(H - Ho)^e
+                           3: Case of Puls Approach Q = b(H - Ho)^2
+    :ivar sh: data for storage curve
+    :ivar hq: data for rating curve
+    :ivar lake_b: rating curve coefficient
+    :ivar lake_e: rating curve exponent
+    :ivar inflow: inflow to the lake (surface runoff + river discharge + seepage)
+    :ivar precip: precipitation map
+    :ivar pet: PET map
+    :ivar LakeAreasMap: lake extent map (for filtering P and PET)
+    :ivar JDOY: Julian Day of Year to read storage/rating curve from data
+    :ivar timestepsecs: model timestep in seconds
+
+    :returns: waterlevel, outflow, prec_av, pet_av, storage
+    """
+
+    mv = -999.0
+    LakeZeros = LakeArea * 0.0
+    
+    waterlevel_start = waterlevel
+
+    inflow = pcr.ifthen(pcr.boolean(LakeLocs), inflow)
+
+    prec_av = pcr.ifthen(
+        pcr.boolean(LakeLocs), pcr.areaaverage(precip, LakeAreasMap)
+    )
+    pet_av = pcr.ifthen(
+        pcr.boolean(LakeLocs), pcr.areaaverage(pet, LakeAreasMap)
+    )
+    
+    
+    ### Modified Puls Approach (Burek et al., 2013, LISFLOOD) ###
+    #ResOutflowFunc = 3 
+    
+    #Calculate lake factor and SI parameter
+    LakeFactor = pcr.ifthenelse(
+            LakeOutflowFunc == 3,
+            LakeArea / (timestepsecs * (lake_b) ** 0.5),
+            mv
+            )
+    
+    storage_start = pcr.ifthenelse(
+            LakeStorFunc == 1,
+            LakeArea * waterlevel_start,
+            lookupResFunc(LakeLocs, waterlevel_start, sh, "0-1"),
+            )
+
+    SIFactor = pcr.ifthenelse(
+            LakeOutflowFunc == 3,
+            ((storage_start + (prec_av-pet_av)*LakeArea/1000.0) / timestepsecs 
+             + inflow),
+            mv
+            )
+    #Adjust SIFactor for ResThreshold != 0
+    SIFactorAdj = SIFactor - LakeArea * LakeThreshold / timestepsecs
+    
+    #Calculate the new lake outflow/waterlevel/storage
+    outflow = pcr.ifthenelse(
+            LakeOutflowFunc == 3,
+            pcr.ifthenelse(
+                    SIFactorAdj > 0.0,
+                    (-LakeFactor + (LakeFactor**2 + 2*SIFactorAdj) ** 0.5) ** 2,
+                    0.0),
+            LakeZeros
+            )
+    storage = pcr.ifthenelse(
+            LakeOutflowFunc == 3,
+            (SIFactor - outflow) * timestepsecs,
+            LakeZeros
+            )
+    waterlevel = pcr.ifthenelse(
+            LakeOutflowFunc == 3,
+            storage / LakeArea,
+            LakeZeros
+            )
+    
+    ### Linearisation and iteration for specific storage/rating curves ###
+    np_lakeoutflowfunc = pcr.pcr2numpy(LakeOutflowFunc, 0.0)
+    if ((bool(np.isin(1, np.unique(np_lakeoutflowfunc)))) or 
+        (bool(np.isin(2, np.unique(np_lakeoutflowfunc))))):
+        
+        np_lakelocs = pcr.pcr2numpy(LakeLocs, 0.0)
+        np_linkedlakelocs = pcr.pcr2numpy(LinkedLakeLocs, 0.0)
+        waterlevel_loop = waterlevel_start
+    
+        _outflow = []
+        nr_loop = np.max([int(timestepsecs / 21600), 1])
+        for n in range(0, nr_loop):
+            np_waterlevel = pcr.pcr2numpy(waterlevel_loop, np.nan)
+            np_waterlevel_lower = np_waterlevel.copy()
+    
+            for val in np.unique(np_linkedlakelocs):
+                if val > 0:
+                    np_waterlevel_lower[np_linkedlakelocs == val] = np_waterlevel[
+                        np.where(np_lakelocs == val)
+                    ]
+    
+            diff_wl = np_waterlevel - np_waterlevel_lower
+            diff_wl[np.isnan(diff_wl)] = mv
+            np_waterlevel_lower[np.isnan(np_waterlevel_lower)] = mv
+    
+            pcr_diff_wl = pcr.numpy2pcr(pcr.Scalar, diff_wl, mv)
+            pcr_wl_lower = pcr.numpy2pcr(pcr.Scalar, np_waterlevel_lower, mv)
+    
+            storage_start_loop = pcr.ifthenelse(
+                LakeStorFunc == 1,
+                LakeArea * waterlevel_loop,
+                lookupResFunc(LakeLocs, waterlevel_loop, sh, "0-1"),
+            )
+    
+            outflow_loop = pcr.ifthenelse(
+                LakeOutflowFunc == 1,
+                lookupResRegMatr(LakeLocs, waterlevel_loop, hq, JDOY),
+                pcr.ifthenelse(
+                    pcr_diff_wl >= 0,
+                    pcr.max(lake_b * (waterlevel_loop - LakeThreshold) ** lake_e, 0),
+                    pcr.min(-1 * lake_b * (pcr_wl_lower - LakeThreshold) ** lake_e, 0),
+                ),
+            )
+    
+            np_outflow = pcr.pcr2numpy(outflow_loop, np.nan)
+            np_outflow_linked = np_lakelocs * 0.0
+    
+            with np.errstate(invalid="ignore"):
+                if np_outflow[np_outflow < 0] is not None:
+                    np_outflow_linked[
+                        np.in1d(np_lakelocs, np_linkedlakelocs[np_outflow < 0]).reshape(
+                            np_linkedlakelocs.shape
+                        )
+                    ] = np_outflow[np_outflow < 0]
+    
+            outflow_linked = pcr.numpy2pcr(pcr.Scalar, np_outflow_linked, 0.0)
+    
+            fl_nr_loop = float(nr_loop)
+            storage_loop = (
+                storage_start_loop
+                + (inflow * timestepsecs / fl_nr_loop)
+                + (prec_av / fl_nr_loop / 1000.0) * LakeArea
+                - (pet_av / fl_nr_loop / 1000.0) * LakeArea
+                - (pcr.cover(outflow_loop, 0.0) * timestepsecs / fl_nr_loop)
+                + (pcr.cover(outflow_linked, 0.0) * timestepsecs / fl_nr_loop)
+            )
+    
+            waterlevel_loop = pcr.ifthenelse(
+                LakeStorFunc == 1,
+                waterlevel_loop + (storage_loop - storage_start_loop) / LakeArea,
+                lookupResFunc(LakeLocs, storage_loop, sh, "1-0"),
+            )
+    
+            np_outflow_nz = np_outflow * 0.0
+            with np.errstate(invalid="ignore"):
+                np_outflow_nz[np_outflow > 0] = np_outflow[np_outflow > 0]
+            _outflow.append(np_outflow_nz)
+    
+        outflow_av_temp = np.average(_outflow, 0)
+        outflow_av_temp[np.isnan(outflow_av_temp)] = mv
+        outflow_av = pcr.numpy2pcr(pcr.Scalar, outflow_av_temp, mv)
+        
+        #Add the discharge/waterlevel/storage from the loop to the one from puls approach
+        outflow = pcr.ifthenelse(
+                LakeOutflowFunc == 3,
+                outflow,
+                outflow_av
+                )
+        waterlevel = pcr.ifthenelse(
+                LakeOutflowFunc == 3,
+                waterlevel,
+                waterlevel_loop
+                )
+        storage = pcr.ifthenelse(
+                LakeOutflowFunc == 3,
+                storage,
+                storage_loop
+                )
+
+    return waterlevel, outflow, prec_av, pet_av, storage
+
+
+def simplereservoir(
+    storage,
+    inflow,
+    ResArea,
+    maxstorage,
+    target_perc_full,
+    maximum_Q,
+    demand,
+    minimum_full_perc,
+    ReserVoirLocs,
+    precip,
+    pet,
+    ReservoirSimpleAreas,
+    timestepsecs=86400,
+):
+    """
+
+    :param storage: initial storage m^3
+    :param inflow: inflow m^3/s
+    :param maxstorage: maximum storage (above which water is spilled) m^3
+    :param target_perc_full: target fraction full (of max storage) -
+    :param maximum_Q: maximum Q to release m^3/s if below spillway
+    :param demand: water demand (all combined) m^3/s
+    :param minimum_full_perc: target minimum full fraction (of max storage) -
+    :param ReserVoirLocs: map with reservoir locations
+    :param timestepsecs: timestep of the model in seconds (default = 86400)
+    :return: storage (m^3), outflow (m^3/s), PercentageFull (0-1), Release (m^3/sec)
+    """
+
+    inflow = pcr.ifthen(pcr.boolean(ReserVoirLocs), inflow)
+
+    prec_av = pcr.cover(
+        pcr.ifthen(
+            pcr.boolean(ReserVoirLocs), pcr.areaaverage(precip, ReservoirSimpleAreas)
+        ),
+        pcr.scalar(0.0),
+    )
+    pet_av = pcr.cover(
+        pcr.ifthen(
+            pcr.boolean(ReserVoirLocs), pcr.areaaverage(pet, ReservoirSimpleAreas)
+        ),
+        pcr.scalar(0.0),
+    )
+
+    oldstorage = storage
+    storage = (
+        storage
+        + (inflow * timestepsecs)
+        + (prec_av / 1000.0) * ResArea
+        - (pet_av / 1000.0) * ResArea
+    )
+
+    percfull = ((storage + oldstorage) * 0.5) / maxstorage
+    # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
+    fac = sCurve(percfull, a=minimum_full_perc, c=30.0)
+    demandRelease = pcr.min(fac * demand * timestepsecs, storage)
+    storage = storage - demandRelease
+
+    # Re-determine percfull
+    percfull = ((storage + oldstorage) * 0.5) / maxstorage
+
+    wantrel = pcr.max(0.0, storage - (maxstorage * target_perc_full))
+    # Assume extra maximum Q if spilling
+    overflowQ = (percfull - 1.0) * (storage - maxstorage)
+    torelease = pcr.min(wantrel, overflowQ + maximum_Q * timestepsecs)
+    storage = storage - torelease
+    outflow = (torelease + demandRelease) / timestepsecs
+    percfull = storage / maxstorage
+
+    return storage, outflow, percfull, prec_av, pet_av, demandRelease / timestepsecs
