@@ -1,10 +1,9 @@
 ===========================================
-Welcome to wflow's |release| documentation!
+Welcome to wflow's documentation!
 ===========================================
 
 .. note::
 
-      This documentation is for release |release| of wflow
       This documentation was generated |today|
 
       Latest version documentation (development):

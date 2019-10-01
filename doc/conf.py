@@ -75,7 +75,10 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.graphviz",
     "sphinx.ext.doctest",
+    "sphinx.ext.autosectionlabel",
 ]
+
+autosectionlabel_prefix_document = True
 
 todo_include_todos = True
 # Add any paths that contain templates here, relative to this directory.

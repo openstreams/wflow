@@ -41,19 +41,19 @@ In addition, while the kinemative wave equations are solved with a nonlinear sch
 equations are solved through a simple explicit scheme. In summary the following limitations apply:
 
 + Channel flow, and to a lesser degree overland flow, may be unrealistic in terrain that is not steep, 
-  and where pressure forces and inertial momentum are important
+  and where pressure forces and inertial momentum are important.
 
-+ The lateral movement of subsurface flow may be very wrong in terrain that is not steep
++ The lateral movement of subsurface flow may be very wrong in terrain that is not steep.
 
 + The simple numerical solution means that results from a daily timestep model may be different from those
-  with an hourly timestep. This can also cause water budget problems
+  with an hourly timestep.
 
 
 
 Potential and Reference evaporation
 -----------------------------------
 
-The wflow\_sbm model assumes the input to be potential evaporation. In many case the evaporation
+The wflow\_sbm model assumes the input to be potential evaporation. In many cases the evaporation
 will be a reference evaporation for a different land cover. In that case you can use the
 et_reftopot.tbl file to set the mutiplication per landuse to go from the supplied evaporation
 to the potential evaporation for each land cover. By default al is set to 1.0 assuming the evaporation
@@ -63,69 +63,14 @@ to be potential.
 Snow
 ----
 
-Precipitation enters the model via the snow routine. If the air temperature,
-:math:`T_{a}`, is below a user-defined threshold :math:`TT (\approx0^{o}C)`
-precipitation occurs as snowfall, whereas it occurs as rainfall if
-:math:`T_{a}\geq TT`. A another parameter :math:`TTI` defines how precipitation
-can occur partly as rain of snowfall (see the figure below).
-If precipitation occurs as snowfall, it is added to the dry snow component
-within the snow pack. Otherwise it ends up in the free water reservoir,
-which represents the liquid water content of the snow pack. Between
-the two components of the snow pack, interactions take place, either
-through snow melt (if temperatures are above a threshold :math:`TT`) or
-through snow refreezing (if temperatures are below threshold :math:`TT`).
-The respective rates of snow melt and refreezing are:
+Snow modelling is enabled by specifying the following in the ini file:
 
-.. math::
+::
 
-    Q_{m}  =  cfmax(T_{a}-TT)\;\;;T_{a}>TT
+    [model]
+    ModelSnow = 1
 
-    Q_{r}  =  cfmax*cfr(TT-T_{a})\;;T_{a}<TT
-
-
-
-where :math:`Q_{m}` is the rate of snow melt, :math:`Q_{r}` is the rate of snow
-refreezing, and $cfmax$ and $cfr$ are user defined model parameters
-(the melting factor :math:`mm/(^{o}C*day)` and the refreezing factor
-respectively)
-
-.. note::
-
-    The FoCFMAX parameter from the original HBV version is not used. instead
-    the CFMAX is presumed to be for the landuse per pixel. Normally for
-    forested pixels the CFMAX is 0.6 {*} CFMAX
-
-
-The air temperature, :math:`T_{a}`, is related to measured daily average
-temperatures. In the original HBV-concept, elevation differences within
-the catchment are represented through a distribution function (i.e.
-a hypsographic curve) which makes the snow module semi-distributed.
-In the modified version that is applied here, the temperature, :math:`T_{a}`,
-is represented in a fully distributed manner, which means for each
-grid cell the temperature is related to the grid elevation.
-
-The fraction of liquid water in the snow pack (free water) is at most
-equal to a user defined fraction, :math:`WHC`, of the water equivalent
-of the dry snow content. If the liquid water concentration exceeds
-:math:`WHC`, either through snow melt or incoming rainfall, the surpluss
-water becomes available for infiltration into the soil:
-
-.. math::
-
-    Q_{in}=max\{(SW-WHC*SD);\;0.0\}
-
-
-
-where :math:`Q_{in}` is the volume of water added to the soil module, :math:`SW`
-is the free water content of the snow pack and :math:`SD` is the dry snow
-content of the snow pack.
-
-
-.. figure:: _images/hbv-snow.png
-	:width: 600px
-
-	Schematic view of the snow routine
-
+The snow model is described in the wflow_funcs Module :ref:`wflow_funcs:Snow modelling`
 
 The snow model als has an optional (experimental) 'mass-wasting' routine. This transports snow downhill
 using the local drainage network. To use it set the variable MassWasting in the model section to 1.
@@ -143,295 +88,15 @@ using the local drainage network. To use it set the variable MassWasting in the 
 
 Glaciers
 --------
-wflow\_sbm can model glacier processes if the snow model is enabled. Glacier modelling is very close to 
-snow modelling and considers two main processes: glacier build-up from snow turning into firn/ice (using 
-the HBV-light model) and glacier melt (using a temperature degree-day model).
 
-The definition of glacier boundaries and initial volume is defined in two staticmaps. *GlacierFrac* is a map 
-that gives the fraction of each grid cell covered by a glacier as a number between zero and one. *GlacierStore* 
-is a state map that gives the amount of water (in mm w.e.) within the glaciers at each gridcell. Because the 
-glacier store (GlacierStore.map) cannot be initialized by running the model for a couple of years, a default 
-initial state map should be supplied by placing a GlacierStore.map file in the staticmaps directory. These two 
-maps are prepared from available glacier datasets.
-
-First, a fixed fraction of the snowpack on top of the glacier is converted into ice for each timestep and added 
-to the glacier store using the HBV-light model (Seibert et al.,2017). This fraction, defined in the lookup table 
-*G_SIfrac*, typically ranges from 0.001 to 0.006.
-
-Then, when the snowpack on top of the glacier is almost all melted (snow cover < 10 mm), glacier melt is enabled 
-and estimated with a degree-day model. If the air temperature,
-:math:`T_{a}`, is below a certain threshold  :math:`G\_TT (\approx0^{o}C)`
-precipitation occurs as snowfall, whereas it occurs as rainfall if
-:math:`T_{a}\geq G\_TT`.
-
-With this the rate of glacier melt in mm is estimated as:
-
-.. math::
-
-    Q_{m}  =  G\_Cfmax(T_{a}-G\_TT)\;\;;T_{a}>G\_TT
-
-where :math:`Q_{m}` is the rate of glacier melt and :math:`G\_Cfmax` is the melting factor in :math:`mm/(^{o}C*day)`.
-Parameters *G_TT* and *G_Cfmax* are defined in two lookup tables. *G_TT* can be taken as equal to the snow TT parameter.
-Values of the melting factor normally varies from one glacier to another and some values are reported in the literature. 
-*G_Cfmax* can also be estimated by multiplying snow Cfmax by a factor between 1 and 2, to take into account the higher 
-albedo of ice compared to snow. 
-
-
-If snow modeling is enabled, Glacier modelling can also be enabled by including the following four entries in the 
-modelparameters section:
-
-::
-
-    [modelparameters]
-    GlacierFrac=staticmaps/GlacierFrac.map,staticmap,0.0,0
-    G_TT=intbl/G_TT.tbl,tbl,0.0,1,staticmaps/GlacierFrac.map
-    G_Cfmax=intbl/G_Cfmax.tbl,tbl,3.0,1,staticmaps/GlacierFrac.map
-    G_SIfrac=intbl/G_SIfrac.tbl,tbl,0.001,1,staticmaps/GlacierFrac.map
-
-The initial glacier volume GlacierStore.map should also be added in the staticmaps folder.
+Glacier processes are described in the wflow_funcs Module :ref:`wflow_funcs:Glacier modelling`
 
 
 The rainfall interception model
 -------------------------------
 
-The analytical (Gash) model
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This section is described in the wflow_funcs Module :ref:`wflow_funcs:Rainfall Interception`
 
-The analytical model of rainfall interception is based on Rutter’s
-numerical model. The simplifications that introduced allow the model to
-be applied on a daily basis, although a storm-based approach will yield
-better results in situations with more than one storm per day. The
-amount of water needed to completely saturate the canopy is defined as:
-
-.. math:: 
-
-    P'=\frac{-\overline{R}S}{\overline{E}_{w}}ln\left[1-\frac{\overline{E}_{w}}{\overline{R}}(1-p-p_{t})^{-1}\right]
-
-where :math:`\overline{R}` is the average precipitation intensity on a saturated canopy 
-and :math:`\overline{E}_{w}` the average evaporation from the wet canopy
-and with the vegetation parameters :math:`S`, :math:`p` and :math:`p_t` as defined
-previously. The model uses a series of expressions to calculate the
-interception loss during different phases of a storm.
-An analytical integration of the total evaporation and rainfall under
-saturated canopy conditions is then done for each storm to determine
-average values of :math:`\overline{E}_{w}` and :math:`\overline{R}`. 
-The total evaporation from the canopy (the
-total interception loss) is calculated as the sum of the components
-listed in the table below. Interception losses from the stems are
-calculated for days with :math:`P\geq S_{t}/p_{t}`. :math:`p_t` and :math:`S_t` are
-small and neglected in the wflow\_sbm model.
-
-Table: Formulation of the components of interception loss  according to Gash:
-
-+---------------------------------------------------------------------------------------+-------------------------------------------------------------------+
-|For :math:`m` small storms (:math:`P_{g}<{P'}_{g}`)                                    |  :math:`(1-p-p_{t})\sum_{j=1}^{m}P_{g,j}`                         |
-+---------------------------------------------------------------------------------------+------------------------+------------------------------------------+
-|Wetting up the canopy in :math:`n` large storms (:math:`P_{g}\geq{P'}_{g}`)            | :math:`n(1-p-p_{t}){P'}_{g}-nS`                                   |
-+---------------------------------------------------------------------------------------+-------------------------------------------------------------------+
-|Evaporation from saturated canopy during rainfall                                      | :math:`\overline{E}/\overline{R}\sum_{j=1}^{n}(P_{g,j}-{P'}_{g})` |
-+---------------------------------------------------------------------------------------+-------------------------------------------------------------------+
-|Evaporation after rainfall ceases for :math:`n` large storms                           | :math:`nS`                                                        |
-+---------------------------------------------------------------------------------------+-------------------------------------------------------------------+
-|Evaporation from trunks in :math:`q` storms that  fill the trunk storage               | :math:`qS_{t}`                                                    |
-+---------------------------------------------------------------------------------------+-----------+-------------------------------------------------------+
-|Evaporation from  trunks in (:math:`m+n-q`) storms that do not fill the trunk  storage | :math:`p_{t}\sum_{j=1}^{m+n-q}P_{g,j}`                            |
-+---------------------------------------------------------------------------------------+-------------------------------------------------------------------+
-
-
-In applying the analytical model, saturated conditions are assumed to
-occur when the hourly rainfall exceeds a certain threshold. Often a
-threshold of 0.5 mm/hr is used. :math:`\overline{R}` is calculated for all hours when the
-rainfall exceeds the threshold to give an estimate of the mean rainfall
-rate onto a saturated canopy.
-
-Gash (1979) has shown that in a regression of interception loss on rainfall (on a storm basis) the regression
-coefficient should equal to :math:`\overline{E}_w/\overline{R}`. Assuming that neither :math:`\overline{E}_w` nor
-:math:`\overline{R}` vary considerably in time, :math:`\overline{E}_w` can be estimated in this way from
-:math:`\overline{R}` in the absence of above-canopy climatic observations. Values derived in this way generally tend to
-be (much) higher than those calculated with the penman-monteith equation.
-
-
-Running with parameters derived from LAI
-````````````````````````````````````````
-The model can determine the Gash parameters from an LAI maps. In order to switch this on
-you must define the LAI variable to the model (as in the example below).
-
-::
-
-    [modelparameters]
-    LAI=inmaps/clim/LAI,monthlyclim,1.0,1
-    Sl=inmaps/clim/LCtoSpecificLeafStorage.tbl,tbl,0.5,1,inmaps/clim/LC.map
-    Kext=inmaps/clim/LCtoExtinctionCoefficient.tbl,tbl,0.5,1,inmaps/clim/LC.map
-    Swood=inmaps/clim/LCtoBranchTrunkStorage.tbl,tbl,0.5,1,inmaps/clim/LC.map
-
-Here LAI refers to a MAP with LAI (in this case one per month), Sl to a lookuptable
-result of land cover to specific leaf storage, Kext to a lookuptable result of
-land cover to extinction coefficient and Swood  to a lookuptable result of
-"canopy" capacity of the vegetation woody fraction.
-
-
-Here it is assumed that Cmax(leaves) (Gash’ canopy capacity for the leaves only) relates linearly with LAI (c.f. Van Dijk and Bruijnzeel 2001). This done
-via the Sl (specific leaf storage). Sl is determined via a lookup table with land cover. Next the Cmax(leaves) is
-determined using:
-
-.. math::
-
-    Cmax(leaves)  = Sl  * LAI
-
-The table below shows lookup table for Sl (as determined from Pitman 1986, Lui 1998).
-
-::
-
-    0   0	    Water
-    1	0.045	Evergreen Needle leaf Forest
-    2 	0.036	Evergreen Broadleaf Forest
-    3	0.045	Deciduous Needle leaf Forest
-    4 	0.036	Deciduous Broadleaf Forest
-    5 	0.03926	Mixed Forests
-    6 	0.07	Closed Shrublands
-    7	0.07	Open Shrublands
-    8 	0.07	Woody Savannas
-    9 	0.09	Savannas
-    10 	0.1272	Grasslands
-    11 	0.1272	Permanent Wetland
-    12 	0.1272	Croplands
-    13 	0.04	Urban and Built-Up
-    14	0.1272	Cropland/Natural Vegetation Mosaic
-    15 	0.0	    Snow and Ice
-    16 	0.04	Barren or Sparsely Vegetated
-
-
-
-To get to total storage (Cmax) the woody part of the vegetation also needs to be added. This is done via a simple
-lookup table between land cover the Cmax(wood):
-
-.. digraph:: cmax
-
-    "MODIS LandCover" -> "Sl lookuptable";
-    "Sl lookuptable" -> Sl -> Multiply;
-    "LAI (monthly)" -> Multiply -> "Cmax (leaves)" -> add;
-    "MODIS LandCover" -> "Cmax Wood lookuptable";
-    "Cmax Wood lookuptable" -> "Cmax (wood)";
-    "Cmax (wood)"-> add;
-    add -> Cmax;
-
-The  table below relates the land cover map to the woody part of the Cmax.
-
-::
-
-    0	0	    Water
-    1	0.5 	Evergreen Needle leaf Forest
-    2 	0.5	    Evergreen Broadleaf Forest
-    3	0.5	    Deciduous Needle leaf Forest
-    4 	0.5	    Deciduous Broadleaf Forest
-    5 	0.5	    Mixed Forests
-    6 	0.2	    Closed Shrublands
-    7	0.1	    Open Shrublands
-    8 	0.2	    Woody Savannas
-    9 	0.01	Savannas
-    10 	0.0	    Grasslands
-    11 	0.01	Permanent Wetland
-    12 	0.0	    Croplands
-    13 	0.01	Urban and Built-Up
-    14	0.01	Cropland/Natural Vegetation Mosiac
-    15 	0.0	    Snow and Ice
-    16 	0.04	Barren or Sparsely Vegetated
-
-
-
-
-The canopy gap fraction is determined using the  k: extinction coefficient (van Dijk and Bruijnzeel 2001):
-
-.. math::
-
-    CanopyGapFraction = exp(-k * LAI)
-
-The table below show how k is related to land cover:
-
-::
-
-    0	0.7	Water
-    1	0.8	Evergreen Needle leaf Forest
-    2 	0.8	Evergreen Broadleaf Forest
-    3	0.8	Deciduous Needle leaf Forest
-    4 	0.8	Deciduous Broadleaf Forest
-    5 	0.8	Mixed Forests
-    6 	0.6	Closed Shrublands
-    7	0.6	Open Shrublands
-    8 	0.6	Woody Savannas
-    9 	0.6	Savannas
-    10 	0.6	Grasslands
-    11 	0.6	Permanent Wetland
-    12 	0.6	Croplands
-    13 	0.6	Urban and Built-Up
-    14	0.6	Cropland/Natural Vegetation Mosaic
-    15 	0.6	Snow and Ice
-    16 	0.6	Barren or Sparsely Vegetated
-
-
-The modified rutter model
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-For subdaily timesteps the model uses a simplification of the Rutter model. The simplified
-model is solved explicitly and does not take drainage from the canopy into account.
-
-::
-
- def rainfall_interception_modrut(Precipitation,PotEvap,CanopyStorage,CanopyGapFraction,Cmax):
-    """
-    Interception according to a modified Rutter model. The model is solved
-    explicitly and there is no drainage below Cmax.
-    
-    Returns:
-        - NetInterception: P - TF - SF (may be different from the actual wet canopy evaporation)
-        - ThroughFall:
-        - StemFlow:
-        - LeftOver: Amount of potential eveporation not used
-        - Interception: Actual wet canopy evaporation in this thimestep
-        - CanopyStorage: Canopy storage at the end of the timestep
-    
-    """
-    
-    ##########################################################################
-    # Interception according to a modified Rutter model with hourly timesteps#
-    ##########################################################################
-
-    p = CanopyGapFraction
-    pt = 0.1 * p
-
-    # Amount of P that falls on the canopy
-    Pfrac = (1 - p -pt) * Precipitation
-
-    # S cannot be larger than Cmax, no gravity drainage below that
-    DD = ifthenelse (CanopyStorage > Cmax , Cmax - CanopyStorage , 0.0)
-    self.CanopyStorage = CanopyStorage - DD
-
-    # Add the precipitation that falls on the canopy to the store
-    CanopyStorage = CanopyStorage + Pfrac
-
-    # Now do the Evap, make sure the store does not get negative
-    dC = -1 * min(CanopyStorage, PotEvap)
-    CanopyStorage = CanopyStorage + dC
-    
-    LeftOver = PotEvap +dC; # Amount of evap not used
-
-
-    # Now drain the canopy storage again if needed...
-    D = ifthenelse (CanopyStorage > Cmax , CanopyStorage - Cmax , 0.0)
-    CanopyStorage = CanopyStorage - D
-    
-    # Calculate throughfall
-    ThroughFall = DD + D + p * Precipitation
-    StemFlow = Precipitation * pt
-    
-    # Calculate interception, this is NET Interception
-    NetInterception = Precipitation - ThroughFall - StemFlow
-    Interception = -dC
-    
-    return NetInterception, ThroughFall, StemFlow, LeftOver, Interception, CanopyStorage
-
- 
- 
 
 The soil model
 --------------
@@ -548,7 +213,7 @@ at depth :math:`z_{i}` and the ratio between :math:`U` and
 
 .. figure:: _images/wflow_soil.png
 
-    Schematisation of the soil within the wflow\_sbm model
+    Schematisation of the soil and the connection to the river within the wflow\_sbm model
 
 Saturated conductivity (:math:`K_{sat}`) declines with soil depth (:math:`z`) in
 the model according to: 
@@ -577,35 +242,7 @@ Figure: Plot of the relation between depth and conductivity for different values
 .. plot:: plots/m-plot.py
 
 
-The :math:`S` store can be drained laterally by applying the kinematic wave approach to
-saturated downslope subsurface flow per unit width of slope :math:`w` according to: 
-
-:math:`q=\frac{K_{0}\mathit{tan(\beta)}}{f}(e^{(-fz_{i})}-e^{(-fz_{t})})`
-
-where:
-
-    :math:`\beta` is element slope angle [deg.]
-
-    :math:`q` is the calculated subsurface flow [:math:`mm^{2}d^{-1}`]
-
-with :math:`K_{0}`, :math:`z_{i}` and :math:`z_{t}` as defined previously. 
-
-Combining with the following continuity equation:
-
-:math:`(\theta_s-\theta_r)\frac{\partial h}{\partial t} = -w\frac{\partial q}{\partial x} + wr`
-
-and substituting for :math:`h (\frac{\partial q}{\partial h})`, gives:
-
-:math:`w \frac{\partial q}{\partial t} = -cw\frac{\partial q}{\partial x} + cwr`
-
-where celerity :math:`c = \frac{K_{0}\mathit{tan(\beta)}}{(\theta_s-\theta_r)} e^{(-fz_{i})}`
-
-The kinematic wave equation for lateral subsurface flow is solved iteratively using Newton's method.
-
-.. note::
-
-    For the lateral subsurface flow kinematic wave the model timestep is not adjusted. For certain model timestep
-    and model grid size combinations this may result in loss of accuracy.
+The kinematic wave approach for lateral subsurface flow is described in the wflow_funcs Module :ref:`wflow_funcs:Subsurface flow routing`
 
 
 Transpiration and soil evaporation
@@ -690,7 +327,7 @@ where:
     :math:`\theta_r` and :math:`\lambda` as previously defined.
 
 Feddes (1978) described a transpiration reduction-curve for the reduction coefficient :math:`\alpha`, as a function of :math:`h`.
-Below, the function in wflow_sbm, that calculates for the actual transpiration from the unsaturated zone layer(s).
+Below, the function used in wflow_sbm, that calculates actual transpiration from the unsaturated zone layer(s).
 
 ::
 
@@ -799,8 +436,23 @@ The near surface soil temperature is modelled using a simple equation [Wigmosta]
 where :math:`T_s^{t}` is the near-surface soil temperature at time t, :math:`T_a` is air temperature and :math:`w` is a
 weighting coefficient determined through calibration (default is 0.1125 for daily timesteps).
 
-if T_s < 0 than a reduction factor is applied to the maximum infiltration rate (InfiltCapSoil and InfiltCapPath).
-A S-curve (see plot below) is used to make a smooth transition (a c-factor of 8 is used).
+A reduction factor (cf_soil, default is 0.038) is applied to the maximum infiltration rate (InfiltCapSoil and InfiltCapPath),
+when the following model settings are specified in the ini file:
+
+::
+
+    [model]
+    soilInfRedu = 1
+    ModelSnow = 1
+
+A S-curve (see plot below) is used to make a smooth transition (a c-factor (c) of 8 is used):
+
+.. math::
+    
+    b &= \frac{1.0}{(1.0 - cf\_soil)}\\
+    soilInfRedu &= \frac{1.0}{b + exp(-c (T_s - a))} + cf\_soil\\
+    a &= 0.0\\
+    c &= 8.0
 
 .. plot:: plots/s-curve-freezingsoil.py
 
@@ -819,41 +471,30 @@ For both options a fraction of the supplied water can be put back into the river
 
 The following maps and variables can be defined:
 
-**wflow_irrigationareas.map**:
+* **wflow_irrigationareas.map**: Map of areas where irrigation is applied. Each area has a unique id. The areas do not need to be continuous&
+  but all cells with the same id are assumed to belong to the same irrigation area.
+* **wflow_irrisurfaceintake.map**: Map of intake points at the river(s). The id of each point should correspond to the id of an area in the wflow_irrigationareas map.
+* **wflow_irrisurfacereturns.map**: Map of water return points at the river(s). The id of each point should correspond to the id of an area in the
+  wflow_irrigationareas map or/and the wflow_irrisurfaceintake.map.
+* **IrriDemandExternal**: Irrigation demand supplied to the model. This can be doen by adding an entry to the
+  modelparameters section. if this is doen the irrigation demand supplied here is used and it is NOT determined
+  by the model. Water demand should be given with a negative sign! See below for and example entry
+  in the modelparameters section: ::
 
-    Map of areas where irrigation is applied. Each area has a unique id. The areas do not need to be continuous
-    but all cells with the same id are assumed to belong to the same irrigation area.
+    IrriDemandExternal=intbl/IrriDemandExternal.tbl,tbl,-34.0,0,staticmaps/wflow_irrisurfaceintakes.map
 
-**wflow_irrisurfaceintake.map**: 
+  In this example the default demand is :math:`-34 m^3/s`. The demand must be linked to the map
+  wflow_irrisurfaceintakes.map. Alternatively we can define this as a timeseries of
+  maps: ::
 
-    Map of intake points at the river(s). The id of each point should correspond to the id of an area in the wflow_irrigationareas map.
+    IrriDemandExternal=/inmaps/IRD,timeseries,-34.0,0
 
-**wflow_irrisurfacereturns.map**:
-
-    Map of water return points at the river(s). The id of each point should correspond to the id of an area in the
-    wflow_irrigationareas map or/and the wflow_irrisurfaceintake.map.
-
-**IrriDemandExternal**: Irrigation demand supplied to the model. This can be doen by adding an entry to the
-    modelparameters section. if this is doen the irrigation demand supplied here is used and it is NOT determined
-    by the model. Water demand should be given with a negative sign! See below for and example entry
-    in the modelparameters section: ::
-
-        IrriDemandExternal=intbl/IrriDemandExternal.tbl,tbl,-34.0,0,staticmaps/wflow_irrisurfaceintakes.map
-
-    In this example the default demand is :math:`-34 m^3/s`. The demand must be linked to the map
-    wflow_irrisurfaceintakes.map. Alternatively we can define this as a timeseries of
-    maps: ::
-
-        IrriDemandExternal=/inmaps/IRD,timeseries,-34.0,0
-
-
-**DemandReturnFlowFraction**: Fraction of the supplied water the returns back into the river system (between 0 and 1).
-    This fraction must  be supplied at the  wflow_irrisurfaceintakes.map locations but the water that is returned
-    to the river will be returned at the wflow_irrisurfacereturns.map locations. If this variable is not defined
-    the default is 0.0. See below for an example entry in the modelparameters section: ::
+* **DemandReturnFlowFraction**: Fraction of the supplied water the returns back into the river system (between 0 and 1).
+  This fraction must  be supplied at the  wflow_irrisurfaceintakes.map locations but the water that is returned
+  to the river will be returned at the wflow_irrisurfacereturns.map locations. If this variable is not defined
+  the default is 0.0. See below for an example entry in the modelparameters section: ::
 
     DemandReturnFlowFraction=intbl/IrriDemandReturn.tbl,tbl,0.0,0,staticmaps/wflow_irrisurfaceintakes.map
-
 
 
 .. figure:: _images/wflow_irrigation.png
@@ -880,12 +521,18 @@ The  irrigation model can be used in the following two modes:
    is defined this fraction is the supply is returned to the river at the wflow_irrisurfacereturns.map points.
 
 
-Kinematic wave and River Width
-------------------------------
-Both overland flow (for non-river cells) and river discharge are routed through the catchment using the kinematic wave equation.
-Width and length characteristics of non-river cells use the grid cell dimensions. For river cells, both width and maps can
-either be supplied by separate maps or determined from the grid cell dimension for river length and from the DEM, the upstream area and yearly average discharge for
-the river width ([Finnegan]_):
+Kinematic wave, Length, Width and Slope
+---------------------------------------
+Both overland flow and river flow are routed through the catchment using the kinematic wave equation.
+For overland flow, width (self.SW) and length (self.DL) characteristics are based on the grid cell dimensions and flow direction, 
+and in case of a river cell, the river width is subtracted from the overland flow width.
+For river cells, both width and length can either be supplied by separate maps:
+
+* wflow_riverwidth.map
+* wflow_riverlength.map
+
+or determined from the grid cell dimension and flow direction for river length and from the DEM, the upstream area and yearly 
+average discharge for the river width ([Finnegan]_):
 
 .. math:
 
@@ -894,9 +541,25 @@ the river width ([Finnegan]_):
 The yearly average Q at outlet is scaled for each point in the drainage network 
 with the upstream area. :math:`\alpha` ranges from 5 to > 60. Here 5 is used for hardrock,
 large values are used for sediments.
-  
 
-Implementation::
+When the river length is calculated based on grid dimensions and flow direction in wflow_sbm, it is possible to provide a map
+with factors to multiply the calculated river lenght with (wflow_riverlength_fact.map, default is 1.0).
+
+The slope for kinematic overland flow and river flow can either be provided by maps:
+
+* Slope.map (overland flow)
+* RiverSlope.map (river flow)
+
+or calculated by wflow_sbm based on the provided DEM and Slope function of PCRaster.
+
+.. note::
+    
+    If a river slope is available as map, then we recommend to also provide a river lenght map to avoid possible inconsistencies 
+    between datasets. If a river lenght map is not provided, the river length is calculated based on grid dimensions and flow direction,
+    and if available the wflow_riverlength_fact.map. 
+
+
+Implementation of river width calculation::
 
         if (self.nrresSimple + self.nrlake) > 0:
             upstr = pcr.catchmenttotal(1, self.TopoLddOrg)
@@ -914,7 +577,7 @@ Implementation::
         self.RiverWidth = pcr.ifthenelse(self.RiverWidth <= 0.0, W, self.RiverWidth)
  
 
-The table below list commonly used Manning's N values (in the N_River .tbl file). 
+The table below list commonly used Manning's N values (in the N_River.tbl file). 
 Please note that  the values for non river cells may arguably be set 
 significantly higher. (Use N.tbl for non-river cells and N_River.tbl for river cells)
 
@@ -934,7 +597,7 @@ significantly higher. (Use N.tbl for non-river cells and N_River.tbl for river c
     "*Mountain streams*"
     "bottom: gravels, cobbles, and few  boulders", 0.03, 0.04, 0.05 
     "bottom: cobbles with large boulders", 0.04,  0.05, 0.07 
-
+ 
 Natural lakes and reservoirs can also be added to the model and taken into account during the routing process. For more information,
 see the documentation of the wflow_funcs module.
  
@@ -1013,102 +676,93 @@ The correction grid is optional.
 	If the entry is not in the file the correction will not be applied
 
 
-Guidelines for wflow_sbm model parameters
+Wflow_sbm model parameters
 -----------------------------------------
 
-The tables below shows the most important parameters and suggested ranges
+The list below shows the most important model parameters
+
 
 CanopyGapFraction
-file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/Cfmax.tbl
+    Gash interception model parameter [-]: the free throughfall coefficient.
 
-- EoverR - Ratio of average wet canopy evaporation rate over 
-  precipitation rate - usually between 0.06 and 0.15 depending on climate and site.
-
-- FirstZoneCapacity - 
-
-::
-
-    FirstZoneKsatVer.tbl
-    file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/FirstZoneMinCapacity.tbl
-    file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/InfiltCapPath.tbl
-    file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/InfiltCapSoil.tbl
-    file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/M.tbl
-    file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/MaxCanopyStorage.tbl
-    file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/MaxLeakage.tbl
-    file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/N_River.tbl
-    file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/N.tbl
-    file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/RootingDepth.tbl
-    file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/RunoffGeneratingGWPerc.tbl
-    file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/thetaR.tbl
-    file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/thetaS.tbl
-    file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/TT.tbl
-    file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/TTI.tbl
-    file:///media/schelle/BIG/LINUX/wflow/cases/maas/intbl/WHC.tbl
-
-
-
-
-
-Beta.tbl
-    Beta parameter used in the kinematic wave function. Should be set to
-    0.6 (will be removed later)
-
-CanopyGapFraction.tbl
-    Gash interception model parameter: the free throughfall coefficient.
-
-EoverR.tbl
+EoverR
     Gash interception model parameter. Ratio of average wet canopy
     evaporation rate over average precipitation rate.
 
-FirstZoneCapacity.tbl
-    Maximum capacity of the saturated store [mm]
+SoilThickness
+    Maximum soil depth [mm]
 
-MaxLeakage.tbl
+SoilMinThickness
+    Minimum soil depth [mm]
+
+MaxLeakage
     Maximum leakage [mm/day]. Leakage is lost to the model. Usually
     only used for i.e. linking to a dedicated groundwater model.
     Normally set to zero in all other cases.
 
-FirstZoneKsatVer.tbl
-    Saturated conductivity of the store at the surface. The M parameter
+KsatVer
+    Vertical saturated conductivity [mm/day] of the store at the surface. The M parameter
     determines how this decreases with depth.
 
-FirstZoneMinCapacity.tbl
-    Minimum capacity of the saturated store [mm]
+KsatHorFrac
+    A multiplication factor [-] applied to KsatVer for the horizontal saturated 
+    conductivity used for computing lateral subsurface flow. This parameter 
+    compensates for anisotropy, small scale KsatVer measurement (small soil core) that do not
+    represent larger scale hydraulic conductivity, and model resolution (in reality smaller (hillslope) 
+    flow length scales).
 
-InfiltCapPath.tbl
+InfiltCapPath
     Infiltration capacity [mm/day] of the compacted soil (or paved
-    area) fraction of each gridcell
+    area) fraction of each gridcell.
 
-InfiltCapSoil.tbl
+InfiltCapSoil
     Infiltration capacity [mm/day] of the non-compacted soil
-    fraction (unpaved area) of each gridcell
+    fraction (unpaved area) of each gridcell.
 
-M.tbl
-    Soil parameter determining the decrease of saturated conductivity
-    with depth. Usually between 20 and 2000 (if the soil depth is in mm)
+M
+    Soil parameter M [mm] determines the decrease of vertical saturated conductivity
+    with depth. Usually between 20 and 2000.
 
-MaxCanopyStorage.tbl
-    Canopy storage [mm]. Used in the Gash interception model
+MaxCanopyStorage
+    Canopy storage [mm]. Used in the Gash interception model.
 
-N.tbl
-    Manning N parameter for the Kinematic wave function. Higher values
-    dampen the discharge peak.
+N and N_River
+    Manning N parameter for the kinematic wave function for overland and river
+    flow. Higher valuesdampen the discharge peak.
 
-PathFrac.tbl
-    Fraction of compacted area per gridcell
+PathFrac
+    Fraction of compacted area per gridcell [-].
 
-RootingDepth.tbl
-    Rooting depth of the vegetation [mm]
+RootingDepth
+    Rooting depth of the vegetation [mm].
 
-thetaR.tbl
-    Residual water content
+thetaR
+    Residual water content [mm/mm].
 
-thetaS.tbl
-    Water content at saturation
+thetaS
+    Water content at saturation [mm/mm].
 
+c
+    Brooks-Corey power coefficient [-] based on the pore size distribution index :math:`\lambda`,
+    used for computing vertical unsaturated flow.
 
+.. note::
+    If SoilThickness and SoilMinThickness are not equal, wflow_sbm will scale SoilThickness based on
+    the topographic wetness index.
 
-
+Implementation of SoilThickness scaling::
+    
+    # soil thickness based on topographic wetness index (see Environmental modelling: finding simplicity in complexity)
+    # 1: calculate wetness index
+    # 2: Scale the soil thickness (now actually a max) based on the index, also apply a minimum soil thickness
+    WI = pcr.ln(
+        pcr.accuflux(self.TopoLdd, 1) / self.landSlope
+    )  # Topographic wetnesss index. Scale WI by zone/subcatchment assuming these are also geological units
+    WIMax = pcr.areamaximum(WI, self.TopoId) * WIMaxScale
+    self.SoilThickness = pcr.max(
+        pcr.min(self.SoilThickness, (WI / WIMax) * self.SoilThickness),
+        self.SoilMinThickness,
+    )
 
 Calibrating the  wflow_sbm model
 --------------------------------
@@ -1116,65 +770,32 @@ Calibrating the  wflow_sbm model
 Introduction
 ~~~~~~~~~~~~
 As with all hydrological models calibration is needed for optimal performance.
-Currently we are working on getting the link with the OpenDA calibration
-environment running (not tested yet). We have calibrated the Rhine/Meuse
-models using simple shell scripts and the XX and XX command-line parameters
+We have calibrated different wflow_sbm models using simple shell scripts and command-line parameters
 to multiply selected model parameters and evaluate the results later.
-
 
 
 Parameters
 ~~~~~~~~~~
 
+SoilThickness
+    Increasing the soil depth and thus the storage capacity of the soil will decrease 
+    the outflow.
+
 M
-    Once the depth of the soil has been set for the different land-use
-    types the M parameter is the most important variable in calibrating
+    Once the depth of the soil has been set (e.g. for different land-use
+    types) the M parameter is the most important variable in calibrating
     the model. The decay of the conductivity with depth controls the
     baseflow resession and part of the stormflow curve.
 
-N
+N and N_River
     The Manning N parameter controls the shape of the hydrograph (the
     peak parts). In general it is advised to set N to realistic values
     for the rivers, for the land phase higher values are usually needed.
 
-Ksat
-    Increasing the Ksat will lower the hydrograph (baseflow) and
+KsatVer and KsatHorFrac
+    Increasing KsatVer and or KsatHorFrac will lower the hydrograph (baseflow) and
     flatten the peaks. The latter also depend on the shape of the
     catchment.
-
-FirstZoneCapacity
-    Increasing the storage capacity of the soil will decrease the
-    outflow
-
-RunoffGeneratingGWPerc
-    Default is 0.1. Determines the (upper) part of the groudwater that
-    can generate runoff in a cell. This is only used of the
-    RunoffGenSigmaFunction option is set to 1. In general generating
-    more runoff before a cell is completely saturated (which is the case
-    if RunoffGenSigmaFunction is set to 0) will lead to more baseflow
-    and flattening of the peaks.
-
-
-Changes in hydrographs for different values of parameters
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    .. figure:: _images/mult_firstzonemin.png
-       :align: center
-       :alt: image
-       :height: 600px
-
-
-
-    .. figure:: _images/mult_ksat_rhine.png
-       :align: center
-       :alt: image
-       :height: 600px
-
-
-
-    .. figure:: _images/mult_m_rhine.png
-       :align: center
-       :height: 600px
 
 
 References

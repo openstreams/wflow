@@ -17,32 +17,76 @@ wflow_funcs is a library of hydrological modules that can be used by any of the 
 
 Kinematic Wave
 --------------
-The main flow routing scheme used by the wflow models (wflow\_sbm, wflow\_hbv and wflow\_routing) is the kinematic wave approach for channel, overland and lateral subsurface flow, assuming that the topography controls water flow mostly.
+
+Surface flow routing
+~~~~~~~~~~~~~~~~~~~~
+
+The main flow routing scheme used by the wflow models (wflow\_sbm and wflow\_hbv) is the kinematic wave approach for channel and overland flow, assuming that the topography controls water flow mostly.
 The kinemative wave equations are (Chow, 1988): :math:`\dfrac{dQ}{dx} + \dfrac{dA}{dt} = q` and :math:`A = \alpha * Q^{\beta}`. These equations can then be combined as a function of streamflow only:
 
 .. math:: \dfrac{dQ}{dx} + \alpha * \beta * Q^{\beta - 1} * \dfrac{dQ}{dt} = q
 
-where :math:`Q` is the surface (or subsurface) runoff in the kinamtic wave [m\ :math:`^{3}`/s], :math:`x` is the length of the runoff pathway [m], :math:`A` is the cross-section area of the runoff pathway [m\ :math:`^{2}`],
-:math:`t` is the integration timestep [s] and \alpha and \beta are coefficents.
+where :math:`Q` is the surface runoff in the kinematic wave [m\ :math:`^{3}`/s], :math:`x` is the length of the runoff pathway [m], :math:`A` is the cross-section area of the runoff pathway [m\ :math:`^{2}`],
+:math:`t` is the integration timestep [s] and \alpha and \beta are coefficients.
 
 
-These equations are solved with a nonlinear scheme using Newton’s method and can also be iterated depending on the wflow models space and time resolutions. By defaults, the iterations are performed until a stable solution is
-reached (\epsilon < 10\ :math:`^{-12}`. For larger models, the number of iterations can also be fixed to a specific sub-timestep (in seconds) for both overland and channel flows to improve simulation time. To enable (fixed or not) iterations
+These equations are solved with a nonlinear scheme using Newton’s method and can also be iterated depending on the wflow models space and time resolutions. By default, the iterations are performed until a stable solution is
+reached (\epsilon < 10\ :math:`^{-12}`). For larger models, the number of iterations can also be fixed for wflow\_sbm to a specific sub-timestep (in seconds) for both overland and channel flows to improve simulation time. To enable (fixed or not) iterations
 of the kinematic wave the following lines can be inserted in the ini files of the related models:
 
 ::
+    [model]
+    # Enable iterations of the kinematic wave
+    kinwaveIters = 1
+    # Fixed sub-timestep for iterations of channel flow (river cells)
+    kinwaveRiverTstep = 900
+    # Fixed sub-timestep for iterations of overland flow (land cells)
+    kinwaveLandTstep = 3600
 
-	# Enable iterations of the kinematic wave
-	kinwaveIters = 1
-	# Fixed sub-timestep for iterations of channel flow (river cells)
-	kinwaveRiverTstep = 900
-	# Fixed sub-timestep for iterations of overland flow (land cells)
-	kinwaveLandTstep = 3600
+Subsurface flow routing
+~~~~~~~~~~~~~~~~~~~~~~~
+
+In wflow\_sbm the kinematic wave approach is used to route subsurface flow laterally. The saturated store :math:`S` can be drained laterally by
+saturated downslope subsurface flow per unit width of slope :math:`w` [mm] according to: 
+
+.. math:: q=\frac{K_{0}\mathit{tan(\beta)}}{f}(e^{(-fz_{i})}-e^{(-fz_{t})})
+
+where :math:`\beta` is element slope angle [deg.], :math:`q` is subsurface flow [:math:`mm^{2}/t`], 
+:math:`K_{0}` is the saturated hydraulic conductivity at the soil surface [mm/t], :math:`z_{i}` is the water table depth [mm],
+:math:`z_{t}` is total soil depth [mm], and :math:`f` is a scaling parameter [:math:`mm^{-1}`]:
+
+.. math:: f=\frac{\theta_{s}-\theta_{r}}{M}
+
+where :math:`\theta_{s}` is saturated water content [mm/mm] and :math:`\theta_{r}` is residual water content [mm/mm]
+and :math:`M` represents a model parameter [mm], that determines the decrease of vertical saturated conductivity
+with depth.
+
+Combining with the following continuity equation:
+
+.. math:: (\theta_s-\theta_r)\frac{\partial h}{\partial t} = -w\frac{\partial q}{\partial x} + wr
+
+where :math:`h` is the water table height [mm], :math:`x` is the distance downslope [mm], and :math:`r` is the netto input rate
+[mm/t] to the saturated store.
+
+and substituting for :math:`h (\frac{\partial q}{\partial h})`, gives:
+
+.. math:: w \frac{\partial q}{\partial t} = -cw\frac{\partial q}{\partial x} + cwr
+
+where celerity :math:`c = \frac{K_{0}\mathit{tan(\beta)}}{(\theta_s-\theta_r)} e^{(-fz_{i})}`
+
+The kinematic wave equation for lateral subsurface flow is solved iteratively using Newton's method.
+
+.. note::
+
+    For the lateral subsurface flow kinematic wave the model timestep is not adjusted. For certain model timestep
+    and model grid size combinations this may result in loss of accuracy.
+
+
 
 Rainfall Interception
 ---------------------
 Both the Gash and Rutter models are available in the wflow framework to estimate rainfall interception by the vegetation.
-The selection of an interception model depends on the simulation timestep. These modules are used by the wflow\_sbm and wflow\_hbv models.
+The selection of an interception model depends on the simulation timestep. These modules are used by the wflow\_sbm model.
 
 The analytical (Gash) model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -128,28 +172,34 @@ determined using:
 
     Cmax(leaves)  = Sl  * LAI
 
-The table below shows lookup table for Sl (as determined from Pitman 1986, Lui 1998).
+The table below shows lookup table for Sl (as determined from Pitman 1986, Lui 1998) and GlobCover land cover map.
 
 ::
 
-    0   0	    Water
-    1	0.045	Evergreen Needle leaf Forest
-    2 	0.036	Evergreen Broadleaf Forest
-    3	0.045	Deciduous Needle leaf Forest
-    4 	0.036	Deciduous Broadleaf Forest
-    5 	0.03926	Mixed Forests
-    6 	0.07	Closed Shrublands
-    7	0.07	Open Shrublands
-    8 	0.07	Woody Savannas
-    9 	0.09	Savannas
-    10 	0.1272	Grasslands
-    11 	0.1272	Permanent Wetland
-    12 	0.1272	Croplands
-    13 	0.04	Urban and Built-Up
-    14	0.1272	Cropland/Natural Vegetation Mosaic
-    15 	0.0	    Snow and Ice
-    16 	0.04	Barren or Sparsely Vegetated
 
+    11   0.1272    Post-flooding or irrigated croplands (or aquatic)
+    14   0.1272    Rainfed croplands
+    20   0.1272    Mosaic cropland (50-70%) / vegetation (grassland/shrubland/forest) (20-50%)
+    30   0.1272    Mosaic vegetation (grassland/shrubland/forest) (50-70%) / cropland (20-50%)
+    40   0.03926   Closed to open (>15%) broadleaved evergreen or semi-deciduous forest (>5m)
+    50   0.036     Closed (>40%) broadleaved deciduous forest (>5m)
+    60   0.036     Open (15-40%) broadleaved deciduous forest/woodland (>5m)
+    70   0.045     Closed (>40%) needleleaved evergreen forest (>5m)
+    90   0.045     Open (15-40%) needleleaved deciduous or evergreen forest (>5m)
+    100  0.03926   Closed to open (>15%) mixed broadleaved and needleleaved forest (>5m)
+    110  0.07      Mosaic forest or shrubland (50-70%) / grassland (20-50%)
+    120  0.1272    Mosaic grassland (50-70%) / forest or shrubland (20-50%)
+    130  0.07      Closed to open (>15%) (broadleaved or needleleaved, evergreen or deciduous) shrubland (<5m)
+    140  0.09      Closed to open (>15%) herbaceous vegetation (grassland, savannas or lichens/mosses)
+    150  0.04      Sparse (<15%) vegetation
+    160  0.04      Closed to open (>15%) broadleaved forest regularly flooded (semi-permanently or temporarily) - Fresh or brackish water
+    170  0.036     Closed (>40%) broadleaved forest or shrubland permanently flooded - Saline or brackish water
+    180  0.1272    Closed to open (>15%) grassland or woody vegetation on regularly flooded or waterlogged soil - Fresh, brackish or saline water
+    190  0.04      Artificial surfaces and associated areas (Urban areas >50%)
+    200  0.04      Bare areas
+    210  0.04      Water bodies
+    220  0.04      Permanent snow and ice
+    230   -        No data (burnt areas, clouds,…)
 
 
 To get to total storage (Cmax) the woody part of the vegetation also needs to be added. This is done via a simple
@@ -157,10 +207,10 @@ lookup table between land cover the Cmax(wood):
 
 .. digraph:: cmax
 
-    "MODIS LandCover" -> "Sl lookuptable";
+    "GlobCover LandCover" -> "Sl lookuptable";
     "Sl lookuptable" -> Sl -> Multiply;
     "LAI (monthly)" -> Multiply -> "Cmax (leaves)" -> add;
-    "MODIS LandCover" -> "Cmax Wood lookuptable";
+    "GlobCover LandCover" -> "Cmax Wood lookuptable";
     "Cmax Wood lookuptable" -> "Cmax (wood)";
     "Cmax (wood)"-> add;
     add -> Cmax;
@@ -169,25 +219,29 @@ The  table below relates the land cover map to the woody part of the Cmax.
 
 ::
 
-    0	0	    Water
-    1	0.5 	Evergreen Needle leaf Forest
-    2 	0.5	    Evergreen Broadleaf Forest
-    3	0.5	    Deciduous Needle leaf Forest
-    4 	0.5	    Deciduous Broadleaf Forest
-    5 	0.5	    Mixed Forests
-    6 	0.2	    Closed Shrublands
-    7	0.1	    Open Shrublands
-    8 	0.2	    Woody Savannas
-    9 	0.01	Savannas
-    10 	0.0	    Grasslands
-    11 	0.01	Permanent Wetland
-    12 	0.0	    Croplands
-    13 	0.01	Urban and Built-Up
-    14	0.01	Cropland/Natural Vegetation Mosiac
-    15 	0.0	    Snow and Ice
-    16 	0.04	Barren or Sparsely Vegetated
-
-
+    11   0.01    Post-flooding or irrigated croplands (or aquatic)
+    14   0.0     Rainfed croplands
+    20   0.01    Mosaic cropland (50-70%) / vegetation (grassland/shrubland/forest) (20-50%)
+    30   0.01    Mosaic vegetation (grassland/shrubland/forest) (50-70%) / cropland (20-50%)
+    40   0.5     Closed to open (>15%) broadleaved evergreen or semi-deciduous forest (>5m)
+    50   0.5     Closed (>40%) broadleaved deciduous forest (>5m)
+    60   0.5     Open (15-40%) broadleaved deciduous forest/woodland (>5m)
+    70   0.5     Closed (>40%) needleleaved evergreen forest (>5m)
+    90   0.5     Open (15-40%) needleleaved deciduous or evergreen forest (>5m)
+    100  0.5     Closed to open (>15%) mixed broadleaved and needleleaved forest (>5m)
+    110  0.2     Mosaic forest or shrubland (50-70%) / grassland (20-50%)
+    120  0.05    Mosaic grassland (50-70%) / forest or shrubland (20-50%)
+    130  0.1     Closed to open (>15%) (broadleaved or needleleaved, evergreen or deciduous) shrubland (<5m)
+    140  0.0     Closed to open (>15%) herbaceous vegetation (grassland, savannas or lichens/mosses)
+    150  0.04    Sparse (<15%) vegetation
+    160  0.1     Closed to open (>15%) broadleaved forest regularly flooded (semi-permanently or temporarily) - Fresh or brackish water
+    170  0.2     Closed (>40%) broadleaved forest or shrubland permanently flooded - Saline or brackish water
+    180  0.01    Closed to open (>15%) grassland or woody vegetation on regularly flooded or waterlogged soil - Fresh, brackish or saline water
+    190  0.01    Artificial surfaces and associated areas (Urban areas >50%)
+    200  0.0     Bare areas
+    210  0.0     Water bodies
+    220  0.0     Permanent snow and ice
+    230   -      No data (burnt areas, clouds,…)
 
 
 The canopy gap fraction is determined using the  k: extinction coefficient (van Dijk and Bruijnzeel 2001):
@@ -200,26 +254,32 @@ The table below show how k is related to land cover:
 
 ::
 
-    0	0.7	Water
-    1	0.8	Evergreen Needle leaf Forest
-    2 	0.8	Evergreen Broadleaf Forest
-    3	0.8	Deciduous Needle leaf Forest
-    4 	0.8	Deciduous Broadleaf Forest
-    5 	0.8	Mixed Forests
-    6 	0.6	Closed Shrublands
-    7	0.6	Open Shrublands
-    8 	0.6	Woody Savannas
-    9 	0.6	Savannas
-    10 	0.6	Grasslands
-    11 	0.6	Permanent Wetland
-    12 	0.6	Croplands
-    13 	0.6	Urban and Built-Up
-    14	0.6	Cropland/Natural Vegetation Mosaic
-    15 	0.6	Snow and Ice
-    16 	0.6	Barren or Sparsely Vegetated
+    11   0.6    Post-flooding or irrigated croplands (or aquatic)
+    14   0.6    Rainfed croplands
+    20   0.6    Mosaic cropland (50-70%) / vegetation (grassland/shrubland/forest) (20-50%)
+    30   0.6    Mosaic vegetation (grassland/shrubland/forest) (50-70%) / cropland (20-50%)
+    40   0.6    Closed to open (>15%) broadleaved evergreen or semi-deciduous forest (>5m)
+    50   0.8    Closed (>40%) broadleaved deciduous forest (>5m)
+    60   0.8    Open (15-40%) broadleaved deciduous forest/woodland (>5m)
+    70   0.8    Closed (>40%) needleleaved evergreen forest (>5m)
+    90   0.8    Open (15-40%) needleleaved deciduous or evergreen forest (>5m)
+    100  0.8    Closed to open (>15%) mixed broadleaved and needleleaved forest (>5m)
+    110  0.6    Mosaic forest or shrubland (50-70%) / grassland (20-50%)
+    120  0.6    Mosaic grassland (50-70%) / forest or shrubland (20-50%)
+    130  0.6    Closed to open (>15%) (broadleaved or needleleaved, evergreen or deciduous) shrubland (<5m)
+    140  0.6    Closed to open (>15%) herbaceous vegetation (grassland, savannas or lichens/mosses)
+    150  0.6    Sparse (<15%) vegetation
+    160  0.6    Closed to open (>15%) broadleaved forest regularly flooded (semi-permanently or temporarily) - Fresh or brackish water
+    170  0.8    Closed (>40%) broadleaved forest or shrubland permanently flooded - Saline or brackish water
+    180  0.6    Closed to open (>15%) grassland or woody vegetation on regularly flooded or waterlogged soil - Fresh, brackish or saline water
+    190  0.6    Artificial surfaces and associated areas (Urban areas >50%)
+    200  0.6    Bare areas
+    210  0.7    Water bodies
+    220  0.6    Permanent snow and ice
+    230   -     No data (burnt areas, clouds,…)d
 
 
-The modified Rutter model
+The modified rutter model
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For subdaily timesteps the model uses a simplification of the Rutter model. The simplified
@@ -227,7 +287,7 @@ model is solved explicitly and does not take drainage from the canopy into accou
 
 ::
 
- def rainfall_interception_modrut(Precipitation,PotEvap,CanopyStorage,CanopyGapFraction,Cmax):
+    def rainfall_interception_modrut(Precipitation, PotEvap, CanopyStorage, CanopyGapFraction, Cmax):
     """
     Interception according to a modified Rutter model. The model is solved
     explicitly and there is no drainage below Cmax.
@@ -241,7 +301,7 @@ model is solved explicitly and does not take drainage from the canopy into accou
         - CanopyStorage: Canopy storage at the end of the timestep
     
     """
-    
+
     ##########################################################################
     # Interception according to a modified Rutter model with hourly timesteps#
     ##########################################################################
@@ -250,47 +310,45 @@ model is solved explicitly and does not take drainage from the canopy into accou
     pt = 0.1 * p
 
     # Amount of P that falls on the canopy
-    Pfrac = (1 - p -pt) * Precipitation
+    Pfrac = pcr.max((1 - p - pt), 0) * Precipitation
 
     # S cannot be larger than Cmax, no gravity drainage below that
-    DD = ifthenelse (CanopyStorage > Cmax , Cmax - CanopyStorage , 0.0)
-    self.CanopyStorage = CanopyStorage - DD
+    DD = pcr.ifthenelse(CanopyStorage > Cmax, CanopyStorage - Cmax, 0.0)
+    CanopyStorage = CanopyStorage - DD
 
     # Add the precipitation that falls on the canopy to the store
     CanopyStorage = CanopyStorage + Pfrac
 
     # Now do the Evap, make sure the store does not get negative
-    dC = -1 * min(CanopyStorage, PotEvap)
+    dC = -1 * pcr.min(CanopyStorage, PotEvap)
     CanopyStorage = CanopyStorage + dC
-    
-    LeftOver = PotEvap +dC; # Amount of evap not used
 
+    LeftOver = PotEvap + dC
+    # Amount of evap not used
 
     # Now drain the canopy storage again if needed...
-    D = ifthenelse (CanopyStorage > Cmax , CanopyStorage - Cmax , 0.0)
+    D = pcr.ifthenelse(CanopyStorage > Cmax, CanopyStorage - Cmax, 0.0)
     CanopyStorage = CanopyStorage - D
-    
+
     # Calculate throughfall
     ThroughFall = DD + D + p * Precipitation
     StemFlow = Precipitation * pt
-    
+
     # Calculate interception, this is NET Interception
     NetInterception = Precipitation - ThroughFall - StemFlow
     Interception = -dC
-    
-    return NetInterception, ThroughFall, StemFlow, LeftOver, Interception, CanopyStorage
 
- 
+    return NetInterception, ThroughFall, StemFlow, LeftOver, Interception, CanopyStorage
 
 Snow and Glaciers
 -----------------
-Snow and glaciers processes, from the HBV model, are available in the wflow fremawork and used by the wflow\_sbm and wflow\_hbv models.
+Snow and glaciers processes, from the HBV model, are available in the wflow framework. The snow and glacier functions are
+used by the wflow\_sbm model, and the glacier function is used by the wflow\_hbv model.
 
 Snow modelling
 ~~~~~~~~~~~~~~
 
-Precipitation enters the model via the snow routine. If the air temperature,
-:math:`T_{a}`, is below a user-defined threshold :math:`TT (\approx0^{o}C)`
+If the air temperature, :math:`T_{a}`, is below a user-defined threshold :math:`TT (\approx0^{o}C)`
 precipitation occurs as snowfall, whereas it occurs as rainfall if
 :math:`T_{a}\geq TT`. A another parameter :math:`TTI` defines how precipitation
 can occur partly as rain of snowfall (see the figure below).
@@ -353,25 +411,12 @@ content of the snow pack.
 	Schematic view of the snow routine
 
 
-The snow model als has an optional (experimental) 'mass-wasting' routine. This transports snow downhill
-using the local drainage network. To use it set the variable MassWasting in the model section to 1.
-
-::
-
-       # Masswasting of snow
-       # 5.67 = tan 80 graden
-       SnowFluxFrac = min(0.5,self.Slope/5.67) * min(1.0,self.DrySnow/MaxSnowPack)
-       MaxFlux = SnowFluxFrac * self.DrySnow
-       self.DrySnow = accucapacitystate(self.TopoLdd,self.DrySnow, MaxFlux)
-       self.FreeWater = accucapacitystate(self.TopoLdd,self.FreeWater,SnowFluxFrac * self.FreeWater )
-
-
-
 Glacier modelling
 ~~~~~~~~~~~~~~~~~
-Glacier processes can be modelled if the snow model is enabled. Glacier modelling is very close to 
-snow modelling and considers two main processes: glacier build-up from snow turning into firn/ice (using 
-the HBV-light model) and glacier melt (using a temperature degree-day model).
+Glacier processes can be modelled if the snow model is enabled in wflow\_sbm.
+For wflow\_hbv snow modelling is not optional.
+Glacier modelling is very close to snow modelling and considers two main processes: glacier build-up from snow turning 
+into firn/ice (using the HBV-light model) and glacier melt (using a temperature degree-day model).
 
 The definition of glacier boundaries and initial volume is defined in two staticmaps. *GlacierFrac* is a map 
 that gives the fraction of each grid cell covered by a glacier as a number between zero and one. *GlacierStore* 
@@ -403,7 +448,7 @@ Values of the melting factor normally varies from one glacier to another and som
 albedo of ice compared to snow. 
 
 
-If snow modeling is enabled, Glacier modelling can also be enabled by including the following four entries in the 
+Glacier modelling can be enabled by including the following four entries in the 
 modelparameters section:
 
 ::

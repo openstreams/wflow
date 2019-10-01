@@ -224,7 +224,7 @@ def infiltration(AvailableForInfiltration, PathFrac, cf_soil, TSoil,InfiltCapSoi
     PathInf = AvailableForInfiltration * PathFrac
     if modelSnow & soilInfReduction:
         bb = 1.0 / (1.0 - cf_soil)
-        soilInfRedu = _sCurve(TSoil, a=0.0, b=bb, c=8.0)
+        soilInfRedu = _sCurve(TSoil, a=0.0, b=bb, c=8.0) + cf_soil
     else:
         soilInfRedu = 1.0
     MaxInfiltSoil = min(InfiltCapSoil * soilInfRedu, SoilInf)
@@ -1567,17 +1567,17 @@ class WflowModel(pcraster.framework.DynamicModel):
         # Slope land surface either provided as map, or based om DEM (default)
         self.landSlope = pcr.max(0.00001, self.wf_readmap(os.path.join(self.Dir, "staticmaps/Slope.map"), self.Slope))            
 
-        # soil thickness based on topographical index (see Environmental modelling: finding simplicity in complexity)
+        # soil thickness based on topographic wetness index (see Environmental modelling: finding simplicity in complexity)
         # 1: calculate wetness index
-        # 2: Scale the capacity (now actually a max capacity) based on the index, also apply a minmum capacity
+        # 2: Scale the soil thickness (now actually a max) based on the index, also apply a minimum soil thickness
         WI = pcr.ln(
             pcr.accuflux(self.TopoLdd, 1) / self.landSlope
-        )  # Topographical wetnesss. Scale WI by zone/subcatchment assuming these ara also geological units
+        )  # Topographic wetnesss index. Scale WI by zone/subcatchment assuming these ara also geological units
         WIMax = pcr.areamaximum(WI, self.TopoId) * WIMaxScale
         self.SoilThickness = pcr.max(
             pcr.min(self.SoilThickness, (WI / WIMax) * self.SoilThickness),
             self.SoilMinThickness,
-        )        
+        )
 
         self.SoilWaterCapacity = self.SoilThickness * (self.thetaS - self.thetaR)
 

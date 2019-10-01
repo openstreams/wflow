@@ -124,6 +124,12 @@ using the local drainage network. To use it set the variable MassWasting in the 
        self.FreeWater = accucapacitystate(self.TopoLdd,self.FreeWater,SnowFluxFrac * self.FreeWater )
 
 
+Glaciers
+~~~~~~~~
+
+Glacier processes are described in the wflow_funcs Module :ref:`wflow_funcs:Glacier modelling`
+
+
 Potential Evaporation
 ~~~~~~~~~~~~~~~~~~~~~
 
