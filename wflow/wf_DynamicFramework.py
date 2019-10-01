@@ -653,7 +653,7 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
             for cmdd in self.modelparameters_changes_once:
                 var = cmdd.replace("self._userModel().", "").strip()
                 
-                #statement below added for topoflex                 
+                # for List objects in topoflex
                 if '[' in var:
                     listnr = var.split('[')[-1].split(']')[0]
                     varname = var.split('[')[0]
@@ -664,10 +664,20 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
                         "Variable change (apply_once) applied to "
                         + str(var) + " with factor" + self.modelparameters_changes_once[cmdd].split('*')[1]
                     )
-                    
-                if not hasattr(self._userModel(), var):
+                
+                # for List objects in sbm
+                elif var.split('_')[-1].isdigit():
+                    mapmult = getattr(self._userModel(), var.split('_')[0])[int(var.split('_')[-1])] * float(self.modelparameters_changes_once[cmdd].split("*")[1])
+                    getattr(self._userModel(),var.split('_')[0])[int(var.split('_')[-1])] = mapmult
+
+                    self.logger.warning(
+                    "Variable change (apply_once) applied to "
+                    + str(var.split('_')[0]) + str([int(var.split('_')[-1])]) + " with factor" + self.modelparameters_changes_once[cmdd].split('*')[1]
+                    )
+
+                elif not hasattr(self._userModel(), var):
                     self.logger.error(
-                        "Variable change ((apply_once) could not be applied to "
+                        "Variable change (apply_once) could not be applied to "
                         + str(var)
                     )
                 else:
