@@ -25,10 +25,10 @@ usage
 
 ::
 
-    wflow_sbm [-h][-v level][-F runinfofile][-L logfile][-C casename][-R runId]
-          [-c configfile][-T last_step][-S first_step][-s seconds][-W][-E][-N][-U discharge]
-          [-P parameter multiplication][-X][-f][-I][-i tbl_dir][-x subcatchId][-u updatecols]
-          [-p inputparameter multiplication][-l loglevel]
+    wflow_sbm [-h][-v level][-L logfile][-C casename][-R runId]
+          [-c configfile][-T last_step][-S first_step][-s seconds]
+          [-P parameter multiplication][-X][-f][-I][-i tbl_dir][-x subcatchId]
+          [-p inputparameter multiplication][-l loglevel][--version]
 
 
     -X: save state at the end of the run over the initial conditions at the start
@@ -53,34 +53,18 @@ usage
 
     -L: set the logfile
 
-    -E: Switch on reinfiltration of overland flow
-
-    -c: name of wflow the configuration file (default: Casename/wflow_sbm.ini).
+    -c: name of wflow configuration file (default: Casename/wflow_sbm.ini).
 
     -h: print usage information
-
-    -W: If set, this flag indicates that an ldd is created for the water level
-        for each timestep. If not the water is assumed to flow according to the
-        DEM. Wflow will run a lot slower with this option. Most of the time
-        (shallow soil, steep topography) you do not need this option. Also, if you
-        need it you migth actually need another model.
-
-    -U: The argument to this option should be a .tss file with measured discharge in
-        [m^3/s] which the progam will use to update the internal state to match
-        the measured flow. The number of columns in this file should match the
-        number of gauges in the wflow_gauges.map file.
-
-    -u: list of gauges/columns to use in update. Format:
-        -u [1 , 4 ,13]
-        The above example uses column 1, 4 and 13
 
     -P: set parameter change string (e.g: -P "self.FC = self.FC * 1.6") for non-dynamic variables
 
     -p: set parameter change string (e.g: -P "self.Precipitation = self.Precipitation * 1.11") for
         dynamic variables
 
-
     -l: loglevel (most be one of DEBUG, WARNING, ERROR)
+
+    --version: print wflow version
 
 """
 
@@ -1450,15 +1434,8 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.ReserVoirLocs = self.ReserVoirLocs + pcr.cover(
                 pcr.scalar(self.ReserVoirSimpleLocs), 0.0
             )
-            areamap = self.reallength * self.reallength
-            res_area = pcr.areatotal(pcr.spatial(areamap), self.ReservoirSimpleAreas)
-
-            resarea_pnt = pcr.ifthen(pcr.boolean(self.ReserVoirSimpleLocs), res_area)
-            self.ResSimpleArea = pcr.ifthenelse(
-                pcr.cover(self.ResSimpleArea, pcr.scalar(0.0)) > 0,
-                self.ResSimpleArea,
-                pcr.cover(resarea_pnt, pcr.scalar(0.0)),
-            )
+            
+            res_area = pcr.cover(pcr.scalar(self.ReservoirSimpleAreas), 0.0)
             self.filter_P_PET = pcr.ifthenelse(
                 pcr.boolean(pcr.cover(res_area, pcr.scalar(0.0))),
                 res_area * 0.0,
@@ -3067,21 +3044,8 @@ def main(argv=None):
             configset(myModel.config, "model", "configfile", a, overwrite=True)
         if o == "-M":
             configset(myModel.config, "model", "MassWasting", "0", overwrite=True)
-        if o == "-Q":
-            configset(myModel.config, "model", "ExternalQbase", "1", overwrite=True)
-        if o == "-U":
-            configset(myModel.config, "model", "updateFile", a, overwrite=True)
-            configset(myModel.config, "model", "updating", "1", overwrite=True)
-        if o == "-u":
-            zz = []
-            exec("zz =" + a)
-            updateCols = zz
-        if o == "-E":
-            configset(myModel.config, "model", "reInfilt", "1", overwrite=True)
         if o == "-R":
             runId = a
-        if o == "-W":
-            configset(myModel.config, "model", "waterdem", "1", overwrite=True)
         if o == "-T":
             configset(myModel.config, "run", "endtime", a, overwrite=True)
         if o == "-S":

@@ -639,9 +639,9 @@ onlys shows the soil and Kinematic wave reservoir, not the canopy model.
     UStoreDepth -> OutSide [label="SumEvapUstore [mm]"];
     SatWaterDepth -> OutSide [label="SumEvapSat [mm]"];
     "OutSide" -> KinWaveStoreLand [label="InWaterL [m^{3}/s]"];
-    KinWaveStoreLand -> KinWaveStoreRiver [label="qo_toriver [m^{3}/s]"]
-    SatWaterDepth -> KinWaveStoreRiver [label="ssf_toriver [m^{3}/s]"]
-    "OutSide" -> KinWaveStoreRiver [label="RunoffOpenWaterRiver [m^3/s]"] ;
+    KinWaveStoreLand -> KinWaveStoreRiver [label="qo_toriver [m\ :math:`^3`/s]"]
+    SatWaterDepth -> KinWaveStoreRiver [label="ssf_toriver [m\ :math:`^3`/s]"]
+    "OutSide" -> KinWaveStoreRiver [label="RunoffOpenWaterRiver [m\ :math:`^3`/s]"] ;
     
 
 
@@ -666,14 +666,15 @@ wflow\_sbm takes the correction grid as input and applies this to the input
 temperature. The correction grid has to be made outside of the model.
 The correction grid is optional.
 
-.. note::
 
-	The temperature correction map is specified in the model section of the ini file:
+The temperature correction map is specified in the model section of the ini file:
 
-	[model]
-	TemperatureCorrectionMap=NameOfTheMap
+::
 
-	If the entry is not in the file the correction will not be applied
+    [model]
+    TemperatureCorrectionMap=NameOfTheMap
+
+If the entry is not in the file the correction will not be applied
 
 
 Wflow_sbm model parameters

@@ -468,15 +468,16 @@ Simplified reservoirs and lakes models are included in the framwork and used by 
 
 Reservoirs
 ~~~~~~~~~~
-Simple reservoirs can be included within the kinematic wave routing by supplying a map with the locations of the
-reservoirs in which each reservoir has a unique id.  Furthermore a set of lookuptables must be defined linking
-the reservoir-id's to reservoir characteristics:
+Simple reservoirs can be included within the kinematic wave routing by supplying two maps, one map with the outlet of the
+reservoirs in which each reservoir has a unique id (ReserVoirSimpleLocs), and one map with the extent of reservoir (ReservoirSimpleAreas). 
+Furthermore a set of lookuptables must be defined linking the reservoir-id's to reservoir characteristics:
 
 + ResTargetFullFrac.tbl - Target fraction full (of max storage) for the reservoir: number between 0 and 1
-+ ResTargetMinFrac.tbl - Target minimum full fraction (of max storage). Number between 01 and 1 <  ResTargetFullFrac
-+ ResMaxVolume.tbl - Maximum reservoir storage (above which water is spilled) [m^3]
-+ ResDemand.tbl - Water demand on the reservoir (all combined) m^3/s
-+ ResMaxRelease.tbl - Maximum Q that can be released if below spillway [m^3/s]
++ ResTargetMinFrac.tbl - Target minimum full fraction (of max storage). Number between 0 and 1 <  ResTargetFullFrac
++ ResMaxVolume.tbl - Maximum reservoir storage (above which water is spilled) [m\ :math:`^3`]
++ ResDemand.tbl - Minimum (environmental) flow requirement downstream of the reservoir  m\ :math:`^3`/s
++ ResMaxRelease.tbl - Maximum Q that can be released if below spillway [m\ :math:`^3`/s]
++ ResSimpleArea.tbl - Surface area of the reservoir [m\ :math:`^{2}`]
 
 By default the reservoirs are not included in the model. To include them put the following
 lines in the .ini file of the model.
@@ -485,14 +486,17 @@ lines in the .ini file of the model.
 
     [modelparameters]
     # Add this if you want to model reservoirs
-    ReserVoirLocs=staticmaps/wflow_reservoirlocs.map,staticmap,0.0,0
+    ReserVoirSimpleLocs=staticmaps/wflow_reservoirlocs.map,staticmap,0.0,0
+    ReservoirSimpleAreas=staticmaps/wflow_reservoirareas.map,staticmap,0.0,0
+    ResSimpleArea = intbl/ResSimpleArea.tbl,tbl,0,0,staticmaps/wflow_reservoirlocs.map
     ResTargetFullFrac=intbl/ResTargetFullFrac.tbl,tbl,0.8,0,staticmaps/wflow_reservoirlocs.map
     ResTargetMinFrac=intbl/ResTargetMinFrac.tbl,tbl,0.4,0,staticmaps/wflow_reservoirlocs.map
     ResMaxVolume=intbl/ResMaxVolume.tbl,tbl,0.0,0,staticmaps/wflow_reservoirlocs.map
     ResMaxRelease=intbl/ResMaxRelease.tbl,tbl,1.0,0,staticmaps/wflow_reservoirlocs.map
     ResDemand=intbl/ResDemand.tbl,tblmonthlyclim,1.0,0,staticmaps/wflow_reservoirlocs.map
+    
 
-In the above example most values are fixed thought the year, only the demand is given per month of the year.
+In the above example most values are fixed thoughout the year, only the ResDemand is in given per month of the year.
 
 
 Natural Lakes
