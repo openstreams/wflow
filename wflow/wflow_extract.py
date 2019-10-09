@@ -57,7 +57,7 @@ def main(argv=None):
             usage()
             return
 
-    opts, args = getopt.getopt(argv, "fhC:N:Ir:c:",['version'])
+    opts, args = getopt.getopt(argv, "fhC:N:Ir:c:")
 
     factor = 1
     Verbose = 1
@@ -82,10 +82,6 @@ def main(argv=None):
             usage()
         if o == "-f":
             force = True
-        if o == "--version":
-            import wflow
-            print("wflow version: ", wflow.__version__)
-            sys.exit(0)
 
     dirs = ["/intbl/", "/inmaps/", "/staticmaps/", "/intss/", "/instate/", "/outstate/"]
     if os.path.isdir(caseNameNew) and not force:

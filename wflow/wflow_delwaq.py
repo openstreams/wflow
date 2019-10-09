@@ -1245,7 +1245,7 @@ def main():
     # T0 = datetime.strptime("2000-01-01 00:00:00",'%Y-%m-%d %H:%M:%S')
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "adD:C:R:S:hT:s:O:A:jc:n:",['version'])
+        opts, args = getopt.getopt(sys.argv[1:], "adD:C:R:S:hT:s:O:A:jc:n:")
     except getopt.error as msg:
         pcrut.usage(msg)
 
@@ -1268,10 +1268,6 @@ def main():
             sourcesMap.append(a)
         if o == "-h":
             usage()
-        if o == "--version":
-            import wflow
-            print("wflow version: ", wflow.__version__)
-            sys.exit(0)
         # if o == '-T': timeSteps = int(a)
         if o == "-A":
             areamap = a.strip()

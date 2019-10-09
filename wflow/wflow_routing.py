@@ -1051,7 +1051,7 @@ def main(argv=None):
     ## Process command-line options                                        #
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, "F:L:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:g:",['version'])
+        opts, args = getopt.getopt(argv, "F:L:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:g:")
     except getopt.error as msg:
         pcrut.usage(msg)
 
@@ -1068,10 +1068,6 @@ def main(argv=None):
             timestepsecs = int(a)
         if o == "-h":
             usage()
-        if o == "--version":
-            import wflow
-            print("wflow version: ", wflow.__version__)
-            sys.exit(0)
         if o == "-f":
             _NoOverWrite = 0
         if o == "-l":

@@ -35,6 +35,7 @@ reached (\epsilon < 10\ :math:`^{-12}`). For larger models, the number of iterat
 of the kinematic wave the following lines can be inserted in the ini files of the related models:
 
 ::
+
     [model]
     # Enable iterations of the kinematic wave
     kinwaveIters = 1
@@ -42,6 +43,18 @@ of the kinematic wave the following lines can be inserted in the ini files of th
     kinwaveRiverTstep = 900
     # Fixed sub-timestep for iterations of overland flow (land cells)
     kinwaveLandTstep = 3600
+
+For wflow\_sbm and wflow\_hbv Manning's N values for the river can be specified through a N_River.tbl file in two ways:
+
+- N values are linked to land cover (col 1), sub catchment (col 2) and soil type (col 3) (default (NRiverMethod == 1))
+- N values are linked to streamorder (col 1) (NRiverMethod == 2)
+
+To link N values to streamorder insert the following in the ini file:
+
+:: 
+
+    [model]
+    nrivermethod = 2
 
 Subsurface flow routing
 ~~~~~~~~~~~~~~~~~~~~~~~

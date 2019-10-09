@@ -28,7 +28,7 @@ usage
     wflow_sbm [-h][-v level][-L logfile][-C casename][-R runId]
           [-c configfile][-T last_step][-S first_step][-s seconds]
           [-P parameter multiplication][-X][-f][-I][-i tbl_dir][-x subcatchId]
-          [-p inputparameter multiplication][-l loglevel][--version]
+          [-p inputparameter multiplication][-l loglevel]
 
 
     -X: save state at the end of the run over the initial conditions at the start
@@ -64,7 +64,6 @@ usage
 
     -l: loglevel (most be one of DEBUG, WARNING, ERROR)
 
-    --version: print wflow version
 
 """
 
@@ -2967,7 +2966,7 @@ def main(argv=None):
     ## Process command-line options                                        #
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, "XL:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:", ['version'])
+        opts, args = getopt.getopt(argv, "XL:hC:Ii:v:S:T:WR:u:s:EP:p:Xx:U:fOc:l:")
     except getopt.error as msg:
         pcrut.usage(msg)
 
@@ -2988,10 +2987,6 @@ def main(argv=None):
             _NoOverWrite = 0
         if o == "-l":
             exec("loglevel = logging." + a)
-        if o == "--version":
-            import wflow
-            print("wflow version: ", wflow.__version__)
-            sys.exit(0)
 
     starttime = dt.datetime(1990, 1, 1)
 

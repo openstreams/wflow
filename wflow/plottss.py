@@ -57,7 +57,7 @@ def main(argv=None):
             return
 
     plottitle = ""
-    opts, args = getopt.getopt(argv, "T:LSC:",['version'])
+    opts, args = getopt.getopt(argv, "T:LSC:")
 
     for o, a in opts:
         if o == "-T":
@@ -68,10 +68,6 @@ def main(argv=None):
             subplots = True
         if o == "-C":
             cols = a
-        if o == "--version":
-            import wflow
-            print("wflow version: ", wflow.__version__)
-            sys.exit(
 
     nrplotfiles = len(args)
 

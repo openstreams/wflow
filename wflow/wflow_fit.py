@@ -404,7 +404,7 @@ def main(argv=None):
             usage()
             return
 
-    opts, args = getopt.getopt(argv, "C:S:T:c:s:R:hM:U",['version'])
+    opts, args = getopt.getopt(argv, "C:S:T:c:s:R:hM:U")
 
     for o, a in opts:
         if o == "-C":
@@ -423,10 +423,6 @@ def main(argv=None):
             theModel = a
         if o == "-U":
             saveResults = True
-        if o == "--version":
-            import wflow
-            print("wflow version: ", wflow.__version__)
-            sys.exit(0)
         if o == "-h":
             usage()
 

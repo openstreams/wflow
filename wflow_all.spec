@@ -1,6 +1,7 @@
 # -*- mode: python -*-
 
 import os
+import subprocess
 import pathlib
 import shutil
 from distutils.dir_util import copy_tree, remove_tree
@@ -8,7 +9,6 @@ from distutils.dir_util import copy_tree, remove_tree
 from osgeo import gdal
 import pyproj
 pyproj_datadir = pyproj.datadir.pyproj_datadir
-
 import pcraster
 
 pcrasterlib = pathlib.Path(pcraster.__file__).parents[2] / "lib"
@@ -36,7 +36,7 @@ scriptpaths = [
     "wflow/wflow_lintul.py",
     "wflow/wflow_pcrglobwb.py",
     "wflow/wflow_routing.py",
-    "wflow/wflow_sbm.py",
+     "wflow/wflow_sbm.py",
     "wflow/wflow_sphy.py",
     "wflow/wflow_topoflex.py",
     "wflow/wflow_w3ra.py",
@@ -110,6 +110,13 @@ else:
 pyzlist = list(map(do_pyz, analist))
 exelist = list(map(do_exe, zip(analist, pyzlist)))
 collist = list(map(do_collect, zip(analist, exelist)))
+
+filename = "version.txt"
+versionfile = open(os.path.join("dist",filename), 'w')
+version=subprocess.check_output(["git", "describe", "--tags"]).strip().decode()
+versionfile.write(version)
+versionfile.close()
+
 
 # merge all individual folders in the parent 'dist' folder
 # Replace with MERGE when this issue is fixed

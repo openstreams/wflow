@@ -1576,8 +1576,7 @@ def main():
     ########################################################################
     try:
         opts, args = getopt.getopt(
-            sys.argv[1:], "XF:L:hC:Ii:v:S:T:WNR:u:s:EP:p:Xx:U:fOc:", ['version']
-        )
+            sys.argv[1:], "XF:L:hC:Ii:v:S:T:WNR:u:s:EP:p:Xx:U:fOc:")
     except getopt.error as msg:
         pcrut.usage(msg)
 
@@ -1603,10 +1602,6 @@ def main():
             usage()
         if o == "-f":
             NoOverWrite = 0
-        if o == "--version":
-            import wflow
-            print("wflow version: ", wflow.__version__)
-            sys.exit(0)
 
     if _lastTimeStep < _firstTimeStep:
         usage()
