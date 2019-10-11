@@ -13,3 +13,4 @@ Available models
     wflow_wave.rst
     wflow_floodmap.rst
     wflow_sediment.rst
+    wflow_lintul.rst
