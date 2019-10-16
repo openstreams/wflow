@@ -23,6 +23,8 @@ setup(
     author_email="wflow@deltares.nl",
     url="http://wflow.readthedocs.io/",
     license="GPL",
+    use_scm_version = True,
+    setup_requires=["setuptools_scm"],
     python_requires=">=3.6",
     install_requires=[
         "numpy",
@@ -37,8 +39,6 @@ setup(
     extras_require={
         "docs": ["sphinx", "sphinx_rtd_theme"],
     },
-    version=versioneer.get_version(),
-    cmdclass=versioneer.get_cmdclass(),
     packages=["wflow", "wflow.pcrglobwb", "wflow.sphy", "wflow.wrappers.rtc"],
     package_dir={"wflow": "wflow"},
     test_suite="tests",
