@@ -8,7 +8,7 @@ __all__ = [
 ]
 import os
 import sys
-
+import pkg_resources
 
 if getattr(sys, "frozen", False):
     import osgeo.gdal as gdal
@@ -27,7 +27,8 @@ if getattr(sys, "frozen", False):
     # that child processes will inherit it
     os.environ["PROJ_DIR"] = os.path.join(basedir, "proj-data")
 
-from ._version import get_versions
-
-__version__ = get_versions()["version"]
-del get_versions
+try:
+    __version__ = pkg_resources.get_distribution(__name__).version
+except pkg_resources.DistributionNotFound:
+    # package is not installed
+    pass

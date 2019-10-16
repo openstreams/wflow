@@ -15,7 +15,7 @@ dependencies:
   - thrift>=0.11
   - numba>=0.42
   - pyinstaller>=3.3
-  - versioneer>=0.18
+  - setuptools_scm
   - setuptools>=38
   - pip>=9.0.3
   - python-dateutil>=2.7

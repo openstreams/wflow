@@ -24,9 +24,9 @@ usage
 
 ::
 
-    wflow_pcrglobwb [-h][-v level][-F runinfofile][-L logfile][-C casename][-R runId]
-          [-c configfile][-T last_step][-S first_step][-s seconds][-W][-E][-N][-U discharge]
-          [-P parameter multiplication][-X][-f][-I][-i tbl_dir][-x subcatchId][-u updatecols]
+    wflow_pcrglobwb [-h][-v level][-L logfile][-C casename][-R runId]
+          [-c configfile][-T last_step][-S first_step][-s seconds][-N]
+          [-P parameter multiplication][-f][-I][-i tbl_dir][-x subcatchId]
           [-p inputparameter multiplication][-l loglevel]
 
 
@@ -52,32 +52,14 @@ usage
 
     -L: set the logfile
 
-    -E: Switch on reinfiltration of overland flow
-
     -c: name of wflow the configuration file (default: Casename/wflow_sbm.ini).
 
     -h: print usage information
-
-    -W: If set, this flag indicates that an ldd is created for the water level
-        for each timestep. If not the water is assumed to flow according to the
-        DEM. Wflow will run a lot slower with this option. Most of the time
-        (shallow soil, steep topography) you do not need this option. Also, if you
-        need it you migth actually need another model.
-
-    -U: The argument to this option should be a .tss file with measured discharge in
-        [m^3/s] which the progam will use to update the internal state to match
-        the measured flow. The number of columns in this file should match the
-        number of gauges in the wflow\_gauges.map file.
-
-    -u: list of gauges/columns to use in update. Format:
-        -u [1 , 4 ,13]
-        The above example uses column 1, 4 and 13
 
     -P: set parameter change string (e.g: -P "self.FC = self.FC * 1.6") for non-dynamic variables
 
     -p: set parameter change string (e.g: -P "self.Precipitation = self.Precipitation * 1.11") for
         dynamic variables
-
 
     -l: loglevel (most be one of DEBUG, WARNING, ERROR)
 
@@ -97,10 +79,6 @@ from wflow.wflow_funcs import *
 
 wflow = "wflow_pcrglobwb: "
 
-
-#: columns used in updating
-updateCols = []  #: columns used in updating
-""" Column used in updating """
 
 
 def usage(*args):
@@ -276,18 +254,6 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.configfile = configfile
         self.SaveDir = os.path.join(self.Dir, self.runId)
 
-    def updateRunOff(self):
-        """
-      Updates the kinematic wave reservoir
-      """
-
-        self.WaterLevel = (self.Alpha * pow(self.SurfaceRunoff, self.Beta)) / self.Bw
-        # wetted perimeter (m)
-        P = self.Bw + (2 * self.WaterLevel)
-        # Alpha
-        self.Alpha = self.AlpTerm * pow(P, self.AlpPow)
-        self.OldKinWaveVolume = self.KinWaveVolume
-        self.KinWaveVolume = self.WaterLevel * self.Bw * self.DCL
 
     def stateVariables(self):
 
@@ -728,23 +694,8 @@ def main(argv=None):
             configset(myModel.config, "model", "sCatch", a, overwrite=True)
         if o == "-c":
             configset(myModel.config, "model", "configfile", a, overwrite=True)
-        if o == "-M":
-            configset(myModel.config, "model", "MassWasting", "0", overwrite=True)
-        if o == "-Q":
-            configset(myModel.config, "model", "ExternalQbase", "1", overwrite=True)
-        if o == "-U":
-            configset(myModel.config, "model", "updateFile", a, overwrite=True)
-            configset(myModel.config, "model", "updating", "1", overwrite=True)
-        if o == "-u":
-            zz = []
-            exec("zz =" + a)
-            updateCols = zz
-        if o == "-E":
-            configset(myModel.config, "model", "reInfilt", "1", overwrite=True)
         if o == "-R":
             runId = a
-        if o == "-W":
-            configset(myModel.config, "model", "waterdem", "1", overwrite=True)
         if o == "-T":
             configset(myModel.config, "run", "endtime", a, overwrite=True)
         if o == "-S":
