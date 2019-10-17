@@ -1,6 +1,5 @@
 import os
 from setuptools import setup
-import versioneer
 
 # since pcraster cannot be installed with pip, we check it like this
 try:
