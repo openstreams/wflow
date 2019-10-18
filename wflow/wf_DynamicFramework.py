@@ -23,8 +23,8 @@ import traceback
 from collections import namedtuple
 from functools import reduce
 
+import wflow
 import numpy as np
-from wflow import __version__
 from wflow.wf_netcdfio import *
 import pcraster as pcr
 import pcraster.framework
@@ -577,7 +577,7 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
         self._addMethodToClass(self.wf_supplyEndTime)
         self._addAttributeToClass("ParamType", self.ParamType)
         self._addAttributeToClass("timestepsecs", self.DT.timeStepSecs)
-        self._addAttributeToClass("__version__", __version__)
+        self._addAttributeToClass("__version__", wflow.__version__)
         # self._addAttributeToClass("__release__", __release__)
         # self._addAttributeToClass("__build__", __build__)
         self.skipfirsttimestep = 0
@@ -1179,7 +1179,7 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
         caseName = self._userModel().caseName
         runId = self._userModel().runId
         if modelVersion == "no version":
-            modelVersion = __version__
+            modelVersion = wflow.__version__
 
         configfile = self._userModel().configfile
         if not os.path.isdir(caseName + "/" + runId):
@@ -1216,7 +1216,7 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
         self.logger = self._userModel().logger
 
         self.logger.info(
-            "Initialise framework version: " + __version__
+            "Initialise framework version: " + wflow.__version__
         )  # + "(" + __release__ + ")")
 
         global logging
@@ -1482,7 +1482,7 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
         meta = {}
         meta["caseName"] = caseName
         meta["runId"] = runId
-        meta["wflow_version"] = __version__
+        meta["wflow_version"] = wflow.__version__
         # meta['wflow_release'] = __release__
         # meta['wflow_build'] = __build__
         meta["wflow_ini"] = self._userModel().configfile
