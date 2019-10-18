@@ -40,6 +40,7 @@ import math
 import os.path
 
 import pcraster.framework
+import pcraster as pcr
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
 
@@ -70,12 +71,13 @@ class WflowModel(pcraster.framework.DynamicModel):
 
       """
         pcraster.framework.DynamicModel.__init__(self)
-        pcr.setclone(Dir + "/staticmaps/" + cloneMap)
+        self.caseName = os.path.abspath(Dir)
+        self.clonemappath = os.path.join(os.path.abspath(Dir), "staticmaps", cloneMap)
+        pcr.setclone(self.clonemappath)
         self.runId = RunDir
-        self.caseName = Dir
-        self.Dir = Dir
+        self.Dir = os.path.abspath(Dir)
         self.configfile = configfile
-        self.SaveDir = self.Dir + "/" + self.runId + "/"
+        self.SaveDir = os.path.join(self.Dir, self.runId)
 
     def stateVariables(self):
         """
@@ -163,6 +165,10 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.timestepsecs = int(
             configget(self.config, "model", "timestepsecs", "86400")
         )
+        
+        self.reinit = int(configget(self.config, "run", "reinit", "0"))
+        self.OverWriteInit = int(configget(self.config, "model", "OverWriteInit", "0"))
+        
         self.UseETPdata = int(
             configget(self.config, "model", "UseETPdata", "1")
         )  #  1: Use ETP data, 0: Compute ETP from meteorological variables
@@ -425,15 +431,14 @@ class WflowModel(pcraster.framework.DynamicModel):
     setup needed.
 
     """
-        self.logger.info("Reading initial conditions...")
-        #: It is advised to use the wf_resume() function
-        #: here which pick up the variable save by a call to wf_suspend()
-        try:
-            self.wf_resume(self.Dir + "/instate/")
-        except:
-            self.logger.warning("Cannot load initial states, setting to default")
+        if self.reinit == 1:
+            self.logger.info("Setting initial conditions to default")
             for s in self.stateVariables():
                 exec("self." + s + " = pcr.cover(1.0)")
+        else:
+            self.logger.info("Setting initial conditions from state files")
+            self.wf_resume(os.path.join(self.Dir, "instate"))
+            
 
     def default_summarymaps(self):
         """
@@ -1106,11 +1111,11 @@ def main(argv=None):
         if o == "-X":
             configset(myModel.config, "model", "OverWriteInit", "1", overwrite=True)
         if o == "-I":
-            configset(myModel.config, "model", "reinit", "1", overwrite=True)
+            configset(myModel.config, "run", "reinit", "1", overwrite=True)
         if o == "-i":
             configset(myModel.config, "model", "intbl", a, overwrite=True)
         if o == "-s":
-            configset(myModel.config, "model", "timestepsecs", a, overwrite=True)
+            configset(myModel.config, "run", "timestepsecs", a, overwrite=True)
         if o == "-T":
             configset(myModel.config, "run", "endtime", a, overwrite=True)
         if o == "-S":

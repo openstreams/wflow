@@ -24,13 +24,9 @@ Run the wflow_hbv hydrological model..
 usage:
 wflow_hbv::
 
-      [-h][-v level][-F runinfofile][-L logfile][-C casename][-R runId]
+      [-h][-v level][-L logfile][-C casename][-R runId]
       [-c configfile][-T timesteps][-s seconds][-W][-E][-N][-U discharge]
       [-P parameter multiplication][-X][-l loglevel]
-
-    -F: if set wflow is expected to be run by FEWS. It will determine
-        the timesteps from the runinfo.xml file and save the output initial
-        conditions to an alternate location. Also set fewsrun=1 in the .ini file!
 
     -f: Force overwrite of existing results
 
@@ -188,7 +184,7 @@ class WflowModel(pcraster.framework.DynamicModel):
           - time in seconds since the start of the model run
       """
         return self.currentTimeStep() * int(
-            configget(self.config, "model", "timestepsecs", "86400")
+            configget(self.config, "run", "timestepsecs", "86400")
         )
 
     def parameters(self):
@@ -287,9 +283,6 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.logger.info("Saving initial conditions over start conditions...")
             self.wf_suspend(os.path.join(self.SaveDir, "instate"))
 
-        if self.fewsrun:
-            self.logger.info("Saving initial conditions for FEWS...")
-            self.wf_suspend(os.path.join(self.Dir, "outstate"))
 
     def initial(self):
 
@@ -375,16 +368,15 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.config, "model", "InterpolationMethod", "inv"
         )
         self.reinit = int(configget(self.config, "run", "reinit", "0"))
-        self.fewsrun = int(configget(self.config, "run", "fewsrun", "0"))
         self.OverWriteInit = int(configget(self.config, "model", "OverWriteInit", "0"))
         self.updating = int(configget(self.config, "model", "updating", "0"))
         self.updateFile = configget(self.config, "model", "updateFile", "no_set")
         
-        self.kinwaveIters = int(configget(self.config, "model", "kinwaveIters", "0"))        
+        self.kinwaveIters = int(configget(self.config, "model", "kinwaveIters", "0"))         
         if self.kinwaveIters == 1:
             self.logger.info(
                 "Using sub timestep for kinematic wave (iterate)"
-            ) 
+            )
 
         self.sCatch = int(configget(self.config, "model", "sCatch", "0"))
         self.intbl = configget(self.config, "model", "intbl", "intbl")
@@ -1134,7 +1126,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         """ read initial state maps (they are output of a previous call to suspend()) """
 
         if self.reinit == 1:
-            self.logger.info("Setting initial conditions to default (zero!)")
+            self.logger.info("Setting initial conditions to default")
             self.FreeWater = pcr.cover(0.0)  #: Water on surface (state variable [mm])
             self.SoilMoisture = self.FC  #: Soil moisture (state variable [mm])
             self.UpperZoneStorage = (
@@ -1163,6 +1155,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                     55.0 * 1000,
                 )
         else:
+            self.logger.info("Setting initial conditions from state files")
             self.wf_resume(os.path.join(self.Dir, "instate"))
 
         P = self.Bw + (2.0 * self.WaterLevel)
@@ -1708,11 +1701,10 @@ def main(argv=None):
     LogFileName = "wflow.log"
     _lastTimeStep = 0
     _firstTimeStep = 0
-    fewsrun = False
     runinfoFile = "runinfo.xml"
     timestepsecs = 86400
     wflow_cloneMap = "wflow_subcatch.map"
-    NoOverWrite = 1
+    _NoOverWrite = 1
     loglevel = logging.DEBUG
 
     if argv is None:
@@ -1724,15 +1716,11 @@ def main(argv=None):
     ## Main model starts here
     ########################################################################
     try:
-        opts, args = getopt.getopt(argv, "c:QXS:F:hC:Ii:T:R:u:s:P:p:Xx:U:fl:L:")
+        opts, args = getopt.getopt(argv, "c:QXS:hC:Ii:T:R:u:s:P:p:Xx:U:fl:L:")
     except getopt.error as msg:
         pcrut.usage(msg)
 
     for o, a in opts:
-        if o == "-F":
-            runinfoFile = a
-            fewsrun = True
-
         if o == "-C":
             caseName = a
         if o == "-R":
@@ -1748,19 +1736,10 @@ def main(argv=None):
         if o == "-h":
             usage()
         if o == "-f":
-            NoOverWrite = 0
+            _NoOverWrite = 0
 
-    if fewsrun:
-        ts = getTimeStepsfromRuninfo(runinfoFile, timestepsecs)
-        starttime = getStartTimefromRuninfo(runinfoFile)
-        if ts:
-            _lastTimeStep = ts  # * 86400/timestepsecs
-            _firstTimeStep = 1
-        else:
-            print("Failed to get timesteps from runinfo file: " + runinfoFile)
-            sys.exit(2)
-    else:
-        starttime = dt.datetime(1990, 1, 1)
+
+    starttime = dt.datetime(1990, 1, 1)
 
     if _lastTimeStep < _firstTimeStep:
         print(
@@ -1777,9 +1756,10 @@ def main(argv=None):
         myModel, _lastTimeStep, firstTimestep=_firstTimeStep, datetimestart=starttime
     )
     dynModelFw.createRunId(
-        NoOverWrite=NoOverWrite,
+        NoOverWrite=_NoOverWrite,
         logfname=LogFileName,
         level=loglevel,
+        model="wflow_hbv",
         doSetupFramework=False,
     )
 
@@ -1803,7 +1783,7 @@ def main(argv=None):
         if o == "-i":
             configset(myModel.config, "model", "intbl", a, overwrite=True)
         if o == "-s":
-            configset(myModel.config, "model", "timestepsecs", a, overwrite=True)
+            configset(myModel.config, "run", "timestepsecs", a, overwrite=True)
         if o == "-x":
             configset(myModel.config, "model", "sCatch", a, overwrite=True)
         if o == "-c":

@@ -925,7 +925,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 )
             if self.kinwaveLandTstep > 0:
                 self.logger.info(
-                    "Using a fixed timestep (seconds) for kinematic wave overland flow: " + str(self.kinwaveRiverTstep)
+                    "Using a fixed timestep (seconds) for kinematic wave overland flow: " + str(self.kinwaveLandTstep)
                 )                
         if self.TransferMethod == 1:
             self.logger.info(
@@ -3032,7 +3032,7 @@ def main(argv=None):
         if o == "-i":
             configset(myModel.config, "model", "intbl", a, overwrite=True)
         if o == "-s":
-            configset(myModel.config, "model", "timestepsecs", a, overwrite=True)
+            configset(myModel.config, "run", "timestepsecs", a, overwrite=True)
         if o == "-x":
             configset(myModel.config, "model", "sCatch", a, overwrite=True)
         if o == "-c":

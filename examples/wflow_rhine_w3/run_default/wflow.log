@@ -1,0 +1,119 @@
+2019-10-18 15:52:14,630 - wflow_w3 - pcrut - DEBUG - File logging to C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\run_default\wflow.log
+2019-10-18 15:52:14,630 - wflow_w3 - wf_DynamicFramework - INFO - wflow_w3 git Case: C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3 Runid: run_default
+2019-10-18 15:52:14,630 - wflow_w3 - wf_DynamicFramework - INFO - Initialise framework version: git
+2019-10-18 15:52:14,646 - wflow_w3 - wf_DynamicFramework - WARNING - Ini file made for wflow_w3 but found __main__ in code.
+2019-10-18 15:52:14,647 - wflow_w3 - wf_DynamicFramework - DEBUG - Found following input variables to get from netcdf file: ['TMAX', 'TMIN', 'TEMP', 'PET', 'P', 'RAD', 'ALBEDO', 'WIND', 'PRES', 'P', 'PET', 'TEMP', 'TMAX', 'TMIN', 'RAD', 'ALBEDO', 'WIND', 'PRES']
+2019-10-18 15:52:14,647 - wflow_w3 - wf_netcdfio - INFO - Reading input from netCDF file: C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\inmaps/forcing_w3.nc
+2019-10-18 15:52:14,664 - wflow_w3 - wf_netcdfio - WARNING - Variable TMAX not found in netcdf file: C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\inmaps/forcing_w3.nc
+2019-10-18 15:52:14,664 - wflow_w3 - wf_netcdfio - WARNING - Variable TMIN not found in netcdf file: C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\inmaps/forcing_w3.nc
+2019-10-18 15:52:14,664 - wflow_w3 - wf_netcdfio - WARNING - Variable RAD not found in netcdf file: C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\inmaps/forcing_w3.nc
+2019-10-18 15:52:14,664 - wflow_w3 - wf_netcdfio - WARNING - Variable ALBEDO not found in netcdf file: C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\inmaps/forcing_w3.nc
+2019-10-18 15:52:14,664 - wflow_w3 - wf_netcdfio - WARNING - Variable WIND not found in netcdf file: C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\inmaps/forcing_w3.nc
+2019-10-18 15:52:14,664 - wflow_w3 - wf_netcdfio - WARNING - Variable PRES not found in netcdf file: C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\inmaps/forcing_w3.nc
+2019-10-18 15:52:14,664 - wflow_w3 - wf_netcdfio - WARNING - Variable TMAX not found in netcdf file: C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\inmaps/forcing_w3.nc
+2019-10-18 15:52:14,664 - wflow_w3 - wf_netcdfio - WARNING - Variable TMIN not found in netcdf file: C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\inmaps/forcing_w3.nc
+2019-10-18 15:52:14,664 - wflow_w3 - wf_netcdfio - WARNING - Variable RAD not found in netcdf file: C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\inmaps/forcing_w3.nc
+2019-10-18 15:52:14,664 - wflow_w3 - wf_netcdfio - WARNING - Variable ALBEDO not found in netcdf file: C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\inmaps/forcing_w3.nc
+2019-10-18 15:52:14,664 - wflow_w3 - wf_netcdfio - WARNING - Variable WIND not found in netcdf file: C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\inmaps/forcing_w3.nc
+2019-10-18 15:52:14,664 - wflow_w3 - wf_netcdfio - WARNING - Variable PRES not found in netcdf file: C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\inmaps/forcing_w3.nc
+2019-10-18 15:52:14,664 - wflow_w3 - wf_netcdfio - INFO - Setting up netcdf output: C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\run_default\outmaps.nc
+2019-10-18 15:52:14,664 - wflow_w3 - wf_netcdfio - INFO - Setting up dimensions and attributes. Steps: 9 lat: 117 lon: 154
+2019-10-18 15:52:14,680 - wflow_w3 - wf_DynamicFramework - DEBUG - Updating existing parameter specification for par: AIRPRESS (['inmaps/ClimatologyMapFiles/AIRPRESS/AIRPRESS', 'monthlyclim', '980', '1'])
+2019-10-18 15:52:14,680 - wflow_w3 - wf_DynamicFramework - DEBUG - Updating existing parameter specification for par: ALBEDO (['inmaps/ClimatologyMapFiles/ALBEDO/ALBEDO', 'monthlyclim', '0.1', '1'])
+2019-10-18 15:52:14,680 - wflow_w3 - wf_DynamicFramework - DEBUG - Updating existing parameter specification for par: WINDSPEED (['inmaps/ClimatologyMapFiles/WINDS/WIND', 'monthlyclim', '5', '1'])
+2019-10-18 15:52:14,680 - wflow_w3 - wf_DynamicFramework - INFO - Adding csv output at C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps/wflow_subcatch.map function: average
+2019-10-18 15:52:14,680 - wflow_w3 - wflow_w3 - DEBUG - use DATA: 1
+2019-10-18 15:52:14,747 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\alb_water.map)  not present, returning 0.05
+2019-10-18 15:52:14,747 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\Cg.map)  not present, returning 1.94
+2019-10-18 15:52:14,747 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\d0.map)  not present, returning 0.15
+2019-10-18 15:52:14,747 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\ds.map)  not present, returning 0.85
+2019-10-18 15:52:14,747 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\dd.map)  not present, returning 4.0
+2019-10-18 15:52:14,747 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\D50.map)  not present, returning 700
+2019-10-18 15:52:14,747 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\ER_exp.map)  not present, returning 0.114
+2019-10-18 15:52:14,747 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\Fgw_conn.map)  not present, returning 1
+2019-10-18 15:52:14,747 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\fvegref_G.map)  not present, returning 0.15
+2019-10-18 15:52:14,747 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\FwaterE.map)  not present, returning 1
+2019-10-18 15:52:14,747 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\Gfrac_max.map)  not present, returning 0.15
+2019-10-18 15:52:14,763 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\InitLoss.map)  not present, returning 0
+2019-10-18 15:52:14,764 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\K_rout.map)  not present, returning 0.5
+2019-10-18 15:52:14,764 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\Kr_coeff.map)  not present, returning 0.0741
+2019-10-18 15:52:14,764 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\LAIref.map)  not present, returning 2.4
+2019-10-18 15:52:14,764 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\LUEmax.map)  not present, returning 0.0544
+2019-10-18 15:52:14,764 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\Pref_imp.map)  not present, returning 10
+2019-10-18 15:52:14,764 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\R0.map)  not present, returning 0.789
+2019-10-18 15:52:14,764 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\SLA.map)  not present, returning 5
+2019-10-18 15:52:14,764 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\slope_coeff.map)  not present, returning 0.9518
+2019-10-18 15:52:14,764 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\snow_TTI.map)  not present, returning 1
+2019-10-18 15:52:14,764 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\T24_snow.map)  not present, returning 18
+2019-10-18 15:52:14,764 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\Tmin.map)  not present, returning -10
+2019-10-18 15:52:14,764 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\Topt.map)  not present, returning 10
+2019-10-18 15:52:14,764 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\Tgrow.map)  not present, returning 200
+2019-10-18 15:52:14,764 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\Tsenc.map)  not present, returning 20
+2019-10-18 15:52:14,764 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\Ud0.map)  not present, returning 6
+2019-10-18 15:52:14,764 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\Ug0.map)  not present, returning 1
+2019-10-18 15:52:14,764 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\Us0.map)  not present, returning 6
+2019-10-18 15:52:14,764 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\w0ref_alb.map)  not present, returning 0.3
+2019-10-18 15:52:14,797 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\psi_FC.map)  not present, returning -3.3
+2019-10-18 15:52:14,797 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\psi_FC0.map)  not present, returning -0.5
+2019-10-18 15:52:14,797 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\psi_ERRP.map)  not present, returning -10
+2019-10-18 15:52:14,797 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\psi_d.map)  not present, returning -50
+2019-10-18 15:52:14,797 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\psi_PWP.map)  not present, returning -150
+2019-10-18 15:52:14,797 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\staticmaps\psi_res.map)  not present, returning -1000000.0
+2019-10-18 15:52:14,797 - wflow_w3 - wf_DynamicFramework - INFO - Adding TMAX to model.
+2019-10-18 15:52:14,797 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\inmaps\TMAX.map)  not present, returning 10.0
+2019-10-18 15:52:14,797 - wflow_w3 - wf_DynamicFramework - INFO - Adding TMIN to model.
+2019-10-18 15:52:14,797 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\inmaps\TMIN.map)  not present, returning 10.0
+2019-10-18 15:52:14,797 - wflow_w3 - wf_DynamicFramework - INFO - Adding TDAY to model.
+2019-10-18 15:52:14,797 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\inmaps\TEMP.map)  not present, returning 10.0
+2019-10-18 15:52:14,797 - wflow_w3 - wf_DynamicFramework - INFO - Adding EPOT to model.
+2019-10-18 15:52:14,797 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\inmaps\PET.map)  not present, returning 0.0
+2019-10-18 15:52:14,797 - wflow_w3 - wf_DynamicFramework - INFO - Adding PRECIP to model.
+2019-10-18 15:52:14,797 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\inmaps\P.map)  not present, returning 0.0
+2019-10-18 15:52:14,797 - wflow_w3 - wf_DynamicFramework - INFO - Adding RAD to model.
+2019-10-18 15:52:14,797 - wflow_w3 - wf_DynamicFramework - DEBUG - Static input data (C:\Users\boisgont\OneDrive - Stichting Deltares\Data\wflow\wflow_rhine_w3\inmaps\RAD.map)  not present, returning 10.0
+2019-10-18 15:52:14,797 - wflow_w3 - wf_DynamicFramework - INFO - Adding ALBEDO to model.
+2019-10-18 15:52:14,797 - wflow_w3 - wf_DynamicFramework - INFO - Adding WINDSPEED to model.
+2019-10-18 15:52:14,813 - wflow_w3 - wf_DynamicFramework - INFO - Adding AIRPRESS to model.
+2019-10-18 15:52:14,813 - wflow_w3 - wf_DynamicFramework - INFO - Adding alb_dry to model.
+2019-10-18 15:52:14,813 - wflow_w3 - wf_DynamicFramework - INFO - Adding alb_wet to model.
+2019-10-18 15:52:14,813 - wflow_w3 - wf_DynamicFramework - INFO - Adding alb_snow to model.
+2019-10-18 15:52:14,813 - wflow_w3 - wf_DynamicFramework - INFO - Adding cGsmax to model.
+2019-10-18 15:52:14,830 - wflow_w3 - wf_DynamicFramework - INFO - Adding f_alb_Vc to model.
+2019-10-18 15:52:14,830 - wflow_w3 - wf_DynamicFramework - INFO - Adding Vc to model.
+2019-10-18 15:52:14,830 - wflow_w3 - wflow_w3 - INFO - Starting Dynamic run...
+2019-10-18 15:52:14,830 - wflow_w3 - wflow_w3 - INFO - Setting initial conditions from state files
+2019-10-18 15:52:14,847 - wflow_w3 - wflow_w3 - DEBUG - Running for: 2000-01-01 00:00:00
+2019-10-18 15:52:15,164 - wflow_w3 - wf_DynamicFramework - INFO - saving maps
+2019-10-18 15:52:15,164 - wflow_w3 - wf_netcdfio - DEBUG - Creating variable Qtot in netcdf file. Format: NETCDF4
+2019-10-18 15:52:15,164 - wflow_w3 - wf_netcdfio - DEBUG - Creating variable P in netcdf file. Format: NETCDF4
+2019-10-18 15:52:15,164 - wflow_w3 - wf_DynamicFramework - DEBUG - timestep: 1/9.0 (2000-01-02 00:00:00)
+2019-10-18 15:52:15,164 - wflow_w3 - wflow_w3 - DEBUG - Running for: 2000-01-02 00:00:00
+2019-10-18 15:52:15,464 - wflow_w3 - wf_DynamicFramework - INFO - saving maps
+2019-10-18 15:52:15,464 - wflow_w3 - wf_DynamicFramework - DEBUG - timestep: 2/9.0 (2000-01-03 00:00:00)
+2019-10-18 15:52:15,464 - wflow_w3 - wflow_w3 - DEBUG - Running for: 2000-01-03 00:00:00
+2019-10-18 15:52:16,013 - wflow_w3 - wf_DynamicFramework - INFO - saving maps
+2019-10-18 15:52:16,013 - wflow_w3 - wf_DynamicFramework - DEBUG - timestep: 3/9.0 (2000-01-04 00:00:00)
+2019-10-18 15:52:16,013 - wflow_w3 - wflow_w3 - DEBUG - Running for: 2000-01-04 00:00:00
+2019-10-18 15:52:16,313 - wflow_w3 - wf_DynamicFramework - INFO - saving maps
+2019-10-18 15:52:16,313 - wflow_w3 - wf_DynamicFramework - DEBUG - timestep: 4/9.0 (2000-01-05 00:00:00)
+2019-10-18 15:52:16,313 - wflow_w3 - wflow_w3 - DEBUG - Running for: 2000-01-05 00:00:00
+2019-10-18 15:52:16,864 - wflow_w3 - wf_DynamicFramework - INFO - saving maps
+2019-10-18 15:52:16,880 - wflow_w3 - wf_DynamicFramework - DEBUG - timestep: 5/9.0 (2000-01-06 00:00:00)
+2019-10-18 15:52:16,880 - wflow_w3 - wflow_w3 - DEBUG - Running for: 2000-01-06 00:00:00
+2019-10-18 15:52:17,247 - wflow_w3 - wf_DynamicFramework - INFO - saving maps
+2019-10-18 15:52:17,247 - wflow_w3 - wf_DynamicFramework - DEBUG - timestep: 6/9.0 (2000-01-07 00:00:00)
+2019-10-18 15:52:17,247 - wflow_w3 - wflow_w3 - DEBUG - Running for: 2000-01-07 00:00:00
+2019-10-18 15:52:17,630 - wflow_w3 - wf_DynamicFramework - INFO - saving maps
+2019-10-18 15:52:17,630 - wflow_w3 - wf_DynamicFramework - DEBUG - timestep: 7/9.0 (2000-01-08 00:00:00)
+2019-10-18 15:52:17,646 - wflow_w3 - wflow_w3 - DEBUG - Running for: 2000-01-08 00:00:00
+2019-10-18 15:52:17,997 - wflow_w3 - wf_DynamicFramework - INFO - saving maps
+2019-10-18 15:52:18,013 - wflow_w3 - wf_DynamicFramework - DEBUG - timestep: 8/9.0 (2000-01-09 00:00:00)
+2019-10-18 15:52:18,013 - wflow_w3 - wflow_w3 - DEBUG - Running for: 2000-01-09 00:00:00
+2019-10-18 15:52:18,397 - wflow_w3 - wf_DynamicFramework - INFO - saving maps
+2019-10-18 15:52:18,397 - wflow_w3 - wf_netcdfio - DEBUG - Writing buffer for Qtot to file at: 0 9 timesteps
+2019-10-18 15:52:18,547 - wflow_w3 - wf_netcdfio - DEBUG - Writing buffer for P to file at: 0 9 timesteps
+2019-10-18 15:52:18,663 - wflow_w3 - wf_DynamicFramework - DEBUG - timestep: 9/9.0 (2000-01-10 00:00:00)
+2019-10-18 15:52:18,663 - wflow_w3 - wflow_w3 - INFO - Saving initial conditions...
+2019-10-18 15:52:18,663 - wflow_w3 - wf_DynamicFramework - INFO - Saving summary maps to disk...
+2019-10-18 15:52:18,663 - wflow_w3 - wflow_w3 - INFO - Saving initial conditions over start conditions...
+2019-10-18 15:52:18,680 - wflow_w3 - wf_DynamicFramework - INFO - Saving summary maps to disk...

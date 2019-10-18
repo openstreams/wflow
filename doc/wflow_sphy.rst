@@ -11,6 +11,12 @@ https://github.com/FutureWater/SPHY/tree/v2.1
 
 An example model is available in \\wflow\\examples\\wflow_ganga_sphy\\. 
 
+.. figure:: _images/SPHY_overview.jpg
+    :width: 600px
+    :align: center
+
+    Overview of the concepts of the wflow_sphy model (`futurewater.eu <https://www.futurewater.eu/methods/sphy/>`_).
+
 wflow_sphy module documentation
 -------------------------------
 

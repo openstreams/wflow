@@ -28,6 +28,7 @@ import datetime as dt
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_funcs import *
 from wflow.wflow_adapt import *
+import pcraster.framework
 import pcraster as pcr
 
 # from wflow.wflow_lib import reporting
@@ -57,7 +58,7 @@ def usage(*args):
     sys.exit(0)
 
 
-class WflowModel(DynamicModel):
+class WflowModel(pcraster.framework.DynamicModel):
 
     """
   The user defined model class.
@@ -65,10 +66,10 @@ class WflowModel(DynamicModel):
   """
 
     def __init__(self, cloneMap, Dir, RunDir, configfile):
-        DynamicModel.__init__(self)
+        pcraster.framework.DynamicModel.__init__(self)
         self.caseName = os.path.abspath(Dir)
         self.clonemappath = os.path.join(os.path.abspath(Dir), "staticmaps", cloneMap)
-        setclone(self.clonemappath)
+        pcr.setclone(self.clonemappath)
         self.runId = RunDir
         self.Dir = os.path.abspath(Dir)
         self.configfile = configfile
@@ -243,9 +244,9 @@ class WflowModel(DynamicModel):
         global multpars
         global updateCols
 
-        setglobaloption("unittrue")
+        pcr.setglobaloption("unittrue")
 
-        self.thestep = scalar(0)
+        self.thestep = pcr.scalar(0)
 
         self.logger.info("running for " + str(self.nrTimeSteps()) + " timesteps")
 
@@ -352,13 +353,13 @@ class WflowModel(DynamicModel):
             del groundwater
 
         # -set the global options
-        setglobaloption("radians")
+        pcr.setglobaloption("radians")
         # -set the 2000 julian date number
         self.julian_date_2000 = 2451545
         # -set the option to calculate the fluxes in mm for the upstream area
         self.mm_rep_FLAG = int(configget(self.config, "model", "mm_rep_FLAG", "1"))
         # -convert flow from m3/s to mm
-        self.ToMM = 1000 * 3600 * 24 / cellarea()
+        self.ToMM = 1000 * 3600 * 24 / pcr.cellarea()
 
         # static maps to use (normally default)
         wflow_dem = configget(self.config, "model", "dem", "staticmaps/dem.map")
@@ -437,9 +438,9 @@ class WflowModel(DynamicModel):
         )
 
         # Set static initial values here #########################################
-        self.ZeroMap = 0.0 * scalar(self.DEM)  # map with only zero's
-        self.Latitude = ycoordinate(boolean(self.ZeroMap))
-        self.Longitude = xcoordinate(boolean(self.ZeroMap))
+        self.ZeroMap = 0.0 * pcr.scalar(self.DEM)  # map with only zero's
+        self.Latitude = pcr.ycoordinate(pcr.boolean(self.ZeroMap))
+        self.Longitude = pcr.xcoordinate(pcr.boolean(self.ZeroMap))
 
         # Read parameters NEW Method
         self.logger.info("Linking parameters to landuse, catchment and soil...")
@@ -474,11 +475,11 @@ class WflowModel(DynamicModel):
             self.Hargreaves = hargreaves
             del hargreaves
 
-        setglobaloption("matrixtable")
+        pcr.setglobaloption("matrixtable")
         # -read lake maps and parameters if lake module is used
         if self.LakeFLAG == 1:
             # nominal map with lake IDs
-            self.LakeID = cover(self.LakeID, 0)
+            self.LakeID = pcr.cover(self.LakeID, 0)
             # lookup table with function for each lake (exp, 1-order poly, 2-order poly, 3-order poly)
             LakeFunc_Tab = os.path.join(self.Dir, "lake_function.tbl")
             # lookup table with Qh-coeficients for each lake
@@ -488,48 +489,48 @@ class WflowModel(DynamicModel):
             # lookup table with hS-coeficients for each lake
             LakeHS_Tab = os.path.join(self.Dir, "lake_HS.tbl")
             # create lake coefficient maps
-            self.LakeQH_Func = lookupnominal(LakeFunc_Tab, 1, self.LakeID)
-            self.LakeSH_Func = lookupnominal(LakeFunc_Tab, 2, self.LakeID)
-            self.LakeHS_Func = lookupnominal(LakeFunc_Tab, 3, self.LakeID)
+            self.LakeQH_Func = pcr.lookupnominal(LakeFunc_Tab, 1, self.LakeID)
+            self.LakeSH_Func = pcr.lookupnominal(LakeFunc_Tab, 2, self.LakeID)
+            self.LakeHS_Func = pcr.lookupnominal(LakeFunc_Tab, 3, self.LakeID)
             # Read QH coefficients
-            self.LakeQH_exp_a = lookupscalar(LakeQH_Tab, 1, self.LakeID)
-            self.LakeQH_exp_b = lookupscalar(LakeQH_Tab, 2, self.LakeID)
-            self.LakeQH_pol_b = lookupscalar(LakeQH_Tab, 3, self.LakeID)
-            self.LakeQH_pol_a1 = lookupscalar(LakeQH_Tab, 4, self.LakeID)
-            self.LakeQH_pol_a2 = lookupscalar(LakeQH_Tab, 5, self.LakeID)
-            self.LakeQH_pol_a3 = lookupscalar(LakeQH_Tab, 6, self.LakeID)
+            self.LakeQH_exp_a = pcr.lookupscalar(LakeQH_Tab, 1, self.LakeID)
+            self.LakeQH_exp_b = pcr.lookupscalar(LakeQH_Tab, 2, self.LakeID)
+            self.LakeQH_pol_b = pcr.lookupscalar(LakeQH_Tab, 3, self.LakeID)
+            self.LakeQH_pol_a1 = pcr.lookupscalar(LakeQH_Tab, 4, self.LakeID)
+            self.LakeQH_pol_a2 = pcr.lookupscalar(LakeQH_Tab, 5, self.LakeID)
+            self.LakeQH_pol_a3 = pcr.lookupscalar(LakeQH_Tab, 6, self.LakeID)
             # Read SH coefficients
-            self.LakeSH_exp_a = lookupscalar(LakeSH_Tab, 1, self.LakeID)
-            self.LakeSH_exp_b = lookupscalar(LakeSH_Tab, 2, self.LakeID)
-            self.LakeSH_pol_b = lookupscalar(LakeSH_Tab, 3, self.LakeID)
-            self.LakeSH_pol_a1 = lookupscalar(LakeSH_Tab, 4, self.LakeID)
-            self.LakeSH_pol_a2 = lookupscalar(LakeSH_Tab, 5, self.LakeID)
-            self.LakeSH_pol_a3 = lookupscalar(LakeSH_Tab, 6, self.LakeID)
+            self.LakeSH_exp_a = pcr.lookupscalar(LakeSH_Tab, 1, self.LakeID)
+            self.LakeSH_exp_b = pcr.lookupscalar(LakeSH_Tab, 2, self.LakeID)
+            self.LakeSH_pol_b = pcr.lookupscalar(LakeSH_Tab, 3, self.LakeID)
+            self.LakeSH_pol_a1 = pcr.lookupscalar(LakeSH_Tab, 4, self.LakeID)
+            self.LakeSH_pol_a2 = pcr.lookupscalar(LakeSH_Tab, 5, self.LakeID)
+            self.LakeSH_pol_a3 = pcr.lookupscalar(LakeSH_Tab, 6, self.LakeID)
             # Read HS coefficients
-            self.LakeHS_exp_a = lookupscalar(LakeHS_Tab, 1, self.LakeID)
-            self.LakeHS_exp_b = lookupscalar(LakeHS_Tab, 2, self.LakeID)
-            self.LakeHS_pol_b = lookupscalar(LakeHS_Tab, 3, self.LakeID)
-            self.LakeHS_pol_a1 = lookupscalar(LakeHS_Tab, 4, self.LakeID)
-            self.LakeHS_pol_a2 = lookupscalar(LakeHS_Tab, 5, self.LakeID)
-            self.LakeHS_pol_a3 = lookupscalar(LakeHS_Tab, 6, self.LakeID)
+            self.LakeHS_exp_a = pcr.lookupscalar(LakeHS_Tab, 1, self.LakeID)
+            self.LakeHS_exp_b = pcr.lookupscalar(LakeHS_Tab, 2, self.LakeID)
+            self.LakeHS_pol_b = pcr.lookupscalar(LakeHS_Tab, 3, self.LakeID)
+            self.LakeHS_pol_a1 = pcr.lookupscalar(LakeHS_Tab, 4, self.LakeID)
+            self.LakeHS_pol_a2 = pcr.lookupscalar(LakeHS_Tab, 5, self.LakeID)
+            self.LakeHS_pol_a3 = pcr.lookupscalar(LakeHS_Tab, 6, self.LakeID)
             # -Qfrac for lake or servoir cells should be zero, else 1
-            self.QFRAC = ifthenelse(self.LakeID != 0, scalar(0), 1)
+            self.QFRAC = pcr.ifthenelse(self.LakeID != 0, pcr.scalar(0), 1)
 
         # -read reservoir maps and parameters if reservoir module is used
         if self.ResFLAG == 1:
             # nominal map with reservoir IDs
-            self.ResID = cover(self.ResID, 0)
+            self.ResID = pcr.cover(self.ResID, 0)
             # lookup table with operational scheme to use (simple or advanced)
             ResFunc_Tab = os.path.join(self.Dir, "res_id")
             # Reservoir function
-            self.ResFunc = cover(lookupscalar(ResFunc_Tab, 1, self.ResID), 0)
+            self.ResFunc = pcr.cover(pcr.lookupscalar(ResFunc_Tab, 1, self.ResID), 0)
             try:
                 # lookup table with coefficients for simple reservoirs
                 ResSimple_Tab = os.path.join(self.Dir, "reservoir_simple")
                 # Read coefficients for simple reservoirs
-                self.ResKr = lookupscalar(ResSimple_Tab, 1, self.ResID)
+                self.ResKr = pcr.lookupscalar(ResSimple_Tab, 1, self.ResID)
                 self.ResSmax = (
-                    lookupscalar(ResSimple_Tab, 2, self.ResID) * 10 ** 6
+                    pcr.lookupscalar(ResSimple_Tab, 2, self.ResID) * 10 ** 6
                 )  # convert to m3
                 self.ResSimple = True
             except:
@@ -539,27 +540,27 @@ class WflowModel(DynamicModel):
                 ResAdvanced_Tab = os.path.join(self.Dir, "reservoir_advanced")
                 # Read coefficients for advanced reservoirs
                 self.ResEVOL = (
-                    lookupscalar(ResAdvanced_Tab, 1, self.ResID) * 10 ** 6
+                    pcr.lookupscalar(ResAdvanced_Tab, 1, self.ResID) * 10 ** 6
                 )  # convert to m3
                 self.ResPVOL = (
-                    lookupscalar(ResAdvanced_Tab, 2, self.ResID) * 10 ** 6
+                    pcr.lookupscalar(ResAdvanced_Tab, 2, self.ResID) * 10 ** 6
                 )  # convert to m3
                 self.ResMaxFl = (
-                    lookupscalar(ResAdvanced_Tab, 3, self.ResID) * 10 ** 6
+                    pcr.lookupscalar(ResAdvanced_Tab, 3, self.ResID) * 10 ** 6
                 )  # convert to m3/d
                 self.ResDemFl = (
-                    lookupscalar(ResAdvanced_Tab, 4, self.ResID) * 10 ** 6
+                    pcr.lookupscalar(ResAdvanced_Tab, 4, self.ResID) * 10 ** 6
                 )  # convert to m3/d
-                self.ResFlStart = lookupscalar(ResAdvanced_Tab, 5, self.ResID)
-                self.ResFlEnd = lookupscalar(ResAdvanced_Tab, 6, self.ResID)
+                self.ResFlStart = pcr.lookupscalar(ResAdvanced_Tab, 5, self.ResID)
+                self.ResFlEnd = pcr.lookupscalar(ResAdvanced_Tab, 6, self.ResID)
                 self.ResAdvanced = True
             except:
                 self.ResAdvanced = False
             # -Qfrac for reservoir cells should be zero, else 1
             if self.LakeFLAG == 1:
-                self.QFRAC = ifthenelse(self.ResID != 0, scalar(0), self.QFRAC)
+                self.QFRAC = pcr.ifthenelse(self.ResID != 0, pcr.scalar(0), self.QFRAC)
             else:
-                self.QFRAC = ifthenelse(self.ResID != 0, scalar(0), 1)
+                self.QFRAC = pcr.ifthenelse(self.ResID != 0, pcr.scalar(0), 1)
 
     def default_summarymaps(self):  ##-maybe not needed. check later
         """
@@ -634,27 +635,27 @@ class WflowModel(DynamicModel):
                     if os.path.exists(LakeStor_Tab):
                         self.StorRES = (
                             self.StorRES
-                            + cover(lookupscalar(LakeStor_Tab, 1, self.LakeID), 0)
+                            + pcr.cover(pcr.lookupscalar(LakeStor_Tab, 1, self.LakeID), 0)
                             * 10 ** 6
                         )  # convert to m3
                         self.RainRAstor = (
                             self.RainRAstor
-                            + cover(lookupscalar(LakeStor_Tab, 2, self.LakeID), 0)
+                            + pcr.cover(pcr.lookupscalar(LakeStor_Tab, 2, self.LakeID), 0)
                             * 10 ** 6
                         )
                         self.SnowRAstor = (
                             self.SnowRAstor
-                            + cover(lookupscalar(LakeStor_Tab, 3, self.LakeID), 0)
+                            + pcr.cover(pcr.lookupscalar(LakeStor_Tab, 3, self.LakeID), 0)
                             * 10 ** 6
                         )
                         self.GlacRAstor = (
                             self.GlacRAstor
-                            + cover(lookupscalar(LakeStor_Tab, 4, self.LakeID), 0)
+                            + pcr.cover(pcr.lookupscalar(LakeStor_Tab, 4, self.LakeID), 0)
                             * 10 ** 6
                         )
                         self.BaseRAstor = (
                             self.BaseRAstor
-                            + cover(lookupscalar(LakeStor_Tab, 5, self.LakeID), 0)
+                            + pcr.cover(pcr.lookupscalar(LakeStor_Tab, 5, self.LakeID), 0)
                             * 10 ** 6
                         )
                     else:
@@ -666,27 +667,27 @@ class WflowModel(DynamicModel):
                     if os.path.exists(ResStor_Tab):
                         self.StorRES = (
                             self.StorRES
-                            + cover(lookupscalar(ResStor_Tab, 2, self.ResID), 0)
+                            + pcr.cover(pcr.lookupscalar(ResStor_Tab, 2, self.ResID), 0)
                             * 10 ** 6
                         )
                         self.RainRAstor = (
                             self.RainRAstor
-                            + cover(lookupscalar(ResStor_Tab, 3, self.ResID), 0)
+                            + pcr.cover(pcr.lookupscalar(ResStor_Tab, 3, self.ResID), 0)
                             * 10 ** 6
                         )
                         self.SnowRAstor = (
                             self.SnowRAstor
-                            + cover(lookupscalar(ResStor_Tab, 4, self.ResID), 0)
+                            + pcr.cover(pcr.lookupscalar(ResStor_Tab, 4, self.ResID), 0)
                             * 10 ** 6
                         )
                         self.GlacRAstor = (
                             self.GlacRAstor
-                            + cover(lookupscalar(ResStor_Tab, 5, self.ResID), 0)
+                            + pcr.cover(pcr.lookupscalar(ResStor_Tab, 5, self.ResID), 0)
                             * 10 ** 6
                         )
                         self.BaseRAstor = (
                             self.BaseRAstor
-                            + cover(lookupscalar(ResStor_Tab, 6, self.ResID), 0)
+                            + pcr.cover(pcr.lookupscalar(ResStor_Tab, 6, self.ResID), 0)
                             * 10 ** 6
                         )
                     else:
@@ -709,11 +710,11 @@ class WflowModel(DynamicModel):
 
         # Snow and glacier fraction settings
         if self.GlacFLAG == 0:
-            self.GlacFrac = scalar(0)
+            self.GlacFrac = pcr.scalar(0)
         if self.SnowFLAG == 0:
-            self.SnowStore = scalar(0)
-        SnowFrac = ifthenelse(self.SnowStore > 0, scalar(1 - self.GlacFrac), 0)
-        RainFrac = ifthenelse(self.SnowStore == 0, scalar(1 - self.GlacFrac), 0)
+            self.SnowStore = pcr.scalar(0)
+        SnowFrac = pcr.ifthenelse(self.SnowStore > 0, pcr.scalar(1 - self.GlacFrac), 0)
+        RainFrac = pcr.ifthenelse(self.SnowStore == 0, pcr.scalar(1 - self.GlacFrac), 0)
 
         # -Read the precipitation time-series
         self.Precip = self.Prec
@@ -732,7 +733,7 @@ class WflowModel(DynamicModel):
         # -Update canopy storage
         if self.DynVegFLAG == 1:
             # -fill missing ndvi values with ndvi base
-            self.NDVI = ifthenelse(defined(self.NDVI) == 1, self.NDVI, self.NDVIbase)
+            self.NDVI = pcr.ifthenelse(pcr.defined(self.NDVI) == 1, self.NDVI, self.NDVIbase)
             # -calculate the vegetation parameters
             vegoutput = self.dynamic_veg.Veg_function(
                 pcr,
@@ -768,9 +769,9 @@ class WflowModel(DynamicModel):
         # Snow and rain
         if self.SnowFLAG == 1:
             # -Snow and rain differentiation
-            self.Snow = ifthenelse(Temp >= self.Tcrit, 0, self.Precip)
+            self.Snow = pcr.ifthenelse(Temp >= self.Tcrit, 0, self.Precip)
             self.SnowF = self.Snow * (1 - self.GlacFrac)
-            self.Rain = ifthenelse(Temp < self.Tcrit, 0, self.Precip)
+            self.Rain = pcr.ifthenelse(Temp < self.Tcrit, 0, self.Precip)
 
             # -Snow melt
             PotSnowMelt = self.snow.PotSnowMelt(pcr, Temp, self.DDFS)
@@ -844,7 +845,7 @@ class WflowModel(DynamicModel):
 
         # -Rootzone calculations
         self.RootWater = (
-            self.RootWater + ifthenelse(RainFrac > 0, self.Rain, 0) + self.CapRise
+            self.RootWater + pcr.ifthenelse(RainFrac > 0, self.Rain, 0) + self.CapRise
         )
         # -Rootzone runoff
         RootRunoff = self.rootzone.RootRunoff(
@@ -852,8 +853,8 @@ class WflowModel(DynamicModel):
         )
         self.RootWater = self.RootWater - RootRunoff
         # -Actual evapotranspiration
-        etreddry = max(
-            min((self.RootWater - self.RootDry) / (self.RootWilt - self.RootDry), 1), 0
+        etreddry = pcr.max(
+            pcr.min((self.RootWater - self.RootDry) / (self.RootWilt - self.RootDry), 1), 0
         )
         self.ETact = self.ET.ETact(
             pcr, self.ETpot, self.RootWater, self.RootSat, etreddry, RainFrac
@@ -861,7 +862,7 @@ class WflowModel(DynamicModel):
         # -Actual evapotranspiration, corrected for rain fraction
         self.ActETact = self.ETact * RainFrac
         # -Update rootwater content
-        self.RootWater = max(self.RootWater - self.ETact, 0)
+        self.RootWater = pcr.max(self.RootWater - self.ETact, 0)
         # -Rootwater drainage
         self.RootDrain = self.rootzone.RootDrainage(
             pcr,
@@ -885,7 +886,7 @@ class WflowModel(DynamicModel):
         # -Sub soil calculations
         self.SubWater = self.SubWater + self.rootperc
         if self.GroundFLAG == 0:
-            self.SubWater = min(max(self.SubWater - self.SeePage, 0), self.SubSat)
+            self.SubWater = pcr.min(pcr.max(self.SubWater - self.SeePage, 0), self.SubSat)
         # -Capillary rise
         self.CapRise = self.subzone.CapilRise(
             pcr,
@@ -997,10 +998,10 @@ class WflowModel(DynamicModel):
         # -Routing for lake and/or reservoir modules
         if self.LakeFLAG == 1 or self.ResFLAG == 1:
             # -Update storage in lakes/reservoirs (m3) with specific runoff
-            self.StorRES = self.StorRES + ifthenelse(
+            self.StorRES = self.StorRES + pcr.ifthenelse(
                 self.QFRAC == 0,
                 0.001
-                * cellarea()
+                * pcr.cellarea()
                 * (self.BaseR + self.RainR + self.GlacR + self.SnowR),
                 0,
             )
@@ -1012,8 +1013,8 @@ class WflowModel(DynamicModel):
                 self.StorRES = tempvar[1]
                 LakeQ = self.lakes.QLake(self, pcr, LakeLevel)
                 ResQ = self.reservoirs.QRes(self, pcr)
-                self.Qout = ifthenelse(
-                    self.ResID != 0, ResQ, ifthenelse(self.LakeID != 0, LakeQ, 0)
+                self.Qout = pcr.ifthenelse(
+                    self.ResID != 0, ResQ, pcr.ifthenelse(self.LakeID != 0, LakeQ, 0)
                 )
             elif self.LakeFLAG == 1:
                 tempvar = self.lakes.UpdateLakeHStore(self, pcr, pcrm)
@@ -1024,11 +1025,11 @@ class WflowModel(DynamicModel):
                 self.Qout = self.reservoirs.QRes(self, pcr)
 
             # -Calculate volume available for routing (=outflow lakes/reservoir + cell specific runoff)
-            RunoffVolume = upstream(self.FlowDir, self.Qout) + ifthenelse(
+            RunoffVolume = pcr.upstream(self.FlowDir, self.Qout) + pcr.ifthenelse(
                 self.QFRAC == 0,
                 0,
                 0.001
-                * cellarea()
+                * pcr.cellarea()
                 * (self.BaseR + self.RainR + self.GlacR + self.SnowR),
             )
             # -Routing of total flow
@@ -1043,13 +1044,13 @@ class WflowModel(DynamicModel):
             # -Routing of individual contributers
             # -Snow routing
             if self.SnowRA_FLAG == 1 and self.SnowFLAG == 1:
-                self.SnowRAstor = self.SnowRAstor + ifthenelse(
-                    self.QFRAC == 0, self.SnowR * 0.001 * cellarea(), 0
+                self.SnowRAstor = self.SnowRAstor + pcr.ifthenelse(
+                    self.QFRAC == 0, self.SnowR * 0.001 * pcr.cellarea(), 0
                 )
-                cQfrac = cover(self.SnowRAstor / OldStorage, 0)
+                cQfrac = pcr.cover(self.SnowRAstor / OldStorage, 0)
                 self.cQout = cQfrac * self.Qout
-                cRunoffVolume = upstream(self.FlowDir, self.cQout) + ifthenelse(
-                    self.QFRAC == 0, 0, 0.001 * cellarea() * self.SnowR
+                cRunoffVolume = pcr.upstream(self.FlowDir, self.cQout) + pcr.ifthenelse(
+                    self.QFRAC == 0, 0, 0.001 * pcr.cellarea() * self.SnowR
                 )
                 tempvar = self.routing.ROUT(
                     self,
@@ -1066,13 +1067,13 @@ class WflowModel(DynamicModel):
 
             # -Rain routing
             if self.RainRA_FLAG == 1:
-                self.RainRAstor = self.RainRAstor + ifthenelse(
-                    self.QFRAC == 0, self.RainR * 0.001 * cellarea(), 0
+                self.RainRAstor = self.RainRAstor + pcr.ifthenelse(
+                    self.QFRAC == 0, self.RainR * 0.001 * pcr.cellarea(), 0
                 )
-                cQfrac = cover(self.RainRAstor / OldStorage, 0)
+                cQfrac = pcr.cover(self.RainRAstor / OldStorage, 0)
                 self.cQout = cQfrac * self.Qout
-                cRunoffVolume = upstream(self.FlowDir, cQout) + ifthenelse(
-                    self.QFRAC == 0, 0, 0.001 * cellarea() * self.RainR
+                cRunoffVolume = pcr.upstream(self.FlowDir, self.cQout) + pcr.ifthenelse(
+                    self.QFRAC == 0, 0, 0.001 * pcr.cellarea() * self.RainR
                 )
                 tempvar = self.routing.ROUT(
                     self,
@@ -1089,13 +1090,13 @@ class WflowModel(DynamicModel):
 
             # -Glacier routing
             if self.GlacRA_FLAG == 1 and self.GlacFLAG == 1:
-                self.GlacRAstor = self.GlacRAstor + ifthenelse(
-                    self.QFRAC == 0, self.GlacR * 0.001 * cellarea(), 0
+                self.GlacRAstor = self.GlacRAstor + pcr.ifthenelse(
+                    self.QFRAC == 0, self.GlacR * 0.001 * pcr.cellarea(), 0
                 )
-                cQfrac = cover(self.GlacRAstor / OldStorage, 0)
+                cQfrac = pcr.cover(self.GlacRAstor / OldStorage, 0)
                 self.cQout = cQfrac * self.Qout
-                cRunoffVolume = upstream(self.FlowDir, self.cQout) + ifthenelse(
-                    self.QFRAC == 0, 0, 0.001 * cellarea() * self.GlacR
+                cRunoffVolume = pcr.upstream(self.FlowDir, self.cQout) + pcr.ifthenelse(
+                    self.QFRAC == 0, 0, 0.001 * pcr.cellarea() * self.GlacR
                 )
                 tempvar = self.routing.ROUT(
                     self,
@@ -1112,13 +1113,13 @@ class WflowModel(DynamicModel):
 
             # -Baseflow routing
             if self.BaseRA_FLAG == 1:
-                self.BaseRAstor = self.BaseRAstor + ifthenelse(
-                    self.QFRAC == 0, self.BaseR * 0.001 * cellarea(), 0
+                self.BaseRAstor = self.BaseRAstor + pcr.ifthenelse(
+                    self.QFRAC == 0, self.BaseR * 0.001 * pcr.cellarea(), 0
                 )
-                cQfrac = cover(self.BaseRAstor / OldStorage, 0)
+                cQfrac = pcr.cover(self.BaseRAstor / OldStorage, 0)
                 self.cQout = cQfrac * self.Qout
-                cRunoffVolume = upstream(self.FlowDir, self.cQout) + ifthenelse(
-                    self.QFRAC == 0, 0, 0.001 * cellarea() * self.BaseR
+                cRunoffVolume = pcr.upstream(self.FlowDir, self.cQout) + pcr.ifthenelse(
+                    self.QFRAC == 0, 0, 0.001 * pcr.cellarea() * self.BaseR
                 )
                 tempvar = self.routing.ROUT(
                     self,
@@ -1207,9 +1208,9 @@ def main(argv=None):
         pcrut.usage(msg)
 
     for o, a in opts:
-        if o == "-F":
-            runinfoFile = a
-            fewsrun = True
+#        if o == "-F":
+#            runinfoFile = a
+#            fewsrun = True
         if o == "-C":
             caseName = a
         if o == "-R":
@@ -1227,17 +1228,17 @@ def main(argv=None):
         if o == "-f":
             NoOverWrite = 0
 
-    if fewsrun:
-        ts = getTimeStepsfromRuninfo(runinfoFile, timestepsecs)
-        starttime = getStartTimefromRuninfo(runinfoFile)
-        if ts:
-            _lastTimeStep = ts  # * 86400/timestepsecs
-            _firstTimeStep = 1
-        else:
-            print("Failed to get timesteps from runinfo file: " + runinfoFile)
-            sys.exit(2)
-    else:
-        starttime = dt.datetime(1990, 1, 1)
+#    if fewsrun:
+#        ts = getTimeStepsfromRuninfo(runinfoFile, timestepsecs)
+#        starttime = getStartTimefromRuninfo(runinfoFile)
+#        if ts:
+#            _lastTimeStep = ts  # * 86400/timestepsecs
+#            _firstTimeStep = 1
+#        else:
+#            print("Failed to get timesteps from runinfo file: " + runinfoFile)
+#            sys.exit(2)
+#    else:
+    starttime = dt.datetime(1990, 1, 1)
 
     if _lastTimeStep < _firstTimeStep:
         print(
