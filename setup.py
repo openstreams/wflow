@@ -22,7 +22,7 @@ setup(
     author_email="wflow@deltares.nl",
     url="http://wflow.readthedocs.io/",
     license="GPL",
-    use_scm_version = True,
+    use_scm_version = {'write_to': 'wflow/version.py'},
     setup_requires=["setuptools_scm"],
     python_requires=">=3.6",
     install_requires=[
@@ -30,6 +30,7 @@ setup(
         "scipy",
         "gdal",
         "netCDF4",
+        "xarray",
         "cftime",
         "numba",
         "pyproj",
