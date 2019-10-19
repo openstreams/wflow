@@ -76,3 +76,4 @@ ENV/
 *.map
 runinfo
 intbl
+/wflow/version.py

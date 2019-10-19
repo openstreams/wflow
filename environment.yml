@@ -11,6 +11,7 @@ dependencies:
   - gdal>=2.2.4
   - netcdf4>=1.4.1
   - cftime>=1.0.1
+  - xarray>=0.11
   - pyproj=1.9
   - thrift>=0.11
   - numba>=0.42
