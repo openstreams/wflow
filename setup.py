@@ -22,7 +22,7 @@ setup(
     author_email="wflow@deltares.nl",
     url="http://wflow.readthedocs.io/",
     license="GPL",
-    use_scm_version = {'write_to': 'wflow/version.py'},
+    use_scm_version = {'write_to': 'wflow/version.py', 'fallback_version': '2018.1.dev'},
     setup_requires=["setuptools_scm"],
     python_requires=">=3.6",
     install_requires=[
