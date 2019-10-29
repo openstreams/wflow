@@ -481,7 +481,7 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, soilInfReducti
             ponding_add = 0
             if nrpaddyirri > 0:
                 if static['h_p'][idx] > 0:
-                    ponding_add = min(dyn['ExfiltWater'][idx] + dyn['ExcessWater'][idx], static['h_p'][idx] - dyn['PondingDepth'][idx])
+                    ponding_add = min(dyn['ExfiltWater'][idx] + dyn['ExcessWater'][idx] + dyn['InfiltExcess'][idx], static['h_p'][idx] - dyn['PondingDepth'][idx])
                     dyn['PondingDepth'][idx] = dyn['PondingDepth'][idx] + ponding_add
             
             dyn['InwaterO'][idx] = max(dyn['ExfiltWater'][idx] + dyn['ExcessWater'][idx] + dyn['InfiltExcess'][idx] + dyn['RunoffLandCells'][idx] - dyn['ActEvapOpenWaterLand'][idx] - ponding_add, 0.0) * (static['xl'][idx] * static['yl'][idx]) * 0.001 / timestepsecs

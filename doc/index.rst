@@ -19,7 +19,7 @@ Welcome to wflow's documentation!
 
     wflow is released under version 3 of the GPL
 
-    wflow uses pcraster/python (see http://www.pcraster.eu) as it's calculation engine.
+    wflow uses PCRaster/Python (see http://www.pcraster.eu) as it's calculation engine.
 
 
 Introduction
@@ -39,13 +39,22 @@ and distributed under the GPL version 3.0.
 The  wflow distributed hydrological model platform currently includes
 the following models:
 
--  the wflow\_sbm  model (derived from `topog\_sbm <http://www.per.clw.csiro.au/topog/>`_ )
+-  the wflow\_sbm  model (derived from `topog\_sbm <https://csdms.colorado.edu/wiki/Model:TOPOG>`_ )
 
 -  the wflow\_hbv model (a distributed version of the HBV96 model).
 
 -  the wflow\_gr4 model (a distributed version of the gr4h/d models).
 
--  the wflow\_W3RA model (a global hydrological model)
+-  the wflow\_W3RA and wflow\_w3 models (implementations and adaptations of the Australian Water Resources Assessment Landscape model (AWRA-L))
+
+-  the wflow\_topoflex model (a distributed version of the FLEX-Topo model)
+
+-  the wflow\_pcrglobwb model (`PCR-GLOBWB <http://globalhydrology.nl/models/pcr-globwb-2-0/>`_ (PCRaster Global Water Balance, v2.1.0_beta_1))
+
+-  the wflow\_sphy model (`SPHY <https://www.futurewater.eu/methods/sphy/>`_ (Spatial Processes in HYdrology, version 2.1))
+
+-  the wflow\_stream model (`STREAM <https://www.ivm.vu.nl/en/projects/Projects/spatial-analysis/stream/index.aspx>`_ 
+   (Spatial Tools for River Basins and Environment and Analysis of Management Options))
 
 -  the wflow\_routing model (a kinematic wave model that can run on the output of one of the hydrological models
    optionally including a floodplain for more realistic simulations in areas that flood).
@@ -55,6 +64,8 @@ the following models:
 -  the wflow\_floodmap model (a flood mapping model that can use the output of the wflow\_wave model or de wflow\_routing model).
 
 -  the wflow\_sediment model (an experimental erosion and sediment dynamics model that uses the output of the wflow\_sbm model).
+
+-  the wflow\_lintul model (rice crop growth model `LINTUL <https://edepot.wur.nl/461276>`_ (Light Interception and Utilization))
 
 The low level api and links to other frameworks allow the models to be
 linked as part of larger modelling systems:
@@ -103,22 +114,22 @@ different with respect to the conceptualisation. The shared software
 framework includes the basic maps (dem, landuse, soil etc) and the
 hydrological routing via the kinematic wave. The Python class framework
 also exposes the models as an API and is based on the PCRaster/Python
-version 4.0 Beta (www.pcraster.eu).
+version 4.2+ (www.pcraster.eu).
 
 The wflow\_sbm model maximises the use of available spatial data.
 Soil depth, for example, is estimated from the DEM using a topographic
-wetness index . The model is derived from the :cite:`1987:nelson` model that has
+wetness index . The model is derived from the CQflow model (Köhler et al., 2006) that has
 been applied in various countries, most notably in Central America. The
 wflow\_hbv model is derived from the HBV-96 model but does not
 include the routing functions, instead it uses the same kinematic wave
 routine as the wflow\_sbm  model to route the water downstream.
 
-The models are programmed python using the pcraster python extension.
+The models are programmed in Python using the PCRaster Python extension.
 As such, the structure of the model is
 transparent, can be changed by other modellers easily, and the system
 allows for rapid development. In order to run
-the model both PCRaster 4.* and Python 2.7 are needed. At the moment
-only 64 bit versions are  supported.
+the model both PCRaster 4.2+ and Python 3.6 are needed. At the moment
+only 64 bit versions are supported.
 
 .. toctree::
    :hidden:
@@ -142,17 +153,8 @@ only 64 bit versions are  supported.
 References
 ==========
 
-.. bibliography:: refs.bib
-   :cited:
-   \begin{thebibliography}{1}
-  \bibitem{1987:nelson}
-  Edward~Nelson
-  \newblock {\em Radically Elementary Probability Theory}.
-  \newblock Princeton University Press, 1987.
-    \end{thebibliography}
-
-.. [CQFLOW] Köhler, L., Mulligan, M., Schellekens, J., Schmid, S. and Tobón, C.: Final Technical Report DFID-FRP Project no. R7991 Hydrological
-impacts of converting tropical montane cloud forest to pasture, withinitial reference to northern Costa Rica. 2006.
+- Köhler, L., Mulligan, M., Schellekens, J., Schmid, S. and Tobón, C.: Final Technical Report DFID-FRP Project no. R7991 Hydrological
+  impacts of converting tropical montane cloud forest to pasture, withinitial reference to northern Costa Rica. 2006.
 
 
 Papers/reports using wflow

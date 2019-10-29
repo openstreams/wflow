@@ -129,11 +129,11 @@ actual infiltrate is calculated by taking the minimum of the total maximum infil
 Infiltration excess occurs when the infiltration capacity is smaller then the throughfall and stemflow rate.
 This amount of water (self.InfiltExcess) becomes overland flow (infiltration excess overland flow). Saturation excess
 occurs when the (upper) soil becomes saturated and water cannot infiltrate anymore. This amount of water
-(self.ExcessWater) becomes overland flow (saturation excess overland flow).
+(self.ExcessWater and self.ExfiltWater) becomes overland flow (saturation excess overland flow).
 
 The wflow\_sbm soil water accounting scheme
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-A detailed description of the Topog_SBM model has been given by [vertessy]_. Briefly:
+A detailed description of the Topog_SBM model has been given by Vertessy (1999). Briefly:
 the soil is considered as a bucket with a certain depth
 (:math:`z_{t}`), divided into a saturated store (:math:`S`) and an
 unsaturated store (:math:`U`), the magnitudes of which are expressed
@@ -429,7 +429,7 @@ If the MaxLeakage parameter is set > 0, water is lost from the saturated zone an
 Soil temperature
 ~~~~~~~~~~~~~~~~
 
-The near surface soil temperature is modelled using a simple equation [Wigmosta]_:
+The near surface soil temperature is modelled using a simple equation (Wigmosta et al., 2009):
 
 .. math:: T_s^{t} = T_s^{t-1} + w  (T_a - T_s^{t-1})  
 
@@ -483,7 +483,7 @@ The following maps and variables can be defined:
 
     IrriDemandExternal=intbl/IrriDemandExternal.tbl,tbl,-34.0,0,staticmaps/wflow_irrisurfaceintakes.map
 
-  In this example the default demand is :math:`-34 m^3/s`. The demand must be linked to the map
+  In this example the default demand is -34 m\ :math:`^3` s\ :math:`^{-1}`. The demand must be linked to the map
   wflow_irrisurfaceintakes.map. Alternatively we can define this as a timeseries of
   maps: ::
 
@@ -514,11 +514,66 @@ The  irrigation model can be used in the following two modes:
 2. Irrigation areas have been defined and no IrriDemandExternal has been defined. In this case the model will
    estimate the irrigation water demand. The irrigation algorithim works as follows: For each of the areas the
    difference between potential transpiration and actual transpiration is determined. Next, this is converted to a
-   demand in :math:`m^3/s` at the corresponding intake point at the river. The demand is converted to a supply
+   demand in m\ :math:`^3` s\ :math:`^{-1}` at the corresponding intake point at the river. The demand is converted to a supply
    (taking into account the available water in the river) and converted to an amount in mm over the irrigation area.
    The supply is converted in the *next timestep* as extra water available for infiltration in the irrigation area.
    This option has only be tested in combination with a monthly LAI climatology as input. If a DemandReturnFlowFraction
    is defined this fraction is the supply is returned to the river at the wflow_irrisurfacereturns.map points.
+
+
+Paddy areas and irrigation
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Paddy areas (irrigated rice fields) can be defined by including the following maps:
+
+- **wflow_irrigationpaddyareas.map**: Map of areas where irrigated rice fields are located.
+- **wflow_hmax.map**: Map with the optimal water height [mm] in the irrigated rice fields.
+- **wflow_hp.map**: Map of the water height [mm] when rice field starts spilling water (overflow).
+- **wflow_hmin.map**: Map with the minimum required water height in the irrigated rice fields.
+- **wflow_irrisurfaceintake.map**: Map of intake points at the river(s). The id of each point should correspond to the
+  id of an area in the wflow_irrigationpaddyareas map.
+
+Furthermore, gridded timeseries whether rice crop growth occurs (value = 1), or not (value = 0), are required. These timeseries can be 
+included as follows:
+
+::
+
+    [modelparameters]
+    CRPST=inmaps/CRPSTART,timeseries,0.0,1
+
+
+Wflow_sbm will estimate the irrigation water demand as follows, a ponding depth (self.PondingDepth) is simulated in the
+grid cells with a rice crop. Potential evaporation left after interception and open water evaporation (self.RestEvap), is subtracted 
+from the ponding depth as follows:
+
+::
+
+    if self.nrpaddyirri > 0:
+        self.ActEvapPond = pcr.min(self.PondingDepth, self.RestEvap)
+        self.PondingDepth = self.PondingDepth - self.ActEvapPond
+        self.RestEvap = self.RestEvap - self.ActEvapPond
+
+Infiltration excess and saturation excess water are added to the ponding depth in grid cells with a rice crop, to the maximum water height
+when the rice field starts spilling water. 
+
+The irrigation depth is then determined as follows:
+
+::
+
+    if self.nrpaddyirri > 0:
+        irr_depth = (
+            pcr.ifthenelse(
+                self.PondingDepth < self.h_min, self.h_max - self.PondingDepth, 0.0
+            )
+            * self.CRPST
+        )
+
+The irrigation depth is converted to m\ :math:`^3` s\ :math:`^{-1}` for each irrigated paddy area, at the corresponding intake point at the river. 
+The demand is converted to a supply (taking into account the available water in the river) and converted to an amount in mm over the irrigation area.
+The supply is converted in the *next timestep* as extra water available for infiltration in the irrigation area.
+
+This functionality was added to simulate rice crop production when coupled (through Basic Model Interface (BMI)) to the 
+:ref:`wflow_lintul:The wflow_lintul Model`.
 
 
 Kinematic wave, Length, Width and Slope
@@ -532,7 +587,7 @@ For river cells, both width and length can either be supplied by separate maps:
 * wflow_riverlength.map
 
 or determined from the grid cell dimension and flow direction for river length and from the DEM, the upstream area and yearly 
-average discharge for the river width ([Finnegan]_):
+average discharge for the river width (Finnegan et al., 2005):
 
 .. math:
 
@@ -616,33 +671,16 @@ Example:
     SubCatchFlowOnly = 1
 
 
-
-
-
 Model variables stores and fluxes
 ---------------------------------
 
-The diagram below shows the stores and fluxes in the model in terms of internal variable names. It
-onlys shows the soil and Kinematic wave reservoir, not the canopy model.
+The figure below shows the stores and fluxes in the model in terms of internal variable names.
 
-.. digraph:: grids
- 
-    compound=true;
-    node[shape=record];
-    UStoreDepth [shape=box];
-    OutSide [style=dotted];
-    SatWaterDepth [shape=box];
-    UStoreDepth -> SatWaterDepth [label="Transfer [mm]"];
-    SatWaterDepth -> UStoreDepth [label="CapFlux [mm]"];        
-    SatWaterDepth -> KinWaveStoreLand [label="ExfiltWater [mm]"];
-    "OutSide" -> UStoreDepth [label="ActInfilt [mm]"];
-    UStoreDepth -> OutSide [label="SumEvapUstore [mm]"];
-    SatWaterDepth -> OutSide [label="SumEvapSat [mm]"];
-    "OutSide" -> KinWaveStoreLand [label="InWaterL [m^{3}/s]"];
-    KinWaveStoreLand -> KinWaveStoreRiver [label="qo_toriver [m\ :math:`^3`/s]"]
-    SatWaterDepth -> KinWaveStoreRiver [label="ssf_toriver [m\ :math:`^3`/s]"]
-    "OutSide" -> KinWaveStoreRiver [label="RunoffOpenWaterRiver [m\ :math:`^3`/s]"] ;
-    
+.. figure:: _images/wflow_sbm_flux_layer.png
+    :width: 800px
+    :align: center
+
+    Complete wflow scheme.
 
 
 Processing of meteorological forcing data
@@ -802,11 +840,15 @@ KsatVer and KsatHorFrac
 References
 ----------
 
-.. [vertessy]  Vertessy, R.A. and H. Elsenbeer, “Distributed modelling of storm flow generation in an Amazonian rainforest catchment: effects of model parameterization,” Water Resources Research, vol. 35, no. 7, pp. 2173–2187, 1999.
-
-.. [Finnegan] Noah J. Finnegan et al 2005 Controls on the channel width of rivers: Implications for modeling fluvial incision of bedrock" 
-
-.. [Wigmosta] Wigmosta, M. S., L. J. Lane, J. D. Tagestad, and A. M. Coleman (2009), Hydrologic and erosion models to assess land use and management practices affecting soil erosion, Journal of Hydrologic Engineering, 14(1), 27-41.
+- Vertessy, R.A. and Elsenbeer, H., 1999, Distributed modelling of storm flow generation in an Amazonian rainforest catchment: effects of 
+  model parameterization, Water Resources Research, vol. 35, no. 7, pp. 2173–2187.
+- Brooks, R., and Corey, T., 1964, Hydraulic properties of porous media, Hydrology Papers, Colorado State University, 24, 
+  doi:10.13031/2013. 40684.
+- Chow, V., Maidment, D. and Mays, L., 1988, Applied Hydrology. McGraw-Hill Book Company, New York.
+- Finnegan, N.J., Roe, G., Montgomery, D.R., and Hallet, B., 2005, Controls on the channel width of rivers: Implications for modeling 
+  fluvial incision of bedrock, Geology, v. 33; no. 3; p. 229–232; doi: 10.1130/G21171.1.
+- Wigmosta, M. S., L. J. Lane, J. D. Tagestad, and A. M. Coleman, 2009, Hydrologic and erosion models to assess land use and 
+  management practices affecting soil erosion, Journal of Hydrologic Engineering, 14(1), 27-41.
 
 wflow_sbm module documentation
 ------------------------------

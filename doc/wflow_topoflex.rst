@@ -17,7 +17,7 @@ The model code is written in a modular setup: different conceptualisations can b
 each HRU. The code currently contains some reservoir conceptualisations (see below), but new conceptualisations can
 easily be added.
 
-Examples of the application of topoflex can be found in [gharari], [gao] and [euser].
+Examples of the application of topoflex can be found in Gharari et al. (2014), Gao et al. (2014) and Euser et al. (2015).
 
 Figure 1 shows a possible model conceptualistion: one that used two HRUs (wetland (W) and hillslope (H), adapted from [euser])
 
@@ -44,7 +44,7 @@ done in the preparation step: for each cell the percentage of each class needs t
 staticmap.
 
 The cell sizes do not have to have the same size: the size of individual cells can be stored in a staticmap, which is
- used to calculate the contribution of each cell to the generated discharge.
+used to calculate the contribution of each cell to the generated discharge.
 
 
 Input data
@@ -108,7 +108,7 @@ Including more HRUs in the model leads to an increase in parameters. To make it 
 model, a set of constraints is introduced: parameter and process constraints. These constraints are assumed relations
  between parameters and fluxes of different HRUs and prevent the selection of unreaslistic parameters. The
  constraints are an important part of the perceptual model, but are not (yet) included in de wflow code. Below some
- examples of constraints are given, more examples of constraints can be found in [gharari], [gao] and [euser].
+ examples of constraints are given, more examples of constraints can be found in Gharari et al. (2014), Gao et al. (2014) and Euser et al. (2015).
 
 Parameter constraints
 ~~~~~~~~~~~~~~~~~~~~~
@@ -127,10 +127,14 @@ Process constraints are calculated after the model runs.
 
 References
 ----------
-.. [euser]     Euser, T., Hrachowitz, M., Winsemius, H. C. and Savenije, H. H. G.: The effect of forcing and landscape distribution on performance and consistency of model structures. Hydrol. Process., doi: 10.1002/hyp.10445, 2015.	
-.. [gao]       Gao, H., Hrachowitz, M., Fenicia, F., Gharari, S., and Savenije, H. H. G.: Testing the realism of a topography-driven model (FLEX-Topo) in the nested catchments of the Upper Heihe, China, Hydrol. Earth Syst. Sci., 18, 1895-1915, doi:10.5194/hess-18-1895-2014, 2014.
-.. [gharari]   Gharari, S., Hrachowitz, M., Fenicia, F., Gao, H., and Savenije, H. H. G.: Using expert knowledge to increase realism in environmental system models can dramatically reduce the need for calibration, Hydrol. Earth Syst. Sci., 18, 4839-4859, doi:10.5194/hess-18-4839-2014, 2014.
-.. [savenije]  Savenije, H. H. G.: HESS Opinions "Topography driven conceptual modelling (FLEX-Topo)", Hydrol. Earth Syst. Sci., 14, 2681-2692, doi:10.5194/hess-14-2681-2010, 2010.
+- Euser, T., Hrachowitz, M., Winsemius, H. C. and Savenije, H. H. G.: The effect of forcing and landscape distribution on 
+  performance and consistency of model structures. Hydrol. Process., doi: 10.1002/hyp.10445, 2015.
+- Gao, H., Hrachowitz, M., Fenicia, F., Gharari, S., and Savenije, H. H. G.: Testing the realism of a topography-driven model 
+  (FLEX-Topo) in the nested catchments of the Upper Heihe, China, Hydrol. Earth Syst. Sci., 18, 1895-1915, doi:10.5194/hess-18-1895-2014, 2014.
+- Gharari, S., Hrachowitz, M., Fenicia, F., Gao, H., and Savenije, H. H. G.: Using expert knowledge to increase realism in environmental system 
+  models can dramatically reduce the need for calibration, Hydrol. Earth Syst. Sci., 18, 4839-4859, doi:10.5194/hess-18-4839-2014, 2014.
+- Savenije, H. H. G.: HESS Opinions "Topography driven conceptual modelling (FLEX-Topo)", Hydrol. Earth Syst. Sci., 14, 2681-2692, 
+  doi:10.5194/hess-14-2681-2010, 2010.
 
 example ini file
 ----------------
@@ -142,7 +146,7 @@ An example ini file be found :download:`here. <_download/wflow_topoflex_example.
 
 
 wflow_topoflex module documentation
-------------------------------
+-----------------------------------
 
 .. automodule:: wflow_topoflex
     :members:
