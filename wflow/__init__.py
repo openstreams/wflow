@@ -9,7 +9,7 @@ __all__ = [
 import os
 import sys
 import pkg_resources
-from wflow.version import version
+
 
 if getattr(sys, "frozen", False):
     import osgeo.gdal as gdal
@@ -28,4 +28,8 @@ if getattr(sys, "frozen", False):
     # that child processes will inherit it
     os.environ["PROJ_DIR"] = os.path.join(basedir, "proj-data")
 
-__version__ = version
+try:
+    from wflow.version import version
+    __version__ = version
+except:
+    pass
