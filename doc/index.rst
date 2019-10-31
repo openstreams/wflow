@@ -113,8 +113,7 @@ The different wflow models share the same structure but are fairly
 different with respect to the conceptualisation. The shared software
 framework includes the basic maps (dem, landuse, soil etc) and the
 hydrological routing via the kinematic wave. The Python class framework
-also exposes the models as an API and is based on the PCRaster/Python
-version 4.2+ (www.pcraster.eu).
+also exposes the models as an API and is based on PCRaster/Python.
 
 The wflow\_sbm model maximises the use of available spatial data.
 Soil depth, for example, is estimated from the DEM using a topographic
@@ -127,9 +126,7 @@ routine as the wflow\_sbm  model to route the water downstream.
 The models are programmed in Python using the PCRaster Python extension.
 As such, the structure of the model is
 transparent, can be changed by other modellers easily, and the system
-allows for rapid development. In order to run
-the model both PCRaster 4.2+ and Python 3.6 are needed. At the moment
-only 64 bit versions are supported.
+allows for rapid development.
 
 .. toctree::
    :hidden:
