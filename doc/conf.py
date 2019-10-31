@@ -38,6 +38,8 @@ MOCK_MODULES = [
     "osgeo.gdalconst",
     "osgeo",
     "osgeo.ogr",
+    "cftime",
+    "xarray",
     "netCDF4",
     "netCDF4_utils",
     "netcdftime",
