@@ -45,6 +45,7 @@ MOCK_MODULES = [
     "pcraster._pcraster",
     "pcraster",
     "pyproj",
+    "wflow.version",
 ]
 
 
