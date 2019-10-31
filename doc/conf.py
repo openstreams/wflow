@@ -95,7 +95,7 @@ master_doc = "index"
 
 # General information about the project.
 project = u"wflow"
-copyright = u"2013-2018, Deltares/Jaap Schellekens"
+copyright = u"2013-2019, Deltares/Jaap Schellekens"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

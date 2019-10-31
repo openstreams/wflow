@@ -36,10 +36,12 @@ scriptpaths = [
     "wflow/wflow_lintul.py",
     "wflow/wflow_pcrglobwb.py",
     "wflow/wflow_routing.py",
-     "wflow/wflow_sbm.py",
+    "wflow/wflow_sbm.py",
     "wflow/wflow_sphy.py",
     "wflow/wflow_topoflex.py",
     "wflow/wflow_w3ra.py",
+    "wflow/wflow_w3.py",
+    "wflow/wflow_stream.py",
     "wflow/wflow_wave.py",
 ]
 
