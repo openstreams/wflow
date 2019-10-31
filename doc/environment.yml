@@ -1,0 +1,27 @@
+name: wflow
+
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.6
+  - numpy>=1.12
+  - scipy>=1.0
+  - gdal>=2.2.4
+  - netcdf4>=1.4.1
+  - cftime>=1.0.1
+  - xarray>=0.11
+  - pyproj=1.9
+  - thrift>=0.11
+  - numba>=0.42
+  - pyinstaller>=3.3
+  - setuptools_scm
+  - setuptools>=38
+  - pip>=9.0.3
+  - python-dateutil>=2.7
+  - sphinx
+  - sphinx_rtd_theme
+  - matplotlib
+  - pip:
+    - bmi-python
