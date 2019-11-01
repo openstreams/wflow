@@ -1,0 +1,10 @@
+mapping wflow_java lu to globcover lu
+1	0
+2	12
+3	7
+4	13
+5	13
+6	1
+7
+8
+9

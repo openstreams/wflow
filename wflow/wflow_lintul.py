@@ -5,6 +5,7 @@ import os.path
 import math
 
 import pcraster.framework
+import pcraster as pcr
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
 
@@ -138,7 +139,7 @@ class Interpol_Obj(object):
         temptablefile.close()
 
     def lookup_linear(self, x):
-        y = lookuplinear(self.filename, x)
+        y = pcr.lookuplinear(self.filename, x)
         return y
 
 
@@ -891,8 +892,8 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         # Growth of leaves in terms of mass (GLV) and in terms of LAI (GLAI).
         GLV = FLV * GTOTAL
-        Adt_or_Harv = pcror(Adult, CropHarvNow)
-        Juv_or_Harv = pcror(Juvenile, CropHarvNow)
+        Adt_or_Harv = pcr.pcror(Adult, CropHarvNow)
+        Juv_or_Harv = pcr.pcror(Juvenile, CropHarvNow)
         NoLeavesYet = self.LAI == 0.0
         LetsGo = pcr.pcrand(Enough_water, CropStartNow)
         LetsGro = pcr.pcrand(NoLeavesYet, LetsGo)
