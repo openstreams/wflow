@@ -98,6 +98,14 @@ For running wflow_lintul in conjunction with the hydrological model wflow_sbm, w
 and which is what the model is really intended for, a Python BMI runner module, exchanging data between wflow_sbm and wflow_lintul, needs 
 to be run.
 
+An example of a coupled wflow_sbm and wflow_lintul model is available in \\wflow\\examples\\wflow_brantas_sbm_lintul
+
+To run the coupled models:
+
+    + ``activate wflow``
+
+    + ``python bmi2runner.py bmi2runner.ini``
+
 Settings for wflow_lintul
 -------------------------
 
