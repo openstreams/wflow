@@ -25,4 +25,3 @@ dependencies:
   - matplotlib
   - pip:
     - bmi-python
-    - git+https://github.com/openstreams/wflow.git
