@@ -221,12 +221,12 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
                 supplymodel = self.__getmodulenamefromvar__(item)
                 if curmodel == supplymodel:
                     if len(idfrom) > 0 and len(idto) == 0:
-                        sum_ind = np.sum(self.get_value_at_indices(item, idfrom))
+                        sum_ind = np.sum(self.get_value_at_indices(item, tuple(idfrom)))
                         outofmodel = np.ndarray(shape=(1, 1))
                         outofmodel[0][0] = sum_ind
 
                     elif len(idfrom) > 0 and len(idto) > 0:
-                        outofmodel = self.get_value_at_indices(item, idfrom).copy()
+                        outofmodel = self.get_value_at_indices(item, tuple(idfrom)).copy()
 
                     else:
                         outofmodel = self.get_value(item).copy()
@@ -234,7 +234,7 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
                     tomodel = self.config.get("exchanges", item)
 
                     if len(idto) > 0:
-                        self.set_value_at_indices(tomodel, idto, outofmodel)
+                        self.set_value_at_indices(tomodel, tuple(idto), outofmodel)
                     else:
                         self.set_value(tomodel, outofmodel)
 
@@ -352,12 +352,12 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
                 if curmodel == supplymodel:
 
                     if len(idfrom) > 0 and len(idto) == 0:
-                        sum_ind = np.sum(self.get_value_at_indices(item, idfrom))
+                        sum_ind = np.sum(self.get_value_at_indices(item, tuple(idfrom)))
                         outofmodel = np.ndarray(shape=(1, 1))
                         outofmodel[0][0] = sum_ind
 
                     elif len(idfrom) > 0 and len(idto) > 0:
-                        outofmodel = self.get_value_at_indices(item, idfrom).copy()
+                        outofmodel = self.get_value_at_indices(item, tuple(idfrom)).copy()
 
                     else:
                         outofmodel = self.get_value(item).copy()
@@ -365,7 +365,7 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
                     tomodel = self.config.get("exchanges", item)
 
                     if len(idto) > 0:
-                        self.set_value_at_indices(tomodel, idto, outofmodel)
+                        self.set_value_at_indices(tomodel, tuple(idto), outofmodel)
                     else:
                         self.set_value(tomodel, outofmodel)
 

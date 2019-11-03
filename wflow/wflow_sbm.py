@@ -80,6 +80,11 @@ import pdb
 import math
 from numba import jit
 
+from numba.errors import NumbaPendingDeprecationWarning
+import warnings
+
+warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
+
 wflow = "wflow_sbm: "
 
 updateCols = []
