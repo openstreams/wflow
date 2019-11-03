@@ -57,9 +57,11 @@ Install as a conda environment
 The easiest and most robust way to install wflow is by installing it in a separate
 conda environment. In the root repository directory there is an ``environment.yml`` file.
 This file lists all dependencies, except PCRaster, which must be installed manually as
-described above.
+described above. Either use the ``environment.yml`` file from the master branch (please note
+that the master branch can change rapidly and break functionality without warning) , or from
+one of the releases {release}.
 
-Run this command to start installing wflow with all dependencies:
+Run this command to start installing all wflow dependencies:
 
 + ``conda env create -f environment.yml``
 
@@ -68,25 +70,24 @@ a session, run:
 
 + ``activate wflow``
 
+For the installation of wflow there are two options (from the Python Package Index (PyPI)
+or from Github). To install a release of wflow from the PyPI (available from release 2018.1):
+
++ ``pip install wflow=={release}``
+
+To install directly from GitHub (from the HEAD of the master branch):
+
++ ``pip install git+https://github.com/openstreams/wflow.git``
+
+or from Github from a specific release:
+
++ ``pip install git+https://github.com/openstreams/wflow.git@{release}``
+
 Now you should be able to start this environment's Python with ``python``, try
 ``import wflow`` to see if the package is installed.
 
 More details on how to work with conda environments can be found here:
 https://conda.io/docs/user-guide/tasks/manage-environments.html
-
-
-Install using pip
------------------
-
-Besides the recommended conda environment setup described above, you can also install
-wflow with ``pip``. For the more difficult to install Python dependencies, it is best to
-use the conda package manager:
-
-+ ``conda install numpy scipy gdal netcdf4 cftime pyproj python-dateutil``
-
-This will install the latest release of wflow:
-
-+ ``pip install wflow``
 
 If you are planning to make changes and contribute to the development of wflow, it is
 best to make a git clone of the repository, and do a editable install in the location
@@ -96,12 +97,25 @@ it from, such that any changes you make there are directly reflected in your ins
 
 + ``git clone https://github.com/openstreams/wflow.git``
 + ``cd wflow``
++ ``activate wflow``
 + ``pip install -e .``
 
 Alternatively, if you want to avoid using ``git`` and simply want to test the latest
 version from the ``master`` branch, you can replace the first line with downloading
 a zip archive from GitHub: https://github.com/openstreams/wflow/archive/master.zip
 
+Install using pip
+-----------------
+
+Besides the recommended conda environment setup described above, you can also install
+wflow with ``pip``. For the more difficult to install Python dependencies, it is best to
+use the conda package manager:
+
++ ``conda install numpy scipy gdal netcdf4 cftime xarray pyproj numba python-dateutil``
+
+Then install a release {release} of wflow (available from release 2018.1) with pip:
+
++ ``pip install wflow=={release}``
 
 Check if the installation is successful
 ---------------------------------------
@@ -146,18 +160,12 @@ Citation
 ========
 See doi of the release you use. If you use a snapshot of the development (without a DOI) cite as follows:
 
-Jaap Schellekens, Willem van Verseveld, Tanja Euser, Hessel Winsemius, Christophe Thiange, Laurène Bouaziz, Daniel Tollenaar, Sander de Vries, Albrecht Weerts, YEAR. openstreams/wflow: unstable-master. https://github.com/openstreams/wflow, obtained: DATE_OF_DOWNLOAD
+Jaap Schellekens, Willem van Verseveld, Martijn Visser, Hessel Winsemius, Tanja Euser, Laurène Bouaziz, Christophe Thiange, Sander de Vries,
+Hélène Boisgontier, Dirk Eilander, Daniel Tollenaar, Albrecht Weerts, Fedor Baart, Pieter Hazenberg, Arthur Lutz, Corine ten Velden,
+Mischa Jansen, Imme Benedict, YEAR. openstreams/wflow: unstable-master. https://github.com/openstreams/wflow, obtained: DATE_OF_DOWNLOAD
 
 
-Recent releases
----------------
+Releases
+--------
 
-.. image:: https://zenodo.org/badge/17738134.svg
-   :target: https://zenodo.org/badge/latestdoi/17738134
-
-Jaap Schellekens, Willem van Verseveld, Tanja Euser, Hessel Winsemius, Christophe Thiange, Laurène Bouaziz, Daniel Tollenaar, Sander de Vries, 2016. openstreams/wflow: 2016.04 Test release. doi:10.5281/zenodo.167057
-
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.155389.svg
-   :target: https://doi.org/10.5281/zenodo.155389
-
-Jaap Schellekens, Willem van Verseveld, Tanja Euser, Hessel Winsemius, Christophe Thiange, Laurène Bouaziz, Daniel Tollenaar, Sander de Vries, 2016. openstreams/wflow: 2016.03. doi:10.5281/zenodo.155389
+To check the doi of releases you use: https://doi.org/10.5281/zenodo.593510
