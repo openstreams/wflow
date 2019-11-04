@@ -14,6 +14,10 @@ import wflow.wflow_routing
 import wflow.wflow_sbm
 import wflow.wflow_sceleton
 import wflow.wflow_w3ra
+import wflow.wflow_w3
+import wflow.wflow_stream
+import wflow.wflow_sphy
+import wflow.wflow_pcrglobwb
 import pcraster as pcr
 from wflow.pcrut import setlogger
 
@@ -26,6 +30,10 @@ wflow_models = [
     wflow.wflow_lintul,
     wflow.wflow_sceleton,
     wflow.wflow_w3ra,
+    wflow.wflow_w3,
+    wflow.wflow_stream,
+    wflow.wflow_sphy,
+    wflow.wflow_pcrglobwb,
 ]
 
 
