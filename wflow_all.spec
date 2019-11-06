@@ -8,15 +8,18 @@ from distutils.dir_util import copy_tree, remove_tree
 
 from osgeo import gdal
 import pyproj
-pyproj_datadir = pyproj.datadir.pyproj_datadir
 import pcraster
 
+gdal.UseExceptions()
 pcrasterlib = pathlib.Path(pcraster.__file__).parents[2] / "lib"
 datas = [(gdal.GetConfigOption("GDAL_DATA"), "gdal-data")]
+pyproj_datadir = pyproj.datadir.get_data_dir()
 # prevent unintentionally adding the entire workdir
 if pyproj_datadir != "":
     datas.append((pyproj_datadir, "proj-data"))
 
+print("data included in pyinstaller distribution:")
+print(datas)
 
 # list identical make_wflow_exe script with --normal
 # except for the wtools scripts
