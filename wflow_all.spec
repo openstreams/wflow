@@ -1,6 +1,7 @@
 # -*- mode: python -*-
 
 import os
+import sys
 import subprocess
 import pathlib
 import shutil
@@ -9,6 +10,9 @@ from distutils.dir_util import copy_tree, remove_tree
 from osgeo import gdal
 import pyproj
 import pcraster
+
+# got a RecursionError: maximum recursion depth exceeded
+sys.setrecursionlimit(10_000)
 
 gdal.UseExceptions()
 pcrasterlib = pathlib.Path(pcraster.__file__).parents[2] / "lib"
