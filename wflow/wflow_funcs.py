@@ -904,7 +904,7 @@ def simplereservoir(
         wantrel = pcr.max(0.0, storage - (maxstorage * target_perc_full))
         # Assume extra maximum Q if spilling
         overflowQ = pcr.max((storage - maxstorage), 0.0)
-        torelease = pcr.min(wantrel, overflowQ + maximum_Q * timestepsecs / fl_nr_loop)
+        torelease = pcr.min(wantrel, overflowQ + maximum_Q * timestepsecs / fl_nr_loop - demandRelease)
         storage = storage - torelease
         outflow = torelease + demandRelease
         percfull = storage / maxstorage
