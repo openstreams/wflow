@@ -539,7 +539,7 @@ def glacierHBV(GlacierFrac,
     )
     # Max conversion to 8mm/day
     Snow2Glacier = (
-        pcr.min(Snow2Glacier, 8.0) * timestepsecs / basetimestep
+        pcr.min(Snow2Glacier, 8.0 * (timestepsecs / basetimestep))
     )
 
     Snow = Snow - (Snow2Glacier * GlacierFrac)
@@ -879,30 +879,37 @@ def simplereservoir(
         ),
         pcr.scalar(0.0),
     )
+    
+    _outflow = 0
+    _demandRelease = 0
+    
+    nr_loop = np.max([int(timestepsecs / 21600), 1])
+    for n in range(0, nr_loop):
+        
+        fl_nr_loop = float(nr_loop)
+        
+        storage = (
+            storage
+            + (inflow * timestepsecs / fl_nr_loop)
+            + (prec_av / fl_nr_loop / 1000.0) * ResArea
+            - (pet_av / fl_nr_loop / 1000.0) * ResArea
+        )
 
-    oldstorage = storage
-    storage = (
-        storage
-        + (inflow * timestepsecs)
-        + (prec_av / 1000.0) * ResArea
-        - (pet_av / 1000.0) * ResArea
-    )
+        percfull = storage / maxstorage
+        # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
+        fac = sCurve(percfull, a=minimum_full_perc, c=30.0)
+        demandRelease = pcr.min(fac * demand * timestepsecs / fl_nr_loop, storage)
+        storage = storage - demandRelease
 
-    percfull = ((storage + oldstorage) * 0.5) / maxstorage
-    # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
-    fac = sCurve(percfull, a=minimum_full_perc, c=30.0)
-    demandRelease = pcr.min(fac * demand * timestepsecs, storage)
-    storage = storage - demandRelease
+        wantrel = pcr.max(0.0, storage - (maxstorage * target_perc_full))
+        # Assume extra maximum Q if spilling
+        overflowQ = pcr.max((storage - maxstorage), 0.0)
+        torelease = pcr.min(wantrel, overflowQ + maximum_Q * timestepsecs / fl_nr_loop)
+        storage = storage - torelease
+        outflow = torelease + demandRelease
+        percfull = storage / maxstorage
+        
+        _outflow = _outflow + outflow
+        _demandRelease = _demandRelease + demandRelease
 
-    # Re-determine percfull
-    percfull = ((storage + oldstorage) * 0.5) / maxstorage
-
-    wantrel = pcr.max(0.0, storage - (maxstorage * target_perc_full))
-    # Assume extra maximum Q if spilling
-    overflowQ = (percfull - 1.0) * (storage - maxstorage)
-    torelease = pcr.min(wantrel, overflowQ + maximum_Q * timestepsecs)
-    storage = storage - torelease
-    outflow = (torelease + demandRelease) / timestepsecs
-    percfull = storage / maxstorage
-
-    return storage, outflow, percfull, prec_av, pet_av, demandRelease / timestepsecs
+    return storage, _outflow / timestepsecs, percfull, prec_av, pet_av, _demandRelease / timestepsecs

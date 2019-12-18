@@ -1374,12 +1374,15 @@ class WflowModel(pcraster.framework.DynamicModel):
                 -1.41934,
             )
             # Cfmax = 3.75653 # meltconstant in temperature-index
-            self.Cfmax = self.readtblDefault(
+            self.Cfmax = (self.readtblDefault(
                 self.Dir + "/" + self.intbl + "/Cfmax.tbl",
                 self.LandUse,
                 subcatch,
                 self.Soil,
                 3.75653,
+                )
+                * self.timestepsecs
+                / self.basetimestep
             )
             # WHC= 0.10000        # fraction of Snowvolume that can store water
             self.WHC = self.readtblDefault(
@@ -2252,13 +2255,44 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.OldPondingDepth = self.PondingDepth
         self.PotEvap = self.PotenEvap  #
 
+        ##########################################################################
+        # Interception according to a modified Gash model
+        ##########################################################################
+        if self.timestepsecs >= (23 * 3600):
+            self.ThroughFall, self.Interception, self.StemFlow, self.CanopyStorage = rainfall_interception_gash(
+                self.Cmax,
+                self.EoverR,
+                self.CanopyGapFraction,
+                self.Precipitation,
+                self.CanopyStorage,
+                maxevap=self.PotEvap,
+            )
+
+            self.PotTransSoil = pcr.cover(
+                pcr.max(0.0, self.PotEvap - self.Interception), 0.0
+            )  # now in mm
+
+        else:
+            NetInterception, self.ThroughFall, self.StemFlow, LeftOver, Interception, self.CanopyStorage = rainfall_interception_modrut(
+                self.Precipitation,
+                self.PotEvap,
+                self.CanopyStorage,
+                self.CanopyGapFraction,
+                self.Cmax,
+            )
+            self.PotTransSoil = pcr.cover(pcr.max(0.0, LeftOver), 0.0)  # now in mm
+            self.Interception = NetInterception
+
+        self.EffectivePrecipitation = self.ThroughFall + self.StemFlow
+
         if self.modelSnow:
+            self.OldSnow = self.Snow
             self.TSoil = self.TSoil + self.w_soil * (self.Temperature - self.TSoil)
             # return Snow,SnowWater,SnowMelt,RainFall
-            self.Snow, self.SnowWater, self.SnowMelt, self.PrecipitationPlusMelt, self.SnowFall = SnowPackHBV(
+            self.Snow, self.SnowWater, self.SnowMelt, self.RainFallPlusMelt, self.SnowFall = SnowPackHBV(
                 self.Snow,
                 self.SnowWater,
-                self.Precipitation,
+                self.EffectivePrecipitation,
                 self.Temperature,
                 self.TTI,
                 self.TT,
@@ -2303,39 +2337,13 @@ class WflowModel(pcraster.framework.DynamicModel):
                 )
                 # Convert to mm per grid cell and add to snowmelt
                 self.GlacierMelt = self.GlacierMelt * self.GlacierFrac
-                self.PrecipitationPlusMelt = (
-                    self.PrecipitationPlusMelt + self.GlacierMelt
+                self.RainFallPlusMelt = (
+                    self.RainFallPlusMelt + self.GlacierMelt
                 )
         else:
-            self.PrecipitationPlusMelt = self.Precipitation
+            self.RainFallPlusMelt = self.EffectivePrecipitation
 
-        ##########################################################################
-        # Interception according to a modified Gash model
-        ##########################################################################
-        if self.timestepsecs >= (23 * 3600):
-            self.ThroughFall, self.Interception, self.StemFlow, self.CanopyStorage = rainfall_interception_gash(
-                self.Cmax,
-                self.EoverR,
-                self.CanopyGapFraction,
-                self.PrecipitationPlusMelt,
-                self.CanopyStorage,
-                maxevap=self.PotEvap,
-            )
 
-            self.PotTransSoil = pcr.cover(
-                pcr.max(0.0, self.PotEvap - self.Interception), 0.0
-            )  # now in mm
-
-        else:
-            NetInterception, self.ThroughFall, self.StemFlow, LeftOver, Interception, self.CanopyStorage = rainfall_interception_modrut(
-                self.PrecipitationPlusMelt,
-                self.PotEvap,
-                self.CanopyStorage,
-                self.CanopyGapFraction,
-                self.Cmax,
-            )
-            self.PotTransSoil = pcr.cover(pcr.max(0.0, LeftOver), 0.0)  # now in mm
-            self.Interception = NetInterception
 
         # Start with the soil calculations
         # --------------------------------
@@ -2346,7 +2354,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         )
 
         self.AvailableForInfiltration = (
-            self.ThroughFall + self.StemFlow + self.IRSupplymm
+            self.RainFallPlusMelt + self.IRSupplymm
         )
         self.oldIRSupplymm = self.IRSupplymm
         
@@ -2882,7 +2890,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.QCatchmentMM = self.RiverRunoff * self.QMMConvUp
         self.RunoffCoeff = (
             self.QCatchmentMM
-            / pcr.catchmenttotal(self.PrecipitationPlusMelt, self.TopoLdd)
+            / pcr.catchmenttotal(self.RainFallPlusMelt, self.TopoLdd)
             / pcr.catchmenttotal(pcr.cover(1.0), self.TopoLdd)
         )
         # Single cell based water budget. snow not included yet.
@@ -2919,17 +2927,17 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.SoilWatbal = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['SoilWatbal'].reshape(self.shape)),self.mv)
         
         self.InterceptionWatBal = (
-            self.PrecipitationPlusMelt
+            self.Precipitation
             - self.Interception
             - self.StemFlow
             - self.ThroughFall
             - (self.OldCanopyStorage - self.CanopyStorage)
         )
         
+        
         self.SurfaceWatbal = (
-            self.PrecipitationPlusMelt
+            self.RainFallPlusMelt
             + self.oldIRSupplymm
-            - self.Interception
             - self.InfiltExcess
             - self.ExcessWater
             - self.RunoffRiverCells 
