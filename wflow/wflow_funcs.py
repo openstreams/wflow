@@ -179,7 +179,7 @@ def kin_wave(rnodes, rnodes_up, Qold, q, Alpha, Beta, DCL, River, Bw, AlpTermR, 
 @jit(nopython=True)
 def kinematic_wave_ssf(ssf_in, ssf_old, zi_old, r, Ks_hor, Ks, slope, neff, f, D, dt, dx, w, ssf_max):
     
-    epsilon = 1e-6
+    epsilon = 1e-3
     MAX_ITERS = 3000
         
     if ((ssf_in+ssf_old) == 0. and (r <= 0)):
