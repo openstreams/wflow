@@ -1427,7 +1427,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         #self.N = pcr.ifthenelse(self.River, self.NRiver, self.N)
 
         if hasattr(self, "ReserVoirSimpleLocs") or hasattr(
-            self, "ReserVoirComplexLocs"
+            self, "LakeLocs"
         ):
             self.ReserVoirLocs = self.ZeroMap
             self.filter_P_PET = self.ZeroMap + 1.0
