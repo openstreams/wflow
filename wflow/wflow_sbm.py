@@ -230,47 +230,60 @@ def infiltration(AvailableForInfiltration, PathFrac, cf_soil, TSoil,InfiltCapSoi
     
     return InfiltSoilPath, InfiltSoil, InfiltPath, SoilInf, PathInf, InfiltExcess
 
+@jit(nopython=True)
+def unsatzone_flow_layer(USd,KsatVerFrac,KsatVer,f,z,L_sat,c):
+
+    sum_ast = 0
+    #first transfer soil water > maximum soil water capacity layer (iteration is not required because of steady theta (USd))
+    st = KsatVerFrac * KsatVer * np.exp(-f * z) * min((USd/L_sat)**c,1.0)
+    st_sat = max(0, USd-L_sat)
+    USd = USd - min(st, st_sat)
+    sum_ast = sum_ast + min(st, st_sat)
+    ast = min(st - min(st, st_sat),USd)
+    #number of iterations (to reduce "overshooting") based on fixed maximum change in soil water per iteration step (0.02 x maximum soil water capacity layer)
+    its = max(int(math.ceil(ast/(L_sat*0.02))),1)
+    k = KsatVerFrac * KsatVer/its * np.exp(-f * z)
+    for i in range(0,its):
+        st = k * min((USd/L_sat)**c,1.0)
+        ast = min(st,USd)
+        USd = USd - ast
+        sum_ast = sum_ast + ast
+    
+    return USd, sum_ast
+
 
 @jit(nopython=True)  
 def unsatzone_flow(UStoreLayerDepth, InfiltSoilPath, L, z, KsatVerFrac, c, KsatVer, f, thetaS, thetaR, SoilWaterCapacity, SWDold, shape_layer, TransferMethod):
     
-    # iterate in time based on infiltration amount (steps of 2 mm)
-    its = max(int(math.ceil(InfiltSoilPath/2)),1)
-    ast_ = 0
-    for i in range(0,its):
-        m = 0
-        UStoreLayerDepth[m] = UStoreLayerDepth[m] + InfiltSoilPath/its
-        
-        if L[m] > 0.0:
-            #sbm option for vertical transfer (only for 1 layer)
-            if (TransferMethod == 1 and shape_layer == 1):
-                Sd = SoilWaterCapacity - SWDold
-                if Sd <= 0.00001:
-                    st = 0.0
-                else:
-                    st = KsatVerFrac[m] * KsatVer/its * (min(UStoreLayerDepth[m],L[m]*(thetaS-thetaR))/Sd)
-            else:    
-                st = KsatVerFrac[m] * KsatVer/its * np.exp(-f * z[m]) * min((UStoreLayerDepth[m]/(L[m] * (thetaS-thetaR)))**c[m],1.0)
+    m = 0
+    UStoreLayerDepth[m] = UStoreLayerDepth[m] + InfiltSoilPath
+    
+    if L[m] > 0.0:
+        #sbm option for vertical transfer (only for 1 layer)
+        if (TransferMethod == 1 and shape_layer == 1):
+            Sd = SoilWaterCapacity - SWDold
+            if Sd <= 0.00001:
+                st = 0.0
+            else:
+                st = KsatVerFrac[m] * KsatVer * (min(UStoreLayerDepth[m],L[m]*(thetaS-thetaR))/Sd)
                 ast = min(st,UStoreLayerDepth[m])
                 UStoreLayerDepth[m] = UStoreLayerDepth[m] - ast
-        else: 
-            ast = 0.0
+        else:
+            L_sat = L[m] * (thetaS-thetaR)
+            UStoreLayerDepth[m], ast = unsatzone_flow_layer(UStoreLayerDepth[m],KsatVerFrac[m],KsatVer,f,z[m],L_sat,c[m])
+    else: 
+        ast = 0.0
+            
                 
-                    
-        for m in range(1,len(L)):
+    for m in range(1,len(L)):
+        UStoreLayerDepth[m] = UStoreLayerDepth[m] + ast
+        if L[m] > 0.0:
+            L_sat = L[m] * (thetaS-thetaR)
+            UStoreLayerDepth[m], ast = unsatzone_flow_layer(UStoreLayerDepth[m],KsatVerFrac[m],KsatVer,f,z[m],L_sat,c[m])
+        else:
+            ast = 0.0
             
-            UStoreLayerDepth[m] = UStoreLayerDepth[m] + ast
-
-            if L[m] > 0.0:
-                st = KsatVerFrac[m] * KsatVer/its * np.exp(-f* z[m]) * min((UStoreLayerDepth[m]/(L[m] * (thetaS-thetaR)))**c[m],1.0)
-                ast = min(st,UStoreLayerDepth[m])
-            else:
-                ast = 0.0
-            
-            UStoreLayerDepth[m] = UStoreLayerDepth[m] - ast
-        ast_ = ast_ + ast
-        
-    return ast_, UStoreLayerDepth
+    return ast, UStoreLayerDepth
     
     
 @jit(nopython=True)    
