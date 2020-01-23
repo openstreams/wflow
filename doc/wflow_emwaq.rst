@@ -1,18 +1,18 @@
 wflow_emwaq Module
 ==================
 
-The wflow\_emwaq module provides a set of functions to create and link a Delft3D-WAQ or D-Emission model to a wflow model. The module allows to both converts static and dynamic data from wflow\_sbm to readable structure 
-and flow data used to set up an emission or a water quality model in Delft3D (later referred to as D-Emission and D-WAQ).
+The wflow\_emwaq module provides a set of functions to create and link a Delft3Delwaq or D-Emission model to a wflow model. The module allows to both converts static and dynamic data from wflow\_sbm to readable structure, flow and emission 
+data used to set up an emission or a water quality model (later referred to as D-Emission and Delwaq).
 
-It is an extension of the wflow\_delwaq module that only handles the surface water for a D-WAQ model. In addition, the script can aggregate results from wflow cells to build an emission/water quality model at the sub-catchment 
+It is an extension of the wflow\_delwaq module that only handles the surface water for a Delwaq model. In addition, the script can aggregate results from wflow cells to build an emission/water quality model at the sub-catchment 
 scale instead. The module has yet only been tested for wflow\_sbm but could as well be applied to other wflow models.
 
-Basic concepts on the structure of wflow and D-Emission/WAQ
+Basic concepts on the structure of wflow and D-Emission/Delwaq
 -----------------------------------------------------------
 The wflow\_sbm model is a fully distributed hydrologic model working on a regular grid of cells. Each cell is composed of several layers (or water buckets) such as open water, the unsaturated store or saturated store 
 of the soil… (figure below) The link between each cell (or direction of the lateral water flow) is then defined according to the local drain direction map (ldd) which indicates which of the cell neighbours has the lowest elevation.
 
-D-Emission or D-WAQ are unstructured models. They are composed of unordered segments. Contrary to a wflow cell which contains several layers a D-Emission/WAQ segment only represent one layer, called a compartment. 
+D-Emission or Delwaq are unstructured models. They are composed of unordered segments. Contrary to a wflow cell which contains several layers a D-Emission/WAQ segment only represent one layer, called a compartment. 
 This means that one wflow cell is represented by several segments in D-Emission/WAQ: one for the open water, one for the unsaturated store, one for the saturated store… The direction of the flows in D-Emission/WAQ between 
 each segment is defined in the pointer file. Contrary to wflow ldd which only needs to define the direction of lateral flows, the pointer file therefore also needs to indicate the direction of vertical flows (flows between 
 the different layers/compartments of a same wflow cell). This also means that external flows coming to/out of a wflow cell (for example precipitation from the atmosphere) are defined in the pointer as flows between a segment 
@@ -41,11 +41,11 @@ wflow\_emwaq module is run to convert the outputs of wflow\_sbm into several fil
 wflow\_sbm and via three csv tables that selects the compartments, fluxes and boundaries that the user wants to include in the D-Emission/WAQ models. Finally, the links to the different files created by the wflow\_emwaq 
 module are written in D-Emission/WAQ main input file and the emission and water quality model can be run.
 
-.. figure:: _images/emwaq_scheme.png
+.. figure:: _images/emwaq_scheme.jpg
     :width: 400px
     :align: center
 
-    Scheme of the coupling between wflow and D-Emission-D-WAQ.
+    Scheme of the coupling between wflow and D-Emission-Delwaq.
 
 
 Setting up the coupling
@@ -62,7 +62,7 @@ layers/compartments of a wflow cell with their corresponding volumes.
 
     Complete wflow scheme.
 
-For example, for a simple D-WAQ run for the surface water with fraction calculation, only the surface water compartment is needed and all the fluxes coming in/out of it as shown in the left part of the following figure. 
+For example, for a simple Delwaq run for the surface water with fraction calculation, only the surface water compartment is needed and all the fluxes coming in/out of it as shown in the left part of the following figure. 
 In that case, the other compartments are turned into boundaries. In addition, as there is already a wflow variable that sums up all the in/outflows from the surface water (self.Inwater), the scheme can be simplified with 
 just one boundary and flow (right part of the following figure).
 
@@ -70,7 +70,7 @@ just one boundary and flow (right part of the following figure).
     :width: 640px
     :align: center
 
-    Compartments and fluxes needed for a D-WAQ fraction model (left: with all the fluxes, right: simplified).
+    Compartments and fluxes needed for a Delwaq fraction model (left: with all the fluxes, right: simplified).
 
 Once the needed compartments and fluxes have been defined, they have to be translated into inputs for the wflow\_emwaq module. This is done by editing the csv tables compartments.csv, fluxes.csv and boundaries.csv. 
 
@@ -79,12 +79,12 @@ The compartments.csv file is a table composed of eight columns (Table 1, columns
 -  Nr: number of the compartment. This field is not used by the python script of the module but is defined for user information.
 -  ID: simplified identifier for the compartment, usually a few letters. The user can choose any name but IDs must be consistent with the ones in the fluxes.csv and boundaries.csv files.
 -  Name: name of the compartment. This field is not used by the python script of the module but is defined for user information.
--  wflowVar: wflow\_sbm variable representing the volume of the compartment (as in the complete scheme above). If the compartment isn’t defined or doesn’t have a volume defined in wflow\_sbm, for example Sewage or Paved, the keyword ZeroMap can be used. 
--  mapstack: name of the PCRaster or NetCDF mapstack (storage of the output variables). Mapstack are defined in the wflow_sbm ini file by the user. Note that the maximum allowed number of characters is eight. If the compartment doesn’t have a volume defined in wflow_sbm, for example Paved or Unpaved, the keyword ZeroMap can be used.
--  Unit: unit of the compartment volume, usually either mm or m3 for wflow volumes. If the volume is in mm, the script will convert it into m3 which is the standard for D-WAQ.
+-  wflowVar: wflow\_sbm variable representing the volume of the compartment (as in the complete scheme above). If the compartment isn’t defined or doesn’t have a volume defined in wflow\_sbm, for example Sewage or Paved, the keyword ZeroMap can be used. Several wflow variables can be summed up to create one WAQ flux using '+' symbol between variables.
+-  mapstack: name of the PCRaster or NetCDF mapstack (storage of the output variables). Mapstack are defined in the wflow_sbm ini file by the user. Note that the maximum allowed number of characters is eight. If the compartment doesn’t have a volume defined in wflow_sbm, for example Paved or Unpaved, the keyword ZeroMap can be used. Several wflow mapstacks can be summed up to create one WAQ flux using '+' symbol between mapstacks.
+-  Unit: unit of the compartment volume, usually either mm or m3 for wflow volumes. If the volume is in mm, the script will convert it into m3 which is the standard for Delwaq.
 -  At1, At2: D-Emission/WAQ attributes of the compartments. Usually attribute 1 specifies if the compartments is active or passive and attribute 2 specifies the type of the compartment (0 for surface water in 1D/2D models… see D-Emission/WAQ documentation). Here it is important that At2 is set to 0 for the Surface Water compartment and other numbers for the others.
 
-Table 1: Example of the compartmemts.csv file for a D-WAQ fraction model
+Table 1: Example of the compartmemts.csv file for a Delwaq fraction model
 
 .. figure:: _images/compartmentcsv.png
     :width: 640px
@@ -96,7 +96,7 @@ The boundaries.csv file, which is not used by the script but for user informatio
 -  ID: simplified identifier for the boundary, usually a few letters. The user can choose any names but IDs must be consistent with the ones in the fluxes.csv and compartments.csv files.
 -  Name: name of the boundary. This field is not used by the python script of the module but is defined for user information.
 
-Table 2: Example of the boundaries.csv file for a D-WAQ fraction model
+Table 2: Example of the boundaries.csv file for a Delwaq fraction model
 
 .. figure:: _images/boundarycsv.png
     :width: 640px
@@ -108,13 +108,13 @@ The fluxes.csv file is a table composed of nine columns (Table 3, columns in red
 -  Name: name of the flux. This field is not used by the python script of the module but is defined for user information. For a coupling with D-Emission, this field is used to create the parameters name of the hydrology file. An “f” will be added at the beginning of the name if the flux unit is in fraction.
 -  From: simplified identifier for the compartment or boundary where the flow comes from, usually a few letters. The user can choose any name but IDs must be consistent with the ones in the compartments.csv and boundaries.csv files.
 -  To: simplified identifier for the compartment or boundary where the flow goes to, usually a few letters. The user can choose any name but IDs must be consistent with the ones in the compartments.csv and boundaries.csv files.
--  wflowVar: wflow_sbm variable representing the flux (as in Figure 3). If the flux is not defined in wflow_sbm, for example flux between the Sewage compartment and Surface Water in an emission model, the keyword ZeroMap can be used. 
--  mapstack: name of the PCRaster or NetCDF mapstack (storage of the output variables). Mapstack are defined in the wflow_sbm ini file by the user. Note that the maximum allowed number of characters is eight. If the flux is not defined in wflow_sbm, for example flux between the Sewage compartment and Surface Water in an emission model, the keyword ZeroMap can be used.
--  Unit: unit of the flux, usually either mm or m3/s for wflow fluxes. If the flux is in mm, the script will convert it into m3/s which is the standard for D-WAQ or D-Emission.
--  EmPointerHyd: specificity of the emission model. In the coupling between wflow and D-Emission, both the pointer file between each segment and actual fluxes data (hydrology.bin file) are saved. While the two files are consistent in D-WAQ, this is not the case for D-Emission where some fluxes may only be present in the pointer but not the hydrology file and vice-versa. To take that into account the following keywords are used: P for a flux only present in the pointer file, H for a flux only present in the hydrology file and PH for a flux present in both. Note: D-Emission also needs an additional flow recorded in the hydrology file which is the “TotalFlow” that sums up some of wflow\_sbm fluxes to the surface water. If a wflow flux is needed for the calculation of the “TotalFlow”, the keywords T, PT, HT or PHT are used depending if the flow is also needed for the pointer and/or hydrology file. 
+-  wflowVar: wflow_sbm variable representing the flux (as in Figure 3). If the flux is not defined in wflow_sbm, for example flux between the Sewage compartment and Surface Water in an emission model, the keyword ZeroMap can be used. Several wflow variables can be summed up to create one WAQ flux using '+' symbol between variables.
+-  mapstack: name of the PCRaster or NetCDF mapstack (storage of the output variables). Mapstack are defined in the wflow_sbm ini file by the user. Note that the maximum allowed number of characters is eight. If the flux is not defined in wflow_sbm, for example flux between the Sewage compartment and Surface Water in an emission model, the keyword ZeroMap can be used. Several wflow mapstacks can be summed up to create one WAQ flux using '+' symbol between mapstacks.
+-  Unit: unit of the flux, usually either mm or m3/s for wflow fluxes. If the flux is in mm, the script will convert it into m3/s which is the standard for Delwaq or D-Emission.
+-  EmPointerHyd: specificity of the emission model. In the coupling between wflow and D-Emission, both the pointer file between each segment and actual fluxes data (hydrology.bin file) are saved. While the two files are consistent in Delwaq, this is not the case for D-Emission where some fluxes may only be present in the pointer but not the hydrology file and vice-versa. To take that into account the following keywords are used: P for a flux only present in the pointer file, H for a flux only present in the hydrology file and PH for a flux present in both. Note: D-Emission also needs an additional flow recorded in the hydrology file which is the “TotalFlow” that sums up some of wflow\_sbm fluxes to the surface water. If a wflow flux is needed for the calculation of the “TotalFlow”, the keywords T, PT, HT or PHT are used depending if the flow is also needed for the pointer and/or hydrology file. 
 -  EmFraction: for emission modelling some fluxes units have to be converted to fraction of the volume of the compartment from which they come from. For those fluxes the keyword 1 is used, else 0.
 
-Table 3: Example of the fluxes.csv file for a D-WAQ fraction model
+Table 3: Example of the fluxes.csv file for a Delwaq fraction model
 
 .. figure:: _images/fluxcsv.png
     :width: 640px
@@ -122,7 +122,7 @@ Table 3: Example of the fluxes.csv file for a D-WAQ fraction model
 
 **Specificities of the coupling with D-Emission**
 
-Setting up an emission model from wflow\_sbm is less straightforward than for D-WAQ and the coupling script has therefore further requirements needed.  For example, an emission model can contain compartments that are not present
+Setting up an emission model from wflow\_sbm is less straightforward than for Delwaq and the coupling script has therefore further requirements needed.  For example, an emission model can contain compartments that are not present
 in wflow\_sbm, for example the Sewage compartment (figure below). To add this compartment, a new compartment line in the compartments.csv is added and as for the Paved or Unpaved compartments that don’t have any volume, 
 the corresponding wflowVar and mapstack column values are ZeroMap. Then additional fluxes linked to the Sewage compartments are also added. There are two of them: a flux from the Sewage to the Surface Water compartment 
 and a second flux from the Sewage to a Waste Water Treatment Plant boundary. As these fluxes are not defined in wflow\_sbm, the corresponding wflowVar and mapstack values are again ZeroMap.
@@ -133,7 +133,7 @@ and a second flux from the Sewage to a Waste Water Treatment Plant boundary. As 
 
     Example of an emssion model including a Sewage compartment.
 
-Then, contrary to D-WAQ, wflow\_sbm fluxes are not saved in a flow.dat file that represents exactly the pointer structure but rather in a hydrology.bin file that only saves some of the fluxes. This means that some wflow\_sbm 
+Then, contrary to Delwaq, wflow\_sbm fluxes are not saved in a flow.dat file that represents exactly the pointer structure but rather in a hydrology.bin file that only saves some of the fluxes. This means that some wflow\_sbm 
 fluxes are needed just in the pointer or in the hydrology file. In addition, in the hydrology file, an additional flow recorded is the “TotalFlow” that sums up some of wflow_sbm fluxes to the surface water. These fluxes may 
 already be needed for the pointer or the hydrology file or just for the “TotalFlow”. In order to tell the coupling code which flux is needed where, the column EmPointerHyd is added in the fluxes.csv file. This column is filled 
 with specific keywords:
@@ -154,6 +154,23 @@ and is filled with 1 if the wflow_sbm flux needs to be converted in fraction of 
 
 If aggregation of wflow\_sbm results from the cell to the subcatchment scale is needed, then the variable representing the volume of the surface water in wflow_sbm must be self.KinWaveVolume. This is because the surface area 
 of the surface water compartment is not always the cell area but can also be the river surface area for wflow river cells.
+
+Adding emissions maps
+`````````````````````
+The coupling can also prepare .inc emission data for D-Emission/WAQ, that are adapted to the wflow schematisation. In order to enable this option, emissions data must be prepared as wflow PCRaster map files and the links to these maps 
+written in an emissions.csv file. The emssions.csv file contains 5 columns (Table 4, columns in red need to be filled with precise keywords used in the coupling script, columns in blue only need to be consistent between the csv files):
+
+-  Nr: number of the emission data.
+-  Name: name of the emission
+-  To: ID of the compartment where the emission are located.
+-  Fileloc: the link to the .map emission file. Path is relative to the wflow model casename.
+-  AggType: if data need to be aggregated to the subcatchment level, identify the aggregation operation (total, average, maximum, minimum).
+
+Table 4: Example of the emissions.csv file
+
+.. figure:: _images/emissioncsv.png
+    :width: 640px
+    :align: center
 
 Setting up the wflow\_sbm run
 `````````````````````````````
@@ -190,6 +207,7 @@ As for wflow\_sbm, wflow\_emwaq also has its own ini file wflow\_emwaq.ini. The 
    -  compartments: link to the compartments.csv file.
    -  boundaries: link to the boundaries.csv file.
    -  fluxes: link to the fluxes.csv file.
+   -  emissions: link to the emissions.csv file. If no path is specified the coupling won't produce any emission data.
 
 -  run: similar than in wflow_sbm.ini. Required fields are:
 
@@ -210,8 +228,8 @@ As for wflow\_sbm, wflow\_emwaq also has its own ini file wflow\_emwaq.ini. The 
    -  write_ascii: dynamic data for D-Emission/WAQ are saved in binary files. If this option is on, an ASCII copy will also be created. Default is 0.
    -  write_structure: if on, structure data for D-Emission/WAQ are produced. Default is 1.
    -  write_dynamic: if on, dynamic data for D-Emission/WAQ are produced. Default is 1.
-   -  fraction: if on, produce additional structure files used for D-WAQ fraction mode. Default is 0.
-   -  emission: if on, a coupling for D-Emission will be prepared. If off, a coupling for D-WAQ will be prepared. Default is 0.
+   -  fraction: if on, produce additional structure files used for Delwaq fraction mode. Default is 0.
+   -  emission: if on, a coupling for D-Emission will be prepared. If off, a coupling for Delwaq will be prepared. Default is 0.
    -  fews: if on, additional files to use for FEWS or deltashell GUI will be produced. Default is 0.
    -  aggregation: if on, results from wflow_sbm will be aggregated from the cell to the subcatchment scale.
    
@@ -393,16 +411,16 @@ Once the pointer is created, the other structure files are created using a speci
 Creation of the flow file (either flow.dat or hydrology.bin)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For a coupling with D-WAQ for each wflow cells, the flow.dat file is constructed in the very same way as the pointer. Flows are read from lateral, to between 2 compartments to between boundaries and compartments and then in 
+For a coupling with Delwaq for each wflow cells, the flow.dat file is constructed in the very same way as the pointer. Flows are read from lateral, to between 2 compartments to between boundaries and compartments and then in 
 the order of their definition in the fluxes.csv table.  For each timestep, the corresponding wflow netcdf or map output will be read, and fluxes values saved row by row from the top left corner to the bottom right corner, 
 corresponding to the numbering of the wflow cells IDs.
 
 For a coupling with D-Emission for each wflow cells, as some fluxes are present in the pointer but not the hydrology file, another definition file hydrology.inc is created to give the order of the fluxes saved in the 
 hydrology.bin file and the corresponding segments affected in the pointer file. As the order of the fluxes definition is not important then, fluxes are saved one by one in the order of their definition in the fluxes.csv 
-table (and not from lateral to vertical fluxes). The “TotalFlow” is then added at the end. As for a D-WAQ coupling, for each timestep, the corresponding wflow netcdf or map output will be read and fluxes values saved row 
+table (and not from lateral to vertical fluxes). The “TotalFlow” is then added at the end. As for a Delwaq coupling, for each timestep, the corresponding wflow netcdf or map output will be read and fluxes values saved row 
 by row from the top left corner to the bottom right corner, corresponding to the numbering of the wflow cells IDs.
 
-If the aggregation option is on, the entire aggregated CSV tables of the different wflow variables are read in the order of the flow definition in the pointer file for D-WAQ (lateral then vertical) and in the order of their 
+If the aggregation option is on, the entire aggregated CSV tables of the different wflow variables are read in the order of the flow definition in the pointer file for Delwaq (lateral then vertical) and in the order of their 
 definition in the fluxes.csv table for D-Emission. As wflow already sorts the saved aggregated variables by ascending number of the subcatchment IDs, no restructuration of the variables CSV tables is needed.
 
 

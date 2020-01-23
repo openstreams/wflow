@@ -2053,6 +2053,8 @@ def main(argv=None):
     if os.path.exists(emiFile):
         includeEmi = True
         emiData = pd.read_csv(emiFile, sep = sepcsv, header=0)
+    else:
+        includeEmi = False
     
     logger.info("Nb of compartments: " + str(len(comp)))
     logger.info("Nb of boundaries: " + str(len(bound)))

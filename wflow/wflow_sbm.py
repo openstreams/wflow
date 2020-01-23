@@ -1519,14 +1519,14 @@ class WflowModel(pcraster.framework.DynamicModel):
             
             np_lakeoutflowfunc_old = pcr.pcr2numpy(self.LakeOutflowFunc, 0)
             self.LakeOutflowFunc = pcr.ifthenelse(
-                    pcr.pcrand(self.LakeOutflowFunc == 3, self.LakeStorFunc == 1),
-                    self.LakeOutflowFunc,
-                    2
+                    pcr.pcrand(self.LakeOutflowFunc == 3, self.LakeStorFunc != 1),
+                    2,
+                    self.LakeOutflowFunc
                     )
             self.LakeOutflowFunc = pcr.ifthenelse(
-                    pcr.pcrand(self.LakeOutflowFunc == 3, self.Lake_e == 2.0),
-                    self.LakeOutflowFunc,
-                    2
+                    pcr.pcrand(self.LakeOutflowFunc == 3, self.Lake_e != 2.0),
+                    2,
+                    self.LakeOutflowFunc
                     )
             np_lakeoutflowfunc = pcr.pcr2numpy(self.LakeOutflowFunc, 0)
             if np_lakeoutflowfunc_old.sum() != np_lakeoutflowfunc.sum():
