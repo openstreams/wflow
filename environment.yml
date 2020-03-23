@@ -10,7 +10,7 @@ dependencies:
   - scipy>=1.0
   - gdal>=3
   - netcdf4>=1.4.1
-  - cftime>=1.0.1
+  - cftime=1.0.4
   - xarray>=0.11
   - pyproj=2.4
   - thrift>=0.11
