@@ -2535,16 +2535,22 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.PondingDepth = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['PondingDepth'].reshape(self.shape)),self.mv)
         
         # Determine transpiration
-        self.Transpiration = (pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ActEvapUStore'].reshape(self.shape)),self.mv) + 
-                              pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ActEvapSat'].reshape(self.shape)),self.mv))              
-                      
+        self.ActEvapUStore = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ActEvapUStore'].reshape(self.shape)),self.mv)
+        self.ActEvapSat = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ActEvapSat'].reshape(self.shape)),self.mv)
+        self.Transpiration = self.ActEvapUStore + self.ActEvapSat
+        
+        self.soilevap = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['soilevap'].reshape(self.shape)),self.mv)
+        
         self.ActEvap = (
-                pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['soilevap'].reshape(self.shape)),self.mv)
+                self.soilevap
                 + self.Transpiration
                 + self.ActEvapOpenWaterRiver
                 + self.ActEvapOpenWaterLand
                 + self.ActEvapPond
                 )
+        
+        self.PotTrans = self.PotTransSoil - self.soilevap - self.ActEvapOpenWaterLand - self.ActEvapOpenWaterRiver
+        self.Recharge = self.Transfer - self.CapFlux - self.ActEvapSat
 
         # Run only if we have irrigation areas or an externally given demand, determine irrigation demand based on potrans and acttrans
         if self.nrirri > 0 or hasattr(self, "IrriDemandExternal"):

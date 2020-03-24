@@ -686,3 +686,27 @@ class wflowbmi_csdms(bmi.Bmi):
         Not applicable raises NotImplementedError
         """
         raise NotImplementedError
+        
+    def get_grid_rank(self, grid_id):
+        """
+        Not applicable raises NotImplementedError
+        """
+        raise NotImplementedError
+
+    def get_grid_size(self, grid_id):
+        """
+        Not applicable raises NotImplementedError
+        """
+        raise NotImplementedError
+
+    def get_var_grid(self, long_var_name):
+        """
+        Not applicable raises NotImplementedError
+        """
+        raise NotImplementedError
+        
+    def get_var_itemsize(self, long_var_name):
+        """
+        Not applicable raises NotImplementedError
+        """
+        raise NotImplementedError

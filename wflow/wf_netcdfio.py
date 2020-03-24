@@ -724,11 +724,9 @@ class netcdfinput:
 
         if self.datetimelist.size < ncindex + 1:
             ncindex = self.datetimelist.size - 1
-
+        
         if tsdatetime != None:
-            if tsdatetime.replace(tzinfo=None) != self.datetimelist[ncindex].replace(
-                tzinfo=None
-            ):
+            if tsdatetime.replace(tzinfo=None) != self.datetimelist[ncindex]:
                 logging.warning(
                     "Date/time does not match. Wanted "
                     + str(tsdatetime)
@@ -932,8 +930,7 @@ class netcdfinputstates:
         if var in self.dataset.variables:
             if tsdatetime != None:
                 if tsdatetime.replace(tzinfo=None) != self.datetimelist[
-                    ncindex
-                ].replace(tzinfo=None):
+                    ncindex]:
                     logging.warning(
                         "Date/time of state ("
                         + var

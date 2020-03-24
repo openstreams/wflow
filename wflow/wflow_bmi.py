@@ -8,6 +8,7 @@ import os
 import numpy as np
 import wflow.bmi as bmi
 import wflow.wflow_floodmap
+import wflow.wflow_topoflex
 import wflow.wflow_hbv
 import wflow.wflow_lintul
 import wflow.wflow_routing
@@ -25,6 +26,7 @@ from wflow.pcrut import setlogger
 wflow_models = [
     wflow.wflow_sbm,
     wflow.wflow_hbv,
+    wflow.wflow_topoflex,
     wflow.wflow_routing,
     wflow.wflow_floodmap,
     wflow.wflow_lintul,
@@ -1007,6 +1009,18 @@ class wflowbmi_csdms(bmi.Bmi):
         self.bmilogger.debug("get_var_nbytes: " + str(npmap.size * npmap.itemsize))
         return npmap.size * npmap.itemsize
 
+    def get_var_itemsize(self, long_var_name):
+        """
+        Gets the number of bytes occupied in memory for a given variable grid point value.
+
+        :var  String long_var_name: identifier of a variable in the model:
+        :return: number of bytes contained in the given variable bytes per element.
+        """
+        npmap = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
+
+        self.bmilogger.debug("get_var_itemsize: " + str(npmap.itemsize))
+        return npmap.itemsize
+
     def get_start_time(self):
         """
         Gets the start time of the model.
@@ -1121,7 +1135,7 @@ class wflowbmi_csdms(bmi.Bmi):
                 "get_value_at_indices: " + long_var_name + " at " + str(inds)
             )
             npmap = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
-            return npmap[inds]
+            return npmap.flat[inds]
         else:
             self.bmilogger.error(
                 "get_value_at_indices: "
@@ -1160,112 +1174,134 @@ class wflowbmi_csdms(bmi.Bmi):
                 "set_value_at_indices: " + long_var_name + " at " + str(inds)
             )
             npmap = self.dynModel.wf_supplyMapAsNumpy(long_var_name)
-            npmap[inds] = src
+            npmap.flat[inds] = src
             self.dynModel.wf_setValuesAsNumpy(long_var_name, npmap)
 
-    def get_grid_type(self, long_var_name):
+    def get_var_grid(self, long_var_name):
+        """
+        Input parameters:
+        String long_var_name: identifier of a variable in the model.
+
+        Return value:
+        Integer: identifier for the grid on which the variable is defined.
+        """
+        if long_var_name in self.get_input_var_names() + self.get_output_var_names():
+            return 1
+        return -1
+
+    def get_grid_type(self, grid_id):
         """
         Get the grid type according to the enumeration in BmiGridType
 
-        :var String long_var_name: identifier of a variable in the model.
+        :var Integer grid_id: identifier of a grid in the model.
 
         :return: BmiGridType type of the grid geometry of the given variable.
         """
-        ret = BmiGridType()
+        if grid_id == 1:
+            ret = bmi.BmiGridType()
+            self.bmilogger.debug("get_grid_type: " + str(grid_id) + ' result: ' + str(ret.UNIFORM))
+            return ret.UNIFORM
+        else:
+            raise Exception("Unknown grid id %d" % grid_id)
 
-        self.bmilogger.debug(
-            "get_grid_type: " + long_var_name + " result: " + str(ret.UNIFORM)
-        )
-
-        return ret.UNIFORM
-
-    def get_grid_shape(self, long_var_name):
+    def get_grid_shape(self, grid_id):
         """
         Return the shape of the grid. Only return something for variables with a uniform, rectilinear or structured grid. Otherwise raise ValueError.
 
-        :var long_var_name: identifier of a variable in the model.
+        :var Integer grid_id: identifier of a grid in the model.
 
         :return: List of integers: the sizes of the dimensions of the given variable, e.g. [500, 400] for a 2D grid with 500x400 grid cells.
         """
-        dim = self.dynModel.wf_supplyGridDim()
-        # [ Xll, Yll, xsize, ysize, rows, cols]
+        if grid_id == 1:
+            dim =  self.dynModel.wf_supplyGridDim()
+            #[ Xll, Yll, xsize, ysize, rows, cols]
 
-        self.bmilogger.debug(
-            "get_grid_shape: " + long_var_name + " result: " + str([dim[4], dim[5]])
-        )
+            self.bmilogger.debug("get_grid_shape: " + str(grid_id) + ' result: ' + str([dim[4], dim[5]]))
 
-        return [dim[4], dim[5]]
+            return [dim[4], dim[5]]
+        else:
+            raise Exception("Unknown grid id %d" % grid_id)
 
-    def get_grid_spacing(self, long_var_name):
+    def get_grid_spacing(self, grid_id):
         """
         Only return something for variables with a uniform grid. Otherwise raise ValueError.
 
-        :var long_var_name: identifier of a variable in the model.
+        :var Integer grid_id: identifier of a grid in the model.
 
         :return: The size of a grid cell for each of the dimensions of the given variable, e.g. [width, height]: for a 2D grid cell.
         """
-        dims = self.dynModel.wf_supplyGridDim()[2:4]
-        x = dims[0]
-        y = dims[1]
-        self.bmilogger.debug(
-            "get_grid_spacing: " + long_var_name + " result: " + str([y, x])
-        )
-        return [y, x]
+        if grid_id == 1:
+            dims = self.dynModel.wf_supplyGridDim()[2:4]
+            x = dims[0]
+            y = dims[1]
+            self.bmilogger.debug("get_grid_spacing: " + str(grid_id) + ' result: ' + str([y, x]))
+            return [y, x]
+        else:
+            raise Exception("Unknown grid id %d" % grid_id)
 
-    def get_grid_origin(self, long_var_name):
+    def get_grid_origin(self, grid_id):
         """
         gets the origin of the model grid.
 
-        :var String long_var_name: identifier of a variable in the model.
+        :var Integer grid_id: identifier of a grid in the model.
 
         :return: X, Y: ,the lower left corner of the grid.
         """
-        dims = self.dynModel.wf_supplyGridDim()  # returns in cell centre
+        if grid_id == 1:
+            dims = self.dynModel.wf_supplyGridDim() # returns in cell centre
+            xsize = dims[2]
+            ysize = dims[3]
+            x = dims[0] - (xsize * 0.5)
+            y = dims[7] - (ysize * 0.5)
+            self.bmilogger.debug("get_grid_origin: " + str(grid_id) + ' result: ' + str([y, x]))
+            return [y, x]
+        else:
+            raise Exception("Unknown grid id %d" % grid_id)
 
-        xsize = dims[2]
-        ysize = dims[3]
-        x = dims[0] - (xsize * 0.5)
-        y = dims[7] - (ysize * 0.5)
-        self.bmilogger.debug(
-            "get_grid_origin: " + long_var_name + " result: " + str([y, x])
-        )
-        return [y, x]
-
-    def get_grid_x(self, long_var_name):
+    def get_grid_x(self, grid_id):
         """
         Give X coordinates of point in the model grid
 
-        :var String long_var_name: identifier of a variable in the model.
+        :var Integer grid_id: identifier of a grid in the model.
 
         :return: Numpy array of doubles: x coordinate of grid cell center for each grid cell, in the same order as the
         values returned by function get_value.
         """
-        self.bmilogger.debug("get_grid_x: " + long_var_name)
-        return self.dynModel.wf_supplyMapXAsNumpy()
+        if grid_id == 1:
+            self.bmilogger.debug("get_grid_x: " + str(grid_id))
+            return self.dynModel.wf_supplyMapXAsNumpy()[0,:]
+        else:
+            raise Exception("Unknown grid id %d" % grid_id)
 
-    def get_grid_y(self, long_var_name):
+    def get_grid_y(self, grid_id):
         """
         Give Y coordinates of point in the model grid
 
-        :var String long_var_name: identifier of a variable in the model.
+        :var Integer grid_id: identifier of a grid in the model.
 
         :return: Numpy array of doubles: y coordinate of grid cell center for each grid cell, in the same order as the
         values returned by function get_value.
 
         """
-        self.bmilogger.debug("get_grid_y: " + long_var_name)
-        return self.dynModel.wf_supplyMapYAsNumpy()
+        if grid_id == 1:
+            self.bmilogger.debug("get_grid_y: " + str(grid_id))
+            return self.dynModel.wf_supplyMapYAsNumpy()[:,0]
+        else:
+            raise Exception("Unknown grid id %d" % grid_id)
 
-    def get_grid_z(self, long_var_name):
+    def get_grid_z(self, grid_id):
         """
         Give Z coordinates of point in the model grid
 
-        :var String long_var_name: identifier of a variable in the model.
+        :var Integer grid_id: identifier of a grid in the model.
 
         :return: Numpy array of doubles: z coordinate of grid cell center for each grid cell, in the same order as the values returned by function get_value.
         """
-        self.bmilogger.debug("get_grid_z: " + long_var_name)
-        return self.dynModel.wf_supplyMapZAsNumpy()
+        if grid_id == 1:
+            self.bmilogger.debug("get_grid_z: " + str(grid_id))
+            return self.dynModel.wf_supplyMapZAsNumpy()
+        else:
+            raise Exception("Unknown grid id %d" % grid_id)
 
     def get_var_units(self, long_var_name):
         """
@@ -1327,23 +1363,102 @@ class wflowbmi_csdms(bmi.Bmi):
                 self.bmilogger.debug("set_value: (grid) " + long_var_name)
                 self.dynModel.wf_setValuesAsNumpy(long_var_name, src)
 
-    def get_grid_connectivity(self, long_var_name):
+    def get_grid_connectivity(self, grid_id):
         """
         Not applicable, raises NotImplementedError
         Should return the ldd if present!!
         """
         raise NotImplementedError
 
-    def get_grid_offset(self, long_var_name):
+    def get_grid_offset(self, grid_id):
         """
         Not applicable raises NotImplementedError
         """
         raise NotImplementedError
 
+    def get_grid_rank(self, grid_id):
+        """
+        gets the grid rank.
 
-class BmiGridType(object):
-    UNKNOWN = 0
-    UNIFORM = 1
-    RECTILINEAR = 2
-    STRUCTURED = 3
-    UNSTRUCTURED = 4
+        :var int grid_id: identifier of grid.
+
+        :return: id
+        """
+        if grid_id == 1:
+            return 2
+        else:
+            raise Exception("Unknown grid id %d" % grid_id)
+
+
+    def get_grid_size(self, grid_id):
+        """
+        Not applicable raises NotImplementedError
+        """
+        if grid_id == 1:
+            dim =  self.dynModel.wf_supplyGridDim()
+            #[ Xll, Yll, xsize, ysize, rows, cols]
+            self.bmilogger.debug("get_grid_shape: " + str(grid_id) + ' result: ' + str([dim[4], dim[5]]))
+            return dim[4] * dim[5]
+        else:
+            raise Exception("Unknown grid id %d" % grid_id)
+
+
+    def get_var_units(self, long_var_name):
+        """
+        Supply units as defined in the API section of the ini file
+
+        :var long_var_name: identifier of a variable in the model.
+
+        :return:   String: unit of the values of the given variable. Return a string formatted
+        using the UDUNITS standard from Unidata. (only if set properly in the ini file)
+        """
+
+        nru = self.dynModel.wf_supplyVariableNamesAndRoles()
+
+        unit = "mm"
+
+        for it in nru:
+            if long_var_name == it[0]:
+                unit = it[2]
+
+        self.bmilogger.debug("get_var_units: " + long_var_name + " result: " + unit)
+        return unit
+
+    def set_value(self, long_var_name, src):
+        """
+        Set the values(s) in a map using a numpy array as source
+
+        :var long_var_name: identifier of a variable in the model.
+        :var src: all values to set for the given variable. If only one value
+                  is present a uniform map will be set in the wflow model.
+        """
+
+        self.bmilogger.debug("set_value: " + long_var_name + ":" + str(src))
+        if self.wrtodisk:
+            fname = str(self.currenttimestep) + "_set_" + long_var_name + ".map"
+            arpcr = numpy2pcr(Scalar, src, -999)
+            self.bmilogger.debug("Writing to disk: " + fname)
+            report(arpcr, fname)
+
+        if long_var_name in self.outputonlyvars:
+            self.bmilogger.error(
+                "set_value: "
+                + long_var_name
+                + " is listed as an output only variable, cannot set. "
+                + str(self.outputonlyvars)
+            )
+            raise ValueError(
+                "set_value: "
+                + long_var_name
+                + " is listed as an output only variable, cannot set. "
+                + str(self.outputonlyvars)
+            )
+        else:
+            if len(src) == 1:
+                self.bmilogger.debug(
+                    "set_value: (uniform value) " + long_var_name + "(" + str(src) + ")"
+                )
+                self.dynModel.wf_setValues(long_var_name, float(src))
+            else:
+                self.bmilogger.debug("set_value: (grid) " + long_var_name)
+                self.dynModel.wf_setValuesAsNumpy(long_var_name, src)
