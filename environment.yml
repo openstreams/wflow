@@ -1,4 +1,4 @@
-name: wflow_pcr
+name: wflow
 
 channels:
   - conda-forge
