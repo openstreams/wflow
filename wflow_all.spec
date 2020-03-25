@@ -9,13 +9,11 @@ from distutils.dir_util import copy_tree, remove_tree
 
 from osgeo import gdal
 import pyproj
-import pcraster
 
 # got a RecursionError: maximum recursion depth exceeded
 sys.setrecursionlimit(10_000)
 
 gdal.UseExceptions()
-pcrasterlib = pathlib.Path(pcraster.__file__).parents[2] / "lib"
 datas = [(gdal.GetConfigOption("GDAL_DATA"), "gdal-data")]
 pyproj_datadir = pyproj.datadir.get_data_dir()
 # prevent unintentionally adding the entire workdir
@@ -64,7 +62,6 @@ def do_analysis(scriptpath):
     # if they are to work in a bundled folder
     return Analysis(
         [scriptpath],
-        binaries=[(pcrasterlib, ".")],
         # TODO check if still necessary in PyInstaller 3.3 after
         # https://github.com/pyinstaller/pyinstaller/pull/2401
         # Though this seems more solid, submit as hook patch?
@@ -72,7 +69,7 @@ def do_analysis(scriptpath):
         hiddenimports=[  # in opendapy.py: importlib.import_module(sys.argv[3])
             # for wflow this would always be wflow.wflow_bmi
             "wflow.wflow_bmi",
-            "wflow.wflow_bmi_combined",
+            "wflow.wflow_bmi_combined","pkg_resources.py2_warn",
         ],
     )
 

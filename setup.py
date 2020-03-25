@@ -1,15 +1,6 @@
 import os
 from setuptools import setup
 
-# since pcraster cannot be installed with pip, we check it like this
-try:
-    import pcraster
-except:
-    print(
-        "Could not import pcraster, make sure it is installed including the python extensions"
-    )
-    print("see www.pcraster.eu")
-
 here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, "README.rst"), encoding="utf-8") as f:
     README = f.read()
@@ -26,6 +17,7 @@ setup(
     setup_requires=["setuptools_scm"],
     python_requires=">=3.6",
     install_requires=[
+        "pcraster",
         "numpy",
         "scipy",
         "gdal",
