@@ -4,22 +4,20 @@ Welcome to wflow's documentation!
 
 .. note::
 
-      This documentation was generated |today|
+      This documentation was generated on |today|
 
-      Latest version documentation (development):
+      Documentation for the development version:
+      https://wflow.readthedocs.org/en/latest/
 
-      http://wflow.readthedocs.org/en/latest/
-
-      Latest release (stable) version documentation
-
-      http://wflow.readthedocs.org/en/stable/
+      Documentation for the stable version:
+      https://wflow.readthedocs.org/en/stable/
 
 
 .. note::
 
     wflow is released under version 3 of the GPL
 
-    wflow uses PCRaster/Python (see http://www.pcraster.eu) as it's calculation engine.
+    wflow uses PCRaster/Python (see http://www.pcraster.eu) as its calculation engine
 
 
 Introduction

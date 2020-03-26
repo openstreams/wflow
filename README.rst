@@ -11,7 +11,7 @@ A link to the latest version can always be found at https://github.com/openstrea
 
 Reference documentation at:
 
-+ http://wflow.readthedocs.io/en/latest/
++ https://wflow.readthedocs.io/en/latest/
 
 
 Obtaining wflow
