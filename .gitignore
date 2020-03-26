@@ -77,3 +77,6 @@ ENV/
 runinfo
 intbl
 /wflow/version.py
+*.bak
+outmaps/
+AltTemp.cvs
