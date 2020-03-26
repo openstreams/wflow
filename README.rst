@@ -31,7 +31,7 @@ assume you should be comfortable using the master branch.
 Installation
 ============
 
-The main dependencies for wflow are an installation of Python 3.6, and PCRaster 4.2+.
+The main dependencies for wflow are an installation of Python 3.6+, and PCRaster 4.2+.
 Only 64 bit OS/Python is supported.
 
 *Installing Python*
@@ -47,6 +47,7 @@ makes installation of required dependencies easier using the conda package manag
 
 *Installing pcraster*
 
++ If you are using conda, pcraster will be installed automatically in the section below, otherwise:
 + Download pcraster from http://pcraster.geo.uu.nl/ website (version 4.2+)
 + Follow the installation instructions at http://pcraster.geo.uu.nl/quick-start-guide/
 
@@ -56,10 +57,9 @@ Install as a conda environment
 
 The easiest and most robust way to install wflow is by installing it in a separate
 conda environment. In the root repository directory there is an ``environment.yml`` file.
-This file lists all dependencies, except PCRaster, which must be installed manually as
-described above. Either use the ``environment.yml`` file from the master branch (please note
-that the master branch can change rapidly and break functionality without warning) , or from
-one of the releases {release}.
+This file lists all dependencies. Either use the ``environment.yml`` file from the master branch
+(please note that the master branch can change rapidly and break functionality without warning),
+or from one of the releases {release}.
 
 Run this command to start installing all wflow dependencies:
 
@@ -125,23 +125,6 @@ To check it the install is successful, go to the examples directory and run the 
 + ``python -m wflow.wflow_sbm -C wflow_rhine_sbm -R testing``
 
 This should run without errors.
-
-
-Linux
------
-
-Although you can get everything with the python packages bundled with most linux distributions
-(CentOS, Ubuntu, etc) we have found that the easiest way is to install the linux version of Anaconda
-and use the conda tool to install all requirements apart from pcraster which has to be installed manually.
-
-Since version 4.2, compiled versions of PCRaster are no longer distributed, so it will
-need to be built following the instructions given at http://pcraster.geo.uu.nl/getting-started/pcraster-on-linux/
-
-
-OSX
----
-Unfortunately there is no pcraster build for osx yet. If anybody wants to pick this up please let
-the guys at pcraster.eu know!
 
 
 Credits
