@@ -373,10 +373,15 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.updateFile = configget(self.config, "model", "updateFile", "no_set")
         
         self.kinwaveIters = int(configget(self.config, "model", "kinwaveIters", "0"))         
+        self.kinwaveTstep = int(configget(self.config, "model", "kinwaveTstep", "0"))     
         if self.kinwaveIters == 1:
             self.logger.info(
                 "Using sub timestep for kinematic wave (iterate)"
             )
+            if self.kinwaveTstep > 0:
+                self.logger.info(
+                    "Using a fixed timestep (seconds) for kinematic wave flow: " + str(self.kinwaveTstep)
+                )
 
         self.sCatch = int(configget(self.config, "model", "sCatch", "0"))
         self.intbl = configget(self.config, "model", "intbl", "intbl")
@@ -1151,7 +1156,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 self.LakeWaterLevel = self.LakeAvgLevel
             if hasattr(self, "GlacierFrac"):
                 self.GlacierStore = self.wf_readmap(
-                    os.path.join(self.Dir, "staticmaps", "GlacierStore.map"),
+                    os.path.join(self.Dir, "staticmaps", "wflow_glacierstore.map"),
                     55.0 * 1000,
                 )
         else:
@@ -1554,7 +1559,10 @@ class WflowModel(pcraster.framework.DynamicModel):
         #Kinematic wave runoff iterations
         it_kinR=1
         if self.kinwaveIters == 1:
-            it_kinR = estimate_iterations_kin_wave(self.SurfaceRunoff, self.Beta, self.Alpha, self.timestepsecs, self.DCL, self.mv)
+            if self.kinwaveTstep == 0:
+                it_kinR = estimate_iterations_kin_wave(self.RiverRunoff, self.Beta, self.AlphaR, self.timestepsecs, self.DCL, self.mv)
+            else:
+                it_kinR = int(np.ceil(self.timestepsecs/self.kinwaveTstep))
             
         #Convert from pcr to numpy for the kinematic wave function
         q_np =  pcr.pcr2numpy(q,self.mv).ravel()        

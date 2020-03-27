@@ -2105,7 +2105,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 self.LakeWaterLevel = self.LakeAvgLevel
             if hasattr(self, "GlacierFrac"):
                 self.GlacierStore = self.wf_readmap(
-                    os.path.join(self.Dir, "staticmaps", "GlacierStore.map"),
+                    os.path.join(self.Dir, "staticmaps", "wflow_glacierstore.map"),
                     55.0 * 100
                         
                 )
