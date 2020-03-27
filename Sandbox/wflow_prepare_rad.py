@@ -171,7 +171,7 @@ def correctrad(Day, Hour, Lat, Lon, Slope, Aspect, Altitude, Altitude_UnitLatLon
         (sqrt(1229 + (614 * sin(SolAlt)) ** 2) - 614 * sin(SolAlt)) * AtmPcor
     )  # correction for air masses [-]
     Sout = Sc * (
-        1 + 0.034 * cos(360 * Day / 365.0)
+        1 + 0.0167 * cos(360 * Day / 365.0)
     )  # radiation outer atmosphere [W/m2]
     Snor = Sout * OpCorr  # rad on surface normal to the beam [W/m2]
 
