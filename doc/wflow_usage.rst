@@ -93,7 +93,7 @@ e.g.:
 
 ::
 
-    python wflow_sbm.py -C myCase -R calib_run -T 365 -f
+    python -m wflow.wflow_sbm -C myCase -R calib_run -T 365 -f
 
 In the example above the  wflow\_sbm  model is run using the
 information in case myCase storing the results in runId calib\_run. A
