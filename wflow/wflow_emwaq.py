@@ -63,6 +63,7 @@ import pcraster as pcr
 import sys
 import os
 import os.path
+import shutil
 import getopt
 import builtins
 import struct
@@ -72,7 +73,7 @@ from wflow.wf_DynamicFramework import *
 from wflow.wflow_funcs import *
 from wflow.wflow_adapt import *
 from wflow import wf_netcdfio
-
+from wflow import pcrut
 
 import pandas as pd
 import math
@@ -94,10 +95,11 @@ def dw_CreateDwRun(thedir):
     """"
     Create the dir to save delwaq info in
     Delete flow files if the same runid is used
+    Create extra folders if Fews option is enabled.
     """
     
     if not os.path.isdir(thedir):
-        os.makedirs(thedir + "/fixed/")
+        #os.makedirs(thedir + "/fixed/")
         os.makedirs(thedir + "/includes_deltashell/")
         os.makedirs(thedir + "/includes_fews/")
         os.makedirs(thedir + "/includes_flow/")
@@ -112,7 +114,7 @@ def dw_CreateDwRun(thedir):
     if os.path.isdir(comdir):
         shutil.rmtree(comdir)
     os.mkdir(comdir)
-    
+
 def dw_pcrToDataBlock(pcrmap, amap, agg = False):
     """
     Converts a pcrmap to a numpy array that is flattend and from which
@@ -567,19 +569,23 @@ def dw_mkDelwaqMonitoring(mon_points, mon_areas, gmap, amap, comp, cells, segmen
         cell_ID = np.int_(gauges_comp[np.isfinite(gauges_comp)])
         comp_list = seg_labels[np.isfinite(gauges_comp)]
         point_list = np.int_(segments[np.isfinite(gauges_comp)])    
-    else:
+    elif mon_points == "segments":
         ID = "Cell"
         cell_ID = np.int_(np.tile(cells, len(comp)))
         comp_list = seg_labels
         point_list = np.int_(segments)
-
-    outlocname = (np.char.array(np.repeat("'", NOPT)) + np.char.array(np.repeat(ID, NOPT)) + 
-                  np.char.array(cell_ID.astype(np.unicode)) + np.char.array(np.repeat("_", NOPT)) +
-                  np.char.array(comp_list) + np.char.array(np.repeat("'", NOPT)))
-    onecol = np.repeat(1, NOPT).reshape(NOPT,1)
-    balcol = np.repeat("NO_BALANCE", NOPT).reshape(NOPT,1)
-    stations = np.hstack((outlocname.reshape(NOPT,1), balcol, onecol, point_list.reshape(NOPT,1)))
-    stations_balance = np.hstack((outlocname.reshape(NOPT,1), onecol, point_list.reshape(NOPT,1)))
+    
+    if NOPT > 0:
+        outlocname = (np.char.array(np.repeat("'", NOPT)) + np.char.array(np.repeat(ID, NOPT)) + 
+                      np.char.array(cell_ID.astype(np.unicode)) + np.char.array(np.repeat("_", NOPT)) +
+                      np.char.array(comp_list) + np.char.array(np.repeat("'", NOPT)))
+        onecol = np.repeat(1, NOPT).reshape(NOPT,1)
+        balcol = np.repeat("NO_BALANCE", NOPT).reshape(NOPT,1)
+        stations = np.hstack((outlocname.reshape(NOPT,1), balcol, onecol, point_list.reshape(NOPT,1)))
+        stations_balance = np.hstack((outlocname.reshape(NOPT,1), onecol, point_list.reshape(NOPT,1)))
+    else:
+        stations = []
+        stations_balance = []
     
     return NOPT, NOAR, stations, stations_balance
     
@@ -744,7 +750,8 @@ def dw_WriteGeometry(fname, cells, amap, reallength, PathFrac, WaterFrac, Aggreg
                             fUnPaved.reshape(len(cells),1), WaterFrac.reshape(len(cells),1),
                             outlocname.reshape(len(cells),1)))
         #Put zeros for the remaining compartments
-        extra_data = str(int(len(cells)*(NOCP-1)*4)) + "*0.0"
+        if NOCP > 1:
+            extra_data = str(int(len(cells)*(NOCP-1)*4)) + "*0.0"
         exfile = open(fname + "geometry.inc", "w")        
         print("PARAMETERS TotArea fPaved fUnpaved fOpenWater ALL", file=exfile)
 #        print("PARAMETERS TotArea fPaved fUnpaved fOpenWater SEGMENTS", file=exfile)
@@ -755,7 +762,7 @@ def dw_WriteGeometry(fname, cells, amap, reallength, PathFrac, WaterFrac, Aggreg
 #            savetxt(exfile, cell_list, fmt="%6.10s")
         print("DATA", file=exfile)
         np.savetxt(exfile, geometry_data, fmt="%10.10s")
-        print(extra_data, file=exfile)            
+        if NOCP >1: print(extra_data, file=exfile)            
         exfile.close()
     
     # Write binary file
@@ -1637,9 +1644,9 @@ def dw_WriteSegmentOrExchangeData(ttime, fname, datablock, boundids, WriteAscii=
     if WriteAscii:
         fpa.close()
         
-def dw_Write_Times(dwdir, T0, timeSteps, timeStepSec):
+def dw_Write_Times(dwdir, T0, timeSteps, timeStepSec, configfile):
     """
-    Writes B1_timestamp.inc, B2_outputtimes.inc, (B2_sysclock.inc) and /B2_timers.inc
+    Writes B1_timestamp.inc, B2_outputtimes.inc, (B2_sysclock.inc), B2_timers.inc, B10_simtime.inc.
     Assumes daily timesteps for now!
     """
     # B1_timestamp.inc
@@ -1691,7 +1698,7 @@ def dw_Write_Times(dwdir, T0, timeSteps, timeStepSec):
     )
     exfile.close()
 
-    # B2_simtimers.inc
+    # B2_timers.inc
     exfile = open(dwdir + "/B2_timers.inc", "w")
     print("  " + T0.strftime("%Y/%m/%d-%H:%M:%S") + " ; start time", file=exfile)
     print("  " + etime.strftime("%Y/%m/%d-%H:%M:%S") + " ; stop time", file=exfile)
@@ -1704,6 +1711,67 @@ def dw_Write_Times(dwdir, T0, timeSteps, timeStepSec):
     exfile = open(dwdir + "/B2_sysclock.inc", "w")
     print("%7d 'DDHHMMSS' 'DDHHMMSS'  ; system clock" % timeStepSec, file=exfile)
     exfile.close()
+    
+#    # B10_simtime.inc
+#    exfile = open(dwdir + "/B10_simtime.inc", "w")
+#    print("period 'sim'", file=exfile)
+#    print("  suffix  'sim'", file=exfile)
+#    print("  start-time  '" + T0.strftime("%Y/%m/%d-%H:%M:%S") + "'", file=exfile)
+#    print("  stop-time  '" + etime.strftime("%Y/%m/%d-%H:%M:%S") + "'", file=exfile)
+#    print("end-period", file=exfile)
+#    exfile.close()
+    
+    #Statistics timers (block 10)
+    secname = 'outputstat_'
+    secnr = 0
+    thissection = secname + str(secnr)
+    toprint = configsection(configfile, thissection)
+    
+    while len(toprint) > 0:
+        statname = configget(
+            configfile, thissection, "name", "sim"
+        )
+        startperiod = configget(
+            configfile, thissection, "start-period", T0.strftime("%Y/%m/%d-%H:%M:%S")
+        )
+        endperiod = configget(
+            configfile, thissection, "end-period", etime.strftime("%Y/%m/%d-%H:%M:%S")
+        )
+        operation = configget(
+            configfile, thissection, "output-operation", "STADSC"
+        )
+        
+        
+        exfile = open(dwdir + '/B10_' + statname + 'time.inc', "w")
+        print("period '" + statname + "'", file=exfile)
+        print("  suffix  '"+statname+"'", file=exfile)
+        print("  start-time  '" + startperiod + "'", file=exfile)
+        print("  stop-time  '" + endperiod + "'", file=exfile)
+        print("end-period", file=exfile)
+        print("", file=exfile)
+                
+        print("output-operation '" + operation + "'", file=exfile)
+        
+        for option in toprint:
+            if (
+                "name" not in option
+                and "start-period" not in option
+                and "end-period" not in option
+                and "output-operation" not in option
+            ):
+                optionname = configget(configfile,thissection, option, "")
+                lineprint = "  " + option +"  '" + optionname + "'"
+                print(lineprint, file = exfile)
+
+        print("  suffix  ''", file=exfile)
+        print("end-output-operation", file=exfile)
+        exfile.close()
+        
+        secnr = secnr + 1
+        thissection = secname + str(secnr)
+        toprint = configsection(configfile, thissection)
+        
+
     
 def dw_WriteCSVdata(timestepsecs, fname, varcsv, boundids, WriteAscii=False):
     """ 
@@ -1894,6 +1962,7 @@ def main(argv=None):
             dwdir = a
         if o == "-c":
             configfile = a
+
     
     #Initialize waq output directories
     dw_CreateDwRun(dwdir)
@@ -1931,6 +2000,8 @@ def main(argv=None):
     if inputType == "netcdf":
         netcdffile = configget(config, "model", "netcdfinput", "wflow2waq.nc")
 
+    #Template ini file
+    template_ini_path = configget(config, "model", "template_ini", "None")
     
     #Monitoring options
     mon_points = configget(config, "model", "mon_points", "gauges")
@@ -1938,6 +2009,9 @@ def main(argv=None):
     
     #Boundaries ID creation
     bd_id = configget(config, "model", "bd_id", "boundaries")
+    
+    #Layout option
+    sizeinmetres = int(configget(config, "layout", "sizeinmetres", "0"))
     
     #Time options
     timestepsecs = int(configget(config, "run", "timestepsecs", str(timestepsecs)))
@@ -1996,10 +2070,13 @@ def main(argv=None):
         caseId + "/"
         + configget(config, "model", "wflow_gauges", "/staticmaps/wflow_gauges.map")
     )
-    reallength = pcr.readmap(
-        caseId + "/" + runId + "/" 
-        + configget(config, "model", "wflow_reallength", "/outsum/reallength.map")
-    )
+#    reallength = pcr.readmap(
+#        caseId + "/" + runId + "/" 
+#        + configget(config, "model", "wflow_reallength", "/outsum/reallength.map")
+#    )
+    xl, yl, reallength = pcrut.detRealCellLength(
+            modelmap, sizeinmetres
+        )
     cellsize = float(pcr.pcr2numpy(reallength, np.NaN)[0,0])
     logger.info("Cellsize model: " + str(cellsize))
     
@@ -2174,49 +2251,51 @@ def main(argv=None):
     #Surface data [m^2]
     #For surface runoff, the surface is adjusted in river cells to the real river size.
     #For other compartments, surface should be cell size.
-    internalflowwidth = pcr.readmap(caseId + "/" + runId + "/outsum/Bw.map")
-    internalflowlength = pcr.readmap(caseId + "/" + runId + "/outsum/DCL.map")
-    surfaceWater_map = internalflowwidth * internalflowlength
-    if Aggregation:
-        surfaceWater_map = pcr.areatotal(surfaceWater_map, modelmap)
-    surfaceWater_block = dw_pcrToDataBlock(surfaceWater_map, amap, Aggregation)
-
-    realarea = reallength * reallength
-    if Aggregation:
-        realarea = pcr.areatotal(realarea, modelmap)
-    realarea_block = dw_pcrToDataBlock(realarea, amap, Aggregation)
+    if WriteDynamic:
+        internalflowwidth = pcr.readmap(caseId + "/" + runId + "/outsum/Bw.map")
+        internalflowlength = pcr.readmap(caseId + "/" + runId + "/outsum/DCL.map")
+        surfaceWater_map = internalflowwidth * internalflowlength
+        if Aggregation:
+            surfaceWater_map = pcr.areatotal(surfaceWater_map, modelmap)
+        surfaceWater_block = dw_pcrToDataBlock(surfaceWater_map, amap, Aggregation)
     
-    surface_block = []
-    for i in np.arange(0, len(comp)):
-        if comp.At2[i] == 0:
-            surface_block = np.append(surface_block, surfaceWater_block)
-        else:
-            surface_block = np.append(surface_block, realarea_block)
-     
-    if not Emission:           
-        logger.info("Writing surface.dat. Nr of points: " + str(np.size(surface_block)))
-        dw_WriteSegmentOrExchangeData(
-            0, dwdir + "/includes_flow/surface.dat", surface_block, 1, WriteAscii
-        )
-                
-        #Manning
-        #Manning for Surface Water, zero for other compartments
-        Manning_block = []
+        realarea = reallength * reallength
+        if Aggregation:
+            realarea = pcr.areatotal(realarea, modelmap)
+        realarea_block = dw_pcrToDataBlock(realarea, amap, Aggregation)
+        
+        surface_block = []
         for i in np.arange(0, len(comp)):
             if comp.At2[i] == 0:
-                Manning_map = pcr.readmap(caseId + "/" + runId + "/outsum/N.map")
-                if Aggregation:
-                    Manning_map = pcr.areaaverage(Manning_map, modelmap)
-                Manning_block = np.append(Manning_block, dw_pcrToDataBlock(Manning_map, amap, Aggregation))
+                surface_block = np.append(surface_block, surfaceWater_block)
             else:
-                Manning_block = np.append(Manning_block, np.repeat(0, len(cells)))
-        logger.info("Writing Manning n coefficient")
-        dw_WriteSegmentOrExchangeData(
-            0, dwdir + "/includes_flow/manning.dat", Manning_block, 1, WriteAscii
-        )
+                surface_block = np.append(surface_block, realarea_block)
+         
+        if not Emission:           
+            logger.info("Writing surface.dat. Nr of points: " + str(np.size(surface_block)))
+            dw_WriteSegmentOrExchangeData(
+                0, dwdir + "/includes_flow/surface.dat", surface_block, 1, WriteAscii
+            )
+                    
+            #Manning
+            #Manning for Surface Water, zero for other compartments
+            Manning_block = []
+            for i in np.arange(0, len(comp)):
+                if comp.At2[i] == 0:
+                    Manning_map = pcr.readmap(caseId + "/" + runId + "/outsum/N.map")
+                    if Aggregation:
+                        Manning_map = pcr.areaaverage(Manning_map, modelmap)
+                    Manning_block = np.append(Manning_block, dw_pcrToDataBlock(Manning_map, amap, Aggregation))
+                else:
+                    Manning_block = np.append(Manning_block, np.repeat(0, len(cells)))
+            logger.info("Writing Manning n coefficient")
+            dw_WriteSegmentOrExchangeData(
+                0, dwdir + "/includes_flow/manning.dat", Manning_block, 1, WriteAscii
+            )
         
     #FEWS files
     if Fews:
+        logger.info("Writing additional files for FEWS")
         np.save(dwdir + "/debug/pointer.npy", pointer)
         np.save(dwdir + "/debug/segments.npy", segments)
         dw_Write_B2_outlocs(dwdir + "/includes_deltashell/B2_outlocs.inc", gauges, ptid)
@@ -2226,48 +2305,48 @@ def main(argv=None):
         mmax, nmax = dw_GetGridDimensions(reallength)
         logger.info("mmax, nmax: " + str(mmax) +","+ str(nmax))
         dw_WritePointer(comroot + ".poi", pointer, binary=True)
-        if not Emission:
+        if not Emission and WriteDynamic:
             dw_WriteSurfaceFile(comroot + ".srf", surface_block)
             #dw_WriteSegmentOrExchangeData(0, comroot + ".len", length_block, 1, WriteAscii)
         logger.info("Writing waq geometry file")
         dw_WriteWaqGeom(comroot, ptid, ldd, Fews)
-        logger.info("Writing boundary file")
+        logger.info("Writing fews boundary file")
         dw_WriteBndFile(comroot, ptid, pointer, pointer_labels, flow_labels)
        
     
     ######## Dynamic data ########
-    #Set up netcdf or mapstack of volumes and fluxes
-    var_list = np.append(comp.mapstack.values, flux.mapstack.values)
-    #Remove compartments with no volumes (mapstack = ZeroMap)
-    var_list = var_list[var_list != "ZeroMap"]
-    #Separate the variables that are sum of wflow fluxes
-    var_sublist = var_list[np.char.find(var_list.astype(np.str), "+") != -1]
-    if len(var_sublist) > 0:
-        var_list = var_list[np.char.find(var_list.astype(np.str), "+") == -1]
-        for v in range(len(var_sublist)):
-            wflowVars = var_sublist[v].split("+")
-            var_list = np.append(var_list, wflowVars)
-    if inputType == "netcdf":
-        pcr.setglobaloption('coorcentre')
-        netcdffile = caseId + "/" + runId + "/" + netcdffile
-        nc = wf_netcdfio.netcdfinput(
-            netcdffile, logger, var_list
-        )
-    else:
-        nc = None
-    
-    # mask to filter out inactive segments
-    zeroMap = 0.0 * pcr.scalar(amap)
-    minVolumeMap = zeroMap + 0.0001
-    
-    #Start dynamic section
-    ts = 1
-    
     if WriteDynamic:
+        #Set up netcdf or mapstack of volumes and fluxes
+        var_list = np.append(comp.mapstack.values, flux.mapstack.values)
+        #Remove compartments with no volumes (mapstack = ZeroMap)
+        var_list = var_list[var_list != "ZeroMap"]
+        #Separate the variables that are sum of wflow fluxes
+        var_sublist = var_list[np.char.find(var_list.astype(np.str), "+") != -1]
+        if len(var_sublist) > 0:
+            var_list = var_list[np.char.find(var_list.astype(np.str), "+") == -1]
+            for v in range(len(var_sublist)):
+                wflowVars = var_sublist[v].split("+")
+                var_list = np.append(var_list, wflowVars)
+        if inputType == "netcdf":
+            pcr.setglobaloption('coorcentre')
+            netcdffile = caseId + "/" + runId + "/" + netcdffile
+            nc = wf_netcdfio.netcdfinput(
+                netcdffile, logger, var_list
+            )
+        else:
+            nc = None
+        
+        # mask to filter out inactive segments
+        zeroMap = 0.0 * pcr.scalar(amap)
+        minVolumeMap = zeroMap + 0.0001
+        
+        #Start dynamic section
+        ts = 1
+    
         #Time inputs
         logger.info("Writing timers")
         #dw_Write_Times(dwdir + "/includes_deltashell/", T0, timeSteps - 1, timestepsecs)
-        dw_Write_Times(dwdir + "/includes_deltashell/", T0, timeSteps, timestepsecs)
+        dw_Write_Times(dwdir + "/includes_deltashell/", T0, timeSteps, timestepsecs, config)
         
         logger.info("Writing dynamic data...")
         #Start loop over time steps to read and write netcdf or PCRaster maps
@@ -2760,8 +2839,18 @@ def main(argv=None):
             dw_WriteHydFile(hyd_file, hydinfo)
         
     #End write dynamic
-                                                                                                    
-            
+    
+    if template_ini_path != 'None':                                                                                                
+        logger.info('Writing model ini file with template from ' + template_ini_path)
+        if Emission: model_ini = 'EM'
+        else: model_ini = 'WAQ'
+        model_ini_path  = os.path.join(dwdir, model_ini + '.inp')
+        if os.path.exists(template_ini_path):
+            if os.path.exists(model_ini_path):
+                os.remove(model_ini_path)
+            shutil.copy(template_ini_path, model_ini_path)
+        else:
+            logger.error('Could not find specified template ini file!')        
 
 
 if __name__ == "__main__":

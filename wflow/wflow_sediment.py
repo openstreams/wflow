@@ -1,5 +1,22 @@
 #!/usr/bin/python
 
+# Wflow is Free software, see below:
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#@author: H. Boisgontier / Deltares 2018-2020
+#
 """
 Definition of the wflow_sediment model
 The model is based on EUROSEM and ANSWERS for soil loss.
@@ -29,16 +46,20 @@ wflow_sediment  -C case -R Runid -c inifile -s seconds -T last timestep -S First
 
 """
 
-import numpy
-import os
+import numpy as np
+import os, sys
 import os.path
 import shutil, glob
 import getopt
 
 from wflow.wf_DynamicFramework import *
 from wflow.wflow_adapt import *
+from wflow.wflow_funcs import *
 
-# import scipy
+import pcraster.framework
+import pcraster as pcr
+
+wflow = "wflow_sediment: "
 
 
 def usage(*args):
@@ -47,13 +68,32 @@ def usage(*args):
         print(msg)
     print(__doc__)
     sys.exit(0)
+    
+def estimate_sedriv_tranport_iter(Q, deltaT, h, x, W, mv = -999):
+    """
+    Estimate the number of iterations needed for sediment tranport in the river.
+    Q: River runoff [m3/s]
+    deltaT: model timestepsecs [s]
+    h: river water level [m]
+    x: river length [m]
+    W: river width [m]
+    """
+    
+    minTstep = pcr.ifthenelse(Q>0, h*x*W/Q, deltaT)
+    minTstep = pcr.pcr2numpy(minTstep, mv)
+    
+    it = np.ceil(deltaT / np.amin(minTstep))
+    #Maximum number of iterations
+    it = max(it, 1000)
+    
+    return it
 
 
-class WflowModel(DynamicModel):
+class WflowModel(pcraster.framework.DynamicModel):
     """
   The user defined model class. This is your work!
   """
-
+        
     def __init__(self, cloneMap, Dir, RunDir, configfile):
         """
       *Required*
@@ -62,101 +102,16 @@ class WflowModel(DynamicModel):
       may be added by you if needed.
       
       """
-        DynamicModel.__init__(self)
-        setclone(Dir + "/staticmaps/" + cloneMap)
+        pcraster.framework.DynamicModel.__init__(self)
+
+        self.caseName = os.path.abspath(Dir)
+        self.clonemappath = os.path.join(os.path.abspath(Dir), "staticmaps", cloneMap)
+        pcr.setclone(self.clonemappath)
         self.runId = RunDir
-        self.caseName = Dir
-        self.Dir = Dir
+        self.Dir = os.path.abspath(Dir)
         self.configfile = configfile
         self.SaveDir = os.path.join(self.Dir, self.runId)
 
-    def smoothriv(self, river, subcatch, streamorder, param, wlgt):
-        """
-      Average a parameter (eg. slope, width...) over river cells only and by streamorder
-
-      :param river: River map 
-      :param subcatch: Subcatchment map 
-      :param streamorder: Streamorder map
-      :param param: river parameter to average
-      :param wglt: window length in nb of cells
-
-      :return: 
-      """
-        # Cover river map with zeros
-        # Rivercov = ifthenelse(river == 1, 1.0, scalar(0.0))
-        # Rivercov = ifthen(subcatch > 0, cover(boolean(river), 0))
-        Rivercov = cover(boolean(river), 0)
-        Rivercov = scalar(Rivercov)
-
-        order3 = ifthenelse(streamorder == 3, param, scalar(0.0))
-        riv3 = ifthenelse(streamorder == 3, Rivercov, scalar(0.0))
-        order4 = ifthenelse(streamorder == 4, param, scalar(0.0))
-        riv4 = ifthenelse(streamorder == 4, Rivercov, scalar(0.0))
-        order5 = ifthenelse(streamorder == 5, param, scalar(0.0))
-        riv5 = ifthenelse(streamorder == 5, Rivercov, scalar(0.0))
-        order6 = ifthenelse(streamorder == 6, param, scalar(0.0))
-        riv6 = ifthenelse(streamorder == 6, Rivercov, scalar(0.0))
-        order7 = ifthenelse(streamorder == 7, param, scalar(0.0))
-        riv7 = ifthenelse(streamorder == 7, Rivercov, scalar(0.0))
-        order8 = ifthenelse(streamorder == 8, param, scalar(0.0))
-        riv8 = ifthenelse(streamorder == 8, Rivercov, scalar(0.0))
-        order9 = ifthenelse(streamorder == 9, param, scalar(0.0))
-        riv9 = ifthenelse(streamorder == 9, Rivercov, scalar(0.0))
-
-        unitmap = riv9 * 0.0 + 1.0
-
-        # self.W = ifthenelse(self.streamorder == 1, windowaverage(order1, celllength()*2) * windowtotal(riv1, celllength()*2), self.W)
-        param = ifthenelse(
-            streamorder == 9,
-            windowaverage(order9, celllength() * wlgt)
-            * windowtotal(unitmap, celllength() * wlgt)
-            / windowtotal(riv9, celllength() * wlgt),
-            param,
-        )
-        param = ifthenelse(
-            streamorder == 8,
-            windowaverage(order8, celllength() * wlgt)
-            * windowtotal(unitmap, celllength() * wlgt)
-            / windowtotal(riv8, celllength() * wlgt),
-            param,
-        )
-        param = ifthenelse(
-            streamorder == 7,
-            windowaverage(order7, celllength() * wlgt)
-            * windowtotal(unitmap, celllength() * wlgt)
-            / windowtotal(riv7, celllength() * wlgt),
-            param,
-        )
-        param = ifthenelse(
-            streamorder == 6,
-            windowaverage(order6, celllength() * wlgt)
-            * windowtotal(unitmap, celllength() * wlgt)
-            / windowtotal(riv6, celllength() * wlgt),
-            param,
-        )
-        param = ifthenelse(
-            streamorder == 5,
-            windowaverage(order5, celllength() * wlgt)
-            * windowtotal(unitmap, celllength() * wlgt)
-            / windowtotal(riv5, celllength() * wlgt),
-            param,
-        )
-        param = ifthenelse(
-            streamorder == 4,
-            windowaverage(order4, celllength() * wlgt)
-            * windowtotal(unitmap, celllength() * wlgt)
-            / windowtotal(riv4, celllength() * wlgt),
-            param,
-        )
-        param = ifthenelse(
-            streamorder == 3,
-            windowaverage(order3, celllength() * wlgt)
-            * windowtotal(unitmap, celllength() * wlgt)
-            / windowtotal(riv3, celllength() * wlgt),
-            param,
-        )
-
-        return param
 
     def parameters(self):
         """
@@ -170,8 +125,10 @@ class WflowModel(DynamicModel):
         
         *Forcing from wflow_sbm*
         :var Interception: Rainfall intercepted by vegetation canopy [mm]
-        :var SurfaceRunoff: Surface runoff in the kinematic wave [m3/s]
-        :var WaterLevel: Water level in the kinematic wave [m]
+        :var RiverRunoff: Surface runoff in the kinematic wave in the river [m3/s]
+        :var LandRunoff: Surface runoff in the kinematic wave inland [m3/s]
+        :var WaterLevelR: Water level in the kinematic wave in the river [m]
+        :var WaterLevelL: Water level in the kinematic wave inland [m]
         
       """
 
@@ -184,12 +141,18 @@ class WflowModel(DynamicModel):
         self.Int_mapstack = self.Dir + configget(
             self.config, "inputmapstacks", "Interception", "/inmaps/int"
         )  # rainfall interception
-        self.SR_mapstack = self.Dir + configget(
-            self.config, "inputmapstacks", "SurfaceRunoff", "/inmaps/run"
-        )  # surface runoff
-        self.WL_mapstack = self.Dir + configget(
-            self.config, "inputmapstacks", "WaterLevel", "/inmaps/levKin"
-        )  # water level
+        self.RR_mapstack = self.Dir + configget(
+            self.config, "inputmapstacks", "RiverRunoff", "/inmaps/runR"
+        )  # river runoff
+        self.LR_mapstack = self.Dir + configget(
+            self.config, "inputmapstacks", "LandRunoff", "/inmaps/runL"
+        )  # land runoff
+        self.WLR_mapstack = self.Dir + configget(
+            self.config, "inputmapstacks", "WaterLevelR", "/inmaps/levKinR"
+        )  # river water level
+        self.WLL_mapstack = self.Dir + configget(
+            self.config, "inputmapstacks", "WaterLevelL", "/inmaps/levKinL"
+        )  # land water level
 
         # Meteo and other forcing from wflow_sbm
         modelparameters.append(
@@ -214,8 +177,8 @@ class WflowModel(DynamicModel):
         )
         modelparameters.append(
             self.ParamType(
-                name="SurfaceRunoff",
-                stack=self.SR_mapstack,
+                name="RiverRunoff",
+                stack=self.RR_mapstack,
                 type="timeseries",
                 default=0.0,
                 verbose=True,
@@ -224,8 +187,28 @@ class WflowModel(DynamicModel):
         )
         modelparameters.append(
             self.ParamType(
-                name="WaterLevel",
-                stack=self.WL_mapstack,
+                name="LandRunoff",
+                stack=self.LR_mapstack,
+                type="timeseries",
+                default=0.0,
+                verbose=True,
+                lookupmaps=[],
+            )
+        )
+        modelparameters.append(
+            self.ParamType(
+                name="WaterLevelR",
+                stack=self.WLR_mapstack,
+                type="timeseries",
+                default=0.0,
+                verbose=False,
+                lookupmaps=[],
+            )
+        )
+        modelparameters.append(
+            self.ParamType(
+                name="WaterLevelL",
+                stack=self.WLL_mapstack,
                 type="timeseries",
                 default=0.0,
                 verbose=False,
@@ -277,6 +260,12 @@ class WflowModel(DynamicModel):
                 "RivStoreLagg",
                 "RivStoreGrav",
             ]
+            
+            if hasattr(self, "ReserVoirSimpleLocs"):
+                states.append("ReservoirSedStore")
+
+            if hasattr(self, "LakeLocs"):
+                states.append("LakeSedStore")
 
         return states
 
@@ -294,9 +283,7 @@ class WflowModel(DynamicModel):
           
       """
 
-        return self.currentTimeStep() * int(
-            configget(self.config, "model", "timestepsecs", "86400")
-        )
+        return self.currentTimeStep() * self.timestepsecs
 
     def suspend(self):
         """
@@ -310,10 +297,11 @@ class WflowModel(DynamicModel):
     """
 
         self.logger.info("Saving initial conditions...")
-        #: It is advised to use the wf_suspend() function
-        #: here which will suspend the variables that are given by stateVariables
-        #: function.
-        self.wf_suspend(self.SaveDir + "/outstate/")
+        self.wf_suspend(os.path.join(self.SaveDir, "outstate"))
+
+        if self.OverWriteInit:
+            self.logger.info("Saving initial conditions over start conditions...")
+            self.wf_suspend(os.path.join(self.Dir, "instate"))
 
     def initial(self):
 
@@ -349,24 +337,25 @@ class WflowModel(DynamicModel):
     """
         #: pcraster option to calculate with units or cells. Not really an issue
         #: in this model but always good to keep in mind.
-        setglobaloption("unittrue")
+        pcr.setglobaloption("unittrue")
 
         self.timestepsecs = int(
             configget(self.config, "model", "timestepsecs", "86400")
         )
+        self.reinit = int(configget(self.config, "run", "reinit", "0"))
+        self.OverWriteInit = int(configget(self.config, "model", "OverWriteInit", "0"))
         sizeinmetres = int(configget(self.config, "layout", "sizeinmetres", "0"))
         self.basetimestep = 86400
+        self.mv = -999
 
         # Reads all parameter from disk
         self.wf_updateparameters()
 
-        """  Read static model parameters/maps from ini file """
+        # Set and get defaults from ConfigFile here ###################################
 
         self.intbl = configget(self.config, "model", "intbl", "intbl")
         self.RunRiverModel = int(configget(self.config, "model", "runrivermodel", "1"))
-        self.slopecorr = int(configget(self.config, "model", "slopecorr", "0"))
         self.UsleKMethod = int(configget(self.config, "model", "uslekmethod", "2"))
-        self.UsleCMethod = int(configget(self.config, "model", "uslecmethod", "2"))
         self.RainErodMethod = int(
             configget(self.config, "model", "rainerodmethod", "1")
         )
@@ -378,98 +367,172 @@ class WflowModel(DynamicModel):
         )
         if self.RunRiverModel == 1:
             self.LandTransportMethod = 1
-
-        # Static maps to use
+            
+        self.transportIters = int(configget(self.config, "model", "transportIters", "0"))
+        self.transportRiverTstep = int(configget(self.config, "model", "transportRiverTstep", "0"))
+        self.transportLandTstep = int(configget(self.config, "model", "transportLandTstep", "0"))        
+        if self.transportIters == 1:
+            self.logger.info(
+                "Using sub timestep for sediment transport (iterate)"
+            )
+            if self.transportRiverTstep > 0:
+                self.logger.info(
+                    "Using a fixed timestep (seconds) for sediment transport in the river: " + str(self.transportRiverTstep)
+                )
+            if self.transportLandTstep > 0:
+                self.logger.info(
+                    "Using a fixed timestep (seconds) for sediment transport in overland flow: " + str(self.transportLandTstep)
+                ) 
+        
+        self.dmClay = float(configget(self.config, "model", "dmClay", "2.0"))
+        self.dmSilt = float(configget(self.config, "model", "dmSilt", "10.0"))
+        self.dmSand = float(configget(self.config, "model", "dmSand", "200.0"))
+        self.dmSagg = float(configget(self.config, "model", "dmSagg", "30.0"))
+        self.dmLagg = float(configget(self.config, "model", "dmLagg", "500.0"))
+        self.dmGrav = float(configget(self.config, "model", "dmGrav", "2000.0"))
+        self.rhoSed = float(configget(self.config, "model", "rhoSed", "2650.0"))
+        alf = float(configget(self.config, "model", "Alpha", "60"))
+        Qmax = float(configget(self.config, "model", "AnnualDischarge", "300"))
+        
+        # static maps to use (normally default)
         wflow_dem = configget(
             self.config, "model", "wflow_dem", "staticmaps/wflow_dem.map"
-        )
-        self.Altitude = self.wf_readmap(
-            os.path.join(self.Dir, wflow_dem), 0.0, fail=True
         )
         wflow_landuse = configget(
             self.config, "model", "wflow_landuse", "staticmaps/wflow_landuse.map"
         )
-        self.LandUse = self.wf_readmap(
-            os.path.join(self.Dir, wflow_landuse), 0.0, fail=True
-        )
         wflow_soil = configget(
             self.config, "model", "wflow_soil", "staticmaps/wflow_soil.map"
         )
-        self.Soil = self.wf_readmap(os.path.join(self.Dir, wflow_soil), 0.0, fail=False)
         wflow_subcatch = configget(
             self.config, "model", "wflow_subcatch", "staticmaps/wflow_subcatch.map"
-        )
-        self.TopoId = self.wf_readmap(
-            os.path.join(self.Dir, wflow_subcatch), 0.0, fail=True
-        )
-        wflow_Hype = configget(
-            self.config, "model", "wflow_Hype", "staticmaps/SUBID-HYPE-Rhine.map"
-        )
-        self.HypeId = self.wf_readmap(
-            os.path.join(self.Dir, wflow_Hype), 0.0, fail=False
         )
         wflow_ldd = configget(
             self.config, "model", "wflow_ldd", "staticmaps/wflow_ldd.map"
         )
-        self.TopoLdd = self.wf_readmap(
-            os.path.join(self.Dir, wflow_ldd), 0.0, fail=True
-        )
         wflow_river = configget(
             self.config, "model", "wflow_river", "staticmaps/wflow_river.map"
         )
-        self.River = self.wf_readmap(
-            os.path.join(self.Dir, wflow_river), 0.0, fail=True
-        )
         wflow_riverwidth = configget(
-            self.config, "model", "wflow_riverwidth", "staticmaps/RiverWidth.map"
+            self.config, "model", "wflow_riverwidth", "staticmaps/wflow_riverwidth.map"
         )
-        self.RiverWidth = self.wf_readmap(
-            os.path.join(self.Dir, wflow_riverwidth), 0.0, fail=True
+        wflow_riverlength = configget(
+            self.config, "model", "wflow_riverlength", "staticmaps/wflow_riverlength.map"
         )
-        self.RiverWidth = ifthenelse(self.River == 1, self.RiverWidth, scalar(0.0))
-        wflow_dcl = configget(self.config, "model", "wflow_dcl", "staticmaps/DCL.map")
-        self.DCL = self.wf_readmap(
-            os.path.join(self.Dir, wflow_dcl), 0.0, fail=True
-        )  # Drain/River length
+        wflow_riverlength_fact = configget(
+            self.config,
+            "model",
+            "wflow_riverlength_fact",
+            "staticmaps/wflow_riverlength_fact.map",
+        )
+#        wflow_riverslope = configget(
+#            self.config, "model", "wflow_riverslope", "staticmaps/RiverSlope.map"
+#        )
         wflow_streamorder = configget(
             self.config,
             "model",
             "wflow_streamorder",
             "staticmaps/wflow_streamorder.map",
         )
-        self.streamorder = self.wf_readmap(
-            os.path.join(self.Dir, wflow_streamorder), 0.0, fail=True
-        )
 
         # Soil
         wflow_clay = configget(
             self.config, "model", "wflow_clay", "staticmaps/percent_clay.map"
         )
-        self.PercentClay = self.wf_readmap(
-            os.path.join(self.Dir, wflow_clay), 0.1, fail=True
-        )
         wflow_silt = configget(
             self.config, "model", "wflow_silt", "staticmaps/percent_silt.map"
+        )
+        if self.UsleKMethod == 3:
+            wflow_oc = configget(
+                self.config, "model", "wflow_oc", "staticmaps/percent_oc.map"
+            )
+
+
+        # 2: Input base maps ########################################################
+        # Subcatchment map
+        subcatch = pcr.ordinal(
+            self.wf_readmap(os.path.join(self.Dir, wflow_subcatch), 0.0, fail=True)
+        )  # Determines the area of calculations (all cells > 0)
+        subcatch = pcr.ifthen(subcatch > 0, subcatch)
+        
+        self.Altitude = self.wf_readmap(
+            os.path.join(self.Dir, wflow_dem), 0.0, fail=True
+        )
+#        self.LandUse = self.wf_readmap(
+#            os.path.join(self.Dir, wflow_landuse), 0.0, fail=True
+#        )
+#        self.Soil = self.wf_readmap(os.path.join(self.Dir, wflow_soil), 0.0, fail=False)
+        self.LandUse = pcr.ordinal(
+            self.wf_readmap(os.path.join(self.Dir, wflow_landuse), 0.0, fail=True)
+        )
+        self.LandUse = pcr.cover(self.LandUse, pcr.ordinal(subcatch > 0))
+        self.Soil = pcr.ordinal(
+            self.wf_readmap(os.path.join(self.Dir, wflow_soil), 0.0, fail=True)
+        )
+        self.Soil = pcr.cover(self.Soil, pcr.ordinal(subcatch > 0))
+        self.TopoId = self.wf_readmap(
+            os.path.join(self.Dir, wflow_subcatch), 0.0, fail=True
+        )
+        self.TopoLdd = self.wf_readmap(
+            os.path.join(self.Dir, wflow_ldd), 0.0, fail=True
+        )
+        self.River = self.wf_readmap(
+            os.path.join(self.Dir, wflow_river), 0.0, fail=True
+        )
+        self.RiverWidth = self.wf_readmap(
+            os.path.join(self.Dir, wflow_riverwidth), 0.0, fail=True
+        )
+        self.RiverLength = self.wf_readmap(
+            os.path.join(self.Dir, wflow_riverlength), 0.0, fail=True
+        )
+        # Factor to multiply riverlength with (defaults to 1.0)
+        self.RiverLengthFac = self.wf_readmap(
+            os.path.join(self.Dir, wflow_riverlength_fact), 1.0
+        )
+#        self.RiverSlope = self.wf_readmap(
+#            os.path.join(self.Dir, wflow_riverslope), 0.0, fail=True
+#        )
+        self.streamorder = self.wf_readmap(
+            os.path.join(self.Dir, wflow_streamorder), 0.0, fail=True
+        )
+        
+        self.PercentClay = self.wf_readmap(
+            os.path.join(self.Dir, wflow_clay), 0.1, fail=True
         )
         self.PercentSilt = self.wf_readmap(
             os.path.join(self.Dir, wflow_silt), 0.1, fail=True
         )
-        wflow_oc = configget(
-            self.config, "model", "wflow_oc", "staticmaps/percent_oc.map"
-        )
-        self.PercentOC = self.wf_readmap(
-            os.path.join(self.Dir, wflow_oc), 0.1, fail=False
-        )
-        #    wflow_bulk = configget(self.config, "model", "wflow_bulk", "staticmaps/bulk_density.map")
-        #    self.BulkDensity = self.wf_readmap(os.path.join(self.Dir,wflow_bulk), 0.1, fail=False)
+        if self.UsleKMethod == 3:
+            self.PercentOC = self.wf_readmap(
+                os.path.join(self.Dir, wflow_oc), 0.1, fail=False
+            )
 
-        """ Read tbl parameters and link them to landuse, soil, subcatch...) """
-
+        
+        # Set static initial values here #########################################
+        
+        #Detachability of the soil (k) [g/J]
+        self.ErosK = self.readtblDefault(
+            self.Dir + "/" + self.intbl + "/ErosK.tbl",
+            self.LandUse,
+            subcatch,
+            self.Soil,
+            0.6,
+        )
+        
+        # USLE C factor map based on land use (from Gericke 2015, Soil loss estimation and empirical relationships for sediment delivery ratios of European river catchments)
+        self.UsleC = self.readtblDefault(
+                self.Dir + "/" + self.intbl + "/USLE_C.tbl",
+                self.LandUse,
+                subcatch,
+                self.Soil,
+                0.01,
+            )
+        
         # Soil impervious area
         self.PathFrac = self.readtblDefault(
             self.Dir + "/" + self.intbl + "/PathFrac.tbl",
             self.LandUse,
-            self.TopoId,
+            subcatch,
             self.Soil,
             0.01,
         )
@@ -478,120 +541,75 @@ class WflowModel(DynamicModel):
         self.ErosOv = self.readtblDefault(
             self.Dir + "/" + self.intbl + "/eros_ov.tbl",
             self.LandUse,
-            self.TopoId,
+            subcatch,
             self.Soil,
             0.90,
         )
+        self.NRiver = self.readtblFlexDefault(
+                self.Dir + "/" + self.intbl + "/N_River.tbl", 0.036, wflow_streamorder
+            )
 
         if self.RunRiverModel == 1:
             # River model parameters
             self.D50River = self.readtblFlexDefault(
                 self.Dir + "/" + self.intbl + "/D50_River.tbl", 0.050, wflow_streamorder
             )
-            self.D50River = ifthenelse(self.River == 1, self.D50River, scalar(0.0))
+            self.D50River = pcr.cover(self.D50River, pcr.scalar(0.0))
             self.CovRiver = self.readtblDefault(
                 self.Dir + "/" + self.intbl + "/cov_River.tbl",
                 self.LandUse,
-                self.TopoId,
+                subcatch,
                 self.Soil,
                 1.0,
+            )
+            
+            # River particle size distribution (estimated with SWAT method)
+            d50riv = self.Dir + "/" + self.runId + "/outsum/D50River.map"
+            pcr.report(self.D50River, d50riv)
+            self.FracClayRiv = self.readtblFlexDefault(
+                self.Dir + "/" + self.intbl + "/ClayF_River.tbl", 0.15, d50riv
+            )
+            self.FracSiltRiv = self.readtblFlexDefault(
+                self.Dir + "/" + self.intbl + "/SiltF_River.tbl", 0.65, d50riv
+            )
+            self.FracSandRiv = self.readtblFlexDefault(
+                self.Dir + "/" + self.intbl + "/SandF_River.tbl", 0.15, d50riv
+            )
+            self.FracGravRiv = self.readtblFlexDefault(
+                self.Dir + "/" + self.intbl + "/GravelF_River.tbl", 0.05, d50riv
             )
 
         """ Determine global variables """
         # Map with zeros
-        self.ZeroMap = 0.0 * self.Altitude
-
-        # Subcatchment map
-        self.subcatch = ordinal(self.TopoId)
-        self.subcatch = ifthen(self.subcatch > 0, self.subcatch)
-
-        # HYPE subcatchment map
-        self.HYPEcatch = ordinal(self.HypeId)
-        self.HYPEcatch = ifthen(self.HYPEcatch > 0, self.HYPEcatch)
+        self.ZeroMap = 0.0 * pcr.scalar(subcatch)  # map with only zero's
 
         # Determine real slope, cell length and cell area
         self.xl, self.yl, self.reallength = pcrut.detRealCellLength(
             self.ZeroMap, sizeinmetres
         )
-        self.Slope = slope(self.Altitude)
-        self.Slope = max(0.00001, self.Slope * celllength() / self.reallength)
+        
+        self.Slope = pcr.slope(self.Altitude)
+        self.Slope = pcr.max(0.00001, self.Slope * pcr.celllength() / self.reallength)
 
         self.cellareaKm = (self.reallength / 1000.0) ** 2
-        self.UpArea = accuflux(self.TopoLdd, self.cellareaKm)
+        self.UpArea = pcr.accuflux(self.TopoLdd, self.cellareaKm)
 
         # Sine of the slope
-        self.sinSlope = sin(atan(self.Slope))
-
-        # If necessary reduce dem and slope for river cells
-        if self.slopecorr == 1:
-            self.AltitudeMin = self.wf_readmap(
-                os.path.join(self.Dir, "staticmaps/wflow_demmin.map"), 0.0, fail=True
-            )
-            # In 90m SRTM correct sea cells (-32768) with wflow_dem
-            self.AltitudeMin = ifthenelse(
-                self.AltitudeMin == -32768, scalar(0.0), self.AltitudeMin
-            )
-            # Take this minimum value only for river cells (rest is original DEM)
-            self.RiverDem = ifthenelse(self.River == 1, self.AltitudeMin, scalar(0.0))
-            self.RiverDem = ifthen(self.subcatch > 0, cover(self.RiverDem, scalar(0.0)))
-            # Compute corrected slope for river cells
-            self.Rivercov = ifthenelse(self.River == 1, 1.0, scalar(0.0))
-            self.Rivercov = ifthen(self.subcatch > 0, cover(self.Rivercov, scalar(0.0)))
-            self.nrupcell = upstream(self.TopoLdd, self.Rivercov)
-            self.RiverSlope = (
-                upstream(self.TopoLdd, self.RiverDem) / self.nrupcell
-                - downstream(self.TopoLdd, self.RiverDem)
-            ) / (2 * self.reallength)
-            self.RiverSlope = max(0.0003, self.RiverSlope)
-
-            # Cover the non river cells with original slope/dem
-            self.RiverDem = cover(self.RiverDem, self.Altitude)
-            self.RiverSlope = cover(self.RiverSlope, self.Slope)
-
-        else:
-            self.RiverDem = self.Altitude
-            self.RiverSlope = self.Slope
-
-        # Correct slope with drain length
-        drainlength = detdrainlength(self.TopoLdd, self.xl, self.yl)
-        riverslopecor = drainlength / self.DCL
-        self.RiverSlope = self.RiverSlope * riverslopecor
-
-        # Smooth river slope
-        self.RiverSlope = self.smoothriv(
-            self.River, subcatch, self.streamorder, self.RiverSlope, 6
-        )
-
-        #    #Calculate RiverWidth
-        #    upstr = catchmenttotal(1, self.TopoLdd)
-        #    Qmax = 2200
-        #    Qscale = upstr / mapmaximum(upstr) * Qmax
-        #    alf = 120
-        #    self.N = self.readtblDefault(self.Dir + "/" + self.intbl + "/N.tbl",self.LandUse,self.TopoId,self.Soil,0.072)
-        #    self.NRiver = self.readtblFlexDefault(self.Dir + "/" + self.intbl + "/N_River.tbl", 0.036, wflow_streamorder)
-        #    self.N = ifthen(subcatch > 0, cover(ifthenelse(self.River, self.NRiver, self.N), self.N))
-        #    self.W = (alf * (alf + 2.0) ** (0.6666666667)) ** (0.375)* Qscale ** (0.375) \
-        #            * (max(0.0001, windowaverage(self.Slope, celllength() * 4.0))) ** (-0.1875)* self.N ** (0.375)
-        #    self.WRiv = ifthen(self.River,((alf * (alf + 2.0) ** (0.6666666667)) ** (0.375)* Qscale ** (0.375)* \
-        #                                   self.RiverSlope ** (-0.1875)* self.N ** (0.375)))
-        #    #Smooth river width
-        #    self.WRiv = self.smoothriv(self.River, subcatch, self.streamorder, self.WRiv, 4)
-        #    self.W = ifthen(subcatch > 0, cover(ifthenelse(self.River, self.WRiv, self.W), self.W))
-        #    self.RiverWidth = self.W
+        self.sinSlope = pcr.sin(pcr.atan(self.Slope))
 
         """ Determine variables for the soil loss model """
 
         # Canopy gap fraction based on LAI or input table
         if hasattr(self, "LAI"):
             if not hasattr(self, "Kext"):
-                logging.error(
+                self.logger.error(
                     "Kext (canopy extinction coefficient) not defined! Needed becausee LAI is defined."
                 )
-                logging.error("Please add it to the modelparameters section. e.g.:")
-                logging.error(
+                self.logger.error("Please add it to the modelparameters section. e.g.:")
+                self.logger.error(
                     "Kext=inmaps/clim/LCtoExtinctionCoefficient.tbl,tbl,0.5,1,inmaps/clim/LC.map"
                 )
-            self.CanopyGapFraction = exp(-self.Kext * self.LAI)
+            self.CanopyGapFraction = pcr.exp(-self.Kext * self.LAI)
         else:
             self.CanopyGapFraction = self.readtblDefault(
                 self.Dir + "/" + self.intbl + "/CanopyGapFraction.tbl",
@@ -604,133 +622,47 @@ class WflowModel(DynamicModel):
         # Determine sand content
         self.PercentSand = 100 - (self.PercentClay + self.PercentSilt)
 
-        # Calculate detachability of the soil (k) [g/J]
-        self.ErosK = ifthenelse(
-            pcrand(
-                self.PercentClay >= 40.0,
-                pcrand(self.PercentSand >= 20.0, self.PercentSand <= 45.0),
-            ),
-            2.0,
-            ifthenelse(
-                pcrand(
-                    self.PercentClay >= 27.0,
-                    pcrand(self.PercentSand >= 20.0, self.PercentSand <= 45.0),
-                ),
-                1.7,
-                ifthenelse(
-                    pcrand(self.PercentSilt <= 40.0, self.PercentSand <= 20.0),
-                    2.0,
-                    ifthenelse(
-                        pcrand(self.PercentSilt > 40.0, self.PercentClay >= 40.0),
-                        1.6,
-                        ifthenelse(
-                            pcrand(self.PercentClay >= 35.0, self.PercentSand >= 45.0),
-                            1.9,
-                            ifthenelse(
-                                pcrand(
-                                    self.PercentClay >= 27.0, self.PercentSand < 20.0
-                                ),
-                                1.6,
-                                ifthenelse(
-                                    pcrand(
-                                        self.PercentClay <= 10.0,
-                                        self.PercentSilt >= 80.0,
-                                    ),
-                                    1.2,
-                                    ifthenelse(
-                                        self.PercentSilt >= 50,
-                                        1.5,
-                                        ifthenelse(
-                                            pcrand(
-                                                self.PercentClay >= 7.0,
-                                                pcrand(
-                                                    self.PercentSand <= 52.0,
-                                                    self.PercentSilt >= 28.0,
-                                                ),
-                                            ),
-                                            2.0,
-                                            ifthenelse(
-                                                self.PercentClay >= 20.0,
-                                                2.1,
-                                                ifthenelse(
-                                                    self.PercentClay
-                                                    >= self.PercentSand - 70.0,
-                                                    2.6,
-                                                    ifthenelse(
-                                                        self.PercentClay
-                                                        >= (2.0 * self.PercentSand)
-                                                        - 170.0,
-                                                        3,
-                                                        scalar(1.9),
-                                                    ),
-                                                ),
-                                            ),
-                                        ),
-                                    ),
-                                ),
-                            ),
-                        ),
-                    ),
-                ),
-            ),
-        )
-
         # Compute USLE K factor
         if self.UsleKMethod == 1:
-            self.UsleC = self.wf_readmap(
+            self.UsleK = self.wf_readmap(
                 os.path.join(self.Dir, "staticmaps/USLE_K.map"), 0.1, fail=True
             )
         if self.UsleKMethod == 2:
             # Calculate USLE K factor (from Renard et al. 1997, with the geometric mean particle diameter Dg)
-            self.Dg = exp(
+            self.Dg = pcr.exp(
                 0.01
                 * (
-                    self.PercentClay * ln(0.001)
-                    + self.PercentSilt * ln(0.025)
-                    + self.PercentSand * ln(0.999)
+                    self.PercentClay * pcr.ln(0.001)
+                    + self.PercentSilt * pcr.ln(0.025)
+                    + self.PercentSand * pcr.ln(0.999)
                 )
             )  # [mm]
-            self.UsleK = 0.0034 + 0.0405 * exp(
-                -1 / 2 * ((log10(self.Dg) + 1.659) / 0.7101) ** 2
+            self.UsleK = 0.0034 + 0.0405 * pcr.exp(
+                -1 / 2 * ((pcr.log10(self.Dg) + 1.659) / 0.7101) ** 2
             )
             # Remove possible outliers
-            self.UsleK = max(0.0, self.UsleK)
+            self.UsleK = pcr.max(0.0, self.UsleK)
 
         if self.UsleKMethod == 3:
             # Calculate USLE K factor (from Williams and Renard 1983, EPIC: a new method for assessing erosion's effect on soil productivity)
-            self.SN = (1 - self.PercentSand) / 100
+            self.SN = 1 - (self.PercentSand / 100)
             self.UsleK = (
                 (
                     0.2
                     + 0.3
-                    * exp(-0.0256 * self.PercentSand * (1 - self.PercentSilt / 100))
+                    * pcr.exp(-0.0256 * self.PercentSand * (1 - self.PercentSilt / 100))
                 )
-                * (self.PercentSilt / (max(0.01, self.PercentClay + self.PercentSilt)))
+                * (self.PercentSilt / (pcr.max(0.01, self.PercentClay + self.PercentSilt)))
                 ** 0.3
                 * (
                     1
                     - (0.25 * self.PercentOC)
-                    / (self.PercentOC + exp(3.72 - 2.95 * self.PercentOC))
+                    / (self.PercentOC + pcr.exp(3.72 - 2.95 * self.PercentOC))
                 )
-                * (1 - (0.7 * self.SN) / (self.SN + exp(-5.51 + 22.9 * self.SN)))
+                * (1 - (0.7 * self.SN) / (self.SN + pcr.exp(-5.51 + 22.9 * self.SN)))
             )
             # Remove possible outliers
-            self.UsleK = max(0.0, self.UsleK)
-
-        # Compute USLE C factor
-        if self.UsleCMethod == 1:
-            self.UsleC = self.wf_readmap(
-                os.path.join(self.Dir, "staticmaps/USLE_C.map"), 0.1, fail=True
-            )
-        if self.UsleCMethod == 2:
-            # USLE C factor map based on land use (from Gericke 2015, Soil loss estimation and empirical relationships for sediment delivery ratios of European river catchments)
-            self.UsleC = self.readtblDefault(
-                self.Dir + "/" + self.intbl + "/USLE_C.tbl",
-                self.LandUse,
-                self.TopoId,
-                self.Soil,
-                1.0,
-            )
+            self.UsleK = pcr.max(0.0, self.UsleK)
 
         # Parameters for either EUROSEM or ANSWERS rainfall erosion
         if self.RainErodMethod == 1:  # EUROSEM
@@ -742,7 +674,7 @@ class WflowModel(DynamicModel):
             self.ErosSpl = self.readtblDefault(
                 self.Dir + "/" + self.intbl + "/eros_spl.tbl",
                 self.LandUse,
-                self.TopoId,
+                subcatch,
                 self.Soil,
                 2.0,
             )
@@ -751,7 +683,7 @@ class WflowModel(DynamicModel):
             self.ErosSpl = self.readtblDefault(
                 self.Dir + "/" + self.intbl + "/eros_spl.tbl",
                 self.LandUse,
-                self.TopoId,
+                subcatch,
                 self.Soil,
                 0.108,
             )
@@ -765,11 +697,11 @@ class WflowModel(DynamicModel):
             self.PercentSand999 = (
                 self.PercentSand * (999 - 25) / (1000 - 25)
             )  #%sand with a mean radius of 999um instead of 1000
-            self.vd50 = ln(
+            self.vd50 = pcr.ln(
                 (1 / ((self.PercentClay + self.PercentSilt) / 100) - 1)
                 / (1 / (self.PercentClay / 100) - 1)
             )
-            self.wd50 = ln(
+            self.wd50 = pcr.ln(
                 (
                     1
                     / (
@@ -782,11 +714,11 @@ class WflowModel(DynamicModel):
             )
             ad50 = 1 / (-3.727699)  # 1 / ln((25-1)/(999-1))
             bd50 = ad50 * 3.17805  # ad50 / ln((25-1)/1)
-            self.cd50 = ad50 * ln(self.vd50 / self.wd50)
+            self.cd50 = ad50 * pcr.ln(self.vd50 / self.wd50)
             self.ud50 = (-self.vd50) ** (1 - bd50) / (-self.wd50) ** (-bd50)
 
             self.D50 = 1 + (
-                -1 / self.ud50 * ln(1 / (1 / (self.PercentClay / 100) - 1))
+                -1 / self.ud50 * pcr.ln(1 / (1 / (self.PercentClay / 100) - 1))
             ) ** (
                 1 / self.cd50
             )  # [um]
@@ -805,10 +737,10 @@ class WflowModel(DynamicModel):
             self.FracClay = 0.20 * self.PercentClay / 100
             self.FracSilt = 0.13 * self.PercentSilt / 100
             self.FracSand = self.PercentSand / 100 * (1 - self.PercentClay / 100) ** 2.4
-            self.FracSagg = ifthenelse(
+            self.FracSagg = pcr.ifthenelse(
                 self.PercentClay < 25,
                 2.0 * self.PercentClay / 100,
-                ifthenelse(
+                pcr.ifthenelse(
                     self.PercentClay > 50,
                     0.57,
                     0.28 * (self.PercentClay / 100 - 0.25) + 0.5,
@@ -821,75 +753,60 @@ class WflowModel(DynamicModel):
         """ Variables for the river transport model """
 
         if self.RunRiverModel == 1:
-            # River particle size distribution (estimated with SWAT method) !!! D50 can be calibrated
-            self.FracClayRiv = ifthenelse(
-                self.D50River <= 0.005,
-                0.65,
-                ifthenelse(self.D50River > 2.0, 0.005, scalar(0.15)),
-            )
-            self.FracSiltRiv = ifthenelse(
-                pcrand(self.D50River > 0.005, self.D50River <= 0.050),
-                0.65,
-                scalar(0.15),
-            )
-            self.FracSandRiv = ifthenelse(
-                pcrand(self.D50River > 0.050, self.D50River <= 2.0), 0.65, scalar(0.15)
-            )
-            self.FracGravRiv = ifthenelse(self.D50River > 2.0, 0.65, scalar(0.05))
 
             # Parameters of Bagnold transport formula
             if self.RivTransportMethod == 2:
                 self.cBagnold = self.readtblDefault(
                     self.Dir + "/" + self.intbl + "/c_Bagnold.tbl",
                     self.LandUse,
-                    self.TopoId,
+                    subcatch,
                     self.Soil,
                     0.0015,
                 )
                 self.expBagnold = self.readtblDefault(
                     self.Dir + "/" + self.intbl + "/exp_Bagnold.tbl",
                     self.LandUse,
-                    self.TopoId,
+                    subcatch,
                     self.Soil,
                     1.4,
                 )
 
             # Parameters of Kodatie transport formula
             if self.RivTransportMethod == 3:
-                self.aK = ifthenelse(
+                self.aK = pcr.ifthenelse(
                     self.D50River <= 0.05,
                     281.4,
-                    ifthenelse(
+                    pcr.ifthenelse(
                         self.D50River <= 0.25,
                         2829.6,
-                        ifthenelse(self.D50River <= 2, 2123.4, scalar(431884.8)),
+                        pcr.ifthenelse(self.D50River <= 2, 2123.4, pcr.scalar(431884.8)),
                     ),
                 )
-                self.bK = ifthenelse(
+                self.bK = pcr.ifthenelse(
                     self.D50River <= 0.05,
                     2.622,
-                    ifthenelse(
+                    pcr.ifthenelse(
                         self.D50River <= 0.25,
                         3.646,
-                        ifthenelse(self.D50River <= 2, 3.300, scalar(1.0)),
+                        pcr.ifthenelse(self.D50River <= 2, 3.300, pcr.scalar(1.0)),
                     ),
                 )
-                self.cK = ifthenelse(
+                self.cK = pcr.ifthenelse(
                     self.D50River <= 0.05,
                     0.182,
-                    ifthenelse(
+                    pcr.ifthenelse(
                         self.D50River <= 0.25,
                         0.406,
-                        ifthenelse(self.D50River <= 2, 0.468, scalar(1.0)),
+                        pcr.ifthenelse(self.D50River <= 2, 0.468, pcr.scalar(1.0)),
                     ),
                 )
-                self.dK = ifthenelse(
+                self.dK = pcr.ifthenelse(
                     self.D50River <= 0.05,
                     0.0,
-                    ifthenelse(
+                    pcr.ifthenelse(
                         self.D50River <= 0.25,
                         0.412,
-                        ifthenelse(self.D50River <= 2, 0.613, scalar(2.0)),
+                        pcr.ifthenelse(self.D50River <= 2, 0.613, pcr.scalar(2.0)),
                     ),
                 )
 
@@ -916,73 +833,149 @@ class WflowModel(DynamicModel):
                 * 9.81
                 * self.D50River
                 * (
-                    0.13 * E ** (-0.392) * exp(-0.015 * E ** 2)
-                    + 0.045 * (1 - exp(-0.068 * E))
+                    0.13 * E ** (-0.392) * pcr.exp(-0.015 * E ** 2)
+                    + 0.045 * (1 - pcr.exp(-0.068 * E))
                 )
             )
             self.KdBed = 0.2 * self.TCrBed ** (-0.5) * 10 ** (-6)
 
-        """ Variables for reservoirs model """
+        """ Variables for lakes and reservoirs model """
 
         if hasattr(self, "ReserVoirSimpleLocs") or hasattr(
-            self, "ReserVoirComplexLocs"
+            self, "LakeLocs"
         ):
             self.ReserVoirLocs = self.ZeroMap
             self.filter_Eros_TC = self.ZeroMap + 1.0
 
         if hasattr(self, "ReserVoirSimpleLocs"):
             # Check if we have simple and or complex reservoirs
-            tt_simple = pcr2numpy(self.ReserVoirSimpleLocs, 0.0)
-            self.nrresSimple = tt_simple.max()
-            self.ReserVoirLocs = self.ReserVoirLocs + cover(
-                scalar(self.ReserVoirSimpleLocs)
+            self.ReserVoirSimpleLocs = pcr.nominal(self.ReserVoirSimpleLocs)
+            self.ReservoirSimpleAreas = pcr.nominal(self.ReservoirSimpleAreas)
+            tt_simple = pcr.pcr2numpy(self.ReserVoirSimpleLocs, 0.0)
+            self.nrresSimple = np.size(np.where(tt_simple > 0.0)[0])
+            self.ReserVoirLocs = self.ReserVoirLocs + pcr.cover(
+                pcr.scalar(self.ReserVoirSimpleLocs), 0.0
             )
-            areamap = self.reallength * self.reallength
-            res_area = areatotal(spatial(areamap), self.ReservoirSimpleAreas)
-
-            resarea_pnt = ifthen(boolean(self.ReserVoirSimpleLocs), res_area)
-            self.ResSimpleArea = ifthenelse(
-                cover(self.ResSimpleArea, scalar(0.0)) > 0,
-                self.ResSimpleArea,
-                cover(resarea_pnt, scalar(0.0)),
-            )
-            self.filter_Eros_TC = ifthenelse(
-                boolean(cover(res_area, scalar(0.0))),
+            
+            res_area = pcr.cover(pcr.scalar(self.ReservoirSimpleAreas), 0.0)
+            self.filter_Eros_TC = pcr.ifthenelse(
+                pcr.boolean(pcr.cover(res_area, pcr.scalar(0.0))),
                 res_area * 0.0,
                 self.filter_Eros_TC,
             )
         else:
             self.nrresSimple = 0
 
-        if hasattr(self, "ReserVoirComplexLocs"):
-            tt_complex = pcr2numpy(self.ReserVoirComplexLocs, 0.0)
-            self.nrresComplex = tt_complex.max()
-            self.ReserVoirLocs = self.ReserVoirLocs + cover(
-                scalar(self.ReserVoirComplexLocs)
+        if hasattr(self, "LakeLocs"):
+            self.LakeAreasMap = pcr.nominal(self.LakeAreasMap)
+            self.LakeLocs = pcr.nominal(self.LakeLocs)
+            tt_lake = pcr.pcr2numpy(self.LakeLocs, 0.0)
+            #self.nrlake = tt_lake.max()
+            self.nrlake = np.size(np.where(tt_lake > 0.0)[0])
+            self.ReserVoirLocs = self.ReserVoirLocs + pcr.cover(
+                pcr.scalar(self.LakeLocs), 0.0
             )
-            res_area = cover(scalar(self.ReservoirComplexAreas), 0.0)
-            self.filter_Eros_TC = ifthenelse(
-                res_area > 0, res_area * 0.0, self.filter_Eros_TC
+            lake_area = pcr.cover(pcr.scalar(self.LakeAreasMap), 0.0)
+            self.filter_Eros_TC = pcr.ifthenelse(
+                lake_area > 0, lake_area * 0.0, self.filter_Eros_TC
             )
         else:
-            self.nrresComplex = 0
+            self.nrlake = 0
 
-        if (self.nrresSimple + self.nrresComplex) > 0:
-            self.ReserVoirLocs = ordinal(self.ReserVoirLocs)
+        if (self.nrresSimple + self.nrlake) > 0:
+            self.ReserVoirLocs = pcr.ordinal(self.ReserVoirLocs)
             self.logger.info(
                 "A total of "
                 + str(self.nrresSimple)
                 + " simple reservoirs and "
-                + str(self.nrresComplex)
-                + " complex reservoirs found."
+                + str(self.nrlake)
+                + " lakes found."
             )
-            self.ReserVoirDownstreamLocs = downstream(self.TopoLdd, self.ReserVoirLocs)
-            self.TopoLddOrg = lddrepair(
-                cover(ifthen(boolean(self.ReserVoirLocs), ldd(5)), self.TopoLdd)
+            self.ReserVoirDownstreamLocs = pcr.downstream(
+                self.TopoLdd, self.ReserVoirLocs
+            )
+            self.TopoLddOrg = self.TopoLdd
+            self.TopoLdd = pcr.lddrepair(
+                pcr.cover(
+                    pcr.ifthen(pcr.boolean(self.ReserVoirLocs), pcr.ldd(5)),
+                    self.TopoLdd,
+                )
             )
 
-            tt_filter = pcr2numpy(self.filter_Eros_TC, 1.0)
+            tt_filter = pcr.pcr2numpy(self.filter_Eros_TC, 1.0)
             self.filterResArea = tt_filter.min()
+            
+        
+        #Compute length and width and correct for reservoirs/lakes
+        # Factor on river length (self.RiverLengthFac) only used in combination with
+        # calculated (by wflow_sbm) slope    
+        # Set DCL to riverlength if that is longer that the basic length calculated from grid
+        drainlength = detdrainlength(self.TopoLdd, self.xl, self.yl)
+        # Multiply with Factor (taken from upscaling operation, defaults to 1.0 if no map is supplied)
+        self.DCL = drainlength * pcr.max(1.0, self.RiverLengthFac)
+        # Correct slope for extra length of the river in a gridcel
+        riverslopecor = drainlength / self.DCL
+        self.riverSlope = self.Slope * riverslopecor
+        
+        # If river slope available as map, also provide river length 
+        self.riverSlope = pcr.max(
+                pcr.scalar(0.00001), 
+                self.wf_readmap(os.path.join(self.Dir, "staticmaps/RiverSlope.map"), self.riverSlope)
+                )
+        if os.path.isfile(os.path.join(self.Dir, wflow_riverlength)):
+            self.DCL = self.RiverLength # m
+
+
+        # Determine river width from DEM, upstream area and yearly average discharge
+        # Scale yearly average Q at outlet with upstream are to get Q over whole catchment
+        # Alf ranges from 5 to > 60. 5 for hardrock. large values for sediments
+        # "Noah J. Finnegan et al 2005 Controls on the channel width of rivers:
+        # Implications for modeling fluvial incision of bedrock"
+        if (self.nrresSimple + self.nrlake) > 0:
+            upstr = pcr.catchmenttotal(1, self.TopoLddOrg)
+        else:
+            upstr = pcr.catchmenttotal(1, self.TopoLdd)
+        Qscale = upstr / pcr.mapmaximum(upstr) * Qmax
+        W = (
+            (alf * (alf + 2.0) ** (0.6666666667)) ** (0.375)
+            * Qscale ** (0.375)
+            * (pcr.max(0.0001, pcr.windowaverage(self.riverSlope, pcr.celllength() * 4.0)))
+            ** (-0.1875)
+            * self.NRiver ** (0.375)
+        )
+        # Use supplied riverwidth if possible, else calulate
+        self.RiverWidth = pcr.ifthenelse(self.RiverWidth <= 0.0, W, self.RiverWidth)
+        #Use W instead of RiverWidth for reservoirs and lake cells
+        if self.nrresSimple > 0:
+            self.RiverWidth = pcr.ifthenelse(
+                    pcr.cover(pcr.scalar(self.ReservoirSimpleAreas), 0.0) > 0.0,
+                    W,
+                    self.RiverWidth
+                    )
+        if self.nrlake > 0:
+            self.RiverWidth = pcr.ifthenelse(
+                    pcr.cover(pcr.scalar(self.LakeAreasMap), 0.0) > 0.0,
+                    W,
+                    self.RiverWidth
+                    )
+        
+        # water depth (m)
+        # set width for kinematic wave to cell width for all cells
+        self.Bw = detdrainwidth(self.TopoLdd, self.xl, self.yl)
+        # However, in the main river we have real flow so set the width to the
+        # width of the river
+
+        self.Bw = pcr.ifthenelse(self.River, self.RiverWidth, self.Bw)
+
+#        # Add rivers to the WaterFrac, but check with waterfrac map and correct
+#        self.RiverFrac = pcr.min(
+#            1.0,
+#            pcr.ifthenelse(
+#                self.River, (self.RiverWidth * self.DCL) / (self.xl * self.yl), 0
+#            ),
+#        )
+#        
+#        self.WaterFrac = pcr.max(self.WaterFrac - self.RiverFrac, 0)
 
         self.logger.info("Starting Dynamic run...")
 
@@ -1025,6 +1018,14 @@ class WflowModel(DynamicModel):
                 self.RivStoreSagg = self.ZeroMap
                 self.RivStoreLagg = self.ZeroMap
                 self.RivStoreGrav = self.ZeroMap
+                
+                if hasattr(self, "ReserVoirSimpleLocs"):
+                    self.ReservoirSedStore = self.wf_readmap(
+                            os.path.join(self.Dir, "staticmaps", "ReservoirSedStore.map"),
+                            0.0                        
+                    )
+                if hasattr(self, "LakeLocs"):
+                    self.LakeSedStore = self.ZeroMap
         else:
             self.logger.info("Setting initial conditions from state files")
             self.wf_resume(os.path.join(self.Dir, "instate"))
@@ -1041,10 +1042,13 @@ class WflowModel(DynamicModel):
             "self.UsleK",
             "self.UsleC",
             "self.ErodK",
-            "self.D50River",
+#            "self.D50River",
             "self.FracClayRiv",
+            "self.FracSiltRiv",
+            "self.FracSandRiv",
+            "self.FracGravRiv",
             "self.filter_Eros_TC",
-            "self.RiverSlope",
+            "self.riverSlope",
             "self.RiverWidth",
             "self.RiverDem",
             "self.UpArea",
@@ -1070,7 +1074,6 @@ class WflowModel(DynamicModel):
       
       *Inland sediment routing*
       :var self.InLandSed: Inland eroded sediment in surface runoff reaching the river [ton]
-      :var self.HYPESedCatch: Land eroded sediment reaching the river summed per HYPE subcatchment [ton]
       
       *River model*
       :var self.SedLoad: Sediment river load [ton]
@@ -1087,7 +1090,7 @@ class WflowModel(DynamicModel):
       """
 
         self.wf_updateparameters()
-        self.Precipitation = max(0.0, self.Precipitation)
+        self.Precipitation = pcr.max(0.0, self.Precipitation)
 
         ##########################################################################
         # Soil loss model #############################
@@ -1101,19 +1104,19 @@ class WflowModel(DynamicModel):
 
             # Kinectic energy of direct throughfall [J/m^2/mm]
             # self.KeDirect = max(11.87 + 8.73 * log10(max(0.0001,self.rintnsty)), 0.0)  #basis used in USLE
-            self.KeDirect = max(
-                8.95 + 8.44 * log10(max(0.0001, self.rintnsty)), 0.0
+            self.KeDirect = pcr.max(
+                8.95 + 8.44 * pcr.log10(pcr.max(0.0001, self.rintnsty)), 0.0
             )  # variant, most used in distributed models
 
             # Kinetic energy of leaf drainage [J/m^2/mm]
             pheff = 0.5 * self.CanopyHeight  # [m]
-            self.KeLeaf = max((15.8 * pheff ** 0.5) - 5.87, 0.0)
+            self.KeLeaf = pcr.max((15.8 * pheff ** 0.5) - 5.87, 0.0)
 
             # Depths of rainfall (total, leaf drainage, direct) [mm]
             # rdepth_tot = max(self.Precipitation/self.timestepsecs, 0.0)
-            rDepthTot = max(self.Precipitation, 0.0)
-            rDepthLeaf = max(rDepthTot * 0.1 * self.CanopyGapFraction, 0.0)  # stemflow
-            rDepthDirect = max(
+            rDepthTot = pcr.max(self.Precipitation, 0.0)
+            rDepthLeaf = pcr.max(rDepthTot * 0.1 * self.CanopyGapFraction, 0.0)  # stemflow
+            rDepthDirect = pcr.max(
                 rDepthTot - rDepthLeaf - self.Interception, 0.0
             )  # throughfall
 
@@ -1124,7 +1127,7 @@ class WflowModel(DynamicModel):
 
             # Rainfall/Splash erosion
             self.SedSpl = (
-                self.ErosK * self.KeTotal * exp(-self.ErosSpl * self.WaterLevel)
+                self.ErosK * self.KeTotal * pcr.exp(-self.ErosSpl * self.WaterLevelL)
             )  # [g/m^2]
             self.Sedspl = (
                 self.cellareaKm * self.SedSpl
@@ -1150,14 +1153,11 @@ class WflowModel(DynamicModel):
         # Remove the impervious areas
         self.SedSpl = self.SedSpl * (1.0 - self.PathFrac)
         # Remove nodata values
-        self.SedSpl = ifthen(self.subcatch > 0, cover(self.SedSpl, 0.0))
+        self.SedSpl = pcr.cover(self.SedSpl, self.ZeroMap)
 
         """ Overland flow erosion from ANSWERS"""
         # Only calculate overland flow erosion outside of river cells
-        self.OvRun = cover(
-            ifthenelse(self.River == 1, 0.0, self.SurfaceRunoff), self.SurfaceRunoff
-        )  # [m3/s]
-        self.OvRunRate = self.OvRun * 60 / self.reallength  # [m2/min]
+        self.LandRunoffRate = self.LandRunoff * 60 / self.reallength  # [m2/min]
 
         # Overland flow erosion
         # For a wide range of slope, it is better to use the sine of slope rather than tangeant
@@ -1168,7 +1168,7 @@ class WflowModel(DynamicModel):
             * self.cellareaKm
             * 10 ** 6
             * self.sinSlope
-            * self.OvRunRate
+            * self.LandRunoffRate
         )  # [kg/min]
         self.SedOv = (
             self.timestepsecs / 60.0 * 10 ** (-3) * self.SedOv
@@ -1177,19 +1177,19 @@ class WflowModel(DynamicModel):
         # Remove the impervious areas
         self.SedOv = self.SedOv * (1.0 - self.PathFrac)
         # Remove nodata values
-        self.SedOv = ifthen(self.subcatch > 0, cover(self.SedOv, 0.0))
+        self.SedOv = pcr.cover(self.SedOv, self.ZeroMap)
 
         """ Total soil detachment """
         self.SoilLoss = self.SedSpl + self.SedOv  # [ton/cell/timestep]
 
         # Remove land erosion for reservoir cells
-        if (self.nrresSimple + self.nrresComplex) > 0 and self.filterResArea == 0:
+        if (self.nrresSimple + self.nrlake) > 0 and self.filterResArea == 0:
             self.SedSpl = self.filter_Eros_TC * self.SedSpl
             self.SedOv = self.filter_Eros_TC * self.SedOv
             self.SoilLoss = self.filter_Eros_TC * self.SoilLoss
 
         ##########################################################################
-        # Inland sediment routing model #############################
+        # Inland sediment routing model              #############################
         ##########################################################################
 
         # If the river model is run, use Yalin's equation with particle differentiation.
@@ -1200,19 +1200,19 @@ class WflowModel(DynamicModel):
         if self.LandTransportMethod == 2 or self.LandTransportMethod == 3:
             if self.LandTransportMethod == 2:
                 # Unit stream power
-                self.velocity = cover(
-                    ifthenelse(
-                        self.WaterLevel > 0,
-                        self.OvRun / (self.reallength * self.WaterLevel),
+                self.velocityL = pcr.cover(
+                    pcr.ifthenelse(
+                        self.WaterLevelL > 0,
+                        self.LandRunoff / (self.reallength * self.WaterLevelL),
                         0.0,
                     ),
                     0.0,
                 )  # [m/s]
-                self.omega = 10 * self.sinSlope * 100 * self.velocity  # [cm/s]
+                self.omega = 10 * self.sinSlope * 100 * self.velocityL  # [cm/s]
                 # self.omega = self.sinSlope * 100 * self.velocity #[cm/s]
 
                 # Transport capacity from Govers, 1990
-                self.TCf = ifthenelse(
+                self.TCf = pcr.ifthenelse(
                     self.omega > 0.4,
                     self.cGovers * (self.omega - 0.4) ** self.nGovers * 2650,
                     0.0,
@@ -1220,86 +1220,75 @@ class WflowModel(DynamicModel):
                 # self.TC = self.TCf / (1 - self.TCf/2650) #[kg/m3]
                 # self.TC = max(self.TC, 2650)
                 self.TC = (
-                    self.TCf * self.OvRun * self.timestepsecs * 10 ** (-3)
+                    self.TCf * self.LandRunoff * self.timestepsecs * 10 ** (-3)
                 )  # [ton/cell/timestep]
                 # Remove nodata values
-                self.TC = ifthen(self.subcatch > 0, cover(self.TC, 0.0))
+                self.TC = pcr.cover(self.TC, self.ZeroMap)
                 # Assume that eroded soil on lake cells all reach the river cells of the reservoir
                 if (
-                    self.nrresSimple + self.nrresComplex
+                    self.nrresSimple + self.nrlake
                 ) > 0 and self.filterResArea == 0:
-                    self.TC = ifthenelse(
-                        pcrand(self.filter_Eros_TC == 0, self.River == 0),
+                    self.TC = pcr.ifthenelse(
+                        pcr.pcrand(self.filter_Eros_TC == 0, self.River == 0),
                         10 ** 9,
                         self.TC,
                     )
 
             elif self.LandTransportMethod == 3:
                 # Transport capacity from Yalin
-                self.OvLevel = cover(
-                    ifthenelse(self.River == 1, 0.0, self.WaterLevel), self.WaterLevel
-                )  # [m]
-                self.delta = max(
-                    self.OvLevel
+                self.delta = pcr.max(
+                    self.WaterLevelL
                     * self.sinSlope
-                    / (self.D50 * 10 ** (-3) * (2650 / 1000 - 1))
+                    / (self.D50 * 10 ** (-3) * (self.rhoSed / 1000 - 1))
                     / 0.06
                     - 1,
                     0.0,
                 )
                 self.TC = (
                     self.reallength
-                    / self.OvRun
-                    * (2650 - 1000)
+                    / self.LandRunoff
+                    * (self.rhoSed - 1000)
                     * self.D50
                     * 10 ** (-3)
-                    * (9.81 * self.OvLevel * self.sinSlope)
+                    * (9.81 * self.WaterLevelL * self.sinSlope)
                     * 0.635
                     * self.delta
                     * (
                         1
-                        - ln(1 + self.delta * 2.45 / (2650 / 1000) ** 0.4 * 0.06 ** 0.5)
+                        - pcr.ln(1+self.delta*2.45/(self.rhoSed / 1000)**0.4 *0.06** 0.5)
                         / self.delta
                         * 2.45
-                        / (2650 / 1000) ** 0.4
+                        / (self.rhoSed / 1000) ** 0.4
                         * 0.06 ** 0.5
                     )
                 )  # [kg/m3]
-                self.TC = ifthen(
-                    self.subcatch > 0,
-                    cover(self.TC * self.OvRun * self.timestepsecs * 10 ** (-3), 0.0),
-                )  # [ton/cell/timestep]
-                # Assume that eroded soil on lake cells all reach the river cells of the reservoir
-                if (
-                    self.nrresSimple + self.nrresComplex
-                ) > 0 and self.filterResArea == 0:
-                    self.TC = ifthenelse(
-                        pcrand(self.filter_Eros_TC == 0, self.River == 0),
+                self.TC = pcr.cover(
+                        self.TC * self.LandRunoff * self.timestepsecs * 10 ** (-3), 
+                        self.ZeroMap
+                        )  # [ton/cell/timestep]
+                
+                # Assume that eroded soil on reservoir/lake cells all reach the river cells of the reservoir/lake
+                if (self.nrresSimple + self.nrlake)>0 and self.filterResArea == 0:
+                    self.TC = pcr.ifthenelse(
+                        pcr.pcrand(self.filter_Eros_TC == 0, self.River == 0),
                         10 ** 9,
                         self.TC,
                     )
 
             # To get total sediment input from land into the river systems, river cells transport all sediment to the output (huge TC)
-            self.TCRiv = cover(ifthenelse(self.River == 1, 10 ** 9, self.TC), self.TC)
+            self.TCRiv = pcr.cover(pcr.ifthenelse(self.River == 1, 10 ** 9, self.TC), self.TC)
             # Transported sediment over the land
-            self.SedFlux = accucapacityflux(
+            self.SedFlux = pcr.accucapacityflux(
                 self.TopoLdd, self.SoilLoss, self.TCRiv
             )  # [ton/cell/tinestep]
             # Deposited sediment over the land
-            self.SedDep = accucapacitystate(self.TopoLdd, self.SoilLoss, self.TCRiv)
+            self.SedDep = pcr.accucapacitystate(self.TopoLdd, self.SoilLoss, self.TCRiv)
 
             # Sediment amount reaching each river cell '''
-            self.SedDep2 = accucapacitystate(self.TopoLdd, self.SoilLoss, self.TC)
+            self.SedDep2 = pcr.accucapacitystate(self.TopoLdd, self.SoilLoss, self.TC)
             # Remove inland deposition
-            self.OvSed = cover(ifthenelse(self.River == 1, self.SedDep2, 0.0), 0.0)
+            self.OvSed = pcr.cover(pcr.ifthenelse(self.River == 1, self.SedDep2, 0.0), 0.0)
 
-            # Sum the results per subcatchment (input for D-WAQ) [kg/ha/timestep]
-            self.HYPEOvSedCatch = areatotal(
-                self.OvSed, self.HYPEcatch
-            )  # [ton/cell/timestep]
-            self.HYPEOvSedCatch = (
-                self.HYPEOvSedCatch * 1000 / (self.cellareaKm * 100)
-            )  # [kg/ha/timestep]
 
             """ Transport of overland flow with particle differenciation using Yalin equation"""
         else:
@@ -1310,257 +1299,152 @@ class WflowModel(DynamicModel):
             self.LandErodSagg = self.SoilLoss * self.FracSagg
             self.LandErodLagg = self.SoilLoss * self.FracLagg
 
-            # Water level of overland flow
-            self.OvLevel = cover(
-                ifthenelse(self.River == 1, 0.0, self.WaterLevel), self.WaterLevel
-            )  # [m]
-
+            
             # Delta parameter of Yalin for each particle class
-            self.DClay = max(
-                self.OvLevel
-                * self.sinSlope
-                / (2 * 10 ** (-6) * (2650 / 1000 - 1))
-                / 0.06
-                - 1,
-                0.0,
-            )
-            self.DSilt = max(
-                self.OvLevel
-                * self.sinSlope
-                / (10 * 10 ** (-6) * (2650 / 1000 - 1))
-                / 0.06
-                - 1,
-                0.0,
-            )
-            self.DSand = max(
-                self.OvLevel
-                * self.sinSlope
-                / (200 * 10 ** (-6) * (2650 / 1000 - 1))
-                / 0.06
-                - 1,
-                0.0,
-            )
-            self.DSagg = max(
-                self.OvLevel
-                * self.sinSlope
-                / (30 * 10 ** (-6) * (2650 / 1000 - 1))
-                / 0.06
-                - 1,
-                0.0,
-            )
-            self.DLagg = max(
-                self.OvLevel
-                * self.sinSlope
-                / (500 * 10 ** (-6) * (2650 / 1000 - 1))
-                / 0.06
-                - 1,
-                0.0,
-            )
+            deltaCoeff = (self.WaterLevelL* self.sinSlope / (10 ** (-6) 
+                            * (self.rhoSed / 1000 - 1)) / 0.06)
+            self.DClay = pcr.max((1/self.dmClay * deltaCoeff -1), 0.0)
+            self.DSilt = pcr.max((1/self.dmSilt * deltaCoeff -1), 0.0)
+            self.DSand = pcr.max((1/self.dmSand * deltaCoeff -1), 0.0)
+            self.DSagg = pcr.max((1/self.dmSagg * deltaCoeff -1), 0.0)
+            self.DLagg = pcr.max((1/self.dmLagg * deltaCoeff -1), 0.0)
 
             # Total transportability
             self.Dtot = self.DClay + self.DSilt + self.DSand + self.DSagg + self.DLagg
 
             # Yalin Transport capacity of overland flow for each particle class
+            TCa = (self.reallength / self.LandRunoff * (self.rhoSed - 1000) * 10 ** (-6) 
+                    * (9.81 * self.WaterLevelL * self.sinSlope))
+            TCb = 2.45 / (self.rhoSed / 1000) ** 0.4 * 0.06 ** 0.5
             self.TCClay = (
-                self.reallength
-                / self.OvRun
-                * (2650 - 1000)
-                * 2
-                * 10 ** (-6)
-                * (9.81 * self.OvLevel * self.sinSlope)
-                * self.DClay
-                / self.Dtot
-                * 0.635
-                * self.DClay
-                * (
-                    1
-                    - ln(1 + self.DClay * 2.45 / (2650 / 1000) ** 0.4 * 0.06 ** 0.5)
-                    / self.DClay
-                    * 2.45
-                    / (2650 / 1000) ** 0.4
-                    * 0.06 ** 0.5
-                )
+                TCa * self.dmClay
+                * self.DClay / self.Dtot
+                * 0.635 * self.DClay
+                * (1 - pcr.ln(1 + self.DClay * TCb) / self.DClay * TCb)
             )  # [kg/m3]
-            self.TCClay = ifthen(
-                self.subcatch > 0,
-                cover(self.TCClay * self.OvRun * self.timestepsecs * 10 ** (-3), 0.0),
-            )  # [ton/cell/timestep]
+            self.TCClay = pcr.cover(
+                    self.TCClay * self.LandRunoff * self.timestepsecs * 10 ** (-3), 
+                    self.ZeroMap
+                    ) # [ton/cell/timestep]
 
             self.TCSilt = (
-                self.reallength
-                / self.OvRun
-                * (2650 - 1000)
-                * 10
-                * 10 ** (-6)
-                * (9.81 * self.OvLevel * self.sinSlope)
-                * self.DSilt
-                / self.Dtot
-                * 0.635
-                * self.DSilt
-                * (
-                    1
-                    - ln(1 + self.DSilt * 2.45 / (2650 / 1000) ** 0.4 * 0.06 ** 0.5)
-                    / self.DSilt
-                    * 2.45
-                    / (2650 / 1000) ** 0.4
-                    * 0.06 ** 0.5
-                )
+                TCa * self.dmSilt
+                * self.DSilt / self.Dtot
+                * 0.635 * self.DClay
+                * (1 - pcr.ln(1 + self.DSilt * TCb) / self.DSilt * TCb)
             )  # [kg/m3]
-            self.TCSilt = ifthen(
-                self.subcatch > 0,
-                cover(self.TCSilt * self.OvRun * self.timestepsecs * 10 ** (-3), 0.0),
-            )  # [ton/cell/timestep]
+            self.TCSilt = pcr.cover(
+                    self.TCSilt * self.LandRunoff * self.timestepsecs * 10 ** (-3), 
+                    self.ZeroMap
+                    ) # [ton/cell/timestep]
 
             self.TCSand = (
-                self.reallength
-                / self.OvRun
-                * (2650 - 1000)
-                * 200
-                * 10 ** (-6)
-                * (9.81 * self.OvLevel * self.sinSlope)
-                * self.DSand
-                / self.Dtot
-                * 0.635
-                * self.DSand
-                * (
-                    1
-                    - ln(1 + self.DSand * 2.45 / (2650 / 1000) ** 0.4 * 0.06 ** 0.5)
-                    / self.DSand
-                    * 2.45
-                    / (2650 / 1000) ** 0.4
-                    * 0.06 ** 0.5
-                )
+                TCa * self.dmSand
+                * self.DSand / self.Dtot
+                * 0.635 * self.DSand
+                * (1 - pcr.ln(1 + self.DSand * TCb) / self.DSand * TCb)
             )  # [kg/m3]
-            self.TCSand = ifthen(
-                self.subcatch > 0,
-                cover(self.TCSand * self.OvRun * self.timestepsecs * 10 ** (-3), 0.0),
-            )  # [ton/cell/timestep]
+            self.TCSand = pcr.cover(
+                    self.TCSand * self.LandRunoff * self.timestepsecs * 10 ** (-3), 
+                    self.ZeroMap) # [ton/cell/timestep]
 
             self.TCSagg = (
-                self.reallength
-                / self.OvRun
-                * (2650 - 1000)
-                * 30
-                * 10 ** (-6)
-                * (9.81 * self.OvLevel * self.sinSlope)
-                * self.DSagg
-                / self.Dtot
-                * 0.635
-                * self.DSagg
-                * (
-                    1
-                    - ln(1 + self.DSagg * 2.45 / (2650 / 1000) ** 0.4 * 0.06 ** 0.5)
-                    / self.DSagg
-                    * 2.45
-                    / (2650 / 1000) ** 0.4
-                    * 0.06 ** 0.5
-                )
+                TCa * self.dmSagg
+                * self.DSagg / self.Dtot
+                * 0.635 * self.DSagg
+                * (1 - pcr.ln(1 + self.DSagg * TCb) / self.DSagg * TCb)
             )  # [kg/m3]
-            self.TCSagg = ifthen(
-                self.subcatch > 0,
-                cover(self.TCSagg * self.OvRun * self.timestepsecs * 10 ** (-3), 0.0),
-            )  # [ton/cell/timestep]
+            self.TCSagg = pcr.cover(
+                    self.TCSagg * self.LandRunoff * self.timestepsecs * 10 ** (-3), 
+                    self.ZeroMap
+                    ) # [ton/cell/timestep]
 
             self.TCLagg = (
-                self.reallength
-                / self.OvRun
-                * (2650 - 1000)
-                * 500
-                * 10 ** (-6)
-                * (9.81 * self.OvLevel * self.sinSlope)
-                * self.DLagg
-                / self.Dtot
-                * 0.635
-                * self.DLagg
-                * (
-                    1
-                    - ln(1 + self.DLagg * 2.45 / (2650 / 1000) ** 0.4 * 0.06 ** 0.5)
-                    / self.DLagg
-                    * 2.45
-                    / (2650 / 1000) ** 0.4
-                    * 0.06 ** 0.5
-                )
+                TCa * self.dmLagg
+                * self.DLagg / self.Dtot
+                * 0.635 * self.DLagg
+                * (1 - pcr.ln(1 + self.DLagg * TCb) / self.DLagg * TCb)
             )  # [kg/m3]
-            self.TCLagg = ifthen(
-                self.subcatch > 0,
-                cover(self.TCLagg * self.OvRun * self.timestepsecs * 10 ** (-3), 0.0),
-            )  # [ton/cell/timestep]
+            self.TCLagg = pcr.cover(
+                    self.TCLagg * self.LandRunoff * self.timestepsecs * 10 ** (-3), 
+                    self.ZeroMap
+                    ) # [ton/cell/timestep]
 
             # Assume that eroded soil on lake cells all reach the river cells of the reservoir
-            if (self.nrresSimple + self.nrresComplex) > 0:
-                self.TCClay = cover(
-                    ifthenelse(self.filter_Eros_TC == 0, 10 ** 9, self.TCClay),
+            if (self.nrresSimple + self.nrlake) > 0:
+                self.TCClay = pcr.cover(
+                    pcr.ifthenelse(self.filter_Eros_TC == 0, 10 ** 9, self.TCClay),
                     self.TCClay,
                 )
-                self.TCClay = cover(
-                    ifthenelse(self.River == 1, 0.0, self.TCClay), self.TCClay
+                self.TCClay = pcr.cover(
+                    pcr.ifthenelse(self.River == 1, 0.0, self.TCClay), self.TCClay
                 )
-                self.TCSilt = cover(
-                    ifthenelse(self.filter_Eros_TC == 0, 10 ** 9, self.TCSilt),
+                self.TCSilt = pcr.cover(
+                    pcr.ifthenelse(self.filter_Eros_TC == 0, 10 ** 9, self.TCSilt),
                     self.TCSilt,
                 )
-                self.TCSilt = cover(
-                    ifthenelse(self.River == 1, 0.0, self.TCSilt), self.TCSilt
+                self.TCSilt = pcr.cover(
+                    pcr.ifthenelse(self.River == 1, 0.0, self.TCSilt), self.TCSilt
                 )
-                self.TCSand = cover(
-                    ifthenelse(self.filter_Eros_TC == 0, 10 ** 9, self.TCSand),
+                self.TCSand = pcr.cover(
+                    pcr.ifthenelse(self.filter_Eros_TC == 0, 10 ** 9, self.TCSand),
                     self.TCSand,
                 )
-                self.TCSand = cover(
-                    ifthenelse(self.River == 1, 0.0, self.TCSand), self.TCSand
+                self.TCSand = pcr.cover(
+                    pcr.ifthenelse(self.River == 1, 0.0, self.TCSand), self.TCSand
                 )
-                self.TCSagg = cover(
-                    ifthenelse(self.filter_Eros_TC == 0, 10 ** 9, self.TCSagg),
+                self.TCSagg = pcr.cover(
+                    pcr.ifthenelse(self.filter_Eros_TC == 0, 10 ** 9, self.TCSagg),
                     self.TCSagg,
                 )
-                self.TCSagg = cover(
-                    ifthenelse(self.River == 1, 0.0, self.TCSagg), self.TCSagg
+                self.TCSagg = pcr.cover(
+                    pcr.ifthenelse(self.River == 1, 0.0, self.TCSagg), self.TCSagg
                 )
-                self.TCLagg = cover(
-                    ifthenelse(self.filter_Eros_TC == 0, 10 ** 9, self.TCLagg),
+                self.TCLagg = pcr.cover(
+                    pcr.ifthenelse(self.filter_Eros_TC == 0, 10 ** 9, self.TCLagg),
                     self.TCLagg,
                 )
-                self.TCLagg = cover(
-                    ifthenelse(self.River == 1, 0.0, self.TCLagg), self.TCLagg
+                self.TCLagg = pcr.cover(
+                    pcr.ifthenelse(self.River == 1, 0.0, self.TCLagg), self.TCLagg
                 )
 
             # Eroded sediment in overland flow reaching the river system per particle class [ton/cell/timestep]
-            self.InLandClay = cover(
-                ifthenelse(
+            self.InLandClay = pcr.cover(
+                pcr.ifthenelse(
                     self.River == 1,
-                    accucapacitystate(self.TopoLdd, self.LandErodClay, self.TCClay),
+                    pcr.accucapacitystate(self.TopoLdd, self.LandErodClay, self.TCClay),
                     0.0,
                 ),
                 0.0,
             )
-            self.InLandSilt = cover(
-                ifthenelse(
+            self.InLandSilt = pcr.cover(
+                pcr.ifthenelse(
                     self.River == 1,
-                    accucapacitystate(self.TopoLdd, self.LandErodSilt, self.TCSilt),
+                    pcr.accucapacitystate(self.TopoLdd, self.LandErodSilt, self.TCSilt),
                     0.0,
                 ),
                 0.0,
             )
-            self.InLandSand = cover(
-                ifthenelse(
+            self.InLandSand = pcr.cover(
+                pcr.ifthenelse(
                     self.River == 1,
-                    accucapacitystate(self.TopoLdd, self.LandErodSand, self.TCSand),
+                    pcr.accucapacitystate(self.TopoLdd, self.LandErodSand, self.TCSand),
                     0.0,
                 ),
                 0.0,
             )
-            self.InLandSagg = cover(
-                ifthenelse(
+            self.InLandSagg = pcr.cover(
+                pcr.ifthenelse(
                     self.River == 1,
-                    accucapacitystate(self.TopoLdd, self.LandErodSagg, self.TCSagg),
+                    pcr.accucapacitystate(self.TopoLdd, self.LandErodSagg, self.TCSagg),
                     0.0,
                 ),
                 0.0,
             )
-            self.InLandLagg = cover(
-                ifthenelse(
+            self.InLandLagg = pcr.cover(
+                pcr.ifthenelse(
                     self.River == 1,
-                    accucapacitystate(self.TopoLdd, self.LandErodLagg, self.TCLagg),
+                    pcr.accucapacitystate(self.TopoLdd, self.LandErodLagg, self.TCLagg),
                     0.0,
                 ),
                 0.0,
@@ -1573,42 +1457,9 @@ class WflowModel(DynamicModel):
                 + self.InLandLagg
             )  # total
 
-            # Sediment input reaching the river system per particle class and per HYPE subcatchment [kg/ha/timestep]
-            self.ClayCatch = (
-                areatotal(self.InLandClay, self.HYPEcatch)
-                * 1000
-                / (self.cellareaKm * 100)
-            )
-            self.SiltCatch = (
-                areatotal(self.InLandSilt, self.HYPEcatch)
-                * 1000
-                / (self.cellareaKm * 100)
-            )
-            self.SandCatch = (
-                areatotal(self.InLandSand, self.HYPEcatch)
-                * 1000
-                / (self.cellareaKm * 100)
-            )
-            self.SaggCatch = (
-                areatotal(self.InLandSagg, self.HYPEcatch)
-                * 1000
-                / (self.cellareaKm * 100)
-            )
-            self.LaggCatch = (
-                areatotal(self.InLandLagg, self.HYPEcatch)
-                * 1000
-                / (self.cellareaKm * 100)
-            )
-            self.HYPESedCatch = (
-                self.ClayCatch
-                + self.SiltCatch
-                + self.SandCatch
-                + self.SaggCatch
-                + self.LaggCatch
-            )  # total
 
         ##########################################################################
-        # River transport and processes #############################
+        # River transport and processes              #############################
         ##########################################################################
 
         if self.RunRiverModel == 1:
@@ -1616,60 +1467,16 @@ class WflowModel(DynamicModel):
             # Clay, silt and sand can both come from land, resuspension or river channel erosion.
             # Small and large aggregates only come from land erosion or resuspension.
             # Gravel only comes from resuspension or river channel erosion.
-
-            """ Initial concentration and input from land and upstream river cells """
-            # Save the loads from the previous time step that remained in the cell
-            self.OldSedLoad = self.SedLoad
-            self.OldClayLoad = self.ClayLoad
-            self.OldSiltLoad = self.SiltLoad
-            self.OldSandLoad = self.SandLoad
-            self.OldSaggLoad = self.SaggLoad
-            self.OldLaggLoad = self.LaggLoad
-            self.OldGravLoad = self.GravLoad
-
-            # Input concentration including the old load, the incoming load from upstream river cells and the incoming load from land erosion
-            self.InSedLoad = (
-                self.OldSedLoad
-                + upstream(self.TopoLdd, self.OutSedLoad)
-                + self.InLandSed
-            )
-            self.InClayLoad = (
-                self.OldClayLoad
-                + upstream(self.TopoLdd, self.OutClayLoad)
-                + self.InLandClay
-            )
-            self.InSiltLoad = (
-                self.OldSiltLoad
-                + upstream(self.TopoLdd, self.OutSiltLoad)
-                + self.InLandSilt
-            )
-            self.InSandLoad = (
-                self.OldSandLoad
-                + upstream(self.TopoLdd, self.OutSandLoad)
-                + self.InLandSand
-            )
-            self.InSaggLoad = (
-                self.OldSaggLoad
-                + upstream(self.TopoLdd, self.OutSaggLoad)
-                + self.InLandSagg
-            )
-            self.InLaggLoad = (
-                self.OldLaggLoad
-                + upstream(self.TopoLdd, self.OutLaggLoad)
-                + self.InLandLagg
-            )
-            self.InGravLoad = self.OldGravLoad + upstream(
-                self.TopoLdd, self.OutGravLoad
-            )
-
-            """ River erosion """
+            
+            ### Equations independant of the iterations ###
+            """River erosion """
             # Hydraulic radius of the river [m] (rectangular channel)
             self.HydRad = (
-                self.WaterLevel
+                self.WaterLevelR
                 * self.RiverWidth
-                / (self.RiverWidth + 2 * self.WaterLevel)
+                / (self.RiverWidth + 2 * self.WaterLevelR)
             )
-
+            
             # Transport capacity
             # Engelund and Hansen transport formula
             if self.RivTransportMethod == 1:
@@ -1678,137 +1485,125 @@ class WflowModel(DynamicModel):
                     1000
                     * 9.81
                     * self.HydRad
-                    * self.RiverSlope
-                    / ((2650 - 1000) * 9.81 * self.D50River / 1000)
+                    * self.riverSlope
+                    / ((self.rhoSed - 1000) * 9.81 * self.D50River / 1000)
                 )
-                self.vmean = ifthenelse(
-                    pcrand(self.WaterLevel > 0, self.River == 1),
-                    self.SurfaceRunoff / (self.RiverWidth * self.WaterLevel),
-                    scalar(0.0),
+                self.vmean = pcr.ifthenelse(
+                    self.WaterLevelR > 0,
+                    self.RiverRunoff / (self.RiverWidth * self.WaterLevelR),
+                    pcr.scalar(0.0),
                 )
-                self.vshear = (9.81 * self.HydRad * self.RiverSlope) ** (0.5)
-                #          self.Cw = 0.05 * (2650/(2650-1000)) * self.vmean * self.RiverSlope \
+                self.vshear = (9.81 * self.HydRad * self.riverSlope) ** (0.5)
+                #          self.Cw = 0.05 * (2650/(2650-1000)) * self.vmean * self.riverSlope \
                 #              / ((2650-1000)/1000*9.81*self.D50River/1000)**(0.5) * self.ThetaShields**(0.5) # sediment concentration by weight
-                self.Cw = min(
+                self.Cw = pcr.min(
                     1.0,
-                    ifthenelse(
-                        pcrand(self.HydRad > 0, self.River == 1),
-                        2.65
+                    pcr.ifthenelse(
+                        pcr.pcrand(self.HydRad > 0, self.River == 1),
+                        self.rhoSed/1000
                         * 0.05
                         * self.vmean
                         * self.vshear ** 3
-                        / ((2.65 - 1) ** 2 * 9.81 ** 2 * self.D50River * self.HydRad),
-                        scalar(0.0),
+                        / ((self.rhoSed/1000 - 1) ** 2 * 9.81 ** 2 *self.D50River*self.HydRad),
+                        pcr.scalar(0.0),
                     ),
                 )  # concentration by weight
-                self.MaxSedLoad = max(
-                    0.0, self.Cw / (self.Cw + (1 - self.Cw) * 2.65) * 2.65
+                self.MaxSedLoad = pcr.max(
+                    self.Cw / (self.Cw + (1 - self.Cw) * self.rhoSed/1000) * self.rhoSed/1000,
+                    self.ZeroMap
                 )  # [tons/m3]
-                self.MaxSedLoad = self.MaxSedLoad * (
-                    self.WaterLevel * self.RiverWidth * self.DCL
-                    + self.SurfaceRunoff * self.timestepsecs
-                )  # [ton]
-
+            
             # Simplified Bagnold transport formula
             if self.RivTransportMethod == 2:
                 self.MaxSedLoad = (
                     self.cBagnold
-                    * (self.SurfaceRunoff / (self.WaterLevel * self.RiverWidth))
+                    * (self.RiverRunoff / (self.WaterLevelR * self.RiverWidth))
                     ** self.expBagnold
                 )  # [ton/m3]
-                self.MaxSedLoad = self.MaxSedLoad * (
-                    self.WaterLevel * self.RiverWidth * self.DCL
-                    + self.SurfaceRunoff * self.timestepsecs
-                )  # [ton]
 
             # Kodatie transport formula
             if self.RivTransportMethod == 3:
-                self.vmean = ifthenelse(
-                    pcrand(self.WaterLevel > 0, self.River == 1),
-                    self.SurfaceRunoff / (self.RiverWidth * self.WaterLevel),
-                    scalar(0.0),
+                self.vmean = pcr.ifthenelse(
+                    self.WaterLevelR > 0,
+                    self.RiverRunoff / (self.RiverWidth * self.WaterLevelR),
+                    pcr.scalar(0.0),
                 )
                 self.MaxSedLoad = (
                     self.aK
                     * self.vmean ** (self.bK)
-                    * self.WaterLevel ** (self.cK)
-                    * self.RiverSlope ** (self.dK)
+                    * self.WaterLevelR ** (self.cK)
+                    * self.riverSlope ** (self.dK)
                 ) * (
                     self.RiverWidth
                 )  # [tons]
-
+                
             # Yang transport formula
             if self.RivTransportMethod == 4:
                 self.wsRiv = 411 * self.D50River ** 2 / 3600
-                self.vshear = (9.81 * self.HydRad * self.RiverSlope) ** (0.5)
+                self.vshear = (9.81 * self.HydRad * self.riverSlope) ** (0.5)
                 self.var1 = self.vshear * self.D50River / 1000 / (1.16 * 10 ** (-6))
                 self.var2 = self.wsRiv * self.D50River / 1000 / (1.16 * 10 ** (-6))
-                self.vcr = ifthenelse(
+                self.vcr = pcr.ifthenelse(
                     self.var1 >= 70,
                     2.05 * self.wsRiv,
-                    self.wsRiv * (2.5 / (log10(self.var1) - 0.06) + 0.66),
+                    self.wsRiv * (2.5 / (pcr.log10(self.var1) - 0.06) + 0.66),
                 )
 
                 # Sand equation
                 self.logCppm = (
                     5.435
-                    - 0.286 * log10(self.var2)
-                    - 0.457 * log10(self.vshear / self.wsRiv)
+                    - 0.286 * pcr.log10(self.var2)
+                    - 0.457 * pcr.log10(self.vshear / self.wsRiv)
                     + (
                         1.799
-                        - 0.409 * log10(self.var2)
-                        - 0.314 * log10(self.vshear / self.wsRiv)
+                        - 0.409 * pcr.log10(self.var2)
+                        - 0.314 * pcr.log10(self.vshear / self.wsRiv)
                     )
-                    * log10(
+                    * pcr.log10(
                         (
-                            self.SurfaceRunoff / (self.RiverWidth * self.WaterLevel)
+                            self.RiverRunoff / (self.RiverWidth * self.WaterLevelR)
                             - self.vcr
                         )
-                        * self.RiverSlope
+                        * self.riverSlope
                         / self.wsRiv
                     )
                 )
                 # Gravel equation
-                self.logCppm = ifthenelse(
+                self.logCppm = pcr.ifthenelse(
                     self.D50River < 2.0,
                     self.logCppm,
                     6.681
-                    - 0.633 * log10(self.var2)
-                    - 4.816 * log10(self.vshear / self.wsRiv)
+                    - 0.633 * pcr.log10(self.var2)
+                    - 4.816 * pcr.log10(self.vshear / self.wsRiv)
                     + (
                         2.784
-                        - 0.305 * log10(self.var2)
-                        - 0.282 * log10(self.vshear / self.wsRiv)
+                        - 0.305 * pcr.log10(self.var2)
+                        - 0.282 * pcr.log10(self.vshear / self.wsRiv)
                     )
-                    * log10(
+                    * pcr.log10(
                         (
-                            self.SurfaceRunoff / (self.RiverWidth * self.WaterLevel)
+                            self.RiverRunoff / (self.RiverWidth * self.WaterLevelR)
                             - self.vcr
                         )
-                        * self.RiverSlope
+                        * self.riverSlope
                         / self.wsRiv
                     ),
                 )
-                self.Cw = 10 ** self.logCppm * 10 ** (
-                    -6
-                )  # sediment concentration by weight
-                self.MaxSedLoad = max(
-                    0.0, self.Cw / (self.Cw + (1 - self.Cw) * 2.65) * 2.65
+                self.Cw = 10 ** self.logCppm * 10**(-6)  # sediment concentration by weight
+                self.MaxSedLoad = pcr.max(
+                    self.Cw / (self.Cw + (1 - self.Cw) * self.rhoSed/1000) * self.rhoSed/1000,
+                    self.ZeroMap
                 )  # [tons/m3]
-                self.MaxSedLoad = self.MaxSedLoad * (
-                    self.WaterLevel * self.RiverWidth * self.DCL
-                    + self.SurfaceRunoff * self.timestepsecs
-                )  # [ton]
 
             # Molinas & Wu transport formula
             if self.RivTransportMethod == 5:
                 self.wsRiv = 411 * self.D50River ** 2 / 3600
                 self.psi = (
-                    (2.65 - 1)
+                    (self.rhoSed/1000 - 1)
                     * 9.81
-                    * self.WaterLevel
+                    * self.WaterLevelR
                     * self.wsRiv
-                    * (log10(self.WaterLevel / self.D50River)) ** 2
+                    * (pcr.log10(self.WaterLevelR / self.D50River)) ** 2
                 ) ** (0.5)
                 self.Cw = (
                     1430
@@ -1817,450 +1612,502 @@ class WflowModel(DynamicModel):
                     / (0.016 + self.psi)
                     * 10 ** (-6)
                 )  # weight
-                self.MaxSedLoad = max(
-                    0.0, self.Cw / (self.Cw + (1 - self.Cw) * 2.65) * 2.65
+                self.MaxSedLoad = pcr.max(
+                    self.Cw / (self.Cw + (1 - self.Cw) * self.rhoSed/1000) * self.rhoSed/1000,
+                    self.ZeroMap
                 )  # [tons/m3]
-                self.MaxSedLoad = self.MaxSedLoad * (
-                    self.WaterLevel * self.RiverWidth * self.DCL
-                    + self.SurfaceRunoff * self.timestepsecs
-                )  # [ton]
-
-            self.MaxSedLoad = ifthen(self.subcatch > 0, cover(self.MaxSedLoad, 0.0))
-
+                
+            
             # Repartition of the effective shear stress between the bank and the bed from Knight et al. 1984
-            self.SFBank = ifthenelse(
-                pcrand(self.WaterLevel > 0, self.River == 1),
-                exp(-3.230 * log10(self.RiverWidth / self.WaterLevel + 3) + 6.146),
-                scalar(0.0),
+            self.SFBank = pcr.ifthenelse(
+                self.WaterLevelR > 0,
+                pcr.exp(-3.230 * pcr.log10(self.RiverWidth / self.WaterLevelR + 3) + 6.146),
+                pcr.scalar(0.0),
             )  # [%]
             # Effective shear stress on river bed and banks [N/m2]
-            self.TEffBank = ifthenelse(
-                pcrand(self.WaterLevel > 0, self.River == 1),
+            self.TEffBank = pcr.ifthenelse(
+                self.WaterLevelR > 0,
                 1000
                 * 9.81
                 * self.HydRad
-                * self.RiverSlope
+                * self.riverSlope
                 * self.SFBank
                 / 100
-                * (1 + self.RiverWidth / (2 * self.WaterLevel)),
-                scalar(0.0),
+                * (1 + self.RiverWidth / (2 * self.WaterLevelR)),
+                pcr.scalar(0.0),
             )
             self.TEffBed = (
                 1000
                 * 9.81
                 * self.HydRad
-                * self.RiverSlope
+                * self.riverSlope
                 * (1 - self.SFBank / 100)
-                * (1 + 2 * self.WaterLevel / self.RiverWidth)
+                * (1 + 2 * self.WaterLevelR / self.RiverWidth)
             )
-            # Potential erosion rates of the bed and bank [t/cell/timestep] (assuming only one bank is eroding)
-            self.ERBank = max(
-                0.0,
-                self.KdBank
-                * (self.TEffBank - self.TCrBank)
-                * (self.DCL * self.WaterLevel)
-                * 1.4
-                * self.timestepsecs,
-            )  # 1.4 is bank default bulk density
-            self.ERBed = max(
-                0.0,
-                self.KdBed
-                * (self.TEffBed - self.TCrBed)
-                * (self.DCL * self.RiverWidth)
-                * 1.5
-                * self.timestepsecs,
-            )  # 1.5 is bed default bulk density
-            # Relative potential erosion rates of the bed and bank [-]
-            self.RTEBank = ifthenelse(
-                self.ERBank + self.ERBed > 0.0,
-                self.ERBank / (self.ERBank + self.ERBed),
-                0.0,
-            )
-            self.RTEBed = 1.0 - self.RTEBank
-
-            # Excess transport capacity [ton/cell/timestep]
-            # Erosion only if the load is below the transport capacity of the flow
-            self.SedEx = max(self.MaxSedLoad - self.InSedLoad, 0.0)
-            # Bed and bank are eroded after the previously deposited material
-            self.EffSedEx = max(self.SedEx - self.RivStoreSed, 0.0)
-
-            # Bank erosion [ton/cell/timestep]
-            self.BankSedLoad = ifthenelse(
-                self.EffSedEx == 0,
-                0.0,
-                ifthenelse(
-                    self.EffSedEx * self.RTEBank <= self.ERBank,
-                    self.EffSedEx * self.RTEBank,
-                    self.ERBank,
-                ),
-            )
-            self.BankClay = self.FracClayRiv * self.BankSedLoad
-            self.BankSilt = self.FracSiltRiv * self.BankSedLoad
-            self.BankSand = self.FracSandRiv * self.BankSedLoad
-            self.BankGrav = self.FracGravRiv * self.BankSedLoad
-
-            # Bed erosion [ton/cell/timestep]
-            self.BedSedLoad = ifthenelse(
-                self.EffSedEx == 0,
-                0.0,
-                ifthenelse(
-                    self.EffSedEx * self.RTEBed <= self.ERBed,
-                    self.EffSedEx * self.RTEBed,
-                    self.ERBed,
-                ),
-            )
-            self.BedClay = self.FracClayRiv * self.BedSedLoad
-            self.BedSilt = self.FracSiltRiv * self.BedSedLoad
-            self.BedSand = self.FracSandRiv * self.BedSedLoad
-            self.BedGrav = self.FracGravRiv * self.BedSedLoad
-
-            # Erosion/degradation of the previously deposited sediment (from clay to gravel) [ton/cell/timestep]
-            self.DegStoreClay = ifthenelse(
-                self.RivStoreClay >= self.SedEx, self.SedEx, self.RivStoreClay
-            )
-            self.RivStoreClay = self.RivStoreClay - self.DegStoreClay  # update store
-            self.SedEx = max(
-                self.SedEx - self.DegStoreClay, 0.0
-            )  # update amount of sediment that need to be degraded
-
-            self.DegStoreSilt = ifthenelse(
-                self.RivStoreSilt >= self.SedEx, self.SedEx, self.RivStoreSilt
-            )
-            self.RivStoreSilt = self.RivStoreSilt - self.DegStoreSilt
-            self.SedEx = max(self.SedEx - self.DegStoreSilt, 0.0)
-
-            self.DegStoreSagg = ifthenelse(
-                self.RivStoreSagg >= self.SedEx, self.SedEx, self.RivStoreSagg
-            )
-            self.RivStoreSagg = self.RivStoreSagg - self.DegStoreSagg
-            self.SedEx = max(self.SedEx - self.DegStoreSagg, 0.0)
-
-            self.DegStoreSand = ifthenelse(
-                self.RivStoreSand >= self.SedEx, self.SedEx, self.RivStoreSand
-            )
-            self.RivStoreSand = self.RivStoreSand - self.DegStoreSand
-            self.SedEx = max(self.SedEx - self.DegStoreSand, 0.0)
-
-            self.DegStoreLagg = ifthenelse(
-                self.RivStoreLagg >= self.SedEx, self.SedEx, self.RivStoreLagg
-            )
-            self.RivStoreLagg = self.RivStoreLagg - self.DegStoreLagg
-            self.SedEx = max(self.SedEx - self.DegStoreLagg, 0.0)
-
-            self.DegStoreGrav = ifthenelse(
-                self.RivStoreGrav >= self.SedEx, self.SedEx, self.RivStoreGrav
-            )
-            self.RivStoreGrav = self.RivStoreGrav - self.DegStoreGrav
-            self.SedEx = max(self.SedEx - self.DegStoreGrav, 0.0)
-
-            self.DegStoreSed = (
-                self.DegStoreClay
-                + self.DegStoreSilt
-                + self.DegStoreSand
-                + self.DegStoreSagg
-                + self.DegStoreLagg
-                + self.DegStoreGrav
-            )
-            self.RivStoreSed = self.RivStoreSed - self.DegStoreSed
-
-            # Sum all erosion sources per particle class
-            self.RivErodSed = self.BankSedLoad + self.BedSedLoad + self.DegStoreSed
-            self.RivErodClay = self.BankClay + self.BedClay + self.DegStoreClay
-            self.RivErodSilt = self.BankSilt + self.BedSilt + self.DegStoreSilt
-            self.RivErodSand = self.BankSand + self.BedSand + self.DegStoreSand
-            self.RivErodSagg = self.DegStoreSagg
-            self.RivErodLagg = self.DegStoreLagg
-            self.RivErodGrav = self.BankGrav + self.BedGrav + self.DegStoreGrav
-
-            # Assume that there is no erosion/resuspension in reservoir
-            if (self.nrresSimple + self.nrresComplex) > 0 and self.filterResArea == 0:
-                self.RivErodSed = self.filter_Eros_TC * self.RivErodSed
-                self.RivErodClay = self.filter_Eros_TC * self.RivErodClay
-                self.RivErodSilt = self.filter_Eros_TC * self.RivErodSilt
-                self.RivErodSand = self.filter_Eros_TC * self.RivErodSand
-                self.RivErodSagg = self.filter_Eros_TC * self.RivErodSagg
-                self.RivErodLagg = self.filter_Eros_TC * self.RivErodLagg
-                self.RivErodGrav = self.filter_Eros_TC * self.RivErodGrav
-
-            """ Deposition/settling """
-            # If transport capacity is exceeded, the excess is deposited.
-            # Else classic deposition with Einstein formula.
-            self.TCEx = self.MaxSedLoad - self.InSedLoad
-            self.FracDepEx = ifthenelse(
-                self.TCEx < 0, 1 - self.MaxSedLoad / self.InSedLoad, scalar(0.0)
-            )
-
+            
+            """ Depositio/settling """
             # Fractions of deposited particles in river cells from the Einstein formula [-]
             # Particle fall velocity [m/s] from Stokes
-            self.x = ifthenelse(
-                pcrand(self.SurfaceRunoff > 0, self.River == 1),
-                1.055 * self.DCL / (self.SurfaceRunoff / self.RiverWidth),
-                scalar(0.0),
+            self.x = pcr.ifthenelse(
+                self.RiverRunoff > 0,
+                1.055 * self.DCL / (self.RiverRunoff / self.RiverWidth),
+                pcr.scalar(0.0),
             )
-            self.x = ifthen(self.subcatch > 0, cover(self.x, 0.0))
+            self.x = pcr.cover(self.x, self.ZeroMap)
+            
+            self.xClay = pcr.min(1.0, 1 - 1 / pcr.exp(self.x * (411 * (self.dmClay/1000) ** 2 / 3600)))
+            self.xSilt = pcr.min(1.0, 1 - 1 / pcr.exp(self.x * (411 * (self.dmSilt/1000) ** 2 / 3600)))
+            self.xSand = pcr.min(1.0, 1 - 1 / pcr.exp(self.x * (411 * (self.dmSand/1000) ** 2 / 3600)))
+            self.xSagg = pcr.min(1.0, 1 - 1 / pcr.exp(self.x * (411 * (self.dmSagg/1000) ** 2 / 3600)))
+            self.xLagg = pcr.min(1.0, 1 - 1 / pcr.exp(self.x * (411 * (self.dmLagg/1000) ** 2 / 3600)))
+            self.xGrav = pcr.min(1.0, 1 - 1 / pcr.exp(self.x * (411 * (self.dmGrav/1000) ** 2 / 3600)))
+            
+            
+            ### Time iterations of the river processes ###
+            #Compute the number of iterations if necessary
+            it_sedR = 1
+            if self.transportIters == 1:
+                if self.transportRiverTstep == 0:
+                    it_sedR = estimate_sedriv_tranport_iter(self.RiverRunoff, 
+                                                            self.timestepsecs, 
+                                                            self.WaterLevelR, 
+                                                            self.DCL, 
+                                                            self.RiverWidth, 
+                                                            self.mv
+                                                            )
+                else:
+                    it_sedR = int(np.ceil(self.timestepsecs/self.transportRiverTstep))
 
-            self.FracDepClay = ifthenelse(
-                self.TCEx >= 0,
-                min(1.0, 1 - 1 / exp(self.x * (411 * 0.002 ** 2 / 3600))),
-                self.FracDepEx,
-            )
-            self.FracDepSilt = ifthenelse(
-                self.TCEx >= 0,
-                min(1.0, 1 - 1 / exp(self.x * (411 * 0.010 ** 2 / 3600))),
-                self.FracDepEx,
-            )
-            self.FracDepSand = ifthenelse(
-                self.TCEx >= 0,
-                min(1.0, 1 - 1 / exp(self.x * (411 * 0.200 ** 2 / 3600))),
-                self.FracDepEx,
-            )
-            self.FracDepSagg = ifthenelse(
-                self.TCEx >= 0,
-                min(1.0, 1 - 1 / exp(self.x * (411 * 0.030 ** 2 / 3600))),
-                self.FracDepEx,
-            )
-            self.FracDepLagg = ifthenelse(
-                self.TCEx >= 0,
-                min(1.0, 1 - 1 / exp(self.x * (411 * 0.500 ** 2 / 3600))),
-                self.FracDepEx,
-            )
-            self.FracDepGrav = ifthenelse(
-                self.TCEx >= 0,
-                min(1.0, 1 - 1 / exp(self.x * (411 * 2.000 ** 2 / 3600))),
-                self.FracDepEx,
-            )
-
-            # Sediment deposited in the channel [ton/cell/timestep]
-            self.DepClay = self.FracDepClay * (self.InClayLoad + self.RivErodClay)
-            self.DepSilt = self.FracDepSilt * (self.InSiltLoad + self.RivErodSilt)
-            self.DepSand = self.FracDepSand * (self.InSandLoad + self.RivErodSand)
-            self.DepSagg = self.FracDepSagg * (self.InSaggLoad + self.RivErodSagg)
-            self.DepLagg = self.FracDepLagg * (self.InLaggLoad + self.RivErodLagg)
-            self.DepGrav = self.FracDepGrav * (self.InGravLoad + self.RivErodGrav)
-            self.DepSedLoad = (
-                self.DepClay
-                + self.DepSilt
-                + self.DepSand
-                + self.DepSagg
-                + self.DepLagg
-                + self.DepGrav
-            )
-
-            # Assume that deposition happens only on reservoir output cells where the reservoir mass balance takes place
-            if (self.nrresSimple + self.nrresComplex) > 0:
-                self.DepClay = self.filter_Eros_TC * self.DepClay
-                self.DepSilt = self.filter_Eros_TC * self.DepSilt
-                self.DepSand = self.filter_Eros_TC * self.DepSand
-                self.DepSagg = self.filter_Eros_TC * self.DepSagg
-                self.DepLagg = self.filter_Eros_TC * self.DepLagg
-                self.DepGrav = self.filter_Eros_TC * self.DepGrav
-                self.DepSedLoad = self.filter_Eros_TC * self.DepSedLoad
-
-            # Deposition in reservoirs from Camp 1945
-            if (self.nrresSimple + self.nrresComplex) > 0 and self.filterResArea == 0:
-                self.VcRes = ifthenelse(
-                    self.ReserVoirLocs > 0, self.SurfaceRunoff / self.ResArea, 0.0
+            #Start iterations of the river transport
+            for v in range(0,it_sedR):
+                """ Initial concentration and input from land and upstream river cells """
+                # Save the loads from the previous time step that remained in the cell
+                self.OldSedLoad = self.SedLoad
+                self.OldClayLoad = self.ClayLoad
+                self.OldSiltLoad = self.SiltLoad
+                self.OldSandLoad = self.SandLoad
+                self.OldSaggLoad = self.SaggLoad
+                self.OldLaggLoad = self.LaggLoad
+                self.OldGravLoad = self.GravLoad
+    
+                # Input concentration including the old load, the incoming load from upstream river cells and the incoming load from land erosion
+                self.InSedLoad = (
+                    self.OldSedLoad
+                    + pcr.upstream(self.TopoLdd, self.OutSedLoad)
+                    + self.InLandSed / it_sedR
                 )
-                self.DepClay = cover(
-                    ifthen(
-                        self.ReserVoirLocs > 0,
-                        self.InClayLoad
-                        * min(1.0, (411 / 3600 * 0.002 ** 2) / self.VcRes),
+                self.InClayLoad = (
+                    self.OldClayLoad
+                    + pcr.upstream(self.TopoLdd, self.OutClayLoad)
+                    + self.InLandClay / it_sedR
+                )
+                self.InSiltLoad = (
+                    self.OldSiltLoad
+                    + pcr.upstream(self.TopoLdd, self.OutSiltLoad)
+                    + self.InLandSilt / it_sedR
+                )
+                self.InSandLoad = (
+                    self.OldSandLoad
+                    + pcr.upstream(self.TopoLdd, self.OutSandLoad)
+                    + self.InLandSand / it_sedR
+                )
+                self.InSaggLoad = (
+                    self.OldSaggLoad
+                    + pcr.upstream(self.TopoLdd, self.OutSaggLoad)
+                    + self.InLandSagg / it_sedR
+                )
+                self.InLaggLoad = (
+                    self.OldLaggLoad
+                    + pcr.upstream(self.TopoLdd, self.OutLaggLoad)
+                    + self.InLandLagg / it_sedR
+                )
+                self.InGravLoad = self.OldGravLoad + pcr.upstream(
+                    self.TopoLdd, self.OutGravLoad
+                )
+    
+                """ River erosion """    
+                # Transport capacity in [tons]
+                if self.RivTransportMethod != 3:
+                    self.MaxSedLoad = self.MaxSedLoad * (
+                        self.WaterLevelR * self.RiverWidth * self.DCL
+                        + self.RiverRunoff * self.timestepsecs / it_sedR
+                    )  # [ton]
+    
+                self.MaxSedLoad = pcr.cover(self.MaxSedLoad, self.ZeroMap)
+    
+                # Potential erosion rates of the bed and bank [t/cell/timestep] 
+                #(assuming only one bank is eroding)
+                self.ERBank = pcr.max(
+                    0.0,
+                    self.KdBank
+                    * (self.TEffBank - self.TCrBank)
+                    * (self.DCL * self.WaterLevelR)
+                    * 1.4
+                    * self.timestepsecs / it_sedR,
+                )  # 1.4 is bank default bulk density
+                self.ERBed = pcr.max(
+                    0.0,
+                    self.KdBed
+                    * (self.TEffBed - self.TCrBed)
+                    * (self.DCL * self.RiverWidth)
+                    * 1.5
+                    * self.timestepsecs / it_sedR,
+                )  # 1.5 is bed default bulk density
+                # Relative potential erosion rates of the bed and bank [-]
+                self.RTEBank = pcr.ifthenelse(
+                    self.ERBank + self.ERBed > 0.0,
+                    self.ERBank / (self.ERBank + self.ERBed),
+                    0.0,
+                )
+                self.RTEBed = 1.0 - self.RTEBank
+    
+                # Excess transport capacity [ton/cell/timestep]
+                # Erosion only if the load is below the transport capacity of the flow
+                self.SedEx = pcr.max(self.MaxSedLoad - self.InSedLoad, 0.0)
+                # Bed and bank are eroded after the previously deposited material
+                self.EffSedEx = pcr.max(self.SedEx - self.RivStoreSed, 0.0)
+    
+                # Bank erosion [ton/cell/timestep]
+                self.BankSedLoad = pcr.ifthenelse(
+                    self.EffSedEx == 0,
+                    0.0,
+                    pcr.ifthenelse(
+                        self.EffSedEx * self.RTEBank <= self.ERBank,
+                        self.EffSedEx * self.RTEBank,
+                        self.ERBank,
                     ),
-                    self.DepClay,
                 )
-                self.DepSilt = cover(
-                    ifthen(
-                        self.ReserVoirLocs > 0,
-                        self.InSiltLoad
-                        * min(1.0, (411 / 3600 * 0.010 ** 2) / self.VcRes),
+                self.BankClay = self.FracClayRiv * self.BankSedLoad
+                self.BankSilt = self.FracSiltRiv * self.BankSedLoad
+                self.BankSand = self.FracSandRiv * self.BankSedLoad
+                self.BankGrav = self.FracGravRiv * self.BankSedLoad
+    
+                # Bed erosion [ton/cell/timestep]
+                self.BedSedLoad = pcr.ifthenelse(
+                    self.EffSedEx == 0,
+                    0.0,
+                    pcr.ifthenelse(
+                        self.EffSedEx * self.RTEBed <= self.ERBed,
+                        self.EffSedEx * self.RTEBed,
+                        self.ERBed,
                     ),
-                    self.DepSilt,
                 )
-                self.DepSand = cover(
-                    ifthen(
-                        self.ReserVoirLocs > 0,
-                        self.InSandLoad
-                        * min(1.0, (411 / 3600 * 0.200 ** 2) / self.VcRes),
-                    ),
-                    self.DepSand,
+                self.BedClay = self.FracClayRiv * self.BedSedLoad
+                self.BedSilt = self.FracSiltRiv * self.BedSedLoad
+                self.BedSand = self.FracSandRiv * self.BedSedLoad
+                self.BedGrav = self.FracGravRiv * self.BedSedLoad
+    
+                # Erosion/degradation of the previously deposited sediment (from clay to gravel) [ton/cell/timestep]
+                self.DegStoreClay = pcr.ifthenelse(
+                    self.RivStoreClay >= self.SedEx, self.SedEx, self.RivStoreClay
                 )
-                self.DepSagg = cover(
-                    ifthen(
-                        self.ReserVoirLocs > 0,
-                        self.InSaggLoad
-                        * min(1.0, (411 / 3600 * 0.030 ** 2) / self.VcRes),
-                    ),
-                    self.DepSagg,
+                self.RivStoreClay = self.RivStoreClay - self.DegStoreClay  # update store
+                self.SedEx = pcr.max(
+                    self.SedEx - self.DegStoreClay, 0.0
+                )  # update amount of sediment that need to be degraded
+    
+                self.DegStoreSilt = pcr.ifthenelse(
+                    self.RivStoreSilt >= self.SedEx, self.SedEx, self.RivStoreSilt
                 )
-                self.DepLagg = cover(
-                    ifthen(
-                        self.ReserVoirLocs > 0,
-                        self.InLaggLoad
-                        * min(1.0, (411 / 3600 * 0.500 ** 2) / self.VcRes),
-                    ),
-                    self.DepLagg,
+                self.RivStoreSilt = self.RivStoreSilt - self.DegStoreSilt
+                self.SedEx = pcr.max(self.SedEx - self.DegStoreSilt, 0.0)
+    
+                self.DegStoreSagg = pcr.ifthenelse(
+                    self.RivStoreSagg >= self.SedEx, self.SedEx, self.RivStoreSagg
                 )
-                self.DepGrav = cover(
-                    ifthen(
-                        self.ReserVoirLocs > 0,
-                        self.InGravLoad
-                        * min(1.0, (411 / 3600 * 2.000 ** 2) / self.VcRes),
-                    ),
-                    self.DepGrav,
+                self.RivStoreSagg = self.RivStoreSagg - self.DegStoreSagg
+                self.SedEx = pcr.max(self.SedEx - self.DegStoreSagg, 0.0)
+    
+                self.DegStoreSand = pcr.ifthenelse(
+                    self.RivStoreSand >= self.SedEx, self.SedEx, self.RivStoreSand
                 )
-                self.DepSedLoad = cover(
-                    ifthen(
-                        self.ReserVoirLocs > 0,
+                self.RivStoreSand = self.RivStoreSand - self.DegStoreSand
+                self.SedEx = pcr.max(self.SedEx - self.DegStoreSand, 0.0)
+    
+                self.DegStoreLagg = pcr.ifthenelse(
+                    self.RivStoreLagg >= self.SedEx, self.SedEx, self.RivStoreLagg
+                )
+                self.RivStoreLagg = self.RivStoreLagg - self.DegStoreLagg
+                self.SedEx = pcr.max(self.SedEx - self.DegStoreLagg, 0.0)
+    
+                self.DegStoreGrav = pcr.ifthenelse(
+                    self.RivStoreGrav >= self.SedEx, self.SedEx, self.RivStoreGrav
+                )
+                self.RivStoreGrav = self.RivStoreGrav - self.DegStoreGrav
+                self.SedEx = pcr.max(self.SedEx - self.DegStoreGrav, 0.0)
+    
+                self.DegStoreSed = (
+                    self.DegStoreClay
+                    + self.DegStoreSilt
+                    + self.DegStoreSand
+                    + self.DegStoreSagg
+                    + self.DegStoreLagg
+                    + self.DegStoreGrav
+                )
+                self.RivStoreSed = self.RivStoreSed - self.DegStoreSed
+    
+                # Sum all erosion sources per particle class
+                self.RivErodSed = self.BankSedLoad + self.BedSedLoad + self.DegStoreSed
+                self.RivErodClay = self.BankClay + self.BedClay + self.DegStoreClay
+                self.RivErodSilt = self.BankSilt + self.BedSilt + self.DegStoreSilt
+                self.RivErodSand = self.BankSand + self.BedSand + self.DegStoreSand
+                self.RivErodSagg = self.DegStoreSagg
+                self.RivErodLagg = self.DegStoreLagg
+                self.RivErodGrav = self.BankGrav + self.BedGrav + self.DegStoreGrav
+    
+                # Assume that there is no erosion/resuspension in reservoir
+                if (self.nrresSimple + self.nrlake) > 0 and self.filterResArea == 0:
+                    self.RivErodSed = self.filter_Eros_TC * self.RivErodSed
+                    self.RivErodClay = self.filter_Eros_TC * self.RivErodClay
+                    self.RivErodSilt = self.filter_Eros_TC * self.RivErodSilt
+                    self.RivErodSand = self.filter_Eros_TC * self.RivErodSand
+                    self.RivErodSagg = self.filter_Eros_TC * self.RivErodSagg
+                    self.RivErodLagg = self.filter_Eros_TC * self.RivErodLagg
+                    self.RivErodGrav = self.filter_Eros_TC * self.RivErodGrav
+    
+                """ Deposition/settling """
+                # If transport capacity is exceeded, the excess is deposited.
+                # Else classic deposition with Einstein formula.
+                self.TCEx = self.MaxSedLoad - self.InSedLoad
+                self.FracDepEx = pcr.ifthenelse(
+                    self.TCEx < 0, 1 - self.MaxSedLoad / self.InSedLoad, pcr.scalar(0.0)
+                )
+                
+                # Fractions of deposited particles in river cells from the Einstein formula [-]
+                # Particle fall velocity [m/s] from Stokes
+                self.FracDepClay = pcr.ifthenelse(self.TCEx >= 0, self.xClay, self.FracDepEx)
+                self.FracDepSilt = pcr.ifthenelse(self.TCEx >= 0, self.xSilt, self.FracDepEx)
+                self.FracDepSand = pcr.ifthenelse(self.TCEx >= 0, self.xSand, self.FracDepEx)
+                self.FracDepSagg = pcr.ifthenelse(self.TCEx >= 0, self.xSagg, self.FracDepEx)
+                self.FracDepLagg = pcr.ifthenelse(self.TCEx >= 0, self.xLagg, self.FracDepEx)
+                self.FracDepGrav = pcr.ifthenelse(self.TCEx >= 0, self.xGrav, self.FracDepEx)
+    
+                # Sediment deposited in the channel [ton/cell/timestep]
+                self.DepClay = self.FracDepClay * (self.InClayLoad + self.RivErodClay)
+                self.DepSilt = self.FracDepSilt * (self.InSiltLoad + self.RivErodSilt)
+                self.DepSand = self.FracDepSand * (self.InSandLoad + self.RivErodSand)
+                self.DepSagg = self.FracDepSagg * (self.InSaggLoad + self.RivErodSagg)
+                self.DepLagg = self.FracDepLagg * (self.InLaggLoad + self.RivErodLagg)
+                self.DepGrav = self.FracDepGrav * (self.InGravLoad + self.RivErodGrav)
+                self.DepSedLoad = (
+                    self.DepClay
+                    + self.DepSilt
+                    + self.DepSand
+                    + self.DepSagg
+                    + self.DepLagg
+                    + self.DepGrav
+                )
+    
+                # Assume that deposition happens only on reservoir output cells where the reservoir mass balance takes place
+                if (self.nrresSimple + self.nrlake) > 0:
+                    self.DepClay = self.filter_Eros_TC * self.DepClay
+                    self.DepSilt = self.filter_Eros_TC * self.DepSilt
+                    self.DepSand = self.filter_Eros_TC * self.DepSand
+                    self.DepSagg = self.filter_Eros_TC * self.DepSagg
+                    self.DepLagg = self.filter_Eros_TC * self.DepLagg
+                    self.DepGrav = self.filter_Eros_TC * self.DepGrav
+                    self.DepSedLoad = self.filter_Eros_TC * self.DepSedLoad
+    
+                # Deposition in lakes from Camp 1945
+                if self.nrlake > 0:
+                    self.VcRes = pcr.ifthenelse(
+                        self.LakeArea > 0, self.RiverRunoff / self.LakeArea, self.ZeroMap
+                    )
+                    DCRes = 411 / 3600 / self.VcRes
+                    self.DepClay = pcr.ifthenelse(
+                        pcr.cover(self.LakeArea, pcr.scalar(0.0)) > 0,
+                        self.InClayLoad * pcr.min(1.0, (DCRes * (self.dmClay/1000) ** 2)),
                         self.DepClay
-                        + self.DepSilt
-                        + self.DepSand
-                        + self.DepSagg
-                        + self.DepLagg
-                        + self.DepGrav,
+                        )
+                    self.DepSilt = pcr.ifthenelse(
+                        pcr.cover(self.LakeArea, pcr.scalar(0.0)) > 0,
+                        self.InSiltLoad * pcr.min(1.0, (DCRes * (self.dmSilt/1000) ** 2)),
+                        self.DepSilt
+                        )
+                    self.DepSand = pcr.ifthenelse(
+                        pcr.cover(self.LakeArea, pcr.scalar(0.0)) > 0,
+                        self.InSandLoad * pcr.min(1.0, (DCRes * (self.dmSand/1000) ** 2)),
+                        self.DepSand
+                        )
+                    self.DepSagg = pcr.ifthenelse(
+                        pcr.cover(self.LakeArea, pcr.scalar(0.0)) > 0,
+                        self.InSaggLoad * pcr.min(1.0, (DCRes * (self.dmSagg/1000) ** 2)),
+                        self.DepSagg
+                        )
+                    self.DepLagg = pcr.ifthenelse(
+                        pcr.cover(self.LakeArea, pcr.scalar(0.0)) > 0,
+                        self.InLaggLoad * pcr.min(1.0, (DCRes * (self.dmLagg/1000) ** 2)),
+                        self.DepLagg
+                        )
+                    self.DepGrav = pcr.ifthenelse(
+                        pcr.cover(self.LakeArea, pcr.scalar(0.0)) > 0,
+                        self.InGravLoad * pcr.min(1.0, (DCRes * (self.dmGrav/1000) ** 2)),
+                        self.DepGrav
+                        )
+                    self.DepSedLoad = (self.DepClay
+                            + self.DepSilt
+                            + self.DepSand
+                            + self.DepSagg
+                            + self.DepLagg
+                            + self.DepGrav)
+    
+                    self.LakeSedStore = pcr.ifthen(self.LakeArea > 0, self.DepSedLoad)
+                    
+                #Deposition in reservoir, simple retention coeff for now
+                if self.nrresSimple > 0:
+                    
+                    self.DepClay = pcr.ifthenelse(
+                            pcr.cover(self.ResSimpleArea, pcr.scalar(0.0)) > 0,
+                            0.8*self.InClayLoad,
+                            self.DepClay
+                            )
+                    self.DepSilt = pcr.ifthenelse(
+                            pcr.cover(self.ResSimpleArea, pcr.scalar(0.0)) > 0,
+                            0.8*self.InSiltLoad,
+                            self.DepSilt
+                            )
+                    self.DepSand = pcr.ifthenelse(
+                            pcr.cover(self.ResSimpleArea, pcr.scalar(0.0)) > 0,
+                            0.9*self.InSandLoad,
+                            self.DepSand
+                            )
+                    self.DepSagg = pcr.ifthenelse(
+                            pcr.cover(self.ResSimpleArea, pcr.scalar(0.0)) > 0,
+                            0.9*self.InSaggLoad,
+                            self.DepSagg
+                            )
+                    self.DepLagg = pcr.ifthenelse(
+                            pcr.cover(self.ResSimpleArea, pcr.scalar(0.0)) > 0,
+                            self.InLaggLoad,
+                            self.DepLagg
+                            )
+                    self.DepGrav = pcr.ifthenelse(
+                            pcr.cover(self.ResSimpleArea, pcr.scalar(0.0)) > 0,
+                            self.InGravLoad,
+                            self.DepGrav
+                            )
+                    self.DepSedLoad = (self.DepClay
+                            + self.DepSilt
+                            + self.DepSand
+                            + self.DepSagg
+                            + self.DepLagg
+                            + self.DepGrav)
+                    
+                    self.ReservoirSedStore = pcr.ifthen(self.ResSimpleArea > 0, 
+                                                        self.DepSedLoad)
+    
+                # Update the river deposited sediment storage
+                self.RivStoreSed = self.RivStoreSed + self.DepSedLoad
+                self.RivStoreClay = self.RivStoreClay + self.DepClay
+                self.RivStoreSilt = self.RivStoreSilt + self.DepSilt
+                self.RivStoreSand = self.RivStoreSand + self.DepSand
+                self.RivStoreSagg = self.RivStoreSagg + self.DepSagg
+                self.RivStoreLagg = self.RivStoreLagg + self.DepLagg
+                self.RivStoreGrav = self.RivStoreGrav + self.DepGrav
+    
+                """ Output loads """
+                # Sediment transported out of the cell during the timestep [ton/cell/timestep]
+                # 0 in case all sediment are deposited in the cell
+                # Reduce the fraction so that there is still some sediment staying in the river cell
+                self.OutFracWat = pcr.min(
+                    self.RiverRunoff
+                    * self.timestepsecs / it_sedR
+                    / (
+                        self.WaterLevelR * self.RiverWidth * self.DCL
                     ),
-                    self.DepSedLoad,
+                    1.0,
+                )
+    
+                self.OutSedLoad = pcr.cover(
+                        pcr.max(
+                            0.0,
+                            (self.InSedLoad + self.RivErodSed - self.DepSedLoad)
+                            * self.OutFracWat,
+                        ),
+                        self.ZeroMap)
+                self.OutClayLoad = pcr.cover(
+                        pcr.max(
+                            0.0,
+                            (self.InClayLoad + self.RivErodClay - self.DepClay)
+                            * self.OutFracWat,
+                        ),
+                        self.ZeroMap)
+                self.OutSiltLoad = pcr.cover(
+                        pcr.max(
+                            0.0,
+                            (self.InSiltLoad + self.RivErodSilt - self.DepSilt)
+                            * self.OutFracWat,
+                        ),
+                        self.ZeroMap)
+                self.OutSandLoad = pcr.cover(
+                        pcr.max(
+                            0.0,
+                            (self.InSandLoad + self.RivErodSand - self.DepSand)
+                            * self.OutFracWat,
+                        ),
+                        self.ZeroMap)
+                self.OutSaggLoad = pcr.cover(
+                        pcr.max(
+                            0.0,
+                            (self.InSaggLoad + self.RivErodSagg - self.DepSagg)
+                            * self.OutFracWat,
+                        ),
+                        self.ZeroMap)
+                self.OutLaggLoad = pcr.cover(
+                        pcr.max(
+                            0.0,
+                            (self.InLaggLoad + self.RivErodLagg - self.DepLagg)
+                            * self.OutFracWat,
+                        ),
+                        self.ZeroMap)
+                self.OutGravLoad = pcr.cover(
+                        pcr.max(
+                            0.0,
+                            (self.InGravLoad + self.RivErodGrav - self.DepGrav)
+                            * self.OutFracWat,
+                        ),
+                        self.ZeroMap)
+    
+                """ Mass balance, sediment concentration in each river cell """
+                # Sediment load [ton/cell/timestep]
+                # 0 in case all sediment are deposited in the cell
+                self.SedLoad = pcr.max(
+                    0.0,
+                    self.InSedLoad + self.RivErodSed - self.DepSedLoad - self.OutSedLoad,
+                )
+                self.ClayLoad = pcr.max(
+                    0.0,
+                    self.InClayLoad + self.RivErodClay - self.DepClay - self.OutClayLoad,
+                )
+                self.SiltLoad = pcr.max(
+                    0.0,
+                    self.InSiltLoad + self.RivErodSilt - self.DepSilt - self.OutSiltLoad,
+                )
+                self.SandLoad = pcr.max(
+                    0.0,
+                    self.InSandLoad + self.RivErodSand - self.DepSand - self.OutSandLoad,
+                )
+                self.SaggLoad = pcr.max(
+                    0.0,
+                    self.InSaggLoad + self.RivErodSagg - self.DepSagg - self.OutSaggLoad,
+                )
+                self.LaggLoad = pcr.max(
+                    0.0,
+                    self.InLaggLoad + self.RivErodLagg - self.DepLagg - self.OutLaggLoad,
+                )
+                self.GravLoad = pcr.max(
+                    0.0,
+                    self.InGravLoad + self.RivErodGrav - self.DepGrav - self.OutGravLoad,
                 )
 
-            # Update the river deposited sediment storage
-            self.RivStoreSed = self.RivStoreSed + self.DepSedLoad
-            self.RivStoreClay = self.RivStoreClay + self.DepClay
-            self.RivStoreSilt = self.RivStoreSilt + self.DepSilt
-            self.RivStoreSand = self.RivStoreSand + self.DepSand
-            self.RivStoreSagg = self.RivStoreSagg + self.DepSagg
-            self.RivStoreLagg = self.RivStoreLagg + self.DepLagg
-            self.RivStoreGrav = self.RivStoreGrav + self.DepGrav
-
-            """ Output loads """
-            # Sediment transported out of the cell during the timestep [ton/cell/timestep]
-            # 0 in case all sediment are deposited in the cell
-            # Reduce the fraction so that there is still some sediment staying in the river cell
-            self.OutFracWat = min(
-                self.SurfaceRunoff
-                * self.timestepsecs
-                / (
-                    self.WaterLevel * self.RiverWidth * self.DCL
-                    + self.SurfaceRunoff * self.timestepsecs
-                ),
-                0.999999,
-            )
-
-            self.OutSedLoad = ifthen(
-                self.subcatch > 0,
-                cover(
-                    max(
-                        0.0,
-                        (self.InSedLoad + self.RivErodSed - self.DepSedLoad)
-                        * self.OutFracWat,
-                    ),
-                    0.0,
-                ),
-            )
-            self.OutClayLoad = ifthen(
-                self.subcatch > 0,
-                cover(
-                    max(
-                        0.0,
-                        (self.InClayLoad + self.RivErodClay - self.DepClay)
-                        * self.OutFracWat,
-                    ),
-                    0.0,
-                ),
-            )
-            self.OutSiltLoad = ifthen(
-                self.subcatch > 0,
-                cover(
-                    max(
-                        0.0,
-                        (self.InSiltLoad + self.RivErodSilt - self.DepSilt)
-                        * self.OutFracWat,
-                    ),
-                    0.0,
-                ),
-            )
-            self.OutSandLoad = ifthen(
-                self.subcatch > 0,
-                cover(
-                    max(
-                        0.0,
-                        (self.InSandLoad + self.RivErodSand - self.DepSand)
-                        * self.OutFracWat,
-                    ),
-                    0.0,
-                ),
-            )
-            self.OutSaggLoad = ifthen(
-                self.subcatch > 0,
-                cover(
-                    max(
-                        0.0,
-                        (self.InSaggLoad + self.RivErodSagg - self.DepSagg)
-                        * self.OutFracWat,
-                    ),
-                    0.0,
-                ),
-            )
-            self.OutLaggLoad = ifthen(
-                self.subcatch > 0,
-                cover(
-                    max(
-                        0.0,
-                        (self.InLaggLoad + self.RivErodLagg - self.DepLagg)
-                        * self.OutFracWat,
-                    ),
-                    0.0,
-                ),
-            )
-            self.OutGravLoad = ifthen(
-                self.subcatch > 0,
-                cover(
-                    max(
-                        0.0,
-                        (self.InGravLoad + self.RivErodGrav - self.DepGrav)
-                        * self.OutFracWat,
-                    ),
-                    0.0,
-                ),
-            )
-
-            """ Mass balance, sediment concentration in each river cell """
-            # Sediment load [ton/cell/timestep]
-            # 0 in case all sediment are deposited in the cell
-            self.SedLoad = max(
-                0.0,
-                self.InSedLoad + self.RivErodSed - self.DepSedLoad - self.OutSedLoad,
-            )
-            self.ClayLoad = max(
-                0.0,
-                self.InClayLoad + self.RivErodClay - self.DepClay - self.OutClayLoad,
-            )
-            self.SiltLoad = max(
-                0.0,
-                self.InSiltLoad + self.RivErodSilt - self.DepSilt - self.OutSiltLoad,
-            )
-            self.SandLoad = max(
-                0.0,
-                self.InSandLoad + self.RivErodSand - self.DepSand - self.OutSandLoad,
-            )
-            self.SaggLoad = max(
-                0.0,
-                self.InSaggLoad + self.RivErodSagg - self.DepSagg - self.OutSaggLoad,
-            )
-            self.LaggLoad = max(
-                0.0,
-                self.InLaggLoad + self.RivErodLagg - self.DepLagg - self.OutLaggLoad,
-            )
-            self.GravLoad = max(
-                0.0,
-                self.InGravLoad + self.RivErodGrav - self.DepGrav - self.OutGravLoad,
-            )
-
+            #End of the transport iterations
+            
             # Sediment concentration [mg/L]
             # The suspended load is composed of clay and silt.
             # The bed load is composed of sand, small and large aggregates from overland flow and gravel coming from river bed erosion.
             # Conversion from load [ton] to concentration for rivers [mg/L]
-            # self.ToConc = 10**(6) / (self.RiverWidth * self.WaterLevel * self.DCL)
-            self.ToConc = 10 ** (6) / (self.SurfaceRunoff * self.timestepsecs)
+            # self.ToConc = 10**(6) / (self.RiverWidth * self.WaterLevelR * self.DCL)
+            self.ToConc = pcr.cover((10 ** (6) / (self.RiverRunoff * self.timestepsecs)), self.ZeroMap)
             self.SedConc = self.OutSedLoad * self.ToConc
             self.SSConc = (self.OutClayLoad + self.OutSiltLoad) * self.ToConc
             self.BedConc = (
@@ -2271,26 +2118,12 @@ class WflowModel(DynamicModel):
             ) * self.ToConc
             self.MaxSedConc = self.MaxSedLoad * self.ToConc
 
-        """ Check / summary maps """
-        # Checking processes contribution to sediment budget
-        self.PrecipitationCatch = areatotal(self.Precipitation, self.HYPEcatch)
-        # self.InLandSedCatch = areatotal(self.InLandSed, self.HYPEcatch)
-        # self.MaxSedLoadCatch = areatotal(self.MaxSedLoad, self.HYPEcatch)
-        # self.SedExCatch = areatotal(self.SedEx, self.HYPEcatch)
-        # self.BankSedLoadCatch = areatotal(self.BankSedLoad, self.HYPEcatch)
-        # self.BedSedLoadCatch = areatotal(self.BedSedLoad, self.HYPEcatch)
-        # self.DegStoreSedCatch = areatotal(self.DegStoreSed, self.HYPEcatch)
-        # self.DepSedLoadCatch = areatotal(self.DepSedLoad, self.HYPEcatch)
-        # self.OutSedLoadCatch = areatotal(self.OutSedLoad, self.HYPEcatch)
-        # self.SedLoadCatch = areatotal(self.SedLoad, self.HYPEcatch)
 
-        # Area specific runoff
-        # annual runoff / upstream (area)
-        # L/km2/s
+        # Area specific runoff (annual runoff / upstream area) [L/km2/s]
         # values between 5 and 25 for the Rhine
         self.SpecRun = (
-            self.SurfaceRunoff * 1000 / accuflux(self.TopoLdd, self.cellareaKm)
-        )  # [L/km2/s]
+            self.RiverRunoff * 1000 / pcr.accuflux(self.TopoLdd, self.cellareaKm)
+        )
 
 
 # The main function is used to run the program from the command line
@@ -2311,6 +2144,8 @@ def main(argv=None):
     configfile = "wflow_sediment.ini"
     _lastTimeStep = 0
     _firstTimeStep = 0
+    LogFileName = 'wflow.log'
+    
     timestepsecs = 86400
     wflow_cloneMap = "wflow_subcatch.map"
 
@@ -2323,7 +2158,13 @@ def main(argv=None):
             usage()
             return
 
-    opts, args = getopt.getopt(argv, "C:S:T:c:s:R:")
+    ########################################################################
+    ## Process command-line options                                        #
+    ########################################################################
+    try:
+        opts, args = getopt.getopt(argv, "C:S:T:c:s:R:L:hP:p:XIi:")
+    except getopt.error as msg:
+        pcrut.usage(msg)
 
     for o, a in opts:
         if o == "-C":
@@ -2332,21 +2173,69 @@ def main(argv=None):
             runId = a
         if o == "-c":
             configfile = a
+        if o == "-L":
+            LogFileName = a
         if o == "-s":
             timestepsecs = int(a)
         if o == "-T":
             _lastTimeStep = int(a)
         if o == "-S":
             _firstTimeStep = int(a)
-
-    if len(opts) <= 1:
+        if o == "-h":
+            usage()
+    
+    starttime = dt.datetime(1990, 1, 1)
+    
+    if _lastTimeStep < _firstTimeStep:
+        print(
+            "The starttimestep ("
+            + str(_firstTimeStep)
+            + ") is smaller than the last timestep ("
+            + str(_lastTimeStep)
+            + ")"
+        )
         usage()
+
 
     myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile)
     dynModelFw = wf_DynamicFramework(
-        myModel, _lastTimeStep, firstTimestep=_firstTimeStep
+        myModel, _lastTimeStep, firstTimestep=_firstTimeStep, datetimestart=starttime
     )
-    dynModelFw.createRunId(NoOverWrite=False, level=logging.DEBUG)
+    dynModelFw.createRunId(
+            NoOverWrite=False, 
+            level=logging.DEBUG, 
+            logfname=LogFileName, 
+            model = "wflow_sediment",
+            doSetupFramework=False,
+    )
+    
+    for o, a in opts:
+        if o == "-P":
+            left = a.split("=")[0]
+            right = a.split("=")[1]
+            configset(
+                myModel.config, "variable_change_once", left, right, overwrite=True
+            )
+        if o == "-p":
+            left = a.split("=")[0]
+            right = a.split("=")[1]
+            configset(
+                myModel.config, "variable_change_timestep", left, right, overwrite=True
+            )
+        if o == "-X":
+            configset(myModel.config, "model", "OverWriteInit", "1", overwrite=True)
+        if o == "-I":
+            configset(myModel.config, "run", "reinit", "1", overwrite=True)
+        if o == "-i":
+            configset(myModel.config, "model", "intbl", a, overwrite=True)
+        if o == "-s":
+            configset(myModel.config, "run", "timestepsecs", a, overwrite=True)
+        if o == "-T":
+            configset(myModel.config, "run", "endtime", a, overwrite=True)
+        if o == "-S":
+            configset(myModel.config, "run", "starttime", a, overwrite=True)
+    
+    dynModelFw.setupFramework()
     dynModelFw._runInitial()
     dynModelFw._runResume()
     # dynModelFw._runDynamic(0,0)
