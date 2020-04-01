@@ -1,6 +1,13 @@
 import os
 from setuptools import setup
 
+# putting pcraster under install_requires fails
+# it seems pip cannot find a suitable version even though the conda install works
+try:	
+    import pcraster	
+except:	
+    print("Could not import pcraster, install using conda install pcraster")	
+
 here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, "README.rst"), encoding="utf-8") as f:
     README = f.read()
@@ -17,7 +24,6 @@ setup(
     setup_requires=["setuptools_scm"],
     python_requires=">=3.6",
     install_requires=[
-        "pcraster",
         "numpy",
         "scipy",
         "gdal",

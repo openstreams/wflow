@@ -69,7 +69,8 @@ def do_analysis(scriptpath):
         hiddenimports=[  # in opendapy.py: importlib.import_module(sys.argv[3])
             # for wflow this would always be wflow.wflow_bmi
             "wflow.wflow_bmi",
-            "wflow.wflow_bmi_combined","pkg_resources.py2_warn",
+            "wflow.wflow_bmi_combined",
+            "pkg_resources.py2_warn",
         ],
     )
 
