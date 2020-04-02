@@ -971,10 +971,7 @@ def sCurve(X, a=0.0, b=1.0, c=1.0):
     Output:
         - result
     """
-    try:
-        s = 1.0 / (b + pcr.exp(-c * (X - a)))
-    except:
-        s = 1.0 / (b + pcr.exp(-c * (X - a)))
+    s = 1.0 / (pcr.exp(-c * (X - a)) + b)
     return s
 
 

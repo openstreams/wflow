@@ -134,7 +134,7 @@ def setlogger(logfilename,loggername,thelevel=logging.INFO):
         logger.debug("File logging to " + logfilename)
         return logger
     except IOError:
-        print "ERROR: Failed to initialize logger with logfile: " + logfilename
+        print("ERROR: Failed to initialize logger with logfile: " + logfilename)
         sys.exit(2)
     
 def readmapSave(pathtomap, default):
@@ -186,7 +186,7 @@ def readtss(nname):
             #dumm[:] = 1E-31
             #return numpy.vstack((dumm,mat[1:])), head
     else:
-        print nname + " does not exists."
+        print(nname + " does not exists.")
     
     return
 
@@ -260,11 +260,11 @@ def tableToMapSparse (step, table, map):
 
     
     if os.path.exists(fname_map):
-	    print "found: " + fname_map
+	    print("found: " + fname_map)
 	    _tableToMap_LastMap[map] = step
   	    
     if os.path.exists(fname_tbl):
-	    print "found: " + fname_tbl
+	    print("found: " + fname_tbl)
 	    _tableToMap_LastTbl[table] = step
 
     if _tableToMap_LastTbl.has_key(table) == False:
@@ -369,7 +369,7 @@ def GenRadMaps(SaveDir,SaveName,Lat,Lon,Slope,Aspect,Altitude,debug):
     for Day in range(1,366):
     	avgrad = 0.0 * Altitude
     	for Hour in range(6,19):
-    		print "day: " + str(Day) + " Hour: " + str(Hour)
+    		print("day: " + str(Day) + " Hour: " + str(Hour))
     		crad = correctrad(Day,Hour,Lat,Lon,Slope,Aspect,Altitude)
     		if debug:
     			nr = "%0.3d" % Hour

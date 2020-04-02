@@ -20,39 +20,6 @@ html_theme = "sphinxdoc"
 # html_theme = "agogo"
 html_theme_path = ["."]
 
-from mock import Mock as MagicMock
-
-
-class Mock(MagicMock):
-    __all__ = []
-    __version__ = "1.6"
-
-    @classmethod
-    def __getattr__(cls, name):
-        return Mock()
-
-
-# Mock modules so that we can build on readthedocs.org
-MOCK_MODULES = [
-    "osgeo.gdal",
-    "osgeo.gdalconst",
-    "osgeo",
-    "osgeo.ogr",
-    "cftime",
-    "xarray",
-    "netCDF4",
-    "netCDF4_utils",
-    "netcdftime",
-    "pcraster.framework",
-    "pcraster._pcraster",
-    "pcraster",
-    "pyproj",
-    "wflow.version",
-]
-
-
-sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
-
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -292,4 +259,19 @@ texinfo_documents = [
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 # texinfo_show_urls = 'footnote'
 
-autodoc_mock_imports = ["pcraster"]
+autodoc_mock_imports = [
+    "osgeo.gdal",
+    "osgeo.gdalconst",
+    "osgeo",
+    "osgeo.ogr",
+    "cftime",
+    "xarray",
+    "netCDF4",
+    "netCDF4_utils",
+    "netcdftime",
+    "pcraster.framework",
+    "pcraster._pcraster",
+    "pcraster",
+    "pyproj",
+    "wflow.version",
+]
