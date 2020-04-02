@@ -258,7 +258,7 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
                 nrsteps = int(timespan / self.get_time_step())
 
                 for st in range(0, nrsteps):
-                    self.bmimodels[key].update(-1.0)
+                    self.bmimodels[key].update()
 
     def set_start_time(self, start_time):
         """
