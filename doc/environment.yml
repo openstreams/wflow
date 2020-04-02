@@ -1,0 +1,25 @@
+name: wflowdocs
+
+channels:
+  - defaults
+
+dependencies:
+  # required
+  - numpy>=1.12
+  - scipy>=1.0
+  - gdal>=3
+  - netcdf4>=1.4.1
+  - xarray>=0.11
+  - cftime>=1.0.4
+  - numba>=0.42
+  - pyproj>=2.4
+  - python-dateutil>=2.7
+  # optional
+  - setuptools_scm
+  - setuptools>=38
+  - pip>=9.0.3
+  - sphinx
+  - sphinx_rtd_theme
+  - matplotlib
+  - pip:
+    - bmi-python
