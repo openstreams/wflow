@@ -666,8 +666,8 @@ surface area :math:`A_{res}` (m\ :math:`^{2}`).
 
 Configuration
 -------------
-The wflow\_sediment model was developed as part of the wflow hydrologic platform and is therefore a
-nother wflow module, developed in Python, and using the same framework than wflow\_sbm. First, the model 
+The wflow\_sediment model was developed as part of the wflow hydrologic platform and is therefore 
+another wflow module, developed in Python, and using the same framework than wflow\_sbm. First, the model 
 case is set up and run normally with wflow\_sbm. Then wflow\_sediment is run using the outputs of the hydrologic model.
 As settings for wflow\_sbm are explained in the corresponding part of this documentation, only specific details 
 regarding the run of wflow\_sediment are developed here.
@@ -683,9 +683,13 @@ wflow_sbm.ini file:
 -  Precipitation "self.Precipitation" (can also be taken directly from
    the wflow_sbm forcings)
 
--  Surface runoff from the kinematic wave "self.SurfaceRunoff"
+-  Land runoff (overland flow) from the kinematic wave "self.LandRunoff"
 
--  Water level in the kinematic wave "self.WaterLevel"
+-  River runoff from the kinematic wave "self.RiverRunoff"
+
+-  Land water level in the kinematic wave "self.WaterLevelL"
+
+-  River water level in the kinematic wave "self.WaterLevelR"
 
 -  Rainfall interception by the vegetation "self.Interception".
 
@@ -747,8 +751,10 @@ The main sections and options needed are:
 	# Outputs from wflow_sbm
 	Precipitation		= /inmaps/P
 	Interception		= /inmaps/int
-	SurfaceRunoff = /inmaps/run
-	WaterLevel = /inmaps/levKin
+	RiverRunoff = /inmaps/runR
+	LandRunoff = /inmaps/runL
+	WaterLevelR = /inmaps/levKinR
+	WaterLevelL = /inmaps/levKinL
 
 -  **framework**: As for wflow_sbm, specifies if the inputs or outputs
    of the model are in netcdf format or PCRaster maps. If the results of
@@ -764,7 +770,7 @@ The main sections and options needed are:
 
 -  **modelparameters**: Other parameters used by the model. This section
    should include the same inputs as the wflow_sbm.ini file for
-   reservoir modelling and Leaf Area Index data.
+   reservoir / lake modelling and Leaf Area Index data.
 
 -  **model**: Parameters and settings for the sediment model. It
    contains both links to the staticmaps of the model (DEM, LDD etc.)
@@ -790,14 +796,9 @@ The main sections and options needed are:
 	intbl = intbl
 	# Run only the soil erosion model (0) or also the river transport model (1)
 	runrivermodel = 1
-	#Use original (0) or minimum dem (1) for river slope computation
-	slopecorr = 1
 	#USLE K computation method
 	#1=map ; 2=geometric mean ; 3=EPIC 
 	uslekmethod = 2
-	#USLE C computation method
-	#1=map ; 2=TBL based on land use
-	uslecmethod=2
 	#Rainfall erosion
 	#1=EUROSEM ; 2=ANSWERS
 	rainerodmethod = 1
@@ -808,13 +809,16 @@ The main sections and options needed are:
 	#River sediment transport formula for erosion threshold
 	#1=Engelund and Hansen ; 2=Bagnold ; 3=Kodatie ; 4=Yang ; 5=Molinas and Wu
 	rivtransportmethod = 2
-	#sCatch = 0
+	
+	#Iterations of the transport equation
+	transportIters = 1
+	transportRiverTstep = 3600
+	
 	#Model maps from wflow_sbm
 	wflow_dem = staticmaps/wflow_dem.map
 	wflow_landuse = staticmaps/wflow_landuse.map
 	wflow_soil = staticmaps/wflow_soil.map
 	wflow_subcatch = staticmaps/wflow_subcatch.map
-	wflow_Hype = staticmaps/SUBID-HYPE-Rhine.map
 	wflow_ldd = staticmaps/wflow_ldd.map
 	wflow_river = staticmaps/wflow_river.map
 	wflow_riverwidth = staticmaps/wflow_riverwidth.map
@@ -850,8 +854,6 @@ The main sections and options needed are:
 	self.SedSpl=sedspl
 	#Total soil loss [ton/timestep/cell]
 	self.SoilLoss=soilloss
-	#Total sediment input in the river per subcatchment [kg/ha/timestep]
-	self.HYPEOvSedCatch = sedcatch
 	#Sediment from land erosion entering the river [ton]
 	self.InLandSed = landsed
 	#Total river inputs [ton]

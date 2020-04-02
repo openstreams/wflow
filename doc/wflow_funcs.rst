@@ -431,11 +431,12 @@ For wflow\_hbv snow modelling is not optional.
 Glacier modelling is very close to snow modelling and considers two main processes: glacier build-up from snow turning 
 into firn/ice (using the HBV-light model) and glacier melt (using a temperature degree-day model).
 
-The definition of glacier boundaries and initial volume is defined in two staticmaps. *GlacierFrac* is a map 
+The definition of glacier boundaries and initial volume is defined in three staticmaps. *GlacierAreas* is a map 
+containing the ID of the glacier present in the wflow cell. *GlacierFrac* is a map 
 that gives the fraction of each grid cell covered by a glacier as a number between zero and one. *GlacierStore* 
 is a state map that gives the amount of water (in mm w.e.) within the glaciers at each gridcell. Because the 
 glacier store (GlacierStore.map) cannot be initialized by running the model for a couple of years, a default 
-initial state map should be supplied by placing a GlacierStore.map file in the staticmaps directory. These two 
+initial state map should be supplied by placing a GlacierStore.map file in the staticmaps directory. These three 
 maps are prepared from available glacier datasets.
 
 First, a fixed fraction of the snowpack on top of the glacier is converted into ice for each timestep and added 
@@ -467,12 +468,13 @@ modelparameters section:
 ::
 
     [modelparameters]
-    GlacierFrac=staticmaps/GlacierFrac.map,staticmap,0.0,0
-    G_TT=intbl/G_TT.tbl,tbl,0.0,1,staticmaps/GlacierFrac.map
-    G_Cfmax=intbl/G_Cfmax.tbl,tbl,3.0,1,staticmaps/GlacierFrac.map
-    G_SIfrac=intbl/G_SIfrac.tbl,tbl,0.001,1,staticmaps/GlacierFrac.map
+    GlacierAreas = staticmaps/wflow_glacierareas.map,staticmap,0.0,0
+    GlacierFrac = staticmaps/wflow_glacierfrac.map,staticmap,0.0,0
+    G_TT = intbl/G_TT.tbl,tbl,0.0,1,staticmaps/wflow_glacierareas.map
+    G_Cfmax = intbl/G_Cfmax.tbl,tbl,3.0,1,staticmaps/wflow_glacierareas.map
+    G_SIfrac = intbl/G_SIfrac.tbl,tbl,0.001,1,staticmaps/wflow_glacierareas.map
 
-The initial glacier volume GlacierStore.map should also be added in the staticmaps folder.
+The initial glacier volume wflow_glacierstore.map should also be added in the staticmaps folder.
 
 
 Reservoirs and Lakes

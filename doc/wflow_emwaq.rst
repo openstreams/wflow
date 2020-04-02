@@ -220,13 +220,13 @@ As for wflow\_sbm, wflow\_emwaq also has its own ini file wflow\_emwaq.ini. The 
    
    Type of the results saved by wflow_sbm. Indicate which type of file the coupling should read from. Options are:
    
-   -  input_type: type of wflow outputs to read. Can be netcdf or PCRaster map  files or csv tables. The csv tables option is the one to use if aggregation of results to subcatchments is chosen.
+   -  input_type: type of wflow outputs to read. Can be "netcdf" or PCRaster "map"  files or "csv" tables. The csv tables option is the one to use if aggregation of results to subcatchments is chosen.
    -  netcdfinput: name of the possible NetCDF output file of wflow_sbm is required. Can be left empty if input_type is either map or csv.
    
    Options for wflow_emwaq run (0 to turn off or 1 to turn on):
    
    -  write_ascii: dynamic data for D-Emission/WAQ are saved in binary files. If this option is on, an ASCII copy will also be created. Default is 0.
-   -  write_structure: if on, structure data for D-Emission/WAQ are produced. Default is 1.
+   -  write_structure: if on, structure data for D-Emission/WAQ are produced. Note that this option cn be used without previsouly running wflow_sbm. Default is 1.
    -  write_dynamic: if on, dynamic data for D-Emission/WAQ are produced. Default is 1.
    -  fraction: if on, produce additional structure files used for Delwaq fraction mode. Default is 0.
    -  emission: if on, a coupling for D-Emission will be prepared. If off, a coupling for Delwaq will be prepared. Default is 0.
@@ -234,27 +234,38 @@ As for wflow\_sbm, wflow\_emwaq also has its own ini file wflow\_emwaq.ini. The 
    -  aggregation: if on, results from wflow_sbm will be aggregated from the cell to the subcatchment scale.
    
    Input or output staticmaps of wflow_sbm to use. The maps needed are:
-
+   
    -  wflow_subcatch: map of wflow subcatchments. Serves as basis to define the extent of the model grid. Map used for the aggregation of results option.
    -  wflow_ldd: wflow local drain direction map used for pointer creation.
    -  wflow_gauges: map with points of interest where D-Emission/WAQ results will be saved. Map used for the aggregation of results option.
    -  wflow_reallength: map with the cell size (corrected with real latitude).
    -  wflow_pathfrac: fraction of the land part of the cell that is paved.
    -  wflow_waterfrac: fraction of the open water part of the cell.
-
+   
    Settings for D-Emission/WAQ monitoring points or areas. Indicates the segments or zones where the emission water quality models sum and save the results.
    
    -  mon_points: selection of segments where results will be saved. Option segments will save the results for every segment of the model. Option gauges will save it for the compartments belonging to the points selected in the wflow_gauge map.  The gauges option is not handled if aggregation option is on.
    -  mon_areas: selection of monitoring areas to aggregate results. Option subcatch will save results for the segments present in each subcatchment of the wflow_subcatch map.  Option compartments will save it for the segments belonging in the same compartment type (e.g. by surface water). The subcatch option is not handled if aggregation option is on.
-
+   
    Settings for the numbering of the model boundaries. Indicates if the boundary ID is set by boundary type (ex: one ID for atmosphere) or if it is set by boundary type and for each segment.
    
    -  bd_id: the default numbering is one ID per boundary type. If bd_id is set to segments then one ID per boundary type and per segment will be created.
-
+   
+   Settings for the Delwaq run input file (.inp)
+   
+   -  template_ini: the path to a template Delwaq input file to add to the coupling results. By default, no file is added.
+   
    Additional parameters from wflow_sbm needing for data processing. Now only one parameter is needed:
    
    -  UStoreLayerThickness: same as in wflow_sbm.ini. It is needed in order for the python script to be able to handle the instates files of all the layers of the unsaturated store.
 
+-  outputstat_: similar to the outputcsv_ section of wflow_sbm ini file. This section prepare a list of files for Delwaq to generate statistics during its run (inputs for block 10). If several statistics have to be computed, several outputstat_ sections can be created (outputstat_0, outputstat_1...).
+
+   -  name: name of the created file. Resulting file will be "B10_nametime.inc"
+   -  start-period: the start time for which statistics are calculated (YYYY/MM/DD-hh:mm:ss).
+   -  end-period: the end time for which statistics are calculated (YYYY/MM/DD-hh:mm:ss).
+   -  output-operation: type of operation (example: STADSC).
+   -  substance: substance for which statistics are calculated. Several substances can be added using the names substance1, substance2...
 
 
 Running the coupling
@@ -284,7 +295,7 @@ Additional run options corresponding to the one set up in the model section of t
 -  -F for writing additional files for FEWS or deltashell GUIs.
 -  -a for aggregation of results from cells to subcatchments.
 
-Finally, all the files produced by wflow\_emwaq needs to be included in the main input file from D-Emission/WAQ and the emission or water quality model can be run. An example of the command lines needed to run both wflow python 
+Finally, all the files produced by wflow\_emwaq need to be included in the main input file from D-Emission/WAQ and the emission or water quality model can be run. An example of the command lines needed to run both wflow python 
 scripts is:
 
 ::
@@ -293,6 +304,9 @@ scripts is:
     python wflow\wflow_sbm.py -C Rhine -R SBM
     python wflow\wflow_emwaq.py -C Rhine -R SBM -D Rhine\WAQ -c wflow_emwaq.ini
 
+Note: if only the schematisation is of interest and not the dynamic fluxes, the coupling can also be run
+without first running wflow_sbm. In that case, the writing structure files option should be turned on and the 
+writing dynamic files option turned off.
 
 Outputs of the wflow\_emwaq module
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -321,6 +335,7 @@ Table 4: List of structure files produced by wflow\_emwaq
  B5\_bounddata.inc                                     X      
  B5\_boundlist.inc              X        X                    
  B8\_initials.inc                                      X      
+ B10\_simtime.inc               X        X                    
 geometry.inc                    X                             
 hydrology.bin                   X                             
 nrofsegl.inc                    X                             
