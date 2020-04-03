@@ -132,71 +132,31 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         for item in self.exchanges:
             exchange_from = item.split(self.comp_sep)
 
-            if len(exchange_from) == 3:
-                if exchange_from[2].startswith("["):
-                    ind = json.loads(mappingdir + exchange_from[2])
-                elif exchange_from[2].endswith("id"):
-                    ind_temp = np.loadtxt(
-                        mappingdir + exchange_from[2], delimiter=",", dtype=int
-                    )
-                    if ind_temp.size == 2:
-                        ind = [[ind_temp[0]], [ind_temp[1]]]
-                    else:
-                        ind = [list(ind_temp[0]), list(ind_temp[1])]
-                elif exchange_from[2].endswith("map"):
-                    map_temp = pcr.readmap(mappingdir + exchange_from[2])
-                    map_flip = np.flipud(pcr.pcr2numpy(map_temp, 0))
-                    ind_temp = np.where(map_flip == 1)
-                    ind = [list(ind_temp[0]), list(ind_temp[1])]
+            if len(exchange_from) == 3 and exchange_from[2].endswith("map"):
+                map_temp = pcr.readmap(mappingdir + exchange_from[2])
+                map_flip = np.flipud(pcr.pcr2numpy(map_temp, 0))
+                ind = np.where(map_flip.flat == 1)
                 self.indices_from.append(ind)
             else:
                 self.indices_from.append([])
 
             exchange_to = self.config.get("exchanges", item).split(self.comp_sep)
 
-            if len(exchange_to) == 3:
-                if exchange_to[2].startswith("["):
-                    ind = json.loads(mappingdir + exchange_to[2])
-                elif exchange_to[2].endswith("id"):
-                    ind_temp = np.loadtxt(
-                        mappingdir + exchange_to[2], delimiter=",", dtype=int
-                    )
-                    if ind_temp.size == 2:
-                        ind = [[ind_temp[0]], [ind_temp[1]]]
-                    else:
-                        ind = [list(ind_temp[0]), list(ind_temp[1])]
-                elif exchange_to[2].endswith("map"):
-                    map_temp = pcr.readmap(mappingdir + exchange_to[2])
-                    map_flip = np.flipud(pcr.pcr2numpy(map_temp, 0))
-                    ind_temp = np.where(map_flip == 1)
-                    ind = [list(ind_temp[0]), list(ind_temp[1])]
+            if len(exchange_to) == 3 and exchange_from[2].endswith("map"):
+                map_temp = pcr.readmap(mappingdir + exchange_to[2])
+                map_flip = np.flipud(pcr.pcr2numpy(map_temp, 0))
+                ind = np.where(map_flip.flat == 1)
                 self.indices_to.append(ind)
             else:
                 self.indices_to.append([])
 
-        # Initialize rtc bmi model object
         for mod in self.models:
-            if mod.startswith("RTC"):
-                bin_rtc = os.path.join(
-                    self.datadir, self.config.get("RTC wrapper engine", "bin_rtc")
-                )
-                print(bin_rtc)
-                os.chdir(bin_rtc)
-                import wflow.rtc_wflow_bmi as rtcwfbmi
+            self.bmimodels[mod] = wfbmi.wflowbmi_csdms()
 
-                print(bin_rtc)
-                self.bmimodels[mod] = rtcwfbmi.rtcbmi_csdms(
-                    os.path.join(bin_rtc, "RTCTools_BMI")
-                )
-
-            else:
-                self.bmimodels[mod] = wfbmi.wflowbmi_csdms()
-
-        # Initialize all wflow bmi model objects
+        # Initialize all bmi model objects
         for key, value in self.bmimodels.items():
-            if key.startswith("wflow"):
-                modconf = os.path.join(self.datadir, self.config.get("models", key))
-                self.bmimodels[key].initialize_config(modconf, loglevel=loglevel)
+            modconf = os.path.join(self.datadir, self.config.get("models", key))
+            self.bmimodels[key].initialize_config(modconf, loglevel=loglevel)
 
     def initialize_model(self):
         """
@@ -220,13 +180,8 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
             ):
                 supplymodel = self.__getmodulenamefromvar__(item)
                 if curmodel == supplymodel:
-                    if len(idfrom) > 0 and len(idto) == 0:
-                        sum_ind = np.sum(self.get_value_at_indices(item, tuple(idfrom)))
-                        outofmodel = np.ndarray(shape=(1, 1))
-                        outofmodel[0][0] = sum_ind
-
-                    elif len(idfrom) > 0 and len(idto) > 0:
-                        outofmodel = self.get_value_at_indices(item, tuple(idfrom)).copy()
+                    if len(idfrom) > 0 and len(idto) > 0:
+                        outofmodel = self.get_value_at_indices(item, idfrom).copy()
 
                     else:
                         outofmodel = self.get_value(item).copy()
@@ -234,7 +189,7 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
                     tomodel = self.config.get("exchanges", item)
 
                     if len(idto) > 0:
-                        self.set_value_at_indices(tomodel, tuple(idto), outofmodel)
+                        self.set_value_at_indices(tomodel, idto, outofmodel)
                     else:
                         self.set_value(tomodel, outofmodel)
 
@@ -350,14 +305,8 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
                 supplymodel = self.__getmodulenamefromvar__(item)
 
                 if curmodel == supplymodel:
-
-                    if len(idfrom) > 0 and len(idto) == 0:
-                        sum_ind = np.sum(self.get_value_at_indices(item, tuple(idfrom)))
-                        outofmodel = np.ndarray(shape=(1, 1))
-                        outofmodel[0][0] = sum_ind
-
-                    elif len(idfrom) > 0 and len(idto) > 0:
-                        outofmodel = self.get_value_at_indices(item, tuple(idfrom)).copy()
+                    if len(idfrom) > 0 and len(idto) > 0:
+                        outofmodel = self.get_value_at_indices(item, idfrom).copy()
 
                     else:
                         outofmodel = self.get_value(item).copy()
@@ -365,7 +314,7 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
                     tomodel = self.config.get("exchanges", item)
 
                     if len(idto) > 0:
-                        self.set_value_at_indices(tomodel, tuple(idto), outofmodel)
+                        self.set_value_at_indices(tomodel, idto, outofmodel)
                     else:
                         self.set_value(tomodel, outofmodel)
 
