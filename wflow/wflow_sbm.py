@@ -2638,6 +2638,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.Inflow < 0.0, pcr.min(MaxExtract, -1.0 * self.Inflow), self.ZeroMap
         )
         self.OldRiverRunoff = self.RiverRunoff  # NG Store for iteration
+        OldRiverRunoff = pcr.pcr2numpy(self.OldRiverRunoff,self.mv).ravel()
         self.OldInwater = self.Inwater
         self.Inwater = self.Inwater + pcr.ifthenelse(
             self.SurfaceWaterSupply > 0, -1.0 * self.SurfaceWaterSupply, self.Inflow
@@ -2718,20 +2719,19 @@ class WflowModel(pcraster.framework.DynamicModel):
                 )
                 # per distance along stream
                 q = self.Inwater / self.DCL
-                np_RiverRunoff = pcr.pcr2numpy(self.RiverRunoff,self.mv)
-                q_np = pcr.pcr2numpy(q, self.mv)
+                q_np = pcr.pcr2numpy(q, self.mv).ravel()
 
                 if self.kinwaveIters == 1:
                     if self.kinwaveRiverTstep == 0:
-                        it_kinR = estimate_iterations_kin_wave(self.RiverRunoff, self.Beta, self.AlphaR, self.timestepsecs, self.DCL, self.mv)
+                        it_kinR = estimate_iterations_kin_wave(self.OldRiverRunoff, self.Beta, self.AlphaR, self.timestepsecs, self.DCL, self.mv)
                     else:
                         it_kinR = int(np.ceil(self.timestepsecs/self.kinwaveRiverTstep))
                                 
                 acc_flow = kin_wave(
                         self.rnodes,
                         self.rnodes_up,
-                        RiverRunoff,
-                        qr_np,
+                        OldRiverRunoff,
+                        q_np,
                         self.dyn['AlphaR'],
                         self.static['Beta'],
                         self.static['DCL'],
@@ -2747,7 +2747,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                                 
                 self.RiverRunoffMM = (
                     self.RiverRunoff * self.QMMConv
-                )  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
+                )  # RiverRunoffMM (mm) from RiverRunoff (m3/s)
 
                 self.InflowKinWaveCell = pcr.upstream(
                     self.TopoLdd, self.OldRiverRunoff
@@ -2762,15 +2762,14 @@ class WflowModel(pcraster.framework.DynamicModel):
         else:
             self.RiverRunoffMM = (
                 self.RiverRunoff * self.QMMConv
-            )  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
-            self.LandRunoffMM = (
-                self.LandRunoff * self.QMMConv
-            )  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)    
-        
+            )  # RiverRunoffMM (mm) from RiverRunoff (m3/s)
             self.updateRunOff()
+            
+        self.LandRunoffMM = (
+            self.LandRunoff * self.QMMConv
+        )  # LandRunoffMM (mm) from LandRunoff (m3/s)
 
         # Now add the supply that is linked to irrigation areas to extra precip
-
         if self.nrirri > 0:
             # loop over irrigation areas and spread-out the supply over the area
             IRSupplymm = idtoid(
