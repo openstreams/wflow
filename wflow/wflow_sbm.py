@@ -367,30 +367,30 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, soilInfReducti
                     # First calculate the evaporation of unsaturated storage into the atmosphere from the layer closest to the surface
                     # In case of a s single soil layer
                     if shape_layer[0] == 1:
-                        soilevapunsat = dyn['restEvap'][idx] * min(1.0, SaturationDeficit / static['SoilWaterCapacity'][idx])
+                        soilevapunsat = dyn['PotSoilEvap'][idx] * min(1.0, SaturationDeficit / static['SoilWaterCapacity'][idx])
                     else:
                         #In case only the most upper soil layer contains unsaturated storage
                         if len(L) == 1:
                             # Check if groundwater level lies below the surface
                             if dyn['zi'][idx] > 0:
-                                soilevapunsat = dyn['restEvap'][idx] * min(1.0, layer['UStoreLayerDepth'][k,idx]/(dyn['zi'][idx]*(static['thetaS'][idx]-static['thetaR'][idx])))
+                                soilevapunsat = dyn['PotSoilEvap'][idx] * min(1.0, layer['UStoreLayerDepth'][k,idx]/(dyn['zi'][idx]*(static['thetaS'][idx]-static['thetaR'][idx])))
                             else:
                                soilevapunsat = 0.0 
                         else:
                             # In case first layer contains no saturated storage
-                            soilevapunsat = dyn['restEvap'][idx] * min(1.0, layer['UStoreLayerDepth'][k,idx]/(layer['UStoreLayerThickness'][k,idx]*(static['thetaS'][idx]-static['thetaR'][idx])))
+                            soilevapunsat = dyn['PotSoilEvap'][idx] * min(1.0, layer['UStoreLayerDepth'][k,idx]/(layer['UStoreLayerThickness'][k,idx]*(static['thetaS'][idx]-static['thetaR'][idx])))
                             
                     # Ensure that the unsaturated evaporation rate does not exceed the available unsaturated moisture
                     soilevapunsat = min(soilevapunsat, layer['UStoreLayerDepth'][k,idx])
                     # Update the additional atmospheric demand
-                    dyn['restEvap'][idx] = dyn['restEvap'][idx] - soilevapunsat                        
+                    dyn['PotSoilEvap'][idx] = dyn['PotSoilEvap'][idx] - soilevapunsat                        
                     layer['UStoreLayerDepth'][k,idx] = layer['UStoreLayerDepth'][k,idx] - soilevapunsat
                     
                     if shape_layer[0] == 1:
                         soilevapsat = 0.0
                     else:
                         if len(L) == 1:
-                            soilevapsat = dyn['restEvap'][idx] * min(1.0, (layer['UStoreLayerThickness'][k,idx] - dyn['zi'][idx])/ layer['UStoreLayerThickness'][k,idx])
+                            soilevapsat = dyn['PotSoilEvap'][idx] * min(1.0, (layer['UStoreLayerThickness'][k,idx] - dyn['zi'][idx])/ layer['UStoreLayerThickness'][k,idx])
                             soilevapsat = min(soilevapsat, (layer['UStoreLayerThickness'][k,idx] - dyn['zi'][idx]) * (static['thetaS'][idx] - static['thetaR'][idx]))
                         else:
                            soilevapsat = 0.0 
@@ -401,23 +401,20 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, soilInfReducti
                     dyn['soilevapsat'][idx] = soilevapsat
                     dyn['SatWaterDepth'][idx] = dyn['SatWaterDepth'][idx] - soilevapsat
                     
-                    # evaporation available for transpiration
-                    PotTrans = dyn['PotTransSoil'][idx] - dyn['soilevap'][idx] - dyn['ActEvapOpenWaterLand'][idx] - dyn['ActEvapOpenWaterRiver'][idx]
-
                     # transpiration from saturated store
                     wetroots = _sCurve(dyn['zi'][idx], a=static['ActRootingDepth'][idx], c=static['rootdistpar'][idx])
-                    dyn['ActEvapSat'][idx] = min(PotTrans * wetroots, dyn['SatWaterDepth'][idx])
+                    dyn['ActEvapSat'][idx] = min(dyn['PotTrans'][idx] * wetroots, dyn['SatWaterDepth'][idx])
                     dyn['SatWaterDepth'][idx] = dyn['SatWaterDepth'][idx] - dyn['ActEvapSat'][idx]
-                    RestPotEvap = PotTrans - dyn['ActEvapSat'][idx]
+                    RestPotTrans = dyn['PotTrans'][idx] - dyn['ActEvapSat'][idx]
 
                     # actual transpiration from UStore
-                    layer['UStoreLayerDepth'][k,idx], dyn['ActEvapUStore'][idx], RestPotEvap = actTransp_unsat_SBM(static['ActRootingDepth'][idx], layer['UStoreLayerDepth'][k,idx], 
-                                                                          sumlayer_0[k], RestPotEvap, dyn['ActEvapUStore'][idx], layer['c'][k,idx], L[k], static['thetaS'][idx], static['thetaR'][idx], static['AirEntryPressure'][idx], ust)
+                    layer['UStoreLayerDepth'][k,idx], dyn['ActEvapUStore'][idx], RestPotTrans = actTransp_unsat_SBM(static['ActRootingDepth'][idx], layer['UStoreLayerDepth'][k,idx], 
+                                                                          sumlayer_0[k], RestPotTrans, dyn['ActEvapUStore'][idx], layer['c'][k,idx], L[k], static['thetaS'][idx], static['thetaR'][idx], static['AirEntryPressure'][idx], ust)
                 # For the layers below  
                 else:
                     # actual transpiration from UStore
-                    layer['UStoreLayerDepth'][k,idx], dyn['ActEvapUStore'][idx], RestPotEvap = actTransp_unsat_SBM(static['ActRootingDepth'][idx], layer['UStoreLayerDepth'][k,idx], 
-                                                                          sumlayer_0[k], RestPotEvap, dyn['ActEvapUStore'][idx], layer['c'][k,idx], L[k], static['thetaS'][idx], static['thetaR'][idx], static['AirEntryPressure'][idx], ust)
+                    layer['UStoreLayerDepth'][k,idx], dyn['ActEvapUStore'][idx], RestPotTrans = actTransp_unsat_SBM(static['ActRootingDepth'][idx], layer['UStoreLayerDepth'][k,idx], 
+                                                                          sumlayer_0[k], RestPotTrans, dyn['ActEvapUStore'][idx], layer['c'][k,idx], L[k], static['thetaS'][idx], static['thetaR'][idx], static['AirEntryPressure'][idx], ust)
 
             #check soil moisture balance per layer
             du = 0.0
@@ -1964,8 +1961,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.layer['UStoreLayerThickness'][n] = UstoreThick
         
         dyn_dtype = np.dtype(
-                [('restEvap', np.float64),
-                 ('AvailableForInfiltration', np.float64),
+                [('AvailableForInfiltration', np.float64),
                  ('SoilInf', np.float64),
                  ('PathInf', np.float64),
                  ('TSoil', np.float64),
@@ -1973,7 +1969,8 @@ class WflowModel(pcraster.framework.DynamicModel):
                  ('SatWaterDepth', np.float64),
                  ('ssf', np.float64),
                  ('LandRunoff', np.float64),
-                 ('PotTransSoil', np.float64),
+                 ('PotTrans', np.float64),
+                 ('PotSoilEvap', np.float64),
                  ('ActEvapOpenWaterLand', np.float64),
                  ('ActEvapOpenWaterRiver', np.float64),
                  ('RiverRunoff', np.float64),
@@ -2424,8 +2421,9 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.PondingDepth = self.PondingDepth - self.ActEvapPond
             self.RestEvap = self.RestEvap - self.ActEvapPond
 
-        # evap available for soil evaporation
-        self.RestEvap = self.RestEvap * self.CanopyGapFraction
+        # evap available for soil evaporation and transpiration
+        self.PotSoilEvap = self.RestEvap * self.CanopyGapFraction
+        self.PotTrans = self.RestEvap * (1-self.CanopyGapFraction)
         
         self.Inflow = pcr.cover(self.Inflow, self.ZeroMap)
         # only run the reservoir module if needed
@@ -2479,8 +2477,8 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.dyn['AvailableForInfiltration'] = pcr.pcr2numpy(self.AvailableForInfiltration, self.mv).ravel()
         self.dyn['zi'] = pcr.pcr2numpy(self.zi,self.mv).ravel()
         self.dyn['SatWaterDepth'] = pcr.pcr2numpy(self.SatWaterDepth,self.mv).ravel()
-        self.dyn['restEvap'] = pcr.pcr2numpy(self.RestEvap,self.mv).ravel()
-        self.dyn['PotTransSoil'] = pcr.pcr2numpy(self.PotTransSoil,self.mv).ravel()
+        self.dyn['PotSoilEvap'] = pcr.pcr2numpy(self.PotSoilEvap,self.mv).ravel()
+        self.dyn['PotTrans'] = pcr.pcr2numpy(self.PotTrans,self.mv).ravel()
         self.dyn['TSoil'] = pcr.pcr2numpy(self.TSoil, self.mv).ravel()
         self.dyn['ssf'] = pcr.pcr2numpy(self.SubsurfaceFlow,self.mv).ravel()
         self.dyn['WaterLevelL'] = pcr.pcr2numpy(self.WaterLevelL,self.mv).ravel()
@@ -2549,7 +2547,6 @@ class WflowModel(pcraster.framework.DynamicModel):
                 + self.ActEvapPond
                 )
         
-        self.PotTrans = self.PotTransSoil - self.soilevap - self.ActEvapOpenWaterLand - self.ActEvapOpenWaterRiver
         self.Recharge = self.Transfer - self.CapFlux - self.ActEvapSat
 
         # Run only if we have irrigation areas or an externally given demand, determine irrigation demand based on potrans and acttrans
