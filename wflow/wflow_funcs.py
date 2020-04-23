@@ -550,8 +550,9 @@ def glacierHBV(GlacierFrac,
     )  # Potential snow melt, based on temperature
 
     GlacierMelt = pcr.ifthenelse(
-        Snow < 10.0, pcr.min(PotMelt, GlacierStore), pcr.cover(0.0)
+        Snow < 10.0, pcr.min(PotMelt, GlacierStore), pcr.scalar(0.0)
     )  # actual Glacier melt
+    GlacierMelt = pcr.cover(GlacierMelt, pcr.scalar(0.0))
     GlacierStore = GlacierStore - GlacierMelt  # dry snow content
 
     return Snow, Snow2Glacier, GlacierStore, GlacierMelt

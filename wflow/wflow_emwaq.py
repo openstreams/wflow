@@ -2075,7 +2075,7 @@ def main(argv=None):
 #        + configget(config, "model", "wflow_reallength", "/outsum/reallength.map")
 #    )
     xl, yl, reallength = pcrut.detRealCellLength(
-            modelmap, sizeinmetres
+            amap, sizeinmetres
         )
     cellsize = float(pcr.pcr2numpy(reallength, np.NaN)[0,0])
     logger.info("Cellsize model: " + str(cellsize))
