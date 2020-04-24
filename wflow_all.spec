@@ -34,6 +34,8 @@ scriptpaths = [
     "Scripts/wflow_prepare_step2.py",
     "wflow/wflow_adapt.py",
     "wflow/wflow_delwaq.py",
+    "wflow/wflow_emwaq.py",
+    "wflow/wflow_sediment.py",
     "wflow/wflow_floodmap.py",
     "wflow/wflow_gr4.py",
     "wflow/wflow_hbv.py",

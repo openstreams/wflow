@@ -70,6 +70,8 @@ setup(
         "wflow/wflow_fit.py",
         "wflow/wflow_adapt.py",
         "wflow/wflow_delwaq.py",
+        "wflow/wflow_emwaq.py",
+        "wflow/wflow_sediment.py",
         "Scripts/wflow_prepare_step1.py",
         "Scripts/wflow_prepare_step2.py",
         "wflow/wflow_sbm.py",
