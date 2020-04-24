@@ -50,7 +50,7 @@ setup(
         ],
         "docs": ["sphinx", "sphinx_rtd_theme"],
     },
-    packages=["wflow", "wflow.pcrglobwb", "wflow.sphy", "wflow.wrappers.rtc"],
+    packages=["wflow", "wflow.pcrglobwb", "wflow.sphy"],
     package_dir={"wflow": "wflow"},
     test_suite="tests",
     zip_safe=False,
