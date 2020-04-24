@@ -15,51 +15,48 @@ Simple test for wflow bmi framework
 
 
 class MyTest(unittest.TestCase):
-
-    
     def testbmifuncs(self):
-        grid_id = 1
 
         bmiobj = bmi.wflowbmi_csdms()
         bmiobj.initialize("wflow_sceleton/wflow_sceleton.ini", loglevel=logging.ERROR)
 
         print("-------------- Grid origin: ")
-        gorigin = bmiobj.get_grid_origin(grid_id)
+        gorigin = bmiobj.get_grid_origin("Altitude")
         # print(gorigin)
         self.assertAlmostEqual(
             sum([45.875934703275561, 5.2088299822062254]), sum(gorigin), places=4
         )
 
         print("-------------- Grid shape: ")
-        print((bmiobj.get_grid_shape(grid_id)))
+        print((bmiobj.get_grid_shape("Altitude")))
         self.assertAlmostEqual(
-            sum([169, 187]), sum(bmiobj.get_grid_shape(grid_id)), places=4
+            sum([169, 187]), sum(bmiobj.get_grid_shape("Altitude")), places=4
         )
 
         print("-------------- Grid spacing: ")
-        print((bmiobj.get_grid_spacing(grid_id)))
+        print((bmiobj.get_grid_spacing("Altitude")))
         self.assertAlmostEqual(
             sum([0.036666665, 0.036666665]),
-            sum(bmiobj.get_grid_spacing(grid_id)),
+            sum(bmiobj.get_grid_spacing("Altitude")),
             places=4,
         )
 
         print("-------------- Grid X: ")
-        print((bmiobj.get_grid_x(grid_id)))
+        print((bmiobj.get_grid_x("Altitude")))
         self.assertAlmostEqual(
-            5.22716331, bmiobj.get_grid_x(grid_id)[0], places=4
+            5.22716331, bmiobj.get_grid_x("Altitude")[0, 0], places=4
         )
 
         print("-------------- Grid Y: ")
-        print((bmiobj.get_grid_y(grid_id)))
+        print((bmiobj.get_grid_y("Altitude")))
         self.assertAlmostEqual(
-            45.89426804, bmiobj.get_grid_y(grid_id)[0], places=4
+            45.89426804, bmiobj.get_grid_y("Altitude")[0, 0], places=4
         )
 
         print("-------------- Grid Z: ")
-        print((bmiobj.get_grid_z(grid_id)))
+        print((bmiobj.get_grid_z("Altitude")))
         self.assertAlmostEqual(
-            218.44944763, bmiobj.get_grid_z(grid_id)[0,0], places=4
+            218.44944763, bmiobj.get_grid_z("Altitude")[0, 0], places=4
         )
 
         print("-------------- Name: ")
@@ -116,7 +113,7 @@ class MyTest(unittest.TestCase):
         print((time.localtime(bmiobj.get_end_time())))
 
         print("-------------- Grid type: ")
-        print((bmiobj.get_grid_type(grid_id)))
+        print((bmiobj.get_grid_type("Altitude")))
 
         print("-------------- Var type: ")
         print((bmiobj.get_var_type("Altitude")))

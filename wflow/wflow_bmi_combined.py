@@ -128,14 +128,15 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
 
         self.models = configsection(self.config, "models")
         self.exchanges = configsection(self.config, "exchanges")
-
+        
         for item in self.exchanges:
             exchange_from = item.split(self.comp_sep)
 
             if len(exchange_from) == 3 and exchange_from[2].endswith("map"):
                 map_temp = pcr.readmap(mappingdir + exchange_from[2])
                 map_flip = np.flipud(pcr.pcr2numpy(map_temp, 0))
-                ind = np.where(map_flip.flat == 1)
+                ind_temp = np.where(map_flip == 1)
+                ind = [list(ind_temp[0]), list(ind_temp[1])]
                 self.indices_from.append(ind)
             else:
                 self.indices_from.append([])
@@ -145,11 +146,12 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
             if len(exchange_to) == 3 and exchange_from[2].endswith("map"):
                 map_temp = pcr.readmap(mappingdir + exchange_to[2])
                 map_flip = np.flipud(pcr.pcr2numpy(map_temp, 0))
-                ind = np.where(map_flip.flat == 1)
+                ind_temp = np.where(map_flip == 1)
+                ind = [list(ind_temp[0]), list(ind_temp[1])]
                 self.indices_to.append(ind)
             else:
                 self.indices_to.append([])
-
+        
         for mod in self.models:
             self.bmimodels[mod] = wfbmi.wflowbmi_csdms()
 
@@ -181,7 +183,7 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
                 supplymodel = self.__getmodulenamefromvar__(item)
                 if curmodel == supplymodel:
                     if len(idfrom) > 0 and len(idto) > 0:
-                        outofmodel = self.get_value_at_indices(item, idfrom).copy()
+                        outofmodel = self.get_value_at_indices(item, tuple(idfrom)).copy()
 
                     else:
                         outofmodel = self.get_value(item).copy()
@@ -189,7 +191,7 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
                     tomodel = self.config.get("exchanges", item)
 
                     if len(idto) > 0:
-                        self.set_value_at_indices(tomodel, idto, outofmodel)
+                        self.set_value_at_indices(tomodel, tuple(idto), outofmodel)
                     else:
                         self.set_value(tomodel, outofmodel)
 
@@ -213,7 +215,7 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
                 nrsteps = int(timespan / self.get_time_step())
 
                 for st in range(0, nrsteps):
-                    self.bmimodels[key].update()
+                    self.bmimodels[key].update(-1.0)
 
     def set_start_time(self, start_time):
         """
@@ -306,7 +308,7 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
 
                 if curmodel == supplymodel:
                     if len(idfrom) > 0 and len(idto) > 0:
-                        outofmodel = self.get_value_at_indices(item, idfrom).copy()
+                        outofmodel = self.get_value_at_indices(item, tuple(idfrom)).copy()
 
                     else:
                         outofmodel = self.get_value(item).copy()
@@ -314,7 +316,7 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
                     tomodel = self.config.get("exchanges", item)
 
                     if len(idto) > 0:
-                        self.set_value_at_indices(tomodel, idto, outofmodel)
+                        self.set_value_at_indices(tomodel, tuple(idto), outofmodel)
                     else:
                         self.set_value(tomodel, outofmodel)
 
@@ -779,30 +781,6 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
         raise NotImplementedError
 
     def get_grid_offset(self, long_var_name):
-        """
-        Not applicable raises NotImplementedError
-        """
-        raise NotImplementedError
-
-    def get_grid_rank(self, grid_id):
-        """
-        Not applicable raises NotImplementedError
-        """
-        raise NotImplementedError
-
-    def get_grid_size(self, grid_id):
-        """
-        Not applicable raises NotImplementedError
-        """
-        raise NotImplementedError
-
-    def get_var_grid(self, long_var_name):
-        """
-        Not applicable raises NotImplementedError
-        """
-        raise NotImplementedError
-        
-    def get_var_itemsize(self, long_var_name):
         """
         Not applicable raises NotImplementedError
         """
