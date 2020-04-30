@@ -76,13 +76,6 @@ def do_analysis(scriptpath):
     )
 
 
-def do_analysis_bare(scriptpath):
-    """Run PyInstaller Analysis without extra binaries or datas"""
-    # leave out the binaries and datas, only add for the first script
-    # no need to copy for every script since they are later merged
-    return Analysis([scriptpath])
-
-
 def do_pyz(a):
     return PYZ(a.pure, a.zipped_data)
 
@@ -108,20 +101,14 @@ def do_collect(aexe):
     )
 
 
-if len(scriptpaths) == 1:
-    analist = [do_analysis(scriptpaths[0])]
-else:
-    analist = [do_analysis(scriptpaths[0])] + list(
-        map(do_analysis_bare, scriptpaths[1:])
-    )
-
+analist = list(map(do_analysis, scriptpaths))
 pyzlist = list(map(do_pyz, analist))
 exelist = list(map(do_exe, zip(analist, pyzlist)))
 collist = list(map(do_collect, zip(analist, exelist)))
 
 filename = "version.txt"
-versionfile = open(os.path.join("dist",filename), 'w')
-version=subprocess.check_output(["git", "describe", "--tags"]).strip().decode()
+versionfile = open(os.path.join("dist", filename), "w")
+version = subprocess.check_output(["git", "describe", "--tags"]).strip().decode()
 versionfile.write(version)
 versionfile.close()
 
