@@ -1,20 +1,24 @@
 # -*- mode: python -*-
 
 import os
-import sys
-import subprocess
-import pathlib
 import shutil
+import subprocess
+import sys
 from distutils.dir_util import copy_tree, remove_tree
+from pathlib import Path
 
-from osgeo import gdal
 import pyproj
+import xarray
+from osgeo import gdal
 
 # got a RecursionError: maximum recursion depth exceeded
 sys.setrecursionlimit(10_000)
 
 gdal.UseExceptions()
-datas = [(gdal.GetConfigOption("GDAL_DATA"), "gdal-data")]
+datas = [
+    (gdal.GetConfigOption("GDAL_DATA"), "gdal-data"),
+    (Path(xarray.__path__[0]) / "static", "xarray/static"),
+]
 pyproj_datadir = pyproj.datadir.get_data_dir()
 # prevent unintentionally adding the entire workdir
 if pyproj_datadir != "":
