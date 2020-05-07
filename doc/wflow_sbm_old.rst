@@ -168,9 +168,9 @@ With this the rate of glacier melt in mm is estimated as:
 
 .. math::
 
-    Q_{m}  =  cfmax(T_{a}-G\_TT)\;\;;T_{a}>G\_TT
+    Q_{m}  =  G\_Cfmax(T_{a}-G\_TT)\;\;;T_{a}>G\_TT
 
-where :math:`Q_{m}` is the rate of glacier meltand $cfmax$ is the melting factor in :math:`mm/(^{o}C*day)`.
+where :math:`Q_{m}` is the rate of glacier meltand G_$Cfmax$ is the melting factor in :math:`mm/(^{o}C*day)`.
 
 Accumulated snow on top of the glacier is converted to ice (and will thus become part of the glacier store) if
 the total snow depth > 8300 mm. An S-curve is used to smooth the transition. A maximum of 8mm/day can be converted to ice.
