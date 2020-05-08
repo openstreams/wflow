@@ -389,7 +389,7 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, soilInfReducti
                     if shape_layer[0] == 1:
                         soilevapsat = 0.0
                     else:
-                        if len(L) == 1:
+                        if len(L) == 0 or len(L) == 1:
                             soilevapsat = dyn['PotSoilEvap'][idx] * min(1.0, (layer['UStoreLayerThickness'][k,idx] - dyn['zi'][idx])/ layer['UStoreLayerThickness'][k,idx])
                             soilevapsat = min(soilevapsat, (layer['UStoreLayerThickness'][k,idx] - dyn['zi'][idx]) * (static['thetaS'][idx] - static['thetaR'][idx]))
                         else:
