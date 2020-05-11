@@ -1,4 +1,4 @@
 include README.rst
 include LICENSE
-include versioneer.py
-include wflow/_version.py
+include wflow/version.py
+prune examples
