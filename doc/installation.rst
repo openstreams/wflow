@@ -2,6 +2,22 @@
 Installation
 ============
 
+Install as a conda package
+==========================
+
+By far the easiest way to install wflow, is using the ``conda`` package manager. This
+package manager comes with the Anaconda Python distribution.
+``wflow`` is available in the `conda-forge <https://conda-forge.org/>`_ channel. To install
+you can use the following command:
+
++ ``conda install -c conda-forge wflow``
+
+If this works it will install wflow with all dependencies including Python and PCRaster,
+and you skip the rest of the installation instructions.
+
+Installing Python and PCRaster dependencies
+===========================================
+
 The main dependencies for wflow are an installation of Python 3.6+, and PCRaster 4.2+.
 Only 64 bit OS/Python is supported.
 
