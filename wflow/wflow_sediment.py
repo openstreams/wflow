@@ -84,7 +84,7 @@ def estimate_sedriv_tranport_iter(Q, deltaT, h, x, W, mv = -999):
     
     it = np.ceil(deltaT / np.amin(minTstep))
     #Maximum number of iterations
-    it = max(it, 1000)
+    it = min(it, 1000)
     
     return it
 

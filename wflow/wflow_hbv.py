@@ -581,14 +581,26 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         self.wf_updateparameters()
 
-        self.ReserVoirLocs = self.ZeroMap
+        if hasattr(self, "ReserVoirSimpleLocs") or hasattr(
+            self, "LakeLocs"
+        ):
+            self.ReserVoirLocs = self.ZeroMap
+            self.filter_P_PET = self.ZeroMap + 1.0
 
         if hasattr(self, "ReserVoirSimpleLocs"):
             # Check if we have simple and or complex reservoirs
+            self.ReserVoirSimpleLocs = pcr.nominal(self.ReserVoirSimpleLocs)
+            self.ReservoirSimpleAreas = pcr.nominal(self.ReservoirSimpleAreas)
             tt_simple = pcr.pcr2numpy(self.ReserVoirSimpleLocs, 0.0)
             self.nrresSimple = tt_simple.max()
             self.ReserVoirLocs = self.ReserVoirLocs + pcr.cover(
                 pcr.scalar(self.ReserVoirSimpleLocs), 0.0
+            )
+            res_area = pcr.cover(pcr.scalar(self.ReservoirSimpleAreas), 0.0)
+            self.filter_P_PET = pcr.ifthenelse(
+                pcr.boolean(pcr.cover(res_area, pcr.scalar(0.0))),
+                res_area * 0.0,
+                self.filter_P_PET,
             )
         else:
             self.nrresSimple = 0
@@ -686,6 +698,9 @@ class WflowModel(pcraster.framework.DynamicModel):
                     self.TopoLdd,
                 )
             )
+            
+            tt_filter = pcr.pcr2numpy(self.filter_P_PET, 1.0)
+            self.filterResArea = tt_filter.min()
 
         # HBV Soil params
         self.FC = self.readtblDefault(
@@ -899,8 +914,10 @@ class WflowModel(pcraster.framework.DynamicModel):
         # Alf ranges from 5 to > 60. 5 for hardrock. large values for sediments
         # "Noah J. Finnegan et al 2005 Controls on the channel width of rivers:
         # Implications for modeling fluvial incision of bedrock"
-
-        upstr = pcr.catchmenttotal(1, self.TopoLdd)
+        if (self.nrresSimple + self.nrlake) > 0:
+            upstr = pcr.catchmenttotal(1, self.TopoLddOrg)
+        else:
+            upstr = pcr.catchmenttotal(1, self.TopoLdd)
         Qscale = upstr / pcr.mapmaximum(upstr) * Qmax
         W = (
             (alf * (alf + 2.0) ** (0.6666666667)) ** (0.375)
@@ -1285,7 +1302,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         # I nthe origal HBV code
         RestEvap = pcr.max(0.0, self.PotEvaporation - self.IntEvap)
 
-        if hasattr(self, "ReserVoirComplexLocs"):
+        if (self.nrresSimple + self.nrlake) > 0 and self.filterResArea == 0:
             self.ReserVoirPotEvap = self.PotEvaporation
             self.ReserVoirPrecip = self.Precipitation
 
@@ -1494,15 +1511,19 @@ class WflowModel(pcraster.framework.DynamicModel):
         # only run the reservoir module if needed
 
         if self.nrresSimple > 0:
-            self.ReservoirVolume, self.Outflow, self.ResPercFull, self.DemandRelease = simplereservoir(
+            self.ReservoirVolume, self.Outflow, self.ResPercFull, self.ResPrecip, self.ResEvap, self.DemandRelease = simplereservoir(
                 self.ReservoirVolume,
                 self.SurfaceRunoff,
+                self.ResSimpleArea,
                 self.ResMaxVolume,
                 self.ResTargetFullFrac,
                 self.ResMaxRelease,
                 self.ResDemand,
                 self.ResTargetMinFrac,
                 self.ReserVoirSimpleLocs,
+                self.ReserVoirPrecip,
+                self.ReserVoirPotEvap,
+                self.ReservoirSimpleAreas,
                 timestepsecs=self.timestepsecs,
             )
             self.OutflowDwn = pcr.upstream(
