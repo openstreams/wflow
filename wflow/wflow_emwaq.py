@@ -801,7 +801,10 @@ def dw_WriteHydDef(fname, cells, flux):
     
     hydfluxname = (np.char.array(fracname) + np.char.array(hydfluxname))
     #Add TotalFlow
-    hydfluxname = np.append(hydfluxname, "TotalFlow")
+    totflowflux = flux.EmPointerHyd.isin(["T"])
+    totflow_var = flux.mapstack[totflowflux]
+    if not totflow_var.empty:
+        hydfluxname = np.append(hydfluxname, "TotalFlow")
     hydfluxname = hydfluxname.reshape(1, len(hydfluxname))
     
 #    cell_list = int_(cells)
@@ -1235,6 +1238,10 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map, FEWS):
     v_nnx = f.createVariable("NetNode_x", "f8", ("nNetNode",))
     v_nny = f.createVariable("NetNode_y", "f8", ("nNetNode",))
     v_nnz = f.createVariable("NetNode_z", "f8", ("nNetNode",))
+    v_nx  = f.createVariable("mesh_node_x", "f8", ("nNetNode",))
+    v_ny  = f.createVariable("mesh_node_y", "f8", ("nNetNode",))
+    v_fx  = f.createVariable("mesh_face_x", "f8", ("nNetElem",))
+    v_fy  = f.createVariable("mesh_face_y", "f8", ("nNetElem",))
     v_nlk = f.createVariable("NetLink", "i4", ("nNetLink", "nNetLinkPts"))
     v_nen = f.createVariable(
         "NetElemNode", "i4", ("nNetElem", "nNetElemMaxNode"), fill_value=0
@@ -1248,7 +1255,8 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map, FEWS):
 
     v_msh.long_name = "Delft3D FM aggregated mesh"
     v_msh.cf_role = "mesh_topology"
-    v_msh.topology_dimension = "2 d"
+    v_msh.topology_dimension = 2
+    #v_msh.node_coordinates = "mesh_Node_x mesh_Node_y"
     v_msh.node_coordinates = "NetNode_x NetNode_y"
     v_msh.face_node_connectivity = "NetElemNode"
     v_msh.edge_node_connectivity = "NetLink"
@@ -1256,7 +1264,7 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map, FEWS):
     v_msh.face_dimension = "nNetElem"
     v_msh.edge_dimension = "nNetLink"
     v_msh.node_dimension = "nNetNode"
-    v_msh.face_coordinates = "Face_x Face_y"
+    v_msh.face_coordinates = "mesh_face_x mesh_face_y"
     v_msh.edge_coordinates = "FlowLink_xu FlowLink_yu"
 
     # v_pcs.name = "Unknown projected"
@@ -1272,16 +1280,44 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map, FEWS):
     v_nnx.units = "degrees_east"
     v_nnx.standard_name = "longitude"
     v_nnx.long_name = "longitude"
+    v_nnx.mesh = "mesh"
+    v_nnx.location = "node"
 
     v_nny.units = "degrees_north"
     v_nny.standard_name = "latitude"
     v_nny.long_name = "latitude"
+    v_nny.mesh = "mesh"
+    v_nny.location = "node"
 
     v_nnz.units = "m"
     v_nnz.positive = "up"
     v_nnz.standard_name = "sea_floor_depth"
     v_nnz.long_name = "Bottom level at net nodes (flow element's corners)"
     v_nnz.coordinates = "NetNode_x NetNode_y"
+    
+    v_nx.units = "degrees_east"
+    v_nx.standard_name = "longitude"
+    v_nx.long_name = "longitude"
+    v_nx.mesh = "mesh"
+    v_nx.location = "node"
+
+    v_ny.units = "degrees_north"
+    v_ny.standard_name = "latitude"
+    v_ny.long_name = "latitude"
+    v_ny.mesh = "mesh"
+    v_ny.location = "node"
+
+    v_fx.units = "degrees_east"
+    v_fx.standard_name = "longitude"
+    v_fx.long_name = "longitude"
+    v_fx.mesh = "mesh"
+    v_fx.location = "face"
+    
+    v_fy.units = "degrees_north"
+    v_fy.standard_name = "latitude"
+    v_fy.long_name = "latitude"
+    v_fy.mesh = "mesh"
+    v_fy.location = "face"
 
     v_nlk.long_name = "link between two netnodes"
     v_nlk.start_index = 1
@@ -1327,6 +1363,10 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map, FEWS):
     v_nnx[:] = nodes_x
     v_nny[:] = nodes_y
     v_nnz[:] = nodes_z
+    v_nx[:] = nodes_x
+    v_ny[:] = nodes_y
+    v_fx[:] = nodes_x_all
+    v_fy[:] = nodes_y_all
     v_nlk[:, :] = net_links + 1  # uses 1-based indexes
     v_nen[:, :] = elem_nodes + 1  # uses 1-based indexes
     v_flk[:, :] = flow_links + 1  # uses 1-based indexes
@@ -1336,6 +1376,7 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map, FEWS):
 
     f.close()
 
+    #lines below can be removed if waq_geom.map file is updated to UGRID standards
     if FEWS:
         coordinates = pd.DataFrame({'X': nodes_x_all, 'Y': nodes_y_all})
         dw_WriteFractionsGrid(fname + "_fraction_grid.csv", coordinates)
@@ -2435,8 +2476,14 @@ def main(argv=None):
                 if Emission:
                     hydflux = ~flux.EmPointerHyd.isin(["P"])
                     flow_var = flux.mapstack[hydflux].values.astype(str)
-                    #Initialize total flow map
-                    totalflow_map = zeroMap*0.0
+                    #Check and id needed initialize total flow map
+                    totflowflux = flux.EmPointerHyd.isin(["T"])
+                    totflow_var = flux.mapstack[totflowflux]
+                    if not totflow_var.empty:
+                        CalcTotflow = True
+                        totalflow_map = zeroMap*0.0
+                    else:
+                        CalcTotflow = False
                 
                 for f in np.arange(0, len(flow_var)):
                     #Flow
@@ -2457,7 +2504,7 @@ def main(argv=None):
 #                        totflowlist= array(["RunoffOpenWater", "InfiltExcessSoil", "InfiltExcessPath", 
 #                                         "ExfiltFromUstore","ExfiltFromSat", "ActEvapOpenWater"])
                         addtotflow_f = flux.EmPointerHyd[flux.mapstack == flow_var[f]].values
-                        if (bool(np.isin(addtotflow_f[0], np.array(["T","PT","HT","PHT"])))):
+                        if CalcTotflow and (bool(np.isin(addtotflow_f[0], np.array(["T","PT","HT","PHT"])))):
                             #logger.info("Adding " + str(flow_var[f]) + " to total flow")
                             totalflow_map = totalflow_map + flow_map
                         addflowblock_f = flux.EmPointerHyd[flux.mapstack == flow_var[f]].values
@@ -2480,8 +2527,11 @@ def main(argv=None):
                                 #Convert to fraction and correct for zero volumes
                                 flow_map = pcr.ifthenelse(volume_map != 0.0, flow_map / volume_map, pcr.scalar(0.0))
                             #Else convert from mm to m3/s
-                            if (convfrac_f[0] == 0 and  unit_f[0] == "mm"):
+                            if (convfrac_f[0] == 0 and unit_f[0] == "mm"):
                                 flow_map = flow_map * reallength * reallength / (1000 * timestepsecs)
+                            #Convert sediment flux from tons to g
+                            elif (convfrac_f[0] == 0 and unit_f[0] == "ton"):
+                                flow_map = flow_map / 1000000
                             flow_block = np.append(flow_block, dw_pcrToDataBlock(flow_map, amap))
                     else:
                         flow_block = np.append(flow_block, dw_pcrToDataBlock(flow_map, amap))
@@ -2569,8 +2619,9 @@ def main(argv=None):
                 #Write dynamic data
                 if Emission:
                     #For emission, convert and add totalflow map to flow block before writting
-                    totalflow_map = totalflow_map * reallength * reallength / (1000 * timestepsecs) #mm to m3/s
-                    flow_block = np.append(flow_block, dw_pcrToDataBlock(totalflow_map, amap))
+                    if CalcTotflow:
+                        totalflow_map = totalflow_map * reallength * reallength / (1000 * timestepsecs) #mm to m3/s
+                        flow_block = np.append(flow_block, dw_pcrToDataBlock(totalflow_map, amap))
                     #logger.info("Writing flow.dat. Nr of points: " + str(size(flow_block)))
                     dw_WriteSegmentOrExchangeData(
                         float(i), dwdir + "/includes_flow/hydrology.bin", flow_block, len(comp), WriteAscii
