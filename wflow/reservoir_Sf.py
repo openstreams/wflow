@@ -79,10 +79,14 @@ def fastRunoff_lag2(self, k):
 
     self.Qfin = (1 - self.D[k]) * self.Qu
 
-    if self.D[k] < 1.00:
+    #self.D[k] < 1.00: changed to checking if the max value of the map is less than 1 when applying a D map instead of a single value read from the ini file. 
+    #TODO: check how this works if D = 1! 
+#    if self.D[k] < 1.00:
+    if pcr.pcr2numpy(self.D[k], mv = -999).max() < 1: 
         if self.convQu[k]:
             self.QfinLag = self.convQu[k][-1]
-            self.Qf = self.Sf[k] * self.Kf[k]
+#            self.Qf = self.Sf[k] * self.Kf[k]   #aangepast 17 juni 2020 to add possibility for non linear outflow from fast reservoir
+            self.Qf = pcr.min(self.Sf[k], self.Sf[k]**self.alfa[k] * self.Kf[k])
             self.Sf[k] = self.Sf[k] + self.QfinLag - self.Qf
 
             self.convQu[k].insert(
@@ -105,7 +109,8 @@ def fastRunoff_lag2(self, k):
         #            self.Qfinput_[k] = self.QfinLag
 
         else:
-            self.Qf = self.Sf[k] * self.Kf[k]
+#            self.Qf = self.Sf[k] * self.Kf[k] #aangepast 17 juni 2020 to add possibility for non linear outflow from fast reservoir
+            self.Qf = pcr.min(self.Sf[k], self.Sf[k]**self.alfa[k] * self.Kf[k])
             self.Sf[k] = self.Sf[k] + self.Qfin - self.Qf
 
     #            self.Qfin_[k] = self.Qfin
