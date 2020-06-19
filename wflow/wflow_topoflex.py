@@ -651,8 +651,9 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         self.wf_updateparameters()
         # MODEL PARAMETERS - VALUES PER CLASS
-        self.D = eval(str(configget(self.config, "model", "D", "[0]")))
-        # self.D = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/D" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.2) for i in self.Classes]
+        #read D from .tbl file instead of from inifile 
+#        self.D = eval(str(configget(self.config, "model", "D", "[0]")))
+        self.D = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/D" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.2) for i in self.Classes]
         self.Tf = eval(str(configget(self.config, "model", "Tf", "[0]")))
         self.Tfa = eval(str(configget(self.config, "model", "Tfa", "[0]")))
 
@@ -714,6 +715,16 @@ class WflowModel(pcraster.framework.DynamicModel):
                 subcatch,
                 self.Soil,
                 0.2,
+            )
+            for i in self.Classes
+        ]
+        self.alfa = [
+            self.readtblDefault2(
+                self.Dir + "/" + self.intbl + "/alfa" + self.NamesClasses[i] + ".tbl",
+                self.LandUse,
+                subcatch,
+                self.Soil,
+                1.0,
             )
             for i in self.Classes
         ]
@@ -1034,9 +1045,10 @@ class WflowModel(pcraster.framework.DynamicModel):
         # Set DCL to riverlength if that is longer that the basic length calculated from grid
         drainlength = detdrainlength(self.TopoLdd, self.xl, self.yl)
 
-        self.DCL = pcr.max(drainlength, self.RiverLength)  # m
+#        self.DCL = pcr.max(drainlength, self.RiverLength)  # m
         # Multiply with Factor (taken from upscaling operation, defaults to 1.0 if no map is supplied
-        self.DCL = self.DCL * pcr.max(1.0, self.RiverLengthFac)
+#        self.DCL = self.DCL * pcr.max(1.0, self.RiverLengthFac)
+        self.DCL = self.RiverLength
 
         # water depth (m)
         # set width for kinematic wave to cell width for all cells
