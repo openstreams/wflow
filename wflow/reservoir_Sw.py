@@ -143,12 +143,13 @@ def snow_hourlyEp(self, k):
     """
     - snow melt based on degree day factor and minimum surface temperature
     - meltfactor fixed
-    - same code as snow_rain_hourlyEp but without increase of degree day factor Fm with precipitation (doesn't work at the daily time step)
-    - 
+    - same code as snow_rain_hourlyEp but without increase of degree day factor Fm with precipitation (doesn't work at the daily time step) (june 2020)
+    - also Jarvis is removed and self.PotEvaporation is equal to EpDay (which is the input) (june 2020)
     """
 
-    JarvisCoefficients.calcEpSnowHour(self, k)
-    self.PotEvaporation = pcr.cover(pcr.ifthenelse(self.EpHour > 0, self.EpHour, 0), 0)
+#    JarvisCoefficients.calcEpSnowHour(self, k)
+#    self.PotEvaporation = pcr.cover(pcr.ifthenelse(self.EpHour > 0, self.EpHour, 0), 0)
+    self.PotEvaporation = self.EpDay2
 
     self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow
 
