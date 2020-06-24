@@ -1536,8 +1536,8 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.WBtot = (
             self.P
             - self.Ei
-            + self.EwiCorr
-            - self.Ew
+#            + self.EwiCorr    #adapted june 2020 as Ew is already counted in Ei so seems to be double counted here --- TO DO: check if this correction applies for all configurations and timesteps
+#            - self.Ew
             - self.Ea
             - self.Eu
             - self.Qtot
