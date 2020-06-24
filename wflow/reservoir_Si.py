@@ -77,6 +77,41 @@ def interception_overflow2(self, k):
             self.Si[k] * self.percentArea, pcr.nominal(self.TopoId)
         )
 
+def interception_overflow3(self, k):
+    """
+    - Effective rainfall is all that does not fit into the interception reservoir
+    - Outgoing fluxes are determined separately
+    - June 2020 --> slightly adapted from interception_overflow2:
+        remove lamda correction for self.Ei = self.Ei + self.Ew_[k]
+        subtract sublimation from potential evaporation to calculate Ei (otherwise it can occur that Ei + Ew > Ep)
+    """
+
+    self.Pe = pcr.max(self.Precipitation - (self.imax[k] - self.Si_t[k]), 0)
+    self.Si[k] = self.Si_t[k] + (self.Precipitation - self.Pe)
+    self.Ei = pcr.ifthenelse(
+        self.Sw[k] == 0, pcr.min(self.PotEvaporation - self.Ew_[k], self.Si[k]), 0
+    )  # ifstatement added on 3-11-2015 for snow module; june2020 remove sublimation from potevap
+    self.Si[k] = self.Si[k] - self.Ei
+
+    self.wbSi_[k] = self.Precipitation - self.Ei - self.Pe - self.Si[k] + self.Si_t[k]
+
+    self.Pe = self.Pe + self.Qw_[k]  # added on 3-11-2015 for snow module
+    self.Ei = self.Ei + self.Ew_[k]  # june 2020 no lambda correction 
+#    self.Ei = self.Ei + (self.Ew_[k] / self.lamda * self.lamdaS)  # lambda added on 31-3-2016
+
+    self.Ei_[k] = self.Ei
+    self.Pe_[k] = self.Pe
+    self.PotEvaporation_ = self.PotEvaporation
+
+    if self.URFR_L:
+        self.Ei = pcr.areatotal(self.Ei * self.percentArea, pcr.nominal(self.TopoId))
+        self.Pe = pcr.areatotal(self.Pe * self.percentArea, pcr.nominal(self.TopoId))
+        self.PotEvaporation = pcr.areatotal(
+            self.PotEvaporation * self.percentArea, pcr.nominal(self.TopoId)
+        )
+        self.Si[k] = pcr.areatotal(
+            self.Si[k] * self.percentArea, pcr.nominal(self.TopoId)
+        )
 
 def interception_overflow_Ep(self, k):
     """
