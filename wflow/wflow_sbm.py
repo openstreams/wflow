@@ -80,7 +80,11 @@ import pdb
 import math
 from numba import jit
 
-from numba.errors import NumbaPendingDeprecationWarning
+try:
+    from numba.core.errors import NumbaPendingDeprecationWarning
+except ImportError:
+    from numba.errors import NumbaPendingDeprecationWarning
+
 import warnings
 
 warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
