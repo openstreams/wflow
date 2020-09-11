@@ -29,7 +29,11 @@ from numba import jit
 import math
 import numpy as np
 import pcraster as pcr
-from numba.errors import NumbaPendingDeprecationWarning
+try:
+    from numba.core.errors import NumbaPendingDeprecationWarning
+except ImportError:
+    from numba.errors import NumbaPendingDeprecationWarning
+
 import warnings
 
 warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
