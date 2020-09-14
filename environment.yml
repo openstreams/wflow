@@ -13,7 +13,7 @@ dependencies:
   - netcdf4>=1.4.1
   - xarray>=0.11
   - cftime>=1.0.4
-  - numba<=0.48
+  - numba>=0.49
   - pyproj>=2.4
   - python-dateutil>=2.7
   # optional
