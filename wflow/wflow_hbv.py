@@ -504,7 +504,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.SeepageLoc = self.wf_readmap(
             os.path.join(self.Dir, wflow_inflow), 0.0
         )  #: Seapage from external model (if configured)
-        RiverWidth = self.wf_readmap(os.path.join(self.Dir, wflow_riverwidth), 0.0)
+        self.RiverWidth = self.wf_readmap(os.path.join(self.Dir, wflow_riverwidth), 0.0)
 
         # Temperature correction per cell to add
         self.TempCor = self.wf_readmap(
@@ -927,7 +927,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             * self.N ** (0.375)
         )
         # Use supplied riverwidth if possible, else calulate
-        RiverWidth = pcr.ifthenelse(RiverWidth <= 0.0, W, RiverWidth)
+        self.RiverWidth = pcr.ifthenelse(self.RiverWidth <= 0.0, W, self.RiverWidth)
         #Use W instead of RiverWidth for reservoirs and lake cells
         if self.nrresSimple > 0:
             self.RiverWidth = pcr.ifthenelse(
@@ -1042,7 +1042,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         # However, in the main river we have real flow so set the width to the
         # width of the river
 
-        self.Bw = pcr.ifthenelse(self.River, RiverWidth, self.Bw)
+        self.Bw = pcr.ifthenelse(self.River, self.RiverWidth, self.Bw)
 
         # term for Alpha
         self.AlpTerm = pow((self.N / (pcr.sqrt(self.Slope))), self.Beta)
@@ -1140,6 +1140,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             "self.reallength",
             "self.DCL",
             "self.Bw",
+            "self.RiverWidth",
         ]
 
         return lst
