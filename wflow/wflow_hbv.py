@@ -1363,8 +1363,8 @@ class WflowModel(pcraster.framework.DynamicModel):
                 1.0, self.DrySnow / MaxSnowPack
             )
             MaxFlux = SnowFluxFrac * self.DrySnow
-            self.DrySnow = accucapacitystate(self.TopoLdd, self.DrySnow, MaxFlux)
-            self.FreeWater = accucapacitystate(
+            self.DrySnow = pcr.accucapacitystate(self.TopoLdd, self.DrySnow, MaxFlux)
+            self.FreeWater = pcr.accucapacitystate(
                 self.TopoLdd, self.FreeWater, SnowFluxFrac * self.FreeWater
             )
         else:
