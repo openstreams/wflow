@@ -133,6 +133,9 @@ Then install a release {release} of wflow (available from release 2018.1) with p
 
 + ``pip install wflow=={release}``
 
+If you want to avoid using ``conda``, an example of a PCRaster build and pip install on
+Ubuntu Linux can be found in `issue #36 <https://github.com/openstreams/wflow/issues/36>`_.
+
 Check if the installation is successful
 ---------------------------------------
 
