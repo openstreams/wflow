@@ -38,7 +38,6 @@ import warnings
 
 warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
-
 # ldd definitie
 _ldd = np.array([[7, 8, 9], [4, 5, 6], [1, 2, 3]])
 _ldd_us = np.fliplr(np.flipud(_ldd))
@@ -101,16 +100,14 @@ def set_dd(ldd, _ldd_us=_ldd_us, pit_value=_pits):
 
 def estimate_iterations_kin_wave(Q, Beta, alpha, timestepsecs, dx, mv):
     
-    celerity = pcr.ifthen(Q > 0.0, 1.0 / (alpha * Beta * Q**(Beta-1)))
+    celerity = pcr.ifthenelse(Q > 0.0, 1.0 / (alpha * Beta * Q ** (Beta-1)), 0.0)
     courant = (timestepsecs / dx) * celerity
     np_courant = pcr.pcr2numpy(courant, mv)
     np_courant[np_courant==mv] = np.nan
-    try:
-        it_kin = int(np.ceil(1.25*(np.nanpercentile(np_courant,95))))
-    except:
-        it_kin = 1
+    it_kin = max(int(np.ceil(1.25*(np.nanpercentile(np_courant,95)))), 1)
     
     return it_kin
+
 
 @jit(nopython=True)
 def kinematic_wave(Qin,Qold,q,alpha,beta,deltaT,deltaX):
@@ -153,7 +150,8 @@ def kin_wave(rnodes, rnodes_up, Qold, q, Alpha, Beta, DCL, River, Bw, AlpTermR, 
     
     acc_flow = np.zeros(Qold.size, dtype=np.float64)
     acc_flow = np.concatenate((acc_flow, np.array([0], dtype=np.float64)))
-
+    acc_h = np.copy(acc_flow)
+    waterlevel = np.copy(acc_flow)
 
     for v in range(0,it):
         shape = Qold.shape
@@ -171,14 +169,15 @@ def kin_wave(rnodes, rnodes_up, Qold, q, Alpha, Beta, DCL, River, Bw, AlpTermR, 
                 Qnew[idx] = kinematic_wave(Qin, Qold[idx], q[idx], Alpha[idx], Beta[idx], deltaT/it, DCL[idx])
         
                 acc_flow[idx] = acc_flow[idx] + Qnew[idx] * (deltaT/it)
-                WaterLevelR = (Alpha[idx] * np.power(Qnew[idx], Beta[idx])) / Bw[idx]
-                Pr = Bw[idx] + (2.0 * WaterLevelR)
+                waterlevel[idx] = (Alpha[idx] * np.power(Qnew[idx], Beta[idx])) / Bw[idx]
+                acc_h[idx] = acc_h[idx] + waterlevel[idx]
+                Pr = Bw[idx] + (2.0 * waterlevel[idx])
                 Alpha[idx] = AlpTermR[idx] * np.power(Pr, AlpPow[idx])
                 Qold[idx]= Qnew[idx]
+    waterlevel_av = acc_h[:-1]/it
     # remove last value from array and reshape to original format
-    return acc_flow[:-1].reshape(shape)
-    #return Qnew[:-1].reshape(shape)
-
+    return acc_flow[:-1].reshape(shape), Qnew[:-1].reshape(shape), waterlevel_av.reshape(shape), waterlevel[:-1].reshape(shape)
+    
 
 @jit(nopython=True)
 def kinematic_wave_ssf(ssf_in, ssf_old, zi_old, r, Ks_hor, Ks, slope, neff, f, D, dt, dx, w, ssf_max):

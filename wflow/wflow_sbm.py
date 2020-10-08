@@ -298,8 +298,8 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, soilInfReducti
     # flat new state
     ssf_new = np.zeros(dyn['ssf'].size, dtype=dyn['ssf'].dtype)
 
-    qo_new = np.zeros(dyn['LandRunoff'].size, dtype=dyn['LandRunoff'].dtype)
-    qo_new = np.concatenate((qo_new, np.array([0], dtype=dyn['LandRunoff'].dtype)))
+    qo_new = np.zeros(dyn['LandRunoffsub'].size, dtype=dyn['LandRunoffsub'].dtype)
+    qo_new = np.concatenate((qo_new, np.array([0], dtype=dyn['LandRunoffsub'].dtype)))
 
     
     # append zero to end to deal with nodata (-1) in indices
@@ -527,15 +527,16 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, soilInfReducti
             
             
     
-    acc_flow = np.zeros(dyn['LandRunoff'].size, dtype=dyn['LandRunoff'].dtype)
-    acc_flow = np.concatenate((acc_flow, np.array([0], dtype=dyn['LandRunoff'].dtype)))
+    acc_flow = np.zeros(dyn['LandRunoffsub'].size, dtype=dyn['LandRunoffsub'].dtype)
+    acc_flow = np.concatenate((acc_flow, np.array([0], dtype=dyn['LandRunoffsub'].dtype)))
+    acc_h = np.copy(acc_flow)
     qo_toriver_acc = np.copy(acc_flow)
 
     q = dyn['InwaterO'] / static['DL']
     for v in range(0,it_kinL):
 	
-        qo_new = np.zeros(dyn['LandRunoff'].size, dtype=dyn['LandRunoff'].dtype)
-        qo_new = np.concatenate((qo_new, np.array([0], dtype=dyn['LandRunoff'].dtype)))
+        qo_new = np.zeros(dyn['LandRunoffsub'].size, dtype=dyn['LandRunoffsub'].dtype)
+        qo_new = np.concatenate((qo_new, np.array([0], dtype=dyn['LandRunoffsub'].dtype)))
         
         for i in range(len(nodes)):
             for j in range(len(nodes[i])):
@@ -558,17 +559,19 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, soilInfReducti
                     qo_toriver_vol = 0.0
 
                     
-                qo_new[idx] = kinematic_wave(qo_in, dyn['LandRunoff'][idx], q[idx], dyn['AlphaL'][idx], static['Beta'][idx], timestepsecs/it_kinL, static['DL'][idx])
+                qo_new[idx] = kinematic_wave(qo_in, dyn['LandRunoffsub'][idx], q[idx], dyn['AlphaL'][idx], static['Beta'][idx], timestepsecs/it_kinL, static['DL'][idx])
                                 
                 acc_flow[idx] = acc_flow[idx] + qo_new[idx] * (timestepsecs/it_kinL)
                 dyn['Qo_in'][idx] = dyn['Qo_in'][idx] + qo_in * (timestepsecs/it_kinL)
                 qo_toriver_acc[idx] = qo_toriver_acc[idx] + qo_toriver_vol
                 if static['SW'][idx] > 0:
-                    WaterLevelL = (dyn['AlphaL'][idx] * np.power(qo_new[idx], static['Beta'][idx])) / static['SW'][idx]
-                Pl = static['SW'][idx] + (2.0 * WaterLevelL)
+                    dyn['WaterLevelLsub'][idx] = (dyn['AlphaL'][idx] * np.power(qo_new[idx], static['Beta'][idx])) / static['SW'][idx]
+                acc_h[idx] = acc_h[idx] + dyn['WaterLevelLsub'][idx]
+                Pl = static['SW'][idx] + (2.0 * dyn['WaterLevelLsub'][idx])
                 dyn['AlphaL'][idx] = static['AlpTermL'][idx] * np.power(Pl, static['AlpPow'][idx])
-                dyn['LandRunoff'][idx]= qo_new[idx]
-    qo_new = acc_flow/timestepsecs
+                dyn['LandRunoffsub'][idx]= qo_new[idx]
+    qo_av = acc_flow/timestepsecs
+    waterlevel_av = acc_h[:-1]/it_kinL
     dyn['qo_toriver'][:] = qo_toriver_acc[:-1]/timestepsecs
     dyn['Qo_in'][:] = dyn['Qo_in'][:] / timestepsecs
     
@@ -576,7 +579,7 @@ def sbm_cell(nodes, nodes_up, ldd, layer, static, dyn, modelSnow, soilInfReducti
                   (dyn['CellInFlow'][:]-ssf_new[:-1])/(static['DW'][:]*static['DL'][:]*1000*1000) - dyn['ExfiltWater'][:] - dyn['soilevap'][:] - dyn['ActEvapUStore'][:] -
                   dyn['ActEvapSat'][:] - dyn['ActLeakage'][:])
     
-    return ssf_new[:-1], qo_new[:-1], dyn, layer
+    return ssf_new[:-1], qo_av[:-1], waterlevel_av, dyn, layer
 
 
 
@@ -624,29 +627,14 @@ class WflowModel(pcraster.framework.DynamicModel):
         return Et_diff, m3sec
 
 
-    def updateRunOff(self):
+    def updateKinWaveVolume(self):
         """
       Updates the kinematic wave reservoir. Should be run after updates to Q
       """
-        self.WaterLevelR = (self.AlphaR * pow(self.RiverRunoff, self.Beta)) / self.Bw
-        # wetted perimeter (m)
-        Pr = self.Bw + (2 * self.WaterLevelR)
-        # Alpha River
-        self.AlphaR = self.AlpTermR * pow(Pr, self.AlpPow)
         self.OldKinWaveVolumeR = self.KinWaveVolumeR
         self.KinWaveVolumeR = self.WaterLevelR * self.Bw * self.DCL
-        
-        self.dyn['AlphaR'] = pcr.pcr2numpy(self.AlphaR,self.mv).ravel()
-        
-        self.WaterLevelL = pcr.ifthenelse( self.SW > 0, (self.AlphaL * pow(self.LandRunoff, self.Beta)) / self.SW, 0.0)
-        
-        Pl = self.SW + (2 * self.WaterLevelL)
-        # Alpha Land
-        self.AlphaL = self.AlpTermL * pow(Pl, self.AlpPow)
         self.OldKinWaveVolumeL = self.KinWaveVolumeL
         self.KinWaveVolumeL = self.WaterLevelL * self.SW * self.DL
-        
-        self.dyn['AlphaL'] = pcr.pcr2numpy(self.AlphaL,self.mv).ravel()       
         
         
     def stateVariables(self):
@@ -655,12 +643,15 @@ class WflowModel(pcraster.framework.DynamicModel):
         This list is essential for the resume and suspend functions to work.
 
         This function is specific for each model and **must** be present.
-
-       :var self.RiverRunoff: Surface runoff in the kin-wave resrvoir [m^3/s]
-       :var self.LandRunoff: Surface runoff in the kin-wave resrvoir [m^3/s]
+       :var self.RiverRunoff: Surface runoff in the river kin-wave resrvoir [m^3/s]
+       :var self.RiverRunoffsub: Surface runoff in the river kin-wave resrvoir [m^3/s] at sub timestep (iteration kin-wave)
+       :var self.LandRunoff: Surface runoff in the land kin-wave resrvoir [m^3/s]
+       :var self.LandRunoffsub: Surface runoff in the land kin-wave resrvoir [m^3/s] at sub timestep (iteration kin-wave)
        :var self.SurfaceRunoffDyn: Surface runoff in the dyn-wave resrvoir [m^3/s]
        :var self.WaterLevelR: Water level in the river kin-wave reservoir [m]
+       :var self.WaterLevelRsub: Water level in the river kin-wave reservoir [m] at sub timestep (iteration kin-wave)
        :var self.WaterLevelL: Water level in the land kin-wave reservoir [m]
+       :var self.WaterLevelLsub: Water level in the land kin-wave reservoir [m] at sub timestep (iteration kin-wave)
        :var self.WaterLevelDyn: Water level in the dyn-wave resrvoir [m^]
        :var self.Snow: Snow pack [mm]
        :var self.SnowWater: Snow pack water [mm]
@@ -673,10 +664,14 @@ class WflowModel(pcraster.framework.DynamicModel):
        :var self.GlacierStore: Thickness of the Glacier in a gridcell [mm]
        """
         states = [
+            "RiverRunoffsub",
             "RiverRunoff",
             "WaterLevelR",
+            "WaterLevelRsub",
             "LandRunoff",
+            "LandRunoffsub",
             "WaterLevelL",
+            "WaterLevelLsub",
             "SatWaterDepth",
             "Snow",
             "TSoil",
@@ -1972,7 +1967,8 @@ class WflowModel(pcraster.framework.DynamicModel):
                  ('zi', np.float64),
                  ('SatWaterDepth', np.float64),
                  ('ssf', np.float64),
-                 ('LandRunoff', np.float64),
+                 ('LandRunoffsub', np.float64),
+                 ('WaterLevelLsub', np.float64),
                  ('PotTrans', np.float64),
                  ('PotSoilEvap', np.float64),
                  ('ActEvapOpenWaterLand', np.float64),
@@ -2092,9 +2088,13 @@ class WflowModel(pcraster.framework.DynamicModel):
                 self.UStoreLayerDepth.append(self.ZeroMap)
 
             self.WaterLevelR = self.ZeroMap
+            self.WaterLevelRsub = self.ZeroMap
             self.WaterLevelL = self.ZeroMap
+            self.WaterLevelLsub = self.ZeroMap
             self.RiverRunoff = self.ZeroMap
+            self.RiverRunoffsub = self.ZeroMap
             self.LandRunoff = self.ZeroMap
+            self.LandRunoffsub = self.ZeroMap
             
             self.Snow = self.ZeroMap
             self.SnowWater = self.ZeroMap
@@ -2116,29 +2116,22 @@ class WflowModel(pcraster.framework.DynamicModel):
         else:
             self.logger.info("Setting initial conditions from state files")
             self.wf_resume(os.path.join(self.Dir, "instate"))
-
-        Pr = self.Bw + (2.0 * self.WaterLevelR)
+        
+        Pr = self.Bw + (2.0 * self.WaterLevelRsub)
         self.AlphaR = self.AlpTermR * pow(Pr, self.AlpPow)
         self.dyn['AlphaR'] = pcr.pcr2numpy(self.AlphaR, self.mv).ravel()
         
-        Pl = self.SW + (2.0 * self.WaterLevelL)
+        Pl = self.SW + (2.0 * self.WaterLevelLsub)
         self.AlphaL = self.AlpTermL * pow(Pl, self.AlpPow)
         self.dyn['AlphaL'] = pcr.pcr2numpy(self.AlphaL, self.mv).ravel()
         
-        self.OldLandRunoff = self.LandRunoff
-        self.LandRunoffMM = self.LandRunoff * self.QMMConv
         # Determine initial kinematic wave volume overland
         self.KinWaveVolumeL = self.WaterLevelL * self.SW * self.DL
         self.OldKinWaveVolumeL = self.KinWaveVolumeL
         
-        self.OldRiverRunoff = self.RiverRunoff
-
-        self.RiverRunoffMM = self.RiverRunoff * self.QMMConv
         # Determine initial kinematic wave volume
         self.KinWaveVolumeR = self.WaterLevelR * self.Bw * self.DCL
         self.OldKinWaveVolumeR = self.KinWaveVolumeR
-
-        self.QCatchmentMM = self.RiverRunoff * self.QMMConvUp
        
         self.InitialStorage = (
             self.SatWaterDepth
@@ -2178,14 +2171,20 @@ class WflowModel(pcraster.framework.DynamicModel):
         :var self.soilevap: base soil evaporation [mm]
         :var self.Interception: Actual rainfall interception [mm]
         :var self.ActEvap: Actual evaporation (transpiration + Soil evap + open water evap) [mm]
-        :var self.RiverRunoff: Surface runoff in the kinematic wave [m^3/s]
+        :var self.RiverRunoff: Surface runoff in the river kinematic wave [m^3/s]
+        :var self.Landrunoff: Surface runoff in the land kinematic wave [m^3/s]
+        :var self.RiverRunoffsub: Surface runoff in the river kinematic wave [m^3/s] at sub timestep
+        :var self.Landrunoffsub: Surface runoff in the land kinematic wave [m^3/s] at sub timestep
         :var self.SurfaceRunoffDyn: Surface runoff in the dyn-wave resrvoir [m^3/s]
         :var self.SurfaceRunoffCatchmentMM: Surface runoff in the dyn-wave reservoir expressed in mm over the upstream (catchment) area
         :var self.WaterLevelDyn: Water level in the dyn-wave resrvoir [m^]
         :var self.ActEvap: Actual EvapoTranspiration [mm] (minus interception losses)
         :var self.ExcessWater: Water that cannot infiltrate due to saturated soil [mm]
         :var self.InfiltExcess: Infiltration excess water [mm]
-        :var self.WaterLevel: Water level in the kinematic wave [m] (above the bottom)
+        :var self.WaterLevelR: Water level in the river kinematic wave [m] (above the bottom)
+        :var self.WaterLevelL: Water level in the land kinematic wave [m] (above the bottom)
+        :var self.WaterLevelRsub: Water level in the river kinematic wave [m] (above the bottom) at sub timestep
+        :var self.WaterLevelLsub: Water level in the land kinematic wave [m] (above the bottom) at sub timestep
         :var self.ActInfilt: Actual infiltration into the unsaturated zone [mm]
         :var self.CanopyStorage: actual canopystorage (only for subdaily timesteps) [mm]
         :var self.SatWaterDepth: Amount of water in the saturated store [mm]
@@ -2494,17 +2493,18 @@ class WflowModel(pcraster.framework.DynamicModel):
         for i in range(self.maxLayers):
             self.layer['UStoreLayerDepth'][i] = pcr.pcr2numpy(self.UStoreLayerDepth[i],self.mv).ravel()
         
-        self.dyn['LandRunoff'] = pcr.pcr2numpy(self.LandRunoff,self.mv).ravel()
+        self.dyn['LandRunoffsub'] = pcr.pcr2numpy(self.LandRunoffsub,self.mv).ravel()
         self.dyn['sumUStoreLayerDepth'] = pcr.pcr2numpy(self.UStoreDepth,self.mv).ravel()
+        self.dyn['AlphaL'] = pcr.pcr2numpy(self.AlphaL,self.mv).ravel()
 
         it_kinL = 1
         if self.kinwaveIters == 1:
             if self.kinwaveLandTstep == 0:
-                it_kinL = estimate_iterations_kin_wave(self.LandRunoff, self.Beta, self.AlphaL, self.timestepsecs, self.DL, self.mv)
+                it_kinL = estimate_iterations_kin_wave(self.LandRunoffsub, self.Beta, self.AlphaL, self.timestepsecs, self.DL, self.mv)
             else:
                 it_kinL = int(np.ceil(self.timestepsecs/self.kinwaveLandTstep))
-                
-        ssf, qo, self.dyn, self.layer  = sbm_cell(self.nodes, 
+
+        ssf, qav, wl_av, self.dyn, self.layer  = sbm_cell(self.nodes, 
                                              self.nodes_up,
                                              self.np_ldd.ravel(),
                                              self.layer,
@@ -2523,12 +2523,16 @@ class WflowModel(pcraster.framework.DynamicModel):
                                              )
 
         self.SubsurfaceFlow = pcr.numpy2pcr(pcr.Scalar,ssf.reshape(self.shape),self.mv)
-        self.LandRunoff = pcr.numpy2pcr(pcr.Scalar,qo.reshape(self.shape),self.mv)
+        self.LandRunoffsub = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['LandRunoffsub'].reshape(self.shape)),self.mv)
+        self.WaterLevelLsub = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['WaterLevelLsub'].reshape(self.shape)),self.mv)
+        self.LandRunoff = pcr.numpy2pcr(pcr.Scalar,qav.reshape(self.shape),self.mv)
+        self.WaterLevelL = pcr.numpy2pcr(pcr.Scalar,wl_av.reshape(self.shape),self.mv)
         self.zi = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['zi'].reshape(self.shape)),self.mv)
         self.SatWaterDepth = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['SatWaterDepth'].reshape(self.shape)),self.mv)
         self.UStoreDepth = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['sumUStoreLayerDepth'].reshape(self.shape)),self.mv)
         self.CapFlux = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['CapFlux'].reshape(self.shape)),self.mv)
         self.Transfer = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['Transfer'].reshape(self.shape)),self.mv)
+        self.AlphaL = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['AlphaL'].reshape(self.shape)),self.mv)
         
         for i in range(self.maxLayers):
             self.UStoreLayerDepth[i] = pcr.numpy2pcr(pcr.Scalar,np.copy(self.layer['UStoreLayerDepth'][i].reshape(self.shape)),self.mv)
@@ -2639,7 +2643,8 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.Inflow < 0.0, pcr.min(MaxExtract, -1.0 * self.Inflow), self.ZeroMap
         )
         self.OldRiverRunoff = self.RiverRunoff  # NG Store for iteration
-        OldRiverRunoff = pcr.pcr2numpy(self.OldRiverRunoff,self.mv).ravel()
+        self.OldRiverRunoffsub = self.RiverRunoffsub
+        river_runoff_sub_old = pcr.pcr2numpy(self.RiverRunoffsub,self.mv).ravel()
         self.OldInwater = self.Inwater
         self.Inwater = self.Inwater + pcr.ifthenelse(
             self.SurfaceWaterSupply > 0, -1.0 * self.SurfaceWaterSupply, self.Inflow
@@ -2653,18 +2658,21 @@ class WflowModel(pcraster.framework.DynamicModel):
         qr_np =  pcr.pcr2numpy(qr,self.mv).ravel()
         
         RiverRunoff = pcr.pcr2numpy(self.RiverRunoff,self.mv).ravel()
+        river_runoff_sub = pcr.pcr2numpy(self.RiverRunoffsub,self.mv).ravel()
+        self.dyn['AlphaR'] = pcr.pcr2numpy(self.AlphaR,self.mv).ravel()
+        AlphaR_old = self.AlphaR
         
         it_kinR = 1
         if self.kinwaveIters == 1:
             if self.kinwaveRiverTstep == 0:
-                it_kinR = estimate_iterations_kin_wave(self.RiverRunoff, self.Beta, self.AlphaR, self.timestepsecs, self.DCL, self.mv)
+                it_kinR = estimate_iterations_kin_wave(self.RiverRunoffsub, self.Beta, self.AlphaR, self.timestepsecs, self.DCL, self.mv)
             else:
                 it_kinR = int(np.ceil(self.timestepsecs/self.kinwaveRiverTstep))
-                
-        acc_flow = kin_wave(
+
+        acc_flow, river_runoff_sub, wl_river_av, wl_river = kin_wave(
                 self.rnodes,
                 self.rnodes_up,
-                RiverRunoff,
+                river_runoff_sub,
                 qr_np,
                 self.dyn['AlphaR'],
                 self.static['Beta'],
@@ -2677,8 +2685,11 @@ class WflowModel(pcraster.framework.DynamicModel):
                 it_kinR)
             
         Qriver = acc_flow/self.timestepsecs
-        self.RiverRunoff = pcr.numpy2pcr(pcr.Scalar, np.copy(Qriver).reshape(self.shape),self.mv)
-
+        self.RiverRunoff = pcr.numpy2pcr(pcr.Scalar, Qriver.reshape(self.shape),self.mv)
+        self.WaterLevelR = pcr.numpy2pcr(pcr.Scalar, wl_river_av.reshape(self.shape),self.mv)
+        self.RiverRunoffsub = pcr.numpy2pcr(pcr.Scalar, np.copy(river_runoff_sub).reshape(self.shape),self.mv)
+        self.AlphaR = pcr.numpy2pcr(pcr.Scalar, np.copy(self.dyn['AlphaR'].reshape(self.shape)),self.mv)
+        self.WaterLevelRsub = pcr.numpy2pcr(pcr.Scalar, wl_river.reshape(self.shape),self.mv)
 
         # If inflow is negative we have abstractions. Check if demand can be met (by looking
         # at the flow in the upstream cell) and iterate if needed
@@ -2724,15 +2735,16 @@ class WflowModel(pcraster.framework.DynamicModel):
 
                 if self.kinwaveIters == 1:
                     if self.kinwaveRiverTstep == 0:
-                        it_kinR = estimate_iterations_kin_wave(self.OldRiverRunoff, self.Beta, self.AlphaR, self.timestepsecs, self.DCL, self.mv)
+                        it_kinR = estimate_iterations_kin_wave(self.OldRiverRunoffsub, self.Beta, AlphaR_old, self.timestepsecs, self.DCL, self.mv)
                     else:
                         it_kinR = int(np.ceil(self.timestepsecs/self.kinwaveRiverTstep))
-                                
-                acc_flow = kin_wave(
+                
+                self.dyn['AlphaR'] = pcr.pcr2numpy(AlphaR_old,self.mv).ravel()
+                acc_flow, river_runoff_sub, wl_river_av, wl_river = kin_wave(
                         self.rnodes,
                         self.rnodes_up,
-                        OldRiverRunoff,
-                        q_np,
+                        river_runoff_sub_old,
+                        qr_np,
                         self.dyn['AlphaR'],
                         self.static['Beta'],
                         self.static['DCL'],
@@ -2745,6 +2757,11 @@ class WflowModel(pcraster.framework.DynamicModel):
                     
                 Qriver = acc_flow/self.timestepsecs
                 self.RiverRunoff = pcr.numpy2pcr(pcr.Scalar, np.copy(Qriver).reshape(self.shape),self.mv)
+                self.WaterLevelR = pcr.numpy2pcr(pcr.Scalar, np.copy(wl_river_av).reshape(self.shape),self.mv)
+                self.RiverRunoffsub = pcr.numpy2pcr(pcr.Scalar, np.copy(river_runoff_sub).reshape(self.shape),self.mv)  
+                self.AlphaR = pcr.numpy2pcr(pcr.Scalar, np.copy(self.dyn['AlphaR'].reshape(self.shape)),self.mv)
+                self.WaterLevelRsub = pcr.numpy2pcr(pcr.Scalar, np.copy(wl_river).reshape(self.shape),self.mv)  
+
                                 
                 self.RiverRunoffMM = (
                     self.RiverRunoff * self.QMMConv
@@ -2759,12 +2776,12 @@ class WflowModel(pcraster.framework.DynamicModel):
                     break
 
             self.InflowKinWaveCell = pcr.upstream(self.TopoLdd, self.RiverRunoff)
-            self.updateRunOff()
+            self.updateKinWaveVolume()
         else:
             self.RiverRunoffMM = (
                 self.RiverRunoff * self.QMMConv
             )  # RiverRunoffMM (mm) from RiverRunoff (m3/s)
-            self.updateRunOff()
+            self.updateKinWaveVolume()
             
         self.LandRunoffMM = (
             self.LandRunoff * self.QMMConv
@@ -2875,7 +2892,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.RiverRunoffMM = (
                 self.RiverRunoff * self.QMMConv
             )  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
-            self.updateRunOff()
+            self.updateKinWaveVolume()
             Runoff = self.RiverRunoff
 
         # Determine Soil moisture profile
