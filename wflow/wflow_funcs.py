@@ -100,11 +100,14 @@ def set_dd(ldd, _ldd_us=_ldd_us, pit_value=_pits):
 
 def estimate_iterations_kin_wave(Q, Beta, alpha, timestepsecs, dx, mv):
     
-    celerity = pcr.ifthenelse(Q > 0.0, 1.0 / (alpha * Beta * Q ** (Beta-1)), 0.0)
+    celerity = pcr.ifthen(Q > 0.0, 1.0 / (alpha * Beta * Q**(Beta-1)))
     courant = (timestepsecs / dx) * celerity
     np_courant = pcr.pcr2numpy(courant, mv)
     np_courant[np_courant==mv] = np.nan
-    it_kin = max(int(np.ceil(1.25*(np.nanpercentile(np_courant,95)))), 1)
+    try:
+        it_kin = int(np.ceil(1.25*(np.nanpercentile(np_courant,95))))
+    except:
+        it_kin = 1
     
     return it_kin
 
