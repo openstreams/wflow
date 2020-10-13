@@ -621,7 +621,7 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         Et_diff = pcr.areaaverage(pottrans - acttrans, pcr.nominal(irareas))
         # Now determine demand in m^3/s for each area
-        sqmarea = pcr.areatotal(self.reallength * self.reallength, pcr.nominal(irareas))
+        sqmarea = pcr.areatotal(self.xl * self.yl, pcr.nominal(irareas))
         m3sec = Et_diff * sqmarea / 1000.0 / self.timestepsecs
 
         return Et_diff, m3sec
@@ -1659,19 +1659,20 @@ class WflowModel(pcraster.framework.DynamicModel):
         OutZones = self.LandUse
 
         self.QMMConv = self.timestepsecs / (
-            self.reallength * self.reallength * 0.001
+            self.xl * self.yl * 0.001
         )  # m3/s --> actial mm of water over the cell
         # self.QMMConvUp = 1000.0 * self.timestepsecs / ( pcr.catchmenttotal(pcr.cover(1.0), self.TopoLdd) * self.reallength * self.reallength)  #m3/s --> mm over upstreams
         temp = (
             pcr.catchmenttotal(pcr.cover(1.0), self.TopoLdd)
-            * self.reallength
+            * self.xl
             * 0.001
             * 0.001
-            * self.reallength
+            * self.yl
         )
+   
         self.QMMConvUp = pcr.cover(self.timestepsecs * 0.001) / temp
         self.ToCubic = (
-            self.reallength * self.reallength * 0.001
+            self.xl * self.yl * 0.001
         ) / self.timestepsecs  # m3/s
         self.KinWaveVolumeR = self.ZeroMap
         self.OldKinWaveVolumeR = self.ZeroMap
@@ -2544,7 +2545,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.ActEvapUStore = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ActEvapUStore'].reshape(self.shape)),self.mv)
         self.ActEvapSat = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['ActEvapSat'].reshape(self.shape)),self.mv)
         self.Transpiration = self.ActEvapUStore + self.ActEvapSat
-        
+        self.soilevapsat = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['soilevapsat'].reshape(self.shape)),self.mv)
         self.soilevap = pcr.numpy2pcr(pcr.Scalar,np.copy(self.dyn['soilevap'].reshape(self.shape)),self.mv)
         
         self.ActEvap = (
@@ -2555,7 +2556,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 + self.ActEvapPond
                 )
         
-        self.Recharge = self.Transfer - self.CapFlux - self.ActEvapSat
+        self.Recharge = self.Transfer - self.CapFlux - self.ActEvapSat - self.soilevapsat
 
         # Run only if we have irrigation areas or an externally given demand, determine irrigation demand based on potrans and acttrans
         if self.nrirri > 0 or hasattr(self, "IrriDemandExternal"):
@@ -2585,7 +2586,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 * self.CRPST
             )
             sqmarea = pcr.areatotal(
-                self.reallength * self.reallength, self.IrrigationPaddyAreas
+                self.xl * self.yl, self.IrrigationPaddyAreas
             )
             self.IrriDemandm3 = pcr.cover((irr_depth / 1000.0) * sqmarea, 0)
             IRDemand = idtoid(
@@ -2597,7 +2598,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.IRDemand = IRDemand
             self.Inflow = pcr.cover(IRDemand, self.Inflow)
             self.irr_depth = irr_depth
-
+            
 
         SurfaceWater = self.WaterLevelR / 1000.0  # SurfaceWater (mm)
         self.CumSurfaceWater = self.CumSurfaceWater + SurfaceWater
@@ -2654,7 +2655,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         # Runoff calculation via Kinematic wave ##################################
         ##########################################################################
         
-        qr = self.Inwater/self.DCL     
+        qr = self.Inwater/self.DCL
         qr_np =  pcr.pcr2numpy(qr,self.mv).ravel()
         
         RiverRunoff = pcr.pcr2numpy(self.RiverRunoff,self.mv).ravel()
@@ -2796,7 +2797,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 self.SurfaceWaterSupply * (1 - self.DemandReturnFlowFraction),
             )
             sqmarea = pcr.areatotal(
-                self.reallength * self.reallength, pcr.nominal(self.IrrigationAreas)
+                self.xl * self.yl, pcr.nominal(self.IrrigationAreas)
             )
 
             self.IRSupplymm = pcr.cover(
@@ -2811,7 +2812,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 self.SurfaceWaterSupply,
             )
             sqmarea = pcr.areatotal(
-                self.reallength * self.reallength,
+                self.xl * self.yl,
                 pcr.nominal(
                     pcr.ifthen(self.IrriDemandm3 > 0, self.IrrigationPaddyAreas)
                 ),
