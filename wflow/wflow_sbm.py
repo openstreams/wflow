@@ -2352,7 +2352,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 # Convert to mm per grid cell and add to snowmelt
                 self.GlacierMelt = self.GlacierMelt * self.GlacierFrac
                 self.RainFallPlusMelt = (
-                    self.RainFallPlusMelt + self.GlacierMelt
+                    self.RainFallPlusMelt + pcr.cover(self.GlacierMelt,0.0)
                 )
         else:
             self.RainFallPlusMelt = self.EffectivePrecipitation
