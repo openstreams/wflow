@@ -893,10 +893,10 @@ class WflowModel(pcraster.framework.DynamicModel):
         Terrain_angle = pcr.scalar(pcr.atan(self.Slope))
         temp = (
             pcr.catchmenttotal(pcr.cover(1.0), self.TopoLdd)
-            * self.reallength
+            * self.xl
             * 0.001
             * 0.001
-            * self.reallength
+            * self.yl
         )
         self.QMMConvUp = pcr.cover(self.timestepsecs * 0.001) / temp
 
@@ -987,10 +987,10 @@ class WflowModel(pcraster.framework.DynamicModel):
         # pcr.report(self.reallength,"rl.map")
         # pcr.report(catchmentcells,"kk.map")
         self.QMMConv = self.timestepsecs / (
-            self.reallength * self.reallength * 0.001
+            self.xl * self.yl * 0.001
         )  # m3/s --> mm
         self.ToCubic = (
-            self.reallength * self.reallength * 0.001
+            self.xl * self.yl * 0.001
         ) / self.timestepsecs  # m3/s
         self.sumprecip = self.ZeroMap  #: accumulated rainfall for water balance
         self.sumevap = self.ZeroMap  #: accumulated evaporation for water balance
