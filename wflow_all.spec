@@ -125,3 +125,7 @@ for scriptpath in scriptpaths:
     # only copy if new or newer
     copy_tree(srcdir, "dist", update=1)
     remove_tree(srcdir)
+
+# getting an error if this folder does not exist
+libbin_dir = Path("dist") / "Library" / "bin"
+libbin_dir.mkdir(exist_ok=True, parents=True)
