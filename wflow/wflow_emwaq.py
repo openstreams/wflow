@@ -775,7 +775,7 @@ def dw_WriteGeometry(fname, cells, amap, reallength, PathFrac, WaterFrac, Aggreg
     timear = np.array(0, dtype=np.int32)
     #Open and write the data
     fp = open(fname + "geometry.bin", "wb")
-    tstr = timear.tostring() + artow.tostring()
+    tstr = timear.tobytes() + artow.tobytes()
     fp.write(tstr)
     fp.close()
     
@@ -1664,7 +1664,7 @@ def dw_WriteSegmentOrExchangeData(ttime, fname, datablock, boundids, WriteAscii=
     
     if os.path.isfile(fname):  # append to existing file
         fp = open(fname, "ab")
-        tstr = timear.tostring() + artow.tostring()
+        tstr = timear.tobytes() + artow.tobytes()
         fp.write(tstr)
         if WriteAscii:
             fpa = open(fname + ".asc", "a")
@@ -1673,7 +1673,7 @@ def dw_WriteSegmentOrExchangeData(ttime, fname, datablock, boundids, WriteAscii=
             fpa.write("\n")
     else:
         fp = open(fname, "wb")
-        tstr = timear.tostring() + artow.tostring()
+        tstr = timear.tobytes() + artow.tobytes()
         fp.write(tstr)
         if WriteAscii:
             fpa = open(fname + ".asc", "w")
@@ -1835,7 +1835,7 @@ def dw_WriteCSVdata(timestepsecs, fname, varcsv, boundids, WriteAscii=False):
     for i in range(totareas.shape[0]):
         tstep = np.array(i*timestepsecs, dtype = np.int32)
         vararr = np.array(totareas.loc[i].values, dtype=np.float32)
-        f.write(tstep.tostring() + vararr.tostring())
+        f.write(tstep.tobytes() + vararr.tobytes())
     f.close()
     
     if WriteAscii:
@@ -2342,7 +2342,7 @@ def main(argv=None):
         dw_Write_B2_outlocs(dwdir + "/includes_deltashell/B2_outlocs.inc", gauges, ptid)
         
         # write static data for hyd-file set
-        comroot = os.sep.join([dwdir, "com", runId])
+        comroot = os.sep.join([dwdir, "com", "delwaq"])
         mmax, nmax = dw_GetGridDimensions(reallength)
         logger.info("mmax, nmax: " + str(mmax) +","+ str(nmax))
         dw_WritePointer(comroot + ".poi", pointer, binary=True)
