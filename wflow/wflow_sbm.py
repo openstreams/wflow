@@ -632,9 +632,9 @@ class WflowModel(pcraster.framework.DynamicModel):
       Updates the kinematic wave reservoir. Should be run after updates to Q
       """
         self.OldKinWaveVolumeR = self.KinWaveVolumeR
-        self.KinWaveVolumeR = self.WaterLevelR * self.Bw * self.DCL
+        self.KinWaveVolumeR = self.WaterLevelRsub * self.Bw * self.DCL
         self.OldKinWaveVolumeL = self.KinWaveVolumeL
-        self.KinWaveVolumeL = self.WaterLevelL * self.SW * self.DL
+        self.KinWaveVolumeL = self.WaterLevelLsub * self.SW * self.DL
         
         
     def stateVariables(self):
@@ -2127,11 +2127,11 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.dyn['AlphaL'] = pcr.pcr2numpy(self.AlphaL, self.mv).ravel()
         
         # Determine initial kinematic wave volume overland
-        self.KinWaveVolumeL = self.WaterLevelL * self.SW * self.DL
+        self.KinWaveVolumeL = self.WaterLevelLsub * self.SW * self.DL
         self.OldKinWaveVolumeL = self.KinWaveVolumeL
         
         # Determine initial kinematic wave volume
-        self.KinWaveVolumeR = self.WaterLevelR * self.Bw * self.DCL
+        self.KinWaveVolumeR = self.WaterLevelRsub * self.Bw * self.DCL
         self.OldKinWaveVolumeR = self.KinWaveVolumeR
        
         self.InitialStorage = (
