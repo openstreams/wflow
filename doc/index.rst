@@ -4,6 +4,14 @@ Welcome to wflow's documentation!
 
 .. note::
 
+    There will be no further developments in the Python wflow framework (bugfixes are possible),
+    and the documentation is no longer updated. Developments continue in the
+    [Julia](https://julialang.org/) package Wflow, available 
+    [here](https://github.com/Deltares/Wflow.jl), including 
+    [documentation](https://deltares.github.io/Wflow.jl/dev). 
+
+.. note::
+
       This documentation was generated on |today|
 
       Documentation for the development version:
@@ -25,7 +33,7 @@ Introduction
 
 This document describes the wflow distributed hydrological modelling platform.
 wflow is part of the Deltares'
-OpenStreams project (http://www.openstreams.nl). Wflow consists of a
+OpenStreams project. Wflow consists of a
 set of python programs that can be run on the command line and perform
 hydrological simulations. The models are based on the PCRaster python
 framework (www.pcraster.eu). In wflow this framework is extended (the ``wf_DynamicFramework``
