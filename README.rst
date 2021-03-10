@@ -1,8 +1,8 @@
 Warning
 =======
 There will be no further developments in the Python wflow framework (bugfixes are possible).
-Developments continue in the [Julia](https://julialang.org/) package Wflow, available
-[here](https://github.com/Deltares/Wflow.jl).
+Developments continue in the `Julia <https://julialang.org/>`_ package Wflow, available
+`here <https://github.com/Deltares/Wflow.jl>`_.
 
 wflow
 =====

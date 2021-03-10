@@ -6,9 +6,9 @@ Welcome to wflow's documentation!
 
     There will be no further developments in the Python wflow framework (bugfixes are possible),
     and the documentation is no longer updated. Developments continue in the
-    [Julia](https://julialang.org/) package Wflow, available 
-    [here](https://github.com/Deltares/Wflow.jl), including 
-    [documentation](https://deltares.github.io/Wflow.jl/dev). 
+    `Julia <https://julialang.org/>`_ package Wflow, available 
+    `here <https://github.com/Deltares/Wflow.jl>`_, including 
+    `documentation <https://deltares.github.io/Wflow.jl/dev>`_.
 
 .. note::
 
