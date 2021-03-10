@@ -269,7 +269,7 @@ def unsatzone_flow(UStoreLayerDepth, InfiltSoilPath, L, z, KsatVerFrac, c, KsatV
             if Sd <= 0.00001:
                 st = 0.0
             else:
-                st = KsatVerFrac[m] * KsatVer * (min(UStoreLayerDepth[m],L[m]*(thetaS-thetaR))/Sd)
+                st = KsatVerFrac[m] * KsatVer * np.exp(-f*z[m]) * (min(UStoreLayerDepth[m],L[m]*(thetaS-thetaR))/Sd)
                 ast = min(st,UStoreLayerDepth[m])
                 UStoreLayerDepth[m] = UStoreLayerDepth[m] - ast
         else:
