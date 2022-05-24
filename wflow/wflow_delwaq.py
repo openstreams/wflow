@@ -78,7 +78,10 @@ Command line options::
 import getopt
 import os.path
 import struct
-from datetime import *
+import datetime
+import numpy as np
+import pcraster as pcr
+import builtins
 
 from wflow import wf_netcdfio
 from wflow.wf_DynamicFramework import *
@@ -218,13 +221,13 @@ def dw_WritePointer(fname, pointer, binary=False):
         exfile = open(fname, "w")
         print(";Written by dw_WritePointer", file=exfile)
         print(";nr of pointers is: ", str(pointer.shape[0]), file=exfile)
-        savetxt(exfile, pointer, fmt="%10.0f")
+        np.savetxt(exfile, pointer, fmt="%10.0f")
         exfile.close()
     else:
         # Write binary file
         f = open(fname, "wb")
         for i in range(pointer.shape[0]):
-            f.write(struct.pack("4i", *pointer[i, :]))
+            f.write(struct.pack("4i", *np.int_(pointer[i, :])))
         f.close()
 
 
@@ -241,6 +244,8 @@ def dw_WriteSegmentOrExchangeData(ttime, fname, datablock, boundids, WriteAscii=
         - WriteAscii - set to 1 to alse make an ascii dump
         
     """
+    #Supress potential NaN values to avoid error (replaced by -1.0)
+    datablock[np.isnan(datablock)] = -1.0
     # First convert the array to a 32 bit float
     totareas = datablock
     for i in range(boundids - 1):
@@ -250,7 +255,7 @@ def dw_WriteSegmentOrExchangeData(ttime, fname, datablock, boundids, WriteAscii=
     timear = np.array(ttime, dtype=np.int32)
     if os.path.isfile(fname):  # append to existing file
         fp = open(fname, "ab")
-        tstr = timear.tostring() + artow.tostring()
+        tstr = timear.tobytes() + artow.tobytes()
         fp.write(tstr)
         if WriteAscii:
             fpa = open(fname + ".asc", "a")
@@ -259,7 +264,7 @@ def dw_WriteSegmentOrExchangeData(ttime, fname, datablock, boundids, WriteAscii=
             fpa.write("\n")
     else:
         fp = open(fname, "wb")
-        tstr = timear.tostring() + artow.tostring()
+        tstr = timear.tobytes() + artow.tobytes()
         fp.write(tstr)
         if WriteAscii:
             fpa = open(fname + ".asc", "w")
@@ -353,13 +358,13 @@ def dw_mkDelwaqPointers(ldd, amap, difboun, layers):
     #    negative: outflow boundary
     #    zero    : internal flow
     #    positive: inflow boundary
-    pointer_labels = np.zeros((len(np_flowto)), dtype=numpy.int)
+    pointer_labels = np.zeros((len(np_flowto)), dtype=np.int32)
     extraboun = []
     # Add the inflow boundaries here.
     cells = pointer[:, 0]
     cells = cells.reshape(len(cells), 1)
     bounid = cells.copy()
-    zzerocol = np.zeros((len(np_flowto), 1), dtype=numpy.int)
+    zzerocol = np.zeros((len(np_flowto), 1), dtype=np.int32)
 
     # outflow to pointer
     # point -> - point
@@ -395,7 +400,7 @@ def dw_mkDelwaqPointers(ldd, amap, difboun, layers):
         print("ct: ")
         print(np.unique(ct))
         for i in range(0, len(np_catchid)):
-            ct[i] = np_catchid[i] + "_" + str(idd)
+            ct[i] = f"{np_catchid[i].decode()}_{idd}"
         res = res + ct
     print(np.unique(res))
     np_catchid = res
@@ -411,13 +416,14 @@ def dw_mkDelwaqPointers(ldd, amap, difboun, layers):
     return ptid, pointer, pointer_labels, np_ptid.flatten(), np_catchid
 
 
-def dw_pcrToDataBlock(pcrmap):
+def dw_pcrToDataBlock(pcrmap, amap):
     """
     Converts a pcrmap to a numpy array.that is flattend and from which
     missing values are removed. Used for generating delwaq data
     """
     ttar = pcr.pcr2numpy(pcrmap, np.nan).flatten()
-    ttar = ttar[np.isfinite(ttar)]
+    model = pcr.pcr2numpy(amap, np.NaN).flatten()
+    ttar = ttar[np.isfinite(model)]
 
     return ttar
 
@@ -486,7 +492,7 @@ def dw_Write_Times(dwdir, T0, timeSteps, timeStepSec):
     exfile.close()
 
     # B2_outputtimers.inc
-    timeRange = timedelta(seconds=timeStepSec * timeSteps)
+    timeRange = datetime.timedelta(seconds=timeStepSec * timeSteps)
 
     days = int(timeStepSec / 86400)
     hours = int(timeStepSec / 3600)
@@ -601,7 +607,7 @@ def dw_GetGridDimensions(ptid_map):
     """
     # find number of cells in m and n directions
     zero_map = pcr.scalar(ptid_map) * 0.0
-    allx = dw_pcrToDataBlock(pcr.xcoordinate(pcr.boolean(pcr.cover(zero_map + 1, 1))))
+    allx = dw_pcrToDataBlock(pcr.xcoordinate(pcr.boolean(pcr.cover(zero_map + 1, 1))), pcr.xcoordinate(pcr.boolean(pcr.cover(zero_map + 1, 1))))
     i = 0
     diff = round(builtins.abs(allx[i] - allx[i + 1]), 5)
     diff_next = diff
@@ -641,7 +647,7 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map):
 
     # Number of segments in horizontal dimension
 
-    nosegh = int(numpy.max(np_ptid))
+    nosegh = int(np.max(np_ptid))
 
     # Waqgeom dimensions
 
@@ -659,10 +665,10 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map):
     nodes_y = []
     nodes_z = []
     net_links = []
-    elem_nodes = numpy.zeros((n_net_elem, n_net_elem_max_node), dtype=numpy.int)
-    flow_links = numpy.zeros((n_flow_link, n_flow_link_pts), dtype=numpy.int)
-    flow_link_x = numpy.zeros((n_flow_link), dtype=numpy.float)
-    flow_link_y = numpy.zeros((n_flow_link), dtype=numpy.float)
+    elem_nodes = np.zeros((n_net_elem, n_net_elem_max_node), dtype=np.int32)
+    flow_links = np.zeros((n_flow_link, n_flow_link_pts), dtype=np.int32)
+    flow_link_x = np.zeros((n_flow_link), dtype=np.float32)
+    flow_link_y = np.zeros((n_flow_link), dtype=np.float32)
 
     # Keep track of nodes and links as dataset grows
 
@@ -813,10 +819,10 @@ def dw_WriteWaqGeom(fname, ptid_map, ldd_map):
 
     # Convert data to numpy arrays
 
-    nodes_x = numpy.array(nodes_x)
-    nodes_y = numpy.array(nodes_y)
-    nodes_z = numpy.array(nodes_z)
-    net_links = numpy.array(net_links)
+    nodes_x = np.array(nodes_x)
+    nodes_y = np.array(nodes_y)
+    nodes_z = np.array(nodes_z)
+    net_links = np.array(net_links)
 
     # Update dimensions
 
@@ -959,7 +965,7 @@ def dw_WriteBndFile(fname, ptid_map, pointer, pointer_labels, areas, source_ids)
     """
     buff = ""
     np_ptid = pcr.pcr2numpy(ptid_map, -1)
-    area_ids = unique(areas)
+    area_ids = np.unique(areas)
 
     # Upper-left and lower-right Coordinates
 
@@ -989,7 +995,7 @@ def dw_WriteBndFile(fname, ptid_map, pointer, pointer_labels, areas, source_ids)
 
     # Outflows
 
-    for i_count, i_pointer in enumerate(numpy.where(pointer_labels < 0)[0]):
+    for i_count, i_pointer in enumerate(np.where(pointer_labels < 0)[0]):
         segnum = pointer[i_pointer, 0]
         bndnum = pointer[i_pointer, 1]
         buff += "Outflow_%i\n" % (i_count + 1)
@@ -1031,7 +1037,7 @@ def dw_WriteBndFile(fname, ptid_map, pointer, pointer_labels, areas, source_ids)
     # Sort inflows per area and source
 
     d = {area_id: {source_id: [] for source_id in source_ids} for area_id in area_ids}
-    for i_inflow, i_pointer in enumerate(numpy.where(pointer_labels > 0)[0]):
+    for i_inflow, i_pointer in enumerate(np.where(pointer_labels > 0)[0]):
         source_id = source_ids[pointer_labels[i_pointer] - 1]
         area_id = areas[i_inflow]
         d[area_id][source_id].append(i_pointer)
@@ -1303,7 +1309,7 @@ def main():
             sys.exit(1)
     else:
         T0 = parser.parse(st)
-        ed = configget(self._userModel().config, "run", "endtime", "None")
+        ed = configget(config, "run", "endtime", "None")
         if ed != "None":
             datetimeend = parser.parse(ed)
         else:
@@ -1391,13 +1397,13 @@ def main():
             ldd, amap, boundids, 1
         )
 
-        save(dwdir + "/debug/pointer.npy", pointer)
-        save(dwdir + "/debug/segments.npy", segments)
-        save(dwdir + "/debug/areas.npy", areas)
+        np.save(dwdir + "/debug/pointer.npy", pointer)
+        np.save(dwdir + "/debug/segments.npy", segments)
+        np.save(dwdir + "/debug/areas.npy", areas)
 
         # Write id maps to debug area
         pcr.report(ptid, dwdir + "/debug/ptid.map")
-        logger.info("Unique areas: " + str(unique(areas)))
+        logger.info("Unique areas: " + str(np.unique(areas)))
         # logger.info("Number of area inflows: " + str(len(areas) * boundids))
         logger.info("Number of segments: " + str(len(segments.flatten())))
         logger.info(
@@ -1419,19 +1425,19 @@ def main():
             dwdir + "/includes_deltashell/B5_boundlist.inc", pointer, areas, sourcesMap
         )
         dw_WriteBoundData(
-            dwdir + "/includes_deltashell/B5_bounddata.inc", unique(areas)
+            dwdir + "/includes_deltashell/B5_bounddata.inc", np.unique(areas)
         )
 
         dw_WriteInitials(dwdir + "/includes_deltashell/B8_initials.inc", sourcesMap)
         dw_Write_Substances(
-            dwdir + "/includes_deltashell/B1_sublist.inc", unique(areas)
+            dwdir + "/includes_deltashell/B1_sublist.inc", np.unique(areas)
         )
         dw_Write_B2_outlocs(dwdir + "/includes_deltashell/B2_outlocs.inc", gauges, ptid)
 
     internalflowwidth = pcr.readmap(caseId + "/" + runId + "/outsum/Bw.map")
     internalflowlength = pcr.readmap(caseId + "/" + runId + "/outsum/DCL.map")
     surface_map = internalflowwidth * internalflowlength
-    surface_block = dw_pcrToDataBlock(surface_map)
+    surface_block = dw_pcrToDataBlock(surface_map, amap)
     logger.info("Writing surface.dat. Nr of points: " + str(np.size(surface_block)))
     dw_WriteSegmentOrExchangeData(
         0, dwdir + "/includes_flow/surface.dat", surface_block, 1, WriteAscii
@@ -1464,7 +1470,7 @@ def main():
     # Open nc outputmaps file
     if nc_outmap_file is not None:
         nc = wf_netcdfio.netcdfinput(
-            nc_outmap_file, logger, ["vol", "kwv", "run", "lev", "inw"]
+            nc_outmap_file, logger, ["vol", "kwv", "run", "lev", "inw", "inwint"]
         )
     else:
         nc = None
@@ -1474,10 +1480,10 @@ def main():
     if Write_Dynamic:
         dw_Write_Times(dwdir + "/includes_deltashell/", T0, timeSteps - 1, timestepsecs)
 
-        for i in range(firstTimeStep, timeSteps * timestepsecs, timestepsecs):
+        for i in range(firstTimeStep, int(timeSteps) * int(timestepsecs), timestepsecs):
 
             volume_map = read_timestep(nc, "vol", ts, logger, caseId, runId)
-            volume_block = dw_pcrToDataBlock(volume_map)
+            volume_block = dw_pcrToDataBlock(volume_map, amap)
 
             # volume for each timestep and number of segments
 
@@ -1491,13 +1497,13 @@ def main():
             # Now write the flows (exchnages)
             # First read the flows in the kinematic wave reservoir (internal exchnages)
             flow = read_timestep(nc, "run", ts, logger, caseId, runId)
-            flow_block_Q = dw_pcrToDataBlock(flow)
+            flow_block_Q = dw_pcrToDataBlock(flow, amap)
             # now the inw
             flowblock = flow_block_Q
 
             wlevel = read_timestep(nc, "lev", ts, logger, caseId, runId)
             areadyn = wlevel * internalflowwidth
-            area_block_Q = dw_pcrToDataBlock(areadyn)
+            area_block_Q = dw_pcrToDataBlock(areadyn, amap)
             area_block = area_block_Q
 
             # Now read the inflows in each segment (water that enters the kinamatic
@@ -1506,7 +1512,16 @@ def main():
                 logger.info("Step: " + str(ts) + " source: " + str(source))
                 thesource = read_timestep(nc, source, ts, logger, caseId, runId)
                 thesource = zero_map + thesource
-                flow_block_IN = dw_pcrToDataBlock(thesource)
+                flow_block_IN = dw_pcrToDataBlock(thesource, amap)
+                # Fix for inw in the new wflow_sbm format (separation with land and river)
+                if source == "inw":
+                    try:
+                        thesourceadd = read_timestep(nc, "inwint", ts, logger, caseId, runId)
+                        thesourceadd = zero_map + thesourceadd
+                    except:
+                        thesourceadd = zero_map.copy()
+                    flow_block_INadd = dw_pcrToDataBlock(thesourceadd, amap)
+                    flow_block_IN = flow_block_IN - flow_block_INadd
                 flowblock = np.hstack((flowblock, flow_block_IN))
                 area_block = np.hstack((area_block, surface_block))
 
@@ -1551,7 +1566,7 @@ def main():
         )
 
         volume_map = read_timestep(nc, "voln", ts, logger, caseId, runId)
-        volume_block = dw_pcrToDataBlock(volume_map)
+        volume_block = dw_pcrToDataBlock(volume_map, amap)
         logger.info("Writing volumes.dat. Nr of points: " + str(np.size(volume_block)))
         dw_WriteSegmentOrExchangeData(
             i, dwdir + "/includes_flow/volume.dat", volume_block, 1, WriteAscii
@@ -1574,8 +1589,8 @@ def main():
         hydinfo["runid"] = runId
         hydinfo["tref"] = T0
         hydinfo["tstart"] = T0
-        hydinfo["tstop"] = T0 + timedelta(seconds=(timeSteps - 1) * timestepsecs)
-        hydinfo["tstep"] = timedelta(seconds=timestepsecs)
+        hydinfo["tstop"] = T0 + datetime.timedelta(seconds=(timeSteps - 1) * timestepsecs)
+        hydinfo["tstep"] = datetime.timedelta(seconds=timestepsecs)
         hydinfo["noseg"] = NOSQ
         hydinfo["nosegh"] = NOSQ
         hydinfo["noqh"] = pointer.shape[0]
