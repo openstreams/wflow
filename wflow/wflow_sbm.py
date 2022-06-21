@@ -1425,6 +1425,45 @@ class WflowModel(pcraster.framework.DynamicModel):
                     ),
                 )  # Soil infiltration reduction factor for frozen soil
                 
+        
+        # determine number of layers based on total soil thickness
+        UStoreLayerThickness = configget(
+            self.config, "model", "UStoreLayerThickness", "0"
+        )
+        if UStoreLayerThickness != "0":
+            self.nrLayers = len(UStoreLayerThickness.split(","))
+            self.maxLayers = self.nrLayers + 1
+        else:
+            UStoreLayerThickness = self.SoilThickness
+            self.nrLayers = 1
+            self.maxLayers = self.nrLayers
+
+        self.KsatVerFrac = []
+        self.c = []
+        for n in range(self.maxLayers):
+            self.KsatVerFrac.append(
+                self.readtblLayersDefault(
+                    self.Dir + "/" + self.intbl + "/KsatVerFrac.tbl",
+                    self.LandUse,
+                    subcatch,
+                    self.Soil,
+                    n,
+                    1.0,
+                )
+            )
+            self.c.append(
+                self.readtblLayersDefault(
+                    self.Dir + "/" + self.intbl + "/c.tbl",
+                    self.LandUse,
+                    subcatch,
+                    self.Soil,
+                    n,
+                    10.0,
+                )
+            )
+        
+        self.wf_multparameters()
+            
         # Determine real slope and cell length
 
         self.xl, self.yl, self.reallength = pcrut.detRealCellLength(
@@ -1573,42 +1612,6 @@ class WflowModel(pcraster.framework.DynamicModel):
         )
 
         self.SoilWaterCapacity = self.SoilThickness * (self.thetaS - self.thetaR)
-
-        # determine number of layers based on total soil thickness
-        UStoreLayerThickness = configget(
-            self.config, "model", "UStoreLayerThickness", "0"
-        )
-        if UStoreLayerThickness != "0":
-            self.nrLayers = len(UStoreLayerThickness.split(","))
-            self.maxLayers = self.nrLayers + 1
-        else:
-            UStoreLayerThickness = self.SoilThickness
-            self.nrLayers = 1
-            self.maxLayers = self.nrLayers
-
-        self.KsatVerFrac = []
-        self.c = []
-        for n in range(self.maxLayers):
-            self.KsatVerFrac.append(
-                self.readtblLayersDefault(
-                    self.Dir + "/" + self.intbl + "/KsatVerFrac.tbl",
-                    self.LandUse,
-                    subcatch,
-                    self.Soil,
-                    n,
-                    1.0,
-                )
-            )
-            self.c.append(
-                self.readtblLayersDefault(
-                    self.Dir + "/" + self.intbl + "/c.tbl",
-                    self.LandUse,
-                    subcatch,
-                    self.Soil,
-                    n,
-                    10.0,
-                )
-            )
 
         # limit roots to top 99% of first zone
         self.RootingDepth = pcr.min(self.SoilThickness * 0.99, self.RootingDepth)
@@ -1825,8 +1828,6 @@ class WflowModel(pcraster.framework.DynamicModel):
         # calculate catchmentsize
         self.upsize = pcr.catchmenttotal(self.xl * self.yl, self.TopoLdd)
         self.csize = pcr.areamaximum(self.upsize, self.TopoId)
-        
-        self.wf_multparameters()
         
         # determine flow network and upstream nodes
         self.np_ldd = pcr.pcr2numpy(self.TopoLdd, self.mv)
