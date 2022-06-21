@@ -129,13 +129,13 @@ def lddcreate_save(
     if os.path.exists(lddname) and not force:
         if Verbose:
             print(("Returning existing ldd", lddname))
-            return pcr.readmap(lddname)
+        return pcr.readmap(lddname)
     else:
         if Verbose:
             print(("Creating ldd", lddname))
-            LDD = pcr.lddcreate(dem, 10.0e35, outflowdepth, 10.0e35, 10.0e35)
-            pcr.report(LDD, lddname)
-            return LDD
+        LDD = pcr.lddcreate(dem, 10.0e35, outflowdepth, 10.0e35, 10.0e35)
+        pcr.report(LDD, lddname)
+        return LDD
 
 
 def configget(config, section, var, default):
