@@ -452,6 +452,8 @@ class netcdfoutputstatic:
         self.buffdirty = False
 
         globmetadata.update(metadata)
+        
+        self.nc_trg = None
 
         prepare_nc(
             self.ncfile,
@@ -479,10 +481,11 @@ class netcdfoutputstatic:
         """
         # Open target netCDF file
         var = os.path.basename(var)
-        self.nc_trg = netCDF4.Dataset(
-            self.ncfile, "a", format=self.Format, zlib=self.zlib, complevel=9
-        )
-        self.nc_trg.set_fill_off()
+        if not self.nc_trg:
+            self.nc_trg = netCDF4.Dataset(
+                self.ncfile, "a", format=self.Format, zlib=self.zlib, complevel=9
+            )
+            self.nc_trg.set_fill_off()
         # read time axis and convert to time objects
         # TODO: use this to append time
         # time = self.nc_trg.variables['time']
