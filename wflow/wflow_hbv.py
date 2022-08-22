@@ -726,7 +726,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             subcatch,
             self.Soil,
             0.02307,
-        )  # Recession constant baseflow   #K4=0.07; BASEFLOW:LINEARRESERVOIR
+        ) * self.timestepsecs / self.basetimestep # Recession constant baseflow   #K4=0.07; BASEFLOW:LINEARRESERVOIR
         if self.SetKquickFlow:
             self.KQuickFlow = self.readtblDefault(
                 self.Dir + "/" + self.intbl + "/KQuickFlow.tbl",
@@ -734,7 +734,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 subcatch,
                 self.Soil,
                 0.09880,
-            )  # recession rate at flow HQ     #KHQ=0.2; OUTFLOWUPPERZONE_NONLINEARRESERVOIR
+            ) * self.timestepsecs / self.basetimestep # recession rate at flow HQ     #KHQ=0.2; OUTFLOWUPPERZONE_NONLINEARRESERVOIR
             self.SUZ = self.readtblDefault(
                 self.Dir + "/" + self.intbl + "/SUZ.tbl",
                 self.LandUse,
@@ -748,7 +748,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 subcatch,
                 self.Soil,
                 0.3,
-            )  # K0
+            ) * self.timestepsecs / self.basetimestep # K0
         else:
             self.KHQ = self.readtblDefault(
                 self.Dir + "/" + self.intbl + "/KHQ.tbl",
@@ -756,14 +756,14 @@ class WflowModel(pcraster.framework.DynamicModel):
                 subcatch,
                 self.Soil,
                 0.09880,
-            )  # recession rate at flow HQ     #KHQ=0.2; OUTFLOWUPPERZONE_NONLINEARRESERVOIR
+            ) * self.timestepsecs / self.basetimestep # recession rate at flow HQ     #KHQ=0.2; OUTFLOWUPPERZONE_NONLINEARRESERVOIR
             self.HQ = self.readtblDefault(
                 self.Dir + "/" + self.intbl + "/HQ.tbl",
                 self.LandUse,
                 subcatch,
                 self.Soil,
                 3.27000,
-            )  # high flow rate HQ for which recession rate of upper reservoir is known   #HQ=3.76;
+            ) * self.timestepsecs / self.basetimestep # high flow rate HQ for which recession rate of upper reservoir is known   #HQ=3.76;
             self.AlphaNL = self.readtblDefault(
                 self.Dir + "/" + self.intbl + "/AlphaNL.tbl",
                 self.LandUse,
@@ -778,7 +778,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             subcatch,
             self.Soil,
             0.4000,
-        )  # percolation from Upper to Lowerzone (mm/day)
+        ) * self.timestepsecs / self.basetimestep # percolation from Upper to Lowerzone (mm/day)
         self.CFR = self.readtblDefault(
             self.Dir + "/" + self.intbl + "/CFR.tbl",
             self.LandUse,
@@ -814,7 +814,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             subcatch,
             self.Soil,
             2.0,
-        )  # maximum capillary rise from runoff response routine to soil moisture routine
+        ) * self.timestepsecs / self.basetimestep # maximum capillary rise from runoff response routine to soil moisture routine
         self.ICF = self.readtblDefault(
             self.Dir + "/" + self.intbl + "/ICF.tbl",
             self.LandUse,
@@ -871,7 +871,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             subcatch,
             self.Soil,
             3.75653,
-        )
+        ) * self.timestepsecs / self.basetimestep
         # WHC= 0.10000        # fraction of Snowvolume that can store water
         self.WHC = self.readtblDefault(
             self.Dir + "/" + self.intbl + "/WHC.tbl",

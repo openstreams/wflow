@@ -64,11 +64,11 @@ class MyTest(unittest.TestCase):
         )
 
         print("Checking  water budget ....")
-        self.assertAlmostEqual(0.0011249125109316083, my_data[:, 2].sum(), places=4)
+        self.assertAlmostEqual(0.001239627579707303, my_data[:, 2].sum(), places=4)
 
         my_data = np.genfromtxt(os.path.join(caseName, runId, "run.csv"), delimiter=",")
         print("Checking  discharge ....")
-        self.assertAlmostEqual(1671.0379650115967, my_data[:, 2].mean(), places=4)      
+        self.assertAlmostEqual(163.88664160221816, my_data[:, 2].mean(), places=4)      
 
 if __name__ == "__main__":
     unittest.main()
