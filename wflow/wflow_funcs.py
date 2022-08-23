@@ -532,7 +532,7 @@ def glacierHBV(GlacierFrac,
     :ivar Temperature: Air temperature
     :ivar TT: Temperature threshold for ice melting
     :ivar Cfmax: Ice degree-day factor in mm/(°C/day)
-    :ivar G_SIfrac: Fraction of the snow part turned into ice each timestep
+    :ivar G_SIfrac: Fraction of the snow part turned into ice each daily timestep
     :ivar timestepsecs: Model timestep in seconds
     :ivar basetimestep: Model base timestep (86 400 seconds)
 
@@ -540,7 +540,7 @@ def glacierHBV(GlacierFrac,
     """
     
     #Fraction of the snow transformed into ice (HBV-light model)
-    Snow2Glacier = G_SIfrac * Snow
+    Snow2Glacier = G_SIfrac * (timestepsecs / basetimestep) * Snow
 
     Snow2Glacier = pcr.ifthenelse(
         GlacierFrac > 0.0, Snow2Glacier, pcr.scalar(0.0)
@@ -554,7 +554,7 @@ def glacierHBV(GlacierFrac,
     GlacierStore = GlacierStore + Snow2Glacier
 
     PotMelt = pcr.ifthenelse(
-        Temperature > TT, Cfmax * (Temperature - TT), pcr.scalar(0.0)
+        Temperature > TT, Cfmax * (timestepsecs / basetimestep) * (Temperature - TT), pcr.scalar(0.0)
     )  # Potential snow melt, based on temperature
 
     GlacierMelt = pcr.ifthenelse(
