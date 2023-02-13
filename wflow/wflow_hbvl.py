@@ -105,9 +105,9 @@ def usage(*args):
 class WflowModel(pcraster.framework.DynamicModel):
 
     """
-  The user defined model class.
+    The user defined model class.
 
-  """
+    """
 
     def __init__(self, cloneMap, Dir, RunDir, configfile):
         pcraster.framework.DynamicModel.__init__(self)
@@ -121,18 +121,18 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def stateVariables(self):
         """
-      returns a list of state variables that are essential to the model.
-      This list is essential for the resume and suspend functions to work.
+         returns a list of state variables that are essential to the model.
+         This list is essential for the resume and suspend functions to work.
 
-      This function is specific for each model and **must** be present.
+         This function is specific for each model and **must** be present.
 
-     :var self.DrySnow: Snow pack [mm]
-     :var self.FreeWater:  Available free water [mm]
-     :var self.UpperZoneStorage: Water in the upper zone [mm]
-     :var self.LowerZoneStorage: Water in the lower zone [mm]
-     :var self.SoilMoisture: Soil moisture [mm]
+        :var self.DrySnow: Snow pack [mm]
+        :var self.FreeWater:  Available free water [mm]
+        :var self.UpperZoneStorage: Water in the upper zone [mm]
+        :var self.LowerZoneStorage: Water in the lower zone [mm]
+        :var self.SoilMoisture: Soil moisture [mm]
 
-      """
+        """
         states = [
             "FreeWater",
             "SoilMoisture",
@@ -146,22 +146,22 @@ class WflowModel(pcraster.framework.DynamicModel):
     # The following are made to better connect to deltashell/openmi
     def supplyCurrentTime(self):
         """
-      gets the current time in seconds after the start of the run
+        gets the current time in seconds after the start of the run
 
-      Ouput:
-          - time in seconds since the start of the model run
-      """
+        Ouput:
+            - time in seconds since the start of the model run
+        """
         return self.currentTimeStep() * int(
             configget(self.config, "model", "timestepsecs", "86400")
         )
 
     def parameters(self):
         """
-    Define all model parameters here that the framework should handle for the model
-    See wf_updateparameters and the parameters section of the ini file
-    If you use this make sure to all wf_updateparameters at the start of the dynamic section
-    and at the start/end of the initial section
-    """
+        Define all model parameters here that the framework should handle for the model
+        See wf_updateparameters and the parameters section of the ini file
+        If you use this make sure to all wf_updateparameters at the start of the dynamic section
+        and at the start/end of the initial section
+        """
         modelparameters = []
 
         # Static model parameters e.g.
@@ -204,9 +204,9 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def suspend(self):
         """
-      Suspends the model to disk. All variables needed to restart the model
-      are saved to disk as pcraster maps. Use resume() to re-read them
-    """
+        Suspends the model to disk. All variables needed to restart the model
+        are saved to disk as pcraster maps. Use resume() to re-read them
+        """
 
         self.logger.info("Saving initial conditions...")
         self.wf_suspend(os.path.join(self.SaveDir, "outstate"))
@@ -218,42 +218,42 @@ class WflowModel(pcraster.framework.DynamicModel):
     def initial(self):
 
         """
-    Initial part of the model, executed only once. Reads all static model
-    information (parameters) and sets-up the variables used in modelling.
+        Initial part of the model, executed only once. Reads all static model
+        information (parameters) and sets-up the variables used in modelling.
 
-    *HBV Soil*
+        *HBV Soil*
 
-    :var FC.tbl: Field Capacity (260.0) [mm]
-    :var BETA.tbl: exponent in soil runoff generation equation (1.8)  [-]
-    :var LP.tbl: fraction of Fieldcapacity below which actual evaporation=potential evaporation (0.53000)
-    :var K2.tbl: Recession constant baseflow (0.02307)
+        :var FC.tbl: Field Capacity (260.0) [mm]
+        :var BETA.tbl: exponent in soil runoff generation equation (1.8)  [-]
+        :var LP.tbl: fraction of Fieldcapacity below which actual evaporation=potential evaporation (0.53000)
+        :var K2.tbl: Recession constant baseflow (0.02307)
 
-    *If SetKquickFlow is set to 1*
+        *If SetKquickFlow is set to 1*
 
-    :var K1.tbl: (0.09880)
-    :var SUZ.tbl: Level over wich K0 is used (100.0)
-    :var K0.tbl: (0.3)
-
-
-    :var PERC.tbl: Percolation from Upper to Lowerzone (0.4000)  [mm/day]
-    :var CFR.tbl: Refreezing efficiency constant in refreezing of freewater in snow (0.05000)
-    :var PCORR.tbl: Correction factor for precipitation (1.0)
-    :var RFCF.tbl: Correction factor for rainfall (1.0)
-    :var SFCF.tbl: Correction factor for snowfall(1.0)
-    :var CEVPF.tbl: Correction factor for potential evaporation (1.0)
-    :var EPF.tbl: Exponent of correction factor for evaporation on days with precipitation(0.0)
-    :var ECORR.tbl: Evap correction (1.0)
+        :var K1.tbl: (0.09880)
+        :var SUZ.tbl: Level over wich K0 is used (100.0)
+        :var K0.tbl: (0.3)
 
 
-    *Snow modelling parameters*
+        :var PERC.tbl: Percolation from Upper to Lowerzone (0.4000)  [mm/day]
+        :var CFR.tbl: Refreezing efficiency constant in refreezing of freewater in snow (0.05000)
+        :var PCORR.tbl: Correction factor for precipitation (1.0)
+        :var RFCF.tbl: Correction factor for rainfall (1.0)
+        :var SFCF.tbl: Correction factor for snowfall(1.0)
+        :var CEVPF.tbl: Correction factor for potential evaporation (1.0)
+        :var EPF.tbl: Exponent of correction factor for evaporation on days with precipitation(0.0)
+        :var ECORR.tbl: Evap correction (1.0)
 
-    :var TTI.tbl: critical temperature for snowmelt and refreezing  (1.000) [oC]
-    :var TT.tbl: defines interval in which precipitation falls as rainfall and snowfall (-1.41934) [oC]
-    :var CFMAX.tbl: meltconstant in temperature-index ( 3.75653) [-]
-    :var WHC.tbl: fraction of Snowvolume that can store water (0.1) [-]
+
+        *Snow modelling parameters*
+
+        :var TTI.tbl: critical temperature for snowmelt and refreezing  (1.000) [oC]
+        :var TT.tbl: defines interval in which precipitation falls as rainfall and snowfall (-1.41934) [oC]
+        :var CFMAX.tbl: meltconstant in temperature-index ( 3.75653) [-]
+        :var WHC.tbl: fraction of Snowvolume that can store water (0.1) [-]
 
 
-    """
+        """
         global statistics
         global multpars
         global updateCols
@@ -557,13 +557,13 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def default_summarymaps(self):
         """
-      Returns a list of default summary-maps at the end of a run.
-      This is model specific. You can also add them to the [summary]section of the ini file but stuff
-      you think is crucial to the model should be listed here
+        Returns a list of default summary-maps at the end of a run.
+        This is model specific. You can also add them to the [summary]section of the ini file but stuff
+        you think is crucial to the model should be listed here
 
-       Example:
+         Example:
 
-      """
+        """
         lst = [
             "self.csize",
             "self.upsize",
@@ -582,7 +582,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         return lst
 
     def resume(self):
-        """ read initial state maps (they are output of a previous call to suspend()) """
+        """read initial state maps (they are output of a previous call to suspend())"""
 
         if self.reinit == 1:
             self.logger.info("Setting initial conditions to default (zero!)")
@@ -609,27 +609,27 @@ class WflowModel(pcraster.framework.DynamicModel):
     def dynamic(self):
 
         """
-    Below a list of variables that can be save to disk as maps or as
-    timeseries (see ini file for syntax):
+        Below a list of variables that can be save to disk as maps or as
+        timeseries (see ini file for syntax):
 
-    *Dynamic variables*
+        *Dynamic variables*
 
-    :var self.Snow: Snow depth [mm]
-    :var self.SnowWater: water content of the snow [mm]
-    :var self.LowerZoneStorage: water content of the lower zone [mm]
-    :var self.UpperZoneStorage: water content of the Upper zone [mm]
-    :var self.Q2: Specific runoff (baseflow part) per cell [mm]
-    :var self.Percolation: actual percolation to the lower zone [mm]
-    :var self.SoilMoisture: actual soil moisture [mm]
-    :var self.Q1: specific runoff (quickflow part) [mm]
-    :var self.Q0: specific runoff (quickflow), If K upper zone is precalculated [mm]
+        :var self.Snow: Snow depth [mm]
+        :var self.SnowWater: water content of the snow [mm]
+        :var self.LowerZoneStorage: water content of the lower zone [mm]
+        :var self.UpperZoneStorage: water content of the Upper zone [mm]
+        :var self.Q2: Specific runoff (baseflow part) per cell [mm]
+        :var self.Percolation: actual percolation to the lower zone [mm]
+        :var self.SoilMoisture: actual soil moisture [mm]
+        :var self.Q1: specific runoff (quickflow part) [mm]
+        :var self.Q0: specific runoff (quickflow), If K upper zone is precalculated [mm]
 
 
-    *Static variables*
+        *Static variables*
 
-    :var self.Altitude: The altitude of each cell [m]
-    :var self.ToCubic: Mutiplier to convert mm to m^3/s for fluxes
-    """
+        :var self.Altitude: The altitude of each cell [m]
+        :var self.ToCubic: Mutiplier to convert mm to m^3/s for fluxes
+        """
 
         self.logger.debug(
             "Step: " + str(int(self.currentStep)) + "/" + str(int(self._d_nrTimeSteps))

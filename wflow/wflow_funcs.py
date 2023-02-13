@@ -29,6 +29,7 @@ from numba import jit
 import math
 import numpy as np
 import pcraster as pcr
+
 try:
     from numba.core.errors import NumbaPendingDeprecationWarning
 except ImportError:
@@ -36,17 +37,17 @@ except ImportError:
 
 import warnings
 
-warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
+warnings.simplefilter("ignore", category=NumbaPendingDeprecationWarning)
 
 # ldd definitie
 _ldd = np.array([[7, 8, 9], [4, 5, 6], [1, 2, 3]])
 _ldd_us = np.fliplr(np.flipud(_ldd))
 _pits = 5
 
+
 @jit(nopython=True)
 def _up_nb(ldd_f, idx0, shape, _ldd_us=_ldd_us):
-    """returns a numpy array with 1d indices of upstream neighbors on a ldd
-    """
+    """returns a numpy array with 1d indices of upstream neighbors on a ldd"""
     nrow, ncol = shape
     r = idx0 // ncol
     c = idx0 % ncol
@@ -55,38 +56,38 @@ def _up_nb(ldd_f, idx0, shape, _ldd_us=_ldd_us):
         row = r + dr
         for dc in range(-1, 2):
             col = c + dc
-            if dr == 0 and dc == 0: # skip pit -> return empty array
+            if dr == 0 and dc == 0:  # skip pit -> return empty array
                 continue
-            elif row < 0 or row >= nrow or col < 0 or col >= ncol: # out of bounds
+            elif row < 0 or row >= nrow or col < 0 or col >= ncol:  # out of bounds
                 pass
             else:
-                idx = idx0 + dc + dr*ncol
-                if ldd_f[idx] == _ldd_us[dr+1, dc+1]:
+                idx = idx0 + dc + dr * ncol
+                if ldd_f[idx] == _ldd_us[dr + 1, dc + 1]:
                     wdw_idx.append(idx)
     return np.array(wdw_idx, dtype=np.int64)
 
+
 @jit(nopython=True)
 def set_dd(ldd, _ldd_us=_ldd_us, pit_value=_pits):
-    """set drainage direction network from downstream to upstream
-    """
+    """set drainage direction network from downstream to upstream"""
     shape = ldd.shape
     ldd = ldd.ravel()
     nodes = list()
     nodes_up = list()
 
     # most downstream indices
-    idx_ds = np.where(ldd==np.array(pit_value).astype(ldd.dtype))[0].astype(np.int64)
-           
+    idx_ds = np.where(ldd == np.array(pit_value).astype(ldd.dtype))[0].astype(np.int64)
+
     # move upstream
     while True:
         nodes.append(idx_ds)
         idx_next = list()
-        nbs_up = np.ones((idx_ds.size, 8), dtype=np.int64)*-1
+        nbs_up = np.ones((idx_ds.size, 8), dtype=np.int64) * -1
         for i, idx in enumerate(idx_ds):
             idx_up = _up_nb(ldd, idx, shape, _ldd_us)
             if np.any(idx_up):
                 idx_next.extend(idx_up)
-                nbs_up[i, :idx_up.size] = idx_up
+                nbs_up[i, : idx_up.size] = idx_up
         nodes_up.append(nbs_up)
         if len(idx_next) == 0:
             break
@@ -98,67 +99,82 @@ def set_dd(ldd, _ldd_us=_ldd_us, pit_value=_pits):
 # Kinematic wave modules                                                      #
 ###############################################################################
 
+
 def estimate_iterations_kin_wave(Q, Beta, alpha, timestepsecs, dx, mv):
     if (pcr.pcr2numpy(Q, mv)).max() > 0:
-        celerity = pcr.ifthen(Q > 0.0, 1.0 / (alpha * Beta * Q**(Beta-1)))
+        celerity = pcr.ifthen(Q > 0.0, 1.0 / (alpha * Beta * Q ** (Beta - 1)))
         courant = (timestepsecs / dx) * celerity
         np_courant = pcr.pcr2numpy(courant, mv)
     else:
         np_courant = np.zeros(pcr.pcr2numpy(Q, mv).shape) + mv
-    np_courant[np_courant==mv] = np.nan
+    np_courant[np_courant == mv] = np.nan
     try:
-        it_kin = int(np.ceil(1.25*(np.nanpercentile(np_courant,95))))
+        it_kin = int(np.ceil(1.25 * (np.nanpercentile(np_courant, 95))))
     except:
         it_kin = 1
-    
+
     return it_kin
 
 
 @jit(nopython=True)
-def kinematic_wave(Qin,Qold,q,alpha,beta,deltaT,deltaX):
-    
+def kinematic_wave(Qin, Qold, q, alpha, beta, deltaT, deltaX):
+
     epsilon = 1e-12
     MAX_ITERS = 3000
 
-    if ((Qin+Qold+q) == 0.):
-        return 0.
+    if (Qin + Qold + q) == 0.0:
+        return 0.0
     else:
-        #common terms
-        ab_pQ = alpha*beta*pow(((Qold+Qin)/2.),beta-1.)
-        deltaTX = deltaT/deltaX
-        C = deltaTX*Qin + alpha*pow(Qold,beta) + deltaT*q
-        
-        Qkx   = (deltaTX * Qin + Qold * ab_pQ + deltaT * q) / (deltaTX + ab_pQ)
-        
+        # common terms
+        ab_pQ = alpha * beta * pow(((Qold + Qin) / 2.0), beta - 1.0)
+        deltaTX = deltaT / deltaX
+        C = deltaTX * Qin + alpha * pow(Qold, beta) + deltaT * q
+
+        Qkx = (deltaTX * Qin + Qold * ab_pQ + deltaT * q) / (deltaTX + ab_pQ)
+
         if math.isnan(Qkx):
-            Qkx = 0.
-        
-        Qkx   = max(Qkx, 1e-30)
-        fQkx  = deltaTX * Qkx + alpha * pow(Qkx, beta) - C
-        dfQkx = deltaTX + alpha * beta * pow(Qkx, beta - 1.)
-        Qkx   = Qkx - fQkx / dfQkx
-        Qkx   = max(Qkx, 1e-30)
+            Qkx = 0.0
+
+        Qkx = max(Qkx, 1e-30)
+        fQkx = deltaTX * Qkx + alpha * pow(Qkx, beta) - C
+        dfQkx = deltaTX + alpha * beta * pow(Qkx, beta - 1.0)
+        Qkx = Qkx - fQkx / dfQkx
+        Qkx = max(Qkx, 1e-30)
         count = 0
-        
+
         while abs(fQkx) > epsilon and count < MAX_ITERS:
-            fQkx  = deltaTX * Qkx + alpha * pow(Qkx, beta) - C
-            dfQkx = deltaTX + alpha * beta * pow(Qkx, beta - 1.)
-            Qkx  =  Qkx - fQkx / dfQkx
-            Qkx   = max(Qkx, 1e-30)
+            fQkx = deltaTX * Qkx + alpha * pow(Qkx, beta) - C
+            dfQkx = deltaTX + alpha * beta * pow(Qkx, beta - 1.0)
+            Qkx = Qkx - fQkx / dfQkx
+            Qkx = max(Qkx, 1e-30)
             count = count + 1
-          
+
         return Qkx
 
 
 @jit(nopython=True)
-def kin_wave(rnodes, rnodes_up, Qold, q, Alpha, Beta, DCL, River, Bw, AlpTermR, AlpPow, deltaT, it=1):
-    
+def kin_wave(
+    rnodes,
+    rnodes_up,
+    Qold,
+    q,
+    Alpha,
+    Beta,
+    DCL,
+    River,
+    Bw,
+    AlpTermR,
+    AlpPow,
+    deltaT,
+    it=1,
+):
+
     acc_flow = np.zeros(Qold.size, dtype=np.float64)
     acc_flow = np.concatenate((acc_flow, np.array([0], dtype=np.float64)))
     acc_h = np.copy(acc_flow)
     waterlevel = np.copy(acc_flow)
 
-    for v in range(0,it):
+    for v in range(0, it):
         shape = Qold.shape
         # flat new state
         Qnew = np.zeros(Qold.size, dtype=np.float64)
@@ -169,97 +185,117 @@ def kin_wave(rnodes, rnodes_up, Qold, q, Alpha, Beta, DCL, River, Bw, AlpTermR, 
             for j in range(len(rnodes[i])):
                 idx = rnodes[i][j]
                 nbs = rnodes_up[i][j]
-    
+
                 Qin = np.sum(Qnew[nbs])
-                Qnew[idx] = kinematic_wave(Qin, Qold[idx], q[idx], Alpha[idx], Beta[idx], deltaT/it, DCL[idx])
-        
-                acc_flow[idx] = acc_flow[idx] + Qnew[idx] * (deltaT/it)
-                waterlevel[idx] = (Alpha[idx] * np.power(Qnew[idx], Beta[idx])) / Bw[idx]
+                Qnew[idx] = kinematic_wave(
+                    Qin, Qold[idx], q[idx], Alpha[idx], Beta[idx], deltaT / it, DCL[idx]
+                )
+
+                acc_flow[idx] = acc_flow[idx] + Qnew[idx] * (deltaT / it)
+                waterlevel[idx] = (Alpha[idx] * np.power(Qnew[idx], Beta[idx])) / Bw[
+                    idx
+                ]
                 acc_h[idx] = acc_h[idx] + waterlevel[idx]
-                Pr = Bw[idx] + (2.0 * waterlevel[idx])
-                Alpha[idx] = AlpTermR[idx] * np.power(Pr, AlpPow[idx])
-                Qold[idx]= Qnew[idx]
-    waterlevel_av = acc_h[:-1]/it
+                Qold[idx] = Qnew[idx]
+    waterlevel_av = acc_h[:-1] / it
     # remove last value from array and reshape to original format
-    return acc_flow[:-1].reshape(shape), Qnew[:-1].reshape(shape), waterlevel_av.reshape(shape), waterlevel[:-1].reshape(shape)
-    
+    return (
+        acc_flow[:-1].reshape(shape),
+        Qnew[:-1].reshape(shape),
+        waterlevel_av.reshape(shape),
+        waterlevel[:-1].reshape(shape),
+    )
+
 
 @jit(nopython=True)
-def kinematic_wave_ssf(ssf_in, ssf_old, zi_old, r, Ks_hor, Ks, slope, neff, f, D, dt, dx, w, ssf_max):
-    
+def kinematic_wave_ssf(
+    ssf_in, ssf_old, zi_old, r, Ks_hor, Ks, slope, neff, f, D, dt, dx, w, ssf_max
+):
+
     epsilon = 1e-3
     MAX_ITERS = 3000
-        
-    if ((ssf_in+ssf_old) == 0. and (r <= 0)):
-    #if (max(ssf_in+ssf_old+r,0.) == 0.):
-        return 0., D, 0.
+
+    if (ssf_in + ssf_old) == 0.0 and (r <= 0):
+        # if (max(ssf_in+ssf_old+r,0.) == 0.):
+        return 0.0, D, 0.0
     else:
-        #initial estimate
-        ssf_n = (ssf_old + ssf_in)/2.0
+        # initial estimate
+        ssf_n = (ssf_old + ssf_in) / 2.0
         count = 0
-        
-        # Estimate zi on the basis of the relation between subsurfacel flow and zi           
-        zi = math.log((f*ssf_n)/(w*Ks_hor*Ks*slope) + math.exp(-f*D))/-f
+
+        # Estimate zi on the basis of the relation between subsurfacel flow and zi
+        zi = math.log((f * ssf_n) / (w * Ks_hor * Ks * slope) + math.exp(-f * D)) / -f
         # Reciprocal of derivative delta Q/ delta z_i, constrained w.r.t. neff on the basis of the continuity equation)
-        Cn = (Ks_hor*Ks*np.exp(-f*zi)*slope)/neff
+        Cn = (Ks_hor * Ks * np.exp(-f * zi) * slope) / neff
         # Term of the continuity equation for Newton-Raphson iteration for iteration 1
         # because celerity Cn is depending on zi, the increase or decrease of zi is moved to the recharge term of the continuity equation
-        # then (1./Cn)*ssf_old can be replaced with (1./Cn)*ssf_n, and thus celerity and lateral flow rate ssf_n are then in line 
-        c = (dt/dx)*ssf_in + (1./Cn)*ssf_n + dt*(r-(zi_old-zi)*neff*w)
-   
+        # then (1./Cn)*ssf_old can be replaced with (1./Cn)*ssf_n, and thus celerity and lateral flow rate ssf_n are then in line
+        c = (
+            (dt / dx) * ssf_in
+            + (1.0 / Cn) * ssf_n
+            + dt * (r - (zi_old - zi) * neff * w)
+        )
 
         # Continuity equation of which solution should be zero
-        fQ = (dt/dx)*ssf_n + (1./Cn)*ssf_n - c
+        fQ = (dt / dx) * ssf_n + (1.0 / Cn) * ssf_n - c
         # Derivative of the continuity equation w.r.t. Q_out for iteration 1
-        dfQ = (dt/dx) +  1/Cn
+        dfQ = (dt / dx) + 1 / Cn
         # Update lateral outflow estimate ssf_n (Q_out) for iteration 1
-        ssf_n =  ssf_n - (fQ/dfQ)
+        ssf_n = ssf_n - (fQ / dfQ)
 
         # Check whether ssf_n is reasonable
         if math.isnan(ssf_n):
-            ssf_n = 0.
-        ssf_n   = max(ssf_n, 1e-30)
-        
-        # Start while loop of Newton-Raphson iteration m until continuity equation approaches zero        
+            ssf_n = 0.0
+        ssf_n = max(ssf_n, 1e-30)
+
+        # Start while loop of Newton-Raphson iteration m until continuity equation approaches zero
         while abs(fQ) > epsilon and count < MAX_ITERS:
-            # Estimate zi on the basis of the relation between lateral flow rate and groundwater level           
-            zi = math.log((f*ssf_n)/(w*Ks_hor*Ks*slope) + math.exp(-f*D))/-f
+            # Estimate zi on the basis of the relation between lateral flow rate and groundwater level
+            zi = (
+                math.log((f * ssf_n) / (w * Ks_hor * Ks * slope) + math.exp(-f * D))
+                / -f
+            )
             # Reciprocal of derivative delta Q/ delta z_i, constrained w.r.t. neff on the basis of the continuity equation
-            Cn = (Ks_hor*Ks*np.exp(-f*zi)*slope)/neff
+            Cn = (Ks_hor * Ks * np.exp(-f * zi) * slope) / neff
 
             # Term of the continuity equation for given Newton-Raphson iteration m
             # because celerity Cn is depending on zi, the increase or decrease of zi is moved to the recharge term of the continuity equation
-            # then (1./Cn)*ssf_old can be replaced with (1./Cn)*ssf_n, and thus celerity and lateral flow rate ssf_n are then in line 
-            c = (dt/dx)*ssf_in + (1./Cn)*ssf_n + dt*(r-(zi_old-zi)*neff*w)
-    
+            # then (1./Cn)*ssf_old can be replaced with (1./Cn)*ssf_n, and thus celerity and lateral flow rate ssf_n are then in line
+            c = (
+                (dt / dx) * ssf_in
+                + (1.0 / Cn) * ssf_n
+                + dt * (r - (zi_old - zi) * neff * w)
+            )
+
             # Continuity equation of which solution should be zero
-            fQ = (dt/dx)*ssf_n + (1./Cn)*ssf_n - c
+            fQ = (dt / dx) * ssf_n + (1.0 / Cn) * ssf_n - c
             # Derivative of the continuity equation w.r.t. Q_out for iteration m+1
-            dfQ = (dt/dx) +  1./Cn         
+            dfQ = (dt / dx) + 1.0 / Cn
             # Update lateral outflow estimate ssf_n (Q_out) for iteration m+1
-            ssf_n =  ssf_n - (fQ/dfQ)
-            
+            ssf_n = ssf_n - (fQ / dfQ)
+
             # Check whether ssf_n is reasonable
             if math.isnan(ssf_n):
-                ssf_n = 0.
-            ssf_n   = max(ssf_n, 1e-30)
+                ssf_n = 0.0
+            ssf_n = max(ssf_n, 1e-30)
             # Upload count
             count = count + 1
 
         # Constrain the lateral flow rate ssf_n
-        ssf_n =  min(ssf_n,(ssf_max*w))
+        ssf_n = min(ssf_n, (ssf_max * w))
         # On the basis of the lateral flow rate, estimate the amount of groundwater level above surface (saturation excess conditions), then rest = negative
-        rest = zi_old - (ssf_in + r*dx - ssf_n)/(w*dx)/neff
-        # In case the groundwater level lies above surface (saturation excess conditions, rest = negative), calculate the exfiltration rate and set groundwater back to zero.     
-        exfilt = min(rest,0.0) * -neff
-        zi = max(0,zi)
-        
-        return ssf_n, zi, exfilt   
+        rest = zi_old - (ssf_in + r * dx - ssf_n) / (w * dx) / neff
+        # In case the groundwater level lies above surface (saturation excess conditions, rest = negative), calculate the exfiltration rate and set groundwater back to zero.
+        exfilt = min(rest, 0.0) * -neff
+        zi = max(0, zi)
+
+        return ssf_n, zi, exfilt
 
 
 ###############################################################################
 # Rainfall interception modules                                               #
 ###############################################################################
+
 
 def rainfall_interception_hbv(Rainfall, PotEvaporation, Cmax, InterceptionStorage):
     """
@@ -286,7 +322,7 @@ def rainfall_interception_gash(
     Cmax, EoverR, CanopyGapFraction, Precipitation, CanopyStorage, maxevap=9999
 ):
     """
-    Interception according to the Gash model (For daily timesteps). 
+    Interception according to the Gash model (For daily timesteps).
     """
     # TODO:  add other rainfall interception method (lui)
     # TODO: Include subdaily Gash model
@@ -343,7 +379,7 @@ def rainfall_interception_modrut(
     """
     Interception according to a modified Rutter model. The model is solved
     explicitly and there is no drainage below Cmax.
-    
+
     Returns:
         - NetInterception: P - TF - SF (may be different from the actual wet canopy evaporation)
         - ThroughFall:
@@ -351,7 +387,7 @@ def rainfall_interception_modrut(
         - LeftOver: Amount of potential eveporation not used
         - Interception: Actual wet canopy evaporation in this thimestep
         - CanopyStorage: Canopy storage at the end of the timestep
-    
+
     """
 
     ##########################################################################
@@ -436,19 +472,20 @@ def propagate_downstream(rnodes, rnodes_up, material):
     for i in range(len(rnodes)):
         for j in range(len(rnodes[i])):
             idx_ds = rnodes[i][j]
-            idxs_us = rnodes_up[i][j] # NOTE: has nodata (-1) values
+            idxs_us = rnodes_up[i][j]  # NOTE: has nodata (-1) values
             v = 0
             for idx_us in idxs_us:
-                if idx_us == -1: break
+                if idx_us == -1:
+                    break
                 v += material[idx_us]
             material[idx_ds] += v
     return material.reshape(shape)
 
 
-
 ###############################################################################
 # Snow and glaciers modules                                                   #
 ###############################################################################
+
 
 def SnowPackHBV(Snow, SnowWater, Precipitation, Temperature, TTI, TT, TTM, Cfmax, WHC):
     """
@@ -509,15 +546,17 @@ def SnowPackHBV(Snow, SnowWater, Precipitation, Temperature, TTI, TT, TTM, Cfmax
     return Snow, SnowWater, SnowMelt, RainFall, SnowFall
 
 
-def glacierHBV(GlacierFrac, 
-                GlacierStore, 
-                Snow, 
-                Temperature, 
-                TT, 
-                Cfmax, 
-                G_SIfrac,
-                timestepsecs,
-                basetimestep):
+def glacierHBV(
+    GlacierFrac,
+    GlacierStore,
+    Snow,
+    Temperature,
+    TT,
+    Cfmax,
+    G_SIfrac,
+    timestepsecs,
+    basetimestep,
+):
     """
     Run Glacier module and add the snowpack on-top of it.
     First, a fraction of the snowpack is converted into ice using the HBV-light
@@ -538,23 +577,21 @@ def glacierHBV(GlacierFrac,
 
     :returns: Snow,Snow2Glacier,GlacierStore,GlacierMelt,
     """
-    
-    #Fraction of the snow transformed into ice (HBV-light model)
+
+    # Fraction of the snow transformed into ice (HBV-light model)
     Snow2Glacier = G_SIfrac * (timestepsecs / basetimestep) * Snow
 
-    Snow2Glacier = pcr.ifthenelse(
-        GlacierFrac > 0.0, Snow2Glacier, pcr.scalar(0.0)
-    )
+    Snow2Glacier = pcr.ifthenelse(GlacierFrac > 0.0, Snow2Glacier, pcr.scalar(0.0))
     # Max conversion to 8mm/day
-    Snow2Glacier = (
-        pcr.min(Snow2Glacier, 8.0 * (timestepsecs / basetimestep))
-    )
+    Snow2Glacier = pcr.min(Snow2Glacier, 8.0 * (timestepsecs / basetimestep))
 
     Snow = Snow - (Snow2Glacier * GlacierFrac)
     GlacierStore = GlacierStore + Snow2Glacier
 
     PotMelt = pcr.ifthenelse(
-        Temperature > TT, Cfmax * (timestepsecs / basetimestep) * (Temperature - TT), pcr.scalar(0.0)
+        Temperature > TT,
+        Cfmax * (timestepsecs / basetimestep) * (Temperature - TT),
+        pcr.scalar(0.0),
     )  # Potential snow melt, based on temperature
 
     GlacierMelt = pcr.ifthenelse(
@@ -566,11 +603,11 @@ def glacierHBV(GlacierFrac,
     return Snow, Snow2Glacier, GlacierStore, GlacierMelt
 
 
-
 ###############################################################################
 # Lake and reservoirmodules                                                   #
 ###############################################################################
-    
+
+
 def sCurve(X, a=0.0, b=1.0, c=1.0):
     """
     sCurve function:
@@ -591,7 +628,7 @@ def sCurve(X, a=0.0, b=1.0, c=1.0):
         s = 1.0 / (b + pcr.exp(-c * (X - a)))
     return s
 
-    
+
 def lookupResRegMatr(ReserVoirLocs, values, hq, JDOY):
 
     np_res_ids = pcr.pcr2numpy(ReserVoirLocs, 0)
@@ -648,7 +685,7 @@ def naturalLake(
     JDOY,
     timestepsecs=86400,
 ):
-    
+
     """
     Run Natural Lake module to compute the new waterlevel and outflow.
     Solves lake water balance with linearisation and iteration procedure,
@@ -685,98 +722,89 @@ def naturalLake(
 
     mv = -999.0
     LakeZeros = LakeArea * 0.0
-    
+
     waterlevel_start = waterlevel
 
     inflow = pcr.ifthen(pcr.boolean(LakeLocs), inflow)
 
-    prec_av = pcr.ifthen(
-        pcr.boolean(LakeLocs), pcr.areaaverage(precip, LakeAreasMap)
-    )
-    pet_av = pcr.ifthen(
-        pcr.boolean(LakeLocs), pcr.areaaverage(pet, LakeAreasMap)
-    )
-    
-    
+    prec_av = pcr.ifthen(pcr.boolean(LakeLocs), pcr.areaaverage(precip, LakeAreasMap))
+    pet_av = pcr.ifthen(pcr.boolean(LakeLocs), pcr.areaaverage(pet, LakeAreasMap))
+
     ### Modified Puls Approach (Burek et al., 2013, LISFLOOD) ###
-    #ResOutflowFunc = 3 
-    
-    #Calculate lake factor and SI parameter
+    # ResOutflowFunc = 3
+
+    # Calculate lake factor and SI parameter
     LakeFactor = pcr.ifthenelse(
-            LakeOutflowFunc == 3,
-            LakeArea / (timestepsecs * (lake_b) ** 0.5),
-            mv
-            )
-    
+        LakeOutflowFunc == 3, LakeArea / (timestepsecs * (lake_b) ** 0.5), mv
+    )
+
     storage_start = pcr.ifthenelse(
-            LakeStorFunc == 1,
-            LakeArea * waterlevel_start,
-            lookupResFunc(LakeLocs, waterlevel_start, sh, "0-1"),
-            )
+        LakeStorFunc == 1,
+        LakeArea * waterlevel_start,
+        lookupResFunc(LakeLocs, waterlevel_start, sh, "0-1"),
+    )
 
     SIFactor = pcr.ifthenelse(
-            LakeOutflowFunc == 3,
-            ((storage_start + (prec_av-pet_av)*LakeArea/1000.0) / timestepsecs 
-             + inflow),
-            mv
-            )
-    #Adjust SIFactor for ResThreshold != 0
+        LakeOutflowFunc == 3,
+        (
+            (storage_start + (prec_av - pet_av) * LakeArea / 1000.0) / timestepsecs
+            + inflow
+        ),
+        mv,
+    )
+    # Adjust SIFactor for ResThreshold != 0
     SIFactorAdj = SIFactor - LakeArea * LakeThreshold / timestepsecs
-    
-    #Calculate the new lake outflow/waterlevel/storage
+
+    # Calculate the new lake outflow/waterlevel/storage
     outflow = pcr.ifthenelse(
-            LakeOutflowFunc == 3,
-            pcr.ifthenelse(
-                    SIFactorAdj > 0.0,
-                    (-LakeFactor + (LakeFactor**2 + 2*SIFactorAdj) ** 0.5) ** 2,
-                    0.0),
-            LakeZeros
-            )
+        LakeOutflowFunc == 3,
+        pcr.ifthenelse(
+            SIFactorAdj > 0.0,
+            (-LakeFactor + (LakeFactor**2 + 2 * SIFactorAdj) ** 0.5) ** 2,
+            0.0,
+        ),
+        LakeZeros,
+    )
     storage = pcr.ifthenelse(
-            LakeOutflowFunc == 3,
-            (SIFactor - outflow) * timestepsecs,
-            LakeZeros
-            )
-    waterlevel = pcr.ifthenelse(
-            LakeOutflowFunc == 3,
-            storage / LakeArea,
-            LakeZeros
-            )
-    
+        LakeOutflowFunc == 3, (SIFactor - outflow) * timestepsecs, LakeZeros
+    )
+    waterlevel = pcr.ifthenelse(LakeOutflowFunc == 3, storage / LakeArea, LakeZeros)
+
     ### Linearisation and iteration for specific storage/rating curves ###
     np_lakeoutflowfunc = pcr.pcr2numpy(LakeOutflowFunc, 0.0)
-    if ((bool(np.isin(1, np.unique(np_lakeoutflowfunc)))) or 
-        (bool(np.isin(2, np.unique(np_lakeoutflowfunc))))):
-        
+    if (bool(np.isin(1, np.unique(np_lakeoutflowfunc)))) or (
+        bool(np.isin(2, np.unique(np_lakeoutflowfunc)))
+    ):
+
         np_lakelocs = pcr.pcr2numpy(LakeLocs, 0.0)
         np_linkedlakelocs = pcr.pcr2numpy(LinkedLakeLocs, 0.0)
         waterlevel_loop = waterlevel_start
-    
+
         _outflow = []
         nr_loop = np.max([int(timestepsecs / 21600), 1])
         for n in range(0, nr_loop):
             np_waterlevel = pcr.pcr2numpy(waterlevel_loop, np.nan)
             np_waterlevel_lower = np_waterlevel.copy()
-    
+
             for val in np.unique(np_linkedlakelocs):
                 if val > 0:
                     np_waterlevel_lower[np_linkedlakelocs == val] = np_waterlevel[
                         np.where(np_lakelocs == val)
                     ]
-    
+
             diff_wl = np_waterlevel - np_waterlevel_lower
             diff_wl[np.isnan(diff_wl)] = mv
             np_waterlevel_lower[np.isnan(np_waterlevel_lower)] = mv
-    
+
             pcr_diff_wl = pcr.numpy2pcr(pcr.Scalar, diff_wl, mv)
             pcr_wl_lower = pcr.numpy2pcr(pcr.Scalar, np_waterlevel_lower, mv)
-    
+
             storage_start_loop = pcr.ifthenelse(
                 LakeStorFunc == 1,
                 LakeArea * waterlevel_loop,
                 lookupResFunc(LakeLocs, waterlevel_loop, sh, "0-1"),
             )
-    
+
             outflow_loop = pcr.ifthenelse(
                 LakeOutflowFunc == 1,
                 lookupResRegMatr(LakeLocs, waterlevel_loop, hq, JDOY),
@@ -786,10 +814,10 @@ def naturalLake(
                     pcr.min(-1 * lake_b * (pcr_wl_lower - LakeThreshold) ** lake_e, 0),
                 ),
             )
-    
+
             np_outflow = pcr.pcr2numpy(outflow_loop, np.nan)
             np_outflow_linked = np_lakelocs * 0.0
-    
+
             with np.errstate(invalid="ignore"):
                 if np_outflow[np_outflow < 0] is not None:
                     np_outflow_linked[
@@ -797,9 +825,9 @@ def naturalLake(
                             np_linkedlakelocs.shape
                         )
                     ] = np_outflow[np_outflow < 0]
-    
+
             outflow_linked = pcr.numpy2pcr(pcr.Scalar, np_outflow_linked, 0.0)
-    
+
             fl_nr_loop = float(nr_loop)
             storage_loop = (
                 storage_start_loop
@@ -809,38 +837,26 @@ def naturalLake(
                 - (pcr.cover(outflow_loop, 0.0) * timestepsecs / fl_nr_loop)
                 + (pcr.cover(outflow_linked, 0.0) * timestepsecs / fl_nr_loop)
             )
-    
+
             waterlevel_loop = pcr.ifthenelse(
                 LakeStorFunc == 1,
                 waterlevel_loop + (storage_loop - storage_start_loop) / LakeArea,
                 lookupResFunc(LakeLocs, storage_loop, sh, "1-0"),
             )
-    
+
             np_outflow_nz = np_outflow * 0.0
             with np.errstate(invalid="ignore"):
                 np_outflow_nz[np_outflow > 0] = np_outflow[np_outflow > 0]
             _outflow.append(np_outflow_nz)
-    
+
         outflow_av_temp = np.average(_outflow, 0)
         outflow_av_temp[np.isnan(outflow_av_temp)] = mv
         outflow_av = pcr.numpy2pcr(pcr.Scalar, outflow_av_temp, mv)
-        
-        #Add the discharge/waterlevel/storage from the loop to the one from puls approach
-        outflow = pcr.ifthenelse(
-                LakeOutflowFunc == 3,
-                outflow,
-                outflow_av
-                )
-        waterlevel = pcr.ifthenelse(
-                LakeOutflowFunc == 3,
-                waterlevel,
-                waterlevel_loop
-                )
-        storage = pcr.ifthenelse(
-                LakeOutflowFunc == 3,
-                storage,
-                storage_loop
-                )
+
+        # Add the discharge/waterlevel/storage from the loop to the one from puls approach
+        outflow = pcr.ifthenelse(LakeOutflowFunc == 3, outflow, outflow_av)
+        waterlevel = pcr.ifthenelse(LakeOutflowFunc == 3, waterlevel, waterlevel_loop)
+        storage = pcr.ifthenelse(LakeOutflowFunc == 3, storage, storage_loop)
 
     return waterlevel, outflow, prec_av, pet_av, storage
 
@@ -888,15 +904,15 @@ def simplereservoir(
         ),
         pcr.scalar(0.0),
     )
-    
+
     _outflow = 0
     _demandRelease = 0
-    
+
     nr_loop = np.max([int(timestepsecs / 21600), 1])
     for n in range(0, nr_loop):
-        
+
         fl_nr_loop = float(nr_loop)
-        
+
         storage = (
             storage
             + (inflow * timestepsecs / fl_nr_loop)
@@ -913,12 +929,21 @@ def simplereservoir(
         wantrel = pcr.max(0.0, storage - (maxstorage * target_perc_full))
         # Assume extra maximum Q if spilling
         overflowQ = pcr.max((storage - maxstorage), 0.0)
-        torelease = pcr.min(wantrel, overflowQ + maximum_Q * timestepsecs / fl_nr_loop - demandRelease)
+        torelease = pcr.min(
+            wantrel, overflowQ + maximum_Q * timestepsecs / fl_nr_loop - demandRelease
+        )
         storage = storage - torelease
         outflow = torelease + demandRelease
         percfull = storage / maxstorage
-        
+
         _outflow = _outflow + outflow
         _demandRelease = _demandRelease + demandRelease
 
-    return storage, _outflow / timestepsecs, percfull, prec_av, pet_av, _demandRelease / timestepsecs
+    return (
+        storage,
+        _outflow / timestepsecs,
+        percfull,
+        prec_av,
+        pet_av,
+        _demandRelease / timestepsecs,
+    )

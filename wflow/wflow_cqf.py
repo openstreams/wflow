@@ -125,20 +125,20 @@ def usage(*args):
 def actEvap_SBM(RootingDepth, WTable, UStoreDepth, FirstZoneDepth, PotTrans, smoothpar):
     """
     Actual evaporation function:
-        
-	- first try to get demand from the saturated zone, using the rootingdepth as a limiting factor
-	- secondly try to get the remaining water from the unsaturated store
 
-    Input: 
+        - first try to get demand from the saturated zone, using the rootingdepth as a limiting factor
+        - secondly try to get the remaining water from the unsaturated store
+
+    Input:
         - RootingDepth,WTable, UStoreDepth,FirstZoneDepth, PotTrans
-        
-    Output: 
+
+    Output:
         - ActEvap,  FirstZoneDepth,  UStoreDepth ActEvapUStore
-        
+
     .. todo::
-        
+
         add option to take length of roots in saturated zone into account
-        
+
     """
 
     # Step 1 from saturated zone, use rootingDepth as a limiting factor
@@ -179,8 +179,8 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def updateRunOff(self):
         """
-      Updates the kinematic wave reservoir. Should be run after updates to Q
-      """
+        Updates the kinematic wave reservoir. Should be run after updates to Q
+        """
         self.WaterLevel = (self.Alpha * pow(self.SurfaceRunoff, self.Beta)) / self.Bw
         # wetted perimeter (m)
         P = self.Bw + (2 * self.WaterLevel)
@@ -190,14 +190,14 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.KinWaveVolume = self.WaterLevel * self.Bw * self.DCL
 
     def stateVariables(self):
-        """ 
-      returns a list of state variables that are essential to the model. 
-      This list is essential for the resume and suspend functions to work.
-      
-      This function is specific for each model and **must** be present.
-      
-      - CanopyStorage is any needed for subdaily steps
-      """
+        """
+        returns a list of state variables that are essential to the model.
+        This list is essential for the resume and suspend functions to work.
+
+        This function is specific for each model and **must** be present.
+
+        - CanopyStorage is any needed for subdaily steps
+        """
         states = [
             "SurfaceRunoff",
             "WaterLevel",
@@ -210,23 +210,23 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def supplyCurrentTime(self):
         """
-      gets the current time in seconds after the start of the run
-      """
+        gets the current time in seconds after the start of the run
+        """
         return self.currentTimeStep() * self.timestepsecs
 
     def readtblDefault(self, pathtotbl, landuse, subcatch, soil, default):
         """
-    First check if a prepared map of the same name is present
-    in the staticmaps directory. next try to
-    read a tbl file to match a landuse, catchment and soil map. Returns 
-    the default value if the tbl file is not found.
-    
-    Input: 
-        - pathtotbl,landuse,subcatch,soil, default
-        
-    Output: 
-        - map constructed from tbl file or map with default value
-    """
+        First check if a prepared map of the same name is present
+        in the staticmaps directory. next try to
+        read a tbl file to match a landuse, catchment and soil map. Returns
+        the default value if the tbl file is not found.
+
+        Input:
+            - pathtotbl,landuse,subcatch,soil, default
+
+        Output:
+            - map constructed from tbl file or map with default value
+        """
 
         mapname = (
             os.path.dirname(pathtotbl)
@@ -273,7 +273,7 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def initial(self):
 
-        """Initial part of the model, executed only once """
+        """Initial part of the model, executed only once"""
         global statistics
         global multpars
 
@@ -975,34 +975,34 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def dynamic(self):
         """
-    Stuf that is done for each timestep
-    
-    
-    Below a list of variables that can be save to disk as maps or as 
-    timeseries (see ini file for syntax):
-        
-    :var self.SurfaceRunoff: Surface runoff in the kinematic wave [m^3/s]
-    :var self.ActEvap: Actual EvapoTranspiration [mm]
-    :var self.WaterLevel: Water level in the kinematic wave [m] (above the bottom)
-    :var self.ActInfilt: Actual infiltration into the unsaturated zone [mm]
-    :var self.CanopyStorage: actual canopystorage (only for subdaily timesteps) [mm]
-    :var self.FirstZoneDepth: Amount of water in the saturated store [mm]
-    :var self.UStoreDepth: Amount of water in the unsaturated store [mm]
-    :var self.TSoil: Top soil temperature [oC]
-    :var self.FirstZoneDepth: amount of available water in the saturated part of the soil [mm]
-    :var self.UStoreDepth: amount of available water in the unsaturated zone [mm]
-    :var self.Transfer: downward flux from unsaturated to saturated zone [mm]
-    :var self.CapFlux: capilary flux from saturated to unsaturated zone [mm]
-    
-    
-    Static variables:
-        
-    :var self.Altitude: The altitude of each cell [m]
-    :var self.Bw: Width of the river [m]
-    :var self.River: booolean map indicating the presence of a river [-]
-    :var self.DLC: length of the river within a cell [m]
-    :var self.ToCubic: Mutiplier to convert mm to m^3/s for fluxes
-    """
+        Stuf that is done for each timestep
+
+
+        Below a list of variables that can be save to disk as maps or as
+        timeseries (see ini file for syntax):
+
+        :var self.SurfaceRunoff: Surface runoff in the kinematic wave [m^3/s]
+        :var self.ActEvap: Actual EvapoTranspiration [mm]
+        :var self.WaterLevel: Water level in the kinematic wave [m] (above the bottom)
+        :var self.ActInfilt: Actual infiltration into the unsaturated zone [mm]
+        :var self.CanopyStorage: actual canopystorage (only for subdaily timesteps) [mm]
+        :var self.FirstZoneDepth: Amount of water in the saturated store [mm]
+        :var self.UStoreDepth: Amount of water in the unsaturated store [mm]
+        :var self.TSoil: Top soil temperature [oC]
+        :var self.FirstZoneDepth: amount of available water in the saturated part of the soil [mm]
+        :var self.UStoreDepth: amount of available water in the unsaturated zone [mm]
+        :var self.Transfer: downward flux from unsaturated to saturated zone [mm]
+        :var self.CapFlux: capilary flux from saturated to unsaturated zone [mm]
+
+
+        Static variables:
+
+        :var self.Altitude: The altitude of each cell [m]
+        :var self.Bw: Width of the river [m]
+        :var self.River: booolean map indicating the presence of a river [-]
+        :var self.DLC: length of the river within a cell [m]
+        :var self.ToCubic: Mutiplier to convert mm to m^3/s for fluxes
+        """
 
         self.logger.debug(
             "Step: "
@@ -1257,7 +1257,12 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.InfiltExcess = pcr.ifthenelse(UStoreCapacity > 0.0, FreeWaterDepth, 0.0)
         self.CumInfiltExcess = self.CumInfiltExcess + self.InfiltExcess
 
-        self.ActEvap, self.FirstZoneDepth, self.UStoreDepth, self.ActEvapUStore = actEvap_SBM(
+        (
+            self.ActEvap,
+            self.FirstZoneDepth,
+            self.UStoreDepth,
+            self.ActEvapUStore,
+        ) = actEvap_SBM(
             self.RootingDepth,
             self.zi,
             self.UStoreDepth,
@@ -1576,7 +1581,8 @@ def main():
     ########################################################################
     try:
         opts, args = getopt.getopt(
-            sys.argv[1:], "XF:L:hC:Ii:v:S:T:WNR:u:s:EP:p:Xx:U:fOc:")
+            sys.argv[1:], "XF:L:hC:Ii:v:S:T:WNR:u:s:EP:p:Xx:U:fOc:"
+        )
     except getopt.error as msg:
         pcrut.usage(msg)
 

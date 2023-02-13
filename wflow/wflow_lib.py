@@ -246,7 +246,7 @@ def getcols():
 
 
 def getgridparams():
-    """ return grid parameters in a python friendly way
+    """return grid parameters in a python friendly way
 
     Output:
         [ Xul, Yul, xsize, ysize, rows, cols]
@@ -390,18 +390,18 @@ def area_riverlength_factor(ldd, Area, Clength):
 
 def area_river_burnin(ldd, dem, order, Area):
     """
-  Calculates the lowest values in as DEM for each erea in an area map for
-  river of order *order*
+    Calculates the lowest values in as DEM for each erea in an area map for
+    river of order *order*
 
-  Input:
-      - ldd
-      - dem
-      - order
-      - Area map
+    Input:
+        - ldd
+        - dem
+        - order
+        - Area map
 
-  Output:
-      - dem
-  """
+    Output:
+        - dem
+    """
     strorder = pcr.streamorder(ldd)
     strordermax = pcr.areamaximum(strorder, Area)
     maxordcell = pcr.ifthen(strordermax > order, strordermax)
@@ -412,23 +412,23 @@ def area_river_burnin(ldd, dem, order, Area):
 
 def area_percentile(inmap, area, n, order, percentile):
     """
-  calculates percentile of inmap per area
-  n is the number of points in each area,
-  order, the sorter order of inmap per area (output of
-  areaorder(inmap,area))
-  n is the output of pcr.areatotal(pcr.spatial(pcr.scalar(1.0)),area)
+    calculates percentile of inmap per area
+    n is the number of points in each area,
+    order, the sorter order of inmap per area (output of
+    areaorder(inmap,area))
+    n is the output of pcr.areatotal(pcr.spatial(pcr.scalar(1.0)),area)
 
-  Input:
-      - inmap
-      - area map
-      - n
-      - order (riverorder)
-      - percentile
+    Input:
+        - inmap
+        - area map
+        - n
+        - order (riverorder)
+        - percentile
 
-  Output:
-      - percentile map
+    Output:
+        - percentile map
 
-  """
+    """
     i = pcr.rounddown((n * percentile) / 100.0 + 0.5)  # index in order map
     perc = pcr.ifthen(i == order, inmap)
 
@@ -845,7 +845,7 @@ def detdrainlength(ldd, xl, yl):
     # if ldd is 8 or 2 use Ylength
     # if ldd is 4 or 6 use Xlength
     draindir = pcr.scalar(ldd)
-    slantlength = pcr.sqrt(xl ** 2 + yl ** 2)
+    slantlength = pcr.sqrt(xl**2 + yl**2)
     drainlength = pcr.ifthenelse(
         draindir == 2,
         yl,
@@ -995,13 +995,13 @@ def sCurveSlope(X, a=0.0, b=1.0, c=1.0):
 
 def Gzip(fileName, storePath=False, chunkSize=1024 * 1024):
     """
-        Usage: Gzip(fileName, storePath=False, chunksize=1024*1024)
-        Gzip the given file to the given storePath and then remove the file.
-        A chunk size may be selected. Default is 1 megabyte
-        Input:
-            fileName:   file to be GZipped
-            storePath:  destination folder. Default is False, meaning the file will be zipped to its own folder
-            chunkSize:  size of chunks to write. If set too large, GZip will fail with memory problems
+    Usage: Gzip(fileName, storePath=False, chunksize=1024*1024)
+    Gzip the given file to the given storePath and then remove the file.
+    A chunk size may be selected. Default is 1 megabyte
+    Input:
+        fileName:   file to be GZipped
+        storePath:  destination folder. Default is False, meaning the file will be zipped to its own folder
+        chunkSize:  size of chunks to write. If set too large, GZip will fail with memory problems
     """
     if not storePath:
         pathName = os.path.split(fileName)[0]
@@ -1088,7 +1088,7 @@ def cutMapById(data, subcatchmap, id, x, y, FillVal):
     if len(data.flatten()) == len(subcatchmap.flatten()):
         scid = subcatchmap == id
         data[np.logical_not(scid)] = FillVal
-        xid, = np.where(scid.max(axis=0))
+        (xid,) = np.where(scid.max(axis=0))
         xmin = xid.min()
         xmax = xid.max()
         if xmin >= 1:
@@ -1096,7 +1096,7 @@ def cutMapById(data, subcatchmap, id, x, y, FillVal):
         if xmax < len(x) - 1:
             xmax = xmax + 1
 
-        yid, = np.where(scid.max(axis=1))
+        (yid,) = np.where(scid.max(axis=1))
         ymin = yid.min()
         ymax = yid.max()
         if ymin >= 1:
@@ -1114,7 +1114,7 @@ def cutMapById(data, subcatchmap, id, x, y, FillVal):
 
 
 def writeMap(fileName, fileFormat, x, y, data, FillVal):
-    """ Write geographical data into file"""
+    """Write geographical data into file"""
 
     verbose = False
     gdal.AllRegister()

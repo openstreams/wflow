@@ -128,7 +128,7 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
 
         self.models = configsection(self.config, "models")
         self.exchanges = configsection(self.config, "exchanges")
-        
+
         for item in self.exchanges:
             exchange_from = item.split(self.comp_sep)
 
@@ -151,7 +151,7 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
                 self.indices_to.append(ind)
             else:
                 self.indices_to.append([])
-        
+
         for mod in self.models:
             self.bmimodels[mod] = wfbmi.wflowbmi_csdms()
 
@@ -183,7 +183,9 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
                 supplymodel = self.__getmodulenamefromvar__(item)
                 if curmodel == supplymodel:
                     if len(idfrom) > 0 and len(idto) > 0:
-                        outofmodel = self.get_value_at_indices(item, tuple(idfrom)).copy()
+                        outofmodel = self.get_value_at_indices(
+                            item, tuple(idfrom)
+                        ).copy()
 
                     else:
                         outofmodel = self.get_value(item).copy()
@@ -308,7 +310,9 @@ class wflowbmi_csdms(wflow.bmi.Bmi):
 
                 if curmodel == supplymodel:
                     if len(idfrom) > 0 and len(idto) > 0:
-                        outofmodel = self.get_value_at_indices(item, tuple(idfrom)).copy()
+                        outofmodel = self.get_value_at_indices(
+                            item, tuple(idfrom)
+                        ).copy()
 
                     else:
                         outofmodel = self.get_value(item).copy()

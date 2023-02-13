@@ -52,7 +52,7 @@ def usage(*args):
 def pcr_tanh(x):
     """
     define tanh for pcraster objects
-    
+
     """
     return (pcr.exp(x) - pcr.exp(-x)) / (pcr.exp(x) + pcr.exp(-x))
 
@@ -60,12 +60,12 @@ def pcr_tanh(x):
 def initUH1(X4, D):
     """
     Initialize the UH1 unit hydrograph
-    
-    Input:   
+
+    Input:
         - X4
         - D
-    
-    Returns:   
+
+    Returns:
         - UH1, SH1
     """
     NH = int(numpy.ceil(X4))
@@ -82,14 +82,14 @@ def initUH1(X4, D):
 def initUH2(X4, D):
     """
     Initialize the UH2 unit hydrograph
-    
+
     Input:
-    
+
         - X4
         - D
-    
+
     Returns:
-    
+
         - UH2, SH2
     """
     NH = int(numpy.ceil(X4))
@@ -110,15 +110,15 @@ def initUH2(X4, D):
 
 def mk_qres(N):
     """
-    Returns an array (or ayyar of maps) to store the 
+    Returns an array (or ayyar of maps) to store the
     delayed flow in
-    
+
     Input:
-    
+
         - N nr op steps
-        
+
     Ouput:
-    
+
         - nr of steps elemenst initialized with zeros's
     """
 
@@ -132,17 +132,17 @@ def mk_qres(N):
 
 class WflowModel(pcraster.framework.DynamicModel):
     """
-  The user defined model class. This is your work!
-  """
+    The user defined model class. This is your work!
+    """
 
     def __init__(self, cloneMap, Dir, RunDir, configfile):
         """
-      *Required*
-      
-      The init function **must** contain what is shown below. Other functionality
-      may be added by you if needed.
-      
-      """
+        *Required*
+
+        The init function **must** contain what is shown below. Other functionality
+        may be added by you if needed.
+
+        """
         pcraster.framework.DynamicModel.__init__(self)
 
         self.caseName = os.path.abspath(Dir)
@@ -154,38 +154,38 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.SaveDir = os.path.join(self.Dir, self.runId)
 
     def stateVariables(self):
-        """ 
-      returns a list of state variables that are essential to the model. 
-      This list is essential for the resume and suspend functions to work.
-      
-      This function is specific for each model and **must** be present.
+        """
+        returns a list of state variables that are essential to the model.
+        This list is essential for the resume and suspend functions to work.
+
+        This function is specific for each model and **must** be present.
 
 
-      :var self.S_X1: production reservoir content at the beginning of the time step (divided by X1) [mm]
-      :var self.R_X3: routing reservoir content at the beginning of the time step (divided by X3) [mm]
-      
-      .. todo::
-      
-          add routing state vars
-          
-      """
+        :var self.S_X1: production reservoir content at the beginning of the time step (divided by X1) [mm]
+        :var self.R_X3: routing reservoir content at the beginning of the time step (divided by X3) [mm]
+
+        .. todo::
+
+            add routing state vars
+
+        """
         states = ["S_X1", "R_X3", "QUH1", "QUH2"]
 
         return states
 
     def supplyCurrentTime(self):
         """
-      *Optional*
-      
-      Supplies the current time in seconds after the start of the run
-      This function is optional. If it is not set the framework assumes
-      the model runs with daily timesteps.
-      
-      Ouput:
-      
-          - time in seconds since the start of the model run
-          
-      """
+        *Optional*
+
+        Supplies the current time in seconds after the start of the run
+        This function is optional. If it is not set the framework assumes
+        the model runs with daily timesteps.
+
+        Ouput:
+
+            - time in seconds since the start of the model run
+
+        """
 
         return self.currentTimeStep() * int(
             configget(self.config, "model", "timestepsecs", "3600")
@@ -193,14 +193,14 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def suspend(self):
         """
-      *Required*
-      
-      Suspends the model to disk. All variables needed to restart the model
-      are saved to disk as pcraster maps. Use resume() to re-read them
-      
-      This function is required. 
-      
-    """
+        *Required*
+
+        Suspends the model to disk. All variables needed to restart the model
+        are saved to disk as pcraster maps. Use resume() to re-read them
+
+        This function is required.
+
+        """
 
         self.logger.info("Saving initial conditions...")
         self.wf_suspend(os.path.join(self.SaveDir, "outstate"))
@@ -212,24 +212,24 @@ class WflowModel(pcraster.framework.DynamicModel):
     def initial(self):
 
         """
-    Initial part of the gr4 model, executed only once. Reads all static model
-    information (parameters) and sets-up the variables used in modelling.
-    
-    :var dt.tbl: time step (1) [hour]
-    :var B.tbl: routing ratio (0.9) [-]
-    :var NH: UH dimension (number) taken from ini file [-]
-    :var D.tbl: variable for hourly time steps (1.25) [-]
-    :var C.tbl: variable (number) [hour]
-    
-    *Parameters*
-    
-    :var X1.tbl: capacity of the production store, accounts for soil moisture (number) [mm]
-    :var X2.tbl: water exchange coefficient (number) [mm]
-    :var X3.tbl: capacity of the routing store (number) [mm]
-    :var X4 (in ini): time base of the unit hydrograph (number) [hour]
-    
-    
-    """
+        Initial part of the gr4 model, executed only once. Reads all static model
+        information (parameters) and sets-up the variables used in modelling.
+
+        :var dt.tbl: time step (1) [hour]
+        :var B.tbl: routing ratio (0.9) [-]
+        :var NH: UH dimension (number) taken from ini file [-]
+        :var D.tbl: variable for hourly time steps (1.25) [-]
+        :var C.tbl: variable (number) [hour]
+
+        *Parameters*
+
+        :var X1.tbl: capacity of the production store, accounts for soil moisture (number) [mm]
+        :var X2.tbl: water exchange coefficient (number) [mm]
+        :var X3.tbl: capacity of the routing store (number) [mm]
+        :var X4 (in ini): time base of the unit hydrograph (number) [hour]
+
+
+        """
         #: pcraster option to calculate with units or cells. Not really an issue
         #: in this model but always good to keep in mind.
         pcr.setglobaloption("unittrue")
@@ -332,14 +332,14 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.logger.info("End of initial section...")
 
     def resume(self):
-        """ 
-    *Required*
+        """
+        *Required*
 
-    This function is required. Read initial state maps (they are output of a 
-    previous call to suspend()). The implementation showns her is the most basic 
-    setup needed.
-    
-    """
+        This function is required. Read initial state maps (they are output of a
+        previous call to suspend()). The implementation showns her is the most basic
+        setup needed.
+
+        """
         self.logger.info("Reading initial conditions...")
         #: It is advised to use the wf_resume() function
         #: here which pick upt the variable save by a call to wf_suspend()
@@ -354,13 +354,13 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def dynamic(self):
         """
-      *Required*
-      
-      :var self.Pn: net precipitation [mm]
-      :var self.En: net evapotranspiration [mm]
-      :var self.Ps: part of Pn that feeds the production reservoir [mm]
-      :var self.Es: evaporation quantity substracted from the production reservoir [mm]
-      """
+        *Required*
+
+        :var self.Pn: net precipitation [mm]
+        :var self.En: net evapotranspiration [mm]
+        :var self.Ps: part of Pn that feeds the production reservoir [mm]
+        :var self.Es: evaporation quantity substracted from the production reservoir [mm]
+        """
 
         self.logger.debug(
             "Step: "
@@ -456,10 +456,10 @@ class WflowModel(pcraster.framework.DynamicModel):
 def main(argv=None):
     """
     *Optional*
-    
+
     Perform command line execution of the model. This example uses the getopt
     module to parse the command line options.
-    
+
     The user can set the caseName, the runDir, the timestep and the configfile.
     """
     global multpars

@@ -77,6 +77,7 @@ def interception_overflow2(self, k):
             self.Si[k] * self.percentArea, pcr.nominal(self.TopoId)
         )
 
+
 def interception_overflow3(self, k):
     """
     - Effective rainfall is all that does not fit into the interception reservoir
@@ -96,8 +97,8 @@ def interception_overflow3(self, k):
     self.wbSi_[k] = self.Precipitation - self.Ei - self.Pe - self.Si[k] + self.Si_t[k]
 
     self.Pe = self.Pe + self.Qw_[k]  # added on 3-11-2015 for snow module
-    self.Ei = self.Ei + self.Ew_[k]  # june 2020 no lambda correction 
-#    self.Ei = self.Ei + (self.Ew_[k] / self.lamda * self.lamdaS)  # lambda added on 31-3-2016
+    self.Ei = self.Ei + self.Ew_[k]  # june 2020 no lambda correction
+    #    self.Ei = self.Ei + (self.Ew_[k] / self.lamda * self.lamdaS)  # lambda added on 31-3-2016
 
     self.Ei_[k] = self.Ei
     self.Pe_[k] = self.Pe
@@ -112,6 +113,7 @@ def interception_overflow3(self, k):
         self.Si[k] = pcr.areatotal(
             self.Si[k] * self.percentArea, pcr.nominal(self.TopoId)
         )
+
 
 def interception_overflow_Ep(self, k):
     """

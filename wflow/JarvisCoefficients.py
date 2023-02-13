@@ -39,7 +39,7 @@ def calcEp(self, k):
 def calcEpSnow(self, k):
     """
     REQUIRED INPUT:
-	daily input data
+        daily input data
     """
     #    resistenceAeroD(self)
     #    potential_evaporation(self,k)
@@ -55,7 +55,7 @@ def calcEpSnow(self, k):
 def calcEpSnowHour(self, k):
     """
     REQUIRED INPUT:
-	hourly input data
+        hourly input data
     """
     #    resistenceAeroD(self)
     #    potential_evaporation(self,k)
@@ -116,7 +116,7 @@ def JC_temperature(self, k):
         pcr.ifthenelse(
             pcr.pcrand(self.Tmean >= self.JC_Topt - 1, self.Tmean <= self.JC_Topt + 1),
             1,
-            1 - self.JC_Topt ** -2 * (self.Tmean - self.JC_Topt) ** 2,
+            1 - self.JC_Topt**-2 * (self.Tmean - self.JC_Topt) ** 2,
         ),
     )
     self.JC_temp = pcr.ifthenelse(JC_temp1 < 0, 0, JC_temp1)
@@ -131,7 +131,7 @@ def JC_vapourDeficit(self, k):
         - D05 (vapourpressure deficit halfway between 1 and Cd2, fixed at 1.5 kPa (Matsumoto et al. 2008))
         - Cd1 (first vapour pressure parameter, fixed at 3 (Matsumoto et al. 2008))
         - Cd2 (second vapour pressure parameter, fixed at 0.1 (Matsumoto et al. 2008))
-        """
+    """
 
     denom = 1 + (self.vpd / self.JC_D05[k]) ** self.JC_cd1[k]
     JC_vpd1 = (1 / denom) * (1 - self.JC_cd2[k]) + self.JC_cd2[k]
@@ -144,7 +144,7 @@ def JC_LAIeffective(self, k):
     REQUIRED INPUT:
         - LAI (-)
     PARAMETERS:
-        - none (Allen et al., 2006 & Zhou et al., 2006)   
+        - none (Allen et al., 2006 & Zhou et al., 2006)
     """
 
     self.JC_laiEff = self.LAI / (0.2 * self.LAI + 1)
@@ -274,7 +274,7 @@ def downscale_evaporation(self, k):
         - start of the day (derived from global radiation)
         - end of the day (derived from global radiation)
     PARAMETERS:
-    - 
+    -
     """
 
     # teller = numpy.nanmax(pcr.pcr2numpy(self.thestep,np.nan))
@@ -307,7 +307,7 @@ def downscale_evaporation_snow(self, k):
         - start of the day (derived from global radiation)
         - end of the day (derived from global radiation)
     PARAMETERS:
-    - 
+    -
     """
 
     teller = pcr.pcr2numpy(self.thestep, np.nan)[0, 0]

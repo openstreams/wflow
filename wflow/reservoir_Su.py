@@ -84,9 +84,9 @@ def unsatZone_no_reservoir(self, k):
 
 def unsatZone_LP_beta(self, k):
     """
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation linear until LP, from than with potential rate
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
     and if this leads to negative storage, the outgoing fluxes are corrected to rato
     - Qu is determined with a beta function (same as in HBV?)
     - Code for ini-file: 1
@@ -181,10 +181,10 @@ def unsatZone_LP_beta(self, k):
 
 def unsatZone_LP_beta_Jarvis(self, k):
     """
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation based on Jarvis stress functions
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
-    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is
     no longer taken into account for this correction
     - Qu is determined with a beta function (same as in HBV?)
     - Code for ini-file: 12
@@ -259,9 +259,9 @@ def unsatZone_LP_beta_Ep(self, k):
     """
     - Potential evaporation is calculated with formula in 'JarvisCoefficients', but without
     using the Jarvis stress functions
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation linear until LP, from than with potential rate
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
     and if this leads to negative storage, the outgoing fluxes are corrected to rato
     - Qu is determined with a beta function (same as in HBV?)
     - Code for ini-file: 13
@@ -362,9 +362,9 @@ def unsatZone_LP_beta_Ep_Ei(self, k):
     """
     - Potential evaporation is calculated with formula in 'JarvisCoefficients', but without
     using the Jarvis stress functions
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation linear until LP, from than with potential rate
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
     and if this leads to negative storage, the outgoing fluxes are corrected to rato
     - Qu is determined with a beta function (same as in HBV?)
     - Code for ini-file: 13
@@ -469,9 +469,9 @@ def unsatZone_LP_beta_Ep_percD(self, k):
     """
     - Potential evaporation is calculated with formula in 'JarvisCoefficients', but without
     using the Jarvis stress functions
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation linear until LP, from than with potential rate
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
     and if this leads to negative storage, the outgoing fluxes are corrected to rato
     - Qu is determined with a beta function (same as in HBV?)
     - Code for ini-file: 13
@@ -570,9 +570,9 @@ def unsatZone_LP_beta_Ep_percD(self, k):
     """
     - Potential evaporation is calculated with formula in 'JarvisCoefficients', but without
     using the Jarvis stress functions
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation linear until LP, from than with potential rate
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
     and if this leads to negative storage, the outgoing fluxes are corrected to rato
     - Qu is determined with a beta function (same as in HBV?)
     - Code for ini-file: 13
@@ -671,9 +671,9 @@ def unsatZone_LP_beta_Ep_percDvar(self, k):
     """
     - Potential evaporation is calculated with formula in 'JarvisCoefficients', but without
     using the Jarvis stress functions
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation linear until LP, from than with potential rate
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
     and if this leads to negative storage, the outgoing fluxes are corrected to rato
     - Qu is determined with a beta function (same as in HBV?)
     - Code for ini-file: 13
@@ -795,9 +795,9 @@ def unsatZone_LP_beta_Ep_cropG(self, k):
     """
     - Potential evaporation is calculated with formula in 'JarvisCoefficients', but without
     using the Jarvis stress functions
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation linear until LP, from than with potential rate
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
     and if this leads to negative storage, the outgoing fluxes are corrected to rato
     - Qu is determined with a beta function (same as in HBV?)
     - root zone storage for crop land is decreased in autumn and winter
@@ -905,10 +905,10 @@ def unsatZone_LP_beta_Ep_cropG(self, k):
 
 def unsatZone_forAgri_Jarvis(self, k):
     """
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation based on Jarvis stress functions
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
-    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is
     no longer taken into account for this correction
     - Qu is determined with a beta function (same as in HBV?)
     - inflow is infiltration from agriculture reservoir
@@ -999,10 +999,10 @@ def unsatZone_forAgri_Jarvis(self, k):
 
 def unsatZone_forAgri_Ep(self, k):
     """
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation based on beta/LP
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
-    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is
     no longer taken into account for this correction
     - Qu is determined with a beta function (same as in HBV?)
     - inflow is infiltration from agriculture reservoir
@@ -1099,10 +1099,10 @@ def unsatZone_forAgri_Ep(self, k):
 
 def unsatZone_forAgri_Ep_percD(self, k):
     """
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation based on beta/LP
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
-    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is
     no longer taken into account for this correction
     - Qu is determined with a beta function (same as in HBV?)
     - inflow is infiltration from agriculture reservoir
@@ -1200,10 +1200,10 @@ def unsatZone_forAgri_Ep_percD(self, k):
 
 def unsatZone_forAgri_Ep_percDvar(self, k):
     """
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation based on beta/LP
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
-    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is
     no longer taken into account for this correction
     - Qu is determined with a beta function (same as in HBV?)
     - inflow is infiltration from agriculture reservoir
@@ -1323,10 +1323,10 @@ def unsatZone_forAgri_Ep_percDvar(self, k):
 
 def unsatZone_forAgri_hourlyEp(self, k):
     """
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation based on beta/LP
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
-    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is
     no longer taken into account for this correction
     - Qu is determined with a beta function (same as in HBV?)
     - inflow is infiltration from agriculture reservoir
@@ -1420,10 +1420,10 @@ def unsatZone_forAgri_hourlyEp(self, k):
 
 def unsatZone_forAgri_Jarvis_cropG(self, k):
     """
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation based on Jarvis stress functions
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
-    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is
     no longer taken into account for this correction
     - Qu is determined with a beta function (same as in HBV?)
     - inflow is infiltration from agriculture reservoir
@@ -1518,10 +1518,10 @@ def unsatZone_forAgri_Jarvis_cropG(self, k):
 
 def unsatZone_forAgri_Ep_cropG(self, k):
     """
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation based on beta/LP
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
-    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is
     no longer taken into account for this correction
     - Qu is determined with a beta function (same as in HBV?)
     - inflow is infiltration from agriculture reservoir
@@ -1619,9 +1619,9 @@ def unsatZone_forAgri_Ep_cropG(self, k):
 
 def unsatZone_withAgri(self, k):
     """
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation linear until LP, from than with potential rate
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
     and if this leads to negative storage, the outgoing fluxes are corrected to rato
     - Qu is determined with a beta function (same as in HBV?)
     - Code for ini-file: 10
@@ -1714,10 +1714,10 @@ def unsatZone_withAgri(self, k):
 def unsatZone_withAgri_Ep(self, k):
     """
     - Potential evaporation is calculated with formula in 'JarvisCoefficients', but without
-    using the Jarvis stress functions    
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    using the Jarvis stress functions
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation linear until LP, from than with potential rate
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
     and if this leads to negative storage, the outgoing fluxes are corrected to rato
     - Qu is determined with a beta function (same as in HBV?)
     - Code for ini-file: 14
@@ -1814,10 +1814,10 @@ def unsatZone_withAgri_Ep(self, k):
 def unsatZone_withAgri_Jarvis(self, k):
     """
     - Potential evaporation is calculated with formula in 'JarvisCoefficients', but without
-    using the Jarvis stress functions    
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    using the Jarvis stress functions
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation linear until LP, from than with potential rate
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
     and if this leads to negative storage, the outgoing fluxes are corrected to rato
     - Qu is determined with a beta function (same as in HBV?)
     - Code for ini-file: 15

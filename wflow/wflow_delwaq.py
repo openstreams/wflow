@@ -93,9 +93,9 @@ waterlevelMapStack = "lev"
 
 
 def dw_WriteNrSegments(fname, nr):
-    """ 
-    Writes the number of segments to B3 file 
-    
+    """
+    Writes the number of segments to B3 file
+
     B3\_nrofseg.inc
     """
     exfile = open(fname, "w")
@@ -105,9 +105,9 @@ def dw_WriteNrSegments(fname, nr):
 
 
 def dw_WriteNrExChnages(fname, nr):
-    """ 
+    """
     Writes the number of exchnages to file (number of rows in the pointer file)
-    
+
     B4\_nrofexch.inc
     """
     exfile = open(fname, "w")
@@ -117,7 +117,7 @@ def dw_WriteNrExChnages(fname, nr):
 
 
 def dw_WriteBoundData(fname, areas):
-    """ 
+    """
     writes B5\_bounddata.inc
     """
 
@@ -157,16 +157,16 @@ def dw_WriteInitials(fname, inmaps):
 
 
 def dw_WriteBoundlist(fname, pointer, areas, inflowtypes):
-    """ 
+    """
     Writes the boundary list file
     B5\_boundlist.inc
     Numbering is abs(exchnage id)
-    
-    Input: 
+
+    Input:
         - fname, pointer
-        
+
     .. todo::
-        
+
         - add labeling of different inflows ( the information is already present)
     """
     totareas = areas
@@ -212,7 +212,7 @@ def dw_WriteBoundlist(fname, pointer, areas, inflowtypes):
 
 
 def dw_WritePointer(fname, pointer, binary=False):
-    """ 
+    """
     WRites the pointer file
     B4\_pointer.inc
     """
@@ -234,17 +234,17 @@ def dw_WritePointer(fname, pointer, binary=False):
 def dw_WriteSegmentOrExchangeData(ttime, fname, datablock, boundids, WriteAscii=True):
     """
     Writes a timestep to a segment/exchange data file (appends to an existing
-    file or creates a new one). 
-        
+    file or creates a new one).
+
     Input:
-        - time - time for this timestep  
+        - time - time for this timestep
         - fname - File path of the segment/exchange data file</param>
         - datablock - array with data
         - boundids to write more than 1 block
         - WriteAscii - set to 1 to alse make an ascii dump
-        
+
     """
-    #Supress potential NaN values to avoid error (replaced by -1.0)
+    # Supress potential NaN values to avoid error (replaced by -1.0)
     datablock[np.isnan(datablock)] = -1.0
     # First convert the array to a 32 bit float
     totareas = datablock
@@ -281,19 +281,19 @@ def dw_mkDelwaqPointers(ldd, amap, difboun, layers):
     """
     An ldd is used to determine the from-to relations for delwaq using
     the PCraster up/downstreams commands.
-    *amap* is used to link boundaries to the segments for delwaq (negative 
-    numbers). These are area based boundaries. Diffboun is a 
+    *amap* is used to link boundaries to the segments for delwaq (negative
+    numbers). These are area based boundaries. Diffboun is a
     python dictionary with inflows for each
     cell.
-    
+
     Input:
         - ldd
         - map to determine the active points)
         - difboun : number of inflow boundaries per cell
-        - layers [nr of soil layers (only vertical flow)]. 
-    
+        - layers [nr of soil layers (only vertical flow)].
+
     .. note:: Only one layer at present (layers must be 1)
-        
+
     Output:
         - pointer, fromto, outflows, boundaries, segment
         - matrix with 4 colums: from to, zero, zero.
@@ -301,16 +301,16 @@ def dw_mkDelwaqPointers(ldd, amap, difboun, layers):
 
     .. note::  use savetxt("pointer.inc",pointer,fmt='%10.0f') to save this
         for use with delwaq
-       
-       
+
+
     .. note:: The pointers list first contains the "internal" fluxes in
-        the kinematic wave reservoir, next the fluxes (1-n) into the 
+        the kinematic wave reservoir, next the fluxes (1-n) into the
         kinematic wave reservoir.
-            
-        
-    .. todo:: 
-        Add exta column with boundary labels (of the inflows)    
-        
+
+
+    .. todo::
+        Add exta column with boundary labels (of the inflows)
+
     """
     # Firts make sure there is at least on outflow in the model
     ptid = pcr.uniqueid(pcr.boolean(amap))
@@ -430,7 +430,7 @@ def dw_pcrToDataBlock(pcrmap, amap):
 
 def _readTS(name, ts):
     """
-    Read a pcraster map for a timestep without using the dynamic framework 
+    Read a pcraster map for a timestep without using the dynamic framework
     """
     mname = os.path.basename(name)
     #  now generate timestep
@@ -444,7 +444,7 @@ def _readTS(name, ts):
 
 
 def dw_CreateDwRun(thedir):
-    """"
+    """ "
     create the dir to save delwaq info in
     """
     if not os.path.isdir(thedir):
@@ -549,10 +549,10 @@ def dw_Write_Substances(fname, areas):
     """
     Writes the B1_sublist.inc file
     input:
-        
-        it writes substances for the areas and an initial and mass balance 
+
+        it writes substances for the areas and an initial and mass balance
         check substance
-        
+
     """
 
     exfile = open(fname, "w")
@@ -607,7 +607,10 @@ def dw_GetGridDimensions(ptid_map):
     """
     # find number of cells in m and n directions
     zero_map = pcr.scalar(ptid_map) * 0.0
-    allx = dw_pcrToDataBlock(pcr.xcoordinate(pcr.boolean(pcr.cover(zero_map + 1, 1))), pcr.xcoordinate(pcr.boolean(pcr.cover(zero_map + 1, 1))))
+    allx = dw_pcrToDataBlock(
+        pcr.xcoordinate(pcr.boolean(pcr.cover(zero_map + 1, 1))),
+        pcr.xcoordinate(pcr.boolean(pcr.cover(zero_map + 1, 1))),
+    )
     i = 0
     diff = round(builtins.abs(allx[i] - allx[i + 1]), 5)
     diff_next = diff
@@ -1516,7 +1519,9 @@ def main():
                 # Fix for inw in the new wflow_sbm format (separation with land and river)
                 if source == "inw":
                     try:
-                        thesourceadd = read_timestep(nc, "inwint", ts, logger, caseId, runId)
+                        thesourceadd = read_timestep(
+                            nc, "inwint", ts, logger, caseId, runId
+                        )
                         thesourceadd = zero_map + thesourceadd
                     except:
                         thesourceadd = zero_map.copy()
@@ -1589,7 +1594,9 @@ def main():
         hydinfo["runid"] = runId
         hydinfo["tref"] = T0
         hydinfo["tstart"] = T0
-        hydinfo["tstop"] = T0 + datetime.timedelta(seconds=(timeSteps - 1) * timestepsecs)
+        hydinfo["tstop"] = T0 + datetime.timedelta(
+            seconds=(timeSteps - 1) * timestepsecs
+        )
         hydinfo["tstep"] = datetime.timedelta(seconds=timestepsecs)
         hydinfo["noseg"] = NOSQ
         hydinfo["nosegh"] = NOSQ

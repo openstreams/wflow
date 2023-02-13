@@ -1085,7 +1085,7 @@ class LandSurface(object):
             )
 
     def scaleNaturalLandCoverFractions(self):
-        """ rescales natural land cover fractions (make sure the total = 1)"""
+        """rescales natural land cover fractions (make sure the total = 1)"""
 
         # total land cover fractions
         pristineAreaFrac = 0.0
@@ -1181,7 +1181,7 @@ class LandSurface(object):
             )
 
     def scaleModifiedLandCoverFractions(self):
-        """ rescales the land cover fractions with irrigation areas"""
+        """rescales the land cover fractions with irrigation areas"""
 
         # calculate irrigatedAreaFrac (fraction of irrigation areas)
         irrigatedAreaFrac = pcr.spatial(pcr.scalar(0.0))
@@ -1870,9 +1870,7 @@ class LandSurface(object):
     ):
 
         # surface water source fraction based on Stefan Siebert's map:
-        factor = (
-            0.5
-        )  # using this factor, the minimum value for the following 'data_weight_value' is 0.75 (for swAbstractionFractionDataQuality == 5)
+        factor = 0.5  # using this factor, the minimum value for the following 'data_weight_value' is 0.75 (for swAbstractionFractionDataQuality == 5)
         data_weight_value = (
             pcr.scalar(1.0)
             - (pcr.min(5.0, pcr.max(0.0, swAbstractionFractionDataQuality)) / 10.0)

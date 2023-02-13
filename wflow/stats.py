@@ -49,14 +49,14 @@ SmallValue = 1.0e-10
 
 def get_mean(values, N="", NoData=NoDataVal, Skip=""):
     """This function computes the mean or average of an array of values
-       after filtering out the NoData values.  It returns both the mean
-       value and the number of valid data points used.  The mean value
-       is set to the NoData value if there are no valid data points.
-       If Skip is set, then values equal to skip are included in the count
-       of active data, but not included in the calculation of the mean.
-       An example of when this would be used is for computing average
-       snow cover, where 0 indicates a valid measurement but does not
-       contribute to a meaningful measurement of snow cover."""
+    after filtering out the NoData values.  It returns both the mean
+    value and the number of valid data points used.  The mean value
+    is set to the NoData value if there are no valid data points.
+    If Skip is set, then values equal to skip are included in the count
+    of active data, but not included in the calculation of the mean.
+    An example of when this would be used is for computing average
+    snow cover, where 0 indicates a valid measurement but does not
+    contribute to a meaningful measurement of snow cover."""
     if not N:
         N = len(values)
     mean = 0
@@ -78,9 +78,9 @@ def get_mean(values, N="", NoData=NoDataVal, Skip=""):
 
 def get_median(values, N="", NoData=NoDataVal):
     """This function computes the median of an array of values
-       after filtering out the NoData values.  It returns both the median
-       value and the number of valid data points used.  The median value
-       is set to the NoData value if there are no valid data points."""
+    after filtering out the NoData values.  It returns both the median
+    value and the number of valid data points used.  The median value
+    is set to the NoData value if there are no valid data points."""
     if not N:
         N = len(values)
     new_value = []
@@ -102,10 +102,10 @@ def get_median(values, N="", NoData=NoDataVal):
 
 def get_var(values, N="", mean="", NoData=NoDataVal):
     """This function computes the variance of an array of values after
-       filtering out the NoData values.  The mean value of the array
-       must be provided to the routine.  It returns both the variance
-       value and the number of valid data points used.  The variance
-       is set to the NoData value if there are no valid data points."""
+    filtering out the NoData values.  The mean value of the array
+    must be provided to the routine.  It returns both the variance
+    value and the number of valid data points used.  The variance
+    is set to the NoData value if there are no valid data points."""
     if not N:
         N = len(values)
     if not mean:
@@ -125,11 +125,11 @@ def get_var(values, N="", mean="", NoData=NoDataVal):
 
 def get_stdev(values, N="", mean="", NoData=NoDataVal):
     """This function computes the standard deviation of an array of
-       values after filtering out the NoData values.  The mean of the
-       array must be provided to the routine.  It returns both
-       the standard deviation value and the number of valid data
-       points used.  The standard deviation is set to the NoData value
-       if there are no valid data points."""
+    values after filtering out the NoData values.  The mean of the
+    array must be provided to the routine.  It returns both
+    the standard deviation value and the number of valid data
+    points used.  The standard deviation is set to the NoData value
+    if there are no valid data points."""
     if not N:
         N = len(values)
     if not mean:
@@ -150,11 +150,11 @@ def get_stdev(values, N="", mean="", NoData=NoDataVal):
 
 def get_skew(values, N="", mean="", stdev="", NoData=NoDataVal):
     """This function computes the skewness of an array of values after
-       filtering out the NoData values.  The mean and standard deviation
-       of the array must be provided to the routine.  It returns both
-       the skewness value and the number of valid data points used.  The
-       skewness is set to the NoData value if there are no valid data
-       points."""
+    filtering out the NoData values.  The mean and standard deviation
+    of the array must be provided to the routine.  It returns both
+    the skewness value and the number of valid data points used.  The
+    skewness is set to the NoData value if there are no valid data
+    points."""
     if not N:
         N = len(values)
     if not mean:
@@ -167,8 +167,8 @@ def get_skew(values, N="", mean="", stdev="", NoData=NoDataVal):
         if values[i] != NoData and not np.isnan(values[i]):
             skew = skew + (values[i] - mean) ** 3
             Nact = Nact + 1
-    if (stdev ** 3 * (Nact - 1) * (Nact - 2)) != 0:
-        skew = (skew * Nact) / (stdev ** 3 * (Nact - 1) * (Nact - 2))
+    if (stdev**3 * (Nact - 1) * (Nact - 2)) != 0:
+        skew = (skew * Nact) / (stdev**3 * (Nact - 1) * (Nact - 2))
     else:
         skew = NoData
     return (skew, Nact)
@@ -176,9 +176,9 @@ def get_skew(values, N="", mean="", stdev="", NoData=NoDataVal):
 
 def get_sum(values, N="", NoData=NoDataVal):
     """This function computes the sum of an array of values after
-       filtering out the NoData values.  It returns both the sum value
-       and the number of valid data points used.  The sum is set to
-       the NoData value if there are no valid data points."""
+    filtering out the NoData values.  It returns both the sum value
+    and the number of valid data points used.  The sum is set to
+    the NoData value if there are no valid data points."""
     if not N:
         N = len(values)
     sum = 0
@@ -194,10 +194,10 @@ def get_sum(values, N="", NoData=NoDataVal):
 
 def get_min(values, N="", NoData=NoDataVal):
     """This function finds the minimum value of an array after
-       filtering out the NoData values.  It returns both the
-       minimum value and the number of valid data points used.
-       The minimum is set to the NoData value if there are no
-       valid data points."""
+    filtering out the NoData values.  It returns both the
+    minimum value and the number of valid data points used.
+    The minimum is set to the NoData value if there are no
+    valid data points."""
     if not N:
         N = len(values)
     pos = 0
@@ -224,10 +224,10 @@ def get_min(values, N="", NoData=NoDataVal):
 
 def get_max(values, N="", NoData=NoDataVal):
     """This function finds the maximum value of an array after
-       filtering out the NoData values.  It returns both the
-       maximum value and the number of valid data points used.
-       The maximum is set to the NoData value if there are no
-       valid data points."""
+    filtering out the NoData values.  It returns both the
+    maximum value and the number of valid data points used.
+    The maximum is set to the NoData value if there are no
+    valid data points."""
     if not N:
         N = len(values)
     pos = 0
@@ -649,7 +649,7 @@ def filter_threshold(values, threshold, FILTER="ABOVE", N="", NoData=NoDataVal):
 
 def get_days(values, N="", NoData=NoDataVal, Thres=1.0):
     """This function computes the number of time steps an array of
-       values is above a threshold (i.e. the number of snow covered days."""
+    values is above a threshold (i.e. the number of snow covered days."""
     if not N:
         N = len(values)
     days = 0
@@ -665,7 +665,7 @@ def get_days(values, N="", NoData=NoDataVal, Thres=1.0):
 
 def get_last_day(values, N="", NoData=NoDataVal, Thres=1.0):
     """This function determines the index of the last time the
-       array of values exceeds the threshold (i.e. last day of snow)."""
+    array of values exceeds the threshold (i.e. last day of snow)."""
     if not N:
         N = len(values)
     last_day = 0
@@ -679,7 +679,7 @@ def get_last_day(values, N="", NoData=NoDataVal, Thres=1.0):
 
 def get_first_day(values, N="", NoData=NoDataVal, Thres=1.0):
     """This function determines the index of the first time the
-       array of values exceeds the threshold (i.e. last day of snow)."""
+    array of values exceeds the threshold (i.e. last day of snow)."""
     if not N:
         N = len(values)
     first_day = 0

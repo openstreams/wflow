@@ -415,10 +415,10 @@ class SoilAndTopoParameters(object):
             self.effSatAtFieldCapLow = pcr.cover(self.effSatAtFieldCapLow, 1.0)
 
             self.kUnsatAtFieldCapUpp = pcr.max(
-                0.0, (self.effSatAtFieldCapUpp ** self.campbellBetaUpp) * self.kSatUpp
+                0.0, (self.effSatAtFieldCapUpp**self.campbellBetaUpp) * self.kSatUpp
             )  # unsaturated conductivity at field capacity: KTHEFF_FC = max(0,THEFF_FC[TYPE]**BCB*KS1)
             self.kUnsatAtFieldCapLow = pcr.max(
-                0.0, (self.effSatAtFieldCapLow ** self.campbellBetaLow) * self.kSatLow
+                0.0, (self.effSatAtFieldCapLow**self.campbellBetaLow) * self.kSatLow
             )
         #
         if self.numberOfLayers == 3:
@@ -445,17 +445,17 @@ class SoilAndTopoParameters(object):
 
             self.kUnsatAtFieldCapUpp000005 = pcr.max(
                 0.0,
-                (self.effSatAtFieldCapUpp000005 ** self.campbellBetaUpp000005)
+                (self.effSatAtFieldCapUpp000005**self.campbellBetaUpp000005)
                 * self.kSatUpp000005,
             )
             self.kUnsatAtFieldCapUpp005030 = pcr.max(
                 0.0,
-                (self.effSatAtFieldCapUpp005030 ** self.campbellBetaUpp005030)
+                (self.effSatAtFieldCapUpp005030**self.campbellBetaUpp005030)
                 * self.kSatUpp005030,
             )
             self.kUnsatAtFieldCapLow030150 = pcr.max(
                 0.0,
-                (self.effSatAtFieldCapLow030150 ** self.campbellBetaLow030150)
+                (self.effSatAtFieldCapLow030150**self.campbellBetaLow030150)
                 * self.kSatLow030150,
             )
 

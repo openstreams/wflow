@@ -80,7 +80,6 @@ from wflow.wflow_funcs import *
 wflow = "wflow_pcrglobwb: "
 
 
-
 def usage(*args):
     """
     Print usage information
@@ -238,9 +237,9 @@ def setLandSurfaceStates(landSurface):
 class WflowModel(pcraster.framework.DynamicModel):
 
     """
-  The user defined model class.
+    The user defined model class.
 
-  """
+    """
 
     def __init__(self, cloneMap, Dir, RunDir, configfile, staticmaps):
         pcraster.framework.DynamicModel.__init__(self)
@@ -253,7 +252,6 @@ class WflowModel(pcraster.framework.DynamicModel):
         pcr.setclone(self.clonemappath)
         self.configfile = configfile
         self.SaveDir = os.path.join(self.Dir, self.runId)
-
 
     def stateVariables(self):
 
@@ -357,11 +355,11 @@ class WflowModel(pcraster.framework.DynamicModel):
     # The following are made to better connect to deltashell/openmi
     def supplyCurrentTime(self):
         """
-      gets the current time in seconds after the start of the run
+        gets the current time in seconds after the start of the run
 
-      Ouput:
-          - time in seconds since the start of the model run
-      """
+        Ouput:
+            - time in seconds since the start of the model run
+        """
         return self.currentTimeStep() * int(
             configget(self.config, "model", "timestepsecs", "86400")
         )
@@ -398,11 +396,11 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def parameters(self):
         """
-    Define all model parameters here that the framework should handle for the model
-    See wf_updateparameters and the parameters section of the ini file
-    If you use this make sure to all wf_updateparameters at the start of the dynamic section
-    and at the start/end of the initial section
-    """
+        Define all model parameters here that the framework should handle for the model
+        See wf_updateparameters and the parameters section of the ini file
+        If you use this make sure to all wf_updateparameters at the start of the dynamic section
+        and at the start/end of the initial section
+        """
         modelparameters = []
 
         # Static model parameters e.g.
@@ -456,9 +454,9 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def suspend(self):
         """
-      Suspends the model to disk. All variables needed to restart the model
-      are saved to disk as pcraster maps. Use resume() to re-read them
-    """
+        Suspends the model to disk. All variables needed to restart the model
+        are saved to disk as pcraster maps. Use resume() to re-read them
+        """
 
         self.logger.info("Saving initial conditions...")
         self.wf_suspend(os.path.join(self.SaveDir, "outstate"))
@@ -524,13 +522,13 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def default_summarymaps(self):
         """
-      Returns a list of default summary-maps at the end of a run.
-      This is model specific. You can also add them to the [summary]section of the ini file but stuff
-      you think is crucial to the model should be listed here
+        Returns a list of default summary-maps at the end of a run.
+        This is model specific. You can also add them to the [summary]section of the ini file but stuff
+        you think is crucial to the model should be listed here
 
-       Example:
+         Example:
 
-      """
+        """
         lst = [
             "self.Cfmax",
             "self.csize",
@@ -550,7 +548,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         return lst
 
     def resume(self):
-        """ read initial state maps (they are output of a previous call to suspend()) """
+        """read initial state maps (they are output of a previous call to suspend())"""
 
         if self.reinit == 1:
             self.logger.info("Setting initial conditions to default (zero!)")

@@ -262,9 +262,9 @@ class Groundwater(object):
 
             # calculate recessionCoeff (unit; day-1)
             self.recessionCoeff = (
-                (math.pi ** 2.0)
+                (math.pi**2.0)
                 * aquiferThicknessForRecessionCoeff
-                / (4.0 * self.specificYield * (aquiferWidth ** 2.0))
+                / (4.0 * self.specificYield * (aquiferWidth**2.0))
             )
 
         # assign the reccession coefficient based on the given pcraster file
@@ -289,8 +289,8 @@ class Groundwater(object):
             )
         else:
             minRecessionCoeff = (
-                1.0e-4
-            )  # This is the minimum value used in Van Beek et al. (2011).
+                1.0e-4  # This is the minimum value used in Van Beek et al. (2011).
+            )
         self.recessionCoeff = pcr.max(minRecessionCoeff, self.recessionCoeff)
         #####################################################################################################################################################
 

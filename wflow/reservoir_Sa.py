@@ -15,6 +15,7 @@ List all function versions
 """
 
 import pcraster as pcr
+
 try:
     from wflow.wf_DynamicFramework import *
 except ImportError:
@@ -82,10 +83,10 @@ def agriZone_no_reservoir(self, k):
 
 def agriZone_Jarvis(self, k):
     """
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation based on Jarvis stress functions
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
-    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is
     no longer taken into account for this correction
     - Qa u is determined from overflow from Sa
     - Code for ini-file: 1
@@ -129,10 +130,10 @@ def agriZone_Jarvis(self, k):
 
 def agriZone_Ep(self, k):
     """
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation based on LP
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
-    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is
     no longer taken into account for this correction
     - Qa u is determined from overflow from Sa
     - Code for ini-file: 2
@@ -178,10 +179,10 @@ def agriZone_Ep(self, k):
 
 def agriZone_Ep_Sa(self, k):
     """
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation based on LP
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
-    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is
     no longer taken into account for this correction
     - Qa u is determined from overflow from Sa
     - Fa is based on storage in Sa
@@ -231,10 +232,10 @@ def agriZone_Ep_Sa(self, k):
 
 def agriZone_Ep_Sa_cropG(self, k):
     """
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation based on LP
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
-    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is
     no longer taken into account for this correction
     - Qa u is determined from overflow from Sa
     - Fa is based on storage in Sa
@@ -287,10 +288,10 @@ def agriZone_Ep_Sa_cropG(self, k):
 
 def agriZone_Ep_Sa_cropG_beta(self, k):
     """
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation based on LP
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
-    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is
     no longer taken into account for this correction
     - Qa u is determined from overflow from Sa --> incorporation of beta function
     - Fa is based on storage in Sa
@@ -365,10 +366,10 @@ def agriZone_Ep_Sa_cropG_beta(self, k):
 
 def agriZone_Ep_Sa_beta(self, k):
     """
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation based on LP
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
-    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is
     no longer taken into account for this correction
     - Qa u is determined from overflow from Sa --> incorporation of beta function
     - Fa is based on storage in Sa
@@ -443,10 +444,10 @@ def agriZone_Ep_Sa_beta(self, k):
 
 def agriZone_hourlyEp_Sa_beta(self, k):
     """
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation based on LP
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
-    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is
     no longer taken into account for this correction
     - Qa u is determined from overflow from Sa --> incorporation of beta function
     - Fa is based on storage in Sa
@@ -521,10 +522,10 @@ def agriZone_hourlyEp_Sa_beta(self, k):
 
 def agriZone_Ep_Sa_beta_frost(self, k):
     """
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation based on LP
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
-    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is
     no longer taken into account for this correction
     - Qa u is determined from overflow from Sa --> incorporation of beta function
     - Fa is based on storage in Sa
@@ -615,10 +616,10 @@ def agriZone_Ep_Sa_beta_frost(self, k):
 
 def agriZone_hourlyEp_Sa_beta_frost(self, k):
     """
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation based on LP
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
-    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is
     no longer taken into account for this correction
     - Qa u is determined from overflow from Sa --> incorporation of beta function
     - Fa is based on storage in Sa
@@ -708,10 +709,10 @@ def agriZone_hourlyEp_Sa_beta_frost(self, k):
 
 def agriZone_hourlyEp_Sa_beta_frostSamax(self, k):
     """
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation based on LP
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
-    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is
     no longer taken into account for this correction
     - Qa u is determined from overflow from Sa --> incorporation of beta function
     - Fa is based on storage in Sa
@@ -799,10 +800,10 @@ def agriZone_hourlyEp_Sa_beta_frostSamax(self, k):
 
 def agriZone_Ep_Sa_beta_frostSamax(self, k):
     """
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation based on LP
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
-    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is
     no longer taken into account for this correction
     - Qa u is determined from overflow from Sa --> incorporation of beta function
     - Fa is based on storage in Sa
@@ -898,10 +899,10 @@ def agriZone_Ep_Sa_beta_frostSamax(self, k):
 
 def agriZone_Ep_Sa_beta_frostSamax_surfTemp(self, k):
     """
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation based on LP
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
-    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is
     no longer taken into account for this correction
     - Qa u is determined from overflow from Sa --> incorporation of beta function
     - Fa is based on storage in Sa
@@ -997,10 +998,10 @@ def agriZone_Ep_Sa_beta_frostSamax_surfTemp(self, k):
 
 def agriZone_Ep_Sa_beta_Fvar(self, k):
     """
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation based on LP
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
-    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is
     no longer taken into account for this correction
     - Qa u is determined from overflow from Sa --> incorporation of beta function
     - Fa is based on storage in Sa
@@ -1075,10 +1076,10 @@ def agriZone_Ep_Sa_beta_Fvar(self, k):
 
 def agriZone_hourlyEp_Sa_beta_Fvar(self, k):
     """
-    - Potential evaporation is decreased by energy used for interception evaporation    
+    - Potential evaporation is decreased by energy used for interception evaporation
     - Formula for evaporation based on LP
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
-    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
+    and if this leads to negative storage, the outgoing fluxes are corrected to rato --> Eu is
     no longer taken into account for this correction
     - Qa u is determined from overflow from Sa --> incorporation of beta function
     - Fa is based on storage in Sa

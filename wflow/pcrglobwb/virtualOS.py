@@ -1131,15 +1131,13 @@ def readPCRmapClone(
     if v == "None":
         # ~ PCRmap = str("None")
         PCRmap = (
-            None
-        )  # 29 July: I made an experiment by changing the type of this object.
+            None  # 29 July: I made an experiment by changing the type of this object.
+        )
     elif not re.match(r"[0-9.-]*$", str(v)):
         if absolutePath != None:
             v = getFullPath(v, absolutePath)
         # print(v)
-        sameClone = (
-            True
-        )  # isSameClone(v,cloneMapFileName) #for wflow CloneMap and inputMap should be the same
+        sameClone = True  # isSameClone(v,cloneMapFileName) #for wflow CloneMap and inputMap should be the same
         if sameClone == True:
             PCRmap = pcr.readmap(v)
         else:
@@ -1491,14 +1489,14 @@ def getMapAttributes(cloneMap, attribute, arcDegree=True):
 
 
 def getMapTotal(mapFile):
-    """ outputs the sum of all values in a map file """
+    """outputs the sum of all values in a map file"""
 
     total, valid = pcr.cellvalue(pcr.maptotal(mapFile), 1)
     return total
 
 
 def getMapTotalHighPrecisionButOnlyForPositiveValues_NEEDMORETEST(mapFile):
-    """ outputs the sum of all values in a map file """
+    """outputs the sum of all values in a map file"""
 
     # STILL UNDER DEVELOPMENT - NOT FULLY TESTED
 
@@ -1546,7 +1544,7 @@ def get_rowColAboveThreshold(map, threshold):
 
 
 def getLastDayOfMonth(date):
-    """ returns the last day of the month for a given date """
+    """returns the last day of the month for a given date"""
 
     if date.month == 12:
         return date.replace(day=31)
@@ -1566,7 +1564,7 @@ def getMinMaxMean(mapFile, ignoreEmptyMap=False):
 
 
 def getMapVolume(mapFile, cellareaFile):
-    """ returns the sum of all grid cell values """
+    """returns the sum of all grid cell values"""
     volume = mapFile * cellareaFile
     return getMapTotal(volume) / 1
 
@@ -1709,7 +1707,7 @@ def waterBalanceCheck(
     threshold=1e-5,
     landmask=None,
 ):
-    """ Returns the water balance for a list of input, output, and storage map files  """
+    """Returns the water balance for a list of input, output, and storage map files"""
     # modified by Edwin (22 Apr 2013)
 
     inMap = pcr.spatial(pcr.scalar(0.0))
@@ -1772,7 +1770,7 @@ def waterBalance(
     dateStr,
     threshold=1e-5,
 ):
-    """ Returns the water balance for a list of input, output, and storage map files and """
+    """Returns the water balance for a list of input, output, and storage map files and"""
 
     inMap = pcr.spatial(pcr.scalar(0.0))
     dsMap = pcr.spatial(pcr.scalar(0.0))

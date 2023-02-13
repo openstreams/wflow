@@ -107,9 +107,9 @@ def usage(*args):
 class WflowModel(pcraster.framework.DynamicModel):
 
     """
-  The user defined model class.
+    The user defined model class.
 
-  """
+    """
 
     def __init__(self, cloneMap, Dir, RunDir, configfile):
         pcraster.framework.DynamicModel.__init__(self)
@@ -120,33 +120,33 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.Dir = os.path.abspath(Dir)
         self.configfile = configfile
         self.SaveDir = os.path.join(self.Dir, self.runId)
-        
+
     def updateKinWaveVolume(self):
         """
-      Updates the kinematic wave reservoir. Should be run after updates to Q
-      """
+        Updates the kinematic wave reservoir. Should be run after updates to Q
+        """
         self.OldKinWaveVolume = self.KinWaveVolume
         self.KinWaveVolume = self.WaterLevel * self.Bw * self.DCL
 
     def stateVariables(self):
         """
-      returns a list of state variables that are essential to the model.
-      This list is essential for the resume and suspend functions to work.
+         returns a list of state variables that are essential to the model.
+         This list is essential for the resume and suspend functions to work.
 
-      This function is specific for each model and **must** be present.
-     
-     :var self.SurfaceRunoff: Surface runoff in the kin-wave reservoir [m^3/s]
-     :var self.SurfaceRunoffsub: Surface runoff in the kin-wave reservoir [m^3/s] at sub timestep (iteration kin-wave)
-     :var self.WaterLevelsub: Water level in the kin-wave resrvoir [m] at sub timestep (iteration kin-wave)
-     :var self.WaterLevel: Water level in the kin-wave resrvoir [m]
-     :var self.DrySnow: Snow pack [mm]
-     :var self.FreeWater:  Available free water [mm]
-     :var self.UpperZoneStorage: Water in the upper zone [mm]
-     :var self.LowerZoneStorage: Water in the lower zone [mm]
-     :var self.SoilMoisture: Soil moisture [mm]
-     :var self.InterceptionStorage: Amount of water on the Canopy [mm]
+         This function is specific for each model and **must** be present.
 
-      """
+        :var self.SurfaceRunoff: Surface runoff in the kin-wave reservoir [m^3/s]
+        :var self.SurfaceRunoffsub: Surface runoff in the kin-wave reservoir [m^3/s] at sub timestep (iteration kin-wave)
+        :var self.WaterLevelsub: Water level in the kin-wave resrvoir [m] at sub timestep (iteration kin-wave)
+        :var self.WaterLevel: Water level in the kin-wave resrvoir [m]
+        :var self.DrySnow: Snow pack [mm]
+        :var self.FreeWater:  Available free water [mm]
+        :var self.UpperZoneStorage: Water in the upper zone [mm]
+        :var self.LowerZoneStorage: Water in the lower zone [mm]
+        :var self.SoilMoisture: Soil moisture [mm]
+        :var self.InterceptionStorage: Amount of water on the Canopy [mm]
+
+        """
         states = [
             "FreeWater",
             "SoilMoisture",
@@ -165,7 +165,7 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         if hasattr(self, "LakeLocs"):
             states.append("LakeWaterLevel")
-            
+
         if hasattr(self, "GlacierFrac"):
             states.append("GlacierStore")
 
@@ -174,22 +174,22 @@ class WflowModel(pcraster.framework.DynamicModel):
     # The following are made to better connect to deltashell/openmi
     def supplyCurrentTime(self):
         """
-      gets the current time in seconds after the start of the run
+        gets the current time in seconds after the start of the run
 
-      Ouput:
-          - time in seconds since the start of the model run
-      """
+        Ouput:
+            - time in seconds since the start of the model run
+        """
         return self.currentTimeStep() * int(
             configget(self.config, "run", "timestepsecs", "86400")
         )
 
     def parameters(self):
         """
-    Define all model parameters here that the framework should handle for the model
-    See wf_updateparameters and the parameters section of the ini file
-    If you use this make sure to all wf_updateparameters at the start of the dynamic section
-    and at the start/end of the initial section
-    """
+        Define all model parameters here that the framework should handle for the model
+        See wf_updateparameters and the parameters section of the ini file
+        If you use this make sure to all wf_updateparameters at the start of the dynamic section
+        and at the start/end of the initial section
+        """
         modelparameters = []
 
         # Static model parameters e.g.
@@ -268,9 +268,9 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def suspend(self):
         """
-      Suspends the model to disk. All variables needed to restart the model
-      are saved to disk as pcraster maps. Use resume() to re-read them
-    """
+        Suspends the model to disk. All variables needed to restart the model
+        are saved to disk as pcraster maps. Use resume() to re-read them
+        """
 
         self.logger.info("Saving initial conditions...")
         self.wf_suspend(os.path.join(self.SaveDir, "outstate"))
@@ -279,53 +279,52 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.logger.info("Saving initial conditions over start conditions...")
             self.wf_suspend(os.path.join(self.SaveDir, "instate"))
 
-
     def initial(self):
 
         """
-    Initial part of the model, executed only once. Reads all static model
-    information (parameters) and sets-up the variables used in modelling.
+        Initial part of the model, executed only once. Reads all static model
+        information (parameters) and sets-up the variables used in modelling.
 
-    *HBV Soil*
+        *HBV Soil*
 
-    :var FC.tbl: Field Capacity (260.0) [mm]
-    :var BetaSeepage.tbl: exponent in soil runoff generation equation (1.8)  [-]
-    :var LP.tbl: fraction of Fieldcapacity below which actual evaporation=potential evaporation (0.53000)
-    :var K4.tbl: Recession constant baseflow (0.02307)
+        :var FC.tbl: Field Capacity (260.0) [mm]
+        :var BetaSeepage.tbl: exponent in soil runoff generation equation (1.8)  [-]
+        :var LP.tbl: fraction of Fieldcapacity below which actual evaporation=potential evaporation (0.53000)
+        :var K4.tbl: Recession constant baseflow (0.02307)
 
-    *If SetKquickFlow is set to 1*
+        *If SetKquickFlow is set to 1*
 
-    :var KQuickFlow.tbl: (0.09880)
-    :var SUZ.tbl: Level over which K0 is used (100.0)
-    :var K0.tbl: (0.3)
+        :var KQuickFlow.tbl: (0.09880)
+        :var SUZ.tbl: Level over which K0 is used (100.0)
+        :var K0.tbl: (0.3)
 
-    *If SetKquickFlow is set to 0*
+        *If SetKquickFlow is set to 0*
 
-    :var KHQ.tbl: recession rate at flow HQ (0.09880)
-    :var HQ.tbl: high flow rate HQ for which recession rate of upper reservoir is known (3.27000)
-    :var AlphaNL.tbl: measure of non-linearity of upper reservoir (1.1)
+        :var KHQ.tbl: recession rate at flow HQ (0.09880)
+        :var HQ.tbl: high flow rate HQ for which recession rate of upper reservoir is known (3.27000)
+        :var AlphaNL.tbl: measure of non-linearity of upper reservoir (1.1)
 
-    :var PERC.tbl: Percolation from Upper to Lowerzone (0.4000)  [mm/day]
-    :var CFR.tbl: Refreezing efficiency constant in refreezing of freewater in snow (0.05000)
-    :var Pcorr.tbl: Correction factor for precipitation (1.0)
-    :var RFCF.tbl: Correction factor for rainfall (1.0)
-    :var SFCF.tbl: Correction factor for snowfall(1.0)
-    :var Cflux.tbl: Maximum capillary rise from runoff response routine to soil moisture routine     (2.0)
-    :var ICF.tbl: Maximum interception storage (in forested AND non-forested areas) (2.0)
-    :var CEVPF.tbl: Correction factor for potential evaporation (1.0)
-    :var EPF.tbl: Exponent of correction factor for evaporation on days with precipitation(0.0)
-    :var ECORR.tbl: Evap correction (1.0)
-
-
-    *Snow modelling parameters*
-
-    :var TTI.tbl: critical temperature for snowmelt and refreezing  (1.000) [oC]
-    :var TT.tbl: defines interval in which precipitation falls as rainfall and snowfall (-1.41934) [oC]
-    :var Cfmax.tbl: meltconstant in temperature-index ( 3.75653) [-]
-    :var WHC.tbl: fraction of Snowvolume that can store water (0.1) [-]
+        :var PERC.tbl: Percolation from Upper to Lowerzone (0.4000)  [mm/day]
+        :var CFR.tbl: Refreezing efficiency constant in refreezing of freewater in snow (0.05000)
+        :var Pcorr.tbl: Correction factor for precipitation (1.0)
+        :var RFCF.tbl: Correction factor for rainfall (1.0)
+        :var SFCF.tbl: Correction factor for snowfall(1.0)
+        :var Cflux.tbl: Maximum capillary rise from runoff response routine to soil moisture routine     (2.0)
+        :var ICF.tbl: Maximum interception storage (in forested AND non-forested areas) (2.0)
+        :var CEVPF.tbl: Correction factor for potential evaporation (1.0)
+        :var EPF.tbl: Exponent of correction factor for evaporation on days with precipitation(0.0)
+        :var ECORR.tbl: Evap correction (1.0)
 
 
-    """
+        *Snow modelling parameters*
+
+        :var TTI.tbl: critical temperature for snowmelt and refreezing  (1.000) [oC]
+        :var TT.tbl: defines interval in which precipitation falls as rainfall and snowfall (-1.41934) [oC]
+        :var Cfmax.tbl: meltconstant in temperature-index ( 3.75653) [-]
+        :var WHC.tbl: fraction of Snowvolume that can store water (0.1) [-]
+
+
+        """
         global statistics
         global multpars
         global updateCols
@@ -334,7 +333,7 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         self.thestep = pcr.scalar(0)
         self.basetimestep = 86400
-        
+
         self.mv = -999
         self.count = 0
 
@@ -342,18 +341,10 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         #: name of the tss file with precipitation data ("../intss/P.tss")
         self.precipTss = "../intss/P.tss"
-        self.evapTss = (
-            "../intss/PET.tss"
-        )  #: name of the tss file with potential evap data ("../intss/PET.tss")
-        self.tempTss = (
-            "../intss/T.tss"
-        )  #: name of the tss file with temperature  data ("../intss/T.tss")
-        self.inflowTss = (
-            "../intss/Inflow.tss"
-        )  #: NOT TESTED name of the tss file with inflow data ("../intss/Inflow.tss")
-        self.SeepageTss = (
-            "../intss/Seepage.tss"
-        )  #: NOT TESTED name of the tss file with seepage data ("../intss/Seepage.tss")"
+        self.evapTss = "../intss/PET.tss"  #: name of the tss file with potential evap data ("../intss/PET.tss")
+        self.tempTss = "../intss/T.tss"  #: name of the tss file with temperature  data ("../intss/T.tss")
+        self.inflowTss = "../intss/Inflow.tss"  #: NOT TESTED name of the tss file with inflow data ("../intss/Inflow.tss")
+        self.SeepageTss = "../intss/Seepage.tss"  #: NOT TESTED name of the tss file with seepage data ("../intss/Seepage.tss")"
 
         self.logger.info("running for " + str(self.nrTimeSteps()) + " timesteps")
 
@@ -367,16 +358,15 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.OverWriteInit = int(configget(self.config, "model", "OverWriteInit", "0"))
         self.updating = int(configget(self.config, "model", "updating", "0"))
         self.updateFile = configget(self.config, "model", "updateFile", "no_set")
-        
-        self.kinwaveIters = int(configget(self.config, "model", "kinwaveIters", "0"))         
-        self.kinwaveTstep = int(configget(self.config, "model", "kinwaveTstep", "0"))     
+
+        self.kinwaveIters = int(configget(self.config, "model", "kinwaveIters", "0"))
+        self.kinwaveTstep = int(configget(self.config, "model", "kinwaveTstep", "0"))
         if self.kinwaveIters == 1:
-            self.logger.info(
-                "Using sub timestep for kinematic wave (iterate)"
-            )
+            self.logger.info("Using sub timestep for kinematic wave (iterate)")
             if self.kinwaveTstep > 0:
                 self.logger.info(
-                    "Using a fixed timestep (seconds) for kinematic wave flow: " + str(self.kinwaveTstep)
+                    "Using a fixed timestep (seconds) for kinematic wave flow: "
+                    + str(self.kinwaveTstep)
                 )
 
         self.sCatch = int(configget(self.config, "model", "sCatch", "0"))
@@ -444,8 +434,17 @@ class WflowModel(pcraster.framework.DynamicModel):
         wflow_riverwidth = configget(
             self.config, "model", "wflow_riverwidth", "staticmaps/wflow_riverwidth.map"
         )
+        wflow_bankfulldepth = configget(
+            self.config,
+            "model",
+            "wflow_bankfulldepth",
+            "staticmaps/wflow_bankfulldepth.map",
+        )
         wflow_streamorder = configget(
-            self.config, "model", "wflow_streamorder", "staticmaps/wflow_streamorder.map"
+            self.config,
+            "model",
+            "wflow_streamorder",
+            "staticmaps/wflow_streamorder.map",
         )
 
         # 2: Input base maps ########################################################
@@ -479,6 +478,9 @@ class WflowModel(pcraster.framework.DynamicModel):
         # Factor to multiply riverlength with (defaults to 1.0)
         self.RiverLengthFac = self.wf_readmap(
             os.path.join(self.Dir, wflow_riverlength_fact), 1.0
+        )
+        self.BankfullDepth = pcr.cover(
+            self.wf_readmap(os.path.join(self.Dir, wflow_bankfulldepth), 0.0), 1.0
         )
 
         # read landuse and soilmap and make sure there are no missing points related to the
@@ -572,14 +574,12 @@ class WflowModel(pcraster.framework.DynamicModel):
         if self.NRiverMethod == 2:
             self.NRiver = self.readtblFlexDefault(
                 self.Dir + "/" + self.intbl + "/N_River.tbl", 0.036, wflow_streamorder
-            ) #Read from streamorder instead of landuse, subcatch and soil
+            )  # Read from streamorder instead of landuse, subcatch and soil
         """ Manning's N for all cells that are marked as a river """
 
         self.wf_updateparameters()
 
-        if hasattr(self, "ReserVoirSimpleLocs") or hasattr(
-            self, "LakeLocs"
-        ):
+        if hasattr(self, "ReserVoirSimpleLocs") or hasattr(self, "LakeLocs"):
             self.ReserVoirLocs = self.ZeroMap
             self.filter_P_PET = self.ZeroMap + 1.0
 
@@ -602,12 +602,14 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.nrresSimple = 0
 
         if hasattr(self, "LakeLocs"):
-            #add parameter for lake threshold estimation
-            self.estimatelakethresh = int(configget(self.config, "model", "estimatelakethresh", "0"))
+            # add parameter for lake threshold estimation
+            self.estimatelakethresh = int(
+                configget(self.config, "model", "estimatelakethresh", "0")
+            )
             self.LakeAreasMap = pcr.nominal(self.LakeAreasMap)
             self.LakeLocs = pcr.nominal(self.LakeLocs)
             tt_lake = pcr.pcr2numpy(self.LakeLocs, 0.0)
-            #self.nrlake = tt_lake.max()
+            # self.nrlake = tt_lake.max()
             self.nrlake = np.size(np.where(tt_lake > 0.0)[0])
             self.ReserVoirLocs = self.ReserVoirLocs + pcr.cover(
                 pcr.scalar(self.LakeLocs), 0.0
@@ -625,12 +627,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             if np.size(np_lake_ids_u) > 0:
                 for item in np.nditer(np_lake_ids_u):
                     self.sh[int(item)] = np.loadtxt(
-                        self.Dir
-                        + "/"
-                        + self.intbl
-                        + "/Lake_SH_"
-                        + str(item)
-                        + ".tbl"
+                        self.Dir + "/" + self.intbl + "/Lake_SH_" + str(item) + ".tbl"
                     )
             self.hq = {}
             lake_ids = pcr.ifthen(self.LakeOutflowFunc == 1, self.LakeLocs)
@@ -639,38 +636,34 @@ class WflowModel(pcraster.framework.DynamicModel):
             if np.size(np_lake_ids_u) > 0:
                 for item in np.nditer(np_lake_ids_u):
                     self.hq[int(item)] = np.loadtxt(
-                        self.Dir
-                        + "/"
-                        + self.intbl
-                        + "/Lake_HQ_"
-                        + str(item)
-                        + ".tbl",
+                        self.Dir + "/" + self.intbl + "/Lake_HQ_" + str(item) + ".tbl",
                         skiprows=3,
                     )
-                    
-            #Ini for the Modified Puls Approach (Burek et al., 2013, LISFLOOD)
-            #Check which lakes uses the puls approach (LakeOutflowFunc = 3)
-            #And if the corresponding Lake_e=2 and LakeStorFunc=2
-            
-            #Update Lake_b in ini if ResThreshold different from zero
-            
+
+            # Ini for the Modified Puls Approach (Burek et al., 2013, LISFLOOD)
+            # Check which lakes uses the puls approach (LakeOutflowFunc = 3)
+            # And if the corresponding Lake_e=2 and LakeStorFunc=2
+
+            # Update Lake_b in ini if ResThreshold different from zero
+
             np_lakeoutflowfunc_old = pcr.pcr2numpy(self.LakeOutflowFunc, 0)
             self.LakeOutflowFunc = pcr.ifthenelse(
-                    pcr.pcrand(self.LakeOutflowFunc == 3, self.LakeStorFunc == 1),
-                    2,
-                    self.LakeOutflowFunc
-                    )
+                pcr.pcrand(self.LakeOutflowFunc == 3, self.LakeStorFunc == 1),
+                2,
+                self.LakeOutflowFunc,
+            )
             self.LakeOutflowFunc = pcr.ifthenelse(
-                    pcr.pcrand(self.LakeOutflowFunc == 3, self.Lake_e == 2.0),
-                    2,
-                    self.LakeOutflowFunc
-                    )
+                pcr.pcrand(self.LakeOutflowFunc == 3, self.Lake_e == 2.0),
+                2,
+                self.LakeOutflowFunc,
+            )
             np_lakeoutflowfunc = pcr.pcr2numpy(self.LakeOutflowFunc, 0)
             if np_lakeoutflowfunc_old.sum() != np_lakeoutflowfunc.sum():
-                self.logger.warning("Lake outflow modelling using the modified puls approach selected "+ 
-                                    "but found contradictory arguments for LakeStorFunc/Lake_e: "+
-                                    "using the general iteration method instead")
-            
+                self.logger.warning(
+                    "Lake outflow modelling using the modified puls approach selected "
+                    + "but found contradictory arguments for LakeStorFunc/Lake_e: "
+                    + "using the general iteration method instead"
+                )
 
         else:
             self.nrlake = 0
@@ -694,7 +687,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                     self.TopoLdd,
                 )
             )
-            
+
             tt_filter = pcr.pcr2numpy(self.filter_P_PET, 1.0)
             self.filterResArea = tt_filter.min()
 
@@ -720,21 +713,29 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.Soil,
             0.53000,
         )  # fraction of Fieldcapacity below which actual evaporation=potential evaporation (LP)
-        self.K4 = self.readtblDefault(
-            self.Dir + "/" + self.intbl + "/K4.tbl",
-            self.LandUse,
-            subcatch,
-            self.Soil,
-            0.02307,
-        ) * self.timestepsecs / self.basetimestep # Recession constant baseflow   #K4=0.07; BASEFLOW:LINEARRESERVOIR
-        if self.SetKquickFlow:
-            self.KQuickFlow = self.readtblDefault(
-                self.Dir + "/" + self.intbl + "/KQuickFlow.tbl",
+        self.K4 = (
+            self.readtblDefault(
+                self.Dir + "/" + self.intbl + "/K4.tbl",
                 self.LandUse,
                 subcatch,
                 self.Soil,
-                0.09880,
-            ) * self.timestepsecs / self.basetimestep # recession rate at flow HQ     #KHQ=0.2; OUTFLOWUPPERZONE_NONLINEARRESERVOIR
+                0.02307,
+            )
+            * self.timestepsecs
+            / self.basetimestep
+        )  # Recession constant baseflow   #K4=0.07; BASEFLOW:LINEARRESERVOIR
+        if self.SetKquickFlow:
+            self.KQuickFlow = (
+                self.readtblDefault(
+                    self.Dir + "/" + self.intbl + "/KQuickFlow.tbl",
+                    self.LandUse,
+                    subcatch,
+                    self.Soil,
+                    0.09880,
+                )
+                * self.timestepsecs
+                / self.basetimestep
+            )  # recession rate at flow HQ     #KHQ=0.2; OUTFLOWUPPERZONE_NONLINEARRESERVOIR
             self.SUZ = self.readtblDefault(
                 self.Dir + "/" + self.intbl + "/SUZ.tbl",
                 self.LandUse,
@@ -742,28 +743,40 @@ class WflowModel(pcraster.framework.DynamicModel):
                 self.Soil,
                 100.0,
             )  # Level over wich K0 is used
-            self.K0 = self.readtblDefault(
-                self.Dir + "/" + self.intbl + "/K0.tbl",
-                self.LandUse,
-                subcatch,
-                self.Soil,
-                0.3,
-            ) * self.timestepsecs / self.basetimestep # K0
+            self.K0 = (
+                self.readtblDefault(
+                    self.Dir + "/" + self.intbl + "/K0.tbl",
+                    self.LandUse,
+                    subcatch,
+                    self.Soil,
+                    0.3,
+                )
+                * self.timestepsecs
+                / self.basetimestep
+            )  # K0
         else:
-            self.KHQ = self.readtblDefault(
-                self.Dir + "/" + self.intbl + "/KHQ.tbl",
-                self.LandUse,
-                subcatch,
-                self.Soil,
-                0.09880,
-            ) * self.timestepsecs / self.basetimestep # recession rate at flow HQ     #KHQ=0.2; OUTFLOWUPPERZONE_NONLINEARRESERVOIR
-            self.HQ = self.readtblDefault(
-                self.Dir + "/" + self.intbl + "/HQ.tbl",
-                self.LandUse,
-                subcatch,
-                self.Soil,
-                3.27000,
-            ) * self.timestepsecs / self.basetimestep # high flow rate HQ for which recession rate of upper reservoir is known   #HQ=3.76;
+            self.KHQ = (
+                self.readtblDefault(
+                    self.Dir + "/" + self.intbl + "/KHQ.tbl",
+                    self.LandUse,
+                    subcatch,
+                    self.Soil,
+                    0.09880,
+                )
+                * self.timestepsecs
+                / self.basetimestep
+            )  # recession rate at flow HQ     #KHQ=0.2; OUTFLOWUPPERZONE_NONLINEARRESERVOIR
+            self.HQ = (
+                self.readtblDefault(
+                    self.Dir + "/" + self.intbl + "/HQ.tbl",
+                    self.LandUse,
+                    subcatch,
+                    self.Soil,
+                    3.27000,
+                )
+                * self.timestepsecs
+                / self.basetimestep
+            )  # high flow rate HQ for which recession rate of upper reservoir is known   #HQ=3.76;
             self.AlphaNL = self.readtblDefault(
                 self.Dir + "/" + self.intbl + "/AlphaNL.tbl",
                 self.LandUse,
@@ -772,13 +785,17 @@ class WflowModel(pcraster.framework.DynamicModel):
                 1.1,
             )  # measure of non-linearity of upper reservoir  #Alpha=1.6;
 
-        self.PERC = self.readtblDefault(
-            self.Dir + "/" + self.intbl + "/PERC.tbl",
-            self.LandUse,
-            subcatch,
-            self.Soil,
-            0.4000,
-        ) * self.timestepsecs / self.basetimestep # percolation from Upper to Lowerzone (mm/day)
+        self.PERC = (
+            self.readtblDefault(
+                self.Dir + "/" + self.intbl + "/PERC.tbl",
+                self.LandUse,
+                subcatch,
+                self.Soil,
+                0.4000,
+            )
+            * self.timestepsecs
+            / self.basetimestep
+        )  # percolation from Upper to Lowerzone (mm/day)
         self.CFR = self.readtblDefault(
             self.Dir + "/" + self.intbl + "/CFR.tbl",
             self.LandUse,
@@ -808,13 +825,17 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.Soil,
             1.0,
         )  # correction factor for snowfall
-        self.Cflux = self.readtblDefault(
-            self.Dir + "/" + self.intbl + "/Cflux.tbl",
-            self.LandUse,
-            subcatch,
-            self.Soil,
-            2.0,
-        ) * self.timestepsecs / self.basetimestep # maximum capillary rise from runoff response routine to soil moisture routine
+        self.Cflux = (
+            self.readtblDefault(
+                self.Dir + "/" + self.intbl + "/Cflux.tbl",
+                self.LandUse,
+                subcatch,
+                self.Soil,
+                2.0,
+            )
+            * self.timestepsecs
+            / self.basetimestep
+        )  # maximum capillary rise from runoff response routine to soil moisture routine
         self.ICF = self.readtblDefault(
             self.Dir + "/" + self.intbl + "/ICF.tbl",
             self.LandUse,
@@ -865,13 +886,17 @@ class WflowModel(pcraster.framework.DynamicModel):
             -1.41934,
         )
         # Cfmax = 3.75653 # meltconstant in temperature-index
-        self.Cfmax = self.readtblDefault(
-            self.Dir + "/" + self.intbl + "/Cfmax.tbl",
-            self.LandUse,
-            subcatch,
-            self.Soil,
-            3.75653,
-        ) * self.timestepsecs / self.basetimestep
+        self.Cfmax = (
+            self.readtblDefault(
+                self.Dir + "/" + self.intbl + "/Cfmax.tbl",
+                self.LandUse,
+                subcatch,
+                self.Soil,
+                3.75653,
+            )
+            * self.timestepsecs
+            / self.basetimestep
+        )
         # WHC= 0.10000        # fraction of Snowvolume that can store water
         self.WHC = self.readtblDefault(
             self.Dir + "/" + self.intbl + "/WHC.tbl",
@@ -924,19 +949,17 @@ class WflowModel(pcraster.framework.DynamicModel):
         )
         # Use supplied riverwidth if possible, else calulate
         self.RiverWidth = pcr.ifthenelse(self.RiverWidth <= 0.0, W, self.RiverWidth)
-        #Use W instead of RiverWidth for reservoirs and lake cells
+        # Use W instead of RiverWidth for reservoirs and lake cells
         if self.nrresSimple > 0:
             self.RiverWidth = pcr.ifthenelse(
-                    pcr.cover(pcr.scalar(self.ReservoirSimpleAreas), 0.0) > 0.0,
-                    W,
-                    self.RiverWidth
-                    )
+                pcr.cover(pcr.scalar(self.ReservoirSimpleAreas), 0.0) > 0.0,
+                W,
+                self.RiverWidth,
+            )
         if self.nrlake > 0:
             self.RiverWidth = pcr.ifthenelse(
-                    pcr.cover(pcr.scalar(self.LakeAreasMap), 0.0) > 0.0,
-                    W,
-                    self.RiverWidth
-                    )
+                pcr.cover(pcr.scalar(self.LakeAreasMap), 0.0) > 0.0, W, self.RiverWidth
+            )
 
         self.SnowWater = self.ZeroMap
 
@@ -986,12 +1009,8 @@ class WflowModel(pcraster.framework.DynamicModel):
         # OutZones = self.LandUse
         # pcr.report(self.reallength,"rl.map")
         # pcr.report(catchmentcells,"kk.map")
-        self.QMMConv = self.timestepsecs / (
-            self.xl * self.yl * 0.001
-        )  # m3/s --> mm
-        self.ToCubic = (
-            self.xl * self.yl * 0.001
-        ) / self.timestepsecs  # m3/s
+        self.QMMConv = self.timestepsecs / (self.xl * self.yl * 0.001)  # m3/s --> mm
+        self.ToCubic = (self.xl * self.yl * 0.001) / self.timestepsecs  # m3/s
         self.sumprecip = self.ZeroMap  #: accumulated rainfall for water balance
         self.sumevap = self.ZeroMap  #: accumulated evaporation for water balance
         self.sumrunoff = (
@@ -1044,68 +1063,68 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.AlpTerm = pow((self.N / (pcr.sqrt(self.Slope))), self.Beta)
         # power for Alpha
         self.AlpPow = (2.0 / 3.0) * self.Beta
-        # initial approximation for Alpha
-        
-        #Estimate LakeThreshold depending on outlet characteristics
-        if (self.nrlake > 0 and self.estimatelakethresh == 1):
-            #initial waterLevel
-            level_map_path = self.Dir + "/instate/WaterLevel.map"
-            if os.path.exists(level_map_path):
-                level_map = pcr.readmap(level_map_path)
-            else:
-                level_map = self.ZeroMap
-            alphaR = self.AlpTermR * (pcr.downstream(self.TopoLdd, (self.Bw+2*level_map))) ** self.AlpPow
-            outletRivLevel = alphaR * self.LakeAvgOut ** self.Beta
-            #Lake Threshold = Lake Level - 130% River Level
-            #130% = Adjustment linked to possible uncertainties in River Level estimation
+
+        self.Alpha = self.AlpTerm * pow(self.Bw + self.BankfullDepth, self.AlpPow)
+
+        # Estimate LakeThreshold depending on outlet characteristics
+        if self.nrlake > 0 and self.estimatelakethresh == 1:
+            # use fixed alpha value based on 0.5 * bankfull_depth
+            alpha = (
+                self.AlpTerm
+                * (pcr.downstream(self.TopoLdd, (self.Bw + self.BankfullDepth)))
+                ** self.AlpPow
+            )
+            outletRivLevel = alpha * self.LakeAvgOut**self.Beta
+            # Lake Threshold = Lake Level - 130% River Level
+            # 130% = Adjustment linked to possible uncertainties in River Level estimation
             self.LakeThreshold = pcr.ifthenelse(
-                    self.LakeThreshold > 0.0,
-                    self.LakeThreshold,
-                    pcr.max(self.LakeAvgLevel - 1.3 * outletRivLevel, 0.0)
-                    )
-            
-            #Reupdate rating curve coefficient
+                self.LakeThreshold > 0.0,
+                self.LakeThreshold,
+                pcr.max(self.LakeAvgLevel - 1.3 * outletRivLevel, 0.0),
+            )
+
+            # Reupdate rating curve coefficient
             self.Lake_b = pcr.ifthenelse(
-                    self.LakeOutflowFunc == 3,
-                    self.LakeAvgOut / (self.LakeAvgLevel - self.LakeThreshold) ** 2,
-                    self.Lake_b
-                    )
+                self.LakeOutflowFunc == 3,
+                self.LakeAvgOut / (self.LakeAvgLevel - self.LakeThreshold) ** 2,
+                self.Lake_b,
+            )
 
         # calculate catchmentsize
         self.upsize = pcr.catchmenttotal(self.xl * self.yl, self.TopoLdd)
         self.csize = pcr.areamaximum(self.upsize, self.TopoId)
-        
-        
+
         ##### Set variables and framework for kinematic wave with iterations #####
         # convert pcr objects to numpy for kinemativ wave surface water
         np_zeros = pcr.pcr2numpy(self.ZeroMap, self.mv).ravel()
         np_2d_zeros = pcr.pcr2numpy(self.ZeroMap, self.mv)
         self.shape = np_2d_zeros.shape
-        
+
         static_dtype = np.dtype(
-                [('River', np.float64),
-                 ('Beta', np.float64),
-                 ('DCL', np.float64),
-                 ('Bw', np.float64),
-                 ('AlpPow', np.float64),
-                 ('AlpTerm', np.float64)
-                 ])
-                    
-        self.static = np.zeros(np_zeros.size, dtype=static_dtype)   
-        self.static['River'] = pcr.pcr2numpy(self.River, self.mv).ravel()
-        self.static['Beta'] = pcr.pcr2numpy(self.Beta, self.mv).ravel()
-        self.static['DCL'] = pcr.pcr2numpy(self.DCL, self.mv).ravel()
-        self.static['Bw'] = pcr.pcr2numpy(self.Bw, self.mv).ravel()
-        self.static['AlpPow'] = pcr.pcr2numpy(self.AlpPow, self.mv).ravel()
-        self.static['AlpTerm'] = pcr.pcr2numpy(self.AlpTerm, self.mv).ravel()
-        
-        dyn_dtype = np.dtype(
-                [('SurfaceRunoff', np.float64),
-                 ('Alpha', np.float64)
-                 ])        
-        
+            [
+                ("River", np.float64),
+                ("Beta", np.float64),
+                ("DCL", np.float64),
+                ("Bw", np.float64),
+                ("AlpPow", np.float64),
+                ("AlpTerm", np.float64),
+                ("Alpha", np.float64),
+            ]
+        )
+
+        self.static = np.zeros(np_zeros.size, dtype=static_dtype)
+        self.static["River"] = pcr.pcr2numpy(self.River, self.mv).ravel()
+        self.static["Beta"] = pcr.pcr2numpy(self.Beta, self.mv).ravel()
+        self.static["DCL"] = pcr.pcr2numpy(self.DCL, self.mv).ravel()
+        self.static["Bw"] = pcr.pcr2numpy(self.Bw, self.mv).ravel()
+        self.static["AlpPow"] = pcr.pcr2numpy(self.AlpPow, self.mv).ravel()
+        self.static["AlpTerm"] = pcr.pcr2numpy(self.AlpTerm, self.mv).ravel()
+        self.static["Alpha"] = pcr.pcr2numpy(self.Alpha, self.mv).ravel()
+
+        dyn_dtype = np.dtype([("SurfaceRunoff", np.float64)])
+
         self.dyn = np.zeros(np_zeros.size, dtype=dyn_dtype)
-        
+
         # determine flow network and upstream nodes
         self.np_ldd = pcr.pcr2numpy(self.TopoLdd, self.mv)
         # initialize us-ds network for all cells
@@ -1115,13 +1134,13 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def default_summarymaps(self):
         """
-      Returns a list of default summary-maps at the end of a run.
-      This is model specific. You can also add them to the [summary]section of the ini file but stuff
-      you think is crucial to the model should be listed here
+        Returns a list of default summary-maps at the end of a run.
+        This is model specific. You can also add them to the [summary]section of the ini file but stuff
+        you think is crucial to the model should be listed here
 
-       Example:
+         Example:
 
-      """
+        """
         lst = [
             "self.Cfmax",
             "self.csize",
@@ -1142,7 +1161,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         return lst
 
     def resume(self):
-        """ read initial state maps (they are output of a previous call to suspend()) """
+        """read initial state maps (they are output of a previous call to suspend())"""
 
         if self.reinit == 1:
             self.logger.info("Setting initial conditions to default")
@@ -1154,10 +1173,18 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.LowerZoneStorage = 1.0 / (
                 3.0 * self.K4
             )  #: Storage in Uppe Zone (state variable [mm])
-            self.InterceptionStorage = self.ZeroMap #: Interception Storage (state variable [mm])
-            self.SurfaceRunoff = self.ZeroMap #: Discharge in kinimatic wave (state variable [m^3/s])
-            self.WaterLevel = self.ZeroMap #: Water level in kinimatic wave (state variable [m])
-            self.SurfaceRunoffsub = self.ZeroMap #: Discharge in kinimatic wave (state variable [m^3/s])
+            self.InterceptionStorage = (
+                self.ZeroMap
+            )  #: Interception Storage (state variable [mm])
+            self.SurfaceRunoff = (
+                self.ZeroMap
+            )  #: Discharge in kinimatic wave (state variable [m^3/s])
+            self.WaterLevel = (
+                self.ZeroMap
+            )  #: Water level in kinimatic wave (state variable [m])
+            self.SurfaceRunoffsub = (
+                self.ZeroMap
+            )  #: Discharge in kinimatic wave (state variable [m^3/s])
             self.WaterLevelsub = self.ZeroMap
             self.DrySnow = self.ZeroMap  #: Snow amount (state variable [mm])
             if hasattr(self, "ReserVoirSimpleLocs"):
@@ -1172,9 +1199,6 @@ class WflowModel(pcraster.framework.DynamicModel):
         else:
             self.logger.info("Setting initial conditions from state files")
             self.wf_resume(os.path.join(self.Dir, "instate"))
-
-        P = self.Bw + (2.0 * self.WaterLevelsub)
-        self.Alpha = self.AlpTerm * pow(P, self.AlpPow)
 
         self.SurfaceRunoffMM = self.SurfaceRunoff * self.QMMConv
         # Determine initial kinematic wave volume
@@ -1191,48 +1215,48 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         if not self.SetKquickFlow:
             self.KQuickFlow = (self.KHQ ** (1.0 + self.AlphaNL)) * (
-                self.HQ ** -self.AlphaNL
+                self.HQ**-self.AlphaNL
             )  # recession rate of the upper reservoir, KHQ*UHQ=HQ=kquickflow*(UHQ**alpha)
 
     def dynamic(self):
 
         """
-    Below a list of variables that can be save to disk as maps or as
-    timeseries (see ini file for syntax):
+        Below a list of variables that can be save to disk as maps or as
+        timeseries (see ini file for syntax):
 
-    *Dynamic variables*
+        *Dynamic variables*
 
-    :var self.SurfaceRunoff: Surface runoff in the kinematic wave [m^3/s]
-    :var self.WaterLevel: Water level in the kinematic wave [m] (above the bottom)
-    :var self.SurfaceRunoffsub: Surface runoff in the kinematic wave [m^3/s] at sub timestep
-    :var self.WaterLevelsub: Water level in the kinematic wave [m] (above the bottom) at sub timestep
-    :var self.InterceptionStorage: actual interception storage [mm] at
-    :var self.Snow: Snow depth [mm]
-    :var self.SnowWater: water content of the snow [mm]
-    :var self.LowerZoneStorage: water content of the lower zone [mm]
-    :var self.UpperZoneStorage: water content of the Upper zone [mm]
-    :var self.InUpperZone: water inflow into Upper zone [mm]
-    :var self.HBVSeepage: recharge to Upper zone [mm]
-    :var self.DirectRunoff: direct runoff to Upper Zone [mm]
-    :var self.BaseFlow: Specific runoff (baseflow part) per cell [mm]
-    :var self.Percolation: actual percolation to the lower zone [mm]
-    :var self.SoilMoisture: actual soil moisture [mm]
-    :var se lf.QuickFlow: specific runoff (quickflow part) [mm]
-    :var self.RealQuickFlow: specific runoff (quickflow), If K upper zone is precalculated [mm]
-    :var self.CapFlux: capilary rise [mm]
-    :var self.SurfaceRunoffMM: SurfaceRunoff in mm
-    :var self.KinWaveVolume: Volume in the kinematic wave reservoir
-    :var self.SurfaceWaterSupply: the negative Inflow (water demand) that could be met from the surfacewater [m^3/s]
+        :var self.SurfaceRunoff: Surface runoff in the kinematic wave [m^3/s]
+        :var self.WaterLevel: Water level in the kinematic wave [m] (above the bottom)
+        :var self.SurfaceRunoffsub: Surface runoff in the kinematic wave [m^3/s] at sub timestep
+        :var self.WaterLevelsub: Water level in the kinematic wave [m] (above the bottom) at sub timestep
+        :var self.InterceptionStorage: actual interception storage [mm] at
+        :var self.Snow: Snow depth [mm]
+        :var self.SnowWater: water content of the snow [mm]
+        :var self.LowerZoneStorage: water content of the lower zone [mm]
+        :var self.UpperZoneStorage: water content of the Upper zone [mm]
+        :var self.InUpperZone: water inflow into Upper zone [mm]
+        :var self.HBVSeepage: recharge to Upper zone [mm]
+        :var self.DirectRunoff: direct runoff to Upper Zone [mm]
+        :var self.BaseFlow: Specific runoff (baseflow part) per cell [mm]
+        :var self.Percolation: actual percolation to the lower zone [mm]
+        :var self.SoilMoisture: actual soil moisture [mm]
+        :var se lf.QuickFlow: specific runoff (quickflow part) [mm]
+        :var self.RealQuickFlow: specific runoff (quickflow), If K upper zone is precalculated [mm]
+        :var self.CapFlux: capilary rise [mm]
+        :var self.SurfaceRunoffMM: SurfaceRunoff in mm
+        :var self.KinWaveVolume: Volume in the kinematic wave reservoir
+        :var self.SurfaceWaterSupply: the negative Inflow (water demand) that could be met from the surfacewater [m^3/s]
 
 
-    *Static variables*
+        *Static variables*
 
-    :var self.Altitude: The altitude of each cell [m]
-    :var self.Bw: Width of the river [m]
-    :var self.River: booolean map indicating the presence of a river [-]
-    :var self.DLC: length of the river within a cell [m]
-    :var self.ToCubic: Mutiplier to convert mm to m^3/s for fluxes
-    """
+        :var self.Altitude: The altitude of each cell [m]
+        :var self.Bw: Width of the river [m]
+        :var self.River: booolean map indicating the presence of a river [-]
+        :var self.DLC: length of the river within a cell [m]
+        :var self.ToCubic: Mutiplier to convert mm to m^3/s for fluxes
+        """
 
         self.wf_updateparameters()  # read forcing an dynamic parameters
         self.Precipitation = pcr.max(0.0, self.Precipitation) * self.Pcorr
@@ -1333,7 +1357,6 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         self.SnowCover = pcr.ifthenelse(self.DrySnow > 0, pcr.scalar(1), pcr.scalar(0))
         self.NrCell = pcr.areatotal(self.SnowCover, self.TopoId)
-        
 
         # first part of precipitation is intercepted
         # Interception=pcr.min(InSoil,self.ICF-self.InterceptionStorage)#: Interception in mm/timestep
@@ -1363,7 +1386,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         else:
             SnowFluxFrac = self.ZeroMap
             MaxFlux = self.ZeroMap
-            
+
         if hasattr(self, "GlacierFrac"):
             """
             Run Glacier module and add the snowpack on-top of it.
@@ -1372,7 +1395,12 @@ class WflowModel(pcraster.framework.DynamicModel):
             glacierHBV function in wflow_lib.py
             """
 
-            self.DrySnow, self.Snow2Glacier, self.GlacierStore, self.GlacierMelt = glacierHBV(
+            (
+                self.DrySnow,
+                self.Snow2Glacier,
+                self.GlacierStore,
+                self.GlacierMelt,
+            ) = glacierHBV(
                 self.GlacierFrac,
                 self.GlacierStore,
                 self.DrySnow,
@@ -1381,13 +1409,11 @@ class WflowModel(pcraster.framework.DynamicModel):
                 self.G_Cfmax,
                 self.G_SIfrac,
                 self.timestepsecs,
-                self.basetimestep
+                self.basetimestep,
             )
             # Convert to mm per grid cell and add to snowmelt
             self.GlacierMelt = self.GlacierMelt * self.GlacierFrac
-            self.FreeWater = (
-                self.FreeWater + self.GlacierMelt
-            )
+            self.FreeWater = self.FreeWater + self.GlacierMelt
 
         # IntEvap=pcr.min(self.InterceptionStorage,self.PotEvaporation)  #: Evaporation from interception storage
         # self.InterceptionStorage=self.InterceptionStorage-IntEvap
@@ -1499,12 +1525,19 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.NetInSoil = NetInSoil
         self.InwaterMM = pcr.max(0.0, DirectRunoffStorage)
         self.Inwater = self.InwaterMM * self.ToCubic
-        
+
         self.Inflow = pcr.cover(self.Inflow, self.ZeroMap)
         # only run the reservoir module if needed
 
         if self.nrresSimple > 0:
-            self.ReservoirVolume, self.Outflow, self.ResPercFull, self.ResPrecip, self.ResEvap, self.DemandRelease = simplereservoir(
+            (
+                self.ReservoirVolume,
+                self.Outflow,
+                self.ResPercFull,
+                self.ResPrecip,
+                self.ResEvap,
+                self.DemandRelease,
+            ) = simplereservoir(
                 self.ReservoirVolume,
                 self.SurfaceRunoff,
                 self.ResSimpleArea,
@@ -1527,7 +1560,13 @@ class WflowModel(pcraster.framework.DynamicModel):
         #    self.Inflow= pcr.cover(self.Inflow,self.ZeroMap)
 
         if self.nrlake > 0:
-            self.LakeWaterLevel, self.LakeOutflow, self.LakePrecip, self.LakeEvap, self.LakeVolume = naturalLake(
+            (
+                self.LakeWaterLevel,
+                self.LakeOutflow,
+                self.LakePrecip,
+                self.LakeEvap,
+                self.LakeVolume,
+            ) = naturalLake(
                 self.LakeWaterLevel,
                 self.LakeLocs,
                 self.LinkedLakeLocs,
@@ -1539,7 +1578,9 @@ class WflowModel(pcraster.framework.DynamicModel):
                 self.hq,
                 self.Lake_b,
                 self.Lake_e,
-                self.RiverRunoff + self.LandRunoff + self.SubsurfaceFlow/1000/1000/1000/self.timestepsecs,
+                self.RiverRunoff
+                + self.LandRunoff
+                + self.SubsurfaceFlow / 1000 / 1000 / 1000 / self.timestepsecs,
                 self.ReserVoirPrecip,
                 self.ReserVoirPotEvap,
                 self.LakeAreasMap,
@@ -1568,47 +1609,59 @@ class WflowModel(pcraster.framework.DynamicModel):
         ##########################################################################
         # per distance along stream
         q = self.Inwater / self.DCL + self.ForecQ_qmec / self.DCL
-        
-        #Kinematic wave runoff iterations
-        it_kinR=1
+
+        # Kinematic wave runoff iterations
+        it_kinR = 1
         if self.kinwaveIters == 1:
             if self.kinwaveTstep == 0:
-                it_kinR = estimate_iterations_kin_wave(self.SurfaceRunoffsub, self.Beta, self.Alpha, self.timestepsecs, self.DCL, self.mv)
+                it_kinR = estimate_iterations_kin_wave(
+                    self.SurfaceRunoffsub,
+                    self.Beta,
+                    self.Alpha,
+                    self.timestepsecs,
+                    self.DCL,
+                    self.mv,
+                )
             else:
-                it_kinR = int(np.ceil(self.timestepsecs/self.kinwaveTstep))
-            
-        #Convert from pcr to numpy for the kinematic wave function
-        q_np =  pcr.pcr2numpy(q,self.mv).ravel()        
-        surface_runoff_sub = pcr.pcr2numpy(self.SurfaceRunoffsub,self.mv).ravel()
-        self.dyn['Alpha'] = pcr.pcr2numpy(self.Alpha, self.mv).ravel()
-        
-        #Run the kinematic wave
-        acc_flow, surface_runoff_sub, wl_av, wl_river = kin_wave(
-                self.nodes,
-                self.nodes_up,
-                surface_runoff_sub,
-                q_np,
-                self.dyn['Alpha'],
-                self.static['Beta'],
-                self.static['DCL'],
-                self.static['River'],
-                self.static['Bw'],
-                self.static['AlpTerm'],
-                self.static['AlpPow'],
-                self.timestepsecs,
-                it_kinR) # m3/s
+                it_kinR = int(np.ceil(self.timestepsecs / self.kinwaveTstep))
 
-        Qsurface = acc_flow/self.timestepsecs
-        self.SurfaceRunoff = pcr.numpy2pcr(pcr.Scalar, Qsurface.reshape(self.shape),self.mv)
-        self.SurfaceRunoffsub = pcr.numpy2pcr(pcr.Scalar, surface_runoff_sub.reshape(self.shape),self.mv)
-        self.WaterLevel = pcr.numpy2pcr(pcr.Scalar, wl_av.reshape(self.shape),self.mv)
-        self.WaterLevelsub = pcr.numpy2pcr(pcr.Scalar, wl_river.reshape(self.shape),self.mv)
-        self.Alpha = pcr.numpy2pcr(pcr.Scalar, np.copy(self.dyn['Alpha'].reshape(self.shape)),self.mv)
-                
+        # Convert from pcr to numpy for the kinematic wave function
+        q_np = pcr.pcr2numpy(q, self.mv).ravel()
+        surface_runoff_sub = pcr.pcr2numpy(self.SurfaceRunoffsub, self.mv).ravel()
+
+        # Run the kinematic wave
+        acc_flow, surface_runoff_sub, wl_av, wl_river = kin_wave(
+            self.nodes,
+            self.nodes_up,
+            surface_runoff_sub,
+            q_np,
+            self.static["Alpha"],
+            self.static["Beta"],
+            self.static["DCL"],
+            self.static["River"],
+            self.static["Bw"],
+            self.static["AlpTerm"],
+            self.static["AlpPow"],
+            self.timestepsecs,
+            it_kinR,
+        )  # m3/s
+
+        Qsurface = acc_flow / self.timestepsecs
+        self.SurfaceRunoff = pcr.numpy2pcr(
+            pcr.Scalar, Qsurface.reshape(self.shape), self.mv
+        )
+        self.SurfaceRunoffsub = pcr.numpy2pcr(
+            pcr.Scalar, surface_runoff_sub.reshape(self.shape), self.mv
+        )
+        self.WaterLevel = pcr.numpy2pcr(pcr.Scalar, wl_av.reshape(self.shape), self.mv)
+        self.WaterLevelsub = pcr.numpy2pcr(
+            pcr.Scalar, wl_river.reshape(self.shape), self.mv
+        )
+
         self.SurfaceRunoffMM = (
             self.SurfaceRunoff * self.QMMConv
         )  # SurfaceRunoffMM (mm) from SurfaceRunoff (m3/s)
-        
+
         self.SurfaceRunoffsubMM = (
             self.SurfaceRunoffsub * self.QMMConv
         )  # SurfaceRunoffsubMM (mm) from SurfaceRunoffsub (m3/s)
@@ -1755,7 +1808,6 @@ def main(argv=None):
             usage()
         if o == "-f":
             _NoOverWrite = 0
-
 
     starttime = dt.datetime(1990, 1, 1)
 

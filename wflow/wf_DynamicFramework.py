@@ -160,8 +160,8 @@ class runDateTimeInfo:
             else:
                 # self.runStartTime = datetimestart + datetime.timedelta(seconds=self.timeStepSecs)
                 self.runStartTime = (
-                    datetimestart
-                )  # + datetime.timedelta(seconds=self.timeStepSecs)
+                    datetimestart  # + datetime.timedelta(seconds=self.timeStepSecs)
+                )
                 self.startadjusted = 1
                 self.runStateTime = (
                     self.runStartTime
@@ -194,8 +194,8 @@ class runDateTimeInfo:
                 )
             else:
                 self.runStartTime = (
-                    datetimestart
-                )  # + datetime.timedelta(seconds=self.timeStepSecs)
+                    datetimestart  # + datetime.timedelta(seconds=self.timeStepSecs)
+                )
                 self.startadjusted = 1
                 self.runStateTime = self.runStartTime
 
@@ -652,27 +652,38 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
             #            import pdb; pdb.set_trace()
             for cmdd in self.modelparameters_changes_once:
                 var = cmdd.replace("self._userModel().", "").strip()
-                
+
                 # for List objects in topoflex
-                if '[' in var:
-                    listnr = var.split('[')[-1].split(']')[0]
-                    varname = var.split('[')[0]
-                    mapmult = getattr(self._userModel(), varname)[int(listnr)] * float(self.modelparameters_changes_once[cmdd].split('*')[1])
-                    getattr(self._userModel(), varname)[int(listnr)] = mapmult                    
+                if "[" in var:
+                    listnr = var.split("[")[-1].split("]")[0]
+                    varname = var.split("[")[0]
+                    mapmult = getattr(self._userModel(), varname)[int(listnr)] * float(
+                        self.modelparameters_changes_once[cmdd].split("*")[1]
+                    )
+                    getattr(self._userModel(), varname)[int(listnr)] = mapmult
 
                     self.logger.warning(
                         "Variable change (apply_once) applied to "
-                        + str(var) + " with factor" + self.modelparameters_changes_once[cmdd].split('*')[1]
+                        + str(var)
+                        + " with factor"
+                        + self.modelparameters_changes_once[cmdd].split("*")[1]
                     )
-                
+
                 # for List objects in sbm
-                elif var.split('_')[-1].isdigit():
-                    mapmult = getattr(self._userModel(), var.split('_')[0])[int(var.split('_')[-1])] * float(self.modelparameters_changes_once[cmdd].split("*")[1])
-                    getattr(self._userModel(),var.split('_')[0])[int(var.split('_')[-1])] = mapmult
+                elif var.split("_")[-1].isdigit():
+                    mapmult = getattr(self._userModel(), var.split("_")[0])[
+                        int(var.split("_")[-1])
+                    ] * float(self.modelparameters_changes_once[cmdd].split("*")[1])
+                    getattr(self._userModel(), var.split("_")[0])[
+                        int(var.split("_")[-1])
+                    ] = mapmult
 
                     self.logger.warning(
-                    "Variable change (apply_once) applied to "
-                    + str(var.split('_')[0]) + str([int(var.split('_')[-1])]) + " with factor" + self.modelparameters_changes_once[cmdd].split('*')[1]
+                        "Variable change (apply_once) applied to "
+                        + str(var.split("_")[0])
+                        + str([int(var.split("_")[-1])])
+                        + " with factor"
+                        + self.modelparameters_changes_once[cmdd].split("*")[1]
                     )
 
                 elif not hasattr(self._userModel(), var):
@@ -1835,18 +1846,29 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
 
                 else:
                     # this is added for flextopo -- because list of variables for different classes
-                    if '[' in self.varnamecsv[a].replace("self._userModel().", ""):
-                        listnr = self.varnamecsv[a].replace("self._userModel().", "").split('[')[-1].split(']')[0]
-                        varname = self.varnamecsv[a].replace("self._userModel().", "").split('[')[0]
-                        tmpvar = getattr(self._userModel(),varname)[int(listnr)]
-                        
+                    if "[" in self.varnamecsv[a].replace("self._userModel().", ""):
+                        listnr = (
+                            self.varnamecsv[a]
+                            .replace("self._userModel().", "")
+                            .split("[")[-1]
+                            .split("]")[0]
+                        )
+                        varname = (
+                            self.varnamecsv[a]
+                            .replace("self._userModel().", "")
+                            .split("[")[0]
+                        )
+                        tmpvar = getattr(self._userModel(), varname)[int(listnr)]
+
                     else:
                         tmpvar = reduce(
                             getattr,
-                            self.varnamecsv[a].replace("self._userModel().", "").split("."),
+                            self.varnamecsv[a]
+                            .replace("self._userModel().", "")
+                            .split("."),
                             self._userModel(),
                         )
-                        
+
             except:
                 found = 0
                 self.logger.fatal(
@@ -1876,11 +1898,11 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
         for a in toprint:
             b = a.replace("self.", "")
             try:
-                #below if statement for topoflex lists code 
-                if '[' in str(b):
-                    listnr = str(b).split('[')[-1].split(']')[0]
-                    varname = str(b).split('[')[0]
-                    pcrmap = getattr(self._userModel(),varname)[int(listnr)]
+                # below if statement for topoflex lists code
+                if "[" in str(b):
+                    listnr = str(b).split("[")[-1].split("]")[0]
+                    varname = str(b).split("[")[0]
+                    pcrmap = getattr(self._userModel(), varname)[int(listnr)]
                 else:
                     pcrmap = getattr(self._userModel(), b)
 
@@ -1999,12 +2021,12 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
                             self._userModel(),
                         )
                         report = True
-                
-                #add lines below for topoflex
-                elif '[' in str(a.replace("self.", "")):
-                    listnr = str(a.replace("self.", "")).split('[')[-1].split(']')[0]
-                    varname = str(a.replace("self.", "")).split('[')[0]
-                    thevar = getattr(self._userModel(),varname)[int(listnr)]
+
+                # add lines below for topoflex
+                elif "[" in str(a.replace("self.", "")):
+                    listnr = str(a.replace("self.", "")).split("[")[-1].split("]")[0]
+                    varname = str(a.replace("self.", "")).split("[")[0]
+                    thevar = getattr(self._userModel(), varname)[int(listnr)]
                     report = True
 
                 elif hasattr(self._userModel(), a.replace("self.", "")):
@@ -2203,8 +2225,10 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
             if "LDD" in mapname.upper():
                 setattr(self._userModel(), mapname, pcr.lddrepair(pcr.ldd(arpcr)))
             else:
-                if mapname.split('_')[-1].isdigit():
-                    getattr(self._userModel(), mapname.split('_')[0])[int(mapname.split('_')[-1])] = arpcr
+                if mapname.split("_")[-1].isdigit():
+                    getattr(self._userModel(), mapname.split("_")[0])[
+                        int(mapname.split("_")[-1])
+                    ] = arpcr
                 else:
                     setattr(self._userModel(), mapname, arpcr)
             return 1
@@ -2212,8 +2236,10 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
             self.logger.debug(
                 mapname + " is not defined in the usermodel: setting anyway"
             )
-            if mapname.split('_')[-1].isdigit():
-                getattr(self._userModel(), mapname.split('_')[0])[int(mapname.split('_')[-1])] = arpcr
+            if mapname.split("_")[-1].isdigit():
+                getattr(self._userModel(), mapname.split("_")[0])[
+                    int(mapname.split("_")[-1])
+                ] = arpcr
             else:
                 setattr(self._userModel(), mapname, arpcr)
             return 0
@@ -2236,8 +2262,10 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
         self.setviaAPI[mapname] = 1
 
         if hasattr(self._userModel(), mapname):
-            if mapname.split('_')[-1].isdigit():
-                getattr(self._userModel(), mapname.split('_')[0])[int(mapname.split('_')[-1])] = arpcr
+            if mapname.split("_")[-1].isdigit():
+                getattr(self._userModel(), mapname.split("_")[0])[
+                    int(mapname.split("_")[-1])
+                ] = arpcr
             else:
                 setattr(self._userModel(), mapname, arpcr)
             return 1
@@ -2245,8 +2273,10 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
             self.logger.debug(
                 mapname + " is not defined in the usermodel: setting anyway"
             )
-            if mapname.split('_')[-1].isdigit():
-                getattr(self._userModel(), mapname.split('_')[0])[int(mapname.split('_')[-1])] = arpcr
+            if mapname.split("_")[-1].isdigit():
+                getattr(self._userModel(), mapname.split("_")[0])[
+                    int(mapname.split("_")[-1])
+                ] = arpcr
             else:
                 setattr(self._userModel(), mapname, arpcr)
             return 0
@@ -2277,8 +2307,10 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
             arpcr = pcr.cover(pcr.scalar(values))
 
         if hasattr(self._userModel(), mapname):
-            if mapname.split('_')[-1].isdigit():
-                getattr(self._userModel(), mapname.split('_')[0])[int(mapname.split('_')[-1])] = arpcr
+            if mapname.split("_")[-1].isdigit():
+                getattr(self._userModel(), mapname.split("_")[0])[
+                    int(mapname.split("_")[-1])
+                ] = arpcr
             else:
                 setattr(self._userModel(), mapname, arpcr)
             return 1
@@ -2286,8 +2318,10 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
             self.logger.debug(
                 mapname + " is not defined in the usermodel: setting anyway"
             )
-            if mapname.split('_')[-1].isdigit():
-                getattr(self._userModel(), mapname.split('_')[0])[int(mapname.split('_')[-1])] = arpcr
+            if mapname.split("_")[-1].isdigit():
+                getattr(self._userModel(), mapname.split("_")[0])[
+                    int(mapname.split("_")[-1])
+                ] = arpcr
             else:
                 setattr(self._userModel(), mapname, arpcr)
             return 0
@@ -2309,14 +2343,20 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
         """
         self.setviaAPI[mapname] = 1
         if hasattr(self._userModel(), mapname):
-            if mapname.split('_')[-1].isdigit():
-                ar = pcr.pcr2numpy(getattr(self._userModel(), mapname.split('_')[0])[int(mapname.split('_')[-1])])
+            if mapname.split("_")[-1].isdigit():
+                ar = pcr.pcr2numpy(
+                    getattr(self._userModel(), mapname.split("_")[0])[
+                        int(mapname.split("_")[-1])
+                    ]
+                )
             else:
                 ar = pcr.pcr2numpy(getattr(self._userModel(), mapname), -999)
             ar[row, col] = value
             arpcr = pcr.numpy2pcr(pcr.Scalar, ar.copy(), -999)
-            if mapname.split('_')[-1].isdigit():
-                getattr(self._userModel(), mapname.split('_')[0])[int(mapname.split('_')[-1])] = arpcr
+            if mapname.split("_")[-1].isdigit():
+                getattr(self._userModel(), mapname.split("_")[0])[
+                    int(mapname.split("_")[-1])
+                ] = arpcr
             else:
                 setattr(self._userModel(), mapname, arpcr)
             return 1
@@ -2343,8 +2383,10 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
         """
         self.setviaAPI[mapname] = 1
         if hasattr(self._userModel(), mapname):
-            if mapname.split('_')[-1].isdigit():
-                pcrmap = getattr(self._userModel(), mapname.split('_')[0])[int(mapname.split('_')[-1])]
+            if mapname.split("_")[-1].isdigit():
+                pcrmap = getattr(self._userModel(), mapname.split("_")[0])[
+                    int(mapname.split("_")[-1])
+                ]
             else:
                 pcrmap = getattr(self._userModel(), mapname)
             ar = pcr.pcr2numpy(pcr.scalar(pcrmap), -999)
@@ -2353,8 +2395,10 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
             save("tt.np", ar)
             pcrmap = pcr.numpy2pcr(pcr.Scalar, ar.copy(), -999)
             pcr.report(pcrmap, "zz.map")
-            if mapname.split('_')[-1].isdigit():
-                getattr(self._userModel(), mapname.split('_')[0])[int(mapname.split('_')[-1])] = pcrmap
+            if mapname.split("_")[-1].isdigit():
+                getattr(self._userModel(), mapname.split("_")[0])[
+                    int(mapname.split("_")[-1])
+                ] = pcrmap
             else:
                 setattr(self._userModel(), mapname, pcrmap)
             return 1
@@ -2551,10 +2595,12 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
         Output:
             - numpy array
         """
-        
+
         if hasattr(self._userModel(), mapname):
-            if mapname.split('_')[-1].isdigit():
-                pcrmap = getattr(self._userModel(), mapname.split('_')[0])[int(mapname.split('_')[-1])]
+            if mapname.split("_")[-1].isdigit():
+                pcrmap = getattr(self._userModel(), mapname.split("_")[0])[
+                    int(mapname.split("_")[-1])
+                ]
             else:
                 pcrmap = getattr(self._userModel(), mapname)
             if isinstance(pcrmap, pcraster._pcraster.Field):
@@ -2916,7 +2962,7 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
         return ret[0]
 
     def _userModel(self):
-        """ Returns the class provided by the user """
+        """Returns the class provided by the user"""
         return self._d_model
 
     def _runDynamic(self, firststep, laststep):
@@ -2999,7 +3045,7 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
     #
     # Runs a dynamic user model.
     def run(self):
-        """ Runs the dynamic model for all timesteps """
+        """Runs the dynamic model for all timesteps"""
 
         self._atStartOfScript()
         if hasattr(self._userModel(), "resume"):
@@ -3222,12 +3268,12 @@ class wf_DynamicFramework(pcraster.framework.frameworkBase.FrameworkBase):
         silent=False,
     ):
         """
-          Adjusted version of readmapNew. the style variable is used to indicated
-          how the data is read::
+        Adjusted version of readmapNew. the style variable is used to indicated
+        how the data is read::
 
-              1 - default: reads pcrmaps
-              2 - memory: assumes the map is made available (in memory) using
-              the in-memory interface
+            1 - default: reads pcrmaps
+            2 - memory: assumes the map is made available (in memory) using
+            the in-memory interface
 
 
         """

@@ -259,7 +259,7 @@ class wfmodel_fit_API:
     def savemaps(self, pars, savetoinput=False):
         """
         Ssave the adjusted (and original) parameter maps
-        
+
         """
 
         # To get the original values of the parameters
@@ -305,8 +305,8 @@ class wfmodel_fit_API:
 
     def shutdown(self, pars):
         """
-        Shutdown the model 
-        
+        Shutdown the model
+
         """
 
         self.dynModelFw._wf_shutdown()

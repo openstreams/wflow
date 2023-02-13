@@ -381,9 +381,14 @@ class Routing(object):
                 self.criterionKK = float(iniItems.get("routingOptions", "criterionKK"))
 
             # get relative elevation (above floodplain) profile per grid cell (including smoothing parameters)
-            self.nrZLevels, self.areaFractions, self.relZ, self.floodVolume, self.kSlope, self.mInterval = self.getElevationProfile(
-                iniItems
-            )
+            (
+                self.nrZLevels,
+                self.areaFractions,
+                self.relZ,
+                self.floodVolume,
+                self.kSlope,
+                self.mInterval,
+            ) = self.getElevationProfile(iniItems)
 
             # get bankfull capacity (unit: m3)
             self.predefinedBankfullCapacity = None
@@ -649,8 +654,8 @@ class Routing(object):
         logger.info(msg)
 
         relativeElevationFileNC = (
-            None
-        )  # TODO define relative elevation files in a netdf file.
+            None  # TODO define relative elevation files in a netdf file.
+        )
         if relativeElevationFileNC != None:
             pass  # TODO: using a netcdf file
 
@@ -701,7 +706,7 @@ class Routing(object):
         # - minimum slope of floodplain
         #   being defined as the longest sill,
         #   first used to retrieve longest cumulative distance
-        deltaX = [self.cellArea ** 0.5] * nrZLevels
+        deltaX = [self.cellArea**0.5] * nrZLevels
         deltaX[0] = 0.0
         sumX = deltaX[:]
         minSlope = 0.0
@@ -1035,9 +1040,10 @@ class Routing(object):
         )
 
         # estimate the length of sub-time step (unit: s):
-        length_of_sub_time_step, number_of_loops = (
-            self.estimate_length_of_sub_time_step()
-        )
+        (
+            length_of_sub_time_step,
+            number_of_loops,
+        ) = self.estimate_length_of_sub_time_step()
 
         for i_loop in range(number_of_loops):
 
@@ -1050,7 +1056,10 @@ class Routing(object):
             logger.info(msg)
 
             # alpha parameter and initial discharge variable needed for kinematic wave
-            alpha, dischargeInitial = self.calculate_alpha_and_initial_discharge_for_kinematic_wave(
+            (
+                alpha,
+                dischargeInitial,
+            ) = self.calculate_alpha_and_initial_discharge_for_kinematic_wave(
                 channelStorageForRouting,
                 self.water_height,
                 self.innundatedFraction,
@@ -1118,9 +1127,10 @@ class Routing(object):
             channelStorageForRouting = pcr.max(0.000, channelStorageForRouting)
 
             # update flood fraction and flood depth
-            self.inundatedFraction, self.floodDepth = self.returnInundationFractionAndFloodDepth(
-                channelStorageForRouting
-            )
+            (
+                self.inundatedFraction,
+                self.floodDepth,
+            ) = self.returnInundationFractionAndFloodDepth(channelStorageForRouting)
 
             # update dynamicFracWat: fraction of surface water bodies (dimensionless) including lakes and reservoirs
             # - lake and reservoir surface water fraction
@@ -1221,9 +1231,10 @@ class Routing(object):
         )
 
         # fraction of innundation due to flood (dimensionless) and flood/innundation depth (m)
-        self.innundatedFraction, self.floodDepth = self.returnInundationFractionAndFloodDepth(
-            self.channelStorage
-        )
+        (
+            self.innundatedFraction,
+            self.floodDepth,
+        ) = self.returnInundationFractionAndFloodDepth(self.channelStorage)
 
         # fraction of surface water bodies (dimensionless) including lakes and reservoirs
         # - lake and reservoir surface water fraction
@@ -1929,9 +1940,10 @@ class Routing(object):
         )
 
         # estimate the length of sub-time step (unit: s):
-        length_of_sub_time_step, number_of_loops = (
-            self.estimate_length_of_sub_time_step()
-        )
+        (
+            length_of_sub_time_step,
+            number_of_loops,
+        ) = self.estimate_length_of_sub_time_step()
 
         #######################################################################################################################
         for i_loop in range(number_of_loops):
@@ -2009,7 +2021,10 @@ class Routing(object):
                 )
 
             # alpha parameter and initial discharge variable needed for kinematic wave
-            alpha, dischargeInitial = self.calculate_alpha_and_initial_discharge_for_kinematic_wave(
+            (
+                alpha,
+                dischargeInitial,
+            ) = self.calculate_alpha_and_initial_discharge_for_kinematic_wave(
                 channelStorageForRouting,
                 self.water_height,
                 self.innundatedFraction,
@@ -2106,9 +2121,10 @@ class Routing(object):
             channelStorageForRouting = pcr.max(0.000, channelStorageForRouting)
 
             # update flood fraction and flood depth
-            self.inundatedFraction, self.floodDepth = self.returnInundationFractionAndFloodDepth(
-                channelStorageForRouting
-            )
+            (
+                self.inundatedFraction,
+                self.floodDepth,
+            ) = self.returnInundationFractionAndFloodDepth(channelStorageForRouting)
 
             # update dynamicFracWat: fraction of surface water bodies (dimensionless) including lakes and reservoirs
             # - lake and reservoir surface water fraction
@@ -2237,7 +2253,7 @@ class Routing(object):
             - 1.0,
         )
         # see: online algorithm on http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
-        stdDischarge = pcr.max(varDischarge ** 0.5, 0.0)
+        stdDischarge = pcr.max(varDischarge**0.5, 0.0)
 
         # calculate minimum discharge for environmental flow (m3/s)
         minDischargeForEnvironmentalFlow = pcr.max(
@@ -2259,8 +2275,8 @@ class Routing(object):
         # input: channelStorage    in m3
 
         # estimate minimum discharge for environmental flow (m3/s)
-        minDischargeForEnvironmentalFlow = self.estimate_discharge_for_environmental_flow(
-            channelStorage
+        minDischargeForEnvironmentalFlow = (
+            self.estimate_discharge_for_environmental_flow(channelStorage)
         )
 
         # available channelStorage that can be extracted for surface water abstraction

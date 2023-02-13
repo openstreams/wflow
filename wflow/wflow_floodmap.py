@@ -75,14 +75,14 @@ def usage(*args):
 
 class WflowModel(pcraster.framework.DynamicModel):
     """
-  The user defined model class. This is your work!
-  """
+    The user defined model class. This is your work!
+    """
 
     def __init__(self, cloneMap, Dir, RunDir, configfile):
         """
-      Initialize the object
-      
-      """
+        Initialize the object
+
+        """
         pcraster.framework.DynamicModel.__init__(self)
 
         self.caseName = os.path.abspath(Dir)
@@ -94,49 +94,49 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.SaveDir = os.path.join(self.Dir, self.runId)
 
     def stateVariables(self):
-        """ 
-      *Required*
-      
-      Returns a list of state variables that are essential to the model. 
-      This list is essential for the resume and suspend functions to work.
-      
-      This function is specific for each model and **must** be present. This is
-      where you specify the state variables of you model. If your model is stateless
-      this function must return and empty array (states = [])
-      
+        """
+        *Required*
 
-      
-      :var FloodExtent.map: Current FloodExtent
-      
-      """
+        Returns a list of state variables that are essential to the model.
+        This list is essential for the resume and suspend functions to work.
+
+        This function is specific for each model and **must** be present. This is
+        where you specify the state variables of you model. If your model is stateless
+        this function must return and empty array (states = [])
+
+
+
+        :var FloodExtent.map: Current FloodExtent
+
+        """
         states = ["FloodExtent"]
 
         return states
 
     def supplyCurrentTime(self):
         """
-      *Optional*
-      
-      Supplies the current time in seconds after the start of the run
-      This function is optional. If it is not set the framework assumes
-      the model runs with daily timesteps.
-      
-      Ouput:
-      
-          - time in seconds since the start of the model run
-          
-      """
+        *Optional*
+
+        Supplies the current time in seconds after the start of the run
+        This function is optional. If it is not set the framework assumes
+        the model runs with daily timesteps.
+
+        Ouput:
+
+            - time in seconds since the start of the model run
+
+        """
 
         return self.currentTimeStep() * int(
             configget(self.config, "model", "timestepsecs", "86400")
         )
 
     def suspend(self):
-        """      
-      Suspends the model to disk. All variables needed to restart the model
-      are saved to disk as pcraster maps. Use resume() to re-read them
-      
-    """
+        """
+        Suspends the model to disk. All variables needed to restart the model
+        are saved to disk as pcraster maps. Use resume() to re-read them
+
+        """
 
         # self.logger.info("Saving initial conditions...")
         #: It is advised to use the wf_suspend() function
@@ -156,11 +156,11 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def parameters(self):
         """
-    Define all model parameters here that the framework should handle for the model
-    See wf_updateparameters and the parameters section of the ini file
-    If you use this make sure to all wf_updateparameters at the start of the dynamic section
-    and at the start/end of the initial section
-    """
+        Define all model parameters here that the framework should handle for the model
+        See wf_updateparameters and the parameters section of the ini file
+        If you use this make sure to all wf_updateparameters at the start of the dynamic section
+        and at the start/end of the initial section
+        """
         modelparameters = []
 
         # Static model parameters e.g.
@@ -186,16 +186,16 @@ class WflowModel(pcraster.framework.DynamicModel):
     def initial(self):
 
         """
-    *Required*
-    
-    Initial part of the model, executed only once. It reads all static model
-    information (parameters) and sets-up the variables used in modelling.
-    
-    This function is required. The contents is free. However, in order to
-    easily connect to other models it is advised to adhere to the directory
-    structure used in the other models.
-    
-    """
+        *Required*
+
+        Initial part of the model, executed only once. It reads all static model
+        information (parameters) and sets-up the variables used in modelling.
+
+        This function is required. The contents is free. However, in order to
+        easily connect to other models it is advised to adhere to the directory
+        structure used in the other models.
+
+        """
         #: pcraster option to calculate with units or cells. Not really an issue
         #: in this model but always good to keep in mind.
         pcr.setglobaloption("unittrue")
@@ -229,14 +229,14 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.logger.info("End of initial...")
 
     def resume(self):
-        """ 
-    *Required*
+        """
+        *Required*
 
-    This function is required. Read initial state maps (they are output of a 
-    previous call to suspend()). The implementation showns her is the most basic 
-    setup needed.
-    
-    """
+        This function is required. Read initial state maps (they are output of a
+        previous call to suspend()). The implementation showns her is the most basic
+        setup needed.
+
+        """
         # self.logger.info("Reading initial conditions...")
         #: It is advised to use the wf_resume() function
         #: here which pick upt the variable save by a call to wf_suspend()
@@ -248,15 +248,15 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def dynamic(self):
         """
-      *Required*
-      
-      This is where all the time dependent functions are executed. Time dependent
-      output should also be saved here.
-      
-      :var self.FLOOD: Actual flood level [m]
-      :var self.FloodExtent: Actual flood extent [-]
-      
-      """
+        *Required*
+
+        This is where all the time dependent functions are executed. Time dependent
+        output should also be saved here.
+
+        :var self.FLOOD: Actual flood level [m]
+        :var self.FloodExtent: Actual flood extent [-]
+
+        """
         self.FloodDepth = pcr.scalar(self.FloodDepth) * 0.0
 
         self.wf_updateparameters()
@@ -341,10 +341,10 @@ class WflowModel(pcraster.framework.DynamicModel):
 def main(argv=None):
     """
     *Optional*
-    
+
     Perform command line execution of the model. This example uses the getopt
     module to parse the command line options.
-    
+
     The user can set the caseName, the runDir, the timestep and the configfile.
     """
     global multpars
