@@ -61,9 +61,9 @@ def usage(*args):
 class WflowModel(pcraster.framework.DynamicModel):
 
     """
-  The user defined model class.
+    The user defined model class.
 
-  """
+    """
 
     def __init__(self, cloneMap, Dir, RunDir, configfile):
         pcraster.framework.DynamicModel.__init__(self)
@@ -77,31 +77,31 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def stateVariables(self):
         """
-      returns a list of state variables that are essential to the model.
-      This list is essential for the resume and suspend functions to work.
+         returns a list of state variables that are essential to the model.
+         This list is essential for the resume and suspend functions to work.
 
-      This function is specific for each model and **must** be present.
+         This function is specific for each model and **must** be present.
 
-     :var self.RootWater: Rootwater content [mm]
-     :var self.SubWater: Water content in subsoil [mm]
-     :var self.CapRise: Capillary rise [mm]
-     :var self.RootDrain: Drainage from rootzone [mm]
-     :var self.Scanopy: Water stored in canopy [mm]
-     :var self.GwRecharge: Groundwater recharge [mm]
-     :var self.BaseR: Baseflow [mm]
-     :var self.Gw: Groundwater storage [mm]
-     :var self.H_gw: Groundwater table height in [m] below surface
-     :var self.SubDrain: Drainage from the subsoil [mm]
-     :var self.SnowStore: Snow storage [mm]
-     :var self.SnowWatStore: Water stored in snowpack [mm]
-     :var self.GlacFrac: Glacier fraction map [-]
-     :var self.Q/Rain/Snow/Glac/BaseRAold: Initial routed total / rainfall / 
-             snow / glacier / baseflow runoff [m3/s]
-     :var self.StorRes: Total storage in lakes and reservoirs [m3]
-     :var self.Rain/Snow/Glac/BaseRAstor: Storage of rain / snow / glacier /
-             baseflow waters in lakes and reservoirs [m3]
+        :var self.RootWater: Rootwater content [mm]
+        :var self.SubWater: Water content in subsoil [mm]
+        :var self.CapRise: Capillary rise [mm]
+        :var self.RootDrain: Drainage from rootzone [mm]
+        :var self.Scanopy: Water stored in canopy [mm]
+        :var self.GwRecharge: Groundwater recharge [mm]
+        :var self.BaseR: Baseflow [mm]
+        :var self.Gw: Groundwater storage [mm]
+        :var self.H_gw: Groundwater table height in [m] below surface
+        :var self.SubDrain: Drainage from the subsoil [mm]
+        :var self.SnowStore: Snow storage [mm]
+        :var self.SnowWatStore: Water stored in snowpack [mm]
+        :var self.GlacFrac: Glacier fraction map [-]
+        :var self.Q/Rain/Snow/Glac/BaseRAold: Initial routed total / rainfall /
+                snow / glacier / baseflow runoff [m3/s]
+        :var self.StorRes: Total storage in lakes and reservoirs [m3]
+        :var self.Rain/Snow/Glac/BaseRAstor: Storage of rain / snow / glacier /
+                baseflow waters in lakes and reservoirs [m3]
 
-      """
+        """
         states = ["RootWater", "SubWater", "CapRise", "RootDrain"]
 
         if self.DynVegFLAG == 1:
@@ -140,22 +140,22 @@ class WflowModel(pcraster.framework.DynamicModel):
     # The following are made to better connect to deltashell/openmi
     def supplyCurrentTime(self):  # - this may not be required
         """
-      gets the current time in seconds after the start of the run
+        gets the current time in seconds after the start of the run
 
-      Ouput:
-          - time in seconds since the start of the model run
-      """
+        Ouput:
+            - time in seconds since the start of the model run
+        """
         return self.currentTimeStep() * int(
             configget(self.config, "model", "timestepsecs", "86400")
         )
 
     def parameters(self):
         """
-    Define all model parameters here that the framework should handle for the model
-    See wf_updateparameters and the parameters section of the ini file
-    If you use this make sure to all wf_updateparameters at the start of the dynamic section
-    and at the start/end of the initial section
-    """
+        Define all model parameters here that the framework should handle for the model
+        See wf_updateparameters and the parameters section of the ini file
+        If you use this make sure to all wf_updateparameters at the start of the dynamic section
+        and at the start/end of the initial section
+        """
         modelparameters = []
 
         # Static model parameters e.g.
@@ -223,9 +223,9 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def suspend(self):
         """
-      Suspends the model to disk. All variables needed to restart the model
-      are saved to disk as pcraster maps. Use resume() to re-read them
-    """
+        Suspends the model to disk. All variables needed to restart the model
+        are saved to disk as pcraster maps. Use resume() to re-read them
+        """
 
         self.logger.info("Saving initial conditions...")
         self.wf_suspend(os.path.join(self.SaveDir, "outstate"))
@@ -530,7 +530,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 # Read coefficients for simple reservoirs
                 self.ResKr = pcr.lookupscalar(ResSimple_Tab, 1, self.ResID)
                 self.ResSmax = (
-                    pcr.lookupscalar(ResSimple_Tab, 2, self.ResID) * 10 ** 6
+                    pcr.lookupscalar(ResSimple_Tab, 2, self.ResID) * 10**6
                 )  # convert to m3
                 self.ResSimple = True
             except:
@@ -540,16 +540,16 @@ class WflowModel(pcraster.framework.DynamicModel):
                 ResAdvanced_Tab = os.path.join(self.Dir, "reservoir_advanced")
                 # Read coefficients for advanced reservoirs
                 self.ResEVOL = (
-                    pcr.lookupscalar(ResAdvanced_Tab, 1, self.ResID) * 10 ** 6
+                    pcr.lookupscalar(ResAdvanced_Tab, 1, self.ResID) * 10**6
                 )  # convert to m3
                 self.ResPVOL = (
-                    pcr.lookupscalar(ResAdvanced_Tab, 2, self.ResID) * 10 ** 6
+                    pcr.lookupscalar(ResAdvanced_Tab, 2, self.ResID) * 10**6
                 )  # convert to m3
                 self.ResMaxFl = (
-                    pcr.lookupscalar(ResAdvanced_Tab, 3, self.ResID) * 10 ** 6
+                    pcr.lookupscalar(ResAdvanced_Tab, 3, self.ResID) * 10**6
                 )  # convert to m3/d
                 self.ResDemFl = (
-                    pcr.lookupscalar(ResAdvanced_Tab, 4, self.ResID) * 10 ** 6
+                    pcr.lookupscalar(ResAdvanced_Tab, 4, self.ResID) * 10**6
                 )  # convert to m3/d
                 self.ResFlStart = pcr.lookupscalar(ResAdvanced_Tab, 5, self.ResID)
                 self.ResFlEnd = pcr.lookupscalar(ResAdvanced_Tab, 6, self.ResID)
@@ -564,13 +564,13 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def default_summarymaps(self):  ##-maybe not needed. check later
         """
-      Returns a list of default summary-maps at the end of a run.
-      This is model specific. You can also add them to the [summary]section of the ini file but stuff
-      you think is crucial to the model should be listed here
+        Returns a list of default summary-maps at the end of a run.
+        This is model specific. You can also add them to the [summary]section of the ini file but stuff
+        you think is crucial to the model should be listed here
 
-       Example:
+         Example:
 
-      """
+        """
         # lst = ['self.Cfmax','self.csize','self.upsize','self.TTI','self.TT','self.WHC',
         #       'self.Slope','self.N','self.xl','self.yl','self.reallength','self.DCL','self.Bw',]
         if self.GlacFLAG == 1:
@@ -581,7 +581,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         return lst
 
     def resume(self):
-        """ read initial state maps (they are output of a previous call to suspend()) """
+        """read initial state maps (they are output of a previous call to suspend())"""
 
         if self.reinit == 1:  # -to be defined for sphy model state variables!!!
             self.logger.info("Setting initial conditions to default (zero!)")
@@ -635,28 +635,38 @@ class WflowModel(pcraster.framework.DynamicModel):
                     if os.path.exists(LakeStor_Tab):
                         self.StorRES = (
                             self.StorRES
-                            + pcr.cover(pcr.lookupscalar(LakeStor_Tab, 1, self.LakeID), 0)
-                            * 10 ** 6
+                            + pcr.cover(
+                                pcr.lookupscalar(LakeStor_Tab, 1, self.LakeID), 0
+                            )
+                            * 10**6
                         )  # convert to m3
                         self.RainRAstor = (
                             self.RainRAstor
-                            + pcr.cover(pcr.lookupscalar(LakeStor_Tab, 2, self.LakeID), 0)
-                            * 10 ** 6
+                            + pcr.cover(
+                                pcr.lookupscalar(LakeStor_Tab, 2, self.LakeID), 0
+                            )
+                            * 10**6
                         )
                         self.SnowRAstor = (
                             self.SnowRAstor
-                            + pcr.cover(pcr.lookupscalar(LakeStor_Tab, 3, self.LakeID), 0)
-                            * 10 ** 6
+                            + pcr.cover(
+                                pcr.lookupscalar(LakeStor_Tab, 3, self.LakeID), 0
+                            )
+                            * 10**6
                         )
                         self.GlacRAstor = (
                             self.GlacRAstor
-                            + pcr.cover(pcr.lookupscalar(LakeStor_Tab, 4, self.LakeID), 0)
-                            * 10 ** 6
+                            + pcr.cover(
+                                pcr.lookupscalar(LakeStor_Tab, 4, self.LakeID), 0
+                            )
+                            * 10**6
                         )
                         self.BaseRAstor = (
                             self.BaseRAstor
-                            + pcr.cover(pcr.lookupscalar(LakeStor_Tab, 5, self.LakeID), 0)
-                            * 10 ** 6
+                            + pcr.cover(
+                                pcr.lookupscalar(LakeStor_Tab, 5, self.LakeID), 0
+                            )
+                            * 10**6
                         )
                     else:
                         self.logger.debug(
@@ -668,27 +678,27 @@ class WflowModel(pcraster.framework.DynamicModel):
                         self.StorRES = (
                             self.StorRES
                             + pcr.cover(pcr.lookupscalar(ResStor_Tab, 2, self.ResID), 0)
-                            * 10 ** 6
+                            * 10**6
                         )
                         self.RainRAstor = (
                             self.RainRAstor
                             + pcr.cover(pcr.lookupscalar(ResStor_Tab, 3, self.ResID), 0)
-                            * 10 ** 6
+                            * 10**6
                         )
                         self.SnowRAstor = (
                             self.SnowRAstor
                             + pcr.cover(pcr.lookupscalar(ResStor_Tab, 4, self.ResID), 0)
-                            * 10 ** 6
+                            * 10**6
                         )
                         self.GlacRAstor = (
                             self.GlacRAstor
                             + pcr.cover(pcr.lookupscalar(ResStor_Tab, 5, self.ResID), 0)
-                            * 10 ** 6
+                            * 10**6
                         )
                         self.BaseRAstor = (
                             self.BaseRAstor
                             + pcr.cover(pcr.lookupscalar(ResStor_Tab, 6, self.ResID), 0)
-                            * 10 ** 6
+                            * 10**6
                         )
                     else:
                         self.logger.debug(
@@ -733,7 +743,9 @@ class WflowModel(pcraster.framework.DynamicModel):
         # -Update canopy storage
         if self.DynVegFLAG == 1:
             # -fill missing ndvi values with ndvi base
-            self.NDVI = pcr.ifthenelse(pcr.defined(self.NDVI) == 1, self.NDVI, self.NDVIbase)
+            self.NDVI = pcr.ifthenelse(
+                pcr.defined(self.NDVI) == 1, self.NDVI, self.NDVIbase
+            )
             # -calculate the vegetation parameters
             vegoutput = self.dynamic_veg.Veg_function(
                 pcr,
@@ -854,7 +866,10 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.RootWater = self.RootWater - RootRunoff
         # -Actual evapotranspiration
         etreddry = pcr.max(
-            pcr.min((self.RootWater - self.RootDry) / (self.RootWilt - self.RootDry), 1), 0
+            pcr.min(
+                (self.RootWater - self.RootDry) / (self.RootWilt - self.RootDry), 1
+            ),
+            0,
         )
         self.ETact = self.ET.ETact(
             pcr, self.ETpot, self.RootWater, self.RootSat, etreddry, RainFrac
@@ -886,7 +901,9 @@ class WflowModel(pcraster.framework.DynamicModel):
         # -Sub soil calculations
         self.SubWater = self.SubWater + self.rootperc
         if self.GroundFLAG == 0:
-            self.SubWater = pcr.min(pcr.max(self.SubWater - self.SeePage, 0), self.SubSat)
+            self.SubWater = pcr.min(
+                pcr.max(self.SubWater - self.SeePage, 0), self.SubSat
+            )
         # -Capillary rise
         self.CapRise = self.subzone.CapilRise(
             pcr,
@@ -1208,9 +1225,9 @@ def main(argv=None):
         pcrut.usage(msg)
 
     for o, a in opts:
-#        if o == "-F":
-#            runinfoFile = a
-#            fewsrun = True
+        #        if o == "-F":
+        #            runinfoFile = a
+        #            fewsrun = True
         if o == "-C":
             caseName = a
         if o == "-R":
@@ -1228,16 +1245,16 @@ def main(argv=None):
         if o == "-f":
             NoOverWrite = 0
 
-#    if fewsrun:
-#        ts = getTimeStepsfromRuninfo(runinfoFile, timestepsecs)
-#        starttime = getStartTimefromRuninfo(runinfoFile)
-#        if ts:
-#            _lastTimeStep = ts  # * 86400/timestepsecs
-#            _firstTimeStep = 1
-#        else:
-#            print("Failed to get timesteps from runinfo file: " + runinfoFile)
-#            sys.exit(2)
-#    else:
+    #    if fewsrun:
+    #        ts = getTimeStepsfromRuninfo(runinfoFile, timestepsecs)
+    #        starttime = getStartTimefromRuninfo(runinfoFile)
+    #        if ts:
+    #            _lastTimeStep = ts  # * 86400/timestepsecs
+    #            _firstTimeStep = 1
+    #        else:
+    #            print("Failed to get timesteps from runinfo file: " + runinfoFile)
+    #            sys.exit(2)
+    #    else:
     starttime = dt.datetime(1990, 1, 1)
 
     if _lastTimeStep < _firstTimeStep:

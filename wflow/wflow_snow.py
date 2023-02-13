@@ -62,9 +62,7 @@ import pcraster.framework
 from wflow.wf_DynamicFramework import *
 
 wflow = "wflow_pack: "
-wflowVersion = (
-    "$Revision: 542 $  $Date: 2012-11-27 19:00:43 +0100 (Tue, 27 Nov 2012) $"
-)  #: revision of the model
+wflowVersion = "$Revision: 542 $  $Date: 2012-11-27 19:00:43 +0100 (Tue, 27 Nov 2012) $"  #: revision of the model
 
 
 updateCols = []  #: columns used in updating
@@ -81,9 +79,9 @@ multdynapars = (
 def usage(*args):
     """
     Print usage information
-    
+
     @param *args: command line arguments given
-    
+
     """
     sys.stdout = sys.stderr
     for msg in args:
@@ -103,34 +101,34 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def readmap(self, name, default, style=1):
         """
-      Reads a pcraster map
-      
-      @param name: name of the map to read
-      @param default: default value in case the maps is not found
-      
-      @return: pcraster map
-      """
+        Reads a pcraster map
+
+        @param name: name of the map to read
+        @param default: default value in case the maps is not found
+
+        @return: pcraster map
+        """
         return self._readmapNew(name, default, style)
 
     def supplyVariableNamesAndRoles(self):
         """
-      Returns a list of variables as a
-      List of list with the following structure::
-          [[ name, role, unit]
-          [ name, role, unit]
-          ...   
-          ]
-          role: 0 = input (to the model)
-                1 = is output (from the model)
-                2 = input/output (state information)
-          unit: 0 = mm/timestep
-                1 = m^3/sec
-                2 = m
-                3 = degree Celcius
-                4 = mm
-                
-      @return: list of variables
-      """
+        Returns a list of variables as a
+        List of list with the following structure::
+            [[ name, role, unit]
+            [ name, role, unit]
+            ...
+            ]
+            role: 0 = input (to the model)
+                  1 = is output (from the model)
+                  2 = input/output (state information)
+            unit: 0 = mm/timestep
+                  1 = m^3/sec
+                  2 = m
+                  3 = degree Celcius
+                  4 = mm
+
+        @return: list of variables
+        """
 
         varlist = [
             ["FreeWater", 2, 4],
@@ -145,26 +143,26 @@ class WflowModel(pcraster.framework.DynamicModel):
     # The following are made to better connect to deltashell/openmi
     def supplyCurrentTime(self):
         """
-      gets the current time in seconds after the start of the run
-      
-      @return: time in seconds since the start of the model run
-      """
+        gets the current time in seconds after the start of the run
+
+        @return: time in seconds since the start of the model run
+        """
         return self.currentTimeStep() * modelEnv["timestepsecs"]
 
     def readtblDefault(self, pathtotbl, landuse, subcatch, soil, default):
         """
-    First check if a prepared  maps of the same name is present
-    in the staticmaps directory. next try to
-    read a tbl file to match a landuse, catchment and soil map. Returns 
-    the default value if the tbl file is not found.
-    
-    @param pathtotbl: full path to table file
-    @param landuse: landuse map
-    @param subcatch: subcatchment map
-    @param soil: soil map
-    @param default: default value
-    @return: map constructed from tbl file or map with default value
-    """
+        First check if a prepared  maps of the same name is present
+        in the staticmaps directory. next try to
+        read a tbl file to match a landuse, catchment and soil map. Returns
+        the default value if the tbl file is not found.
+
+        @param pathtotbl: full path to table file
+        @param landuse: landuse map
+        @param subcatch: subcatchment map
+        @param soil: soil map
+        @param default: default value
+        @return: map constructed from tbl file or map with default value
+        """
 
         mapname = (
             os.path.dirname(pathtotbl)
@@ -194,9 +192,9 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def suspend(self):
         """
-      Suspens the model to disk. All variables needed to restart the model
-      are save to disk as pcraster maps. Use resume() to re-read them
-    """
+        Suspens the model to disk. All variables needed to restart the model
+        are save to disk as pcraster maps. Use resume() to re-read them
+        """
 
         self.logger.info("Saving initial conditions...")
         self.wf_suspend(self.SaveDir + "/outstate/")
@@ -211,22 +209,18 @@ class WflowModel(pcraster.framework.DynamicModel):
     def initial(self):
 
         """
-    Initial part of the model, executed only once. Is read all static model
-    information (parameters) and sets-up the variables used in modelling.
-    
-    """
+        Initial part of the model, executed only once. Is read all static model
+        information (parameters) and sets-up the variables used in modelling.
+
+        """
         global statistics
 
         pcr.setglobaloption("unittrue")
 
         self.thestep = pcr.scalar(0)
         self.setQuiet(True)
-        self.precipTss = (
-            "../intss/P.tss"
-        )  #: name of the tss file with precipitation data ("../intss/P.tss")
-        self.tempTss = (
-            "../intss/T.tss"
-        )  #: name of the tss file with temperature  data ("../intss/T.tss")
+        self.precipTss = "../intss/P.tss"  #: name of the tss file with precipitation data ("../intss/P.tss")
+        self.tempTss = "../intss/T.tss"  #: name of the tss file with temperature  data ("../intss/T.tss")
 
         self.logger.info("running for " + str(self.nrTimeSteps()) + " timesteps")
         self.setQuiet(True)
@@ -429,7 +423,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.logger.info("Starting Dynamic run...")
 
     def resume(self):
-        """ read initial state maps (they are output of a previous call to suspend()) """
+        """read initial state maps (they are output of a previous call to suspend())"""
 
         if self.reinit == 1:
             self.logger.info("Setting initial conditions to default (zero!)")

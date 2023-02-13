@@ -65,8 +65,8 @@ def runCommands(commands, maxCpu):
     """
 
     def removeFinishedProcesses(processes):
-        """ given a list of (commandString, process),
-            remove those that have completed and return the result
+        """given a list of (commandString, process),
+        remove those that have completed and return the result
         """
         newProcs = []
         for pollCmd, pollProc in processes:

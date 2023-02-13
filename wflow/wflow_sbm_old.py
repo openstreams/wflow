@@ -122,11 +122,11 @@ def actEvap_SBM(
       if ust is True, all ustore is deems to be avaiable fro the roots a
 
     Input:
-    
+
         - RootingDepth,WTable, UStoreDepth,SatWaterDepth, PotTrans, smoothpar
-        
-    Output: 
-    
+
+    Output:
+
         - ActEvap,  SatWaterDepth,  UStoreDepth ActEvapUStore
     """
 
@@ -258,7 +258,7 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     .. todo::
         - add slope based quick-runoff -> less percolation on hillslopes...
-  """
+    """
 
     def __init__(self, cloneMap, Dir, RunDir, configfile):
         pcraster.framework.DynamicModel.__init__(self)
@@ -292,8 +292,8 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def updateRunOff(self):
         """
-      Updates the kinematic wave reservoir. Should be run after updates to Q
-      """
+        Updates the kinematic wave reservoir. Should be run after updates to Q
+        """
         self.WaterLevel = (self.Alpha * pow(self.SurfaceRunoff, self.Beta)) / self.Bw
         # wetted perimeter (m)
         P = self.Bw + (2 * self.WaterLevel)
@@ -304,24 +304,24 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def stateVariables(self):
         """
-        returns a list of state variables that are essential to the model.
-        This list is essential for the resume and suspend functions to work.
+         returns a list of state variables that are essential to the model.
+         This list is essential for the resume and suspend functions to work.
 
-        This function is specific for each model and **must** be present.
+         This function is specific for each model and **must** be present.
 
-       :var self.SurfaceRunoff: Surface runoff in the kin-wave resrvoir [m^3/s]
-       :var self.SurfaceRunoffDyn: Surface runoff in the dyn-wave resrvoir [m^3/s]
-       :var self.WaterLevel: Water level in the kin-wave resrvoir [m]
-       :var self.WaterLevelDyn: Water level in the dyn-wave resrvoir [m^]
-       :var self.Snow: Snow pack [mm]
-       :var self.SnowWater: Snow pack water [mm]
-       :var self.TSoil: Top soil temperature [oC]
-       :var self.UStoreDepth: Water in the Unsaturated Store [mm]
-       :var self.SatWaterDepth: Water in the saturated store [mm]
-       :var self.CanopyStorage: Amount of water on the Canopy [mm]
-       :var self.ReservoirVolume: Volume of each reservoir [m^3]
-       :var self.GlacierStore: Thickness of the Glacier in a gridcell [mm]
-       """
+        :var self.SurfaceRunoff: Surface runoff in the kin-wave resrvoir [m^3/s]
+        :var self.SurfaceRunoffDyn: Surface runoff in the dyn-wave resrvoir [m^3/s]
+        :var self.WaterLevel: Water level in the kin-wave resrvoir [m]
+        :var self.WaterLevelDyn: Water level in the dyn-wave resrvoir [m^]
+        :var self.Snow: Snow pack [mm]
+        :var self.SnowWater: Snow pack water [mm]
+        :var self.TSoil: Top soil temperature [oC]
+        :var self.UStoreDepth: Water in the Unsaturated Store [mm]
+        :var self.SatWaterDepth: Water in the saturated store [mm]
+        :var self.CanopyStorage: Amount of water on the Canopy [mm]
+        :var self.ReservoirVolume: Volume of each reservoir [m^3]
+        :var self.GlacierStore: Thickness of the Glacier in a gridcell [mm]
+        """
 
         states = [
             "SurfaceRunoff",
@@ -344,8 +344,8 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def supplyCurrentTime(self):
         """
-      gets the current time in seconds after the start of the run
-      """
+        gets the current time in seconds after the start of the run
+        """
         return self.currentTimeStep() * self.timestepsecs
 
     def suspend(self):
@@ -1226,10 +1226,10 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def default_summarymaps(self):
         """
-          Returns a list of default summary-maps at the end of a run.
-          This is model specific. You can also add them to the [summary]section of the ini file but stuff
-          you think is crucial to the model should be listed here
-          """
+        Returns a list of default summary-maps at the end of a run.
+        This is model specific. You can also add them to the [summary]section of the ini file but stuff
+        you think is crucial to the model should be listed here
+        """
         lst = [
             "self.RiverWidth",
             "self.Cmax",
@@ -1416,7 +1416,13 @@ class WflowModel(pcraster.framework.DynamicModel):
         if self.modelSnow:
             self.TSoil = self.TSoil + self.w_soil * (self.Temperature - self.TSoil)
             # return Snow,SnowWater,SnowMelt,RainFall
-            self.Snow, self.SnowWater, self.SnowMelt, self.PrecipitationPlusMelt, self.SnowFall = SnowPackHBV(
+            (
+                self.Snow,
+                self.SnowWater,
+                self.SnowMelt,
+                self.PrecipitationPlusMelt,
+                self.SnowFall,
+            ) = SnowPackHBV(
                 self.Snow,
                 self.SnowWater,
                 self.Precipitation,
@@ -1486,7 +1492,12 @@ class WflowModel(pcraster.framework.DynamicModel):
         # Interception according to a modified Gash model
         ##########################################################################
         if self.timestepsecs >= (23 * 3600):
-            self.ThroughFall, self.Interception, self.StemFlow, self.CanopyStorage = rainfall_interception_gash(
+            (
+                self.ThroughFall,
+                self.Interception,
+                self.StemFlow,
+                self.CanopyStorage,
+            ) = rainfall_interception_gash(
                 self.Cmax,
                 self.EoverR,
                 self.CanopyGapFraction,
@@ -1499,7 +1510,14 @@ class WflowModel(pcraster.framework.DynamicModel):
                 pcr.max(0.0, self.PotEvap - self.Interception), 0.0
             )  # now in mm
         else:
-            NetInterception, self.ThroughFall, self.StemFlow, LeftOver, Interception, self.CanopyStorage = rainfall_interception_modrut(
+            (
+                NetInterception,
+                self.ThroughFall,
+                self.StemFlow,
+                LeftOver,
+                Interception,
+                self.CanopyStorage,
+            ) = rainfall_interception_modrut(
                 self.PrecipitationPlusMelt,
                 self.PotEvap,
                 self.CanopyStorage,
@@ -1635,7 +1653,12 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         self.PotTrans = self.PotTransSoil - self.soilevap - self.ActEvapOpenWater
 
-        self.Transpiration, self.SatWaterDepth, self.UStoreDepth, self.ActEvapUStore = actEvap_SBM(
+        (
+            self.Transpiration,
+            self.SatWaterDepth,
+            self.UStoreDepth,
+            self.ActEvapUStore,
+        ) = actEvap_SBM(
             self.ActRootingDepth,
             self.zi,
             self.UStoreDepth,
@@ -1869,7 +1892,12 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         # only run the reservoir module if needed
         if self.nrres > 0:
-            self.ReservoirVolume, self.Outflow, self.ResPercFull, self.DemandRelease = simplereservoir(
+            (
+                self.ReservoirVolume,
+                self.Outflow,
+                self.ResPercFull,
+                self.DemandRelease,
+            ) = simplereservoir(
                 self.ReservoirVolume,
                 self.SurfaceRunoff,
                 self.ResMaxVolume,

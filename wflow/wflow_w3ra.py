@@ -59,17 +59,17 @@ def usage(*args):
 
 class WflowModel(pcraster.framework.DynamicModel):
     """
-  The user defined model class. T
-  """
+    The user defined model class. T
+    """
 
     def __init__(self, cloneMap, Dir, RunDir, configfile):
         """
-      *Required*
+        *Required*
 
-      The init function **must** contain what is shown below. Other functionality
-      may be added by you if needed.
+        The init function **must** contain what is shown below. Other functionality
+        may be added by you if needed.
 
-      """
+        """
         pcraster.framework.DynamicModel.__init__(self)
         self.caseName = os.path.abspath(Dir)
         self.clonemappath = os.path.join(os.path.abspath(Dir), "staticmaps", cloneMap)
@@ -81,15 +81,15 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def stateVariables(self):
         """
-      *Required*
+        *Required*
 
-      Returns a list of state variables that are essential to the model.
-      This list is essential for the resume and suspend functions to work.
+        Returns a list of state variables that are essential to the model.
+        This list is essential for the resume and suspend functions to work.
 
-      This function is specific for each model and **must** be present. This is
-      where you specify the state variables of you model. If your model is stateless
-      this function must return and empty array (states = [])
-      """
+        This function is specific for each model and **must** be present. This is
+        where you specify the state variables of you model. If your model is stateless
+        this function must return and empty array (states = [])
+        """
 
         states = [
             "S01",
@@ -116,14 +116,14 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def suspend(self):
         """
-      *Required*
+        *Required*
 
-      Suspends the model to disk. All variables needed to restart the model
-      are saved to disk as pcraster maps. Use resume() to re-read them
+        Suspends the model to disk. All variables needed to restart the model
+        are saved to disk as pcraster maps. Use resume() to re-read them
 
-      This function is required.
+        This function is required.
 
-    """
+        """
 
         self.logger.info("Saving initial conditions...")
         #: It is advised to use the wf_suspend() function
@@ -134,16 +134,16 @@ class WflowModel(pcraster.framework.DynamicModel):
     def initial(self):
 
         """
-    *Required*
+        *Required*
 
-    Initial part of the model, executed only once. It reads all static model
-    information (parameters) and sets-up the variables used in modelling.
+        Initial part of the model, executed only once. It reads all static model
+        information (parameters) and sets-up the variables used in modelling.
 
-    This function is required. The contents is free. However, in order to
-    easily connect to other models it is advised to adhere to the directory
-    structure used in the other models.
+        This function is required. The contents is free. However, in order to
+        easily connect to other models it is advised to adhere to the directory
+        structure used in the other models.
 
-    """
+        """
         #: pcraster option to calculate with units or cells. Not really an issue
         #: in this model but always good to keep in mind.
         pcr.setglobaloption("unittrue")
@@ -165,10 +165,10 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.timestepsecs = int(
             configget(self.config, "model", "timestepsecs", "86400")
         )
-        
+
         self.reinit = int(configget(self.config, "run", "reinit", "0"))
         self.OverWriteInit = int(configget(self.config, "model", "OverWriteInit", "0"))
-        
+
         self.UseETPdata = int(
             configget(self.config, "model", "UseETPdata", "1")
         )  #  1: Use ETP data, 0: Compute ETP from meteorological variables
@@ -425,12 +425,12 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def resume(self):
         """
-    *Required*
-    This function is required. Read initial state maps (they are output of a
-    previous call to suspend()). The implementation shown here is the most basic
-    setup needed.
+        *Required*
+        This function is required. Read initial state maps (they are output of a
+        previous call to suspend()). The implementation shown here is the most basic
+        setup needed.
 
-    """
+        """
         if self.reinit == 1:
             self.logger.info("Setting initial conditions to default")
             for s in self.stateVariables():
@@ -438,13 +438,12 @@ class WflowModel(pcraster.framework.DynamicModel):
         else:
             self.logger.info("Setting initial conditions from state files")
             self.wf_resume(os.path.join(self.Dir, "instate"))
-            
 
     def default_summarymaps(self):
         """
-      *Optional*
-      Return a default list of variables to report as summary maps in the outsum dir.
-      """
+        *Optional*
+        Return a default list of variables to report as summary maps in the outsum dir.
+        """
         return []
 
     def parameters(self):
@@ -478,9 +477,9 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def dynamic(self):
         """
-          *Required*
-          This is where all the time dependent functions are executed. Time dependent
-          output should also be saved here.
+        *Required*
+        This is where all the time dependent functions are executed. Time dependent
+        output should also be saved here.
         """
         # print 'useETPdata' , self.UseETPdata
         # Put the W3RA here. Stuff from W3RA_timestep_model.m
@@ -615,13 +614,13 @@ class WflowModel(pcraster.framework.DynamicModel):
         Sgfree = pcr.max(self.Sg, 0.0)
         # JS: Not sure if this is translated properly....
         # for i=1:par.Nhru
-        fwater1 = pcr.min(0.005, (0.007 * self.Sr ** 0.75))
-        fwater2 = pcr.min(0.005, (0.007 * self.Sr ** 0.75))
+        fwater1 = pcr.min(0.005, (0.007 * self.Sr**0.75))
+        fwater2 = pcr.min(0.005, (0.007 * self.Sr**0.75))
         fsat1 = pcr.min(
-            1.0, pcr.max(pcr.min(0.005, 0.007 * self.Sr ** 0.75), Sgfree / self.Sgref)
+            1.0, pcr.max(pcr.min(0.005, 0.007 * self.Sr**0.75), Sgfree / self.Sgref)
         )
         fsat2 = pcr.min(
-            1.0, pcr.max(pcr.min(0.005, 0.007 * self.Sr ** 0.75), Sgfree / self.Sgref)
+            1.0, pcr.max(pcr.min(0.005, 0.007 * self.Sr**0.75), Sgfree / self.Sgref)
         )
         Sghru1 = self.Sg
         Sghru2 = self.Sg
@@ -672,8 +671,8 @@ class WflowModel(pcraster.framework.DynamicModel):
             # long wave radiation balance (3.3 to 3.5)
             StefBolz = 5.67e-8
             Tkelv = Ta + 273.16
-            self.RLin = (0.65 * (pe / Tkelv) ** 0.14) * StefBolz * Tkelv ** 4  # (3.3)
-            RLout = StefBolz * Tkelv ** 4.0  # (3.4)
+            self.RLin = (0.65 * (pe / Tkelv) ** 0.14) * StefBolz * Tkelv**4  # (3.3)
+            RLout = StefBolz * Tkelv**4.0  # (3.4)
             self.RLn = self.RLin - RLout
 
             self.fGR1 = self.Gfrac_max1 * (1 - pcr.exp(-fsoil1 / self.fvegref_G1))
@@ -1032,9 +1031,7 @@ def main(argv=None):
     The user can set the caseName, the runDir, the timestep and the configfile.
     """
     global multpars
-    caseName = (
-        "default_w3ra"
-    )  # "D:/trambaue/_Projects/GLOFFIS/201501/GLOFFIS_SA/Modules/openstreams_w3ra/"
+    caseName = "default_w3ra"  # "D:/trambaue/_Projects/GLOFFIS/201501/GLOFFIS_SA/Modules/openstreams_w3ra/"
     runId = "run_default"
     configfile = "wflow_W3RA.ini"
     _lastTimeStep = 0

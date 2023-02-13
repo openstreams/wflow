@@ -47,19 +47,18 @@ import pcraster.framework
 import pcraster as pcr
 
 
-
 def usage(*args):
     sys.stdout = sys.stderr
     for msg in args:
-        print (msg)
-    print (__doc__)
+        print(msg)
+    print(__doc__)
     sys.exit(0)
 
 
 def pcr_tanh(x):
     """
     define tanh for pcraster objects
-    
+
     """
     return (pcr.exp(x) - pcr.exp(-x)) / (pcr.exp(x) + pcr.exp(-x))
 
@@ -93,17 +92,17 @@ def interp_hand(z, hand, hand_perc):
 
 class WflowModel(pcraster.framework.DynamicModel):
     """
-  The user defined model class. T
-  """
+    The user defined model class. T
+    """
 
     def __init__(self, cloneMap, Dir, RunDir, configfile):
         """
-      *Required*
-      
-      The init function **must** contain what is shown below. Other functionality
-      may be added by you if needed.
-      
-      """       
+        *Required*
+
+        The init function **must** contain what is shown below. Other functionality
+        may be added by you if needed.
+
+        """
         pcraster.framework.DynamicModel.__init__(self)
         self.caseName = os.path.abspath(Dir)
         self.clonemappath = os.path.join(os.path.abspath(Dir), "staticmaps", cloneMap)
@@ -114,16 +113,16 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.SaveDir = os.path.join(self.Dir, self.runId)
 
     def stateVariables(self):
-        """ 
-      *Required*
-      
-      Returns a list of state variables that are essential to the model. 
-      This list is essential for the resume and suspend functions to work.
-      
-      This function is specific for each model and **must** be present. This is
-      where you specify the state variables of you model. If your model is stateless
-      this function must return and empty array (states = [])
-      """
+        """
+        *Required*
+
+        Returns a list of state variables that are essential to the model.
+        This list is essential for the resume and suspend functions to work.
+
+        This function is specific for each model and **must** be present. This is
+        where you specify the state variables of you model. If your model is stateless
+        this function must return and empty array (states = [])
+        """
 
         states = [
             "S0",
@@ -140,52 +139,52 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def suspend(self):
         """
-      *Required*
-      
-      Suspends the model to disk. All variables needed to restart the model
-      are saved to disk as pcraster maps. Use resume() to re-read them
-      
-      This function is required. 
-      
-    """
+        *Required*
+
+        Suspends the model to disk. All variables needed to restart the model
+        are saved to disk as pcraster maps. Use resume() to re-read them
+
+        This function is required.
+
+        """
 
         self.logger.info("Saving initial conditions...")
         #: It is advised to use the wf_suspend() function
         #: here which will suspend the variables that are given by stateVariables
         #: function.
         self.wf_suspend(self.SaveDir + "/outstate/")
-        
+
         if self.OverWriteInit:
             self.logger.info("Saving initial conditions over start conditions...")
             self.wf_suspend(self.Dir + "/instate/")
 
-
     def initial(self):
 
         """
-    *Required*
-    
-    Initial part of the model, executed only once. It reads all static model
-    information (parameters) and sets-up the variables used in modelling.
-    
-    This function is required. The contents is free. However, in order to
-    easily connect to other models it is advised to adhere to the directory
-    structure used in the other models.
-    
-    """
+        *Required*
+
+        Initial part of the model, executed only once. It reads all static model
+        information (parameters) and sets-up the variables used in modelling.
+
+        This function is required. The contents is free. However, in order to
+        easily connect to other models it is advised to adhere to the directory
+        structure used in the other models.
+
+        """
         #: pcraster option to calculate with units or cells. Not really an issue
         #: in this model but always good to keep in mind.
         pcr.setglobaloption("unittrue")
-        pcr.setglobaloption("radians")  # Needed as W3RA was originally written in matlab
+        pcr.setglobaloption(
+            "radians"
+        )  # Needed as W3RA was originally written in matlab
 
         self.timestepsecs = int(
             configget(self.config, "model", "timestepsecs", "86400")
         )
-        
-        
+
         self.reinit = int(configget(self.config, "run", "reinit", "0"))
         self.OverWriteInit = int(configget(self.config, "model", "OverWriteInit", "0"))
-        
+
         self.UseETPdata = int(
             configget(self.config, "model", "UseETPdata", "1")
         )  #  1: Use ETP data, 0: Compute ETP from meteorological variables
@@ -201,14 +200,13 @@ class WflowModel(pcraster.framework.DynamicModel):
             self.wf_readmap(os.path.join(self.Dir, wflow_subcatch), 0.0, fail=True)
         )  # Determines the area of calculations (all cells > 0)
         self.subcatch = pcr.ifthen(self.subcatch > 0, self.subcatch)
-        
+
         self.Altitude = pcr.readmap(self.Dir + "/staticmaps/wflow_clone")
 
         self.latitude = pcr.ycoordinate(pcr.boolean(self.Altitude))
 
-        
         # Reading of parameters extracted from global maps
-        #TODO: NetIceFlow and PermIce supplied but not used in the code
+        # TODO: NetIceFlow and PermIce supplied but not used in the code
         self.Fhru = self.wf_readmap(
             os.path.join(self.Dir, "staticmaps/fHRU.map"), 0.0, fail=True
         )
@@ -287,9 +285,8 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.LAImax = self.wf_readmap(
             os.path.join(self.Dir, "staticmaps/LAImax.map"), 8.0, fail=True
         )
-        
-        
-        # Default parameters maps (supposed to be tbl?)       
+
+        # Default parameters maps (supposed to be tbl?)
         self.alb_water = self.wf_readmap(
             os.path.join(self.Dir, "staticmaps/alb_water.map"), 0.05, fail=False
         )
@@ -410,11 +407,10 @@ class WflowModel(pcraster.framework.DynamicModel):
             os.path.join(self.Dir, "staticmaps/psi_res.map"), -1e6, fail=False
         )  # m
 
-
         # Set static inital variables
         self.wf_updateparameters()
         self.wf_multparameters()
-        
+
         theta_FC = (
             self.theta_s * pcr.min(1, (self.psi_s / psi_FC)) ** self.Lambda
         )  # fraction
@@ -424,7 +420,9 @@ class WflowModel(pcraster.framework.DynamicModel):
         theta_ERRP = (
             self.theta_s * pcr.min(1, (self.psi_s / psi_ERRP)) ** self.Lambda
         )  # fraction
-        theta_d = self.theta_s * pcr.min(1, (self.psi_s / psi_d)) ** self.Lambda  # fraction
+        theta_d = (
+            self.theta_s * pcr.min(1, (self.psi_s / psi_d)) ** self.Lambda
+        )  # fraction
         theta_PWP = (
             self.theta_s * pcr.min(1, (self.psi_s / psi_PWP)) ** self.Lambda
         )  # fraction
@@ -463,24 +461,24 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.logger.info("Starting Dynamic run...")
 
     def resume(self):
-        """ 
-    *Required*
-    This function is required. Read initial state maps (they are output of a 
-    previous call to suspend()). The implementation shown here is the most basic
-    setup needed.
-    
-    """
+        """
+        *Required*
+        This function is required. Read initial state maps (they are output of a
+        previous call to suspend()). The implementation shown here is the most basic
+        setup needed.
+
+        """
         if self.reinit == 1:
             self.logger.info("Setting initial conditions to default")
 
-            self.Sg = pcr.cover(0.)
-            self.Sr = pcr.cover(0.)
-            self.Mleaf = 2. / self.SLA
+            self.Sg = pcr.cover(0.0)
+            self.Sr = pcr.cover(0.0)
+            self.Mleaf = 2.0 / self.SLA
             self.S0 = 0.2 * self.w0limE * self.S0max
             self.Ss = 0.2 * self.wslimU * self.Ssmax
             self.Sd = 0.2 * self.wdlimU * self.Sdmax
-            self.FreeWater = pcr.cover(0.)
-            self.DrySnow = pcr.cover(0.)
+            self.FreeWater = pcr.cover(0.0)
+            self.DrySnow = pcr.cover(0.0)
 
         else:
             self.logger.info("Setting initial conditions from state files")
@@ -491,12 +489,10 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def default_summarymaps(self):
         """
-      *Optional*
-      Return a default list of variables to report as summary maps in the outsum dir.
-      """
-        return [
-                "self.SLA"
-                ]
+        *Optional*
+        Return a default list of variables to report as summary maps in the outsum dir.
+        """
+        return ["self.SLA"]
 
     def parameters(self):
         """
@@ -529,7 +525,9 @@ class WflowModel(pcraster.framework.DynamicModel):
         )
         self.ALBEDO_mapstack = self.Dir + configget(
             self.config,
-            "inputmapstacks", "ALBEDO", "/inmaps/ALBEDO",
+            "inputmapstacks",
+            "ALBEDO",
+            "/inmaps/ALBEDO",
         )
         self.WINDSPEED_mapstack = self.Dir + configget(
             self.config, "inputmapstacks", "WINDSPEED", "/inmaps/WIND"
@@ -537,7 +535,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.AIRPRESS_mapstack = self.Dir + configget(
             self.config, "inputmapstacks", "AIRPRESS", "/inmaps/PRES"
         )
-        
+
         # Add the timeseries to model parameters
         modelparameters.append(
             self.ParamType(
@@ -548,7 +546,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 verbose=True,
                 lookupmaps=[],
             )
-        )            
+        )
         modelparameters.append(
             self.ParamType(
                 name="TMIN",
@@ -558,7 +556,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 verbose=True,
                 lookupmaps=[],
             )
-        )            
+        )
         modelparameters.append(
             self.ParamType(
                 name="TDAY",
@@ -568,7 +566,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 verbose=True,
                 lookupmaps=[],
             )
-        )            
+        )
         modelparameters.append(
             self.ParamType(
                 name="EPOT",
@@ -578,7 +576,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 verbose=True,
                 lookupmaps=[],
             )
-        )            
+        )
         modelparameters.append(
             self.ParamType(
                 name="PRECIP",
@@ -588,7 +586,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 verbose=True,
                 lookupmaps=[],
             )
-        )            
+        )
         modelparameters.append(
             self.ParamType(
                 name="RAD",
@@ -598,7 +596,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 verbose=True,
                 lookupmaps=[],
             )
-        )            
+        )
         modelparameters.append(
             self.ParamType(
                 name="ALBEDO",
@@ -608,7 +606,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 verbose=True,
                 lookupmaps=[],
             )
-        )            
+        )
         modelparameters.append(
             self.ParamType(
                 name="WINDSPEED",
@@ -618,7 +616,7 @@ class WflowModel(pcraster.framework.DynamicModel):
                 verbose=True,
                 lookupmaps=[],
             )
-        )            
+        )
         modelparameters.append(
             self.ParamType(
                 name="AIRPRESS",
@@ -629,9 +627,9 @@ class WflowModel(pcraster.framework.DynamicModel):
                 lookupmaps=[],
             )
         )
-            
-        #Add the climatologies extracted from global maps to model parameters
-        #TODO: fveg, fwater, LAI, PgainF supplied but not used in the code        
+
+        # Add the climatologies extracted from global maps to model parameters
+        # TODO: fveg, fwater, LAI, PgainF supplied but not used in the code
         modelparameters.append(
             self.ParamType(
                 name="alb_dry",
@@ -691,76 +689,87 @@ class WflowModel(pcraster.framework.DynamicModel):
                 verbose=True,
                 lookupmaps=[],
             )
-        )    
-
+        )
 
         return modelparameters
 
     def dynamic(self):
         """
-          *Required*
-          This is where all the time dependent functions are executed. Time dependent
-          output should also be saved here.
+        *Required*
+        This is where all the time dependent functions are executed. Time dependent
+        output should also be saved here.
         """
         # print 'useETPdata' , self.UseETPdata
         # Put the W3RA here. Stuff from W3RA_timestep_model.m
         # read meteo from file
         self.logger.debug("Running for: " + str(self.currentdatetime))
         self.wf_updateparameters()
-#        self.PRECIP = cover(
-#            self.wf_readmap(self.PRECIP_mapstack, 0.0), scalar(0.0)
-#        )  # mm
-#
-#        if self.UseETPdata == 1:
-#            self.TDAY = cover(
-#                self.wf_readmap(self.TDAY_mapstack, 10.0), scalar(10.0)
-#            )  # T in degC
-#            self.EPOT = cover(
-#                self.wf_readmap(self.EPOT_mapstack, 0.0), scalar(0.0)
-#            )  # mm
-#            self.WINDSPEED = cover(
-#                self.wf_readmap(self.WINDSPEED_mapstack, default=1.0), scalar(1.0)
-#            )
-#            self.AIRPRESS = cover(
-#                self.wf_readmap(self.AIRPRESS_mapstack, default=980.0), scalar(980.0)
-#            )
-#            # print "Using climatology for wind, air pressure and albedo."
-#        elif self.UseETPdata == 0:
-#            self.TMIN = cover(
-#                self.wf_readmap(self.TMIN_mapstack, 10.0), scalar(10.0)
-#            )  # T in degC
-#            self.TMAX = cover(
-#                self.wf_readmap(self.TMAX_mapstack, 10.0), scalar(10.0)
-#            )  # T in degC
-#            self.RAD = cover(
-#                self.wf_readmap(self.RAD_mapstack, 10.0), scalar(10.0)
-#            )  # W m-2 s-1
-#            self.WINDSPEED = cover(
-#                self.wf_readmap(self.WINDSPEED_mapstack, 10.0), scalar(10.0)
-#            )  # ms-1
-#            self.AIRPRESS = cover(
-#                self.wf_readmap(self.AIRPRESS_mapstack, 980.0), scalar(980.0)
-#            )  # Pa
-#            self.ALBEDO = cover(
-#                self.wf_readmapClimatology(self.ALBEDO_mapstack, default=0.1),
-#                scalar(0.1),
-#            )
+        #        self.PRECIP = cover(
+        #            self.wf_readmap(self.PRECIP_mapstack, 0.0), scalar(0.0)
+        #        )  # mm
+        #
+        #        if self.UseETPdata == 1:
+        #            self.TDAY = cover(
+        #                self.wf_readmap(self.TDAY_mapstack, 10.0), scalar(10.0)
+        #            )  # T in degC
+        #            self.EPOT = cover(
+        #                self.wf_readmap(self.EPOT_mapstack, 0.0), scalar(0.0)
+        #            )  # mm
+        #            self.WINDSPEED = cover(
+        #                self.wf_readmap(self.WINDSPEED_mapstack, default=1.0), scalar(1.0)
+        #            )
+        #            self.AIRPRESS = cover(
+        #                self.wf_readmap(self.AIRPRESS_mapstack, default=980.0), scalar(980.0)
+        #            )
+        #            # print "Using climatology for wind, air pressure and albedo."
+        #        elif self.UseETPdata == 0:
+        #            self.TMIN = cover(
+        #                self.wf_readmap(self.TMIN_mapstack, 10.0), scalar(10.0)
+        #            )  # T in degC
+        #            self.TMAX = cover(
+        #                self.wf_readmap(self.TMAX_mapstack, 10.0), scalar(10.0)
+        #            )  # T in degC
+        #            self.RAD = cover(
+        #                self.wf_readmap(self.RAD_mapstack, 10.0), scalar(10.0)
+        #            )  # W m-2 s-1
+        #            self.WINDSPEED = cover(
+        #                self.wf_readmap(self.WINDSPEED_mapstack, 10.0), scalar(10.0)
+        #            )  # ms-1
+        #            self.AIRPRESS = cover(
+        #                self.wf_readmap(self.AIRPRESS_mapstack, 980.0), scalar(980.0)
+        #            )  # Pa
+        #            self.ALBEDO = cover(
+        #                self.wf_readmapClimatology(self.ALBEDO_mapstack, default=0.1),
+        #                scalar(0.1),
+        #            )
 
         self.wf_multparameters()
         doy = self.currentdatetime.timetuple().tm_yday
 
         # conversion daylength
         pcr.setglobaloption("radians")
-        m = pcr.scalar(1) - pcr.tan((self.latitude * pcr.scalar(math.pi) / pcr.scalar(180))) * pcr.tan(
+        m = pcr.scalar(1) - pcr.tan(
+            (self.latitude * pcr.scalar(math.pi) / pcr.scalar(180))
+        ) * pcr.tan(
             (
                 (pcr.scalar(23.439) * pcr.scalar(math.pi) / pcr.scalar(180))
-                * pcr.cos(pcr.scalar(2) * pcr.scalar(math.pi) * (doy + pcr.scalar(9)) / pcr.scalar(365.25))
+                * pcr.cos(
+                    pcr.scalar(2)
+                    * pcr.scalar(math.pi)
+                    * (doy + pcr.scalar(9))
+                    / pcr.scalar(365.25)
+                )
             )
         )
         self.fday = pcr.min(
             pcr.max(
                 pcr.scalar(0.02),
-                pcr.scalar(pcr.acos(pcr.scalar(1) - pcr.min(pcr.max(pcr.scalar(0), m), pcr.scalar(2))))
+                pcr.scalar(
+                    pcr.acos(
+                        pcr.scalar(1)
+                        - pcr.min(pcr.max(pcr.scalar(0), m), pcr.scalar(2))
+                    )
+                )
                 / pcr.scalar(math.pi),
             ),
             pcr.scalar(1),
@@ -780,7 +789,8 @@ class WflowModel(pcraster.framework.DynamicModel):
             Ta = self.TMIN + pcr.scalar(0.75) * (self.TMAX - self.TMIN)  # T in degC
             T24 = self.TMIN + pcr.scalar(0.5) * (self.TMAX - self.TMIN)  # T in degC
             pex = pcr.min(
-                pcr.scalar(17.27) * (self.TMIN) / (pcr.scalar(237.3) + self.TMIN), pcr.scalar(10)
+                pcr.scalar(17.27) * (self.TMIN) / (pcr.scalar(237.3) + self.TMIN),
+                pcr.scalar(10),
             )  # T in degC
             pe = pcr.min(
                 pcr.scalar(610.8) * (pcr.exp(pex)), pcr.scalar(10000.0)
@@ -802,14 +812,14 @@ class WflowModel(pcraster.framework.DynamicModel):
         wd = self.Sd / self.Sdmax  # (2.1)
 
         # Calculate vegetation parameters and cover fractions
-        #TODO: change to include clim maps of LAI and fveg?
+        # TODO: change to include clim maps of LAI and fveg?
         self.LAI = self.SLA * self.Mleaf  # (5.3)
         fveg = pcr.max(1 - pcr.exp(-self.LAI / self.LAIref), 0.000001)  # (5.3)
         fsoil = 1 - fveg
         LUE = self.LUEmax * self.Vc * fveg
 
         # Calculate open water fraction
-        ChannelSurface = pcr.min(0, (0.007 * self.Sr ** 0.75))
+        ChannelSurface = pcr.min(0, (0.007 * self.Sr**0.75))
         OpenWaterFrac = pcr.max(ChannelSurface, self.OpenWaterFrac)
 
         # Calculate snow cover fraction
@@ -845,7 +855,9 @@ class WflowModel(pcraster.framework.DynamicModel):
         fsat = pcr.min(1, pcr.max(OpenWaterFrac, fg))  ## V5
 
         # Aerodynamic conductance (3.7)
-        fh = pcr.ln(813 / pcr.max(0.25, self.hveg) - 5.45)  # assume minimum roughness of 0.25 m
+        fh = pcr.ln(
+            813 / pcr.max(0.25, self.hveg) - 5.45
+        )  # assume minimum roughness of 0.25 m
         # ADJUSTED FOR E2O WFEI DATA: uz at 1m screen height (see AWRA technical report)
         ku1 = 0.359 / (fh * (fh + 2.3))
         ga = pcr.max(0.001, ku1 * self.u1)  # minimum of 0.001 imposed to avoid issues
@@ -853,7 +865,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         if self.UseETPdata == 1:
             self.E0 = pcr.max(self.EPOT, 0)
             self.keps = (
-                0.655E-3 * pair / pes
+                0.655e-3 * pair / pes
             )  # See Appendix A3 (http://www.clw.csiro.au/publications/waterforahealthycountry/2010/wfhc-aus-water-resources-assessment-system.pdf) --------------------------------   check!
             self.Ept = self.E0
 
@@ -867,7 +879,9 @@ class WflowModel(pcraster.framework.DynamicModel):
             Caero = (
                 0.176 * (1 + Ta / 209.1) * (pair - 0.417 * pe) * (1 - fRH)
             )  # removed fday as already daytime
-            self.keps = 1.4e-3 * ((Ta / 187) ** 2 + Ta / 107 + 1) * (6.36 * pair + pe) / pes
+            self.keps = (
+                1.4e-3 * ((Ta / 187) ** 2 + Ta / 107 + 1) * (6.36 * pair + pe) / pes
+            )
             Rgeff = Rg / self.fday  # this is original
 
             # albedo model
@@ -890,7 +904,7 @@ class WflowModel(pcraster.framework.DynamicModel):
             RLin = (
                 self.LWdown
             )  # provided by E2O data (though not sure how good it is..)
-            RLout = 1 * StefBolz * Tkelv ** 4  # v0.5   # (3.4)
+            RLout = 1 * StefBolz * Tkelv**4  # v0.5   # (3.4)
             RLn = RLin - RLout
 
             self.fGR = self.Gfrac_max * (1 - pcr.exp(-fsoil / self.fvegref_G))
@@ -995,7 +1009,9 @@ class WflowModel(pcraster.framework.DynamicModel):
         Temperature = T24  # Dimmie, let op: tijdelijke regel!!
         RainFrac = pcr.max(
             0,
-            pcr.min((Temperature - (self.snow_TT - self.snow_TTI / 2)) / self.snow_TTI, 1),
+            pcr.min(
+                (Temperature - (self.snow_TT - self.snow_TTI / 2)) / self.snow_TTI, 1
+            ),
         )
         SnowFrac = 1 - RainFrac  # fraction of precipitation which falls as snow
 
@@ -1047,10 +1063,10 @@ class WflowModel(pcraster.framework.DynamicModel):
         )
         # general case
         Km = (self.K0sat * self.Kssat) ** 0.5
-        A = Km / (self.S0max ** 2)
+        A = Km / (self.S0max**2)
         B = 1
         C = -(self.S0 + self.I - Es)
-        S0 = (-B + ((B ** 2 - 4 * A * C) ** 0.5)) / (2 * A)
+        S0 = (-B + ((B**2 - 4 * A * C) ** 0.5)) / (2 * A)
         D0 = (1 - Rh_0s) * Km * ((S0 / self.S0max) ** 2)
         IF0 = Rh_0s * Km * ((S0 / self.S0max) ** 2)
         # depletion case
@@ -1063,7 +1079,9 @@ class WflowModel(pcraster.framework.DynamicModel):
         imap = (self.S0max - self.S0 + self.K0sat) <= (self.I - Es)
         D0 = pcr.ifthenelse(imap, (1 - Rh_0s) * self.K0sat, D0)
         IF0 = pcr.ifthenelse(
-            imap, Rh_0s * self.K0sat + (self.S0 - self.S0max - self.K0sat + self.I - Es), IF0
+            imap,
+            Rh_0s * self.K0sat + (self.S0 - self.S0max - self.K0sat + self.I - Es),
+            IF0,
         )
         S0 = pcr.ifthenelse(imap, self.S0max, S0)
         # enforce mass balance (there can be small numerical errors in quadratic equation)
@@ -1080,10 +1098,10 @@ class WflowModel(pcraster.framework.DynamicModel):
         )
         # general case
         Km = (self.Kssat * self.Kdsat) ** 0.5
-        A = Km / (self.Ssmax ** 2)
+        A = Km / (self.Ssmax**2)
         B = 1
         C = -(self.Ss + D0 - Us)
-        Ss = (-B + ((B ** 2 - 4 * A * C) ** 0.5)) / (2 * A)
+        Ss = (-B + ((B**2 - 4 * A * C) ** 0.5)) / (2 * A)
         Ds = (1 - Rh_sd) * Km * ((Ss / self.Ssmax) ** 2)
         IFs = Rh_sd * Km * ((Ss / self.Ssmax) ** 2)
         # depletion case
@@ -1110,10 +1128,10 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         # # Deep root zone water balance (Sd) (2.4)
         # general case
-        A = self.Kdsat / (self.Sdmax ** 2)
+        A = self.Kdsat / (self.Sdmax**2)
         B = 1.0
         C = -(self.Sd + Ds - Ud)
-        Sd = (-B + ((B ** 2 - 4 * A * C) ** 0.5)) / (2 * A)
+        Sd = (-B + ((B**2 - 4 * A * C) ** 0.5)) / (2 * A)
         Dd = self.Kdsat * ((Sd / self.Sdmax) ** 2)
         IFd = 0 * Dd
         # depletion case
@@ -1146,7 +1164,7 @@ class WflowModel(pcraster.framework.DynamicModel):
         # Surface water store water balance (Sr) (2.7)
         self.Sr = pcr.max(0, self.Sr + self.QR - self.Erl + self.Qg)
         self.Qtot = pcr.max(0, pcr.min(self.Sr, (1 - pcr.exp(-self.K_rout)) * self.Sr))
-        #Cover in case there is no data in the subcatch
+        # Cover in case there is no data in the subcatch
         self.Qtot = pcr.ifthen(self.subcatch > 0, pcr.cover(self.Qtot, 0.0))
         self.Sr = self.Sr - self.Qtot
 
@@ -1159,7 +1177,6 @@ class WflowModel(pcraster.framework.DynamicModel):
             * (ga / (fD * Gsmax))
         )
         self.fveq = pcr.min(self.fveq, fvmax)
-        
 
         # VEGETATION ADJUSTMENT (5.4-5.6)
         dMleaf = -pcr.ln(1 - self.fveq) * self.LAIref / self.SLA - self.Mleaf
@@ -1183,16 +1200,14 @@ class WflowModel(pcraster.framework.DynamicModel):
 def main(argv=None):
     """
     *Optional*
-    
+
     Perform command line execution of the model. This example uses the getopt
     module to parse the command line options.
-    
+
     The user can set the caseName, the runDir, the timestep and the configfile.
     """
     global multpars
-    caseName = (
-        "openstreams_w3"
-    )  # "D:/trambaue/_Projects/GLOFFIS/201501/GLOFFIS_SA/Modules/openstreams_w3ra/"
+    caseName = "openstreams_w3"  # "D:/trambaue/_Projects/GLOFFIS/201501/GLOFFIS_SA/Modules/openstreams_w3ra/"
     runId = "run_default"
     configfile = "wflow_w3.ini"
     _lastTimeStep = 0
@@ -1230,9 +1245,13 @@ def main(argv=None):
     starttime = dt.datetime(1990, 1, 1)
 
     if _lastTimeStep < _firstTimeStep:
-        print( "The starttimestep (" + str(
-            _firstTimeStep
-        ) + ") is smaller than the last timestep (" + str(_lastTimeStep) + ")")
+        print(
+            "The starttimestep ("
+            + str(_firstTimeStep)
+            + ") is smaller than the last timestep ("
+            + str(_lastTimeStep)
+            + ")"
+        )
         usage()
 
     myModel = WflowModel(wflow_cloneMap, caseName, runId, configfile)
