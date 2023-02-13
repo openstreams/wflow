@@ -480,8 +480,9 @@ class WflowModel(pcraster.framework.DynamicModel):
             os.path.join(self.Dir, wflow_riverlength_fact), 1.0
         )
         self.BankfullDepth = pcr.cover(
-            self.wf_readmap(os.path.join(self.Dir, wflow_bankfulldepth), 0.0), 1.0
+            self.wf_readmap(os.path.join(self.Dir, wflow_bankfulldepth), 1.0), 0.0
         )
+        self.BankfullDepth = pcr.ifthenelse(self.River, self.BankfullDepth, 0.0)
 
         # read landuse and soilmap and make sure there are no missing points related to the
         # subcatchment map. Currently sets the lu and soil type  type to 1
