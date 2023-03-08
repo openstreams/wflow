@@ -24,11 +24,11 @@ def UpdateLakeHStore(self, pcr, pcrm):
                         self.LakeSH_pol_a1 * LakeLevel + self.LakeSH_pol_b,
                         pcr.ifthenelse(
                             self.LakeSH_Func == 3,
-                            (self.LakeSH_pol_a2 * LakeLevel ** 2)
+                            (self.LakeSH_pol_a2 * LakeLevel**2)
                             + self.LakeSH_pol_a1 * LakeLevel
                             + self.LakeSH_pol_b,
-                            (self.LakeSH_pol_a3 * LakeLevel ** 3)
-                            + (self.LakeSH_pol_a2 * LakeLevel ** 2)
+                            (self.LakeSH_pol_a3 * LakeLevel**3)
+                            + (self.LakeSH_pol_a2 * LakeLevel**2)
                             + (self.LakeSH_pol_a1 * LakeLevel + self.LakeSH_pol_b),
                         ),
                     ),
@@ -53,11 +53,11 @@ def UpdateLakeHStore(self, pcr, pcrm):
                         self.LakeHS_pol_a1 * self.StorRES + self.LakeHS_pol_b,
                         pcr.ifthenelse(
                             self.LakeHS_Func == 3,
-                            (self.LakeHS_pol_a2 * self.StorRES ** 2)
+                            (self.LakeHS_pol_a2 * self.StorRES**2)
                             + self.LakeHS_pol_a1 * self.StorRES
                             + self.LakeHS_pol_b,
-                            (self.LakeHS_pol_a3 * self.StorRES ** 3)
-                            + (self.LakeHS_pol_a2 * self.StorRES ** 2)
+                            (self.LakeHS_pol_a3 * self.StorRES**3)
+                            + (self.LakeHS_pol_a2 * self.StorRES**2)
                             + self.LakeHS_pol_a1 * self.StorRES
                             + self.LakeHS_pol_b,
                         ),
@@ -72,11 +72,11 @@ def UpdateLakeHStore(self, pcr, pcrm):
                     self.LakeHS_pol_a1 * self.StorRES + self.LakeHS_pol_b,
                     pcr.ifthenelse(
                         self.LakeHS_Func == 3,
-                        (self.LakeHS_pol_a2 * self.StorRES ** 2)
+                        (self.LakeHS_pol_a2 * self.StorRES**2)
                         + self.LakeHS_pol_a1 * self.StorRES
                         + self.LakeHS_pol_b,
-                        (self.LakeHS_pol_a3 * self.StorRES ** 3)
-                        + (self.LakeHS_pol_a2 * self.StorRES ** 2)
+                        (self.LakeHS_pol_a3 * self.StorRES**3)
+                        + (self.LakeHS_pol_a2 * self.StorRES**2)
                         + self.LakeHS_pol_a1 * self.StorRES
                         + self.LakeHS_pol_b,
                     ),
@@ -94,11 +94,11 @@ def UpdateLakeHStore(self, pcr, pcrm):
                 self.LakeHS_pol_a1 * self.StorRES + self.LakeHS_pol_b,
                 pcr.ifthenelse(
                     self.LakeHS_Func == 3,
-                    (self.LakeHS_pol_a2 * self.StorRES ** 2)
+                    (self.LakeHS_pol_a2 * self.StorRES**2)
                     + self.LakeHS_pol_a1 * self.StorRES
                     + self.LakeHS_pol_b,
-                    (self.LakeHS_pol_a3 * self.StorRES ** 3)
-                    + (self.LakeHS_pol_a2 * self.StorRES ** 2)
+                    (self.LakeHS_pol_a3 * self.StorRES**3)
+                    + (self.LakeHS_pol_a2 * self.StorRES**2)
                     + self.LakeHS_pol_a1 * self.StorRES
                     + self.LakeHS_pol_b,
                 ),
@@ -118,11 +118,11 @@ def QLake(self, pcr, LakeLevel):
             self.LakeQH_pol_a1 * LakeLevel + self.LakeQH_pol_b,
             pcr.ifthenelse(
                 self.LakeQH_Func == 3,
-                (self.LakeQH_pol_a2 * LakeLevel ** 2)
+                (self.LakeQH_pol_a2 * LakeLevel**2)
                 + self.LakeQH_pol_a1 * LakeLevel
                 + self.LakeQH_pol_b,
-                (self.LakeQH_pol_a3 * LakeLevel ** 3)
-                + (self.LakeQH_pol_a2 * LakeLevel ** 2)
+                (self.LakeQH_pol_a3 * LakeLevel**3)
+                + (self.LakeQH_pol_a2 * LakeLevel**2)
                 + self.LakeQH_pol_a1 * LakeLevel
                 + self.LakeQH_pol_b,
             ),

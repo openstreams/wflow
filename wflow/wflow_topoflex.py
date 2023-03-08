@@ -55,17 +55,17 @@ def usage(*args):
 
 class WflowModel(pcraster.framework.DynamicModel):
     """
-  The user defined model class. This is your work!
-  """
+    The user defined model class. This is your work!
+    """
 
     def __init__(self, cloneMap, Dir, RunDir, configfile):
         """
-      *Required*
-      
-      The init function **must** contain what is shown below. Other functionality
-      may be added by you if needed.
-      
-      """
+        *Required*
+
+        The init function **must** contain what is shown below. Other functionality
+        may be added by you if needed.
+
+        """
         pcraster.framework.DynamicModel.__init__(self)
         pcr.setclone(os.path.join(Dir, "staticmaps", cloneMap))
         self.runId = RunDir
@@ -75,22 +75,22 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def parameters(self):
         """
-      List all the parameters (both static and forcing here). Use the wf_updateparameters()
-      function to update them in the initial section (static) and the dynamic section for
-      dynamic parameters and forcing date.
+        List all the parameters (both static and forcing here). Use the wf_updateparameters()
+        function to update them in the initial section (static) and the dynamic section for
+        dynamic parameters and forcing date.
 
-      Possible parameter types are:
+        Possible parameter types are:
 
-      + staticmap: Read at startup from map
-      + statictbl: Read at startup from tbl, fallback to map (need Landuse, Soil and TopoId (subcatch) maps!
-      + timeseries: read map for each timestep
-      + monthlyclim: read a map corresponding to the current month (12 maps in total)
-      + dailyclim: read a map corresponding to the current day of the year
-      + hourlyclim: read a map corresponding to the current hour of the day (24 in total)
+        + staticmap: Read at startup from map
+        + statictbl: Read at startup from tbl, fallback to map (need Landuse, Soil and TopoId (subcatch) maps!
+        + timeseries: read map for each timestep
+        + monthlyclim: read a map corresponding to the current month (12 maps in total)
+        + dailyclim: read a map corresponding to the current day of the year
+        + hourlyclim: read a map corresponding to the current hour of the day (24 in total)
 
 
-      :return: List of modelparameters
-      """
+        :return: List of modelparameters
+        """
         modelparameters = []
 
         # Static model parameters
@@ -112,46 +112,42 @@ class WflowModel(pcraster.framework.DynamicModel):
         Updates the kinematic wave reservoir
         """
         self.WaterLevel = (self.Alpha * pow(self.Qstate, self.Beta)) / self.Bw
-        # wetted perimeter (m)
-        P = self.Bw + (2 * self.WaterLevel)
-        # Alpha
-        self.Alpha = self.AlpTerm * pow(P, self.AlpPow)
         self.OldKinWaveVolume = self.KinWaveVolume
         self.KinWaveVolume = self.WaterLevel * self.Bw * self.DCL
 
     def stateVariables(self):
         """
-      *Required*
-      
-      Returns a list of state variables that are essential to the model. 
-      This list is essential for the resume and suspend functions to work.
-      
-      This function is specific for each model and **must** be present. This is
-      where you specify the state variables of you model. If your model is stateless
-      this function must return and empty array (states = [])
-      
-      In the simple example here the TSoil variable is a state 
-      for the model.
-      
-      :var TSoil: Temperature of the soil [oC]
-      """
+        *Required*
+
+        Returns a list of state variables that are essential to the model.
+        This list is essential for the resume and suspend functions to work.
+
+        This function is specific for each model and **must** be present. This is
+        where you specify the state variables of you model. If your model is stateless
+        this function must return and empty array (states = [])
+
+        In the simple example here the TSoil variable is a state
+        for the model.
+
+        :var TSoil: Temperature of the soil [oC]
+        """
         states = ["Si", "Su", "Sf", "Ss", "Sw", "Sa", "Sfa", "Qstate", "WaterLevel"]
 
         return states
 
     def supplyCurrentTime(self):
         """
-      *Optional*
-      
-      Supplies the current time in seconds after the start of the run
-      This function is optional. If it is not set the framework assumes
-      the model runs with daily timesteps.
-      
-      Output:
-      
-          - time in seconds since the start of the model run
-          
-      """
+        *Optional*
+
+        Supplies the current time in seconds after the start of the run
+        This function is optional. If it is not set the framework assumes
+        the model runs with daily timesteps.
+
+        Output:
+
+            - time in seconds since the start of the model run
+
+        """
 
         return self.currentTimeStep() * int(
             configget(self.config, "model", "timestepsecs", "86400")
@@ -161,17 +157,17 @@ class WflowModel(pcraster.framework.DynamicModel):
         """
         First check if a prepared  maps of the same name is present
         in the staticmaps directory. next try to
-        read a tbl file to match a landuse, catchment and soil map. Returns 
+        read a tbl file to match a landuse, catchment and soil map. Returns
         the default value if the tbl file is not found.
-    
+
         Input:
             -  pathtotbl: full path to table file
             -  landuse: landuse map
             -  subcatch: subcatchment map
             -  soil: soil map
             -  default: default value
-    
-        Output: 
+
+        Output:
             - map constructed from tbl file or map with default value
         """
 
@@ -203,14 +199,14 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def suspend(self):
         """
-      *Required*
-      
-      Suspends the model to disk. All variables needed to restart the model
-      are saved to disk as pcraster maps. Use resume() to re-read them
-      
-      This function is required. 
-      
-    """
+        *Required*
+
+        Suspends the model to disk. All variables needed to restart the model
+        are saved to disk as pcraster maps. Use resume() to re-read them
+
+        This function is required.
+
+        """
 
         self.logger.info("Saving initial conditions...")
         # self.wf_suspend(os.path.join(self.SaveDir,"outstatemm"))
@@ -345,16 +341,16 @@ class WflowModel(pcraster.framework.DynamicModel):
     def initial(self):
 
         """
-    *Required*
-    
-    Initial part of the model, executed only once. It reads all static model
-    information (parameters) and sets-up the variables used in modelling.
-    
-    This function is required. The contents is free. However, in order to
-    easily connect to other models it is advised to adhere to the directory
-    structure used in the other models.
-    
-    """
+        *Required*
+
+        Initial part of the model, executed only once. It reads all static model
+        information (parameters) and sets-up the variables used in modelling.
+
+        This function is required. The contents is free. However, in order to
+        easily connect to other models it is advised to adhere to the directory
+        structure used in the other models.
+
+        """
         #: pcraster option to calculate with units or cells. Not really an issue
         #: in this model but always good to keep in mind.
         pcr.setglobaloption("unittrue")
@@ -583,6 +579,12 @@ class WflowModel(pcraster.framework.DynamicModel):
         wflow_riverwidth = configget(
             self.config, "model", "wflow_riverwidth", "staticmaps/wflow_riverwidth.map"
         )
+        wflow_bankfulldepth = configget(
+            self.config,
+            "model",
+            "wflow_bankfulldepth",
+            "staticmaps/wflow_bankfulldepth.map",
+        )
         self.rst_laiTss = [
             configget(
                 self.config,
@@ -644,6 +646,10 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.RiverLengthFac = self.wf_readmap(
             os.path.join(self.Dir, wflow_riverlength_fact), 1.0
         )
+        self.BankfullDepth = pcr.cover(
+            self.wf_readmap(os.path.join(self.Dir, wflow_bankfulldepth), 1.0), 0.0
+        )
+        self.BankfullDepth = pcr.ifthenelse(self.River, self.BankfullDepth, 0.0)
         self.RiverWidth = self.wf_readmap(os.path.join(self.Dir, wflow_riverwidth), 0.0)
         self.percent = []
         for i in self.Classes:
@@ -651,9 +657,18 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         self.wf_updateparameters()
         # MODEL PARAMETERS - VALUES PER CLASS
-        #read D from .tbl file instead of from inifile 
-#        self.D = eval(str(configget(self.config, "model", "D", "[0]")))
-        self.D = [self.readtblDefault2(self.Dir + "/" + self.intbl + "/D" + self.NamesClasses[i] + ".tbl",self.LandUse,subcatch,self.Soil,0.2) for i in self.Classes]
+        # read D from .tbl file instead of from inifile
+        #        self.D = eval(str(configget(self.config, "model", "D", "[0]")))
+        self.D = [
+            self.readtblDefault2(
+                self.Dir + "/" + self.intbl + "/D" + self.NamesClasses[i] + ".tbl",
+                self.LandUse,
+                subcatch,
+                self.Soil,
+                0.2,
+            )
+            for i in self.Classes
+        ]
         self.Tf = eval(str(configget(self.config, "model", "Tf", "[0]")))
         self.Tfa = eval(str(configget(self.config, "model", "Tfa", "[0]")))
 
@@ -1045,9 +1060,9 @@ class WflowModel(pcraster.framework.DynamicModel):
         # Set DCL to riverlength if that is longer that the basic length calculated from grid
         drainlength = detdrainlength(self.TopoLdd, self.xl, self.yl)
 
-#        self.DCL = pcr.max(drainlength, self.RiverLength)  # m
+        #        self.DCL = pcr.max(drainlength, self.RiverLength)  # m
         # Multiply with Factor (taken from upscaling operation, defaults to 1.0 if no map is supplied
-#        self.DCL = self.DCL * pcr.max(1.0, self.RiverLengthFac)
+        #        self.DCL = self.DCL * pcr.max(1.0, self.RiverLengthFac)
         self.DCL = self.RiverLength
 
         # water depth (m)
@@ -1062,7 +1077,8 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.AlpTerm = pow((self.N / (pcr.sqrt(self.Slope))), self.Beta)
         # power for Alpha
         self.AlpPow = (2.0 / 3.0) * self.Beta
-        # initial approximation for Alpha
+
+        self.Alpha = self.AlpTerm * pow(self.Bw + self.BankfullDepth, self.AlpPow)
 
         # calculate catchmentsize
         self.upsize = pcr.catchmenttotal(self.xl * self.yl, self.TopoLdd)
@@ -1073,13 +1089,13 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def resume(self):
         """
-    *Required*
+        *Required*
 
-    This function is required. Read initial state maps (they are output of a 
-    previous call to suspend()). The implementation shown here is the most basic
-    setup needed.
-    
-    """
+        This function is required. Read initial state maps (they are output of a
+        previous call to suspend()). The implementation shown here is the most basic
+        setup needed.
+
+        """
         if self.reinit == 1:
             # self.logger.info("Setting initial conditions to default (zero!)")
             self.logger.info(
@@ -1205,9 +1221,6 @@ class WflowModel(pcraster.framework.DynamicModel):
                 os.path.join(self.Dir, "instate", "WaterLevel.map")
             )
 
-        P = self.Bw + (2.0 * self.WaterLevel)
-        self.Alpha = self.AlpTerm * pow(P, self.AlpPow)
-
         self.OldSurfaceRunoff = self.Qstate
 
         self.SurfaceRunoffMM = self.Qstate * self.QMMConv
@@ -1254,17 +1267,17 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def default_summarymaps(self):
         """
-      *Optional*
+        *Optional*
 
-      Return a default list of variables to report as summary maps in the outsum dir.
-      The ini file has more options, including average and sum
-      """
+        Return a default list of variables to report as summary maps in the outsum dir.
+        The ini file has more options, including average and sum
+        """
         return ["self.Altitude"]
 
     def dynamic(self):
         """
         *Required*
-        
+
         This is where all the time dependent functions are executed. Time dependent
         output should also be saved here.
         :type self: object
@@ -1430,7 +1443,11 @@ class WflowModel(pcraster.framework.DynamicModel):
             pcr.nominal(self.TopoId),
         )
         self.EwiCorr = pcr.areatotal(
-            sum(np.multiply(np.multiply(self.Ew_, self.lamdaS / self.lamda), self.percent))
+            sum(
+                np.multiply(
+                    np.multiply(self.Ew_, self.lamdaS / self.lamda), self.percent
+                )
+            )
             / 1000
             * self.surfaceArea,
             pcr.nominal(self.TopoId),
@@ -1497,7 +1514,9 @@ class WflowModel(pcraster.framework.DynamicModel):
             pcr.nominal(self.TopoId),
         )
         self.convQu_WB = pcr.areatotal(
-            sum(np.multiply([sum(self.convQu_t[i]) for i in self.Classes], self.percent))
+            sum(
+                np.multiply([sum(self.convQu_t[i]) for i in self.Classes], self.percent)
+            )
             / 1000
             * self.surfaceArea,
             pcr.nominal(self.TopoId),
@@ -1509,7 +1528,9 @@ class WflowModel(pcraster.framework.DynamicModel):
             pcr.nominal(self.TopoId),
         )
         self.convQa_WB = pcr.areatotal(
-            sum(np.multiply([sum(self.convQa_t[i]) for i in self.Classes], self.percent))
+            sum(
+                np.multiply([sum(self.convQa_t[i]) for i in self.Classes], self.percent)
+            )
             / 1000
             * self.surfaceArea,
             pcr.nominal(self.TopoId),
@@ -1536,8 +1557,8 @@ class WflowModel(pcraster.framework.DynamicModel):
         self.WBtot = (
             self.P
             - self.Ei
-#            + self.EwiCorr    #adapted june 2020 as Ew is already counted in Ei so seems to be double counted here --- TO DO: check if this correction applies for all configurations and timesteps
-#            - self.Ew
+            #            + self.EwiCorr    #adapted june 2020 as Ew is already counted in Ei so seems to be double counted here --- TO DO: check if this correction applies for all configurations and timesteps
+            #            - self.Ew
             - self.Ea
             - self.Eu
             - self.Qtot
@@ -1599,10 +1620,10 @@ class WflowModel(pcraster.framework.DynamicModel):
 def main(argv=None):
     """
     *Optional but needed it you want to run the model from the command line*
-    
+
     Perform command line execution of the model. This example uses the getopt
     module to parse the command line options.
-    
+
     The user can set the caseName, the runDir, the timestep and the configfile.
     """
     global multpars

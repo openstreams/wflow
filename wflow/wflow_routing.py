@@ -84,7 +84,7 @@ class WflowModel(pcraster.framework.DynamicModel):
     .. versionchanged:: 0.1
         - initial version.
 
-  """
+    """
 
     def __init__(self, cloneMap, Dir, RunDir, configfile):
         pcraster.framework.DynamicModel.__init__(self)
@@ -174,8 +174,8 @@ class WflowModel(pcraster.framework.DynamicModel):
         # Alpha
         self.WetPComb = self.Pch + self.Pfp
         self.Ncombined = (
-            self.Pch / self.WetPComb * self.N ** 1.5
-            + self.Pfp / self.WetPComb * self.NFloodPlain ** 1.5
+            self.Pch / self.WetPComb * self.N**1.5
+            + self.Pfp / self.WetPComb * self.NFloodPlain**1.5
         ) ** (2.0 / 3.0)
         self.AlpTermFP = pow((self.NFloodPlain / (pcr.sqrt(self.SlopeDCL))), self.Beta)
         self.AlpTermComb = pow((self.Ncombined / (pcr.sqrt(self.SlopeDCL))), self.Beta)
@@ -225,15 +225,15 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def initial(self):
         """
-    Initial part of the model, executed only once. Reads all static data from disk
+        Initial part of the model, executed only once. Reads all static data from disk
 
 
-    *Surface water*
+        *Surface water*
 
-    :var N.tbl: Manning's N parameter
-    :var N_river.tbl: Manning's N parameter fro cells marked as river
+        :var N.tbl: Manning's N parameter
+        :var N_river.tbl: Manning's N parameter fro cells marked as river
 
-    """
+        """
         global statistics
         global multpars
         global updateCols
@@ -587,12 +587,12 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def default_summarymaps(self):
         """
-          Returns a list of default summary-maps at the end of a run.
-          This is model specific. You can also add them to the [summary]section of the ini file but stuff
-          you think is crucial to the model should be listed here
+        Returns a list of default summary-maps at the end of a run.
+        This is model specific. You can also add them to the [summary]section of the ini file but stuff
+        you think is crucial to the model should be listed here
 
 
-          """
+        """
         lst = [
             "self.N",
             "self.NRiver",
@@ -739,8 +739,8 @@ class WflowModel(pcraster.framework.DynamicModel):
         )
         self.WetPComb = self.Pch + self.Pfp
         self.Ncombined = (
-            self.Pch / self.WetPComb * self.N ** 1.5
-            + self.Pfp / self.WetPComb * self.NFloodPlain ** 1.5
+            self.Pch / self.WetPComb * self.N**1.5
+            + self.Pfp / self.WetPComb * self.NFloodPlain**1.5
         ) ** (2.0 / 3.0)
 
         self.AlpTermFP = pow((self.NFloodPlain / (pcr.sqrt(self.SlopeDCL))), self.Beta)
@@ -804,7 +804,14 @@ class WflowModel(pcraster.framework.DynamicModel):
 
         # only run the reservoir module if needed
         if self.nrresSimple > 0:
-            self.ReservoirVolume, self.OutflowSR, self.ResPercFull, self.ResPrecipSR, self.ResEvapSR, self.DemandRelease = simplereservoir(
+            (
+                self.ReservoirVolume,
+                self.OutflowSR,
+                self.ResPercFull,
+                self.ResPrecipSR,
+                self.ResEvapSR,
+                self.DemandRelease,
+            ) = simplereservoir(
                 self.ReservoirVolume,
                 self.SurfaceRunoff,
                 self.ResSimpleArea,

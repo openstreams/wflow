@@ -36,31 +36,19 @@ $Rev: 001 $
 # Some last remaining hardcoded (& partly non-functional) parameters:
 DELT = 1.0  # Time step (delta T) = 1 day; changing it is not recommended.
 TINY = 1e-6  # A tiny number (from the original LINTUL code:)
-WCWP = (
-    0.21
-)  # Volumetric soil water content at wilting point... how soil specific is this for puddled soils...? todo
-WCFC = (
-    0.47
-)  # Volumetric soil water content at field capacity... how soil specific is this for puddled soils...? todo
-WCST = (
-    0.55
-)  # Volumetric soil water content at saturation (normal condition for irrigated rice soil) ... how soil specific is this for puddled soils...? todo
+WCWP = 0.21  # Volumetric soil water content at wilting point... how soil specific is this for puddled soils...? todo
+WCFC = 0.47  # Volumetric soil water content at field capacity... how soil specific is this for puddled soils...? todo
+WCST = 0.55  # Volumetric soil water content at saturation (normal condition for irrigated rice soil) ... how soil specific is this for puddled soils...? todo
 NNI = 1.0  # Nitrogen Nutrition Index (non-functional, for future development)
-NPART = (
-    1.0
-)  # Coefficient for the effect of N stress on leaf biomass reduction (presently non-functional, for future development)
-NSLA = (
-    1.0
-)  # Coefficient for the effect of N stress on SLA reduction (presently non-functional, for future development)
-NLAI = (
-    1.0
-)  # Coefficient for the effect of N stress on LAI reduction(during juvenile phase; presently non-functional, for future development)
+NPART = 1.0  # Coefficient for the effect of N stress on leaf biomass reduction (presently non-functional, for future development)
+NSLA = 1.0  # Coefficient for the effect of N stress on SLA reduction (presently non-functional, for future development)
+NLAI = 1.0  # Coefficient for the effect of N stress on LAI reduction(during juvenile phase; presently non-functional, for future development)
 
 
 def NOTNUL_pcr(pcr_map):
     """
     NOTNUL was originally a FST Fortran Simulation Translator intrinsic function.
-    Here it is applied to arrays. If a value in the array is positive, NOTNUL will 
+    Here it is applied to arrays. If a value in the array is positive, NOTNUL will
     just return the value as is. If it equals zero: NOTNUL will return a value of 1 instead.
     Sander de Vries, March 2018
     """
@@ -72,14 +60,14 @@ def NOTNUL_pcr(pcr_map):
 
 def astro_py(DAY, LAT):
     """
-* ---------------------------------------------------------------------*
-*   SUBROUTINE ASTRO                                                    *
-*   Purpose: This subroutine calculates the astronomic daylength,       *
-*            based on Goudriaan and van Laar 1994, around p.30.         *
-* ---------------------------------------------------------------------*
+    * ---------------------------------------------------------------------*
+    *   SUBROUTINE ASTRO                                                    *
+    *   Purpose: This subroutine calculates the astronomic daylength,       *
+    *            based on Goudriaan and van Laar 1994, around p.30.         *
+    * ---------------------------------------------------------------------*
 
-    Originally: Daniel van Kraalingen, April 1991
-    Python version: Sander de Vries, 30-10-2015
+        Originally: Daniel van Kraalingen, April 1991
+        Python version: Sander de Vries, 30-10-2015
     """
 
     # SINE AND COSINE OF LATITUDE
@@ -110,11 +98,11 @@ def astro_py(DAY, LAT):
 
 class Interpol_Obj(object):
     """
-    Class to facilitate use of the 'lookuplinear' PCraster function. 
-    Upon initialization of an interpolation object, a temporary file 
-    containing x, y value pairs is created and saved in the case directory. 
+    Class to facilitate use of the 'lookuplinear' PCraster function.
+    Upon initialization of an interpolation object, a temporary file
+    containing x, y value pairs is created and saved in the case directory.
     This file is accessed by (PCraster) lookuplinear if the lookup_linear method is called.
-    
+
     Sander de Vries, March 2018
     """
 
@@ -155,7 +143,7 @@ def supplyCurrentTime(self):
 
           - time in seconds since the start of the model run
 
-      """
+    """
 
     return self.currentTimeStep(self) * int(
         configget(self.config, "model", "timestepsecs", "86400")
@@ -405,8 +393,8 @@ class WflowModel(pcraster.framework.DynamicModel):
         This function is specific for each model and **must** be present. This is
         where you specify the state variables of you model. If your model is stateless
         this function must return and empty array (states = [])
-        
-        'Test' is a handy variable to keep if you quickly want to get map output for a certain variable 
+
+        'Test' is a handy variable to keep if you quickly want to get map output for a certain variable
         (e.g. include a statement self.Test = OutputVariable; sdv)
 
         """
@@ -450,12 +438,12 @@ class WflowModel(pcraster.framework.DynamicModel):
 
     def suspend(self):
         """
-          *Required*
+        *Required*
 
-          Suspends the model to disk. All variables needed to restart the model
-          are saved to disk as pcraster maps. Use resume() to re-read them
+        Suspends the model to disk. All variables needed to restart the model
+        are saved to disk as pcraster maps. Use resume() to re-read them
 
-          This function is required.
+        This function is required.
 
         """
 
@@ -974,12 +962,12 @@ class WflowModel(pcraster.framework.DynamicModel):
 
 def main(argv=None):
     """
-    *Optional but needed it you want to run the model from the command line*
+        *Optional but needed it you want to run the model from the command line*
 
-    Perform command line execution of the model. This example uses the getopt
-    module to parse the command line options.
-x
-    The user can set the caseName, the runDir, the timestep and the configfile.
+        Perform command line execution of the model. This example uses the getopt
+        module to parse the command line options.
+    x
+        The user can set the caseName, the runDir, the timestep and the configfile.
     """
     global multpars
     caseName = "default_lintul"

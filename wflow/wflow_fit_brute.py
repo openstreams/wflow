@@ -265,7 +265,7 @@ class wfmodel_fit_API:
     def savemaps(self, pars, savetoinput=False):
         """
         Ssave the adjusted (and original) parameter maps
-        
+
         """
 
         # To get the original values of the parameters
@@ -311,16 +311,15 @@ class wfmodel_fit_API:
 
     def shutdown(self):
         """
-        Shutdown the model 
-        
+        Shutdown the model
+
         """
 
         self.dynModelFw._wf_shutdown()
 
 
 def bruteforce(mimo, qmeas, caseName, runId):
-    """
-    """
+    """ """
     nowpars = mimo.pars
     print(nowpars)
     i = 0

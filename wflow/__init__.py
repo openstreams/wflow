@@ -27,6 +27,7 @@ if getattr(sys, "frozen", False):
     # filter out matplotlib deprecation warning triggered by PyInstaller
     # https://stackoverflow.com/q/57517371
     import warnings
+
     warnings.filterwarnings("ignore", "(?s).*MATPLOTLIBDATA.*", category=UserWarning)
 
     # use the included gdal-data
@@ -40,6 +41,7 @@ if getattr(sys, "frozen", False):
     proj_data_dir = os.path.join(basedir, "proj-data")
     os.environ["PROJ_LIB"] = proj_data_dir
     import pyproj.datadir
+
     pyproj.datadir.set_data_dir(proj_data_dir)
 
 import pyproj

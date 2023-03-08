@@ -62,9 +62,9 @@ def fastAgriRunoff_no_reservoir(self, k):
 # @profile
 def fastRunoff_lag2(self, k):
     """
-    - Lag is applied before inflow into the fast reservoir 
+    - Lag is applied before inflow into the fast reservoir
     - Lag formula is derived from Fenicia (2011)
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
     and if this leads to negative storage, the outgoing fluxes are corrected to rato
     - not a semi analytical solution for Sf anymore
     - Code for ini-file: 2
@@ -77,17 +77,19 @@ def fastRunoff_lag2(self, k):
     else:
         self.Qu = self.Qu_[k]
 
-    self.D[k] = pcr.ifthenelse(self.D[k] >= 1, 0.95, self.D[k])     #make sure D[k] never exceeds 1 -- especially useful for calibration with multiplication factor. todo: check what should be done if you want D = 1
+    self.D[k] = pcr.ifthenelse(
+        self.D[k] >= 1, 0.95, self.D[k]
+    )  # make sure D[k] never exceeds 1 -- especially useful for calibration with multiplication factor. todo: check what should be done if you want D = 1
     self.Qfin = (1 - self.D[k]) * self.Qu
 
-    #self.D[k] < 1.00: changed to checking if the max value of the map is less than 1 when applying a D map instead of a single value read from the ini file. 
-    #TODO: check how this works if D = 1! 
-#    if self.D[k] < 1.00:
-    if pcr.pcr2numpy(self.D[k], mv = -999).max() < 1: 
+    # self.D[k] < 1.00: changed to checking if the max value of the map is less than 1 when applying a D map instead of a single value read from the ini file.
+    # TODO: check how this works if D = 1!
+    #    if self.D[k] < 1.00:
+    if pcr.pcr2numpy(self.D[k], mv=-999).max() < 1:
         if self.convQu[k]:
             self.QfinLag = self.convQu[k][-1]
-#            self.Qf = self.Sf[k] * self.Kf[k]   #aangepast 17 juni 2020 to add possibility for non linear outflow from fast reservoir
-            self.Qf = pcr.min(self.Sf[k], self.Sf[k]**self.alfa[k] * self.Kf[k])
+            #            self.Qf = self.Sf[k] * self.Kf[k]   #aangepast 17 juni 2020 to add possibility for non linear outflow from fast reservoir
+            self.Qf = pcr.min(self.Sf[k], self.Sf[k] ** self.alfa[k] * self.Kf[k])
             self.Sf[k] = self.Sf[k] + self.QfinLag - self.Qf
 
             self.convQu[k].insert(
@@ -110,8 +112,8 @@ def fastRunoff_lag2(self, k):
         #            self.Qfinput_[k] = self.QfinLag
 
         else:
-#            self.Qf = self.Sf[k] * self.Kf[k] #aangepast 17 juni 2020 to add possibility for non linear outflow from fast reservoir
-            self.Qf = pcr.min(self.Sf[k], self.Sf[k]**self.alfa[k] * self.Kf[k])
+            #            self.Qf = self.Sf[k] * self.Kf[k] #aangepast 17 juni 2020 to add possibility for non linear outflow from fast reservoir
+            self.Qf = pcr.min(self.Sf[k], self.Sf[k] ** self.alfa[k] * self.Kf[k])
             self.Sf[k] = self.Sf[k] + self.Qfin - self.Qf
 
     #            self.Qfin_[k] = self.Qfin
@@ -138,9 +140,9 @@ def fastRunoff_lag2(self, k):
 
 def fastRunoff_lag_forAgri_combined(self, k):
     """
-    - Lag is applied before inflow into the fast reservoir 
+    - Lag is applied before inflow into the fast reservoir
     - Lag formula is derived from Fenicia (2011)
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
     and if this leads to negative storage, the outgoing fluxes are corrected to rato
     - not a semi analytical solution for Sf anymore
     - When separate ditch/road fast reservoir is taken into account, this option should not be used
@@ -205,9 +207,9 @@ def fastRunoff_lag_forAgri_combined(self, k):
 
 def fastRunoff_lag_agriDitch(self, k):
     """
-    - Lag is applied before inflow into the fast reservoir 
+    - Lag is applied before inflow into the fast reservoir
     - Lag formula is derived from Fenicia (2011)
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
     and if this leads to negative storage, the outgoing fluxes are corrected to rato
     - not a semi analytical solution for Sf anymore
     - very fast responding reservoir to represent fast drainage via roads and ditches
@@ -266,9 +268,9 @@ def fastRunoff_lag_agriDitch(self, k):
 
 def fastRunoff_lag_agriDitch_reInfilt(self, k):
     """
-    - Lag is applied before inflow into the fast reservoir 
+    - Lag is applied before inflow into the fast reservoir
     - Lag formula is derived from Fenicia (2011)
-    - Outgoing fluxes are determined based on (value in previous timestep + inflow) 
+    - Outgoing fluxes are determined based on (value in previous timestep + inflow)
     and if this leads to negative storage, the outgoing fluxes are corrected to rato
     - not a semi analytical solution for Sf anymore
     - very fast responding reservoir to represent fast drainage via roads and ditches
@@ -328,7 +330,7 @@ def fastRunoff_lag_agriDitch_reInfilt(self, k):
 
 def routingQf_combined(self):
     """
-    - Routing of fluxes from fast reservoir 
+    - Routing of fluxes from fast reservoir
     - Qf is devided over the reservoir numbers for the timesteps matching with the average
     travel time for a calcultation cell
     """

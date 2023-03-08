@@ -15,7 +15,7 @@ import pcraster as pcr
 
 
 def lattometres(lat):
-    """"
+    """ "
     Determines the length of one degree lat/long at a given latitude (in meter).
     Code taken from http:www.nga.mil/MSISiteContent/StaticFiles/Calculators/degree.html
     Input: map with lattitude values for each cell
@@ -125,7 +125,7 @@ def readmapSave(pathtomap, default):
 
 
 def readtss(nname):
-    """Reads a RCraster .tss file into a numpy array. 
+    """Reads a RCraster .tss file into a numpy array.
     Error handling is minimal. The first column that
     contains the timestep is not returned.
     returns:
@@ -169,13 +169,13 @@ def readtss(nname):
 
 
 def interpolategauges(inputmap, method):
-    """"
+    """ "
     Interpolate time series gauge data onto a grid using different methods
     inputmap: map with points data for a single timestep
     method: string indicating the method
         inv
         pol
-        
+
     input: inputmap, method
     returns: interpolated map
     """
@@ -198,7 +198,7 @@ def tableToMapSparse(step, table, map):
     """Reads a pcraster.tbl file for step and assigns using the map in map.
     The behaviour of is a bit similar to the timeinputSparse
     command but in this case for both the tbl file and the map file.
-   
+
     Input: step (int), table (string, path, without the .tbl extension), map
           (ordinal map, without the .map extension)
 
@@ -219,8 +219,8 @@ def tableToMapSparse(step, table, map):
     - LAI10.map will be used between 10 and 119
     etc....
     The same holds for the tables.
-    
-    
+
+
     """
     global debug
 

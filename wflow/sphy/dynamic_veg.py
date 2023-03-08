@@ -9,7 +9,7 @@ def Veg_function(
         (((SR - SR_min) * (fpar_max - fpar_min)) / (SR_max - SR_min)) + 0.001, 0.95
     )
     LAI = lai_max * pcr.log10(1 - FPAR) / pcr.log10(1 - fpar_max)
-    Smax = 0.935 + 0.498 * LAI - 0.00575 * (LAI ** 2)
+    Smax = 0.935 + 0.498 * LAI - 0.00575 * (LAI**2)
     Kc = kc_min + (kc_max - kc_min) * pcr.max(
         pcr.min((ndvi - ndvi_min) / (ndvi_max - ndvi_min), 1), 0
     )

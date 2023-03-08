@@ -452,7 +452,7 @@ class netcdfoutputstatic:
         self.buffdirty = False
 
         globmetadata.update(metadata)
-        
+
         self.nc_trg = None
 
         prepare_nc(
@@ -714,7 +714,7 @@ class netcdfinput:
 
             without ensembles (dims = 3)
             window = data[dpos,latidx.min():latidx.max()+1,lonidx.min():lonidx.max()+1]
-            
+
             with ensembles from Delft-FEWS (dims = 4):
             window = data[dpos,realization,latidx.min():latidx.max()+1,lonidx.min():lonidx.max()+1]
         """
@@ -727,7 +727,7 @@ class netcdfinput:
 
         if self.datetimelist.size < ncindex + 1:
             ncindex = self.datetimelist.size - 1
-        
+
         if tsdatetime != None:
             if tsdatetime.replace(tzinfo=None) != self.datetimelist[ncindex]:
                 logging.warning(
@@ -932,8 +932,7 @@ class netcdfinputstates:
 
         if var in self.dataset.variables:
             if tsdatetime != None:
-                if tsdatetime.replace(tzinfo=None) != self.datetimelist[
-                    ncindex]:
+                if tsdatetime.replace(tzinfo=None) != self.datetimelist[ncindex]:
                     logging.warning(
                         "Date/time of state ("
                         + var

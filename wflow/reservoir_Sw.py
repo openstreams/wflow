@@ -147,14 +147,14 @@ def snow_hourlyEp(self, k):
     - also Jarvis is removed and self.PotEvaporation is equal to EpDay (which is the input) (june 2020)
     """
 
-#    JarvisCoefficients.calcEpSnowHour(self, k)
-#    self.PotEvaporation = pcr.cover(pcr.ifthenelse(self.EpHour > 0, self.EpHour, 0), 0)
+    #    JarvisCoefficients.calcEpSnowHour(self, k)
+    #    self.PotEvaporation = pcr.cover(pcr.ifthenelse(self.EpHour > 0, self.EpHour, 0), 0)
     self.PotEvaporation = self.EpDay2
 
     self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow
 
-#    self.Fm2 = pcr.max(self.Fm[k] * self.Precipitation, self.Fm[k])
-    self.Fm2 = self.Fm[k] #aangepast op 17 juni
+    #    self.Fm2 = pcr.max(self.Fm[k] * self.Precipitation, self.Fm[k])
+    self.Fm2 = self.Fm[k]  # aangepast op 17 juni
     self.Ew1 = pcr.max(pcr.min(self.PotEvaporation, self.Sw[k]), 0)
     self.Qw1 = pcr.max(
         pcr.min(self.Fm2 * (self.Temperature - self.Tm[k]), self.Sw[k]), 0
@@ -183,6 +183,7 @@ def snow_hourlyEp(self, k):
 
     self.Ew_[k] = self.Ew
     self.Qw_[k] = self.Qw
+
 
 def snow_rain_hourlyEp(self, k):
     """
@@ -198,7 +199,7 @@ def snow_rain_hourlyEp(self, k):
     self.Sw[k] = self.Sw_t[k] + self.PrecipitationSnow
 
     self.Fm2 = pcr.max(self.Fm[k] * self.Precipitation, self.Fm[k])
-#    self.Fm2 = self.Fm[k] #aangepast op 17 juni
+    #    self.Fm2 = self.Fm[k] #aangepast op 17 juni
     self.Ew1 = pcr.max(pcr.min(self.PotEvaporation, self.Sw[k]), 0)
     self.Qw1 = pcr.max(
         pcr.min(self.Fm2 * (self.Temperature - self.Tm[k]), self.Sw[k]), 0
@@ -227,6 +228,7 @@ def snow_rain_hourlyEp(self, k):
 
     self.Ew_[k] = self.Ew
     self.Qw_[k] = self.Qw
+
 
 def snow_rain_Tsurf(self, k):
     """

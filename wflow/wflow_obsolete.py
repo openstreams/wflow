@@ -27,7 +27,7 @@ class wflow_model:
     def get_grid_parameters(self):
         """
         return the dimension of the current model grid as list
-      
+
         [Xul, Yul, xsize, ysize, rows, cols]
         """
         return self.dynModelFw.wf_supplyGridDim()

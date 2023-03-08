@@ -160,15 +160,15 @@ def pixml_state_updateTime(inxml, outxml, DT):
     """
     Reads the pi-state xml file inxml and updates the data/time of
     the state using datetime. Writes updated file to outxml
-    
-    - Can be use in scripts to set the date.time of the 
+
+    - Can be use in scripts to set the date.time of the
       output state.xml that Delft-FEWS writes.
 
     .. warning::
 
-	    This function does not fully parse the xml file and will only work properly
+            This function does not fully parse the xml file and will only work properly
         if the xml files date the dateTime element written on one line.
-      
+
     """
 
     if os.path.exists(inxml):
@@ -193,7 +193,7 @@ def pixml_state_updateTime(inxml, outxml, DT):
 
 
 def pixml_totss_dates(nname, outputdir):
-    """ 
+    """
     Gets Date/time info from XML file and creates .tss files with:
 
         - Day of year
@@ -235,14 +235,14 @@ def pixml_totss_dates(nname, outputdir):
 def pixml_totss(nname, outputdir):
     """
     Converts and PI xml timeseries file to a number of tss files.
-   
+
     The tss files are created using the following rules:
- 
+
         - tss filename determined by the content of the parameter element with a ".tss" postfix
         - files are created in "outputdir"
         - multiple locations will be multiple columns in the tss file written in order
           of appearance in the XML file
-     
+
     """
 
     if os.path.exists(nname):
@@ -398,7 +398,7 @@ def mapstackxml(
     mapstackxml, mapstackname, locationname, parametername, Sdate, Edate, timestepsecs
 ):
     """
-        writes a mapstack xml file
+    writes a mapstack xml file
     """
     Sdatestr = Sdate.strftime("%Y-%m-%d")
     Stimestr = Sdate.strftime("%H:%M:%S")
@@ -426,7 +426,7 @@ def mapstackxml(
 
 def getTimeStepsfromRuninfo(xmlfile, timestepsecs):
     """
-        Gets the number of  timesteps from the FEWS runinfo file.
+    Gets the number of  timesteps from the FEWS runinfo file.
     """
     if os.path.exists(xmlfile):
         with open(xmlfile, "r") as f:
@@ -454,7 +454,7 @@ def getTimeStepsfromRuninfo(xmlfile, timestepsecs):
 
 
 def getEndTimefromRuninfo(xmlfile):
-    """ 
+    """
     Gets the endtime of the run from the FEWS runinfo file
     """
     if os.path.exists(xmlfile):
@@ -473,7 +473,7 @@ def getEndTimefromRuninfo(xmlfile):
 
 
 def getStartTimefromRuninfo(xmlfile):
-    """ 
+    """
     Gets the starttime from the FEWS runinfo file
     """
     if os.path.exists(xmlfile):

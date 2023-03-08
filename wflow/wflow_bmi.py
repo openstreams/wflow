@@ -523,9 +523,7 @@ class wflowbmi_light(object):
 
 
 class LookupNames:
-    """
-
-    """
+    """ """
 
     def __init__(self, filename):
         """

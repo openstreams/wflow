@@ -73,9 +73,7 @@ class WaterBodies(object):
                 "Using only natural water bodies identified in the year 1900. All reservoirs in 1900 are assumed as lakes."
             )
             self.onlyNaturalWaterBodies = True
-            self.dateForNaturalCondition = (
-                "1900-01-01"
-            )  # The run for a natural condition should access only this date.
+            self.dateForNaturalCondition = "1900-01-01"  # The run for a natural condition should access only this date.
 
         # names of files containing water bodies parameters
         if configget(iniItems, "routingOptions", "waterBodyInputNC", "None") == str(
@@ -459,8 +457,8 @@ class WaterBodies(object):
             preStorage = self.waterBodyStorage  # unit: m
 
         self.timestepsToAvgDischarge = (
-            timestepsToAvgDischarge
-        )  # TODO: include this one in "currTimeStep"
+            timestepsToAvgDischarge  # TODO: include this one in "currTimeStep"
+        )
 
         # obtain inflow (and update storage)
         self.moveFromChannelToWaterBody(
@@ -606,9 +604,7 @@ class WaterBodies(object):
     ):
 
         # waterHeight (m): temporary variable, a function of storage:
-        minWaterHeight = (
-            0.001
-        )  # (m) Rens used 0.001 m as the limit # this is to make sure there is always lake outflow,
+        minWaterHeight = 0.001  # (m) Rens used 0.001 m as the limit # this is to make sure there is always lake outflow,
         # but it will be still limited by available self.waterBodyStorage
         waterHeight = pcr.cover(
             pcr.max(
